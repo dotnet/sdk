@@ -2,410 +2,1234 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+
+
 using System.Collections.Generic;
+
+
 using System.Linq;
+
+
 using System.Text;
+
+
 using System.Threading.Tasks;
+
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+
+
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Test;
 
+
+
+
+
 // Set of things to test:
+
+
 // Literals 'a'
+
+
 // Multiple literals 'a/b'
+
+
 // Extensions '*.a'
+
+
 // Longer extensions first '*.a', '*.b.a'
+
+
 // Extensions at the beginning '*.a/b'
+
+
 // Extensions at the end 'a/*.b'
+
+
 // Extensions in the middle 'a/*.b/c'
+
+
 // Wildcard '*'
+
+
 // Wildcard at the beginning '*/a'
+
+
 // Wildcard at the end 'a/*'
+
+
 // Wildcard in the middle 'a/*/c'
+
+
 // Recursive wildcard '**'
+
+
 // Recursive wildcard at the beginning '**/a'
+
+
 // Recursive wildcard at the end 'a/**'
+
+
 // Recursive wildcard in the middle 'a/**/c'
+
+
+[TestClass]
+
 public partial class StaticWebAssetGlobMatcherTest
+
+
 {
-        [Theory]
-        [InlineData("**/*.razor.js", "Components/Pages/RegularComponent.razor.js", "Components/Pages/RegularComponent.razor.js")]
-        [InlineData("**/*.razor.js", "Components/User.Profile.Details.razor.js", "Components/User.Profile.Details.razor.js")]
-        [InlineData("**/*.razor.js", "Components/Area/Sub/Feature/User.Profile.Details.razor.js", "Components/Area/Sub/Feature/User.Profile.Details.razor.js")]
-        [InlineData("**/*.razor.js", "Components/Area/Sub/Feature/Deep.Component.Name.With.Many.Parts.razor.js", "Components/Area/Sub/Feature/Deep.Component.Name.With.Many.Parts.razor.js")]
-        [InlineData("**/*.cshtml.js", "Pages/Shared/_Host.cshtml.js", "Pages/Shared/_Host.cshtml.js")]
-        [InlineData("**/*.cshtml.js", "Areas/Admin/Pages/Dashboard.cshtml.js", "Areas/Admin/Pages/Dashboard.cshtml.js")]
-        [InlineData("*.lib.module.js", "Widget.lib.module.js", "Widget.lib.module.js")]
-        [InlineData("*.razor.css", "Component.razor.css", "Component.razor.css")]
-        [InlineData("*.cshtml.css", "View.cshtml.css", "View.cshtml.css")]
-        [InlineData("*.modules.json", "app.modules.json", "app.modules.json")]
-        [InlineData("*.lib.module.js", "Rcl.Client.Feature.lib.module.js", "Rcl.Client.Feature.lib.module.js")]
+
+
+        [TestMethod]
+
+
+        [DataRow("**/*.razor.js", "Components/Pages/RegularComponent.razor.js", "Components/Pages/RegularComponent.razor.js")]
+
+
+        [DataRow("**/*.razor.js", "Components/User.Profile.Details.razor.js", "Components/User.Profile.Details.razor.js")]
+
+
+        [DataRow("**/*.razor.js", "Components/Area/Sub/Feature/User.Profile.Details.razor.js", "Components/Area/Sub/Feature/User.Profile.Details.razor.js")]
+
+
+        [DataRow("**/*.razor.js", "Components/Area/Sub/Feature/Deep.Component.Name.With.Many.Parts.razor.js", "Components/Area/Sub/Feature/Deep.Component.Name.With.Many.Parts.razor.js")]
+
+
+        [DataRow("**/*.cshtml.js", "Pages/Shared/_Host.cshtml.js", "Pages/Shared/_Host.cshtml.js")]
+
+
+        [DataRow("**/*.cshtml.js", "Areas/Admin/Pages/Dashboard.cshtml.js", "Areas/Admin/Pages/Dashboard.cshtml.js")]
+
+
+        [DataRow("*.lib.module.js", "Widget.lib.module.js", "Widget.lib.module.js")]
+
+
+        [DataRow("*.razor.css", "Component.razor.css", "Component.razor.css")]
+
+
+        [DataRow("*.cshtml.css", "View.cshtml.css", "View.cshtml.css")]
+
+
+        [DataRow("*.modules.json", "app.modules.json", "app.modules.json")]
+
+
+        [DataRow("*.lib.module.js", "Rcl.Client.Feature.lib.module.js", "Rcl.Client.Feature.lib.module.js")]
+
+
         public void Can_Match_WellKnownExistingPatterns(string pattern, string path, string expectedStem)
+
+
         {
+
+
             var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
             matcher.AddIncludePatterns(pattern);
+
+
             var globMatcher = matcher.Build();
 
+
+
+
+
             var match = globMatcher.Match(path);
-            Assert.True(match.IsMatch);
-            Assert.Equal(pattern, match.Pattern);
-            Assert.Equal(expectedStem, match.Stem);
+
+
+            Assert.IsTrue(match.IsMatch);
+
+
+            Assert.AreEqual(pattern, match.Pattern);
+
+
+            Assert.AreEqual(expectedStem, match.Stem);
+
+
         }
-    [Fact]
+
+
+    [TestMethod]
+
+
     public void CanMatchLiterals()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("a");
+
+
         var globMatcher = matcher.Build();
+
+
+
+
 
         var match = globMatcher.Match("a");
-        Assert.True(match.IsMatch);
-        Assert.Equal("a", match.Pattern);
-        Assert.Equal("a", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("a", match.Pattern);
+
+
+        Assert.AreEqual("a", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchMultipleLiterals()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("a/b");
+
+
         var globMatcher = matcher.Build();
+
+
+
+
 
         var match = globMatcher.Match("a/b");
-        Assert.True(match.IsMatch);
-        Assert.Equal("a/b", match.Pattern);
-        Assert.Equal("b", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("a/b", match.Pattern);
+
+
+        Assert.AreEqual("b", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchExtensions()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("*.a");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a.a");
-        Assert.True(match.IsMatch);
-        Assert.Equal("*.a", match.Pattern);
-        Assert.Equal("a.a", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("*.a", match.Pattern);
+
+
+        Assert.AreEqual("a.a", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void MatchesLongerExtensionsFirst()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("*.a", "*.b.a");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("c.b.a");
-        Assert.True(match.IsMatch);
-        Assert.Equal("*.b.a", match.Pattern);
-        Assert.Equal("c.b.a", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("*.b.a", match.Pattern);
+
+
+        Assert.AreEqual("c.b.a", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchExtensionsAtTheBeginning()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("*.a/b");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("c.a/b");
-        Assert.True(match.IsMatch);
-        Assert.Equal("*.a/b", match.Pattern);
-        Assert.Equal("b", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("*.a/b", match.Pattern);
+
+
+        Assert.AreEqual("b", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchExtensionsAtTheEnd()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("a/*.b");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a/c.b");
-        Assert.True(match.IsMatch);
-        Assert.Equal("a/*.b", match.Pattern);
-        Assert.Equal("c.b", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("a/*.b", match.Pattern);
+
+
+        Assert.AreEqual("c.b", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchExtensionsInMiddle()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("a/*.b/c");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a/d.b/c");
-        Assert.True(match.IsMatch);
-        Assert.Equal("a/*.b/c", match.Pattern);
-        Assert.Equal("c", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("a/*.b/c", match.Pattern);
+
+
+        Assert.AreEqual("c", match.Stem);
+
+
     }
 
-    [Theory]
-    [InlineData("a*")]
-    [InlineData("*a")]
-    [InlineData("?")]
-    [InlineData("*?")]
-    [InlineData("?*")]
-    [InlineData("**a")]
-    [InlineData("a**")]
-    [InlineData("**?")]
-    [InlineData("?**")]
+
+
+
+
+    [TestMethod]
+
+
+    [DataRow("a*")]
+
+
+    [DataRow("*a")]
+
+
+    [DataRow("?")]
+
+
+    [DataRow("*?")]
+
+
+    [DataRow("?*")]
+
+
+    [DataRow("**a")]
+
+
+    [DataRow("a**")]
+
+
+    [DataRow("**?")]
+
+
+    [DataRow("?**")]
+
+
     public void CanMatchComplexSegments(string pattern)
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns(pattern);
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a");
-        Assert.True(match.IsMatch);
-        Assert.Equal(pattern, match.Pattern);
-        Assert.Equal("a", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual(pattern, match.Pattern);
+
+
+        Assert.AreEqual("a", match.Stem);
+
+
     }
 
-    [Theory]
-    [InlineData("a?", "aa", true)]
-    [InlineData("a?", "a", false)]
-    [InlineData("a?", "aaa", false)]
-    [InlineData("?a", "aa", true)]
-    [InlineData("?a", "a", false)]
-    [InlineData("?a", "aaa", false)]
-    [InlineData("a?a", "aaa", true)]
-    [InlineData("a?a", "aba", true)]
-    [InlineData("a?a", "abaa", false)]
-    [InlineData("a?a", "ab", false)]
+
+
+
+
+    [TestMethod]
+
+
+    [DataRow("a?", "aa", true)]
+
+
+    [DataRow("a?", "a", false)]
+
+
+    [DataRow("a?", "aaa", false)]
+
+
+    [DataRow("?a", "aa", true)]
+
+
+    [DataRow("?a", "a", false)]
+
+
+    [DataRow("?a", "aaa", false)]
+
+
+    [DataRow("a?a", "aaa", true)]
+
+
+    [DataRow("a?a", "aba", true)]
+
+
+    [DataRow("a?a", "abaa", false)]
+
+
+    [DataRow("a?a", "ab", false)]
+
+
     public void QuestionMarksMatchSingleCharacter(string pattern, string input, bool expectedMatchResult)
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns(pattern);
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match(input);
-        Assert.Equal(expectedMatchResult, match.IsMatch);
+
+
+        Assert.AreEqual(expectedMatchResult, match.IsMatch);
+
+
         if(expectedMatchResult)
+
+
         {
-            Assert.Equal(pattern, match.Pattern);
-            Assert.Equal(input, match.Stem);
+
+
+            Assert.AreEqual(pattern, match.Pattern);
+
+
+            Assert.AreEqual(input, match.Stem);
+
+
         }
+
+
         else
+
+
         {
-            Assert.Null(match.Pattern);
-            Assert.Null(match.Stem);
+
+
+            Assert.IsNull(match.Pattern);
+
+
+            Assert.IsNull(match.Stem);
+
+
         }
+
+
     }
 
-    [Theory]
-    [InlineData("a??", "aaa", true)]
-    [InlineData("a??", "aa", false)]
-    [InlineData("a??", "aaaa", false)]
-    [InlineData("?a?", "aaa", true)]
-    [InlineData("?a?", "aa", false)]
-    [InlineData("?a?", "aaaa", false)]
-    [InlineData("??a", "aaa", true)]
-    [InlineData("??a", "aa", false)]
-    [InlineData("??a", "aaaa", false)]
-    [InlineData("a??a", "aaaa", true)]
-    [InlineData("a??a", "aaba", true)]
-    [InlineData("a??a", "aabaa", false)]
-    [InlineData("a??a", "aba", false)]
+
+
+
+
+    [TestMethod]
+
+
+    [DataRow("a??", "aaa", true)]
+
+
+    [DataRow("a??", "aa", false)]
+
+
+    [DataRow("a??", "aaaa", false)]
+
+
+    [DataRow("?a?", "aaa", true)]
+
+
+    [DataRow("?a?", "aa", false)]
+
+
+    [DataRow("?a?", "aaaa", false)]
+
+
+    [DataRow("??a", "aaa", true)]
+
+
+    [DataRow("??a", "aa", false)]
+
+
+    [DataRow("??a", "aaaa", false)]
+
+
+    [DataRow("a??a", "aaaa", true)]
+
+
+    [DataRow("a??a", "aaba", true)]
+
+
+    [DataRow("a??a", "aabaa", false)]
+
+
+    [DataRow("a??a", "aba", false)]
+
+
     public void MultipleQuestionMarksMatchExactlyTheNumberOfCharacters(string pattern, string input, bool expectedMatchResult)
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns(pattern);
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match(input);
-        Assert.Equal(expectedMatchResult, match.IsMatch);
+
+
+        Assert.AreEqual(expectedMatchResult, match.IsMatch);
+
+
         if (expectedMatchResult)
+
+
         {
-            Assert.Equal(pattern, match.Pattern);
-            Assert.Equal(input, match.Stem);
+
+
+            Assert.AreEqual(pattern, match.Pattern);
+
+
+            Assert.AreEqual(input, match.Stem);
+
+
         }
+
+
         else
+
+
         {
-            Assert.Null(match.Pattern);
-            Assert.Null(match.Stem);
+
+
+            Assert.IsNull(match.Pattern);
+
+
+            Assert.IsNull(match.Stem);
+
+
         }
+
+
     }
 
-    [Theory]
-    [InlineData("a*", "a", true)]
-    [InlineData("a*", "aa", true)]
-    [InlineData("a*", "aaa", true)]
-    [InlineData("a*", "aaaa", true)]
-    [InlineData("a*", "aaaaa", true)]
-    [InlineData("a*", "aaaaaa", true)]
-    [InlineData("*a", "a", true)]
-    [InlineData("*a", "aa", true)]
-    [InlineData("*a", "aaa", true)]
-    [InlineData("*a", "aaaa", true)]
-    [InlineData("*a", "aaaaa", true)]
-    [InlineData("a*a", "a", false)]
-    [InlineData("a*a", "aa", true)]
-    [InlineData("a*a", "aaa", true)]
-    [InlineData("a*a", "aaaaa", true)]
-    [InlineData("a*a", "aaaaaa", true)]
-    [InlineData("a*a", "aba", true)]
-    [InlineData("a*a", "abaa", true)]
-    [InlineData("a*a", "abba", true)]
-    [InlineData("a*b", "ab", true)]
+
+
+
+
+    [TestMethod]
+
+
+    [DataRow("a*", "a", true)]
+
+
+    [DataRow("a*", "aa", true)]
+
+
+    [DataRow("a*", "aaa", true)]
+
+
+    [DataRow("a*", "aaaa", true)]
+
+
+    [DataRow("a*", "aaaaa", true)]
+
+
+    [DataRow("a*", "aaaaaa", true)]
+
+
+    [DataRow("*a", "a", true)]
+
+
+    [DataRow("*a", "aa", true)]
+
+
+    [DataRow("*a", "aaa", true)]
+
+
+    [DataRow("*a", "aaaa", true)]
+
+
+    [DataRow("*a", "aaaaa", true)]
+
+
+    [DataRow("a*a", "a", false)]
+
+
+    [DataRow("a*a", "aa", true)]
+
+
+    [DataRow("a*a", "aaa", true)]
+
+
+    [DataRow("a*a", "aaaaa", true)]
+
+
+    [DataRow("a*a", "aaaaaa", true)]
+
+
+    [DataRow("a*a", "aba", true)]
+
+
+    [DataRow("a*a", "abaa", true)]
+
+
+    [DataRow("a*a", "abba", true)]
+
+
+    [DataRow("a*b", "ab", true)]
+
+
     public void WildCardsMatchZeroOrMoreCharacters(string pattern, string input, bool expectedMatchResult)
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns(pattern);
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match(input);
-        Assert.Equal(expectedMatchResult, match.IsMatch);
+
+
+        Assert.AreEqual(expectedMatchResult, match.IsMatch);
+
+
         if (expectedMatchResult)
+
+
         {
-            Assert.Equal(pattern, match.Pattern);
-            Assert.Equal(input, match.Stem);
+
+
+            Assert.AreEqual(pattern, match.Pattern);
+
+
+            Assert.AreEqual(input, match.Stem);
+
+
         }
+
+
         else
+
+
         {
-            Assert.Null(match.Pattern);
-            Assert.Null(match.Stem);
+
+
+            Assert.IsNull(match.Pattern);
+
+
+            Assert.IsNull(match.Stem);
+
+
         }
+
+
     }
 
-    [Theory]
-    [InlineData("*?a", "a", false)]
-    [InlineData("*?a", "aa", true)]
-    [InlineData("*?a", "aaa", true)]
-    [InlineData("*?a", "aaaa", true)]
-    [InlineData("*?a", "aaaaa", true)]
-    [InlineData("*?a", "aaaaaa", true)]
-    [InlineData("*??a", "aa", false)]
-    [InlineData("*??a", "aaa", true)]
-    [InlineData("*???a", "aaa", false)]
-    [InlineData("*???a", "aaaa", true)]
-    [InlineData("*????a", "aaaa", false)]
-    [InlineData("*????a", "aaaaa", true)]
-    [InlineData("*?????a", "aaaaa", false)]
-    [InlineData("*?????a", "aaaaaa", true)]
-    [InlineData("*??????a", "aaaaaa", false)]
-    [InlineData("*??????a", "aaaaaaa", true)]
-    [InlineData("a*?", "a", false)]
-    [InlineData("a*?", "aa", true)]
-    [InlineData("a*?", "aaa", true)]
-    [InlineData("a*?", "aaaa", true)]
-    [InlineData("a*?", "aaaaa", true)]
-    [InlineData("a*?", "aaaaaa", true)]
-    [InlineData("a*??", "aa", false)]
-    [InlineData("a*??", "aaa", true)]
-    [InlineData("a*???", "aaa", false)]
-    [InlineData("a*???", "aaaa", true)]
-    [InlineData("a*????", "aaaa", false)]
-    [InlineData("a*????", "aaaaa", true)]
-    [InlineData("a*?????", "aaaaa", false)]
-    [InlineData("a*?????", "aaaaaa", true)]
-    [InlineData("a*??????", "aaaaaa", false)]
-    [InlineData("a*??????", "aaaaaaa", true)]
+
+
+
+
+    [TestMethod]
+
+
+    [DataRow("*?a", "a", false)]
+
+
+    [DataRow("*?a", "aa", true)]
+
+
+    [DataRow("*?a", "aaa", true)]
+
+
+    [DataRow("*?a", "aaaa", true)]
+
+
+    [DataRow("*?a", "aaaaa", true)]
+
+
+    [DataRow("*?a", "aaaaaa", true)]
+
+
+    [DataRow("*??a", "aa", false)]
+
+
+    [DataRow("*??a", "aaa", true)]
+
+
+    [DataRow("*???a", "aaa", false)]
+
+
+    [DataRow("*???a", "aaaa", true)]
+
+
+    [DataRow("*????a", "aaaa", false)]
+
+
+    [DataRow("*????a", "aaaaa", true)]
+
+
+    [DataRow("*?????a", "aaaaa", false)]
+
+
+    [DataRow("*?????a", "aaaaaa", true)]
+
+
+    [DataRow("*??????a", "aaaaaa", false)]
+
+
+    [DataRow("*??????a", "aaaaaaa", true)]
+
+
+    [DataRow("a*?", "a", false)]
+
+
+    [DataRow("a*?", "aa", true)]
+
+
+    [DataRow("a*?", "aaa", true)]
+
+
+    [DataRow("a*?", "aaaa", true)]
+
+
+    [DataRow("a*?", "aaaaa", true)]
+
+
+    [DataRow("a*?", "aaaaaa", true)]
+
+
+    [DataRow("a*??", "aa", false)]
+
+
+    [DataRow("a*??", "aaa", true)]
+
+
+    [DataRow("a*???", "aaa", false)]
+
+
+    [DataRow("a*???", "aaaa", true)]
+
+
+    [DataRow("a*????", "aaaa", false)]
+
+
+    [DataRow("a*????", "aaaaa", true)]
+
+
+    [DataRow("a*?????", "aaaaa", false)]
+
+
+    [DataRow("a*?????", "aaaaaa", true)]
+
+
+    [DataRow("a*??????", "aaaaaa", false)]
+
+
+    [DataRow("a*??????", "aaaaaaa", true)]
+
+
+
+
 
     public void SingleWildcardPrecededOrSucceededByQuestionMarkRequireMinimumNumberOfCharacters(string pattern, string input, bool expectedMatchResult)
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns(pattern);
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match(input);
-        Assert.Equal(expectedMatchResult, match.IsMatch);
+
+
+        Assert.AreEqual(expectedMatchResult, match.IsMatch);
+
+
         if (expectedMatchResult)
+
+
         {
-            Assert.Equal(pattern, match.Pattern);
-            Assert.Equal(input, match.Stem);
+
+
+            Assert.AreEqual(pattern, match.Pattern);
+
+
+            Assert.AreEqual(input, match.Stem);
+
+
         }
+
+
         else
+
+
         {
-            Assert.Null(match.Pattern);
-            Assert.Null(match.Stem);
+
+
+            Assert.IsNull(match.Pattern);
+
+
+            Assert.IsNull(match.Stem);
+
+
         }
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchWildCard()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("*");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a");
-        Assert.True(match.IsMatch);
-        Assert.Equal("*", match.Pattern);
-        Assert.Equal("a", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("*", match.Pattern);
+
+
+        Assert.AreEqual("a", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchWildCardAtTheBeginning()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("*/a");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("c/a");
-        Assert.True(match.IsMatch);
-        Assert.Equal("*/a", match.Pattern);
-        Assert.Equal("a", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("*/a", match.Pattern);
+
+
+        Assert.AreEqual("a", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchWildCardAtTheEnd()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("a/*");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a/c");
-        Assert.True(match.IsMatch);
-        Assert.Equal("a/*", match.Pattern);
-        Assert.Equal("c", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("a/*", match.Pattern);
+
+
+        Assert.AreEqual("c", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchWildCardInMiddle()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("a/*/c");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a/b/c");
-        Assert.True(match.IsMatch);
-        Assert.Equal("a/*/c", match.Pattern);
-        Assert.Equal("c", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("a/*/c", match.Pattern);
+
+
+        Assert.AreEqual("c", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchRecursiveWildCard()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("**");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a/b/c");
-        Assert.True(match.IsMatch);
-        Assert.Equal("**", match.Pattern);
-        Assert.Equal("a/b/c", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("**", match.Pattern);
+
+
+        Assert.AreEqual("a/b/c", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchRecursiveWildCardAtTheBeginning()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("**/a");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("c/b/a");
-        Assert.True(match.IsMatch);
-        Assert.Equal("**/a", match.Pattern);
-        Assert.Equal("c/b/a", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("**/a", match.Pattern);
+
+
+        Assert.AreEqual("c/b/a", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchRecursiveWildCardAtTheEnd()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("a/**");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a/b/c");
-        Assert.True(match.IsMatch);
-        Assert.Equal("a/**", match.Pattern);
-        Assert.Equal("b/c", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("a/**", match.Pattern);
+
+
+        Assert.AreEqual("b/c", match.Stem);
+
+
     }
 
-    [Fact]
+
+
+
+
+    [TestMethod]
+
+
     public void CanMatchRecursiveWildCardInMiddle()
+
+
     {
+
+
         var matcher = new StaticWebAssetGlobMatcherBuilder();
+
+
         matcher.AddIncludePatterns("a/**/c");
+
+
         var globMatcher = matcher.Build();
+
+
         var match = globMatcher.Match("a/b/c");
-        Assert.True(match.IsMatch);
-        Assert.Equal("a/**/c", match.Pattern);
-        Assert.Equal("b/c", match.Stem);
+
+
+        Assert.IsTrue(match.IsMatch);
+
+
+        Assert.AreEqual("a/**/c", match.Pattern);
+
+
+        Assert.AreEqual("b/c", match.Stem);
+
+
     }
+
+
 }
+
+
