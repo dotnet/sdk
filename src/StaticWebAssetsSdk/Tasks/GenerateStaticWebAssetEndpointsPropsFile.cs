@@ -91,7 +91,7 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task, IMultiThreadableTa
 
     private void WriteFile(byte[] data)
     {
-        AbsolutePath targetPropsFilePath = TaskEnvironment.GetAbsolutePath(TargetPropsFilePath);
+        var targetPropsFilePath = string.IsNullOrWhiteSpace(TargetPropsFilePath) ? TargetPropsFilePath : TaskEnvironment.GetAbsolutePath(TargetPropsFilePath).Value;
         var dataHash = ComputeHash(data);
         var fileExists = File.Exists(targetPropsFilePath);
         var existingFileHash = fileExists ? ComputeHash(File.ReadAllBytes(targetPropsFilePath)) : "";
