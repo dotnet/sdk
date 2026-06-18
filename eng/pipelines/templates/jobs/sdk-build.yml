@@ -232,9 +232,15 @@ jobs:
       displayName: 🟣 Copy NativeAOT Size Analysis Files
       inputs:
         SourceFolder: $(Build.SourcesDirectory)/artifacts/obj/dotnet-aot
+        # the three relevant files for size analysis are
+        # 1. dotnet-aot.mstat - the main size analysis file
+        # 2. dotnet-aot.codegen.dgml.xml - the code generation dependency graph
+        # 3. dotnet-aot.scan.dgml.xml - the scan dependency graph
+        # and each is going to be in the <config>/<tfm>/<rid>/native directory
         Contents: |
-          $(buildConfiguration)/**/native/dotnet-aot.mstat
-          $(buildConfiguration)/**/native/dotnet-aot.scan.dgml
+          $(buildConfiguration)/*/*/native/dotnet-aot.mstat
+          $(buildConfiguration)/*/*/native/dotnet-aot.codegen.dgml.xml
+          $(buildConfiguration)/*/*/native/dotnet-aot.scan.dgml.xml
         TargetFolder: $(Build.ArtifactStagingDirectory)/aot-size-analysis
         flattenFolders: true
       continueOnError: true
