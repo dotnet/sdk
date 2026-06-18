@@ -4,13 +4,13 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGenerateRuntimeConfigMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void ItWritesRuntimeConfigViaTaskEnvironment()
         {
             // Create a temp directory to act as a fake project dir (different from CWD).
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItBehavesSameWithEmptyAssetsFilePathInBothEnvironments()
         {
             // When AssetsFilePath = "", the task enters the else branch (not null)
@@ -172,9 +172,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             return (result, engine, caught);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(null)]
         public void ItBehavesSameWithEmptyOrNullRuntimeConfigPathInBothEnvironments(string? runtimeConfigPath)
         {
             // WriteRuntimeConfig calls TaskEnvironment.GetAbsolutePath(RuntimeConfigPath).
@@ -232,7 +232,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void UserRuntimeConfigProducesSameOutputInBothEnvironments()
         {
             // AddUserRuntimeOptions calls TaskEnvironment.GetAbsolutePath(UserRuntimeConfig).
@@ -300,7 +300,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void UserRuntimeConfigWithNonexistentFileProducesSameOutputInBothEnvironments()
         {
             // When UserRuntimeConfig points to a file that doesn't exist,

@@ -1,13 +1,10 @@
-﻿<Project>
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
 
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
@@ -29,11 +26,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
+    <Using Include="Microsoft.NET.TestFramework" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,7 +39,5 @@
     <None Include="LockFiles\*.project.lock.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\Tasks\Common\Resources\Strings.resx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

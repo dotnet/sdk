@@ -6,13 +6,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenThatWeWantToGetDependenciesViaDesignTimeBuild : SdkTest
     {
-        public GivenThatWeWantToGetDependenciesViaDesignTimeBuild(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItShouldIgnoreAllDependenciesWithTypeNotEqualToPackageOrUnresolved()
         {
             var testRoot = TestAssetsManager.CreateTestDirectory().Path;
@@ -31,7 +30,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute();
 
-            Assert.Equal(2, task.PackageDependenciesDesignTime.Count());
+            Assert.HasCount(2, task.PackageDependenciesDesignTime);
 
             // Verify only
             // top.package1 is type 'package'
@@ -39,13 +38,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             //
             // top.package3 is type 'unknown'. Should not appear in the list
             var item1 = task.PackageDependenciesDesignTime[0];
-            Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
+            Assert.AreEqual("top.package1/1.0.0", item1.ItemSpec);
 
             var item2 = task.PackageDependenciesDesignTime[1];
-            Assert.Equal("top.package2/1.0.0", item2.ItemSpec);
+            Assert.AreEqual("top.package2/1.0.0", item2.ItemSpec);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItShouldIdentifyDefaultImplicitPackages()
         {
             var testRoot = TestAssetsManager.CreateTestDirectory().Path;
@@ -64,23 +64,24 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute();
 
-            Assert.Equal(3, task.PackageDependenciesDesignTime.Count());
+            Assert.HasCount(3, task.PackageDependenciesDesignTime);
 
             // Verify implicit packages
             var item1 = task.PackageDependenciesDesignTime[0];
-            Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
-            Assert.Equal("False", item1.GetMetadata(MetadataKeys.IsImplicitlyDefined));
+            Assert.AreEqual("top.package1/1.0.0", item1.ItemSpec);
+            Assert.AreEqual("False", item1.GetMetadata(MetadataKeys.IsImplicitlyDefined));
 
             var item2 = task.PackageDependenciesDesignTime[1];
-            Assert.Equal("top.package2/1.0.0", item2.ItemSpec);
-            Assert.Equal("True", item2.GetMetadata(MetadataKeys.IsImplicitlyDefined));
+            Assert.AreEqual("top.package2/1.0.0", item2.ItemSpec);
+            Assert.AreEqual("True", item2.GetMetadata(MetadataKeys.IsImplicitlyDefined));
 
             var item3 = task.PackageDependenciesDesignTime[2];
-            Assert.Equal("top.package3/1.0.0", item3.ItemSpec);
-            Assert.Equal("True", item3.GetMetadata(MetadataKeys.IsImplicitlyDefined));
+            Assert.AreEqual("top.package3/1.0.0", item3.ItemSpec);
+            Assert.AreEqual("True", item3.GetMetadata(MetadataKeys.IsImplicitlyDefined));
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItShouldOnlyReturnPackagesInTheSpecifiedTarget()
         {
             var testRoot = TestAssetsManager.CreateTestDirectory().Path;
@@ -340,16 +341,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.TargetFramework = "net6.0";
             task.Execute();
 
-            Assert.Single(task.PackageDependenciesDesignTime);
+            Assert.ContainsSingle(task.PackageDependenciesDesignTime);
 
             // Verify top packages in target
             var item1 = task.PackageDependenciesDesignTime[0];
-            Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
+            Assert.AreEqual("top.package1/1.0.0", item1.ItemSpec);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("latestNet")]
-        [InlineData("net6.0")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow("latestNet")]
+        [DataRow("net6.0")]
         public void ItShouldOnlyReturnTopLevelPackages(string alias)
         {
             var testRoot = TestAssetsManager.CreateTestDirectory().Path;
@@ -366,19 +368,19 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute();
 
             // Verify all top packages are listed here
-            Assert.Equal(3, task.PackageDependenciesDesignTime.Count());
+            Assert.HasCount(3, task.PackageDependenciesDesignTime);
 
             var item1 = task.PackageDependenciesDesignTime[0];
-            Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
-            Assert.Equal("Error", item1.GetMetadata("DiagnosticLevel"));
+            Assert.AreEqual("top.package1/1.0.0", item1.ItemSpec);
+            Assert.AreEqual("Error", item1.GetMetadata("DiagnosticLevel"));
 
             var item2 = task.PackageDependenciesDesignTime[1];
-            Assert.Equal("top.package2/1.0.0", item2.ItemSpec);
-            Assert.Equal(string.Empty, item2.GetMetadata("DiagnosticLevel"));
+            Assert.AreEqual("top.package2/1.0.0", item2.ItemSpec);
+            Assert.AreEqual(string.Empty, item2.GetMetadata("DiagnosticLevel"));
 
             var item3 = task.PackageDependenciesDesignTime[2];
-            Assert.Equal("top.package3/1.0.0", item3.ItemSpec);
-            Assert.Equal("Warning", item3.GetMetadata("DiagnosticLevel"));
+            Assert.AreEqual("top.package3/1.0.0", item3.ItemSpec);
+            Assert.AreEqual("Warning", item3.GetMetadata("DiagnosticLevel"));
         }
 
         /// <summary>
@@ -694,4 +696,3 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
     }
 }
-
