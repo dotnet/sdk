@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
@@ -12,17 +12,12 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
-[Collection("Docker tests")]
-public class CreateImageIndexTests
+[TestClass]
+[DoNotParallelize]
+public class CreateImageIndexTests : SdkTest
 {
-    private ITestOutputHelper _testOutput;
-
-    public CreateImageIndexTests(ITestOutputHelper testOutput)
-    {
-        _testOutput = testOutput;
-    }
-
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task CreateImageIndex_Baseline()
     {
         DirectoryInfo newProjectDir = CreateNewProject();
@@ -42,7 +37,7 @@ public class CreateImageIndexTests
         cii.Repository = repository;
         cii.ImageTags = tags;
         cii.GeneratedContainers = [image1, image2];
-        Assert.True(cii.Execute(), FormatBuildMessages(errors));
+        Assert.IsTrue(cii.Execute(), FormatBuildMessages(errors));
 
         // Assert that the image index is created correctly
         cii.GeneratedImageIndex.Should().NotBeNullOrEmpty();
@@ -58,7 +53,7 @@ public class CreateImageIndexTests
         imageIndex.manifests[1].platform.architecture.Should().Be("arm64");
 
         // Assert that the image index is pushed to the registry
-        var loggerFactory = new TestLoggerFactory(_testOutput);
+        var loggerFactory = new TestLoggerFactory(Log);
         var logger = loggerFactory.CreateLogger(nameof(CreateImageIndex_Baseline));
         Registry registry = new(outputRegistry, logger, RegistryMode.Pull);
 
@@ -76,7 +71,7 @@ public class CreateImageIndexTests
             newProjectDir.Delete(recursive: true);
         }
         newProjectDir.Create();
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(Log, "console", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -93,7 +88,7 @@ public class CreateImageIndexTests
         IBuildEngine buildEngine,
         List<string?> errors)
     {
-        new DotnetCommand(_testOutput, "publish", "-c", "Release", "-r", rid, "--no-self-contained")
+        new DotnetCommand(Log, "publish", "-c", "Release", "-r", rid, "--no-self-contained")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -116,7 +111,7 @@ public class CreateImageIndexTests
         cni.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
         cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
-        Assert.True(cni.Execute(), FormatBuildMessages(errors));
+        Assert.IsTrue(cni.Execute(), FormatBuildMessages(errors));
 
         TaskItem generatedContainer = new("GeneratedContainer" + rid);
         generatedContainer.SetMetadata("Manifest", cni.GeneratedContainerManifest);

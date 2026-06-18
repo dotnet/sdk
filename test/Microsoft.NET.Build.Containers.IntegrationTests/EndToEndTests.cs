@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Formats.Tar;
@@ -14,16 +14,16 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-[Collection("Docker tests")]
-public class EndToEndTests : IDisposable
+[TestClass]
+[DoNotParallelize]
+public class EndToEndTests : SdkTest, IDisposable
 {
-    private ITestOutputHelper _testOutput;
-    private readonly TestLoggerFactory _loggerFactory;
+    private TestLoggerFactory _loggerFactory = null!;
 
-    public EndToEndTests(ITestOutputHelper testOutput)
+    [TestInitialize]
+    public void Initialize()
     {
-        _testOutput = testOutput;
-        _loggerFactory = new TestLoggerFactory(testOutput);
+        _loggerFactory = new TestLoggerFactory(TestContext);
     }
 
     public static string NewImageName([CallerMemberName] string callerMemberName = "")
@@ -55,7 +55,8 @@ public class EndToEndTests : IDisposable
         File.WriteAllText(Path.Combine(path, csprojFilename), text);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithRegistryPushAndPull));
@@ -72,7 +73,7 @@ public class EndToEndTests : IDisposable
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
 
-        Assert.NotNull(imageBuilder);
+        Assert.IsNotNull(imageBuilder);
 
         Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
 
@@ -91,18 +92,19 @@ public class EndToEndTests : IDisposable
         foreach (string tag in destinationReference.Tags)
         {
             // pull it back locally
-            ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:{tag}")
+            ContainerCli.PullCommand(Log, $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:{tag}")
                 .Execute()
                 .Should().Pass();
 
             // Run the image
-            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:{tag}")
+            ContainerCli.RunCommand(Log, "--rm", "--tty", $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:{tag}")
                 .Execute()
                 .Should().Pass();
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithLocalLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithLocalLoad));
@@ -118,7 +120,7 @@ public class EndToEndTests : IDisposable
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
-        Assert.NotNull(imageBuilder);
+        Assert.IsNotNull(imageBuilder);
 
         Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
 
@@ -137,13 +139,14 @@ public class EndToEndTests : IDisposable
         // Run the image
         foreach (string tag in destinationReference.Tags)
         {
-            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:{tag}")
+            ContainerCli.RunCommand(Log, "--rm", "--tty", $"{NewImageName()}:{tag}")
                 .Execute()
                 .Should().Pass();
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
@@ -159,7 +162,7 @@ public class EndToEndTests : IDisposable
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
-        Assert.NotNull(imageBuilder);
+        Assert.IsNotNull(imageBuilder);
 
         Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
 
@@ -177,23 +180,24 @@ public class EndToEndTests : IDisposable
 
         await destinationReference.LocalRegistry!.LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
-        Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
+        Assert.IsTrue(File.Exists(archiveFile), $"File.Exists({archiveFile})");
 
         // Load the archive
-        ContainerCli.LoadCommand(_testOutput, "--input", archiveFile)
+        ContainerCli.LoadCommand(Log, "--input", archiveFile)
             .Execute()
             .Should().Pass();
 
         // Run the image
         foreach (string tag in destinationReference.Tags)
         {
-            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:{tag}")
+            ContainerCli.RunCommand(Log, "--rm", "--tty", $"{NewImageName()}:{tag}")
                 .Execute()
                 .Should().Pass();
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task TarballsHaveCorrectStructure()
     {
         var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
@@ -205,7 +209,7 @@ public class EndToEndTests : IDisposable
 
         await destinationReference.LocalRegistry!.LoadAsync(dockerImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
-        Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
+        Assert.IsTrue(File.Exists(archiveFile), $"File.Exists({archiveFile})");
 
         CheckDockerTarballStructure(archiveFile);
 
@@ -214,7 +218,7 @@ public class EndToEndTests : IDisposable
 
         await destinationReference.LocalRegistry!.LoadAsync(ociImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
-        Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
+        Assert.IsTrue(File.Exists(archiveFile), $"File.Exists({archiveFile})");
 
         CheckOciTarballStructure(archiveFile);
     }
@@ -230,7 +234,7 @@ public class EndToEndTests : IDisposable
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
-        Assert.NotNull(imageBuilder);
+        Assert.IsNotNull(imageBuilder);
 
         BuiltImage builtImage = imageBuilder.Build();
 
@@ -292,9 +296,9 @@ public class EndToEndTests : IDisposable
             }
         }
 
-        Assert.Equal(1, manifestJsonCount);
-        Assert.Equal(1, configJson);
-        Assert.True(layersCount > 0);
+        Assert.AreEqual(1, manifestJsonCount);
+        Assert.AreEqual(1, configJson);
+        Assert.IsGreaterThan(0, layersCount);
     }
 
     private void CheckOciTarballStructure(string tarball)
@@ -331,9 +335,9 @@ public class EndToEndTests : IDisposable
             }
         }
 
-        Assert.Equal(1, ociLayoutCount);
-        Assert.Equal(1, indexJsonCount);
-        Assert.True(blobsCount > 0);
+        Assert.AreEqual(1, ociLayoutCount);
+        Assert.AreEqual(1, indexJsonCount);
+        Assert.IsGreaterThan(0, blobsCount);
     }
 
     private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
@@ -347,7 +351,7 @@ public class EndToEndTests : IDisposable
         }
         Directory.CreateDirectory(workingDirectory);
 
-        new DotnetNewCommand(_testOutput, "console", "-f", tfm, "-o", "MinimalTestApp")
+        new DotnetNewCommand(Log, "console", "-f", tfm, "-o", "MinimalTestApp")
             .WithVirtualHive()
             .WithWorkingDirectory(workingDirectory)
             .Execute()
@@ -357,7 +361,7 @@ public class EndToEndTests : IDisposable
 
 
         var publishCommand =
-            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", _oldFramework, "-c", "Debug")
+            new DotnetCommand(Log, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", _oldFramework, "-c", "Debug")
                 .WithWorkingDirectory(workingDirectory);
 
         publishCommand.Execute()
@@ -367,7 +371,8 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
@@ -381,30 +386,30 @@ public class EndToEndTests : IDisposable
         newSolutionDir.Create();
 
         // Create solution with projects
-        new DotnetNewCommand(_testOutput, "sln", "-n", nameof(EndToEnd_MultiProjectSolution))
+        new DotnetNewCommand(Log, "sln", "-n", nameof(EndToEnd_MultiProjectSolution))
             .WithVirtualHive()
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetNewCommand(_testOutput, "console", "-n", "ConsoleApp")
+        new DotnetNewCommand(Log, "console", "-n", "ConsoleApp")
             .WithVirtualHive()
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("ConsoleApp", "ConsoleApp.csproj"))
+        new DotnetCommand(Log, "sln", "add", Path.Combine("ConsoleApp", "ConsoleApp.csproj"))
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetNewCommand(_testOutput, "web", "-n", "WebApp")
+        new DotnetNewCommand(Log, "web", "-n", "WebApp")
             .WithVirtualHive()
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("WebApp", "WebApp.csproj"))
+        new DotnetCommand(Log, "sln", "add", Path.Combine("WebApp", "WebApp.csproj"))
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
@@ -436,7 +441,7 @@ public class EndToEndTests : IDisposable
         }
 
         // Publish
-        CommandResult commandResult = new DotnetCommand(_testOutput, "publish", "/t:PublishContainer")
+        CommandResult commandResult = new DotnetCommand(Log, "publish", "/t:PublishContainer")
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute();
 
@@ -453,7 +458,8 @@ public class EndToEndTests : IDisposable
     /// It's safe to load the target for libraries in a multi-targeted context because libraries don't have EnableSdkContainerSupport
     /// enabled by default, so the target will be skipped.
     /// </summary>
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task EndToEnd_MultiProjectSolution_with_multitargeted_library()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution_with_multitargeted_library));
@@ -467,30 +473,30 @@ public class EndToEndTests : IDisposable
         newSolutionDir.Create();
 
         // Create solution with projects
-        new DotnetNewCommand(_testOutput, "sln", "-n", nameof(EndToEnd_MultiProjectSolution_with_multitargeted_library))
+        new DotnetNewCommand(Log, "sln", "-n", nameof(EndToEnd_MultiProjectSolution_with_multitargeted_library))
             .WithVirtualHive()
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetNewCommand(_testOutput, "web", "-n", "WebApp")
+        new DotnetNewCommand(Log, "web", "-n", "WebApp")
             .WithVirtualHive()
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("WebApp", "WebApp.csproj"))
+        new DotnetCommand(Log, "sln", "add", Path.Combine("WebApp", "WebApp.csproj"))
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetNewCommand(_testOutput, "classlib", "-n", "Library")
+        new DotnetNewCommand(Log, "classlib", "-n", "Library")
             .WithVirtualHive()
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("Library", "Library.csproj"))
+        new DotnetCommand(Log, "sln", "add", Path.Combine("Library", "Library.csproj"))
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
@@ -513,7 +519,7 @@ public class EndToEndTests : IDisposable
         }
 
         // Publish
-        CommandResult commandResult = new DotnetCommand(_testOutput, "publish", "/t:PublishContainer")
+        CommandResult commandResult = new DotnetCommand(Log, "publish", "/t:PublishContainer")
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute();
 
@@ -521,13 +527,14 @@ public class EndToEndTests : IDisposable
         commandResult.Should().HaveStdOutContaining("Pushed image 'webapp:latest'");
     }
 
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
-    [InlineData("webapi", false)]
-    [InlineData("webapi", true)]
-    [InlineData("worker", false)]
-    [InlineData("worker", true)]
-    [InlineData("console", true)]
-    [InlineData("console", false)]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
+    [DataRow("webapi", false)]
+    [DataRow("webapi", true)]
+    [DataRow("worker", false)]
+    [DataRow("worker", true)]
+    [DataRow("console", true)]
+    [DataRow("console", false)]
     public async Task EndToEnd_NoAPI_ProjectType(string projectType, bool addPackageReference)
     {
         DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_{projectType}_{addPackageReference}"));
@@ -545,7 +552,7 @@ public class EndToEndTests : IDisposable
 
         newProjectDir.Create();
         privateNuGetAssets.Create();
-        new DotnetNewCommand(_testOutput, projectType, "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(Log, projectType, "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
@@ -559,14 +566,14 @@ public class EndToEndTests : IDisposable
 
             (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
+            new DotnetCommand(Log, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
                 .Should().Pass();
 
             // Add package to the project
-            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion ?? string.Empty)
+            new DotnetCommand(Log, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion ?? string.Empty)
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
@@ -587,7 +594,7 @@ public class EndToEndTests : IDisposable
 
         // Build & publish the project
         CommandResult commandResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "publish",
             "/t:PublishContainer",
             "/p:RuntimeIdentifier=linux-x64",
@@ -611,13 +618,13 @@ public class EndToEndTests : IDisposable
             commandResult.Should().NotHaveStdOutContaining("warning");
         }
 
-        ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+        ContainerCli.PullCommand(Log, $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
             .Execute()
             .Should().Pass();
 
         var containerName = $"test-container-1-{projectType}-{addPackageReference}";
         CommandResult processResult = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             [
                 "--rm",
                 "--name",
@@ -628,17 +635,17 @@ public class EndToEndTests : IDisposable
             ])
         .Execute();
         processResult.Should().Pass();
-        Assert.NotNull(processResult.StdOut);
+        Assert.IsNotNull(processResult.StdOut);
         string appContainerId = processResult.StdOut.Trim();
         bool everSucceeded = false;
         if (projectType == "webapi")
         {
             var portCommand =
-            ContainerCli.PortCommand(_testOutput, containerName, 8080)
+            ContainerCli.PortCommand(Log, containerName, 8080)
                 .Execute();
             portCommand.Should().Pass();
             var port = portCommand.StdOut?.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
-            _testOutput.WriteLine($"Discovered port was '{port}'");
+            Log.WriteLine($"Discovered port was '{port}'");
             var tempUri = new Uri($"http://{port}", UriKind.Absolute);
             var appUri = new UriBuilder(tempUri)
             {
@@ -651,7 +658,7 @@ public class EndToEndTests : IDisposable
             {
                 try
                 {
-                    var response = await client.GetAsync($"weatherforecast").ConfigureAwait(false);
+                    var response = await client.GetAsync($"weatherforecast", TestContext.CancellationToken).ConfigureAwait(false);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -661,27 +668,27 @@ public class EndToEndTests : IDisposable
                 }
                 catch { }
 
-                await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken).ConfigureAwait(false);
             }
-            ContainerCli.LogsCommand(_testOutput, appContainerId)
+            ContainerCli.LogsCommand(Log, appContainerId)
             .Execute()
             .Should().Pass();
-            Assert.True(everSucceeded, $"{appUri}weatherforecast never responded.");
+            Assert.IsTrue(everSucceeded, $"{appUri}weatherforecast never responded.");
 
-            ContainerCli.StopCommand(_testOutput, appContainerId)
+            ContainerCli.StopCommand(Log, appContainerId)
             .Execute()
             .Should().Pass();
         }
         else if (projectType == "worker")
         {
             // the worker template needs a second to start up and emit the logs we are looking for
-            await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-            ContainerCli.LogsCommand(_testOutput, appContainerId)
+            await Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken).ConfigureAwait(false);
+            ContainerCli.LogsCommand(Log, appContainerId)
                 .Execute()
                 .Should().Pass()
                 .And.HaveStdOutContaining("Worker running at");
 
-            ContainerCli.StopCommand(_testOutput, appContainerId)
+            ContainerCli.StopCommand(Log, appContainerId)
             .Execute()
             .Should().Pass();
 
@@ -695,9 +702,10 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
-    [InlineData(DockerRegistryManager.FullyQualifiedBaseImageAspNet)]
-    [InlineData(DockerRegistryManager.FullyQualifiedBaseImageAspNetDigest)]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
+    [DataRow(DockerRegistryManager.FullyQualifiedBaseImageAspNet)]
+    [DataRow(DockerRegistryManager.FullyQualifiedBaseImageAspNetDigest)]
     public void EndToEnd_NoAPI_Console(string baseImage)
     {
         DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, "CreateNewImageTest"));
@@ -716,7 +724,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(Log, "console", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
@@ -729,14 +737,14 @@ public class EndToEndTests : IDisposable
 
         (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
+        new DotnetCommand(Log, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework, "-v", packageVersion ?? string.Empty)
+        new DotnetCommand(Log, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework, "-v", packageVersion ?? string.Empty)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -747,7 +755,7 @@ public class EndToEndTests : IDisposable
 
         // Build & publish the project
         new DotnetCommand(
-            _testOutput,
+            Log,
             "publish",
             "/t:PublishContainer",
             "/p:runtimeidentifier=linux-x64",
@@ -760,13 +768,13 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+        ContainerCli.PullCommand(Log, $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
             .Execute()
             .Should().Pass();
 
         var containerName = "test-container-2";
         CommandResult processResult = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--name",
             containerName,
@@ -778,7 +786,8 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void EndToEnd_SingleArch_NoRid()
     {
         // Create a new console project
@@ -789,7 +798,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch
         CommandResult commandResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "publish",
             "/t:PublishContainer",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
@@ -801,7 +810,7 @@ public class EndToEndTests : IDisposable
 
         // Check that the containers can be run
         CommandResult processResultX64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--name",
             $"test-container-singlearch-norid",
@@ -811,9 +820,10 @@ public class EndToEndTests : IDisposable
     }
 
     /**
-    [InlineData("endtoendmultiarch-localregisty")]
-    [InlineData("myteam/endtoendmultiarch-localregisty")]
-    [DockerIsAvailableAndSupportsArchTheory(Skip = "https://github.com/dotnet/sdk/issues/49502", "linux/arm64", checkContainerdStoreAvailability: true)]
+    [DataRow("endtoendmultiarch-localregisty")]
+    [DataRow("myteam/endtoendmultiarch-localregisty")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void EndToEndMultiArch_LocalRegistry(string imageName)
     {
         string tag = "1.0";
@@ -824,7 +834,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch
         CommandResult commandResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "build",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
@@ -844,7 +854,7 @@ public class EndToEndTests : IDisposable
 
         // Check that the containers can be run
         CommandResult processResultX64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/amd64",
@@ -855,7 +865,7 @@ public class EndToEndTests : IDisposable
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
 
         CommandResult processResultArm64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/arm64",
@@ -870,7 +880,8 @@ public class EndToEndTests : IDisposable
     }
     */
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRID()
     {
         string imageName = NewImageName();
@@ -882,7 +893,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch-capable, but single-arch actual
         CommandResult commandResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "publish",
             "/t:PublishContainer",
             // make it so the app is _able_ to target both linux TFMs
@@ -909,7 +920,7 @@ public class EndToEndTests : IDisposable
 
         // Check that the containers can be run
         CommandResult processResultX64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--name",
             $"test-container-{imageName}",
@@ -921,7 +932,8 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRIDUsingJustRIDProperties()
     {
         string imageName = NewImageName();
@@ -933,7 +945,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch-capable, but single-arch actual
         CommandResult commandResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "publish",
             "/t:PublishContainer",
             // make it so the app is _able_ to target both linux TFMs
@@ -958,7 +970,7 @@ public class EndToEndTests : IDisposable
 
         // Check that the containers can be run
         CommandResult processResultX64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--name",
             $"test-container-{imageName}-x64",
@@ -981,7 +993,7 @@ public class EndToEndTests : IDisposable
 
         newProjectDir.Create();
 
-        new DotnetNewCommand(_testOutput, template, "-f", tfm)
+        new DotnetNewCommand(Log, template, "-f", tfm)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -994,9 +1006,10 @@ public class EndToEndTests : IDisposable
         => Path.Combine(projectDir, "bin", configuration, tfm, rid, "publish");
 
     /**
-    [InlineData("endtoendmultiarch-archivepublishing")]
-    [InlineData("myteam/endtoendmultiarch-archivepublishing")]
-    [DockerIsAvailableAndSupportsArchTheory(Skip = "https://github.com/dotnet/sdk/issues/49502", "linux/arm64", checkContainerdStoreAvailability: true)]
+    [DataRow("endtoendmultiarch-archivepublishing")]
+    [DataRow("myteam/endtoendmultiarch-archivepublishing")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void EndToEndMultiArch_ArchivePublishing(string imageName)
     {
         string tag = "1.0";
@@ -1009,7 +1022,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch with ContainerArchiveOutputPath
         CommandResult commandResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "build",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
@@ -1032,13 +1045,13 @@ public class EndToEndTests : IDisposable
         File.Exists(imageTarball).Should().BeTrue();
 
         // Load the multi-arch image from the tarball
-        ContainerCli.LoadCommand(_testOutput, "--input", imageTarball)
+        ContainerCli.LoadCommand(Log, "--input", imageTarball)
            .Execute()
            .Should().Pass();
 
         // Check that the containers can be run
         CommandResult processResultX64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/amd64",
@@ -1049,7 +1062,7 @@ public class EndToEndTests : IDisposable
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
 
         CommandResult processResultArm64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/arm64",
@@ -1064,6 +1077,7 @@ public class EndToEndTests : IDisposable
     }
     */
 
+    [TestMethod]
     [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_RemoteRegistry()
     {
@@ -1080,7 +1094,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch with ContainerRegistry
         CommandResult commandResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "build",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
@@ -1104,14 +1118,14 @@ public class EndToEndTests : IDisposable
         // Check that the containers can be run
         // First pull the image from the registry for each platform
         ContainerCli.PullCommand(
-            _testOutput,
+            Log,
             "--platform",
             "linux/amd64",
             imageFromRegistry)
             .Execute()
             .Should().Pass();
         ContainerCli.PullCommand(
-            _testOutput,
+            Log,
             "--platform",
             "linux/arm64",
             imageFromRegistry)
@@ -1120,7 +1134,7 @@ public class EndToEndTests : IDisposable
 
         // Run the containers
         ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/amd64",
@@ -1129,7 +1143,7 @@ public class EndToEndTests : IDisposable
             imageFromRegistry)
         .Execute().Should().Pass().And.HaveStdOut("Hello, World!");
         ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/arm64",
@@ -1142,7 +1156,8 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/45181")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/45181")]
     public void EndToEndMultiArch_ContainerRuntimeIdentifiersOverridesRuntimeIdentifiers()
     {
         // Create a new console project
@@ -1153,7 +1168,7 @@ public class EndToEndTests : IDisposable
         // Run PublishContainer for multi-arch with ContainerRuntimeIdentifiers
         // RuntimeIdentifiers should contain all the RIDs from ContainerRuntimeIdentifiers to be able to publish
         CommandResult commandResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "build",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
@@ -1176,6 +1191,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
+    [TestMethod]
     [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_EnvVariables()
     {
@@ -1204,7 +1220,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch
         new DotnetCommand(
-            _testOutput,
+            Log,
             "build",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
@@ -1218,7 +1234,7 @@ public class EndToEndTests : IDisposable
         // Check that the env var is printed for linux/amd64 platform
         string containerNameX64 = $"test-container-{imageName}-x64";
         CommandResult processResultX64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/amd64",
@@ -1231,7 +1247,7 @@ public class EndToEndTests : IDisposable
         // Check that the env var is printed for linux/arm64 platform
         string containerNameArm64 = $"test-container-{imageName}-arm64";
         CommandResult processResultArm64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/arm64",
@@ -1245,6 +1261,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
+    [TestMethod]
     [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_Ports()
     {
@@ -1268,7 +1285,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch
         new DotnetCommand(
-            _testOutput,
+            Log,
             "build",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
@@ -1282,7 +1299,7 @@ public class EndToEndTests : IDisposable
         // Check that the ports are correct for linux/amd64 platform
         var containerNameX64 = $"test-container-{imageName}-x64";
         CommandResult processResultX64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/amd64",
@@ -1300,7 +1317,7 @@ public class EndToEndTests : IDisposable
         // Check that the ports are correct for linux/arm64 platform
         var containerNameArm64 = $"test-container-{imageName}-arm64";
         CommandResult processResultArm64 = ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--platform",
             "linux/arm64",
@@ -1317,10 +1334,10 @@ public class EndToEndTests : IDisposable
 
         // Cleanup
         // we ran containers with detached option, so we need to stop them
-        ContainerCli.StopCommand(_testOutput, containerNameX64)
+        ContainerCli.StopCommand(Log, containerNameX64)
            .Execute()
            .Should().Pass();
-        ContainerCli.StopCommand(_testOutput, containerNameArm64)
+        ContainerCli.StopCommand(Log, containerNameArm64)
            .Execute()
            .Should().Pass();
         newProjectDir.Delete(true);
@@ -1331,17 +1348,18 @@ public class EndToEndTests : IDisposable
         foreach (var port in correctPorts)
         {
             // Check the provided port is available
-            ContainerCli.PortCommand(_testOutput, containerName, port)
+            ContainerCli.PortCommand(Log, containerName, port)
                 .Execute().Should().Pass();
         }
         foreach (var port in incorrectPorts)
         {
             // Check that not provided port is not available
-            ContainerCli.PortCommand(_testOutput, containerName, port)
+            ContainerCli.PortCommand(Log, containerName, port)
                 .Execute().Should().Fail();
         }
     }
 
+    [TestMethod]
     [DockerAvailableFact(checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_Labels()
     {
@@ -1354,7 +1372,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch with ContainerGenerateLabels
         new DotnetCommand(
-            _testOutput,
+            Log,
             "publish",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
@@ -1367,7 +1385,7 @@ public class EndToEndTests : IDisposable
 
         // Check that labels are set
         CommandResult inspectResult = ContainerCli.InspectCommand(
-            _testOutput,
+            Log,
             "--format={{json .Config.Labels}}",
             image)
         .Execute();
@@ -1380,12 +1398,13 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerSupportsArchInlineData("linux/arm/v7", "linux-arm", "/app")]
-    [DockerSupportsArchInlineData("linux/arm64/v8", "linux-arm64", "/app")]
-    [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip = "There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
-    [DockerSupportsArchInlineData("windows/amd64", "win-x64", "C:\\app")]
-    [DockerSupportsArchInlineData("linux/amd64", "linux-x64", "/app")]
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49300")]
+    [DataRow("linux/arm/v7", "linux-arm", "/app")]
+    [DataRow("linux/arm64/v8", "linux-arm64", "/app")]
+    [DataRow("linux/386", "linux-x86", "/app")]
+    [DataRow("windows/amd64", "win-x64", "C:\\app")]
+    [DataRow("linux/amd64", "linux-x64", "/app")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));
@@ -1400,7 +1419,7 @@ public class EndToEndTests : IDisposable
             rid,
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
-        Assert.NotNull(imageBuilder);
+        Assert.IsNotNull(imageBuilder);
 
         Layer l = Layer.FromDirectory(publishDirectory, isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType);
 
@@ -1419,7 +1438,7 @@ public class EndToEndTests : IDisposable
 
         // Run the image
         ContainerCli.RunCommand(
-            _testOutput,
+            Log,
             "--rm",
             "--tty",
             "--platform",
@@ -1436,10 +1455,11 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
-    public async void CheckDownloadErrorMessageWhenSourceRepositoryThrows()
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
+    public async Task CheckDownloadErrorMessageWhenSourceRepositoryThrows()
     {
-        var loggerFactory = new TestLoggerFactory(_testOutput);
+        var loggerFactory = new TestLoggerFactory(Log);
         var logger = loggerFactory.CreateLogger(nameof(CheckDownloadErrorMessageWhenSourceRepositoryThrows));
         string rid = "win-x64";
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
@@ -1452,7 +1472,7 @@ public class EndToEndTests : IDisposable
             rid,
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
-        Assert.NotNull(imageBuilder);
+        Assert.IsNotNull(imageBuilder);
 
         Layer l = Layer.FromDirectory(publishDirectory, "C:\\app", true, imageBuilder.ManifestMediaType);
 
@@ -1476,10 +1496,10 @@ public class EndToEndTests : IDisposable
                 .ConfigureAwait(false);
 
         // Assert the error message
-        Assert.True(taskLog.HasLoggedErrors);
-        Assert.NotNull(errors);
-        Assert.Single(errors);
-        Assert.Contains("Unable to download image from the repository", errors[0]);
+        Assert.IsTrue(taskLog.HasLoggedErrors);
+        Assert.IsNotNull(errors);
+        Assert.ContainsSingle(errors);
+        Assert.Contains("Unable to download image from the repository", errors[0]!);
 
         static string[] DecideEntrypoint(string rid, string appName, string workingDir)
         {
@@ -1501,6 +1521,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
+    [TestMethod]
     [DockerAvailableFact(checkContainerdStoreAvailability: true)]
     public void EnforcesOciSchemaForMultiRIDTarballOutput()
     {
@@ -1512,7 +1533,7 @@ public class EndToEndTests : IDisposable
 
         // Run PublishContainer for multi-arch with ContainerGenerateLabels
         var publishResult = new DotnetCommand(
-            _testOutput,
+            Log,
             "publish",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",

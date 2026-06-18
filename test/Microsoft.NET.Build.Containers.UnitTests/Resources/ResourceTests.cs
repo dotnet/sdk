@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
@@ -8,25 +8,26 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.UnitTests.Resources
 {
+    [TestClass]
     public class ResourceTests
     {
-        [Fact]
+        [TestMethod]
         public void GetString_ReturnsValueFromResources()
         {
-            Assert.Equal("CONTAINER0000: Value for unit test {0}", Resource.GetString(nameof(Strings._Test)));
+            Assert.AreEqual("CONTAINER0000: Value for unit test {0}", Resource.GetString(nameof(Strings._Test)));
         }
 
-        [Fact]
+        [TestMethod]
         public void FormatString_ReturnsValueFromResources()
         {
-            Assert.Equal("CONTAINER0000: Value for unit test 1", Resource.FormatString(nameof(Strings._Test), 1));
+            Assert.AreEqual("CONTAINER0000: Value for unit test 1", Resource.FormatString(nameof(Strings._Test), 1));
         }
 
-        [Fact]
+        [TestMethod]
         public void EnsureErrorCodeUniqueness()
         {
             ResourceSet? resourceSet = Resource.Manager.GetResourceSet(CultureInfo.InvariantCulture, true, true);
-            Assert.NotNull(resourceSet);
+            Assert.IsNotNull(resourceSet);
 
             IEnumerable<IGrouping<string, DictionaryEntry>> groups = resourceSet
                 .OfType<DictionaryEntry>()
@@ -44,7 +45,10 @@ namespace Microsoft.NET.Build.Containers.UnitTests.Resources
                 {
                     string prefix = group.First().Key!.ToString()!.Split('_')[0];
 
-                    Assert.All(group, e => e.Key!.ToString()!.StartsWith(prefix, StringComparison.Ordinal));
+                    foreach (DictionaryEntry e in group)
+                    {
+                        Assert.IsTrue(e.Key!.ToString()!.StartsWith(prefix, StringComparison.Ordinal));
+                    }
                 }
             }
         }

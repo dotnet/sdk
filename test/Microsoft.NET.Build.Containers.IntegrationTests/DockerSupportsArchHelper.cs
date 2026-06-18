@@ -1,38 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
 using System.Text.Json;
-using Xunit.v3;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
-
-public class DockerSupportsArchInlineData : DataAttribute
-{
-    private readonly string _arch;
-    private readonly object[] _data;
-
-    public DockerSupportsArchInlineData(string arch, params object[] data)
-    {
-        _arch = arch;
-        _data = data;
-    }
-
-    public override bool SupportsDiscoveryEnumeration() => true;
-
-    public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, Xunit.Sdk.DisposalTracker disposalTracker)
-    {
-        if (DockerSupportsArchHelper.DaemonSupportsArch(_arch))
-        {
-            return new([ConvertDataRow(_data.Prepend(_arch).ToArray())]);
-        }
-        else
-        {
-            base.Skip = $"Skipping test because Docker daemon does not support {_arch}.";
-        }
-        return new(Array.Empty<ITheoryDataRow>());
-    }
-}
 
 internal static class DockerSupportsArchHelper
 {
@@ -99,7 +70,7 @@ internal static class DockerSupportsArchHelper
         }
     }
 
-    private class NullLogger : ITestOutputHelper
+    private sealed class NullLogger : ITestOutputHelper
     {
         private NullLogger() { }
 

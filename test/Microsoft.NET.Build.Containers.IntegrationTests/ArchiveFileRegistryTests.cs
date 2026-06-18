@@ -5,9 +5,11 @@ using Microsoft.NET.Build.Containers.LocalDaemons;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
+[TestClass]
+[DoNotParallelize] // data rows share the same on-disk archive output path
 public class ArchiveFileRegistryTests
 {
-    [Fact]
+    [TestMethod]
     public async Task ArchiveOutputPathIsExistingDirectory_CreatesFileWithRepositoryNameAndTarGz()
     {
         string archiveOutputPath = TestSettings.TestArtifactsDirectory;
@@ -15,12 +17,12 @@ public class ArchiveFileRegistryTests
 
         await CreateRegistryAndCallLoadAsync(archiveOutputPath);
         
-        Assert.True(File.Exists(expectedCreatedFilePath));    
+        Assert.IsTrue(File.Exists(expectedCreatedFilePath));    
     }  
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task ArchiveOutputPathIsNonExistingDirectory_CreatesDirectoryAndFileWithRepositoryNameAndTarGz(bool includeDirectorySeperatorAtTheEnd)
     {
         string archiveOutputPath = Path.Combine(
@@ -30,10 +32,10 @@ public class ArchiveFileRegistryTests
 
         await CreateRegistryAndCallLoadAsync(archiveOutputPath);
         
-        Assert.True(File.Exists(expectedCreatedFilePath));    
+        Assert.IsTrue(File.Exists(expectedCreatedFilePath));    
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ArchiveOutputPathIsCustomFileNameInExistingDirectory_CreatesFileWithThatName()
     {
         string archiveOutputPath = Path.Combine(TestSettings.TestArtifactsDirectory, "custom-name.withextension");
@@ -41,10 +43,10 @@ public class ArchiveFileRegistryTests
 
         await CreateRegistryAndCallLoadAsync(archiveOutputPath);
         
-        Assert.True(File.Exists(expectedCreatedFilePath));    
+        Assert.IsTrue(File.Exists(expectedCreatedFilePath));    
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ArchiveOutputPathIsCustomFileNameInNonExistingDirectory_CreatesDirectoryAndFileWithThatName()
     {
         string archiveOutputPath = Path.Combine(TestSettings.TestArtifactsDirectory, $"nonexisting-directory{Path.AltDirectorySeparatorChar}custom-name.withextension");
@@ -52,7 +54,7 @@ public class ArchiveFileRegistryTests
 
         await CreateRegistryAndCallLoadAsync(archiveOutputPath);
         
-        Assert.True(File.Exists(expectedCreatedFilePath));    
+        Assert.IsTrue(File.Exists(expectedCreatedFilePath));    
     }
 
     private async Task CreateRegistryAndCallLoadAsync(string archiveOutputPath)
