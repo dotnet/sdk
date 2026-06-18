@@ -8,10 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="HelixTasks.SchedulerTool" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime;buildTransitive" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime;buildTransitive" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
+    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="NuGet.ProjectModel" />
   </ItemGroup>
 

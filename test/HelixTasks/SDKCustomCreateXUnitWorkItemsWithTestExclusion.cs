@@ -51,6 +51,47 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         public int BaseMethodLimit { get; set; } = 32;
 
         /// <summary>
+        /// When true, uses time-based scheduling with AzDO historical data
+        /// instead of count-based partitioning.
+        /// </summary>
+        public bool UseTimeBasedScheduling { get; set; }
+
+        /// <summary>
+        /// AzDO project URI for test history queries (e.g. "https://dev.azure.com/dnceng/public").
+        /// Required when UseTimeBasedScheduling is true.
+        /// </summary>
+        public string? AzdoProjectUri { get; set; }
+
+        /// <summary>
+        /// Access token for AzDO REST API. Typically $(System.AccessToken) in pipelines.
+        /// Required when UseTimeBasedScheduling is true.
+        /// </summary>
+        public string? AzdoAccessToken { get; set; }
+
+        /// <summary>
+        /// AzDO pipeline definition ID to query for historical test data.
+        /// Required when UseTimeBasedScheduling is true.
+        /// </summary>
+        public int AzdoDefinitionId { get; set; }
+
+        /// <summary>
+        /// Target branch for finding the last successful build (without refs/heads/ prefix).
+        /// Defaults to "main".
+        /// </summary>
+        public string AzdoTargetBranch { get; set; } = "main";
+
+        /// <summary>
+        /// Optional phase/stage name to filter test runs in the historical build.
+        /// </summary>
+        public string? AzdoPhaseName { get; set; }
+
+        /// <summary>
+        /// Target time per work item in minutes for time-based scheduling.
+        /// Defaults to 10.
+        /// </summary>
+        public int TargetMinutesPerWorkItem { get; set; } = 10;
+
+        /// <summary>
         /// Optional timeout for all created workitems
         /// Defaults to 300s
         /// </summary>
@@ -90,11 +131,199 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 return;
             }
 
-            XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
-                .SelectMany(i => i ?? new())
-                .Where(wi => wi != null)
-                .ToArray();
-            return;
+            if (UseTimeBasedScheduling)
+            {
+                XUnitWorkItems = await PrepareWorkItemsWithTimeBasedScheduling();
+            }
+            else
+            {
+                XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
+                    .SelectMany(i => i ?? new())
+                    .Where(wi => wi != null)
+                    .ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Prepares Helix work items using time-based scheduling with AzDO test history.
+        /// Falls back to per-project count-based scheduling if history is unavailable.
+        /// </summary>
+        private async Task<ITaskItem[]> PrepareWorkItemsWithTimeBasedScheduling()
+        {
+            // Fetch test history from AzDO
+            Dictionary<string, TestExecutionInfo>? history = null;
+            if (!string.IsNullOrEmpty(AzdoProjectUri) && !string.IsNullOrEmpty(AzdoAccessToken) && AzdoDefinitionId > 0)
+            {
+                var historyManager = new TestHistoryManager(
+                    AzdoProjectUri!,
+                    AzdoAccessToken!,
+                    AzdoDefinitionId,
+                    AzdoTargetBranch,
+                    AzdoPhaseName,
+                    Log);
+
+                history = await historyManager.GetTestHistoryAsync();
+            }
+            else
+            {
+                Log.LogMessage("Time-based scheduling requested but AzDO parameters are incomplete; falling back to count-based.");
+            }
+
+            // If we couldn't get history, fall back to per-project count-based scheduling
+            if (history is null)
+            {
+                Log.LogMessage("No test history available; falling back to count-based partitioning.");
+                var fallbackItems = await Task.WhenAll(XUnitProjects!.Select(PrepareWorkItem));
+                return fallbackItems.SelectMany(i => i ?? new()).Where(wi => wi != null).ToArray();
+            }
+
+            // Discover test methods from all assemblies
+            var allTestMethods = new List<TestMethodDiscovery.TestMethodInfo>();
+            var projectMetadata = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var project in XUnitProjects!)
+            {
+                if (!project.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
+                    continue;
+
+                projectMetadata[targetPath] = project;
+
+                try
+                {
+                    var methods = TestMethodDiscovery.DiscoverTestMethods(targetPath);
+                    allTestMethods.AddRange(methods);
+                    Log.LogMessage("Discovered {0} test methods in {1}.", methods.Count, Path.GetFileName(targetPath));
+                }
+                catch (Exception ex)
+                {
+                    Log.LogWarning("Failed to discover test methods in {0}: {1}", targetPath, ex.Message);
+                }
+            }
+
+            if (allTestMethods.Count == 0)
+            {
+                Log.LogWarning("No test methods discovered; falling back to count-based partitioning.");
+                var fallbackItems = await Task.WhenAll(XUnitProjects!.Select(PrepareWorkItem));
+                return fallbackItems.SelectMany(i => i ?? new()).Where(wi => wi != null).ToArray();
+            }
+
+            // Schedule using time-based bin-packing
+            var targetTime = TimeSpan.FromMinutes(TargetMinutesPerWorkItem);
+            var scheduler = new TimeBasedScheduler(targetTime);
+            var workItems = scheduler.Schedule(allTestMethods, history);
+
+            Log.LogMessage("Time-based scheduler produced {0} work items for {1} test methods.", workItems.Count, allTestMethods.Count);
+
+            // Convert scheduled work items to MSBuild task items
+            var taskItems = new List<ITaskItem>();
+            var timeout = targetTime * 3; // 3× target for timeout
+
+            if (!string.IsNullOrEmpty(XUnitWorkItemTimeout) && TimeSpan.TryParse(XUnitWorkItemTimeout, out var parsedTimeout))
+            {
+                timeout = parsedTimeout;
+            }
+
+            foreach (var workItem in workItems)
+            {
+                // For now, use the first assembly's project metadata for command generation
+                var primaryAssembly = workItem.GetAssemblyPaths().First();
+                if (!projectMetadata.TryGetValue(primaryAssembly, out var xunitProject))
+                    continue;
+
+                var command = BuildTimeBasedCommand(xunitProject, workItem, timeout);
+                if (command is null)
+                    continue;
+
+                if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
+                    continue;
+
+                taskItems.Add(new Microsoft.Build.Utilities.TaskItem(workItem.DisplayName, new Dictionary<string, string>()
+                {
+                    { "Identity", workItem.DisplayName },
+                    { "PayloadDirectory", publishDirectory },
+                    { "Command", command },
+                    { "Timeout", timeout.ToString() },
+                }));
+            }
+
+            return taskItems.ToArray();
+        }
+
+        /// <summary>
+        /// Builds the execution command for a time-based work item.
+        /// </summary>
+        private string? BuildTimeBasedCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout)
+        {
+            if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
+                return null;
+            if (!xunitProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
+                return null;
+
+            xunitProject.TryGetMetadata("IsMTPProject", out string isMTPProjectMetadata);
+            bool isMTPProject = string.Equals(isMTPProjectMetadata, "true", StringComparison.OrdinalIgnoreCase);
+
+            xunitProject.TryGetMetadata("EnableTrxReport", out string enableTrxReportMetadata);
+            bool enableTrxReport = string.Equals(enableTrxReportMetadata, "true", StringComparison.OrdinalIgnoreCase);
+
+            xunitProject.TryGetMetadata("ExcludeAdditionalParameters", out string excludeAdditionalParameters);
+
+            string assemblyName = Path.GetFileName(targetPath);
+            string filterString = workItem.GetFilterString();
+            string testFilter = string.IsNullOrEmpty(filterString) ? "" : $"--filter \"{filterString}\"";
+
+            string testExecutionDirectory = string.Empty;
+            string msbuildAdditionalSdkResolverFolder = string.Empty;
+
+            if (!string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase))
+            {
+                testExecutionDirectory = IsPosixShell
+                    ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory"
+                    : "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%";
+                msbuildAdditionalSdkResolverFolder = IsPosixShell
+                    ? ""
+                    : "-e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r";
+            }
+
+            string exeName = Path.GetFileNameWithoutExtension(assemblyName);
+            string chmodPrefix = IsPosixShell ? $"chmod +x {exeName} && " : "";
+            string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx")
+                ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && "
+                : "";
+
+            if (isMTPProject)
+            {
+                string envPrefix;
+                if (IsPosixShell)
+                {
+                    string testExecEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory ";
+                    envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecEnv}";
+                }
+                else
+                {
+                    string testExecEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ";
+                    string msbuildEnv = string.IsNullOrEmpty(msbuildAdditionalSdkResolverFolder) ? "" : "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ";
+                    envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& {testExecEnv}{msbuildEnv}";
+                }
+
+                string diagArg = IsPosixShell
+                    ? "--diagnostic --diagnostic-output-directory $HELIX_WORKITEM_UPLOAD_ROOT"
+                    : "--diagnostic --diagnostic-output-directory %HELIX_WORKITEM_UPLOAD_ROOT%";
+
+                string trxArg = enableTrxReport ? "--report-trx " : "";
+
+                return $"{chmodPrefix}{codesignPrefix}{envPrefix}{PathToDotnet} exec {assemblyName} " +
+                       $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg}";
+            }
+            else
+            {
+                var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
+                string enableDiagLogging = IsPosixShell
+                    ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log"
+                    : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
+
+                return $"{chmodPrefix}{codesignPrefix}{PathToDotnet} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                       $"--results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging}";
+            }
         }
 
         /// <summary>
