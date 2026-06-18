@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 /// <c>[Fact]</c>/<c>[Theory]</c> attributes).
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-public sealed class DockerAvailableConditionAttribute : ConditionBaseAttribute
+public class DockerAvailableConditionAttribute : ConditionBaseAttribute
 {
     public static string LocalRegistry => DockerCliStatus.LocalRegistry;
 
