@@ -27,8 +27,10 @@ public class EnvCommandTests : IDisposable
         _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-env-cmd-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDir);
 
-        // Thread-local override — safe under xunit's parallel test execution because each
-        // test gets its own AsyncLocal context.
+        // The override is thread-local ([ThreadStatic] in DotnetupPaths). Each xunit test case runs
+        // start-to-finish on a single thread, so parallel execution across tests doesn't cross-
+        // contaminate. (Thread-local state would not flow across async continuations, but these
+        // tests are synchronous.)
         DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
 
         _env = new MockDotnetInstallManager(defaultInstallPath: Path.Combine(_tempDir, "dotnet"));

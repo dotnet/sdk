@@ -20,7 +20,13 @@ internal sealed class DotnetAccessModeJsonConverter : JsonConverter<DotnetAccess
     {
         if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out int numeric))
         {
-            return (DotnetAccessMode)numeric;
+            var numericMode = (DotnetAccessMode)numeric;
+            if (!Enum.IsDefined(numericMode))
+            {
+                throw new JsonException($"Unknown {nameof(DotnetAccessMode)} numeric value '{numeric}'.");
+            }
+
+            return numericMode;
         }
 
         string? value = reader.GetString();

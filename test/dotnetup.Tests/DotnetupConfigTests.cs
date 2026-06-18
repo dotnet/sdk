@@ -111,6 +111,29 @@ public class DotnetupConfigTests : IDisposable
         loaded!.DotnetupOnPath.Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData(1, DotnetAccessMode.None)]
+    [InlineData(2, DotnetAccessMode.Shell)]
+    [InlineData(3, DotnetAccessMode.All)]
+    internal void Read_LegacyNumericAccessMode_Maps(int numeric, DotnetAccessMode expected)
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, $$"""{ "schemaVersion": "1", "accessMode": {{numeric}} }""");
+
+        DotnetupConfig.Read()!.AccessMode.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Read_OutOfRangeNumericAccessMode_TreatedAsCorrupt()
+    {
+        // An undefined numeric value must not deserialize to an undefined enum; the converter
+        // throws JsonException, which Read() surfaces as a corrupt (null) config.
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": 99 }""");
+
+        DotnetupConfig.Read().Should().BeNull();
+    }
+
     [Fact]
     public void Read_ReturnsNull_WhenConfigFileIsCorrupt()
     {

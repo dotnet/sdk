@@ -43,9 +43,10 @@ public class ShellProfileManager
                     result.Add(profilePath);
                 }
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // If we can't read the file, treat it as "no managed block detected".
+                // If we can't read the file (missing, locked, or access denied), treat it as
+                // "no managed block detected". Drift detection is best-effort, not authoritative.
             }
         }
 
