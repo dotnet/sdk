@@ -53,7 +53,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void TrimMode_Defaulted_Correctly_On_Trimmed_Apps_Pre_Net8()
         {
             var projectName = "HelloWorld";
