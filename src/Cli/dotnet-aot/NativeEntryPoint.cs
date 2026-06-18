@@ -161,12 +161,8 @@ static unsafe partial class NativeEntryPoint
                 // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
                 // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
                 // project tools, and anything that does not resolve to the managed CLI.
-                else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, out exitCode, out success))
+                else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, globalJsonState, out exitCode, out success))
                 {
-                    // The external command was resolved and invoked in-process (no managed fallback).
-                    // Emit the top-level parser telemetry to match the managed CLI; the
-                    // commandresolution/commandresolved event was already raised during resolution.
-                    SendAotParserTelemetry(parseResult, globalJsonState);
                     return exitCode;
                 }
             }
@@ -217,7 +213,7 @@ static unsafe partial class NativeEntryPoint
     ///  file-based apps (<c>dotnet app.cs</c>), legacy project tools, commands that do not resolve in
     ///  AOT, or any resolution error.
     /// </summary>
-    private static bool TryInvokeExternalCommand(ParseResult parseResult, string[] args, string sdkDir, Activity? mainActivity, out int exitCode, out bool success)
+    private static bool TryInvokeExternalCommand(ParseResult parseResult, string[] args, string sdkDir, Activity? mainActivity, string? globalJsonState, out int exitCode, out bool success)
     {
         exitCode = 1;
         success = false;
@@ -273,6 +269,13 @@ static unsafe partial class NativeEntryPoint
             mainActivity.DisplayName = externalDisplayName;
             mainActivity.SetTag("command.name", externalDisplayName);
         }
+
+        // Resolution succeeded, so this command will be invoked in-process and will not fall back to
+        // the managed CLI. Emit the top-level parser telemetry now - before launching the (often
+        // long-running) external process - so the async telemetry uploader has the child's entire
+        // lifetime to flush, rather than racing process exit. The commandresolution/commandresolved
+        // event was already raised during the resolution above.
+        SendAotParserTelemetry(parseResult, globalJsonState);
 
         using (var invoke = Activities.Source.StartActivity("execute-extensible-command"))
         {
