@@ -14,7 +14,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
+            build.WithWorkingDirectory(projectDirectory.TestRoot);
+            ExecuteCommand(build).Should().Pass();
 
             string outputPath = build.GetOutputDirectory("netcoreapp3.1").ToString();
 
