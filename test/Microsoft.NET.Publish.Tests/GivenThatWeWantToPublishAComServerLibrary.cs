@@ -3,13 +3,11 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAComServerLibrary : SdkTest
     {
-        public GivenThatWeWantToPublishAComServerLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_publishes_comhost_to_the_publish_folder()
         {
             var testAsset = TestAssetsManager

@@ -9,14 +9,12 @@ using static Microsoft.NET.Publish.Tests.ILLinkTestUtils;
 namespace Microsoft.NET.Publish.Tests
 {
     // this test class is split up arbitrarily so Helix can run tests in multiple workitems
+    [TestClass]
     public class GivenThatWeWantToRunILLink2b : SdkTest
     {
-        public GivenThatWeWantToRunILLink2b(ITestOutputHelper log) : base(log)
-        {
-        }
-
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ILLink_ignores_host_config_settings_with_link_false()
         {
             var projectName = "HelloWorld";
@@ -50,8 +48,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [DynamicData(nameof(SupportedTfms), typeof(PublishTestUtils))]
         public void ILLink_runs_incrementally(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -80,10 +79,11 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
-        [InlineData("net6.0")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [DataRow("netcoreapp3.1")]
+        [DataRow("net5.0")]
+        [DataRow("net6.0")]
         public void ILLink_old_defaults_keep_nonframework(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -119,7 +119,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ILLink_net7_defaults_trim_nonframework()
         {
             string targetFramework = "net7.0";
@@ -156,8 +157,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [DynamicData(nameof(SupportedTfms), typeof(PublishTestUtils))]
         public void ILLink_does_not_include_leftover_artifacts_on_second_run(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -209,8 +211,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [DynamicData(nameof(SupportedTfms), typeof(PublishTestUtils))]
         public void ILLink_keeps_symbols_by_default(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -247,8 +250,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [DynamicData(nameof(SupportedTfms), typeof(PublishTestUtils))]
         public void ILLink_removes_symbols_when_debugger_support_is_disabled(string targetFramework)
         {
             var projectName = "HelloWorld";

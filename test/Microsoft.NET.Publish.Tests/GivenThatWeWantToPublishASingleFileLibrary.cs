@@ -3,14 +3,11 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishASingleFileLibrary : SdkTest
     {
-        public GivenThatWeWantToPublishASingleFileLibrary(ITestOutputHelper log) : base(log)
-        {
-
-        }
-
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         // Tests regression on https://github.com/dotnet/sdk/pull/28484
         public void ItPublishesSuccessfullyWithRIDAndPublishSingleFileLibrary()
         {
@@ -41,8 +38,8 @@ namespace Microsoft.NET.Publish.Tests
 
             var referencedProjProperties = referencedProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
             var mainProjProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
-            Assert.True(mainProjProperties["RuntimeIdentifier"] == rid);
-            Assert.True(referencedProjProperties["RuntimeIdentifier"] == "");
+            Assert.AreEqual(rid, mainProjProperties["RuntimeIdentifier"]);
+            Assert.AreEqual("", referencedProjProperties["RuntimeIdentifier"]);
         }
     }
 

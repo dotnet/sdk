@@ -8,6 +8,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToStoreAProjectWithDependencies : SdkTest
     {
         private static readonly string _libPrefix = FileConstants.DynamicLibPrefix;
@@ -47,11 +48,8 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        public GivenThatWeWantToStoreAProjectWithDependencies(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies()
         {
             TestAsset simpleDependenciesAsset = TestAssetsManager
@@ -81,7 +79,8 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies_noopt()
         {
             TestAsset simpleDependenciesAsset = TestAssetsManager
@@ -124,7 +123,8 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_multifile()
         {
             TestAsset simpleDependenciesAsset = TestAssetsManager
@@ -178,7 +178,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_uses_star_versions_correctly()
         {
             TestAsset targetManifestsAsset = TestAssetsManager
@@ -212,7 +212,8 @@ namespace Microsoft.NET.Publish.Tests
             nugetPackage.Version.Should().BeGreaterThan(NuGetVersion.Parse("4.0.0-rc2"));
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void It_creates_profiling_symbols()
         {
             TestAsset targetManifestsAsset = TestAssetsManager
@@ -262,9 +263,10 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_stores_when_targeting_netcoreapp3(bool isExe)
         {
             const string TFM = "netcoreapp3.0";
@@ -302,7 +304,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DotnetStoreWithPrunedPackages()
         {
             const string TargetFramework = "netcoreapp3.1";

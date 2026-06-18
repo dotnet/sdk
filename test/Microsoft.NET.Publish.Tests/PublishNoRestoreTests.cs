@@ -7,27 +7,24 @@ using NuGet.Packaging.Signing;
 
 namespace Microsoft.NET.Publish.Tests;
 
+[TestClass]
 public class PublishNoRestoreTests : SdkTest
 {
-    public PublishNoRestoreTests(ITestOutputHelper log) : base(log)
-    {
-    }
-
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public void PublishTrimmed(bool specifyRuntimeIdentifier)
     {
         TestNoRestore("PublishTrimmed", specifyRuntimeIdentifier);
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public void PublishSingleFile(bool specifyRuntimeIdentifier)
     {
         TestNoRestore("PublishSingleFile", specifyRuntimeIdentifier);
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public void PublishAot(bool specifyRuntimeIdentifier)
     {

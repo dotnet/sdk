@@ -5,13 +5,12 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class PublishWpfApp : SdkTest
     {
-        public PublishWpfApp(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901", Skip = "https://github.com/dotnet/wpf/issues/11651")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("17.0.0.32901")]
+        [Ignore("https://github.com/dotnet/wpf/issues/11651")]
         public void It_publishes_and_runs_self_contained_wpf_app()
         {
             var testDir = TestAssetsManager.CreateTestDirectory();

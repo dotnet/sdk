@@ -5,13 +5,11 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishWithoutConflicts : SdkTest
     {
-        public GivenThatWeWantToPublishWithoutConflicts(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_solves_conflicts_between_package_and_implicit_references()
         {
             // Test case from https://github.com/dotnet/sdk/issues/3904.
@@ -47,9 +45,9 @@ namespace Microsoft.NET.Publish.Tests
             files.FirstOrDefault().Contains(@"Microsoft.NET.Build.Extensions\net462\lib\System.Runtime.InteropServices.RuntimeInformation.dll").Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_has_consistent_behavior_when_publishing_single_file(bool shouldPublishSingleFile)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;

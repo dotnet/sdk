@@ -11,17 +11,14 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAHelloWorldProject : SdkTest
     {
         private const string PublishRelease = nameof(PublishRelease);
         private const string PackRelease = nameof(PackRelease);
 
-        public GivenThatWeWantToPublishAHelloWorldProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Theory]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run(string targetFramework)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
@@ -60,10 +57,10 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [Theory]
-        [InlineData("netcoreapp1.1")]
-        [InlineData("netcoreapp2.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("netcoreapp1.1")]
+        [DataRow("netcoreapp2.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_self_contained_apps_to_the_publish_folder_and_the_app_should_run(string targetFramework)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
@@ -127,7 +124,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_self_contained_app_with_dot_in_the_name()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -164,9 +161,9 @@ public static class Program
             publishDirectory.Should().HaveFile($"Hello.World{Constants.ExeSuffix}");
         }
 
-        [Theory]
-        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm")]
-        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm64")]
+        [TestMethod]
+        [DataRow($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm")]
+        [DataRow($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm64")]
         public void Publish_standalone_post_netcoreapp2_arm_app(string runtimeIdentifier)
         {
             // Tests for existence of expected files when publishing an ARM project
@@ -228,20 +225,21 @@ public static class Program
             publishDirectory.Should().HaveFiles(filesPublished);
         }
 
-        [Fact]
+        [TestMethod]
         public void Conflicts_are_resolved_when_publishing_a_portable_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: false, ridSpecific: false);
         }
 
         // This test is for netcoreapp2 and no longer working on ubuntu 2404
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows | TestPlatforms.OSX)]
         public void Conflicts_are_resolved_when_publishing_a_self_contained_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: true, ridSpecific: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void Conflicts_are_resolved_when_publishing_a_rid_specific_shared_framework_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: false, ridSpecific: true);
@@ -395,7 +393,7 @@ public static class Program
 
         }
 
-        [Fact]
+        [TestMethod]
         public void A_deployment_project_can_reference_the_hello_world_project()
         {
             var helloWorldAsset = TestAssetsManager
@@ -410,7 +408,7 @@ public static class Program
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_for_unsupported_rid()
         {
             var helloWorldAsset = TestAssetsManager
@@ -423,9 +421,9 @@ public static class Program
             publishResult.Should().Fail();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_publishes_on_release_if_PublishRelease_property_set(bool optedOut)
         {
             var helloWorldAsset = TestAssetsManager
@@ -441,10 +439,10 @@ public static class Program
                 .Pass();
 
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", optedOut ? "Debug" : "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.True(File.Exists(expectedAssetPath));
+            Assert.IsTrue(File.Exists(expectedAssetPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_respects_CLI_PublishRelease_over_project_PublishRelease_value()
         {
             var helloWorldAsset = TestAssetsManager
@@ -463,12 +461,12 @@ public static class Program
                 .Pass();
 
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.True(File.Exists(expectedAssetPath));
+            Assert.IsTrue(File.Exists(expectedAssetPath));
             var releaseAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
+            Assert.IsFalse(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_on_release_if_PublishRelease_property_set_in_sln()
         {
 
@@ -484,11 +482,11 @@ public static class Program
                 .Pass();
 
             var expectedAssetPath = Path.Combine(slnDir, "App", "bin", "Release", ToolsetInfo.CurrentTargetFramework, "publish", "App.dll");
-            Assert.True(File.Exists(expectedAssetPath));
+            Assert.IsTrue(File.Exists(expectedAssetPath));
 
         }
 
-        [Fact]
+        [TestMethod]
         public void It_passes_using_PublishRelease_with_conflicting_capitalization_but_same_values_across_solution_projects()
         {
             var slnDir = TestAssetsManager
@@ -503,10 +501,10 @@ public static class Program
                 .Pass();
 
             var expectedAssetPath = Path.Combine(slnDir, "App", "bin", "Release", ToolsetInfo.CurrentTargetFramework, "publish", "App.dll");
-            Assert.True(File.Exists(expectedAssetPath));
+            Assert.IsTrue(File.Exists(expectedAssetPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_no_longer_warns_if_PublishRelease_set_on_sln_but_env_var_not_used()
         {
             var slnDir = TestAssetsManager
@@ -523,7 +521,7 @@ public static class Program
                 .NotHaveStdOutContaining("NETSDK1190");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_correctly_in_PublishRelease_evaluation_despite_option_forwarded_format()
         {
             var helloWorldAsset = TestAssetsManager
@@ -544,7 +542,7 @@ public static class Program
             .Pass().And.NotHaveStdErr();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_on_release_if_PublishRelease_property_set_in_csproj()
         {
             var helloWorldAsset = TestAssetsManager
@@ -564,17 +562,17 @@ public static class Program
             .Pass();
 
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.True(File.Exists(expectedAssetPath));
+            Assert.IsTrue(File.Exists(expectedAssetPath));
         }
 
-        [Theory]
-        [InlineData("-p:Configuration=Debug")]
-        [InlineData("-property:Configuration=Debug")]
-        [InlineData("--property:Configuration=Debug")]
-        [InlineData("/p:Configuration=Debug")]
-        [InlineData("-p:_IsPublishing=true;Configuration=Debug")]
-        [InlineData("-p:_IsPublishing=true;Configuration=Debug;")]
-        [InlineData("/property:Configuration=Debug")]
+        [TestMethod]
+        [DataRow("-p:Configuration=Debug")]
+        [DataRow("-property:Configuration=Debug")]
+        [DataRow("--property:Configuration=Debug")]
+        [DataRow("/p:Configuration=Debug")]
+        [DataRow("-p:_IsPublishing=true;Configuration=Debug")]
+        [DataRow("-p:_IsPublishing=true;Configuration=Debug;")]
+        [DataRow("/property:Configuration=Debug")]
         public void PublishRelease_does_not_override_Configuration_property_across_formats(string configOpt)
         {
             string tfm = "net7.0";
@@ -595,14 +593,14 @@ public static class Program
                 .Pass().And.NotHaveStdErr();
 
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Debug", tfm, "HelloWorld.dll");
-            Assert.True(File.Exists(expectedAssetPath));
+            Assert.IsTrue(File.Exists(expectedAssetPath));
             var releaseAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", tfm, "HelloWorld.dll");
-            Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
+            Assert.IsFalse(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
         }
 
-        [Theory]
-        [InlineData("true")]
-        [InlineData("false")]
+        [TestMethod]
+        [DataRow("true")]
+        [DataRow("false")]
         public void Debug_Symbols_Implies_Debug_Type(string debugSymbols)
         {
             var testProject = new TestProject()
@@ -626,9 +624,9 @@ public static class Program
             properties["DebugType"].Should().Be(debugSymbols.Equals("true") ? "portable" : "None");
         }
 
-        [Theory]
-        [InlineData("net7.0")]
-        [InlineData("net8.0")]
+        [TestMethod]
+        [DataRow("net7.0")]
+        [DataRow("net8.0")]
         public void It_publishes_with_Release_by_default_in_net_8_but_not_net_7(string tfm)
         {
             var testProject = new TestProject()
@@ -650,11 +648,11 @@ public static class Program
             var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: tfm, configuration: tfm == "net7.0" ? "Debug" : "Release");
             var finalConfiguration = properties["Configuration"];
             var finalDebugSymbols = properties["DebugSymbols"];
-            Assert.Equal((tfm == "net7.0" ? "Debug" : "Release"), finalConfiguration);
-            Assert.Equal((tfm == "net7.0" ? "true" : "false"), finalDebugSymbols);
+            Assert.AreEqual((tfm == "net7.0" ? "Debug" : "Release"), finalConfiguration);
+            Assert.AreEqual((tfm == "net7.0" ? "true" : "false"), finalDebugSymbols);
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishRelease_interacts_similarly_with_PublishProfile_Configuration()
         {
             var config = "Debug";
@@ -691,10 +689,10 @@ public static class Program
 
             publishOutput.Should().Pass();
             var releaseAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "HelloWorld.dll");
-            Assert.True(File.Exists(releaseAssetPath)); // We ignore Debug configuration and override it
+            Assert.IsTrue(File.Exists(releaseAssetPath)); // We ignore Debug configuration and override it
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_unsupported_rid_with_override()
         {
             var helloWorldAsset = TestAssetsManager
@@ -708,9 +706,9 @@ public static class Program
             publishResult.Should().Pass();
         }
 
-        [Theory]
-        [InlineData("netcoreapp2.1")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("netcoreapp2.1")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_preserves_newest_files_on_publish(string tfm)
         {
             var testProject = new TestProject()
@@ -739,7 +737,7 @@ public static class Program
                 .NotHaveStdOutContaining("Copying");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_if_nobuild_was_requested_but_build_was_invoked()
         {
             var testProject = new TestProject()
@@ -768,13 +766,14 @@ public static class Program
                 .HaveStdOutContaining("NETSDK1085");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_contains_no_duplicates_in_resolved_publish_assets_on_windows()
             => It_contains_no_duplicates_in_resolved_publish_assets("windows");
 
-        [Theory]
-        [InlineData("console")]
-        [InlineData("web")]
+        [TestMethod]
+        [DataRow("console")]
+        [DataRow("web")]
         public void It_contains_no_duplicates_in_resolved_publish_assets(string type)
         {
             // Use a specific RID to guarantee a consistent set of assets
@@ -833,16 +832,16 @@ public static class Program
                 .NotHaveStdOutContaining("Duplicate filenames are present");
         }
 
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData(false, null)]
-        [InlineData(true, null)]
-        [InlineData(null, false)]
-        [InlineData(null, true)]
-        [InlineData(false, false)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow(false, null)]
+        [DataRow(true, null)]
+        [DataRow(null, false)]
+        [DataRow(null, true)]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
         public void It_publishes_with_a_publish_profile(bool? selfContained, bool? useAppHost)
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -913,7 +912,7 @@ public static class Program
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_with_full_path_publish_profile()
         {
             var libProject = new TestProject()
@@ -966,15 +965,15 @@ public static class Program
                 .Pass();
         }
 
-        [Theory]
-        [InlineData("invalidProfile", true)]
-        [InlineData("invalidProfile.pubxml", true)]
-        [InlineData("..\\Properties\\PublishProfiles\\invalidProfile.pubxml", true)]
-        [InlineData("invalidProfile.txt", true)]
-        [InlineData("testProfile", false)]
-        [InlineData("testProfile.pubxml", false)]
-        [InlineData("..\\Properties\\PublishProfiles\\testProfile.pubxml", false)]
-        [InlineData("", false)]
+        [TestMethod]
+        [DataRow("invalidProfile", true)]
+        [DataRow("invalidProfile.pubxml", true)]
+        [DataRow("..\\Properties\\PublishProfiles\\invalidProfile.pubxml", true)]
+        [DataRow("invalidProfile.txt", true)]
+        [DataRow("testProfile", false)]
+        [DataRow("testProfile.pubxml", false)]
+        [DataRow("..\\Properties\\PublishProfiles\\testProfile.pubxml", false)]
+        [DataRow("", false)]
         public void It_warns_with_an_invalid_publish_profile_NetSdk(string publishProfile, bool shouldWarn)
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1022,16 +1021,16 @@ public static class Program
             }
         }
 
-        [Theory]
-        [InlineData("invalidProfile", true)]
-        [InlineData("invalidProfile.pubxml", true)]
-        [InlineData("..\\Properties\\PublishProfiles\\invalidProfile.pubxml", true)]
-        [InlineData("invalidProfile.txt", true)]
-        [InlineData("testProfile", false)]
-        [InlineData("testProfile.pubxml", false)]
-        [InlineData("..\\Properties\\PublishProfiles\\testProfile.pubxml", false)]
-        [InlineData("Default", false)]
-        [InlineData("", false)]
+        [TestMethod]
+        [DataRow("invalidProfile", true)]
+        [DataRow("invalidProfile.pubxml", true)]
+        [DataRow("..\\Properties\\PublishProfiles\\invalidProfile.pubxml", true)]
+        [DataRow("invalidProfile.txt", true)]
+        [DataRow("testProfile", false)]
+        [DataRow("testProfile.pubxml", false)]
+        [DataRow("..\\Properties\\PublishProfiles\\testProfile.pubxml", false)]
+        [DataRow("Default", false)]
+        [DataRow("", false)]
         public void It_warns_with_an_invalid_publish_profile_WebSdk(string publishProfile, bool shouldWarn)
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1079,10 +1078,10 @@ public static class Program
             }
         }
 
-        [Theory]
-        [InlineData("--p:PublishReadyToRun=true")]
-        [InlineData("-p:PublishSingleFile=true")]
-        [InlineData("-p:PublishSelfContained=true")]
+        [TestMethod]
+        [DataRow("--p:PublishReadyToRun=true")]
+        [DataRow("-p:PublishSingleFile=true")]
+        [DataRow("-p:PublishSelfContained=true")]
         public void It_publishes_with_implicit_rid_with_rid_specific_properties(string executeOptionsAndProperties)
         {
             var testProject = new TestProject()
@@ -1102,14 +1101,14 @@ public static class Program
                .NotHaveStdErrContaining("NETSDK1191"); // Publish Properties Requiring RID Checks
         }
 
-        [Theory]
-        [InlineData("AppRelative", "subdirectory", "AppRelative")]
-        [InlineData("AppRelative", "subdirectory", null)]
-        [InlineData("EnvironmentVariable", null, "EnvironmentVariable")]
-        [InlineData("EnvironmentVariable", null, null)]
-        [InlineData("AppRelative;EnvironmentVariable", "subdirectory", "AppRelative")]
-        [InlineData("AppRelative;EnvironmentVariable", "subdirectory", "EnvironmentVariable")]
-        [InlineData(null, "subdirectory", "AppRelative")]
+        [TestMethod]
+        [DataRow("AppRelative", "subdirectory", "AppRelative")]
+        [DataRow("AppRelative", "subdirectory", null)]
+        [DataRow("EnvironmentVariable", null, "EnvironmentVariable")]
+        [DataRow("EnvironmentVariable", null, null)]
+        [DataRow("AppRelative;EnvironmentVariable", "subdirectory", "AppRelative")]
+        [DataRow("AppRelative;EnvironmentVariable", "subdirectory", "EnvironmentVariable")]
+        [DataRow(null, "subdirectory", "AppRelative")]
         public void It_configures_dotnet_search_options(string searchLocation, string appRelativeDotNet, string expectedLocation)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -1199,7 +1198,7 @@ public static class Program
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_on_invalid_dotnet_search_options()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -1220,7 +1219,7 @@ public static class Program
                 .And.HaveStdOutContaining("NETSDK1217");
         }
 
-        [Fact]
+        [TestMethod]
         public void IsPublishableIsRespectedWhenMultitargeting()
         {
             var testProject = new TestProject()

@@ -7,16 +7,13 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishASelfContainedApp : SdkTest
     {
         private const string TestProjectName = "HelloWorld";
         private const string TargetFramework = "netcoreapp2.1";
 
-        public GivenThatWeWantToPublishASelfContainedApp(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_errors_when_publishing_self_contained_without_apphost()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
@@ -41,7 +38,8 @@ namespace Microsoft.NET.Publish.Tests
         // repro https://github.com/dotnet/sdk/issues/2466
         //  https://github.com/dotnet/sdk/issues/49665
         //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_does_not_fail_publishing_a_self_twice()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
@@ -71,7 +69,8 @@ namespace Microsoft.NET.Publish.Tests
         private const int PEHeaderPointerOffset = 0x3C;
         private const int SubsystemOffset = 0x5C;
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_can_make_a_Windows_GUI_exe()
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid("netcoreapp2.0");
@@ -105,7 +104,8 @@ namespace Microsoft.NET.Publish.Tests
                 .Be(2);
         }
 
-        [RequiresMSBuildVersionFact("17.4.0.41702")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.4.0.41702")]
         public void It_publishes_an_app_with_a_netcoreapp_lib_reference()
         {
             var testAsset = TestAssetsManager
@@ -127,7 +127,8 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_publishes_runtime_pack_resources()
         {
             const string tfm = $"{ToolsetInfo.CurrentTargetFramework}-windows";
@@ -171,7 +172,8 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_publishes_runtime_pack_resources_for_specific_languages()
         {
             const string tfm = $"{ToolsetInfo.CurrentTargetFramework}-windows";
@@ -221,7 +223,8 @@ namespace Microsoft.NET.Publish.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void NoStaticLibs()
         {
             var testAsset = TestAssetsManager
