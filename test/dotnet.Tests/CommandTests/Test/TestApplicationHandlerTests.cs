@@ -292,33 +292,6 @@ public class TestApplicationHandlerTests : IDisposable
         reporter.HasHandshakeFailure.Should().BeFalse();
     }
 
-    [Fact]
-    public void OnOutputDeviceMessageReceived_WhenTextIsPresent_ForwardsMessageToTerminalReporter()
-    {
-        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
-
-        const string text = "Hello from IOutputDevice";
-
-        Action act = () => handler.OnOutputDeviceMessageReceived(new TestHostOutputDeviceMessage("exec-1", "inst-1", text));
-
-        act.Should().NotThrow();
-        console.GetOutput().Should().Contain(text);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void OnOutputDeviceMessageReceived_WhenTextIsNullOrEmpty_DoesNotWriteToTerminal(string? text)
-    {
-        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
-        string originalOutput = console.GetOutput();
-
-        Action act = () => handler.OnOutputDeviceMessageReceived(new TestHostOutputDeviceMessage("exec-1", "inst-1", text));
-
-        act.Should().NotThrow();
-        console.GetOutput().Should().Be(originalOutput);
-    }
-
     private const string TargetPath = "/repo/bin/Debug/net9.0/MyTest.dll";
     private const string ProjectPath = "/repo/MyTest.csproj";
     private const string TargetFramework = "net9.0";

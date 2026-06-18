@@ -319,10 +319,6 @@ internal sealed class TestApplication(
                         OnSessionEvent(sessionEvent);
                         break;
 
-                    case TestHostOutputDeviceMessage outputDeviceMessage:
-                        OnOutputDeviceMessage(outputDeviceMessage);
-                        break;
-
                     // If we don't recognize the message, log and skip it
                     case UnknownMessage unknownMessage:
                         Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
@@ -456,9 +452,6 @@ internal sealed class TestApplication(
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
         => _handler.OnSessionEventReceived(sessionEvent);
-
-    private void OnOutputDeviceMessage(TestHostOutputDeviceMessage outputDeviceMessage)
-        => _handler.OnOutputDeviceMessageReceived(outputDeviceMessage);
 
     private sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
     {

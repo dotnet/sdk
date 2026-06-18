@@ -159,12 +159,3 @@ internal static class TestInProgressMessageFieldsId
     public const ushort Uid = 1;
     public const ushort DisplayName = 2;
 }
-
-internal static class TestHostOutputDeviceMessageFieldsId
-{
-    public const int MessagesSerializerId = 11;
-
-    public const ushort ExecutionId = 1;
-    public const ushort InstanceId = 2;
-    public const ushort Text = 3;
-}

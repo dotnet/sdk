@@ -463,13 +463,6 @@ internal sealed class TestApplicationHandler
         return false;
     }
 
-    internal void OnOutputDeviceMessageReceived(TestHostOutputDeviceMessage outputDeviceMessage)
-    {
-        LogOutputDeviceMessage(outputDeviceMessage);
-
-        WriteMessage(outputDeviceMessage.Text);
-    }
-
     internal void WriteMessage(string? text)
     {
         if (!string.IsNullOrEmpty(text))
@@ -657,21 +650,6 @@ internal sealed class TestApplicationHandler
         logMessageBuilder.AppendLine($"TestSessionEvent.SessionType: {testSessionEvent.SessionType}");
         logMessageBuilder.AppendLine($"TestSessionEvent.SessionUid: {testSessionEvent.SessionUid}");
         logMessageBuilder.AppendLine($"TestSessionEvent.ExecutionId: {testSessionEvent.ExecutionId}");
-        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
-    }
-
-    private static void LogOutputDeviceMessage(TestHostOutputDeviceMessage outputDeviceMessage)
-    {
-        if (!Logger.TraceEnabled)
-        {
-            return;
-        }
-
-        var logMessageBuilder = new StringBuilder();
-
-        logMessageBuilder.AppendLine($"TestHostOutputDeviceMessage Execution Id: {outputDeviceMessage.ExecutionId}");
-        logMessageBuilder.AppendLine($"TestHostOutputDeviceMessage Instance Id: {outputDeviceMessage.InstanceId}");
-        logMessageBuilder.AppendLine($"TestHostOutputDeviceMessage Text: {outputDeviceMessage.Text}");
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 }
