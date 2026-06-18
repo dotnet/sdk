@@ -11,15 +11,11 @@ using NuGet.Packaging.Core;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackAToolProject : SdkTest
     {
         private string _testRoot;
         private string _targetFrameworkOrFrameworks = "netcoreapp2.1";
-
-        public GivenThatWeWantToPackAToolProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
         private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
             string id = $"{callingMethod}-{_targetFrameworkOrFrameworks}";
@@ -47,9 +43,9 @@ namespace Microsoft.NET.ToolPack.Tests
             return packCommand.GetNuGetPackage();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_packs_successfully(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -61,16 +57,16 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
             AssertFiles(nugetPackage);
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_nuget_alias_It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file()
         {
             TestAsset helloWorldAsset = TestAssetsManager
@@ -127,9 +123,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_removes_all_package_dependencies(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -141,9 +137,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_runtimeconfig_for_each_tfm(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -160,9 +156,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_does_not_contain_apphost_exe(bool multiTarget)
         {
             var extension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
@@ -200,9 +196,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_DotnetToolSettingsXml_for_each_tfm(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -219,9 +215,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_does_not_contain_lib(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -231,9 +227,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_folder_structure_tfm_any(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -247,9 +243,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_packagetype_dotnettool(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -260,14 +256,14 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData("", "DotnetTool")]
-        [InlineData("MyCustomType", "DotnetTool;MyCustomType")]
-        [InlineData("MyCustomType, 1.0", "DotnetTool;MyCustomType, 1.0")]
-        [InlineData("dotnettool", "dotnettool")]
-        [InlineData("DotnetTool, 1.0.0.0", "DotnetTool, 1.0.0.0")]
-        [InlineData("DotnetTool , 1.0.0.0", "DotnetTool , 1.0.0.0")]
-        [InlineData("MyDotnetTool", "DotnetTool;MyDotnetTool")]
+        [TestMethod]
+        [DataRow("", "DotnetTool")]
+        [DataRow("MyCustomType", "DotnetTool;MyCustomType")]
+        [DataRow("MyCustomType, 1.0", "DotnetTool;MyCustomType, 1.0")]
+        [DataRow("dotnettool", "dotnettool")]
+        [DataRow("DotnetTool, 1.0.0.0", "DotnetTool, 1.0.0.0")]
+        [DataRow("DotnetTool , 1.0.0.0", "DotnetTool , 1.0.0.0")]
+        [DataRow("MyDotnetTool", "DotnetTool;MyDotnetTool")]
         public void It_allows_more_package_types(string input, string expectedString)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget: false, packageType: input);
@@ -289,9 +285,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_dependencies_dll(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -308,7 +304,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_targetplatform_set_It_should_error()
         {
             TestAsset helloWorldAsset = TestAssetsManager
@@ -325,7 +321,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void It_packs_with_RuntimeIdentifier()
         {
             var testProject = new TestProject("ToolWithRuntimeIdentifier")
@@ -362,7 +358,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void Framework_dependent_tool_should_target_base_runtime_version()
         {
             // This test verifies that framework-dependent tools (FDD) correctly target the .0 patch version
