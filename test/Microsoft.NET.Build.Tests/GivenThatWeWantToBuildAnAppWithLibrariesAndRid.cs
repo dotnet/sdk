@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         //  Unhandled exception. System.DllNotFoundException: Unable to load shared library 'libuv' or one of its dependencies.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_builds_a_RID_specific_runnable_output()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Build.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         //  Unhandled exception. System.DllNotFoundException: Unable to load shared library 'libuv' or one of its dependencies.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_builds_a_framework_dependent_RID_specific_runnable_output()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;

@@ -78,7 +78,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.OSX)]
+        [OSCondition(OperatingSystems.OSX)]
         [DataRow("netcoreapp3.1", "win-x64")]
         [DataRow("net5.0", "win-x64")]
         [DataRow(ToolsetInfo.CurrentTargetFramework, "win-x64")]
@@ -194,7 +194,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow("x86")]
         [DataRow("x64")]
         [DataRow("AnyCPU")]
@@ -314,7 +314,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void AppHost_contains_resources_from_the_managed_dll()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -347,7 +347,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void FSharp_app_can_customize_the_apphost()
         {
             var targetFramework = "netcoreapp3.1";
@@ -404,7 +404,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)] // fails on Unix platforms, see https://github.com/dotnet/sdk/issues/48202
+        [OSCondition(OperatingSystems.Windows)] // fails on Unix platforms, see https://github.com/dotnet/sdk/issues/48202
         public void It_retries_on_failure_to_create_apphost()
         {
             var testProject = new TestProject()

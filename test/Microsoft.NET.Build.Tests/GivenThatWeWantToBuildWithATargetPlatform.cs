@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("16.8.0.41402")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.8.0.41402")]
         [DataRow("netcoreapp3.1", ".NETCoreApp", "v3.1", "Windows", "7.0")] // Default values pre-5.0
         [DataRow(ToolsetInfo.CurrentTargetFramework, ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}", "", "")]
         [DataRow($"{ToolsetInfo.CurrentTargetFramework}-Windows7.0", ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}", "Windows", "7.0")]
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("16.8.0.41402")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.8.0.41402")]
         public void It_defines_target_platform_from_target_framework_with_explicit_version()
         {
             var targetPlatformVersion = "10.0.19041.0";

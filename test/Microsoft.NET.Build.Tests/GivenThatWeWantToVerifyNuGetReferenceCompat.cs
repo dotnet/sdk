@@ -153,7 +153,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow("netstandard2.0")]
         [DataRow("netcoreapp2.0")]
         public void Netfx_is_implicit_for_Netstandard_and_Netcore_20(string targetFramework)
@@ -174,7 +174,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow("netstandard1.6")]
         [DataRow("netcoreapp1.1")]
         public void Netfx_is_not_implicit_for_Netstandard_and_Netcore_less_than_20(string targetFramework)
@@ -189,7 +189,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_is_possible_to_disable_netfx_implicit_asset_target_fallback()
         {
             const string testProjectName = "netstandard20_disabled_atf";
@@ -206,7 +206,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_chooses_lowest_netfx_in_default_atf()
         {
             var testProjectName = $"{ToolsetInfo.CurrentTargetFramework.Replace(".", "")}_multiple_atf";

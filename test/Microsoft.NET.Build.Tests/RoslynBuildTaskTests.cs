@@ -90,7 +90,7 @@ public sealed class RoslynBuildTaskTests : SdkTest
 
     //  https://github.com/dotnet/sdk/issues/49665
     [TestMethod]
-    [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
     [CombinatorialData]
     public void DotNet_ToolsetPackage(bool useSharedCompilation, Language language)
     {

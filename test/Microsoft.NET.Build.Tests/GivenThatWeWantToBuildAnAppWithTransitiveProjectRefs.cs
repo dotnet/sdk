@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
             var testAsset = TestAssetsManager

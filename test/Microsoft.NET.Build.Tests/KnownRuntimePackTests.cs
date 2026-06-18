@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void BuildSucceedsWithRuntimePackWithDifferentLabel()
         {
             var testProject = new TestProject()
@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void RuntimePackWithLabelIsSelected()
         {
             var testProject = new TestProject()

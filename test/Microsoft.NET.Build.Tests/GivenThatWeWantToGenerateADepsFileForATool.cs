@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [CoreMSBuildOnly]
-        [PlatformSpecific(skipPlatforms: TestPlatforms.OSX, skipReason: "https://github.com/dotnet/sdk/issues/49665")]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/49665
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
             TestProject toolProject = new()
@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [CoreMSBuildOnly]
-        [PlatformSpecific(skipPlatforms: TestPlatforms.OSX, skipReason: "https://github.com/dotnet/sdk/issues/49665")]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/49665
         public void It_handles_conflicts_when_creating_a_tool_deps_file()
         {
             TestProject toolProject = new()

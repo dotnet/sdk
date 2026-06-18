@@ -26,7 +26,7 @@ namespace FrameworkReferenceTest
 }";
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("17.0.0.32901")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("17.0.0.32901")]
         [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
         [DataRow("netcoreapp3.1", false)]
         public void Multiple_frameworks_are_written_to_runtimeconfig_when_there_are_multiple_FrameworkReferences(string targetFramework, bool shouldIncludeBaseFramework)
@@ -150,7 +150,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("17.0.0.32901")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("17.0.0.32901")]
         public void DuplicateFrameworksAreNotWrittenToRuntimeConfigWhenThereAreDifferentProfiles()
         {
             var testProject = new TestProject()
@@ -428,7 +428,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void BuildFailsIfRuntimePackIsNotAvailableForRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -824,7 +824,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ResolvedFrameworkReferences_are_generated()
         {
             var testProject = new TestProject()
@@ -896,7 +896,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true)]
         [DataRow(false)]
         public void WindowsFormsFrameworkReference(bool selfContained)
@@ -909,7 +909,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true)]
         [DataRow(false)]
         public void WPFFrameworkReference(bool selfContained)
@@ -922,7 +922,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true)]
         [DataRow(false)]
         public void WindowsFormAndWPFFrameworkReference(bool selfContained)
@@ -935,7 +935,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true)]
         [DataRow(false)]
         public void WindowsDesktopFrameworkReference(bool selfContained)

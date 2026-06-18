@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [Ignore("https://github.com/dotnet/sdk/issues/52032")]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ManagedWinRTComponentCanBeReferenced()
         {
             var managedWinRTComponent = new TestProject()

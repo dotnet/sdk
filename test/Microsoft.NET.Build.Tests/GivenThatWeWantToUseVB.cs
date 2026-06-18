@@ -171,7 +171,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_a_vb_wpf_app()
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory().Path;

@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_copies_the_comhost_to_the_output_directory()
         {
             var testAsset = TestAssetsManager
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_generates_a_regfree_com_manifest_when_requested()
         {
             var testAsset = TestAssetsManager
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_warns_on_self_contained_build()
         {
             var testAsset = TestAssetsManager
@@ -130,7 +130,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
         public void It_fails_to_find_comhost_for_platforms_without_comhost()
         {
             var testAsset = TestAssetsManager
@@ -152,7 +152,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_embeds_single_typelib_with_default_id()
         {
             var testAsset = TestAssetsManager
@@ -168,7 +168,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_fails_when_multiple_typelibs_without_ids_specified()
         {
             var testAsset = TestAssetsManager
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_fails_when_multiple_typelibs_with_same_ids_specified()
         {
             var testAsset = TestAssetsManager
@@ -212,7 +212,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow("non-integer-id")]
         [DataRow(ushort.MaxValue + 1)]
         [DataRow(0)]
@@ -237,7 +237,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_embeds_multiple_typelibs_with_distinct_ids()
         {
             var testAsset = TestAssetsManager
@@ -257,7 +257,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_fails_when_typelib_does_not_exist()
         {
             var testAsset = TestAssetsManager
@@ -275,7 +275,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_fails_when_typelib_is_invalid()
         {
             var testAsset = TestAssetsManager
@@ -293,7 +293,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_copies_nuget_package_dependencies()
         {
             var testAsset = TestAssetsManager

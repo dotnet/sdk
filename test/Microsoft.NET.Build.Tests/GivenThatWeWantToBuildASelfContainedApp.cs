@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tests
 
         // Some netcoreapp2.0 Linux tests are no longer working on ubuntu 2404
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows | TestPlatforms.OSX)]
+        [OSCondition(OperatingSystems.Windows | OperatingSystems.OSX)]
         [DataRow("netcoreapp1.1", false)]
         [DataRow("netcoreapp2.0", false)]
         [DataRow("netcoreapp3.0", true)]

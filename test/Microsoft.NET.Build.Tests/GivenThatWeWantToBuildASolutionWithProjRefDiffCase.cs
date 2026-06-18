@@ -8,7 +8,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows | TestPlatforms.OSX)]
+        [OSCondition(OperatingSystems.Windows | OperatingSystems.OSX)]
         public void ItBuildsTheSolutionSuccessfully()
         {
             const string solutionFile = "AppWithProjRefCaseDiff.sln";

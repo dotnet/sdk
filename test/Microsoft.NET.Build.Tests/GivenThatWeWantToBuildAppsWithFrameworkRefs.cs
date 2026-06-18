@@ -8,7 +8,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_the_projects_successfully()
         {
             var testAsset = TestAssetsManager
@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_with_disable_implicit_frameworkRefs()
         {
             var testAsset = TestAssetsManager
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
             var testAsset = TestAssetsManager

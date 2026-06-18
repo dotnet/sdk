@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [CoreMSBuildAndWindowsOnly]
+        [OSCondition(OperatingSystems.Windows), CoreMSBuildOnly]
         public void It_collects_Exception()
         {
             Type loggerType = typeof(LogTelemetryToStdOutForTest);

@@ -436,7 +436,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_does_not_generate_or_greater_symbols_on_disabled_implicit_framework_defines()
         {
             var targetFramework = "net5.0-windows10.0.19041.0";
@@ -479,7 +479,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("17.12.0")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("17.12.0")]
         [DataRow("net8.0", new[] { "NETCOREAPP", "NET", "NET8_0", "NET8_0_OR_GREATER" })]
         [DataRow("net9.0", new[] { "NETCOREAPP", "NET", "NET8_0_OR_GREATER", "NET9_0_OR_GREATER", "NET9_0", "WINDOWS", "WINDOWS7_0", "WINDOWS7_0_OR_GREATER" }, "windows", "7.0")]
         public void It_can_use_implicitly_defined_compilation_constants(string targetFramework, string[] expectedOutput, string targetPlatformIdentifier = null, string targetPlatformVersion = null)
@@ -584,7 +584,7 @@ class Program
         }
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("16.7.0-preview-20310-07")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.7.0-preview-20310-07")]
         [DataRow(ToolsetInfo.CurrentTargetFramework, "", false)]
         [DataRow(ToolsetInfo.CurrentTargetFramework, "UseWPF", true)]
         [DataRow(ToolsetInfo.CurrentTargetFramework, "UseWindowsForms", true)]
@@ -1078,7 +1078,7 @@ namespace ProjectNameWithSpaces
 
         [TestMethod]
         [Ignore("We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_errors_on_windows_sdk_assembly_version_conflicts()
         {
             var testProjectA = new TestProject()

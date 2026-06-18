@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("16.7.0")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.7.0")]
         [DataRow("UseWindowsForms")]
         [DataRow("UseWPF")]
         public void It_errors_when_missing_windows_target_platform(string propertyName)
@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("16.7.0")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.7.0")]
         [DataRow("UseWindowsForms")]
         [DataRow("UseWPF")]
         public void It_errors_when_missing_transitive_windows_target_platform(string propertyName)
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("16.8.0")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("16.8.0")]
         public void It_warns_when_specifying_windows_desktop_sdk()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_does_not_warn_when_multitargeting()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework};net472;netcoreapp3.1";
@@ -121,7 +121,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_imports_when_targeting_dotnet_3()
         {
             var targetFramework = "netcoreapp3.1";
@@ -176,7 +176,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_fails_if_windows_target_platform_version_is_invalid()
         {
             var testProject = new TestProject()
@@ -195,7 +195,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true)]
         [DataRow(false)]
         public void It_succeeds_if_windows_target_platform_version_does_not_have_trailing_zeros(bool setInTargetframework)
@@ -255,7 +255,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [WindowsOnlyRequiresMSBuildVersion("17.0.0.32901")]
+        [OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("17.0.0.32901")]
         public void UseWPFCanBeSetInDirectoryBuildTargets()
         {
             var testDir = TestAssetsManager.CreateTestDirectory();
@@ -296,7 +296,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void TargetPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
             var testProject = new TestProject()
@@ -329,7 +329,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void SupportedOSPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
             var testProject = new TestProject()
@@ -363,7 +363,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
         [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true)]
         [DataRow("netcoreapp3.1", false)]
@@ -396,7 +396,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         //  Basic Windows TargetFramework
         [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", false, null, "10.0.19041.*")]
         //  Basic UseWindowsSdkPreview usage
@@ -436,7 +436,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow("net5.0-windows10.0.22000.0", "10.0.22000.25")]
         [DataRow("net6.0-windows10.0.22000.0", "10.0.22000.26")]
         [DataRow("net6.0-windows10.0.19041.0", "10.0.19041.25")]
@@ -470,7 +470,7 @@ namespace Microsoft.NET.Build.Tests
 
         // We used to emit NETSDK1219 while UWP support on .NET 9 was not GA yet, make sure it's gone now
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItDoesNotWarnAnymoreWhenBuildingAProjectWithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -493,7 +493,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItWarnsWhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -516,7 +516,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItImplicitlyDefinesCSWINRT3_0WhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -545,7 +545,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItDoesNotImplicitlyDefineCSWINRT3_0WhenBuildingAProjectNotTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -572,7 +572,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItNormalizesWindowsSDKImplicitDefinesWhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -604,7 +604,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItHasExpectedWindowsSDKImplicitDefinesWhenBuildingAProjectTargetingCsWinRT2_0()
         {
             TestProject testProject = new()
@@ -631,7 +631,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItErrorsWhenTargetingBelowNet6WithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -654,7 +654,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItErrorsWhenTransitivelyReferencingWindowsUIXamlReferencesWithoutUseUwpProperty()
         {
             TestProject testProjectA = new()
@@ -685,7 +685,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItFailsToBuildWhenReferencingWindowsUIXamlTypesWithoutUseUwpProperty()
         {
             TestProject testProject = new()
@@ -720,7 +720,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItBuildsWhenReferencingWindowsUIXamlTypesWithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -755,7 +755,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItHandlesProfilesWithSelfContained()
         {
             TestProject testProject = new()
@@ -783,7 +783,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItCanMultiTargetCSWinRT2And3()
         {
             TestProject testProject = new()
@@ -803,7 +803,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow("57", "10.0.19041.57")]
         [DataRow("50", "10.0.19041.55")]
         public void MinimumWindowsSdkPackagRevisionCanBeSet(string minimumRevision, string expectedPackageVersion)
@@ -840,7 +840,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void WindowsSdkPackageVersionAndMinimumRevisionCannotBothBeSpecified()
         {
             var testProject = new TestProject()

@@ -689,7 +689,7 @@ public static class Program
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_escapes_resolved_package_assets_paths()
         {
             var testProject = new TestProject()
@@ -797,7 +797,7 @@ class Program
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItResolvesPackageAssetsMultiTargetingNetStandard()
         {
             var testProject = new TestProject()
@@ -822,7 +822,7 @@ class Program
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_with_unicode_characters_in_path()
         {
             var testProject = new TestProject()

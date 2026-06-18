@@ -47,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         //  error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         [DataRow("Microsoft.AspNetCore.App")]
         [DataRow("Microsoft.AspNetCore.All")]
         public void AspNetCoreVersionRollsForward(string aspnetPackageName)

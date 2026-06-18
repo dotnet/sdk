@@ -262,7 +262,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(ToolsetInfo.CurrentTargetFramework)]
         [DataRow("net45")]
         public void It_respects_version_changes_on_incremental_build(string targetFramework)

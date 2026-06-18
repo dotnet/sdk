@@ -74,7 +74,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true, ReferenceScenario.ProjectReference)]
         [DataRow(true, ReferenceScenario.RawFileName)]
         [DataRow(true, ReferenceScenario.HintPath)]
@@ -168,7 +168,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true, false)]
         [DataRow(false, false)]
         [DataRow(false, true)]
@@ -256,7 +256,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true)]
         [DataRow(false)]
         public void It_does_not_include_netstandard_when_inbox(bool isSdk)
@@ -324,7 +324,7 @@ namespace Microsoft.NET.Build.Tests
 
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true)]
         [DataRow(false)]
         public void It_does_not_include_netstandard_when_library_targets_netstandard14(bool isSdk)
@@ -363,7 +363,7 @@ namespace Microsoft.NET.Build.Tests
 
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow(true)]
         [DataRow(false)]
         public void It_includes_netstandard_when_library_targets_netstandard15(bool isSdk)
