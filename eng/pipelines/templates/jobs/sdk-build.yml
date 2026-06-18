@@ -15,7 +15,7 @@ parameters:
   testRunnerAdditionalArguments: ''
   enableSbom: true
   populateInternalRuntimeVariables: false
-  timeoutInMinutes: 150
+  timeoutInMinutes: ''
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
@@ -46,7 +46,12 @@ jobs:
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
     helixRepo: dotnet/sdk
-    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    ${{ if ne(parameters.timeoutInMinutes, '') }}:
+      timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    ${{ elseif eq(parameters.pool.os, 'macOS') }}:
+      timeoutInMinutes: 90
+    ${{ else }}:
+      timeoutInMinutes: 60
     enableMicrobuild: true
     enablePublishBuildAssets: true
     enableTelemetry: true

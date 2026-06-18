@@ -43,6 +43,7 @@ Even releases that are in lockdown can still take changes as long as they are ap
 Any PR that targets a version-like servicing branch (`release/[0-9]*`, e.g. `release/8.0.4xx`, `release/10.0`) and is not a codeflow PR or a test-only change will automatically have the `Servicing-consider` label applied by the [add-servicing-consider-label](https://github.com/dotnet/sdk/blob/main/.github/workflows/add-servicing-consider-label.yml) workflow. This prevents accidental merging of new features without tactics approval. The following PR types are exempt from automatic labeling:
 - PRs from automated codeflow bots (inter-branch merge flow, darc subscriptions) — but **not** backport PRs, which are also bot-authored and do require servicing approval.
 - PRs that only modify files in the `test/` directory.
+- PRs authored by `vseanreesermsft` (branding and internal-to-public flow).
 
 For servicing changes to other repos like MSBuild and NuGet, we recommend getting approval from tactics before the PR is merged. For codeflow, we do not gate codeflow on approvals as many codeflows are just infra work that doesn't require approval. Separating those out would add additional complexity we want to avoid.
 

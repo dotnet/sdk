@@ -145,8 +145,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishRuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</PublishRuntimeIdentifier>
   </PropertyGroup>
 
-  <!-- Add PublishRuntimeIdentifier to RuntimeIdentifiers list (if it isn't already in the list) so that assets needed to publish will be restored -->
-  <PropertyGroup Condition="'$(PublishRuntimeIdentifier)' != '' And
+  <!-- Add PublishRuntimeIdentifier to RuntimeIdentifiers list (if it isn't already in the list) so that assets needed to publish will be restored.
+       Set AppendPublishRuntimeIdentifierToRuntimeIdentifiers to false to opt out of this behavior. -->
+  <PropertyGroup Condition="'$(AppendPublishRuntimeIdentifierToRuntimeIdentifiers)' != 'false' And
+                '$(PublishRuntimeIdentifier)' != '' And
                 '$(RuntimeIdentifiers)' != '$(PublishRuntimeIdentifier)' And
                 !$(RuntimeIdentifiers.StartsWith('$(PublishRuntimeIdentifier);')) And
                 !$(RuntimeIdentifiers.EndsWith(';$(PublishRuntimeIdentifier)')) And

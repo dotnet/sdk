@@ -20,7 +20,7 @@ namespace Microsoft.NET.TestFramework
         private readonly DateTimeOffset? _logStart;
 
         public XunitLoggerProvider(ITestOutputHelper output)
-            : this(output, LogLevel.Trace)
+            : this(output, LogLevel.Information)
         {
         }
 
