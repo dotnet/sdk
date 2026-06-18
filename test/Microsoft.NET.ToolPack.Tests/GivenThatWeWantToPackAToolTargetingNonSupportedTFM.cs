@@ -46,7 +46,7 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_should_fail_with_error_message_on_fullframework()
         {
             It_should_fail_with_error_message("TargetFramework", "net46", "DotnetToolOnlySupportNetcoreapp");
