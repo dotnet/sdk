@@ -66,14 +66,15 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             }
 
             var trimmedContent = content.Text.AsSpan().TrimStart();
-            return IsDirective(trimmedContent, "include") ||
-                IsDirective(trimmedContent, "ref");
-        }
+            return isDirective(trimmedContent, "include") ||
+                isDirective(trimmedContent, "ref");
 
-        private static bool IsDirective(ReadOnlySpan<char> content, string directiveName)
-        {
-            return content.StartsWith(directiveName, StringComparison.Ordinal) &&
-                (content.Length == directiveName.Length || char.IsWhiteSpace(content[directiveName.Length]));
+            static bool isDirective(ReadOnlySpan<char> content, string directiveName)
+            {
+                return content.StartsWith(directiveName, StringComparison.Ordinal) &&
+                    // `content` is either exactly the directive name or has other text separated from the directive name by whitespace.
+                    (content.Length == directiveName.Length || char.IsWhiteSpace(content[directiveName.Length]));
+            }
         }
     }
 }
