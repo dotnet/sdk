@@ -1,14 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Sdk.StaticWebAssets.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest50(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest50))
+    [TestClass]
+    public class BlazorLegacyIntegrationTest50 : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [CoreMSBuildOnlyFact]
+        protected override string RestoreNugetPackagePath => nameof(BlazorLegacyIntegrationTest50);
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build50Hosted_Works()
         {
             // Arrange
@@ -45,16 +48,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             content.Should().Contain(Path.Combine("Client", "wwwroot"));
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [PlatformSpecific(skipPlatforms: TestPlatforms.OSX, skipReason: "https://github.com/dotnet/sdk/issues/49665")]
         public void Publish50Hosted_Works()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                //  https://github.com/dotnet/sdk/issues/49665
-                //   tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
-                return;
-            }
-
             // Arrange
             var testAsset = "BlazorWasmHosted50";
             var targetFramework = "net5.0";
