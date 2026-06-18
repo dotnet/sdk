@@ -17,6 +17,7 @@ namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 public class CreateImageIndexTests : SdkTest
 {
     [TestMethod]
+    [DockerAvailableFact]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task CreateImageIndex_Baseline()
     {

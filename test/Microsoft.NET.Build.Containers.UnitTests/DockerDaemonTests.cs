@@ -40,6 +40,7 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
+    [DockerAvailableFact]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task Can_detect_when_daemon_is_running()
     {

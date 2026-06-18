@@ -15,6 +15,7 @@ namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 public class CreateNewImageTests : SdkTest
 {
     [TestMethod]
+    [DockerAvailableFact]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public void CreateNewImage_Baseline()
     {
@@ -66,6 +67,7 @@ public class CreateNewImageTests : SdkTest
     }
 
     [TestMethod]
+    [DockerAvailableFact]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public void ParseContainerProperties_EndToEnd()
     {
@@ -131,6 +133,7 @@ public class CreateNewImageTests : SdkTest
     /// </summary>
 
     [TestMethod]
+    [DockerAvailableFact]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
@@ -217,6 +220,7 @@ public class CreateNewImageTests : SdkTest
     }
 
     [TestMethod]
+    [DockerAvailableFact]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
     {
@@ -299,6 +303,7 @@ public class CreateNewImageTests : SdkTest
 
 
     [TestMethod]
+    [DockerAvailableFact]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void CanOverrideContainerImageFormat()
     {
