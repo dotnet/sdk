@@ -205,7 +205,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
         // https://github.com/aspnet/Razor/issues/1991
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public async Task ServerRunning_CancelCompilation_CancelsSuccessfully()
         {
             // Arrange
