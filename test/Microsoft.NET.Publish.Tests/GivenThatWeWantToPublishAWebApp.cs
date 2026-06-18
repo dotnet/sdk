@@ -50,7 +50,7 @@ namespace Microsoft.NET.Publish.Tests
         //  Disabled for OSX due to //  https://github.com/dotnet/sdk/issues/49665, should be re-enabled
         //  error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_should_publish_self_contained_for_2x()
         {
             var tfm = "netcoreapp2.2";
@@ -106,7 +106,7 @@ namespace Microsoft.NET.Publish.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         [DataRow("Microsoft.AspNetCore.App")]
         [DataRow("Microsoft.AspNetCore.All")]
         public void It_should_publish_framework_dependent_for_2x(string platformLibrary)

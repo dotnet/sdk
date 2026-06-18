@@ -39,7 +39,7 @@ namespace Microsoft.NET.Publish.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_does_not_fail_publishing_a_self_twice()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Publish.Tests
         private const int SubsystemOffset = 0x5C;
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_can_make_a_Windows_GUI_exe()
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid("netcoreapp2.0");
@@ -128,7 +128,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_publishes_runtime_pack_resources()
         {
             const string tfm = $"{ToolsetInfo.CurrentTargetFramework}-windows";
@@ -173,7 +173,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_publishes_runtime_pack_resources_for_specific_languages()
         {
             const string tfm = $"{ToolsetInfo.CurrentTargetFramework}-windows";

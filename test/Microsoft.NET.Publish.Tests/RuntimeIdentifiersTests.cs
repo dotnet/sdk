@@ -226,7 +226,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void PublishRuntimeIdentifierOverridesUseCurrentRuntime()
         {
             string tfm = ToolsetInfo.CurrentTargetFramework;

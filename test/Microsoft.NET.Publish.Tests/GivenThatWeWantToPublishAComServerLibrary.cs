@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Publish.Tests
@@ -7,7 +7,7 @@ namespace Microsoft.NET.Publish.Tests
     public class GivenThatWeWantToPublishAComServerLibrary : SdkTest
     {
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_publishes_comhost_to_the_publish_folder()
         {
             var testAsset = TestAssetsManager

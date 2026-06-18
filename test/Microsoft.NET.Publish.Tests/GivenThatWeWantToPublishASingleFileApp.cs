@@ -405,7 +405,7 @@ namespace Microsoft.NET.Publish.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         //   error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         [DataRow("netcoreapp3.0")]
         [DataRow("netcoreapp3.1")]
         public void It_generates_a_single_file_including_pdbs(string targetFramework)
@@ -433,7 +433,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("16.8.0")]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_excludes_ni_pdbs_from_single_file()
         {
             var publishCommand = GetPublishCommand();
@@ -457,7 +457,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("16.8.0")]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         [DataRow("netcoreapp3.0")]
         [DataRow("netcoreapp3.1")]
         public void It_can_include_ni_pdbs_in_single_file(string targetFramework)
@@ -689,7 +689,7 @@ namespace Microsoft.NET.Publish.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         [DataRow("netcoreapp2.1", true)]
         [DataRow("netcoreapp3.0", false)]
         [DataRow("netcoreapp3.1", false)]
@@ -914,7 +914,7 @@ class C
 
         //  https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_errors_when_enabling_compression_targeting_net5()
         {
             var testProject = new TestProject()

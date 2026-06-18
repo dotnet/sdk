@@ -258,7 +258,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         [Ignore("https://github.com/dotnet/sdk/issues/51361")]
         [DataRow("net7.0")]
         public void NativeAot_hw_runs_with_PackageReference_PublishAot_is_enabled(string targetFramework)
@@ -618,7 +618,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         [Ignore("https://github.com/dotnet/sdk/issues/51361")]
         [DataRow("net5.0", true)]
         [DataRow("net6.0", true)]

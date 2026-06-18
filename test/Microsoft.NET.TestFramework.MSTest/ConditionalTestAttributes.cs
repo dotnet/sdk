@@ -7,15 +7,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.TestFramework;
 
-[Flags]
-public enum TestPlatforms
-{
-    Windows = 1,
-    Linux = 2,
-    OSX = 4,
-    FreeBSD = 8,
-    Any = Windows | Linux | OSX | FreeBSD,
-}
+// NOTE: Operating-system gating is intentionally NOT reimplemented here. MSTest ships
+// [OSCondition(OperatingSystems.Windows | OperatingSystems.OSX | ...)] (with
+// ConditionMode.Include/Exclude), which already covers it. Because MSTest combines
+// condition attributes that have different GroupNames with AND, an OS requirement can be
+// composed with the conditions below, for example:
+//   [TestMethod, OSCondition(OperatingSystems.Windows), CoreMSBuildOnly]            // Core MSBuild on Windows
+//   [TestMethod, OSCondition(OperatingSystems.Windows), RequiresMSBuildVersion("17.0")]
+//   [TestMethod, OSCondition(OperatingSystems.OSX)]                                  // macOS only
+//   [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]          // everything except macOS
+// Only conditions that MSTest does not already provide (MSBuild flavor/version, shared
+// framework availability, and process architecture) are defined here.
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public sealed class CoreMSBuildOnlyAttribute : ConditionBaseAttribute
@@ -45,123 +47,33 @@ public sealed class FullMSBuildOnlyAttribute : ConditionBaseAttribute
     public override bool IsConditionMet => SdkTestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild;
 }
 
+/// <summary>
+/// Restricts a test to the specified process architecture(s). Compose with
+/// <c>[OSCondition(...)]</c> for OS gating. Use <see cref="ConditionMode.Exclude"/> to skip
+/// the listed architectures instead of requiring them.
+/// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-public sealed class CoreMSBuildAndWindowsOnlyAttribute : ConditionBaseAttribute
+public sealed class ArchitectureConditionAttribute : ConditionBaseAttribute
 {
-    public CoreMSBuildAndWindowsOnlyAttribute()
-        : base(ConditionMode.Include)
+    private readonly Architecture[] _architectures;
+
+    public ArchitectureConditionAttribute(params Architecture[] architectures)
+        : this(ConditionMode.Include, architectures)
     {
-        IgnoreMessage = "This test requires Core MSBuild and Windows to run";
     }
 
-    public override string GroupName => nameof(CoreMSBuildAndWindowsOnlyAttribute);
-
-    public override bool IsConditionMet =>
-        !SdkTestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild
-            && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-}
-
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-public sealed class MacOsOnlyAttribute : ConditionBaseAttribute
-{
-    public MacOsOnlyAttribute()
-        : base(ConditionMode.Include)
+    public ArchitectureConditionAttribute(ConditionMode mode, params Architecture[] architectures)
+        : base(mode)
     {
-        IgnoreMessage = "This test requires macos to run";
+        _architectures = architectures;
+        IgnoreMessage = mode == ConditionMode.Include
+            ? $"This test is only supported on architecture(s): {string.Join(", ", architectures)}"
+            : $"This test is not supported on architecture(s): {string.Join(", ", architectures)}";
     }
 
-    public override string GroupName => nameof(MacOsOnlyAttribute);
+    public override string GroupName => nameof(ArchitectureConditionAttribute);
 
-    public override bool IsConditionMet => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-}
-
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-public sealed class PlatformSpecificAttribute : ConditionBaseAttribute
-{
-    private const Architecture NoArchitectureFilter = (Architecture)(-1);
-
-    private readonly TestPlatforms _platforms;
-    private readonly TestPlatforms _skipPlatforms;
-    private readonly Architecture _architecture;
-    private readonly Architecture _skipArchitecture;
-    private readonly string? _skipReason;
-
-    public PlatformSpecificAttribute(
-        TestPlatforms platforms = TestPlatforms.Any,
-        TestPlatforms skipPlatforms = 0,
-        Architecture architecture = NoArchitectureFilter,
-        Architecture skipArchitecture = NoArchitectureFilter,
-        string? skipReason = null)
-        : base(ConditionMode.Include)
-    {
-        _platforms = platforms;
-        _skipPlatforms = skipPlatforms;
-        _architecture = architecture;
-        _skipArchitecture = skipArchitecture;
-        _skipReason = skipReason;
-        IgnoreMessage = "This test is not supported on this platform.";
-    }
-
-    public override string GroupName => nameof(PlatformSpecificAttribute);
-
-    public override bool IsConditionMet
-    {
-        get
-        {
-            if (EvaluateSkip(_platforms, _skipPlatforms, _architecture, _skipArchitecture, _skipReason) is { } skip)
-            {
-                IgnoreMessage = skip;
-                return false;
-            }
-
-            return true;
-        }
-    }
-
-    private static string? EvaluateSkip(
-        TestPlatforms platforms,
-        TestPlatforms skipPlatforms,
-        Architecture architecture,
-        Architecture skipArchitecture,
-        string? skipReason)
-    {
-        if (!PlatformsMatchCurrentOS(platforms))
-        {
-            return "This test is not supported on this platform.";
-        }
-
-        if (architecture != NoArchitectureFilter && RuntimeInformation.ProcessArchitecture != architecture)
-        {
-            return $"This test is not supported on {RuntimeInformation.ProcessArchitecture} architecture.";
-        }
-
-        bool skipPlatformMatches = skipPlatforms != 0 && PlatformsMatchCurrentOS(skipPlatforms);
-        bool skipArchMatches = skipArchitecture != NoArchitectureFilter && RuntimeInformation.ProcessArchitecture == skipArchitecture;
-
-        if (skipPlatforms != 0 && skipArchitecture != NoArchitectureFilter)
-        {
-            if (skipPlatformMatches && skipArchMatches)
-            {
-                return skipReason ?? "Test skipped on this platform and architecture.";
-            }
-        }
-        else if (skipPlatformMatches)
-        {
-            return skipReason ?? "Test skipped on this platform.";
-        }
-        else if (skipArchMatches)
-        {
-            return skipReason ?? "Test skipped on this architecture.";
-        }
-
-        return null;
-    }
-
-    private static bool PlatformsMatchCurrentOS(TestPlatforms platforms) =>
-        (platforms.HasFlag(TestPlatforms.Windows) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            || (platforms.HasFlag(TestPlatforms.Linux) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            || (platforms.HasFlag(TestPlatforms.OSX) && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            || (platforms.HasFlag(TestPlatforms.FreeBSD) && RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD")));
+    public override bool IsConditionMet => Array.IndexOf(_architectures, RuntimeInformation.ProcessArchitecture) >= 0;
 }
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
@@ -224,55 +136,3 @@ public sealed class RequiresSpecificFrameworkAttribute : ConditionBaseAttribute
 }
 
 #endif
-
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-public sealed class WindowsOnlyRequiresMSBuildVersionAttribute : ConditionBaseAttribute
-{
-    private readonly string _version;
-
-    public WindowsOnlyRequiresMSBuildVersionAttribute(string version)
-        : base(ConditionMode.Include)
-    {
-        _version = version;
-        IgnoreMessage = "This test requires Windows to run";
-    }
-
-    public string? Reason { get; set; }
-
-    public override string GroupName => nameof(WindowsOnlyRequiresMSBuildVersionAttribute);
-
-    public override bool IsConditionMet
-    {
-        get
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                IgnoreMessage = "This test requires Windows to run";
-                return false;
-            }
-
-            return IsRequiredMSBuildVersionAvailable(_version);
-        }
-    }
-
-    private bool IsRequiredMSBuildVersionAvailable(string version)
-    {
-        if (!Version.TryParse(SdkTestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version? msbuildVersion))
-        {
-            IgnoreMessage = $"Failed to determine the version of MSBuild ({SdkTestContext.Current.ToolsetUnderTest.MSBuildVersion}).";
-            return false;
-        }
-        if (!Version.TryParse(version, out Version? requiredVersion))
-        {
-            IgnoreMessage = $"Failed to determine the version required by this test ({version}).";
-            return false;
-        }
-        if (requiredVersion > msbuildVersion)
-        {
-            IgnoreMessage = $"This test requires MSBuild version {version} to run (using {SdkTestContext.Current.ToolsetUnderTest.MSBuildVersion}).";
-            return false;
-        }
-
-        return true;
-    }
-}

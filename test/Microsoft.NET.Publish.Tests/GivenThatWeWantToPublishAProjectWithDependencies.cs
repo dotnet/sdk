@@ -55,7 +55,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_publishes_the_app_config_if_necessary()
         {
             var testAsset = TestAssetsManager
@@ -147,7 +147,7 @@ namespace Microsoft.NET.Publish.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_publishes_projects_with_filter_and_rid()
         {
             string project = "SimpleDependencies";

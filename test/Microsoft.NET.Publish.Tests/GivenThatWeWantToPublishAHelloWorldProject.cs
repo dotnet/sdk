@@ -233,7 +233,7 @@ public static class Program
 
         // This test is for netcoreapp2 and no longer working on ubuntu 2404
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows | TestPlatforms.OSX)]
+        [OSCondition(OperatingSystems.Windows | OperatingSystems.OSX)]
         public void Conflicts_are_resolved_when_publishing_a_self_contained_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: true, ridSpecific: true);
@@ -767,7 +767,7 @@ public static class Program
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_contains_no_duplicates_in_resolved_publish_assets_on_windows()
             => It_contains_no_duplicates_in_resolved_publish_assets("windows");
 
