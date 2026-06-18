@@ -77,11 +77,7 @@ public class ComputeReferenceStaticWebAssetItems : Task, IMultiThreadableTask
                                 }
                                 if (MakeReferencedAssetOriginalItemSpecAbsolute)
                                 {
-                                    // OriginalItemSpec is consumed only by follow-on tasks running in the *referencing* project,
-                                    // whose project directory differs from this (defining) one. Absolutize it here, against this
-                                    // project's directory, before the item crosses the boundary; otherwise consumers such as
-                                    // StaticWebAsset.ResolveFile would resolve the relative path against the wrong base.
-                                    groupedAsset.OriginalItemSpec = new FileInfo(TaskEnvironment.GetAbsolutePath(groupedAsset.OriginalItemSpec)).FullName;
+                                    groupedAsset.OriginalItemSpec = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(groupedAsset.OriginalItemSpec));
                                 }
                                 resultAssets.Add(groupedAsset);
                             }
@@ -105,9 +101,7 @@ public class ComputeReferenceStaticWebAssetItems : Task, IMultiThreadableTask
                     }
                     if (MakeReferencedAssetOriginalItemSpecAbsolute)
                     {
-                        // Same rationale as the grouped-asset branch above: absolutize against this (defining)
-                        // project's directory before the item crosses into the referencing project.
-                        selected.OriginalItemSpec = new FileInfo(TaskEnvironment.GetAbsolutePath(selected.OriginalItemSpec)).FullName;
+                        selected.OriginalItemSpec = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(selected.OriginalItemSpec));
                     }
                     else
                     {
