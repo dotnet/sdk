@@ -2503,7 +2503,7 @@ for path 'candidate.js'");
 
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Linux)]
+        [OSCondition(OperatingSystems.Linux)]
 
 
         public void ComputesRelativePath_ForAssets_ExplicitPaths()

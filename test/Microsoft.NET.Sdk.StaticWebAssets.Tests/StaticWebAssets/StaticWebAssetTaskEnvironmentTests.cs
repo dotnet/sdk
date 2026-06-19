@@ -43,6 +43,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 // process-CWD mutation these tests perform.
 
 
+[DoNotParallelize]
 [TestClass]
 
 public class StaticWebAssetTaskEnvironmentTests
