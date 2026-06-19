@@ -7,11 +7,12 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class CannotRemoveBaseTypeOrInterfaceTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotRemoveBaseTypeOrInterface(settings, context));
 
-        [Fact]
+        [TestMethod]
         public void PromotedBaseClassOrInterfaceIsNotReported()
         {
             string leftSyntax = @"
@@ -45,10 +46,10 @@ namespace CompatTests
 
             ApiComparer differ = new(s_ruleFactory);
 
-            Assert.Empty(differ.GetDifferences(left, right));
+            Assert.IsEmpty(differ.GetDifferences(left, right));
         }
 
-        [Fact]
+        [TestMethod]
         public void RemovedInterfaceAndBaseClassAreReported()
         {
             string leftSyntax = @"
@@ -80,15 +81,15 @@ namespace CompatTests
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveBaseType, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveBaseInterface, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
 
-            Assert.Contains("CompatTests.FirstBase", differences.ElementAt(0).Message);
-            Assert.Contains("CompatTests.IFirstInterface", differences.ElementAt(1).Message);
+            Assert.Contains(differences.ElementAt(0).Message, "CompatTests.FirstBase");
+            Assert.Contains(differences.ElementAt(1).Message, "CompatTests.IFirstInterface");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void RemovedInternalInterfaceIsReportedWhenIncludeInternals(bool includeInternals)
         {
             string leftSyntax = @"
@@ -119,15 +120,15 @@ namespace CompatTests
                 {
                     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveBaseInterface, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
                 };
-                Assert.Equal(expected, differences);
+                Assert.AreSequenceEqual(expected, differences);
             }
             else
             {
-                Assert.Empty(differences);
+                Assert.IsEmpty(differences);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void RemovedFromLeftReportedOnStrictMode()
         {
             string leftSyntax = @"
@@ -157,21 +158,21 @@ namespace CompatTests
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveBaseType, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveBaseInterface, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
 
             string firstMessage = differences[0].Message;
             string secondMessage = differences[1].Message;
 
-            Assert.Contains("CompatTests.FirstBase", firstMessage);
-            Assert.Contains("CompatTests.IFirstInterface", secondMessage);
+            Assert.Contains(firstMessage, "CompatTests.FirstBase");
+            Assert.Contains(secondMessage, "CompatTests.IFirstInterface");
 
-            Assert.True(firstMessage.IndexOf("right") > firstMessage.IndexOf("left"));
-            Assert.True(secondMessage.IndexOf("right") > firstMessage.IndexOf("left"));
+            Assert.IsGreaterThan(firstMessage.IndexOf("left"), firstMessage.IndexOf("right"));
+            Assert.IsGreaterThan(firstMessage.IndexOf("left"), secondMessage.IndexOf("right"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void SameOnBothSidesDoesNotFail(bool strictMode)
         {
             string leftSyntax = @"
@@ -205,10 +206,10 @@ namespace CompatTests
 
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: strictMode));
 
-            Assert.Empty(differ.GetDifferences(left, right));
+            Assert.IsEmpty(differ.GetDifferences(left, right));
         }
 
-        [Fact]
+        [TestMethod]
         public void MultiRightReportsRightDifferences()
         {
             string leftSyntax = @"
@@ -275,10 +276,10 @@ namespace CompatTests
                 new CompatDifference(leftContainer.MetadataInformation, right[2].MetadataInformation, DiagnosticIds.CannotRemoveBaseInterface, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
             };
 
-            Assert.Equal(expectedDiffs, differences);
+            Assert.AreSequenceEqual(expectedDiffs, differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void MembersPushedDownToNewBaseNotReported()
         {
             string leftSyntax = @"
@@ -332,7 +333,7 @@ namespace CompatTests
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
 
-            Assert.Empty(differ.GetDifferences(left, right));
+            Assert.IsEmpty(differ.GetDifferences(left, right));
         }
     }
 }
