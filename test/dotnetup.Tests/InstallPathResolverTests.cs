@@ -95,19 +95,6 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         result.PathSource.Should().Be(PathSource.Default);
     }
 
-    [Fact]
-    public void Resolve_ForeignUserInstall_FallsToDefault_NotExistingInstall()
-    {
-        // Even if another tool's dotnet is on PATH, dotnetup should install to its own default path.
-        var installManager = new DotnetEnvironmentManager();
-        var result = _resolver.Resolve(
-            explicitInstallPath: null,
-            globalJsonInfo: null);
-
-        result!.ResolvedInstallPath.Should().Be(installManager.GetDefaultDotnetInstallPath());
-        result.PathSource.Should().Be(PathSource.Default);
-    }
-
     /// <summary>
     /// Regression: before the refactor, passing an explicit path without a global.json
     /// caused the method to return null because all logic was gated behind the global.json check.
