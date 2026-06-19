@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public abstract class BaseIntegrationTest : SdkTest
     {
-        public BaseIntegrationTest(ITestOutputHelper log) : base(log)
+        public BaseIntegrationTest()
         {
         }
 

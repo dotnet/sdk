@@ -1,24 +1,30 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public class TemplateDiscoveryTests : BaseIntegrationTest, IClassFixture<TemplateDiscoveryTool>
+    [TestClass]
+    public class TemplateDiscoveryTests : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
-        private readonly TemplateDiscoveryTool _templateDiscoveryTool;
+        private ITestOutputHelper _log => Log;
+        private static TemplateDiscoveryTool s_templateDiscoveryTool = null!;
 
-        public TemplateDiscoveryTests(ITestOutputHelper log, TemplateDiscoveryTool templateDiscoveryTool) : base(log)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext ctx)
         {
-            _log = log;
-            _templateDiscoveryTool = templateDiscoveryTool;
+            s_templateDiscoveryTool = new TemplateDiscoveryTool(new TestContextOutputHelper(ctx));
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/53569")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [ClassCleanup]
+        public static void ClassCleanup() => s_templateDiscoveryTool?.Dispose();
+
+        private TemplateDiscoveryTool _templateDiscoveryTool => s_templateDiscoveryTool;
+
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [ArchitectureCondition(ConditionMode.Exclude, Architecture.Arm64)]
         public async Task CanRunDiscoveryTool()
         {
             string testDir = CreateTemporaryFolder();
@@ -45,7 +51,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             foreach (var cacheFilePath in cacheFilePaths)
             {
-                Assert.True(File.Exists(cacheFilePath));
+                Assert.IsTrue(File.Exists(cacheFilePath));
                 new DotnetNewCommand(_log)
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -69,7 +75,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanReadCliData()
         {
@@ -94,7 +101,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanReadCliDataFromDiff()
         {
@@ -145,7 +153,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             foreach (var cacheFilePath in cacheFilePaths)
             {
-                Assert.True(File.Exists(cacheFilePath));
+                Assert.IsTrue(File.Exists(cacheFilePath));
                 new DotnetNewCommand(_log)
                       .WithCustomHive(settingsPath)
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)

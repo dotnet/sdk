@@ -1,18 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public class FileRenameTests : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
 
-        public FileRenameTests(ITestOutputHelper log) : base(log)
+        public FileRenameTests()
         {
-            _log = log;
         }
 
-        [Fact]
+        [TestMethod]
         public void CanUseFileRenameWithNowGenerator()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("The template \"TestAssets.TemplateWithFileRenameDate\" was created successfully.");
 
             DirectoryInfo directoryInfo = new(workingDirectory);
-            Assert.Matches("\\d{8}_mytestname.cs", directoryInfo.EnumerateFiles().Single().Name);
+            Assert.MatchesRegex(directoryInfo.EnumerateFiles().Single().Name, "\\d{8}_mytestname.cs");
         }
     }
 }

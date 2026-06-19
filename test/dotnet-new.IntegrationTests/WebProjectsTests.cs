@@ -2,42 +2,47 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
-using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public class WebProjectsTests : BaseIntegrationTest, IClassFixture<WebProjectsFixture>
+    [TestClass]
+    public class WebProjectsTests : BaseIntegrationTest
     {
-        private readonly WebProjectsFixture _fixture;
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
+        private static WebProjectsFixture s_fixture = null!;
 
-        public WebProjectsTests(WebProjectsFixture fixture, ITestOutputHelper log) : base(log)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext ctx)
         {
-            _fixture = fixture;
-            _log = log;
+            s_fixture = new WebProjectsFixture(new TestContextOutputHelper(ctx));
         }
 
-        [Theory]
-        [InlineData("emptyweb_cs-latest", "web")]
-        [InlineData("mvc_cs-latest", "mvc")]
-        [InlineData("mvc_fs-latest", "mvc", "-lang", "F#")]
-        [InlineData("api_cs-latest", "webapi")]
-        [InlineData("emptyweb_cs-60", "web", "-f", "net6.0")]
-        [InlineData("mvc_cs-60", "mvc", "-f", "net6.0")]
-        [InlineData("mvc_fs-60", "mvc", "-lang", "F#", "-f", "net6.0")]
-        [InlineData("api_cs-60", "webapi", "-f", "net6.0")]
-        [InlineData("emptyweb_cs-70", "web", "-f", "net7.0")]
-        [InlineData("mvc_cs-70", "mvc", "-f", "net7.0")]
-        [InlineData("mvc_fs-70", "mvc", "-lang", "F#", "-f", "net7.0")]
-        [InlineData("api_cs-70", "webapi", "-f", "net7.0")]
-        [InlineData("emptyweb_cs-80", "web", "-f", "net8.0")]
-        [InlineData("mvc_cs-80", "mvc", "-f", "net8.0")]
-        [InlineData("mvc_fs-80", "mvc", "-lang", "F#", "-f", "net8.0")]
-        [InlineData("api_cs-80", "webapi", "-f", "net8.0")]
-        [InlineData("emptyweb_cs-90", "web", "-f", "net9.0")]
-        [InlineData("mvc_cs-90", "mvc", "-f", "net9.0")]
-        [InlineData("mvc_fs-90", "mvc", "-lang", "F#", "-f", "net9.0")]
-        [InlineData("api_cs-90", "webapi", "-f", "net9.0")]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_fixture?.Dispose();
+
+        private WebProjectsFixture _fixture => s_fixture;
+
+        [TestMethod]
+        [DataRow("emptyweb_cs-latest", "web")]
+        [DataRow("mvc_cs-latest", "mvc")]
+        [DataRow("mvc_fs-latest", "mvc", "-lang", "F#")]
+        [DataRow("api_cs-latest", "webapi")]
+        [DataRow("emptyweb_cs-60", "web", "-f", "net6.0")]
+        [DataRow("mvc_cs-60", "mvc", "-f", "net6.0")]
+        [DataRow("mvc_fs-60", "mvc", "-lang", "F#", "-f", "net6.0")]
+        [DataRow("api_cs-60", "webapi", "-f", "net6.0")]
+        [DataRow("emptyweb_cs-70", "web", "-f", "net7.0")]
+        [DataRow("mvc_cs-70", "mvc", "-f", "net7.0")]
+        [DataRow("mvc_fs-70", "mvc", "-lang", "F#", "-f", "net7.0")]
+        [DataRow("api_cs-70", "webapi", "-f", "net7.0")]
+        [DataRow("emptyweb_cs-80", "web", "-f", "net8.0")]
+        [DataRow("mvc_cs-80", "mvc", "-f", "net8.0")]
+        [DataRow("mvc_fs-80", "mvc", "-lang", "F#", "-f", "net8.0")]
+        [DataRow("api_cs-80", "webapi", "-f", "net8.0")]
+        [DataRow("emptyweb_cs-90", "web", "-f", "net9.0")]
+        [DataRow("mvc_cs-90", "mvc", "-f", "net9.0")]
+        [DataRow("mvc_fs-90", "mvc", "-lang", "F#", "-f", "net9.0")]
+        [DataRow("api_cs-90", "webapi", "-f", "net9.0")]
         public void AllWebProjectsRestoreAndBuild(string testName, params string[] args)
         {
             string workingDir = Path.Combine(_fixture.BaseWorkingDirectory, testName);
@@ -71,7 +76,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Directory.Delete(workingDir, true);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowHelp_WebAPI()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "webapi", "-h")
@@ -88,7 +93,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowHelp_Mvc()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "mvc", "-h")
@@ -106,9 +111,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .AddScrubber(output => output.ScrubByRegex("[A-Za-z0-9\\.]+-third-party-notices", "%version%-third-party-notices"));
         }
 
-        [Theory]
-        [InlineData("webapp")]
-        [InlineData("razor")]
+        [TestMethod]
+        [DataRow("webapp")]
+        [DataRow("razor")]
         public Task CanShowHelp_Webapp(string templateName)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, templateName, "-h")
@@ -131,7 +136,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
     public sealed class WebProjectsFixture : SharedHomeDirectory
     {
-        public WebProjectsFixture(IMessageSink messageSink) : base(messageSink)
+        public WebProjectsFixture(ITestOutputHelper log) : base(log)
         {
             BaseWorkingDirectory = Utilities.CreateTemporaryFolder(nameof(WebProjectsTests));
 
