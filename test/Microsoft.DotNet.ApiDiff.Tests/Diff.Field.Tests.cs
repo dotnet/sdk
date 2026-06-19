@@ -38,7 +38,7 @@ public class DiffFieldTests : DiffBaseTests
                 """);
 
     [TestMethod]
-    public Task tFieldChange() => RunTestAsync(
+    public Task FieldChange() => RunTestAsync(
                 // Test both change of type and change of name
                 beforeCode: """
                 namespace MyNamespace
@@ -74,7 +74,7 @@ public class DiffFieldTests : DiffBaseTests
                 """);
 
     [TestMethod]
-    public Task tFieldDelete() => RunTestAsync(
+    public Task FieldDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

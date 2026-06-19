@@ -115,7 +115,7 @@ public class DiffInterfaceTests : DiffBaseTests
                 """);
 
     [TestMethod]
-    [Ignore("The resulting inheritance shows more than expected but not wrong, and does not show the nullability constraing")]
+    [Ignore("The resulting inheritance shows more than expected but not wrong, and does not show the nullability constraint")]
     // Shows: public interface IMyInterface<TKey, TValue> : System.Collections.Generic.IDictionary<TKey, TValue>, System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<TKey, TValue>>
     public Task InterfaceAddWithTypeConstraints() => RunTestAsync(
                 beforeCode: """
