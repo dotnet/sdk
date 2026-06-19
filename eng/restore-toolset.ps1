@@ -195,7 +195,15 @@ function Get-SharedFrameworkPath([string]$dotNetRoot, [string]$component) {
 # such as 6.0 or an exact version) is already present on disk for $component.
 function Test-SharedFrameworkInstalled([string]$dotNetRoot, [string]$component, [string]$version) {
     $fxRoot = Get-SharedFrameworkPath $dotNetRoot $component
-    return [bool](Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
+
+    # Only a major.minor channel (e.g. 6.0) should match any patch via a wildcard.
+    # An exact version must match an exact folder so that, for example, 8.0.1 does
+    # not spuriously match an installed 8.0.10.
+    if ($version -match '^\d+\.\d+$') {
+        return [bool](Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
+    }
+
+    return [bool](Test-Path -PathType Container (Join-Path $fxRoot $version))
 }
 
 function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$architecture = "") {
@@ -286,7 +294,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
     $coreRuntimePath = Get-SharedFrameworkPath $dotnetRoot 'dotnet'
     $wdRuntimePath = Get-SharedFrameworkPath $dotnetRoot 'windowsdesktop'
     $sdkPath = Join-Path $dotnetRoot 'sdk'
-    $majorVersion = $dotnetSdkVersion.Substring(0, 1)
+    $majorVersion = $dotnetSdkVersion.Split('.')[0]
 
     if (Test-Path($versionPath)) {
         $lastInstalledSDK = Get-Content -Raw -Path ($versionPath)

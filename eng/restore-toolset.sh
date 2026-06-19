@@ -90,7 +90,17 @@ function IsSharedFrameworkInstalled {
   local dotnet_root=$1
   local component=$2
   local version=$3
-  compgen -G "$(GetSharedFrameworkPath "$dotnet_root" "$component")/$version*" > /dev/null 2>&1
+  local fx_root
+  fx_root="$(GetSharedFrameworkPath "$dotnet_root" "$component")"
+
+  # Only a major.minor channel (e.g. 6.0) should match any patch via a glob. An
+  # exact version must match an exact folder so that, for example, 8.0.1 does not
+  # spuriously match an installed 8.0.10.
+  if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    compgen -G "$fx_root/$version*" > /dev/null 2>&1
+  else
+    [[ -d "$fx_root/$version" ]]
+  fi
 }
 
 # Installs additional shared frameworks for testing purposes.
@@ -262,7 +272,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
   local dotnetSdkVersion=$_ReadGlobalVersion
   local dotnetRoot=$DOTNET_INSTALL_DIR
   local versionPath="$dotnetRoot/.version"
-  local majorVersion="${dotnetSdkVersion:0:1}"
+  local majorVersion="${dotnetSdkVersion%%.*}"
   local aspnetRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" aspnetcore)/$majorVersion.*"
   local coreRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" dotnet)/$majorVersion.*"
   local wdRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" windowsdesktop)/$majorVersion.*"
