@@ -303,14 +303,9 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
-        bool isGzip = archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
+        bool isGzip = IsGzipArchive(archivePath);
 
-        // Hold a single read handle on the archive for the entire extraction. FileShare.Read
-        // keeps the file locked against deletion on Windows, and on Unix an open handle keeps the
-        // underlying data readable even if the path is unlinked. Either way the scratch directory
-        // cannot be reaped out from under us (e.g. by CI temp cleanup) in the window between the
-        // entry-count pass and the extraction pass. Both passes seek this shared stream back to the
-        // start and wrap it in a fresh, non-owning GZipStream/TarReader so the handle stays open.
+        // Hold a read handle on the archive throughout the entire extraction to prevent garbage collectors reaping the archive.
         using var archiveStream = new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         long totalEntries = CountTarEntries(archiveStream, isGzip);
@@ -321,10 +316,13 @@ internal class DotnetArchiveExtractor : IDisposable
     }
 
     /// <summary>
-    /// Wraps an already-open tar archive stream for reading, layering in gzip decompression when
-    /// needed. The returned reader leaves <paramref name="archiveStream"/> open so a single file
-    /// handle can be reused across multiple passes; callers dispose the returned stream only when
-    /// it is a gzip wrapper (never the shared archive stream).
+    /// Determines whether the archive at the given path is gzip-compressed based on its file extension.
+    /// </summary>
+    private static bool IsGzipArchive(string archivePath)
+        => archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Wraps an already-open tar archive stream for reading, layering in gzip decompression when needed.
     /// </summary>
     private static Stream OpenTarReadStream(Stream archiveStream, bool isGzip)
         => isGzip ? new GZipStream(archiveStream, CompressionMode.Decompress, leaveOpen: true) : archiveStream;
@@ -358,7 +356,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     internal static void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
-        bool isGzip = tarPath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
+        bool isGzip = IsGzipArchive(tarPath);
         using var archiveStream = new FileStream(tarPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         ExtractTarContents(archiveStream, isGzip, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
     }
