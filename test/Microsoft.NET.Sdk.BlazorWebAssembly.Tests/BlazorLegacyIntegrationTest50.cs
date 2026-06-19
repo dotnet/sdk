@@ -50,7 +50,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [TestMethod]
         [CoreMSBuildOnly]
-        [PlatformSpecific(skipPlatforms: TestPlatforms.OSX, skipReason: "https://github.com/dotnet/sdk/issues/49665")]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/49665
         public void Publish50Hosted_Works()
         {
             // Arrange
