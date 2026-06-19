@@ -491,8 +491,9 @@ public class DotnetArchiveExtractorTests
         using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
 
         extractor.Prepare();
-        Directory.CreateDirectory(mockDownloader.DownloadCalls[0].DestinationPath.Replace(".gz", "", StringComparison.Ordinal));
-
+        var downloadedPath = mockDownloader.DownloadCalls[0].DestinationPath;
+        var decompressedTarPath = Path.Combine(Path.GetDirectoryName(downloadedPath)!, Path.GetFileNameWithoutExtension(downloadedPath));
+        Directory.CreateDirectory(decompressedTarPath);
         extractor.Commit();
 
         var runtimeFile = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.0", "System.Runtime.dll");
