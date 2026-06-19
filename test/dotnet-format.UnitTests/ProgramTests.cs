@@ -59,7 +59,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Assert
             Assert.IsEmpty(result.Errors);
             Assert.IsEmpty(result.UnmatchedTokens);
-            Assert.IsEmpty(result.UnmatchedTokens);
             result.GetValue(FormatCommandCommon.NoRestoreOption);
             var includeValues = result.GetValue(FormatCommandCommon.IncludeOption).ToArray();
             Assert.HasCount(2, includeValues);
