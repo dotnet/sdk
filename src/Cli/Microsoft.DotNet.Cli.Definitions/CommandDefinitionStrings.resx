@@ -454,6 +454,10 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdListTestsDescription" xml:space="preserve">
     <value>List the discovered tests instead of running the tests.</value>
   </data>
+  <data name="CmdMTPListTestsDescription" xml:space="preserve">
+    <value>List the discovered tests instead of running the tests. An optional output format (text or json) may be provided.</value>
+    <comment>The values 'text' and 'json' inside parentheses are option arguments and must not be translated.</comment>
+  </data>
   <data name="CmdLockedModeOptionDescription" xml:space="preserve">
     <value>Don't allow updating project lock file.</value>
   </data>
