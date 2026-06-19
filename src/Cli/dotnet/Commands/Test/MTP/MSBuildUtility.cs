@@ -102,6 +102,7 @@ internal static class MSBuildUtility
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
+        AddNonFormatListTestsArgument(parseResult, otherArgs);
 
         // Terminal logger arguments (e.g. --tl:off, -terminalLogger:auto, -tlp:default=true)
         // should be forwarded to MSBuild during the build phase rather than being passed to
@@ -168,6 +169,73 @@ internal static class MSBuildUtility
             otherArgs,
             msbuildArgs);
     }
+
+    internal static string? GetListTestsArgument(ParseResult parseResult)
+    {
+        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+        var value = parseResult.GetValue(definition.ListTestsOption);
+
+        return IsListTestsFormat(value) ? value : null;
+    }
+
+    private static void AddNonFormatListTestsArgument(ParseResult parseResult, List<string> otherArgs)
+    {
+        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+        var value = parseResult.GetValue(definition.ListTestsOption);
+        if (value is null || IsListTestsFormat(value))
+        {
+            return;
+        }
+
+        // System.CommandLine consumes the token after a ZeroOrOne option before validation.
+        // Put non-format tokens back so project paths and test application arguments keep their previous meaning.
+        otherArgs.Insert(GetOriginalUnmatchedTokenIndex(parseResult, otherArgs, value), value);
+    }
+
+    private static int GetOriginalUnmatchedTokenIndex(ParseResult parseResult, IReadOnlyList<string> otherArgs, string value)
+    {
+        int consumedTokenIndex = GetListTestsConsumedTokenIndex(parseResult, value);
+        if (consumedTokenIndex < 0)
+        {
+            return 0;
+        }
+
+        int unmatchedTokenIndex = 0;
+        for (int tokenIndex = 0; tokenIndex < consumedTokenIndex && unmatchedTokenIndex < otherArgs.Count; tokenIndex++)
+        {
+            if (parseResult.Tokens[tokenIndex].Value == otherArgs[unmatchedTokenIndex])
+            {
+                unmatchedTokenIndex++;
+            }
+        }
+
+        return unmatchedTokenIndex;
+    }
+
+    private static int GetListTestsConsumedTokenIndex(ParseResult parseResult, string value)
+    {
+        for (int i = 0; i < parseResult.Tokens.Count; i++)
+        {
+            var tokenValue = parseResult.Tokens[i].Value;
+            if (tokenValue == TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName &&
+                i + 1 < parseResult.Tokens.Count &&
+                parseResult.Tokens[i + 1].Value == value)
+            {
+                return i + 1;
+            }
+
+            if (tokenValue.StartsWith($"{TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}=", StringComparison.Ordinal))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static bool IsListTestsFormat(string? value)
+        => value is TestCommandDefinition.MicrosoftTestingPlatform.ListTestsTextArgument or
+                    TestCommandDefinition.MicrosoftTestingPlatform.ListTestsJsonArgument;
 
     private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(List<string> otherArgs)
     {

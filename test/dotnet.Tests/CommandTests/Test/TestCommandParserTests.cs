@@ -90,6 +90,34 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
         }
 
+        [Theory]
+        [InlineData("text")]
+        [InlineData("json")]
+        public void MTPListTestsAcceptsFormatArgument(string format)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", format]);
+
+            MSBuildUtility.GetListTestsArgument(parseResult).Should().Be(format);
+            MSBuildUtility.GetBuildOptions(parseResult).TestApplicationArguments.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void MTPListTestsKeepsProjectPathPositional()
+        {
+            using var temp = new TempDirectory();
+            string projectPath = Path.Combine(temp.Path, "SomeProject.csproj");
+            File.WriteAllText(projectPath, "<Project />");
+
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", projectPath]);
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            MSBuildUtility.GetListTestsArgument(parseResult).Should().BeNull();
+            buildOptions.PathOptions.ProjectOrSolutionPath.Should().Be(projectPath);
+            buildOptions.TestApplicationArguments.Should().BeEmpty();
+        }
+
         [Fact]
         public void DllDetectionShouldExcludeRunArgumentsAndGlobalProperties()
         {

@@ -121,7 +121,7 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CmdMTPListTestsDescription,
             HelpName = $"{ListTestsTextArgument}|{ListTestsJsonArgument}",
             Arity = ArgumentArity.ZeroOrOne
-        }.AcceptOnlyFromAmong(ListTestsTextArgument, ListTestsJsonArgument);
+        };
 
         public readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
         {

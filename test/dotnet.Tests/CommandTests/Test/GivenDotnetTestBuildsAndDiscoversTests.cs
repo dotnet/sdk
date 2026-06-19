@@ -208,20 +208,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("JSON")]
         [InlineData("TEXT")]
         [Theory]
-        public void DiscoverTestProjectRejectsInvalidListTestsArgument(string listTestsArgument)
+        public void DiscoverTestProjectForwardsUnrecognizedListTestsArgument(string listTestsArgument)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppPrintingCommandLineArguments", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("--list-tests", listTestsArgument);
 
-            result.ExitCode.Should().NotBe(ExitCodes.Success);
-            if (!SdkTestContext.IsLocalized())
-            {
-                result.StdErr.Should().Contain($"Argument '{listTestsArgument}' not recognized");
-            }
+            result.StdOut.Should().Contain($"""
+                 args[0]=--list-tests
+                  args[1]={listTestsArgument}
+                  args[2]=--server
+                  args[3]=dotnettestcli
+                  args[4]=--dotnet-test-pipe
+                """);
         }
     }
 }
