@@ -2377,9 +2377,9 @@ internal sealed class FSharpHotReloadService
         }
 
         private static ImmutableArray<string> EnsureHotReloadFlag(ImmutableArray<string> args)
-            => args.Any(static arg => string.Equals(arg, "--enable:hotreloaddeltas", StringComparison.OrdinalIgnoreCase))
+            => args.Any(static arg => string.Equals(arg, "--test:HotReloadDeltas", StringComparison.OrdinalIgnoreCase))
                 ? args
-                : args.Add("--enable:hotreloaddeltas");
+                : args.Add("--test:HotReloadDeltas");
 
         private static bool TryGetFSharpOptionValue(object? option, out object? value)
         {

@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <!-- Issue: https://github.com/dotnet/sdk/issues/1150 -->
     <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
-    <OtherFlags>$(OtherFlags) --enable:hotreloaddeltas</OtherFlags>
+    <OtherFlags>$(OtherFlags) --test:HotReloadDeltas</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>
