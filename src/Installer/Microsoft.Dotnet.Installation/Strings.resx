@@ -141,4 +141,8 @@
     <value>An IT policy on this machine requires code-signed downloads. Installing daily or unsigned prerelease builds of {0} {1} is blocked. Choose a released version, or have an administrator clear the policy (registry value HKLM\{2}\{3} on Windows, file {4} on Linux/macOS).</value>
     <comment>{0}=component name (e.g. SDK), {1}=resolved version, {2}=Windows registry key path, {3}=Windows registry value name, {4}=Unix policy file path.</comment>
   </data>
+  <data name="NoUserInstallableArtifact" xml:space="preserve">
+    <value>.NET {0} {1} has no released artifacts for user-level installation. Choose a different version or install it at the system level.</value>
+    <comment>{0}=component name (e.g. WindowsDesktop), {1}=resolved version. Shown when a release publishes only non-installable artifacts (e.g. .exe installers) for the platform and dotnetup cannot perform a user-level install.</comment>
+  </data>
 </root>

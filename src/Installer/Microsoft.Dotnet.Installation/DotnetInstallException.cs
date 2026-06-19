@@ -117,6 +117,13 @@ public enum DotnetInstallErrorCode
 
     /// <summary>An IT-managed policy requires code-signed downloads, so the install was blocked before falling back to the blob feed where only SHA-512 verification is performed.</summary>
     UnsignedDownloadBlockedByPolicy,
+
+    /// <summary>
+    /// The release exists for the platform but publishes no archive that dotnetup can install
+    /// at the user level with only non-installable artifacts such as .exe installers.
+    /// Distinct from <see cref="NoMatchingReleaseFileForPlatform"/>
+    /// </summary>
+    NoUserInstallableArtifact,
 }
 
 /// <summary>
