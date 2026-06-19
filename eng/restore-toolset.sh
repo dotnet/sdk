@@ -65,6 +65,34 @@ function ReadVersionDetailsProperty {
   sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Version.Details.props" | head -n 1
 }
 
+# Maps a dotnetup component (aspnetcore/windowsdesktop/dotnet) to the name of
+# its shared-framework folder under <dotnet root>/shared.
+function GetSharedFrameworkName {
+  local component=$1
+  case "$component" in
+    aspnetcore) echo "Microsoft.AspNetCore.App" ;;
+    windowsdesktop) echo "Microsoft.WindowsDesktop.App" ;;
+    *) echo "Microsoft.NETCore.App" ;;
+  esac
+}
+
+# Returns the shared-framework directory for a component
+# (e.g. <dotnet root>/shared/Microsoft.AspNetCore.App).
+function GetSharedFrameworkPath {
+  local dotnet_root=$1
+  local component=$2
+  echo "$dotnet_root/shared/$(GetSharedFrameworkName "$component")"
+}
+
+# Returns success (0) if a shared framework matching $version (a major.minor
+# channel such as 6.0 or an exact version) is already present for $component.
+function IsSharedFrameworkInstalled {
+  local dotnet_root=$1
+  local component=$2
+  local version=$3
+  compgen -G "$(GetSharedFrameworkPath "$dotnet_root" "$component")/$version*" > /dev/null 2>&1
+}
+
 # Installs additional shared frameworks for testing purposes.
 function InstallDotNetSharedFrameworks {
   local arch=$1
@@ -83,14 +111,7 @@ function InstallDotNetSharedFrameworks {
       version="${spec#*@}"
     fi
 
-    local shared_framework_name="Microsoft.NETCore.App"
-    if [[ "$component" == "aspnetcore" ]]; then
-      shared_framework_name="Microsoft.AspNetCore.App"
-    elif [[ "$component" == "windowsdesktop" ]]; then
-      shared_framework_name="Microsoft.WindowsDesktop.App"
-    fi
-
-    if ! compgen -G "$dotnet_root/shared/$shared_framework_name/$version*" > /dev/null; then
+    if ! IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version"; then
       specs_to_install+=("$spec")
     fi
   done
@@ -168,9 +189,7 @@ function InstallDotNetSharedFrameworksWithInstallScript {
       install_args+=(--architecture "$arch")
     fi
 
-    # Disable errexit around the install-script call so the exit-code and filesystem checks
-    # below always run (mirrors the dotnetup invocation above). Capture $? before restoring
-    # errexit, since the restore itself runs commands that overwrite $?.
+    # Disable errexit around the install-script call so the exit-code and filesystem checks below always run.
     local restore_errexit=false
     if [[ $- == *e* ]]; then
       restore_errexit=true
@@ -182,17 +201,9 @@ function InstallDotNetSharedFrameworksWithInstallScript {
       set -e
     fi
 
-    # bash $? is never stale (unlike PowerShell's $LASTEXITCODE), so the false-failure case
-    # does not apply here. But a soft failure could still exit 0 without installing, so pair
-    # the exit code with a filesystem check that the expected shared-framework version landed
-    # to catch a false success.
-    local shared_framework_name="Microsoft.NETCore.App"
-    case "$component" in
-      aspnetcore) shared_framework_name="Microsoft.AspNetCore.App" ;;
-      windowsdesktop) shared_framework_name="Microsoft.WindowsDesktop.App" ;;
-    esac
+    # Ensure the download was actually successful to some degree.
     local framework_installed=false
-    if compgen -G "$dotnet_root/shared/$shared_framework_name/$version*" > /dev/null 2>&1; then
+    if IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version"; then
       framework_installed=true
     fi
 
@@ -252,9 +263,9 @@ function CleanOutStage0ToolsetsAndRuntimes {
   local dotnetRoot=$DOTNET_INSTALL_DIR
   local versionPath="$dotnetRoot/.version"
   local majorVersion="${dotnetSdkVersion:0:1}"
-  local aspnetRuntimePath="$dotnetRoot/shared/Microsoft.AspNetCore.App/$majorVersion.*"
-  local coreRuntimePath="$dotnetRoot/shared/Microsoft.NETCore.App/$majorVersion.*"
-  local wdRuntimePath="$dotnetRoot/shared/Microsoft.WindowsDesktop.App/$majorVersion.*"
+  local aspnetRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" aspnetcore)/$majorVersion.*"
+  local coreRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" dotnet)/$majorVersion.*"
+  local wdRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" windowsdesktop)/$majorVersion.*"
   local sdkPath="$dotnetRoot/sdk/*"
 
   if [ -f "$versionPath" ]; then

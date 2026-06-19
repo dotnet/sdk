@@ -175,6 +175,29 @@ function Get-CurrentRuntimeToolsetSpecs() {
     return $specs
 }
 
+# Maps a dotnetup component (e.g. 'aspnetcore', 'windowsdesktop' or 'dotnet')
+# to the name of its shared-framework folder under <dotnet root>\shared.
+function Get-SharedFrameworkName([string]$component) {
+    switch ($component) {
+        'aspnetcore' { return 'Microsoft.AspNetCore.App' }
+        'windowsdesktop' { return 'Microsoft.WindowsDesktop.App' }
+        default { return 'Microsoft.NETCore.App' }
+    }
+}
+
+# Returns the shared-framework directory for a component
+# (e.g. <dotnet root>\shared\Microsoft.AspNetCore.App).
+function Get-SharedFrameworkPath([string]$dotNetRoot, [string]$component) {
+    return Join-Path $dotNetRoot "shared\$(Get-SharedFrameworkName $component)"
+}
+
+# Tests whether a shared framework matching $version (a major.minor channel
+# such as 6.0 or an exact version) is already present on disk for $component.
+function Test-SharedFrameworkInstalled([string]$dotNetRoot, [string]$component, [string]$version) {
+    $fxRoot = Get-SharedFrameworkPath $dotNetRoot $component
+    return [bool](Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
+}
+
 function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$architecture = "") {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
 
@@ -184,9 +207,7 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$archite
     # matching patch (e.g. 6.0.36) exists.
     $runtimeSpecsToInstall = @($runtimeSpecs | Where-Object {
             $component, $version = if ($_ -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $_ }
-            $sharedFrameworkName = if ($component -eq 'aspnetcore') { 'Microsoft.AspNetCore.App' } elseif ($component -eq 'windowsdesktop') { 'Microsoft.WindowsDesktop.App' } else { 'Microsoft.NETCore.App' }
-            $fxRoot = Join-Path $dotnetRoot "shared\$sharedFrameworkName"
-            -not (Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
+            -not (Test-SharedFrameworkInstalled $dotnetRoot $component $version)
         })
     if ($runtimeSpecsToInstall.Count -eq 0) {
         return
@@ -244,17 +265,9 @@ function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs,
 
         $global:LASTEXITCODE = 0
         & $installScript @installArgs
-
         $installScriptExitCode = $LASTEXITCODE
 
-        # The install script is a PowerShell script, so $LASTEXITCODE is only updated when it
-        # invokes a native process or calls `exit`. A successful run that returns normally can
-        # leave a stale exit code, and a soft failure can leave 0. We reset $LASTEXITCODE above to
-        # neutralize a stale non-zero (false failure); pair that with a filesystem check that the
-        # expected shared-framework version actually landed to catch a false success (exit 0 but
-        # nothing installed).
-        $sharedFrameworkName = if ($component -eq 'aspnetcore') { 'Microsoft.AspNetCore.App' } elseif ($component -eq 'windowsdesktop') { 'Microsoft.WindowsDesktop.App' } else { 'Microsoft.NETCore.App' }
-        $frameworkInstalled = Test-Path -PathType Container (Join-Path $dotNetRoot "shared\$sharedFrameworkName\$version*")
+        $frameworkInstalled = Test-SharedFrameworkInstalled $dotNetRoot $component $version
 
         if ($installScriptExitCode -ne 0 -or -not $frameworkInstalled) {
             $architectureMessage = if ([string]::IsNullOrEmpty($architecture)) { "" } else { " for architecture '$architecture'" }
@@ -269,9 +282,9 @@ function CleanOutStage0ToolsetsAndRuntimes {
     $dotnetSdkVersion = $GlobalJson.tools.dotnet
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
     $versionPath = Join-Path $dotnetRoot '.version'
-    $aspnetRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared' , 'Microsoft.AspNetCore.App')
-    $coreRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared' , 'Microsoft.NETCore.App')
-    $wdRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared', 'Microsoft.WindowsDesktop.App')
+    $aspnetRuntimePath = Get-SharedFrameworkPath $dotnetRoot 'aspnetcore'
+    $coreRuntimePath = Get-SharedFrameworkPath $dotnetRoot 'dotnet'
+    $wdRuntimePath = Get-SharedFrameworkPath $dotnetRoot 'windowsdesktop'
     $sdkPath = Join-Path $dotnetRoot 'sdk'
     $majorVersion = $dotnetSdkVersion.Substring(0, 1)
 
