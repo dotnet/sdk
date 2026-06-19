@@ -562,7 +562,7 @@ namespace ManifestReaderTests
         [DataRow("utf-16BE")] // UTF-16 BE with BOM
         public void ItUsesWorkloadSetFromGlobalJsonWithUtf16Encoding(string encodingName)
         {
-            Initialize("8.0.200");
+            Initialize("8.0.200", identifier: encodingName);
 
             string? globalJsonPath = Path.Combine(_testDirectory, "global.json");
             var encoding = System.Text.Encoding.GetEncoding(encodingName);
