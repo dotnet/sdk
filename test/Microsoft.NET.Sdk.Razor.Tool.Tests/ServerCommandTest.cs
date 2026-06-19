@@ -11,6 +11,10 @@ using Moq;
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
     [TestClass]
+    // GetPidFilePath_UsesEnvironmentVariablePathIfSpecified mutates the process-wide
+    // DOTNET_BUILD_PIDFILE_DIRECTORY environment variable that GetPidFilePath_ReturnsCorrectDefaultPath
+    // reads, so the methods of this class must not run in parallel with each other.
+    [DoNotParallelize]
     public class ServerCommandTest
     {
         [TestMethod]
