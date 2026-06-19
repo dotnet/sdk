@@ -38,14 +38,17 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
 
     public override bool Execute()
     {
-        if (!string.IsNullOrEmpty(ManifestPath))
+        if (string.IsNullOrWhiteSpace(ManifestPath))
         {
-            AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(ManifestPath);
-            if (File.Exists(manifestPath) && File.GetLastWriteTimeUtc(manifestPath) > File.GetLastWriteTimeUtc(TaskEnvironment.GetAbsolutePath(CacheFilePath)))
-            {
-                Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
-                return true;
-            }
+            Log.LogError("The 'ManifestPath' parameter is required and cannot be empty or whitespace.");
+            return false;
+        }
+
+        AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(ManifestPath);
+        if (File.Exists(manifestPath) && File.GetLastWriteTimeUtc(manifestPath) > File.GetLastWriteTimeUtc(TaskEnvironment.GetAbsolutePath(CacheFilePath)))
+        {
+            Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
+            return true;
         }
 
         try
@@ -60,7 +63,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
                 StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment),
                 DiscoveryPatterns.Select(StaticWebAssetsDiscoveryPattern.FromTaskItem));
 
-            PersistManifest(manifest, TaskEnvironment.GetAbsolutePath(ManifestPath));
+            PersistManifest(manifest, manifestPath);
         }
         catch (Exception ex)
         {
@@ -101,7 +104,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
             return 0;
         });
 
-        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath, TaskEnvironment);
+        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
         return manifest;
     }
 
@@ -176,8 +179,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
 
     private static StaticWebAssetsDevelopmentManifest CreateManifest(
         SegmentsAssetPair[] assetsWithPathSegments,
-        (string[], StaticWebAssetsDiscoveryPattern[] values)[] discoveryPatternsByBasePath,
-        TaskEnvironment env)
+        (string[], StaticWebAssetsDiscoveryPattern[] values)[] discoveryPatternsByBasePath)
     {
         var contentRootIndex = new Dictionary<string, int>();
         var root = new StaticWebAssetNode() { };
@@ -196,7 +198,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
                     }
                     var matchingAsset = new StaticWebAssetMatch
                     {
-                        SubPath = ResolveSubPath(asset, env),
+                        SubPath = ResolveSubPath(asset),
                         ContentRootIndex = index
                     };
                     currentNode.Children ??= new Dictionary<string, StaticWebAssetNode>(StringComparer.Ordinal);
@@ -315,9 +317,9 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
             Root = root
         };
 
-        static string ResolveSubPath(StaticWebAsset asset, TaskEnvironment env)
+        static string ResolveSubPath(StaticWebAsset asset)
         {
-            if (!string.IsNullOrEmpty(asset.Identity) && File.Exists(env.GetAbsolutePath(asset.Identity)))
+            if (File.Exists(asset.Identity))
             {
                 if (asset.Identity.StartsWith(asset.ContentRoot, OSPath.PathComparison))
                 {
