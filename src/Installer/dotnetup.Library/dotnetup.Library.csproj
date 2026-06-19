@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <!-- This project contains the code for the dotnetup application.
+         It's built as a library because we want the same code to be referenced by unit
+         tests, as well as compiled into the NativeAOT executable.
+         
+         The best way to do this ended up being to keep all the code in a library project
+         which would be referenced by the tests and also by a project that compiles into
+         a NativeAOT executable and only has an entry point shim to call the library code. -->
+
+    <OutputType>Library</OutputType>
+    <IsAotCompatible>true</IsAotCompatible>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ControlFlowGuard>Guard</ControlFlowGuard>
+
+    <RootNamespace>Microsoft.DotNet.Tools.Bootstrapper</RootNamespace>
+
+    <!-- Strong naming not needed on .NET Core -->
+    <NoWarn>$(NoWarn);CS8002;CS1591</NoWarn>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnetup" />
+    <InternalsVisibleTo Include="dotnetup.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\TelemetryDiskLogger.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DevDeviceIDGetter.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DockerContainerDetectorForTelemetry.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\IDockerContainerDetector.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\EnvironmentDetectionRule.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.CoreUtils\EnvironmentVariableParser.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ILLMEnvironmentDetector.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Env.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\EnvironmentProvider.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Extensions\CollectionsExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\IEnvironmentProvider.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\AutomaticEncodingRestorer.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\UILanguageOverride.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Spectre.Console" />
+    <!-- Telemetry packages (AOT compatible) — mirrors SDK's dotnet.csproj -->
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.Dotnet.Installation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Tools.Bootstrapper" />
+  </ItemGroup>
+
+</Project>

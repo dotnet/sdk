@@ -506,6 +506,47 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(publishOutputDirectory, "blazorhosted");
     }
 
+    [Fact]
+    public void Build_DefaultDocumentAndSpaFallback_CreatesAdditionalEndpoints()
+    {
+        ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp")
+            .WithProjectChanges(document =>
+            {
+                document.Root.AddFirst(
+                    new XElement("PropertyGroup",
+                        new XElement("StaticWebAssetDefaultDocumentEnabled", "true"),
+                        new XElement("StaticWebAssetSpaFallbackEnabled", "true")));
+            });
+        var root = ProjectDirectory.TestRoot;
+
+        var dir = Directory.CreateDirectory(Path.Combine(root, "wwwroot"));
+        File.WriteAllText(Path.Combine(dir.FullName, "index.html"), "<html><body>Hello</body></html>");
+
+        var build = CreateBuildCommand(ProjectDirectory);
+        ExecuteCommand(build).Should().Pass();
+
+        var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+
+        var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+        new FileInfo(path).Should().Exist();
+        var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+
+        var endpoints = manifest.Endpoints;
+
+        // There should be endpoints for index.html (original + fingerprinted + default document + spa fallback)
+        var indexHtmlEndpoints = endpoints.Where(ep => ep.AssetFile.Contains("index.html") && !ep.AssetFile.Contains(".gz") && !ep.AssetFile.Contains(".br"));
+
+        // Original index.html endpoint
+        indexHtmlEndpoints.Should().Contain(e => e.Route == "index.html");
+
+        // SPA fallback endpoint with catch-all route and max int order
+        var fallback = endpoints.FirstOrDefault(e => e.Route == "{**fallback:nonfile}");
+        fallback.Should().NotBeNull();
+        fallback.Order.Should().Be("2147483647");
+
+        AssertManifest(manifest, LoadBuildManifest());
+    }
+
     // Makes several assertions about the endpoints we defined.
     // All assets have at least one endpoint.
     // No endpoint points to a non-existent asset

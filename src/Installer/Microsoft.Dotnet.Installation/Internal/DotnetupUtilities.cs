@@ -66,18 +66,6 @@ internal static class DotnetupUtilities
         return $"{os}-{arch}";
     }
 
-    public static string GetArchiveFileExtensionForPlatform()
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return ".zip"; // Windows typically uses zip archives
-        }
-        else
-        {
-            return ".tar.gz"; // Unix-like systems use tar.gz
-        }
-    }
-
     /// <summary>
     /// Attempts to find running dotnet processes and returns a formatted string with their PIDs.
     /// Returns an empty string if no processes are found or an error occurs.

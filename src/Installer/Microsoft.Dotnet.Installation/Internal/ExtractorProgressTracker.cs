@@ -13,12 +13,14 @@ internal sealed class ExtractorProgressTracker
     private readonly IProgressReporter _reporter;
     private readonly InstallComponent _component;
     private readonly string _version;
+    private readonly int _versionDisplayWidth;
 
-    public ExtractorProgressTracker(IProgressReporter reporter, InstallComponent component, string version)
+    public ExtractorProgressTracker(IProgressReporter reporter, InstallComponent component, string version, int versionDisplayWidth = 0)
     {
         _reporter = reporter;
         _component = component;
         _version = version;
+        _versionDisplayWidth = versionDisplayWidth > 0 ? versionDisplayWidth : version.Length;
     }
 
     /// <summary>
@@ -27,7 +29,7 @@ internal sealed class ExtractorProgressTracker
     /// </summary>
     public (IProgress<DownloadProgress> Reporter, IProgressTask Task) BeginDownload()
     {
-        string description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionDownloading, _component, _version);
+        string description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionDownloading, _component, _version, _versionDisplayWidth);
         var task = _reporter.AddTask(description, 100);
         var reporter = new DownloadProgressReporter(task, description);
         return (reporter, task);
@@ -40,7 +42,7 @@ internal sealed class ExtractorProgressTracker
     {
         downloadTask.Value = 100;
         long archiveBytes = new FileInfo(archivePath).Length;
-        string downloadedDesc = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionDownloaded, _component, _version);
+        string downloadedDesc = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionDownloaded, _component, _version, _versionDisplayWidth);
         downloadTask.Description = $"{downloadedDesc} ({ProgressFormatting.FormatMB(archiveBytes)} / {ProgressFormatting.FormatMB(archiveBytes)})";
     }
 
@@ -50,7 +52,7 @@ internal sealed class ExtractorProgressTracker
     /// </summary>
     public IProgressTask BeginExtraction()
     {
-        string description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionInstalling, _component, _version);
+        string description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionInstalling, _component, _version, _versionDisplayWidth);
         // Pad to match the width of "Downloading" rows (which have an MB suffix)
         // so all progress rows stay aligned within the shared Spectre column.
         string paddedDescription = description + new string(' ', ProgressFormatting.DownloadSuffixWidth);
@@ -62,6 +64,6 @@ internal sealed class ExtractorProgressTracker
     /// </summary>
     public void CompleteExtraction(IProgressTask extractionTask)
     {
-        extractionTask.Description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionInstalled, _component, _version);
+        extractionTask.Description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionInstalled, _component, _version, _versionDisplayWidth);
     }
 }

@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <TestRunnerName>XUnitV3</TestRunnerName>
+    <OutputType>Exe</OutputType>
     <!-- Set this to true for test project only because test assets contains .editorconfig file -->
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
@@ -17,11 +19,6 @@
     <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
     <Using Include="Xunit" />
-    <Using Include="Xunit.Abstractions" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Program.cs" />
   </ItemGroup>
 
   <Import Project="..\Directory.Build.targets" />

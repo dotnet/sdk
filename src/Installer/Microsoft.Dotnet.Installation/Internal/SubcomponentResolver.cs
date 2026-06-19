@@ -137,7 +137,7 @@ with(StringComparer.OrdinalIgnoreCase),
             normalized = normalized.Substring(2);
         }
 
-        bool isDirectoryEntry = normalized.EndsWith('/');
+        bool isDirectoryEntry = normalized.EndsWith('/', StringComparison.Ordinal);
         return (normalized.TrimEnd('/'), isDirectoryEntry);
     }
 

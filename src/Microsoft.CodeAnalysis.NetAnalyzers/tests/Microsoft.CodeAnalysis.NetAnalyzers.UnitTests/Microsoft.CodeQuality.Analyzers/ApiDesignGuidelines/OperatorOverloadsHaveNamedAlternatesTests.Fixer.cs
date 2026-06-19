@@ -210,7 +210,7 @@ public class C
     public static C Add(C left, C right) { return new C(); }
 }
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -238,7 +238,7 @@ public class C
     public bool IsTrue => true;
 }
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -432,7 +432,7 @@ Public Class C
     End Function
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -476,7 +476,7 @@ Public Class C
     End Property
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

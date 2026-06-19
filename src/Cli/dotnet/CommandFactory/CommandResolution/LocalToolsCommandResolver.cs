@@ -1,30 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 internal class LocalToolsCommandResolver(
-    ToolManifestFinder toolManifest = null,
-    ILocalToolsResolverCache localToolsResolverCache = null,
-    IFileSystem fileSystem = null,
-    string currentWorkingDirectory = null) : ICommandResolver
+    ToolManifestFinder? toolManifest = null,
+    ILocalToolsResolverCache? localToolsResolverCache = null,
+    IFileSystem? fileSystem = null,
+    string? currentWorkingDirectory = null) : ICommandResolver
 {
     private readonly ToolManifestFinder _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     private readonly ILocalToolsResolverCache _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
     private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
     private const string LeadingDotnetPrefix = "dotnet-";
 
-    public CommandSpec ResolveStrict(CommandResolverArguments arguments, bool allowRollForward = false)
+    public CommandSpec? ResolveStrict(CommandResolverArguments arguments, bool allowRollForward = false)
     {
         if (arguments == null || string.IsNullOrWhiteSpace(arguments.CommandName))
         {
@@ -42,7 +39,7 @@ internal class LocalToolsCommandResolver(
         return resolveResult;
     }
 
-    public CommandSpec Resolve(CommandResolverArguments arguments)
+    public CommandSpec? Resolve(CommandResolverArguments arguments)
     {
         if (arguments == null || string.IsNullOrWhiteSpace(arguments.CommandName))
         {
@@ -69,7 +66,7 @@ internal class LocalToolsCommandResolver(
         return GetPackageCommandSpecUsingMuxer(arguments, new ToolCommandName(arguments.CommandName));
     }
 
-    private CommandSpec GetPackageCommandSpecUsingMuxer(CommandResolverArguments arguments,
+    private CommandSpec? GetPackageCommandSpecUsingMuxer(CommandResolverArguments arguments,
         ToolCommandName toolCommandName, bool allowRollForward = false)
     {
         if (!_toolManifest.TryFind(toolCommandName, out var toolManifestPackage))
@@ -93,7 +90,7 @@ internal class LocalToolsCommandResolver(
             }
 
             return ToolCommandSpecCreator.CreateToolCommandSpec(toolCommand.Name.Value, toolCommand.Executable.Value, toolCommand.Runner,
-                toolManifestPackage.RollForward || allowRollForward, arguments.CommandArguments);
+                toolManifestPackage.RollForward || allowRollForward, arguments.CommandArguments ?? []);
         }
         else
         {

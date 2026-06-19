@@ -268,8 +268,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.Satisfy<string>(SupportAllOfTheseRuntimes([.. expectedRids, "any"]));
         }
 
-        [Fact]
-        public void InstallAndRunToolFromAnyRid()
+        [Theory]
+        [InlineData("exec")]
+        [InlineData("dnx")]
+        public void InstallAndRunToolFromAnyRid(string command)
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
             {
@@ -284,7 +286,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath)
+            string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
+            var testCommand = command == "dnx"
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
+
+            testCommand
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()
@@ -292,8 +299,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
         }
 
-        [Fact]
-        public void InstallAndRunToolFromAnyRidWhenOtherRidsArePresentButIncompatible()
+        [Theory]
+        [InlineData("exec")]
+        [InlineData("dnx")]
+        public void InstallAndRunToolFromAnyRidWhenOtherRidsArePresentButIncompatible(string command)
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
             {
@@ -312,7 +321,61 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath)
+            string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
+            var testCommand = command == "dnx"
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
+
+            testCommand
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello Tool!");
+        }
+
+        [Theory]
+        [InlineData("exec")]
+        [InlineData("dnx")]
+        public void ToolExecSucceedsWhenToolIsInLocalManifestButNotRestored(string command)
+        {
+            // Regression test: 'dotnet tool exec' and 'dnx' should succeed even when the tool is
+            // listed in dotnet-tools.json but 'dotnet tool restore' has not been run.
+            var toolSettings = new TestToolBuilder.TestToolSettings()
+            {
+                IncludeAnyRid = true // will make one package with the "any" RID (cross-platform)
+            };
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+
+            // Create a dotnet-tools.json manifest that references the tool (simulating a repo that has the tool in its manifest)
+            var configDir = Path.Combine(testDirectory.Path, ".config");
+            Directory.CreateDirectory(configDir);
+            string manifestContent = $$"""
+                {
+                  "version": 1,
+                  "isRoot": true,
+                  "tools": {
+                    "{{toolSettings.ToolPackageId.ToLowerInvariant()}}": {
+                      "version": "{{toolSettings.ToolPackageVersion}}",
+                      "commands": [
+                        "{{toolSettings.ToolCommandName.ToLowerInvariant()}}"
+                      ],
+                      "rollForward": false
+                    }
+                  }
+                }
+                """;
+            File.WriteAllText(Path.Combine(configDir, "dotnet-tools.json"), manifestContent);
+
+            // Run 'dotnet tool exec' WITHOUT having run 'dotnet tool restore' first
+            string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
+            var testCommand = command == "dnx"
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
+
+            testCommand
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()

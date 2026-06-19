@@ -23,7 +23,8 @@ public static class UrlSanitizer
         "builds.dotnet.microsoft.com",
         "ci.dot.net",
         "dotnetcli.blob.core.windows.net",
-        "dotnetcli.azureedge.net"  // Legacy CDN, may still be referenced
+        "dotnetcli.azureedge.net",   // Legacy CDN, may still be referenced
+        "dotnetbuilds.azureedge.net" // Daily-build CDN aka.ms can redirect to
     ];
 
     /// <summary>

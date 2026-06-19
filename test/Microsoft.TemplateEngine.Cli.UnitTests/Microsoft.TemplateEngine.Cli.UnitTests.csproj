@@ -9,21 +9,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="TemplateInstallTests/TestTemplates/**/*" CopyToOutputDirectory="Always" />
+    <None Include="TemplateInstallTests/TestTemplates/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ParserTests/Approvals/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FakeItEasy" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="Verify.XUnit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
-    <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
-    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
-    <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Cli\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" Aliases="global,TemplateEngineCli" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>

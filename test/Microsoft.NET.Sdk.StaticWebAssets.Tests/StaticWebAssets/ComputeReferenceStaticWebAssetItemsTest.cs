@@ -336,6 +336,101 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
+        [Fact]
+        public void AppliesFrameworkPatternToDiscoveredAssets()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = buildEngine.Object,
+                Source = "MyPackage",
+                Assets = new[]
+                {
+                    CreateCandidate(Path.Combine("wwwroot", "framework.js"), "MyPackage", "Discovered", "framework.js", "All", "All"),
+                    CreateCandidate(Path.Combine("wwwroot", "app.css"), "MyPackage", "Discovered", "app.css", "All", "All")
+                },
+                Patterns = new ITaskItem[] { },
+                AssetKind = "Build",
+                ProjectMode = "Default",
+                FrameworkPattern = "**/*.js"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(true);
+            task.StaticWebAssets.Should().HaveCount(2);
+            task.StaticWebAssets[0].GetMetadata("SourceType").Should().Be("Framework");
+            task.StaticWebAssets[1].GetMetadata("SourceType").Should().Be("Project");
+        }
+
+        [Fact]
+        public void FrameworkPatternDoesNotAffectNonDiscoveredAssets()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = buildEngine.Object,
+                Source = "MyPackage",
+                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Project", "candidate.js", "All", "All") },
+                Patterns = new ITaskItem[] { },
+                AssetKind = "Build",
+                ProjectMode = "Default",
+                UpdateSourceType = false,
+                FrameworkPattern = "**/*.js"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(true);
+            task.StaticWebAssets.Should().HaveCount(1);
+            task.StaticWebAssets[0].GetMetadata("SourceType").Should().Be("Project");
+        }
+
+        [Fact]
+        public void PreservesAssetGroupsOnFrameworkAssets()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var asset = CreateCandidate(Path.Combine("wwwroot", "framework.js"), "MyPackage", "Framework", "framework.js", "All", "All");
+            asset.SetMetadata("AssetGroups", "MyGroup");
+
+            var task = new ComputeReferenceStaticWebAssetItems
+            {
+                BuildEngine = buildEngine.Object,
+                Source = "MyPackage",
+                Assets = new[] { asset },
+                Patterns = new ITaskItem[] { },
+                AssetKind = "Build",
+                ProjectMode = "Default",
+                UpdateSourceType = true
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert — groups are preserved here so FilterByGroup can evaluate them;
+            // clearing happens later during MaterializeFrameworkAsset.
+            result.Should().Be(true);
+            task.StaticWebAssets.Should().HaveCount(1);
+            task.StaticWebAssets[0].GetMetadata("SourceType").Should().Be("Framework");
+            task.StaticWebAssets[0].GetMetadata("AssetGroups").Should().Be("MyGroup");
+        }
+
         private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,

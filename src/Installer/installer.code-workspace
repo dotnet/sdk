@@ -27,7 +27,7 @@
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build-and-link",
-                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/current/dotnetup.dll",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug/current/dotnetup.Library.dll",
                 "args": "${input:dotnetupArgs}",
                 "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
@@ -55,6 +55,25 @@
                 "stopAtEntry": false,
                 "env": {
                     "DOTNETUP_TEST_DEBUG": "0"
+                }
+            },
+            {
+                "name": "Run style check",
+                "type": "coreclr",
+                "request": "launch",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "build",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "-warnaserror",
+                    "/p:EnforceCodeStyleInBuild=true",
+                    "/p:CodeAnalysisTreatWarningsAsErrors=true"
+                ],
+                "cwd": "${workspaceFolder:sdk}",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
                 }
             },
             {
@@ -109,7 +128,7 @@
                 "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "build",
-                    "dotnetup/dotnetup.csproj",
+                    "dotnetup.Library/dotnetup.Library.csproj",
                     "/property:GenerateFullPaths=true",
                     "/consoleloggerparameters:NoSummary",
                     "/p:ContinuousIntegrationBuild=false",
@@ -142,7 +161,7 @@
                     "-File",
                     "${workspaceFolder:installer}/hooks/link-current-tfm.ps1",
                     "-BinDir",
-                    "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                    "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug"
                 ],
                 "windows": {
                     "command": "pwsh",
@@ -151,21 +170,21 @@
                         "-File",
                         "${workspaceFolder:installer}/hooks/link-current-tfm.ps1",
                         "-BinDir",
-                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug"
                     ]
                 },
                 "linux": {
                     "command": "bash",
                     "args": [
                         "${workspaceFolder:installer}/hooks/link-current-tfm.sh",
-                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug"
                     ]
                 },
                 "osx": {
                     "command": "bash",
                     "args": [
                         "${workspaceFolder:installer}/hooks/link-current-tfm.sh",
-                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug"
                     ]
                 },
                 "presentation": {
@@ -177,7 +196,10 @@
             },
             {
                 "label": "build-and-link",
-                "dependsOn": ["build", "link-current-tfm"],
+                "dependsOn": [
+                    "build",
+                    "link-current-tfm"
+                ],
                 "dependsOrder": "sequence",
                 "problemMatcher": []
             },
@@ -194,6 +216,28 @@
                 ],
                 "options": {
                     "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile"
+            },
+            {
+                "label": "dotnetup-style-check",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "build",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "-warnaserror",
+                    "/p:EnforceCodeStyleInBuild=true",
+                    "/p:CodeAnalysisTreatWarningsAsErrors=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:sdk}"
                 },
                 "presentation": {
                     "reveal": "always",

@@ -13,8 +13,8 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly ReleaseVersion _resolvedVersion;
     private readonly IProgressTarget? _progressTarget;
     private readonly IArchiveDownloader _archiveDownloader;
-    private readonly bool _shouldDisposeDownloader;
     private readonly bool _ownsProgressReporter = true;
+    private readonly int _versionDisplayWidth;
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -32,25 +32,26 @@ internal class DotnetArchiveExtractor : IDisposable
         IProgressTarget progressTarget,
         IArchiveDownloader? archiveDownloader = null,
         string? cacheDirectory = null)
-        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory, versionDisplayWidth: resolvedVersion.ToString().Length)
     {
         _progressTarget = progressTarget;
     }
 
     /// <summary>
-    /// Constructor that accepts a shared IProgressReporter, allowing multiple extractors
-    /// to display progress tasks within the same progress widget.
+    /// Constructor for batched installs. The supplied <see cref="InstallBatchContext"/> carries
+    /// the shared progress reporter (so multiple extractors render tasks in the same widget) and
+    /// the batch's version-display width (so progress rows align across differing version lengths).
     /// </summary>
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
-        IProgressReporter sharedReporter,
+        InstallBatchContext batchContext,
         IArchiveDownloader? archiveDownloader = null,
         string? cacheDirectory = null)
-        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory, batchContext.VersionDisplayWidth)
     {
-        _progressReporter = sharedReporter;
+        _progressReporter = batchContext.Reporter;
         _ownsProgressReporter = false;
     }
 
@@ -59,21 +60,21 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         IArchiveDownloader? archiveDownloader,
-        string? cacheDirectory = null)
+        string? cacheDirectory,
+        int versionDisplayWidth)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
+        _versionDisplayWidth = versionDisplayWidth;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
         {
             _archiveDownloader = archiveDownloader;
-            _shouldDisposeDownloader = false;
         }
         else
         {
             _archiveDownloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: cacheDirectory);
-            _shouldDisposeDownloader = true;
         }
     }
 
@@ -89,18 +90,18 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget!.CreateProgressReporter();
 
-    private ExtractorProgressTracker ProgressTracker { get => field ??= new ExtractorProgressTracker(ProgressReporter, _request.Component, _resolvedVersion.ToString()); }
+    private ExtractorProgressTracker ProgressTracker { get => field ??= new ExtractorProgressTracker(ProgressReporter, _request.Component, _resolvedVersion.ToString(), _versionDisplayWidth); }
 
     public void Prepare()
     {
-        var archiveName = $"dotnet-{Guid.NewGuid()}";
-        _archivePath = Path.Combine(ScratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
+        var archiveBaseName = $"dotnet-{Guid.NewGuid()}";
+        var archiveBasePath = Path.Combine(ScratchDownloadDirectory, archiveBaseName);
 
         var (reporter, downloadTask) = ProgressTracker.BeginDownload();
 
         try
         {
-            _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+            _archivePath = _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, archiveBasePath, reporter);
         }
         catch (DotnetInstallException)
         {
@@ -130,8 +131,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Commit()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("extract");
-        activity?.SetTag("download.version", _resolvedVersion.ToString());
+        using var op = Metrics.Track("extract/complete");
+        op.Tag("download.version", _resolvedVersion.ToString());
 
         _extractedSubcomponents.Clear();
 
@@ -217,7 +218,7 @@ internal class DotnetArchiveExtractor : IDisposable
         var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir, _request.Options.Verbosity);
 
         // Extract archive, redirecting muxer to temp path and skipping existing subcomponents
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
         {
             ExtractTarArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent, shouldSkipEntry);
         }
@@ -332,7 +333,7 @@ internal class DotnetArchiveExtractor : IDisposable
             return archivePath;
         }
 
-        string decompressedPath = archivePath.Replace(".gz", "");
+        string decompressedPath = archivePath.Replace(".gz", "", StringComparison.Ordinal);
 
         using FileStream originalFileStream = File.OpenRead(archivePath);
         using FileStream decompressedFileStream = File.Create(decompressedPath);
@@ -502,18 +503,6 @@ internal class DotnetArchiveExtractor : IDisposable
             if (_ownsProgressReporter)
             {
                 _progressReporter?.Dispose();
-            }
-        }
-        catch
-        {
-        }
-
-        try
-        {
-            // Dispose the archive downloader if we created it
-            if (_shouldDisposeDownloader)
-            {
-                _archiveDownloader.Dispose();
             }
         }
         catch

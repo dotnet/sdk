@@ -85,6 +85,49 @@ internal static class LoggerUtility
             || arg.StartsWith("--binaryLogger:", comp) || arg.Equals("--binaryLogger", comp)
             || arg.StartsWith("-bl:", comp) || arg.Equals("-bl", comp);
     }
+
+    private static readonly string[] s_terminalLoggerArgumentNames =
+    [
+        "tl",
+        "terminallogger",
+        "ll",
+        "livelogger",
+        "tlp",
+        "terminalloggerparameters",
+    ];
+
+    private static readonly string[] s_argumentPrefixes = ["--", "-", "/"];
+
+    /// <summary>
+    /// Determines whether the given argument is an MSBuild terminal logger argument
+    /// (e.g. <c>-tl[:value]</c>, <c>--terminalLogger[:value]</c>, <c>-ll[:value]</c>,
+    /// <c>--livelogger[:value]</c>, <c>-tlp:...</c>, or <c>--terminalLoggerParameters:...</c>).
+    /// </summary>
+    internal static bool IsTerminalLoggerArgument(string arg)
+    {
+        const StringComparison comp = StringComparison.OrdinalIgnoreCase;
+        foreach (var prefix in s_argumentPrefixes)
+        {
+            if (!arg.StartsWith(prefix, comp))
+            {
+                continue;
+            }
+
+            var nameAndValue = arg.AsSpan(prefix.Length);
+            int colonIndex = nameAndValue.IndexOf(':');
+            var name = colonIndex < 0 ? nameAndValue : nameAndValue[..colonIndex];
+
+            foreach (var knownName in s_terminalLoggerArgumentNames)
+            {
+                if (name.Equals(knownName.AsSpan(), comp))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 /// <summary>

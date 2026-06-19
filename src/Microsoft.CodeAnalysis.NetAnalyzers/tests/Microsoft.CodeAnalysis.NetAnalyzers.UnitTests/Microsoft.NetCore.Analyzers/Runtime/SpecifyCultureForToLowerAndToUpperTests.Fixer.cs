@@ -51,7 +51,7 @@ class C
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -87,7 +87,7 @@ class C
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -122,7 +122,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -159,7 +159,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -191,7 +191,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -227,7 +227,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -267,7 +267,7 @@ class C
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -303,7 +303,7 @@ class C
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -338,7 +338,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -375,7 +375,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -407,7 +407,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -443,7 +443,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

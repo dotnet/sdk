@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -68,7 +68,7 @@ End Class";
                     VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -94,7 +94,7 @@ internal sealed class C
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -122,7 +122,7 @@ namespace N
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -150,7 +150,7 @@ End Namespace";
                     VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -181,7 +181,7 @@ End Namespace";
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -212,7 +212,7 @@ End Class";
                     VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -247,7 +247,7 @@ End Class";
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -280,7 +280,7 @@ End Class";
                     VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -311,7 +311,7 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
                         .WithArguments("C"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -328,7 +328,7 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
                     OutputKind = OutputKind.ConsoleApplication,
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -491,7 +491,7 @@ End Class";
                     }
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact(Skip = "Changes are being applied to .g.cs file")]
@@ -522,7 +522,7 @@ End Class";
                     }
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -562,7 +562,7 @@ End Class"
                     }
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 

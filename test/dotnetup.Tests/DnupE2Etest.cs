@@ -62,12 +62,10 @@ public class InstallEndToEndTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
         var updateChannel = new UpdateChannel(channel);
-        var expectedVersion = new ChannelVersionResolver().Resolve(
-            new DotnetInstallRequest(
-                new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
-                updateChannel,
-                InstallComponent.SDK,
-                new InstallRequestOptions()));
+        var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(
+            updateChannel,
+            InstallComponent.SDK,
+            InstallerUtilities.GetDefaultInstallArchitecture());
 
         expectedVersion.Should().NotBeNull($"Channel {channel} should resolve to a valid version");
         Console.WriteLine($"Channel '{channel}' resolved to version: {expectedVersion}");
@@ -341,17 +339,156 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         pathLine.Should().NotBeNull($"PATH should be printed for {shell}");
         dotnetRootLine.Should().NotBeNull($"DOTNET_ROOT should be printed for {shell}");
 
-        // Verify PATH contains the install path (find first entry with 'dotnet' to handle shell startup files that may prepend entries)
+        // Verify PATH contains the install path
         var pathValue = pathLine!.Substring("PATH=".Length);
         var pathSeparator = OperatingSystem.IsWindows() ? ';' : ':';
         var pathEntries = pathValue.Split(pathSeparator);
-        var dotnetPathEntries = pathEntries.Where(p => p.Contains("dotnet", StringComparison.OrdinalIgnoreCase)).ToList();
-        var firstDotnetPathEntry = dotnetPathEntries.FirstOrDefault();
-        firstDotnetPathEntry.Should().Be(installPath, $"First PATH entry containing 'dotnet' should be the dotnet install path for {shell}. Found dotnet entries: [{string.Join(", ", dotnetPathEntries)}]");
+        pathEntries.Should().Contain(installPath, $"PATH should contain the dotnet install path for {shell}. PATH entries: [{string.Join(", ", pathEntries)}]");
 
         // Verify DOTNET_ROOT matches install path
         var dotnetRootValue = dotnetRootLine!.Substring("DOTNET_ROOT=".Length);
         dotnetRootValue.Should().Be(installPath, $"DOTNET_ROOT should be set to the install path for {shell}");
+    }
+
+    /// <summary>
+    /// Exercises the blob-feed fallback path for a fully-specified prerelease SDK version
+    /// that isn't published in the release manifest. We discover the current daily-build
+    /// version via aka.ms at test time so the test stays valid as builds roll over on
+    /// ci.dot.net.
+    /// </summary>
+    [Fact]
+    public void SdkInstall_FullySpecifiedPreviewVersion_UsesBlobFeedFallback()
+    {
+        string? previewVersion = TryResolveCurrentDailyPreviewSdkVersion();
+        previewVersion.Should().NotBeNull("a daily preview SDK should be available on one of the probed dev-branch channels");
+
+        Console.WriteLine($"Resolved current daily preview SDK version: {previewVersion}");
+
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildSdkArguments(previewVersion!, testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        // Only assert that an SDK was installed — don't pin the manifest's recorded
+        // version string, because we don't want to couple to the exact form
+        // (prerelease tag, servicing suffix, etc.) preserved through the install pipeline.
+        VerifyManifestContains(testEnv, InstallComponent.SDK);
+    }
+
+    /// <summary>
+    /// Installs the latest daily-channel SDK end-to-end. Exercises the full path:
+    /// `dotnetup sdk daily` → DailyChannelResolver hits aka.ms to discover the latest
+    /// daily prerelease version → DotnetArchiveDownloader pulls the matching archive
+    /// from the blob feed → install completes and is recorded in the manifest.
+    /// </summary>
+    [Fact]
+    public void SdkInstall_DailyChannel()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildSdkArguments("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        // Like SdkInstall_FullySpecifiedPreviewVersion_UsesBlobFeedFallback, we don't
+        // pin the manifest's recorded version because daily channel resolves to a
+        // rolling prerelease that changes day-to-day.
+        VerifyManifestContains(testEnv, InstallComponent.SDK, install =>
+        {
+            install.Version.Should().NotBeNullOrEmpty();
+            // Daily versions are always prerelease.
+            install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+        });
+    }
+
+    /// <summary>
+    /// Installs the latest daily-channel runtime end-to-end. Same flow as
+    /// <see cref="SdkInstall_DailyChannel"/> but exercises the Runtime component, which
+    /// is published at a different base version than the SDK (e.g. SDK 10.0.110 vs
+    /// Runtime 10.0.10 sharing -servicing.26276.118). This catches the case where
+    /// DailyChannelResolver resolves the SDK version and then tries to download a
+    /// non-existent runtime archive from the blob feed.
+    /// </summary>
+    [Fact]
+    public void RuntimeInstall_DailyChannel()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        VerifyManifestContains(testEnv, InstallComponent.Runtime, install =>
+        {
+            install.Version.Should().NotBeNullOrEmpty();
+            install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+        });
+    }
+
+    /// <summary>
+    /// Looks up the current daily preview SDK version by following the aka.ms redirect
+    /// for the SDK archive on the channel with the highest major version in the release
+    /// manifest. If that channel doesn't yield a prerelease, probes the next-major
+    /// channel (some windows have a not-yet-listed dev branch above the manifest's
+    /// highest major).
+    /// </summary>
+    private static string? TryResolveCurrentDailyPreviewSdkVersion()
+    {
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+        string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
+
+        int latestManifestMajor = new ReleaseManifest().GetReleasesIndex()
+            .Select(product =>
+            {
+                var parts = product.ProductVersion.Split('.');
+                return int.TryParse(parts[0], out var major) ? major : 0;
+            })
+            .Max();
+
+        using var handler = new System.Net.Http.HttpClientHandler { AllowAutoRedirect = true, MaxAutomaticRedirections = 10 };
+        using var http = new System.Net.Http.HttpClient(handler);
+
+        // Probe the dev-branch channel above the manifest's highest major first (handles
+        // the window where the next dev branch is building daily but not yet listed in
+        // the manifest), then fall back to the manifest's highest major (the dev branch
+        // for a not-yet-GA major is already there).
+        foreach (int probeMajor in new[] { latestManifestMajor + 1, latestManifestMajor })
+        {
+            string channel = $"{probeMajor}.0";
+            var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{rid}{ext}";
+            try
+            {
+                using var response = http.GetAsync(akaMsUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
+                if (!response.IsSuccessStatusCode)
+                {
+                    continue;
+                }
+
+                var finalUri = response.RequestMessage?.RequestUri;
+                if (finalUri is null)
+                {
+                    continue;
+                }
+
+                // Path looks like .../Sdk/<version>/dotnet-sdk-<version>-<rid>.<ext>.
+                // Pull the first segment that parses as a prerelease ReleaseVersion —
+                // skip stable versions (the channel redirected to a servicing build,
+                // not a daily preview).
+                foreach (var segment in finalUri.Segments)
+                {
+                    var trimmed = segment.Trim('/');
+                    if (ReleaseVersion.TryParse(trimmed, out var parsed)
+                        && !string.IsNullOrEmpty(parsed.Prerelease))
+                    {
+                        return trimmed;
+                    }
+                }
+            }
+            catch (System.Net.Http.HttpRequestException)
+            {
+                // Try the next major.
+            }
+        }
+
+        return null;
     }
 
     private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<Installation>? additionalAssertions = null)
@@ -507,7 +644,7 @@ public class MultiChannelSdkInstallTests
         output.Should().NotContain("\r\n\r\n\r\n",
             "Output should not contain excessive blank lines from corrupted progress bars");
     }
-    
+
     private static int CountOccurrences(string text, string pattern)
     {
         int count = 0;

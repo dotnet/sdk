@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(compressedData);
+            await wrapper.WriteAsync(compressedData, TestContext.Current.CancellationToken);
             await wrapper.CompleteAsync();
 
             // Assert
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(compressedData);
+            await wrapper.WriteAsync(compressedData, TestContext.Current.CancellationToken);
             await wrapper.CompleteAsync();
 
             var result = outputStream.ToArray();
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(data);
+            await wrapper.WriteAsync(data, TestContext.Current.CancellationToken);
             await wrapper.CompleteAsync();
 
             // Assert
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(data);
+            await wrapper.WriteAsync(data, TestContext.Current.CancellationToken);
             await wrapper.CompleteAsync();
 
             // Assert

@@ -256,16 +256,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
-        // Failed to load /private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib, error: dlopen(/private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib, 0x0001): tried: '/private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'x86_64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib' (no such file), '/private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'x86_64'))
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [Theory]
         public void RunTestProjectSolutionWithRuntimeOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
-            string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, "x64");
+            var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
+            string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -479,7 +478,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Output looks similar to the following
             /*
                 error NETSDK1005: Assets file 'path\to\OtherTestProject\obj\project.assets.json' doesn't have a target for 'net9.0'. Ensure that restore has run and that you have included 'net9.0' in the TargetFrameworks for your project.
-                Get projects properties with MSBuild didn't execute properly with exit code: 1.
+                Build failed with exit code: 1.
             */
             if (!SdkTestContext.IsLocalized())
             {
@@ -594,13 +593,30 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithSolutionFilterAsFirstUnmatchedToken_ShouldWork(string configuration)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
-
             string testSolutionFilterPath = "TestProjectsWithShared.slnf";
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(testSolutionFilterPath,
+                                    "--configuration", configuration);
+
+            result.StdOut.Should().Contain("TestProject.dll");
+            result.StdOut.Should().NotContain("OtherTestProject.dll");
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public void RunWithDirectoryOrProjectAsFirstUnmatchedToken_ShouldWork(
+            [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
+            [CombinatorialValues("TestProject", "./TestProject", "TestProject/TestProject.csproj", "./TestProject/TestProject.csproj")] string positionalArgument)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(positionalArgument,
                                     "--configuration", configuration);
 
             result.StdOut.Should().Contain("TestProject.dll");

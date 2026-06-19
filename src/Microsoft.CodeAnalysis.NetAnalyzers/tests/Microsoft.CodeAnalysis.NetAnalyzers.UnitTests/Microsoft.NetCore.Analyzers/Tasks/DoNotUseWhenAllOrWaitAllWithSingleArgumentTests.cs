@@ -252,7 +252,7 @@ class C
                 }
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -332,7 +332,7 @@ End Class";
                 }
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

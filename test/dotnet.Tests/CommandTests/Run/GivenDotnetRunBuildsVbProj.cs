@@ -80,6 +80,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: $"LaunchProfileSuccess-{launchProfileName}")
                             .WithSource();
 
+            var launchSettingsPath = Path.Combine(testInstance.Path, "My Project", "launchSettings.json");
+
             new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("--launch-profile", launchProfileName)
@@ -88,7 +90,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And
                 .HaveStdOutContaining("Second")
                 .And
-                .NotHaveStdErr();
+                .HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -99,17 +101,15 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
-            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "My Project", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute();
 
             cmd.Should().Pass()
-                .And.NotHaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
-
-            cmd.StdErr.Should().BeEmpty();
         }
 
         [Fact]
@@ -126,10 +126,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("-v:m");
 
             cmd.Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
-
-            cmd.StdErr.Should().BeEmpty();
         }
 
         [Fact]

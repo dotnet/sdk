@@ -7,6 +7,19 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class ParserTests
 {
+    public static IEnumerable<object[]> ShellOverrideCommandArgs =>
+    [
+        [new[] { "defaultinstall", "user", "--shell", "bash" }],
+        [new[] { "init", "--shell", "bash" }]
+    ];
+
+    public static IEnumerable<object[]> MigrateFromSystemCommandArgs =>
+    [
+        [new[] { "sdk", "install", "8.0", "--migrate-from-system" }],
+        [new[] { "install", "8.0", "--migrate-from-system" }],
+        [new[] { "runtime", "install", "aspnetcore@9.0", "--migrate-from-system" }]
+    ];
+
     [Fact]
     public void Parser_ShouldParseValidCommands()
     {
@@ -64,6 +77,50 @@ public class ParserTests
     }
 
     [Fact]
+    public void Parser_ShouldParseInitCommand()
+    {
+        var args = new[] { "init", "--help" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseInitCommandWithInteractiveOption()
+    {
+        var args = new[] { "init", "--interactive" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.InteractiveOption).Should().BeTrue();
+    }
+
+    [Theory]
+    [MemberData(nameof(MigrateFromSystemCommandArgs))]
+    public void Parser_ShouldParseInstallCommandsWithMigrateFromSystem(string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldRejectWalkthroughCommand()
+    {
+        var args = new[] { "walkthrough", "--help" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public void Parser_ShouldParseElevatedAdminPathCommand()
     {
         // Arrange
@@ -89,6 +146,29 @@ public class ParserTests
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [MemberData(nameof(ShellOverrideCommandArgs))]
+    public void Parser_ShouldParseCommandsWithShellOverride(string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("sdk", "install", "9.0", "--shell", "zsh")]
+    [InlineData("runtime", "install", "aspnetcore@9.0", "--shell", "pwsh")]
+    public void Parser_ShouldRejectShellOverrideOnInstallCommands(params string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
+        parseResult.Errors.Select(error => error.Message)
+            .Should().Contain(message => message.Contains("--shell"));
     }
 
     [Theory]
@@ -190,6 +270,20 @@ public class ParserTests
 
         // Output should match Parser.Version
         output.Trim().Should().Be(Parser.Version);
+    }
+
+    [Fact]
+    public void DotnetupProcess_RootHelp_ShouldListInitCommand()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("init");
+        output.Should().NotContain("migrate");
+        output.Should().NotContain("walkthrough");
     }
 
     #region Runtime Command Parser Tests
@@ -333,6 +427,20 @@ public class ParserTests
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Parser_BareDotnetup_BindsInteractiveOption()
+    {
+        // Bare `dotnetup` routes to SdkInstallCommand, but the parse result still belongs
+        // to the root command. Registering InteractiveOption on root ensures GetValue()
+        // binds the option there and runs its DefaultValueFactory instead of returning
+        // the default bool value.
+        var parseResult = Parser.Parse([]);
+
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetResult(CommonOptions.InteractiveOption).Should().NotBeNull(
+            "InteractiveOption must be bound on the root command for bare `dotnetup`");
     }
 
     #endregion

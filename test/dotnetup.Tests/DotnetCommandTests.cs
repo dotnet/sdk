@@ -1,11 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
@@ -16,6 +17,22 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class DotnetCommandTests
 {
+    /// <summary>
+    /// Subclass that overrides process execution so tests verify path resolution
+    /// without actually launching a process. On Windows, copying cmd.exe as a
+    /// fake dotnet.exe causes cmd.exe to open an interactive shell that hangs forever.
+    /// </summary>
+    private sealed class TestableDotnetCommand : DotnetForwardCommand
+    {
+        public TestableDotnetCommand(ParseResult parseResult, IDotnetEnvironmentManager? env = null)
+            : base(parseResult, env) { }
+
+        protected override int RunDotnet(string dotnetExe, string dotnetRoot, string[] args)
+        {
+            return 0;
+        }
+    }
+
     // ── Parser tests ─────────────────────────────────────────────────────
 
     [Fact]
@@ -119,7 +136,7 @@ public class DotnetCommandTests
             var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["dotnet", "--version"]);
 
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             // The fake dotnet should exit with 0
@@ -150,7 +167,7 @@ public class DotnetCommandTests
                     IsFullyConfigured: true));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             // Should succeed because it used the configured user path, not the default
@@ -177,7 +194,7 @@ public class DotnetCommandTests
                 configuredRoot: null);
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             exitCode.Should().Be(0);
@@ -207,7 +224,7 @@ public class DotnetCommandTests
                     IsFullyConfigured: true));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             // Should succeed because it fell back to default (has dotnet), not admin (no dotnet)
@@ -232,7 +249,7 @@ public class DotnetCommandTests
             var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["do", "--version"]);
 
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             exitCode.Should().Be(0);
@@ -255,7 +272,7 @@ public class DotnetCommandTests
             var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
             var parseResult = Parser.Parse(["dotnet"]);
 
-            var command = new DotnetForwardCommand(parseResult, mock);
+            var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
             exitCode.Should().Be(0);
@@ -266,101 +283,19 @@ public class DotnetCommandTests
         }
     }
 
-    // ── Stdin forwarding (interactivity) tests ───────────────────────────
-
-    /// <summary>
-    /// Verifies that interactive stdin data is properly forwarded from the
-    /// parent process through dotnetup to the child dotnet process.
-    /// This is critical for commands like <c>dotnet nuget push --interactive</c>
-    /// or <c>dotnet new</c> that prompt for user input.
-    ///
-    /// The test launches dotnetup as a real process, redirects its stdin,
-    /// writes test data, and verifies the child process echoes it back
-    /// through stdout — proving the full stdin forwarding pipeline works.
-    /// </summary>
-    [Fact]
-    public void DotnetCommand_ForwardsStdinToChildProcess()
-    {
-        var tempDir = Directory.CreateTempSubdirectory("dotnetup-stdin-test");
-        try
-        {
-            CreateStdinEchoFakeDotnet(tempDir.FullName);
-
-            string dotnetupPath = DotnetupTestUtilities.GetDotnetupExecutablePath();
-            string testInput = "HelloInteractive_" + Guid.NewGuid().ToString("N")[..8];
-
-            using var process = new Process();
-            process.StartInfo.FileName = dotnetupPath;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.RedirectStandardInput = true;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-
-            // Prepend our temp dir to PATH so dotnetup resolves our fake dotnet
-            var currentPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
-            process.StartInfo.Environment["PATH"] = tempDir.FullName + Path.PathSeparator + currentPath;
-            process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
-            process.StartInfo.Environment["NO_COLOR"] = "1";
-
-            if (OperatingSystem.IsWindows())
-            {
-                // Fake dotnet.exe is cmd.exe; forward /c "findstr /r ." to echo stdin.
-                // findstr reads from stdin and echoes lines matching regex "." (non-empty).
-                process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                    ["dotnet", "/c", "findstr /r ."]);
-            }
-            else
-            {
-                // Fake dotnet is a shell script that cats stdin to stdout.
-                process.StartInfo.Arguments = "dotnet";
-            }
-
-            process.Start();
-
-            // Write test data to dotnetup's stdin; the child process inherits this
-            // stdin handle because DotnetCommand uses RedirectStandardInput = false.
-            process.StandardInput.WriteLine(testInput);
-            process.StandardInput.Close();
-
-            string output = process.StandardOutput.ReadToEnd();
-            string stderr = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            // The child process should have received and echoed our input
-            output.Should().Contain(testInput,
-                because: "stdin data should be forwarded to the child dotnet process for interactive commands");
-        }
-        finally
-        {
-            try { tempDir.Delete(recursive: true); } catch { /* cleanup best-effort */ }
-        }
-    }
-
     // ── Helpers ───────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Creates a simple fake dotnet executable that exits with code 0.
-    /// On Windows, creates a .cmd batch file. On Unix, creates a shell script.
+    /// Creates a dummy dotnet executable file so that <see cref="DotnetForwardCommand"/>'s
+    /// <c>File.Exists</c> check passes. The file does not need to be a real executable
+    /// because the tests use <see cref="TestableDotnetCommand"/> which overrides process
+    /// execution. Previously, copying cmd.exe as a fake dotnet.exe on Windows caused
+    /// cmd.exe to open an interactive shell that hung indefinitely.
     /// </summary>
     private static void CreateFakeDotnetExecutable(string directory)
     {
-        if (OperatingSystem.IsWindows())
-        {
-            var batPath = Path.Combine(directory, "dotnet.exe");
-            // Copy cmd.exe as a stand-in for dotnet.exe so the process can be launched.
-            File.Copy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"), batPath, overwrite: true);
-        }
-        else
-        {
-            var scriptPath = Path.Combine(directory, "dotnet");
-            File.WriteAllText(scriptPath, "#!/bin/sh\nexit 0\n");
-            // Make executable
-            File.SetUnixFileMode(scriptPath,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-        }
+        var path = Path.Combine(directory, DotnetupUtilities.GetDotnetExeName());
+        File.WriteAllText(path, "fake");
     }
 
     /// <summary>
@@ -369,7 +304,7 @@ public class DotnetCommandTests
     /// On Windows, copies cmd.exe as dotnet.exe (caller passes /c "findstr /r ." to echo stdin).
     /// On Unix, creates a shell script that cats stdin to stdout.
     /// </summary>
-    private static void CreateStdinEchoFakeDotnet(string directory)
+    internal static void CreateStdinEchoFakeDotnet(string directory)
     {
         if (OperatingSystem.IsWindows())
         {

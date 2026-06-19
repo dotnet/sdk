@@ -581,5 +581,22 @@ Options:
             result.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
             result.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
         }
+
+        [Fact]
+        public void WhenNoProjectIsSpecifiedItUsesCurrentDirectory()
+        {
+            var setup = Setup();
+            var lib = NewLibWithFrameworks(dir: setup.TestRoot);
+            var libref = AddLibRef(setup, lib);
+
+            // Reproduces: dotnet reference remove ../Lib/Lib.csproj
+            // where the current directory contains a project (no --project argument needed)
+            var result = new DotnetCommand(Log, "reference", "remove")
+                    .WithWorkingDirectory(lib.Path)
+                    .Execute(libref.CsProjPath);
+
+            result.Should().Pass();
+            result.StdErr.Should().BeEmpty();
+        }
     }
 }

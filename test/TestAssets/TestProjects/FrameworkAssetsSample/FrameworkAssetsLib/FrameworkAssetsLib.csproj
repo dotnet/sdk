@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <Copyright>© Microsoft</Copyright>
+    <Product>Framework Assets Test</Product>
+    <Company>Microsoft</Company>
+    <Description>Library producing framework assets</Description>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+
+    <!-- Marks all .js assets as Framework for the pack pipeline -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
+
+    <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
+    <PackageVersion>1.0.0</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>

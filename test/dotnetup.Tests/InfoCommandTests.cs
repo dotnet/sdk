@@ -4,11 +4,19 @@
 using System.Text.Json;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
-public class InfoCommandTests
+[Collection("DotnetupInstallCollection")]
+public class InfoCommandTests : IDisposable
 {
+    //  Create a test environment, which will set up a temp directory for the manifest and
+    // default install path.  The "WithList" tests end up depending on these values to list
+    // existing installs, so this isolates those tests from system state.
+    private readonly TestEnvironment _testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+    public void Dispose() => _testEnv.Dispose();
     [Fact]
     public void Parser_ShouldParseInfoCommand()
     {

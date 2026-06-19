@@ -3,88 +3,51 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watch.UnitTests
+namespace Microsoft.DotNet.Watch.UnitTests;
+
+internal class TestReporter(ITestOutputHelper output) : IReporter, IProcessOutputReporter
 {
-    internal class TestReporter(ITestOutputHelper output) : IReporter, IProcessOutputReporter
+    public readonly List<string> ProcessOutput = [];
+    public readonly List<(LogLevel level, string text)> Messages = [];
+
+    bool IProcessOutputReporter.PrefixProcessOutput
+        => true;
+
+    public event Action<OutputLine>? OnProcessOutput;
+
+    void IProcessOutputReporter.ReportOutput(OutputLine line)
     {
-        private readonly Dictionary<EventId, Action> _actions = [];
-        public readonly List<string> ProcessOutput = [];
-        public readonly List<(LogLevel level, string text)> Messages = [];
+        WriteTestOutput(line.Content);
+        ProcessOutput.Add(line.Content);
 
-        public bool IsVerbose
-            => true;
-
-        bool IProcessOutputReporter.PrefixProcessOutput
-            => true;
-
-        public event Action<OutputLine>? OnProcessOutput;
-
-        void IProcessOutputReporter.ReportOutput(OutputLine line)
-        {
-            WriteTestOutput(line.Content);
-            ProcessOutput.Add(line.Content);
-
-            OnProcessOutput?.Invoke(line);
-        }
-
-        public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)
-        {
-            var semaphore = new SemaphoreSlim(initialCount: 0);
-            RegisterAction(descriptor, () => semaphore.Release());
-            return semaphore;
-        }
-
-        public void RegisterAction(MessageDescriptor eventId, Action action)
-            => RegisterAction(eventId.Id, action);
-
-        public void RegisterAction(EventId eventId, Action action)
-        {
-            if (_actions.TryGetValue(eventId, out var existing))
-            {
-                existing += action;
-            }
-            else
-            {
-                existing = action;
-            }
-
-            _actions[eventId] = existing;
-        }
-
-        public void Report(EventId id, Emoji emoji, LogLevel level, string message)
-        {
-            if (level != LogLevel.None)
-            {
-                Messages.Add((level, message));
-                WriteTestOutput($"{ToString(level)} {emoji.ToDisplay()} {message}");
-            }
-
-            if (_actions.TryGetValue(id, out var action))
-            {
-                action();
-            }
-        }
-
-        private void WriteTestOutput(string line)
-        {
-            try
-            {
-                output.WriteLine(line);
-            }
-            catch (InvalidOperationException)
-            {
-                // May happen when a test is aborted and no longer running.
-            }
-        }
-
-        private static string ToString(LogLevel level)
-            => level switch
-            {
-                LogLevel.Trace or LogLevel.Debug => "verbose",
-                LogLevel.Information => "output",
-                LogLevel.Warning => "warning",
-                LogLevel.Critical or LogLevel.Error => "error",
-                _ => throw new InvalidOperationException()
-            };
+        OnProcessOutput?.Invoke(line);
     }
+
+    public void Report(EventId id, Emoji emoji, LogLevel level, string message)
+    {
+        Messages.Add((level, message));
+        WriteTestOutput($"{ToString(level)} {emoji.ToDisplay()} {message}");
+    }
+
+    private void WriteTestOutput(string line)
+    {
+        try
+        {
+            output.WriteLine(line);
+        }
+        catch (InvalidOperationException)
+        {
+            // May happen when a test is aborted and no longer running.
+        }
+    }
+
+    private static string ToString(LogLevel level)
+        => level switch
+        {
+            LogLevel.Trace or LogLevel.Debug => "verbose",
+            LogLevel.Information => "output",
+            LogLevel.Warning => "warning",
+            LogLevel.Critical or LogLevel.Error => "error",
+            _ => throw new InvalidOperationException()
+        };
 }

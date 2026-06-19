@@ -179,7 +179,7 @@ class MyAsyncDisposable : IAsyncDisposable
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
                 TestCode = code
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

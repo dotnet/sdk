@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" />
     <PackageReference Include="Microsoft.Build" />
   </ItemGroup>
 

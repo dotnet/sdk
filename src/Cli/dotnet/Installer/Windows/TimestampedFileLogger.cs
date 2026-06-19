@@ -174,9 +174,20 @@ internal class TimestampedFileLogger : SetupLoggerBase, IDisposable, ISynchroniz
     /// <param name="message">The message to log.</param>
     protected override void WriteMessage(string message)
     {
-        if (!_messageQueue.IsAddingCompleted)
+        try
         {
-            _messageQueue.Add(message);
+            if (!_messageQueue.IsAddingCompleted)
+            {
+                _messageQueue.Add(message);
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // The logger was disposed before or between the IsAddingCompleted check and Add.
+        }
+        catch (InvalidOperationException)
+        {
+            // CompleteAdding was called between the IsAddingCompleted check and Add.
         }
     }
 }

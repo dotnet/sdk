@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using System.Reflection;
+using System.Net;
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -17,12 +16,11 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     private const int RetryDelayMilliseconds = 1000;
 
     private readonly HttpClient _httpClient;
-    private readonly bool _shouldDisposeHttpClient;
     private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
 
     public DotnetArchiveDownloader()
-        : this(new ReleaseManifest())
+        : this(ReleaseManifest.Default)
     {
     }
 
@@ -30,49 +28,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
         _downloadCache = new DownloadCache(cacheDirectory);
-        if (httpClient == null)
-        {
-            _httpClient = CreateDefaultHttpClient();
-            _shouldDisposeHttpClient = true;
-        }
-        else
-        {
-            _httpClient = httpClient;
-            _shouldDisposeHttpClient = false;
-        }
-    }
-
-    /// <summary>
-    /// Creates an HttpClient with enhanced proxy support for enterprise environments.
-    /// </summary>
-    private static HttpClient CreateDefaultHttpClient()
-    {
-        var handler = new HttpClientHandler()
-        {
-            UseProxy = true,
-            UseDefaultCredentials = true,
-            AllowAutoRedirect = true,
-            MaxAutomaticRedirections = 10,
-            // Do NOT set AutomaticDecompression here. The archives are .tar.gz files
-            // whose gzip layer is handled explicitly by DecompressTarGzIfNeeded().
-            // Enabling automatic decompression causes HttpClient to add Accept-Encoding: gzip
-            // and transparently strip the gzip layer when the CDN returns Content-Encoding: gzip,
-            // resulting in a raw .tar on disk whose hash does not match the manifest's .tar.gz hash.
-        };
-
-        var client = new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromMinutes(10)
-        };
-
-        // Set user-agent to identify dotnetup in telemetry, including version
-        var informationalVersion = typeof(DotnetArchiveDownloader).Assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        string userAgent = informationalVersion == null ? "dotnetup-dotnet-installer" : $"dotnetup-dotnet-installer/{informationalVersion}";
-
-        client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
-
-        return client;
+        // The HttpClient is either the shared process-wide singleton or supplied by the caller; we never own it.
+        _httpClient = httpClient ?? DefaultHttpClient.Instance;
     }
 
     /// <summary>
@@ -175,63 +132,132 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     }
 
     /// <summary>
-    /// Downloads the archive for the specified installation and verifies its hash.
-    /// Checks the download cache first to avoid re-downloading.
+    /// Downloads the archive for the specified installation request and verifies its hash.
+    /// The implementation resolves the appropriate archive format and appends the file extension
+    /// to the provided base path.
     /// </summary>
     /// <param name="installRequest">The .NET installation request details</param>
     /// <param name="resolvedVersion">The resolved version to download</param>
-    /// <param name="destinationPath">The local path to save the downloaded file</param>
+    /// <param name="destinationBasePath">The local base path (without extension) to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    public void DownloadArchiveWithVerification(
+    /// <returns>The full path of the downloaded archive, including the resolved file extension.</returns>
+    public string DownloadArchiveWithVerification(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
-        string destinationPath,
+        string destinationBasePath,
         IProgress<DownloadProgress>? progress = null)
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
-        activity?.SetTag("download.version", resolvedVersion.ToString());
+        using var op = Metrics.Track("download/complete");
+        op.Tag("download.version", resolvedVersion.ToString());
 
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
+        string extension = GetExtensionFromUrl(downloadUrl);
+        string destinationPath = destinationBasePath + extension;
 
-        activity?.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
+        op.Tag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
 
         if (TryServeCachedArchive(downloadUrl, expectedHash, destinationPath, progress))
         {
-            return;
+            return destinationPath;
         }
 
         DownloadArchive(downloadUrl, destinationPath, progress);
         VerifyFileHash(destinationPath, expectedHash);
 
         var fileInfo = new FileInfo(destinationPath);
-        activity?.SetTag("download.bytes", fileInfo.Length);
-        activity?.SetTag("download.from_cache", false);
+        op.Tag("download.bytes", fileInfo.Length);
+        op.Tag("download.from_cache", false);
 
         try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
         catch { /* Ignore errors adding to cache - it's not critical */ }
+
+        return destinationPath;
+    }
+
+    /// <summary>
+    /// Extracts the archive file extension from a download URL.
+    /// </summary>
+    private static string GetExtensionFromUrl(string url)
+    {
+        // Use Uri.LocalPath to strip query strings/fragments before checking the extension.
+        // The .tar.gz check is needed because Path.GetExtension only returns the last
+        // extension (".gz"), not the compound ".tar.gz".
+        var localPath = new Uri(url).LocalPath;
+
+        if (localPath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+        {
+            return ".tar.gz";
+        }
+
+        return Path.GetExtension(localPath);
     }
 
     private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
-        var targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
-
-        if (targetFile == null)
+        // Daily-channel builds are blob-feed-only: they are never listed in the releases
+        // manifest and have no detached .p7s signature. Skip the signature-verified manifest
+        // lookup entirely and go straight to the blob feed: https://github.com/dotnet/sdk/issues/54278 with handle validation of these.
+        if (installRequest.Channel.IsDaily)
         {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform,
-                $"No matching file found for {installRequest.Component} version {resolvedVersion} on {installRequest.InstallRoot.Architecture}",
-                version: resolvedVersion.ToString(),
-                component: installRequest.Component.ToString());
+            return ResolveBlobFeedEntry(installRequest, resolvedVersion);
         }
 
+        var result = _releaseManifest.TryFindReleaseFile(installRequest, resolvedVersion);
+
+        switch (result.Status)
+        {
+            case FindReleaseFileStatus.Found:
+                return BuildEntryFromReleaseFile(result.File!, resolvedVersion, installRequest);
+
+            case FindReleaseFileStatus.NoMatchingFile:
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform,
+                    $"No matching file found for {installRequest.Component} version {resolvedVersion} on {installRequest.InstallRoot.Architecture}",
+                    version: resolvedVersion.ToString(),
+                    component: installRequest.Component.ToString());
+
+            case FindReleaseFileStatus.ProductNotFound:
+            case FindReleaseFileStatus.ReleaseNotFound:
+                // Manifest doesn't list this version. For fully-specified prerelease
+                // versions, try the public blob feed (typical for daily/preview builds).
+                if (ShouldFallbackToBlobFeed(installRequest, resolvedVersion))
+                {
+                    return ResolveBlobFeedEntry(installRequest, resolvedVersion);
+                }
+
+                throw result.Status == FindReleaseFileStatus.ProductNotFound
+                    ? new DotnetInstallException(
+                        DotnetInstallErrorCode.VersionNotFound,
+                        $"No product found for version {resolvedVersion}",
+                        version: resolvedVersion.ToString(),
+                        component: installRequest.Component.ToString())
+                    : new DotnetInstallException(
+                        DotnetInstallErrorCode.ReleaseNotFound,
+                        $"No release found for version {resolvedVersion}",
+                        version: resolvedVersion.ToString(),
+                        component: installRequest.Component.ToString());
+
+            default:
+                throw new InvalidOperationException($"Unexpected {nameof(FindReleaseFileStatus)}: {result.Status}");
+        }
+    }
+
+    private static (string DownloadUrl, string ExpectedHash) BuildEntryFromReleaseFile(
+        ReleaseFile targetFile,
+        ReleaseVersion resolvedVersion,
+        DotnetInstallRequest installRequest)
+    {
         string downloadUrl = targetFile.Address.ToString();
         string expectedHash = targetFile.Hash.ToString();
 
         if (string.IsNullOrEmpty(expectedHash))
         {
+            // Fail closed: without a SHA-512 in the (signed) manifest we cannot establish
+            // archive integrity. The signed-manifest → hash → archive trust chain is broken
+            // if the hash is missing.
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.ManifestParseFailed,
-                $"No hash found in manifest for {resolvedVersion}",
+                DotnetInstallErrorCode.ArchiveHashMissing,
+                $"No archive hash found in release manifest for {resolvedVersion}. Cannot verify download integrity.",
                 version: resolvedVersion.ToString(),
                 component: installRequest.Component.ToString());
         }
@@ -246,6 +272,133 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         }
 
         return (downloadUrl, expectedHash);
+    }
+
+    /// <summary>
+    /// Returns true if a manifest miss should fall back to the blob feed.
+    /// We only fall back when the user gave us an exact prerelease version
+    /// (e.g. <c>10.0.100-preview.4.25216.37</c>) and the manifest doesn't yet
+    /// know about it, OR when the channel is a daily channel (where the
+    /// resolved version always points at a blob-feed-only build). Stable
+    /// versions and named channels (e.g. "preview") are served only from the
+    /// manifest so that real misses surface as errors.
+    /// </summary>
+    private static bool ShouldFallbackToBlobFeed(
+        DotnetInstallRequest installRequest,
+        ReleaseVersion resolvedVersion)
+    {
+        // DailyChannelResolver only returns prerelease versions, so we don't
+        // need to re-check the resolved version's prerelease label here.
+        if (installRequest.Channel.IsDaily)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrEmpty(resolvedVersion.Prerelease)
+            || !installRequest.Channel.IsFullySpecifiedVersion())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Resolves a download URL + SHA-512 by probing the public dotnet blob feed
+    /// for the given component/version/RID.
+    /// </summary>
+    private (string DownloadUrl, string ExpectedHash) ResolveBlobFeedEntry(
+        DotnetInstallRequest installRequest,
+        ReleaseVersion resolvedVersion)
+    {
+        // Blob-feed downloads have no detached CMS signature — only a SHA-512 hash file.
+        // Defense-in-depth: refuse before issuing any blob-feed request when the host has
+        // the "block unsigned downloads" policy enabled. The user-facing warning about
+        // unsigned downloads is emitted up-front by the CLI workflow layer (see
+        // InstallExecutor.ExecuteInstalls / UpdateWorkflow.InstallVersion via
+        // UnsignedSourcePolicy.MayDownloadUnsigned), so no per-fallback warning is needed here.
+        if (UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy,
+                string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    Strings.UnsignedDownloadBlockedByPolicy,
+                    installRequest.Component,
+                    resolvedVersion,
+                    UnsignedSourcePolicy.WindowsPolicyKey,
+                    UnsignedSourcePolicy.WindowsPolicyValueName,
+                    UnsignedSourcePolicy.UnixPolicyFile),
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
+        }
+
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
+        var locationsChecked = new List<string>();
+
+        // Prefer tar.gz, fall back to zip if unavailable (older .NET versions may not publish tar.gz for Windows)
+        var tarLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".tar.gz");
+        locationsChecked.Add(tarLocation.ChecksumUrl);
+        string? hash = TryGetHashFromUrl(tarLocation.ChecksumUrl, resolvedVersion, installRequest.Component);
+        if (hash != null)
+        {
+            return (tarLocation.ArchiveUrl, hash);
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var zipLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".zip");
+            locationsChecked.Add(zipLocation.ChecksumUrl);
+            hash = TryGetHashFromUrl(zipLocation.ChecksumUrl, resolvedVersion, installRequest.Component);
+            if (hash != null)
+            {
+                return (zipLocation.ArchiveUrl, hash);
+            }
+        }
+
+        throw new DotnetInstallException(
+            DotnetInstallErrorCode.VersionNotFound,
+            $"Version {resolvedVersion} for {installRequest.Component} was not found in the release manifest or blob feed (checked: {string.Join(", ", locationsChecked)})",
+            version: resolvedVersion.ToString(),
+            component: installRequest.Component.ToString());
+    }
+
+    /// <summary>
+    /// Downloads and parses a .sha512 hash file. Returns null if the URL 404s
+    /// (the version is not published to the blob feed). Throws for any other error.
+    /// </summary>
+    private string? TryGetHashFromUrl(string checksumUrl, ReleaseVersion resolvedVersion, InstallComponent component)
+    {
+        try
+        {
+            using var response = _httpClient.GetAsync(checksumUrl).GetAwaiter().GetResult();
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            response.EnsureSuccessStatusCode();
+            string contents = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            return BlobFeedUrlBuilder.ParseHashFile(contents);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.NetworkError,
+                $"Failed to fetch hash file from {checksumUrl}: {ex.Message}",
+                ex,
+                version: resolvedVersion.ToString(),
+                component: component.ToString());
+        }
+        catch (FormatException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Hash file at {checksumUrl} is malformed: {ex.Message}",
+                ex,
+                version: resolvedVersion.ToString(),
+                component: component.ToString());
+        }
     }
 
     private bool TryServeCachedArchive(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress)
@@ -264,8 +417,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             var cachedFileSize = new FileInfo(cachedFilePath).Length;
             progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
 
-            Activity.Current?.SetTag("download.bytes", cachedFileSize);
-            Activity.Current?.SetTag("download.from_cache", true);
+            Metrics.Tag("download.bytes", cachedFileSize);
+            Metrics.Tag("download.from_cache", true);
             return true;
         }
         catch
@@ -286,7 +439,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         // Eventually the manifest should indicate which algorithm to use.
         using var sha512 = SHA512.Create();
         byte[] hashBytes = sha512.ComputeHash(fileStream);
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        return BitConverter.ToString(hashBytes).Replace("-", "", StringComparison.Ordinal).ToLowerInvariant();
     }
 
     // Known alternate acceptable hashes keyed by the manifest's expected hash.
@@ -407,13 +560,5 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         throw new DotnetInstallException(
                        DotnetInstallErrorCode.HashMismatch,
                        $"File hash mismatch. Expected: {expectedHash}, Actual: {actualHash}");
-    }
-
-    public void Dispose()
-    {
-        if (_shouldDisposeHttpClient)
-        {
-            _httpClient?.Dispose();
-        }
     }
 }

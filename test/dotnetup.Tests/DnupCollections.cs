@@ -53,3 +53,23 @@ public class DotnetupLifecycleCollection
 public class DotnetupEnvironmentMutationTests
 {
 }
+
+/// <summary>
+/// Serialized collection for tests that mutate process-wide telemetry state
+/// (e.g. Metrics.OnTrackEvent). Tests in this collection run sequentially to avoid races.
+/// </summary>
+[CollectionDefinition("DotnetupTelemetryStateMutationTests", DisableParallelization = true)]
+public class DotnetupTelemetryStateMutationTests
+{
+}
+
+/// <summary>
+/// Serialized collection for tests that launch the real dotnetup executable as a child
+/// process with redirected stdin/stdout. These tests are timing-sensitive (process startup,
+/// PATH lookup, pipe drain) and have shown intermittent flakes when run concurrently with
+/// other CPU-heavy or filesystem-heavy tests. Serializing them removes that contention.
+/// </summary>
+[CollectionDefinition("DotnetupProcessLaunchTests", DisableParallelization = true)]
+public class DotnetupProcessLaunchTests
+{
+}

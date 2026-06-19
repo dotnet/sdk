@@ -13,7 +13,6 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -41,7 +40,7 @@ public class DotnetArchiveDownloaderTests
     {
         // The default constructor creates its own HttpClient via CreateDefaultHttpClient().
         // Verify that the handler does NOT have AutomaticDecompression set.
-        using var downloader = new DotnetArchiveDownloader();
+        var downloader = new DotnetArchiveDownloader();
 
         // Use reflection to access the private _httpClient field
         var httpClientField = typeof(DotnetArchiveDownloader)

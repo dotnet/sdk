@@ -2070,7 +2070,7 @@ public class MyAttribute {}",
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2092,7 +2092,7 @@ End Class",
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

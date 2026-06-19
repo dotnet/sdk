@@ -312,7 +312,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
-            var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunCompositeOn, RuntimeIdentifier };
+            var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunCompositeOn, RuntimeIdentifier, this.BinLogArgument([nameof(extractAll), extractAll.ToString()]) };
 
             if (extractAll)
             {
@@ -320,6 +320,7 @@ namespace Microsoft.NET.Publish.Tests
             }
 
             publishCommand
+                .WithWorkingDirectory(testAsset.TestRoot)
                 .Execute(extraArgs.ToArray())
                 .Should()
                 .Pass();
@@ -1128,6 +1129,67 @@ class C
             }
         }
 
+        [Fact]
+        public void It_preserves_native_dependencies_on_subsequent_publish()
+        {
+            // This test validates the fix for https://github.com/dotnet/sdk/issues/52151
+            // Native DLLs should remain in the publish directory on subsequent runs even when
+            // the single-file bundle is skipped due to incrementality
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileWithNative",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+            // Add a package with a native dependency
+            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Data.Sqlite", "9.0.8"));
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testAsset);
+
+            // First publish
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            var publishDir = GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework).FullName;
+            var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+            var nativeDll = GetNativeDll("e_sqlite3");
+            var nativeDllPath = Path.Combine(publishDir, nativeDll);
+
+            // Verify the native DLL exists after first publish
+            File.Exists(nativeDllPath).Should().BeTrue($"Native DLL {nativeDll} should exist after first publish");
+
+            WaitForUtcNowToAdvance();
+
+            // Second publish (incremental - bundle should be skipped)
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            // Verify the native DLL still exists after second publish
+            File.Exists(nativeDllPath).Should().BeTrue($"Native DLL {nativeDll} should still exist after second incremental publish");
+
+            // Verify the single file bundle was not rebuilt (incrementality worked)
+            var bundleWriteTime = File.GetLastWriteTimeUtc(singleFilePath);
+            WaitForUtcNowToAdvance();
+
+            // Third publish to confirm incrementality
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            var bundleWriteTime2 = File.GetLastWriteTimeUtc(singleFilePath);
+            bundleWriteTime2.Should().Be(bundleWriteTime, "Bundle should not be rebuilt when inputs haven't changed");
+
+            // And the native DLL should STILL be there
+            File.Exists(nativeDllPath).Should().BeTrue($"Native DLL {nativeDll} should persist across multiple incremental publishes");
+        }
+
         [Theory]
         [InlineData("osx-x64", true)]
         [InlineData("osx-arm64", true)]
@@ -1150,12 +1212,13 @@ class C
             var testAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 identifier: $"{rid}_{enableMacOSCodeSign}");
-            var publishCommand = new PublishCommand(testAsset);
+            var publishCommand = new PublishCommand(testAsset).WithWorkingDirectory(testAsset.TestRoot) as PublishCommand;
 
             List<string> publishArgs = new List<string>(3)
             {
                 PublishSingleFile,
-                $"/p:RuntimeIdentifier={rid}"
+                $"/p:RuntimeIdentifier={rid}",
+                this.BinLogArgument([nameof(rid), rid, nameof(enableMacOSCodeSign), enableMacOSCodeSign?.ToString() ?? "null"])
             };
             if (enableMacOSCodeSign.HasValue)
             {

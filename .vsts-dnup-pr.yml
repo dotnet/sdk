@@ -49,7 +49,7 @@ stages:
           $failed = $false
           & .\.dotnet\dotnet build src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }
-          & .\.dotnet\dotnet build src\Installer\dotnetup\dotnetup.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
+          & .\.dotnet\dotnet build src\Installer\dotnetup.Library\dotnetup.Library.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }
           & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
           if ($LASTEXITCODE -ne 0) { $failed = $true }

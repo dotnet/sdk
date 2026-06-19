@@ -2214,6 +2214,18 @@ When Task.Delay is used with Task.WhenAny to implement a timeout, the timer crea
 |CodeFix|False|
 ---
 
+## [CA2028](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2028): Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'
+
+When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.
@@ -2793,6 +2805,18 @@ Using a generic overload is preferable to the 'System.Type' overload when the ty
 ## [CA2265](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2265): Do not compare Span\<T> to 'null' or 'default'
 
 Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span\<T>.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA2266](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2266): File-based program entry point should start with '#!'
+
+When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.
 
 |Item|Value|
 |-|-|
