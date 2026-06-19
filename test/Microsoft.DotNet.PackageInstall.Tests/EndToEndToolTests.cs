@@ -45,8 +45,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  The tool does not support the current architecture or operating system (osx-arm64). Supported runtimes: win-x64 win-x86 osx-x64 linux-x64 linux-musl-x64
-        //  https://github.com/dotnet/sdk/issues/49665
-        //  The tool does not support the current architecture or operating system (osx-arm64). Supported runtimes: win-x64 win-x86 osx-x64 linux-x64 linux-musl-x64
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void InstallAndRunNativeAotGlobalTool()
