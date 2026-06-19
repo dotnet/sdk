@@ -25,7 +25,7 @@ internal enum DotnetAccessMode
     Shell = 2,
 
     /// <summary>Shell profile plus user-level env-var PATH/DOTNET_ROOT (so cmd.exe and GUI apps see the user dotnet too).</summary>
-    All = 3,
+    Full = 3,
 }
 
 /// <summary>
@@ -42,7 +42,7 @@ internal class DotnetupConfigData
     /// </summary>
     [JsonPropertyName("accessMode")]
     [JsonConverter(typeof(DotnetAccessModeJsonConverter))]
-    public DotnetAccessMode AccessMode { get; set; } = DotnetAccessMode.All;
+    public DotnetAccessMode AccessMode { get; set; } = DotnetAccessMode.Full;
 
     /// <summary>
     /// Whether the dotnetup directory is on PATH so <c>dotnetup</c> can be invoked. Orthogonal

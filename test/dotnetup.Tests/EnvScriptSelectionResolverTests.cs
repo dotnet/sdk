@@ -31,7 +31,7 @@ public class EnvScriptSelectionResolverTests
 
     [Theory]
     [InlineData(DotnetAccessMode.Shell, true, true, true)]
-    [InlineData(DotnetAccessMode.All, true, true, true)]
+    [InlineData(DotnetAccessMode.Full, true, true, true)]
     [InlineData(DotnetAccessMode.None, true, false, true)]
     [InlineData(DotnetAccessMode.Shell, false, true, false)]
     [InlineData(DotnetAccessMode.None, false, false, false)]
@@ -52,7 +52,7 @@ public class EnvScriptSelectionResolverTests
     [Fact]
     public void ExplicitDotnetup_WiresDotnetupOnly()
     {
-        var result = Resolve(dotnetup: true, config: Config(DotnetAccessMode.All, dotnetupOnPath: true));
+        var result = Resolve(dotnetup: true, config: Config(DotnetAccessMode.Full, dotnetupOnPath: true));
         result.Should().Be(new EnvScriptSelection(IncludeDotnet: false, IncludeDotnetup: true));
     }
 

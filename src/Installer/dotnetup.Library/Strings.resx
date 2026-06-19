@@ -183,7 +183,7 @@
   <data name="AccessModeShell" xml:space="preserve">
     <value>Terminal Mode (Suggested)</value>
   </data>
-  <data name="AccessModeAll" xml:space="preserve">
+  <data name="AccessModeFull" xml:space="preserve">
     <value>Replacement Mode</value>
   </data>
   <data name="PathGuidanceNone" xml:space="preserve">
@@ -192,7 +192,7 @@
   <data name="PathGuidanceShell" xml:space="preserve">
     <value>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</value>
   </data>
-  <data name="PathGuidanceAll" xml:space="preserve">
+  <data name="PathGuidanceFull" xml:space="preserve">
     <value>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</value>
   </data>
   <data name="PathDescriptionNone" xml:space="preserve">
@@ -204,7 +204,7 @@
   <data name="PathDescriptionShellBase" xml:space="preserve">
     <value>Configure the current shell profile to use installs managed by dotnetup.</value>
   </data>
-  <data name="PathDescriptionAll" xml:space="preserve">
+  <data name="PathDescriptionFull" xml:space="preserve">
     <value>The system will be configured to use dotnetup installs over any other installs.</value>
   </data>
   <data name="PathTooltipNone" xml:space="preserve">
@@ -216,7 +216,7 @@
   <data name="PathTooltipShellWindowsNote" xml:space="preserve">
     <value>Only PowerShell will work in this mode. CMD has no profile file.</value>
   </data>
-  <data name="PathTooltipAll" xml:space="preserve">
+  <data name="PathTooltipFull" xml:space="preserve">
     <value>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</value>
   </data>
   <data name="PathReplacementModeUnixError" xml:space="preserve">

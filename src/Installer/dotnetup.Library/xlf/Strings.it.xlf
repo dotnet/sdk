@@ -2,7 +2,7 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="it" original="../Strings.resx">
     <body>
-      <trans-unit id="AccessModeAll">
+      <trans-unit id="AccessModeFull">
         <source>Replacement Mode</source>
         <target state="new">Replacement Mode</target>
         <note />
@@ -142,7 +142,7 @@
         <target state="new">Total</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathDescriptionAll">
+      <trans-unit id="PathDescriptionFull">
         <source>The system will be configured to use dotnetup installs over any other installs.</source>
         <target state="new">The system will be configured to use dotnetup installs over any other installs.</target>
         <note />
@@ -162,7 +162,7 @@
         <target state="new">Configure the current shell profile to use installs managed by dotnetup.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathGuidanceAll">
+      <trans-unit id="PathGuidanceFull">
         <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
         <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>
         <note />
@@ -182,7 +182,7 @@
         <target state="new">Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathTooltipAll">
+      <trans-unit id="PathTooltipFull">
         <source>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</source>
         <target state="new">Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</target>
         <note />

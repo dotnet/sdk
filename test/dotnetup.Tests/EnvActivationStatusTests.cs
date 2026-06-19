@@ -76,7 +76,7 @@ public class EnvActivationStatusTests
 
     [Fact]
     public void All_DotnetupOn_BothResolveToManaged_IsActive()
-        => Evaluate(DotnetAccessMode.All, dotnetupOnPath: true, DotnetDir, DotnetupDir).IsActive.Should().BeTrue();
+        => Evaluate(DotnetAccessMode.Full, dotnetupOnPath: true, DotnetDir, DotnetupDir).IsActive.Should().BeTrue();
 
     [Fact]
     public void Shell_DotnetupOff_AddDotnetButRemoveDotnetup_NeedsBoth()

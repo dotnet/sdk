@@ -52,7 +52,7 @@ public class DotnetupConfigTests : IDisposable
     [Theory]
     [InlineData(DotnetAccessMode.None)]
     [InlineData(DotnetAccessMode.Shell)]
-    [InlineData(DotnetAccessMode.All)]
+    [InlineData(DotnetAccessMode.Full)]
     internal void ReadAccessMode_ReturnsStoredPreference_WhenConfigExists(DotnetAccessMode preference)
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = preference });
@@ -80,7 +80,7 @@ public class DotnetupConfigTests : IDisposable
     [Theory]
     [InlineData("DotnetupDotnet", DotnetAccessMode.None)]
     [InlineData("ShellProfile", DotnetAccessMode.Shell)]
-    [InlineData("FullPathReplacement", DotnetAccessMode.All)]
+    [InlineData("FullPathReplacement", DotnetAccessMode.Full)]
     internal void Read_LegacyConfig_MapsPropertyNameAndEnumSpelling(string legacyEnumValue, DotnetAccessMode expected)
     {
         // Simulate a config written by an earlier internal build: the legacy "pathPreference"
@@ -114,7 +114,7 @@ public class DotnetupConfigTests : IDisposable
     [Theory]
     [InlineData(1, DotnetAccessMode.None)]
     [InlineData(2, DotnetAccessMode.Shell)]
-    [InlineData(3, DotnetAccessMode.All)]
+    [InlineData(3, DotnetAccessMode.Full)]
     internal void Read_LegacyNumericAccessMode_Maps(int numeric, DotnetAccessMode expected)
     {
         DotnetupPaths.EnsureDataDirectoryExists();

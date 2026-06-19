@@ -44,14 +44,14 @@ internal class EnvSetCommand : CommandBase
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.Unknown,
-                "No env mode specified and none is stored. Specify a mode: none, shell, or all.");
+                "No env mode specified and none is stored. Specify a mode: none, shell, or full.");
         }
 
-        if (targetEnv == DotnetAccessMode.All && !OperatingSystem.IsWindows())
+        if (targetEnv == DotnetAccessMode.Full && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                "'all' mode is only supported on Windows. Use 'shell' on this platform.");
+                "'full' mode is only supported on Windows. Use 'shell' on this platform.");
         }
 
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.

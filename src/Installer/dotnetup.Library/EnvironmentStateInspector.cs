@@ -44,7 +44,7 @@ internal sealed class EnvironmentStateInspector : IEnvironmentStateInspector
             // DOTNET_ROOT, restore the Program Files dotnet to system PATH).
             dotnetUserEnvVarsPresent = installRootManager.GetAdminInstallRootChanges().NeedsChange();
 
-            // Fully wired as 'all' when configuring the user install root would be a no-op.
+            // Fully wired as 'full' when configuring the user install root would be a no-op.
             dotnetUserEnvVarsComplete = !installRootManager.GetUserInstallRootChanges().NeedsChange();
 
             dotnetupOnUserPath = UserPathContainsDotnetupDir();

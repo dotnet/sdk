@@ -20,9 +20,9 @@ internal static class EnvDriftAnalyzer
 
         var drift = new List<string>();
 
-        bool expectsProfileDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.All;
+        bool expectsProfileDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Full;
         bool expectsProfileBlock = expectsProfileDotnet || config.DotnetupOnPath;
-        bool expectsDotnetEnvVars = config.AccessMode == DotnetAccessMode.All;
+        bool expectsDotnetEnvVars = config.AccessMode == DotnetAccessMode.Full;
 
         // Profile-block presence: only assert when the profile state is known.
         if (observed.ProfileBlockPresent is bool profileBlockPresent)
@@ -41,13 +41,13 @@ internal static class EnvDriftAnalyzer
         {
             if (expectsDotnetEnvVars && !observed.DotnetUserEnvVarsComplete)
             {
-                drift.Add("Windows user PATH / DOTNET_ROOT / system PATH do not match 'all' mode expectations.");
+                drift.Add("Windows user PATH / DOTNET_ROOT / system PATH do not match 'full' mode expectations.");
             }
             else if (!expectsDotnetEnvVars && observed.DotnetUserEnvVarsPresent)
             {
                 drift.Add(string.Format(
                     CultureInfo.InvariantCulture,
-                    "Windows user PATH / DOTNET_ROOT still has 'all'-mode wiring (expected dotnet access: '{0}').",
+                    "Windows user PATH / DOTNET_ROOT still has 'full'-mode wiring (expected dotnet access: '{0}').",
                     config.AccessMode.ToString().ToLowerInvariant()));
             }
 

@@ -109,7 +109,7 @@ public class EnvSettingsApplierTests : IDisposable
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        EnvSettingsApplier.Apply(DotnetAccessMode.All, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        EnvSettingsApplier.Apply(DotnetAccessMode.Full, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(1);
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(0);
@@ -215,8 +215,8 @@ public class EnvSettingsApplierTests : IDisposable
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        // Reality has 'all'-mode env vars wired but the target is shell: remove them, even though
-        // no prior 'all' config is supplied.
+        // Reality has 'full'-mode env vars wired but the target is shell: remove them, even though
+        // no prior 'full' config is supplied.
         EnvSettingsApplier.Apply(
             DotnetAccessMode.Shell, targetDotnetupOnPath: true,
             Observed(dotnetEnvVarsPresent: true),
@@ -233,7 +233,7 @@ public class EnvSettingsApplierTests : IDisposable
         if (OperatingSystem.IsWindows()) return;
 
         Action act = () => EnvSettingsApplier.Apply(
-            DotnetAccessMode.All, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+            DotnetAccessMode.Full, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         act.Should().Throw<PlatformNotSupportedException>();
     }

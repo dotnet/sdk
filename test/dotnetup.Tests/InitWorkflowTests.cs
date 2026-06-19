@@ -43,7 +43,7 @@ public class InitWorkflowTests : IDisposable
     }
 
     [Theory]
-    [InlineData(DotnetAccessMode.All)]
+    [InlineData(DotnetAccessMode.Full)]
     internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(DotnetAccessMode preference)
     {
         InitWorkflows.ShouldReplaceSystemConfiguration(preference)
@@ -59,7 +59,7 @@ public class InitWorkflowTests : IDisposable
 
     [Theory]
     [InlineData(DotnetAccessMode.Shell)]
-    [InlineData(DotnetAccessMode.All)]
+    [InlineData(DotnetAccessMode.Full)]
     internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(DotnetAccessMode preference)
     {
         InitWorkflows.ShouldPromptToConvertSystemInstalls(preference)

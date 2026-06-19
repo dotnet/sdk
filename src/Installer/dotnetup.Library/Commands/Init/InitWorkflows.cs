@@ -36,7 +36,7 @@ internal class InitWorkflows
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
     public static bool ShouldReplaceSystemConfiguration(DotnetAccessMode preference) =>
-        preference is DotnetAccessMode.All;
+        preference is DotnetAccessMode.Full;
 
     /// <summary>
     /// Returns true when the user chose a mode that shadows the system PATH and should therefore
@@ -228,7 +228,7 @@ internal class InitWorkflows
 
     private static DotnetAccessMode ValidateDotnetAccessMode(DotnetAccessMode preference)
     {
-        if (preference == DotnetAccessMode.All && !OperatingSystem.IsWindows())
+        if (preference == DotnetAccessMode.Full && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
@@ -319,7 +319,7 @@ internal class InitWorkflows
 
         if (isWindows)
         {
-            options.Add(new("r", Strings.AccessModeAll, Strings.PathDescriptionAll, Strings.PathTooltipAll));
+            options.Add(new("r", Strings.AccessModeFull, Strings.PathDescriptionFull, Strings.PathTooltipFull));
         }
 
         int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
@@ -328,7 +328,7 @@ internal class InitWorkflows
         {
             0 => DotnetAccessMode.None,
             1 => DotnetAccessMode.Shell,
-            _ => DotnetAccessMode.All,
+            _ => DotnetAccessMode.Full,
         };
     }
 
@@ -559,7 +559,7 @@ internal class InitWorkflows
         {
             DotnetAccessMode.None => Strings.PathGuidanceNone,
             DotnetAccessMode.Shell => Strings.PathGuidanceShell,
-            DotnetAccessMode.All => Strings.PathGuidanceAll,
+            DotnetAccessMode.Full => Strings.PathGuidanceFull,
             _ => null,
         };
 

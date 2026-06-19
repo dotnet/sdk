@@ -97,14 +97,14 @@ public class EnvCommandTests : IDisposable
     }
 
     [Fact]
-    public void EnvSet_All_OnNonWindows_RejectedByParser()
+    public void EnvSet_Full_OnNonWindows_RejectedByParser()
     {
         if (OperatingSystem.IsWindows())
         {
             return;
         }
 
-        var parseResult = Parser.Parse(["env", "set", "all"]);
+        var parseResult = Parser.Parse(["env", "set", "full"]);
 
         parseResult.Errors.Should().NotBeEmpty();
         parseResult.Errors.Should().Contain(e => e.Message.Contains("Windows", StringComparison.Ordinal));
@@ -112,21 +112,21 @@ public class EnvCommandTests : IDisposable
     }
 
     [Fact]
-    public void EnvSet_All_FromNone_OnWindows_AppliesAndPersists()
+    public void EnvSet_Full_FromNone_OnWindows_AppliesAndPersists()
     {
         if (!OperatingSystem.IsWindows())
         {
             return;
         }
 
-        var parseResult = Parser.Parse(["env", "set", "all"]);
+        var parseResult = Parser.Parse(["env", "set", "full"]);
         parseResult.Errors.Should().BeEmpty();
 
         int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
-        config!.AccessMode.Should().Be(DotnetAccessMode.All);
+        config!.AccessMode.Should().Be(DotnetAccessMode.Full);
         config.DotnetupOnPath.Should().BeTrue();
         _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(1);
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(0);

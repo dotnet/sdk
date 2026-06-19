@@ -74,12 +74,12 @@ public class EnvDriftAnalyzerTests
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.All, DotnetupOnPath = true };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Full, DotnetupOnPath = true };
         var observed = Observed(dotnetEnvVarsComplete: false, profileBlockPresent: true, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
-        drift.Should().Contain(d => d.Contains("'all' mode expectations", StringComparison.Ordinal));
+        drift.Should().Contain(d => d.Contains("'full' mode expectations", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class EnvDriftAnalyzerTests
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
-        drift.Should().Contain(d => d.Contains("still has 'all'-mode wiring", StringComparison.Ordinal));
+        drift.Should().Contain(d => d.Contains("still has 'full'-mode wiring", StringComparison.Ordinal));
     }
 
     [Fact]

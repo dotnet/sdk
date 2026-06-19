@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 internal static class EnvSetCommandParser
 {
     private static readonly string[] s_supportedModes = OperatingSystem.IsWindows()
-        ? ["none", "shell", "all"]
+        ? ["none", "shell", "full"]
         : ["none", "shell"];
 
     public static readonly Argument<DotnetAccessMode?> ModeArgument = CreateModeArgument();
@@ -41,8 +41,8 @@ internal static class EnvSetCommandParser
         {
             "none" => DotnetAccessMode.None,
             "shell" => DotnetAccessMode.Shell,
-            "all" when OperatingSystem.IsWindows() => DotnetAccessMode.All,
-            "all" => ModeError(result, "'all' mode is only supported on Windows. Use 'shell' on this platform."),
+            "full" when OperatingSystem.IsWindows() => DotnetAccessMode.Full,
+            "full" => ModeError(result, "'full' mode is only supported on Windows. Use 'shell' on this platform."),
             _ => ModeError(result, $"Unknown env mode '{token}'. Expected one of: {string.Join(", ", s_supportedModes)}."),
         };
     }
