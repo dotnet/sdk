@@ -11,6 +11,7 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     [TestClass]
+    [DoNotParallelize]
     public class FolderInstallerTests
     {
         public TestContext TestContext { get; set; } = null!;
@@ -191,8 +192,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Assert.IsTrue(uninstallResult.Success);
             Assert.AreEqual(source, uninstallResult.TemplatePackage);
-            Assert.AreEqual(InstallerErrorCode.Success, result.Error);
-            result.ErrorMessage.Should().BeNullOrEmpty();
+            Assert.AreEqual(InstallerErrorCode.Success, uninstallResult.Error);
+            uninstallResult.ErrorMessage.Should().BeNullOrEmpty();
 
             //directory is not removed
             Directory.Exists(installPath);
