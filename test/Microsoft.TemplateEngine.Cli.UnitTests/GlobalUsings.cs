@@ -17,8 +17,3 @@ global using VerifyMSTest;
 // projects. MSTest.Sdk projects do not get them automatically.
 global using Microsoft.NET.TestFramework;
 global using Microsoft.NET.TestFramework.Utilities;
-
-// Some test methods (e.g. in InstantiateTests) take parameters of internal types
-// from Microsoft.TemplateEngine.Cli. Discover them via DiscoverInternals to keep
-// the existing method accessibility.
-[assembly: Microsoft.VisualStudio.TestTools.UnitTesting.DiscoverInternals]

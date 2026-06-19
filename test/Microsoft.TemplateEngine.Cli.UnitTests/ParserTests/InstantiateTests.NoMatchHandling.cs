@@ -288,7 +288,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         // [2] input format
         // [3] param value
         // [4] error message
-        internal void CanEvaluateInvalidParameters(string command, MockTemplateInfo[] templates, string?[][] expectedInvalidParams)
+        public void CanEvaluateInvalidParameters(string command, MockTemplateInfo[] templates, string?[][] expectedInvalidParams)
         {
             TemplateGroup templateGroup = TemplateGroup.FromTemplateList(
                 CliTemplateInfo.FromTemplateInfo(templates, A.Fake<IHostSpecificDataLoader>()))

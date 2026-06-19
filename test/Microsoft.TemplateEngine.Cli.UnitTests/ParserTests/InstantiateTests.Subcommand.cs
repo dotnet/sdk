@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
     public partial class InstantiateTests
     {
         [TestMethod]
-        internal void Create_CanParseTemplateWithOptions()
+        public void Create_CanParseTemplateWithOptions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             var myCommand = CliTestHostFactory.CreateNewCommand(host);
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanEvaluateTemplateToRunData))]
-        internal void Create_CanEvaluateTemplateToRun(string command, string templateSet, string? defaultLanguage, string? expectedIdentitiesStr)
+        public void Create_CanEvaluateTemplateToRun(string command, string templateSet, string? defaultLanguage, string? expectedIdentitiesStr)
         {
             TemplateGroup templateGroup = TemplateGroup.FromTemplateList(
                 CliTemplateInfo.FromTemplateInfo(_testSets[templateSet], A.Fake<IHostSpecificDataLoader>()))
@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [DataRow("new create foo", null)]
         [DataRow("new create --name name foo ", "name")]
         [DataRow("new create -n name foo", "name")]
-        internal void Create_CanParseNameOption(string command, string? expectedValue)
+        public void Create_CanParseNameOption(string command, string? expectedValue)
         {
             var template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group");
 
@@ -98,7 +98,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [DataRow("new --force create foo", "Unrecognized command or argument(s): '--force'.")]
         [DataRow("new --dry-run create foo", "Unrecognized command or argument(s): '--dry-run'.")]
         [DataRow("new --no-update-check create foo", "Unrecognized command or argument(s): '--no-update-check'.")]
-        internal void Create_CanValidateOptionUsage_InNewCommand(string command, string? expectedErrors)
+        public void Create_CanValidateOptionUsage_InNewCommand(string command, string? expectedErrors)
         {
             string[] expectedErrorsParsed = expectedErrors?.Split("|") ?? Array.Empty<string>();
             var template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group");
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanParseTemplateOptionsData))]
-        internal void Create_CanParseTemplateOptions(string command, string parameterName, string parameterType, string? defaultValue, string? defaultIfNoOptionValue, string? expectedValue)
+        public void Create_CanParseTemplateOptions(string command, string parameterName, string parameterType, string? defaultValue, string? defaultIfNoOptionValue, string? expectedValue)
         {
             //unique case for dotnet new create
             if (command == "foo -in 30")
@@ -163,7 +163,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanParseChoiceTemplateOptionsData))]
-        internal void Create_CanParseChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
+        public void Create_CanParseChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
                 .WithChoiceParameter(parameterName, parameterValues.Split("|"), defaultIfNoOptionValue: defaultIfNoOptionValue);
@@ -198,7 +198,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanDetectParseErrorsTemplateOptionsData))]
-        internal void Create_CanDetectParseErrorsTemplateOptions(
+        public void Create_CanDetectParseErrorsTemplateOptions(
             string command,
             string parameterName,
             string parameterType,
@@ -232,7 +232,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanDetectParseErrorsChoiceTemplateOptionsData))]
-        internal void Create_CanDetectParseErrorsChoiceTemplateOptions(
+        public void Create_CanDetectParseErrorsChoiceTemplateOptions(
               string command,
               string parameterName,
               string parameterValues,
@@ -267,7 +267,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [TestMethod]
         [DataRow("create", "createTemplate")]
         [DataRow("list", "listTemplate")]
-        internal void Create_CanEvaluateTemplateWithSubcommandShortName(string command, string? expectedIdentitiesStr)
+        public void Create_CanEvaluateTemplateWithSubcommandShortName(string command, string? expectedIdentitiesStr)
         {
             MockTemplateInfo template = new(command, identity: $"{command}Template");
 

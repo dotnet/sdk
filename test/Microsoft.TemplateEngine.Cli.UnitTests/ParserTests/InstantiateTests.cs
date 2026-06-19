@@ -207,7 +207,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanEvaluateTemplateToRunData))]
-        internal void CanEvaluateTemplateToRun(string command, string templateSet, string? defaultLanguage, string? expectedIdentitiesStr)
+        public void CanEvaluateTemplateToRun(string command, string templateSet, string? defaultLanguage, string? expectedIdentitiesStr)
         {
             TemplateGroup templateGroup = TemplateGroup.FromTemplateList(
                 CliTemplateInfo.FromTemplateInfo(_testSets[templateSet], A.Fake<IHostSpecificDataLoader>()))
@@ -238,7 +238,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [DataRow("new foo", null)]
         [DataRow("new --name name foo ", "name")]
         [DataRow("new -n name foo", "name")]
-        internal void CanParseNameOption(string command, string? expectedValue)
+        public void CanParseNameOption(string command, string? expectedValue)
         {
             MockTemplateInfo template = new("foo", identity: "foo.1", groupIdentity: "foo.group");
 
@@ -304,7 +304,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanParseTemplateOptionsData))]
-        internal void CanParseTemplateOptions(string command, string parameterName, string parameterType, string? defaultValue, string? defaultIfNoOptionValue, string? expectedValue)
+        public void CanParseTemplateOptions(string command, string parameterName, string parameterType, string? defaultValue, string? defaultIfNoOptionValue, string? expectedValue)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
                 .WithParameter(parameterName, parameterType, defaultValue: defaultValue, defaultIfNoOptionValue: defaultIfNoOptionValue);
@@ -348,7 +348,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanParseChoiceTemplateOptionsData))]
-        internal void CanParseChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
+        public void CanParseChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
                 .WithChoiceParameter(parameterName, parameterValues.Split("|"), defaultIfNoOptionValue: defaultIfNoOptionValue);
@@ -392,7 +392,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanParseMultiChoiceTemplateOptionsData))]
-        internal void CanParseMultiChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
+        public void CanParseMultiChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
                 .WithChoiceParameter(parameterName, parameterValues.Split("|"), defaultIfNoOptionValue: defaultIfNoOptionValue, allowMultipleValues: true);
@@ -455,7 +455,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanDetectParseErrorsTemplateOptionsData))]
-        internal void CanDetectParseErrorsTemplateOptions(
+        public void CanDetectParseErrorsTemplateOptions(
             string command,
             string parameterName,
             string parameterType,
@@ -499,7 +499,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         [TestMethod]
         [DynamicData(nameof(CanDetectParseErrorsChoiceTemplateOptionsData))]
-        internal void CanDetectParseErrorsChoiceTemplateOptions(
+        public void CanDetectParseErrorsChoiceTemplateOptions(
               string command,
               string parameterName,
               string parameterValues,
@@ -557,14 +557,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
-        [DataRow("foo", AllowRunScripts.Prompt)]
-        [DataRow("foo --allow-scripts prompt", AllowRunScripts.Prompt)]
-        [DataRow("foo --allow-scripts Prompt", AllowRunScripts.Prompt)]
-        [DataRow("foo --allow-scripts yes", AllowRunScripts.Yes)]
-        [DataRow("foo --allow-scripts Yes", AllowRunScripts.Yes)]
-        [DataRow("foo --allow-scripts no", AllowRunScripts.No)]
-        [DataRow("foo --allow-scripts NO", AllowRunScripts.No)]
-        internal void CanParseAllowScriptsOption(string command, AllowRunScripts? result)
+        [DataRow("foo", nameof(AllowRunScripts.Prompt))]
+        [DataRow("foo --allow-scripts prompt", nameof(AllowRunScripts.Prompt))]
+        [DataRow("foo --allow-scripts Prompt", nameof(AllowRunScripts.Prompt))]
+        [DataRow("foo --allow-scripts yes", nameof(AllowRunScripts.Yes))]
+        [DataRow("foo --allow-scripts Yes", nameof(AllowRunScripts.Yes))]
+        [DataRow("foo --allow-scripts no", nameof(AllowRunScripts.No))]
+        [DataRow("foo --allow-scripts NO", nameof(AllowRunScripts.No))]
+        public void CanParseAllowScriptsOption(string command, string? result)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
                 .WithPostActions(ProcessStartPostActionProcessor.ActionProcessorId);
@@ -586,7 +586,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
 
             TemplateCommandArgs templateArgs = new(templateCommand, myCommand, templateParseResult);
-            Assert.AreEqual(result, templateArgs.AllowScripts);
+            Assert.AreEqual(result, templateArgs.AllowScripts?.ToString());
         }
 
         #region MultiShortNameResolutionTests
@@ -716,7 +716,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [DataRow("new --force foo", "force")]
         [DataRow("new foo --no-update-check", "no-update-check")]
         [DataRow("new --no-update-check foo", "no-update-check")]
-        internal void CanParseFlagsOption(string command, string action)
+        public void CanParseFlagsOption(string command, string action)
         {
             Func<TemplateCommandArgs, bool> expectedAction = action switch
             {
@@ -754,7 +754,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
-        internal void CanParse_WithoutRequiredParameter()
+        public void CanParse_WithoutRequiredParameter()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
             .WithChoiceParameter("param", new[] { "val1", "val2" }, isRequired: true);
