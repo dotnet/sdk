@@ -322,10 +322,13 @@ public class ReferencedExeProgram
 
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
-        [CombinatorialData]
+        [DataRow("nunit", false)]
+        [DataRow("nunit", true)]
+        [DataRow("mstest", false)]
+        [DataRow("mstest", true)]
         public void TestProjectCanReferenceExe(
             // Note: xunit.v3 is always a "real" executable even with VSTest. So it's irrelevant here.
-            [CombinatorialValues("nunit", "mstest")] string testTemplateName,
+            string testTemplateName,
             bool setSelfContainedProperty)
         {
             var testConsoleProject = new TestProject("ConsoleApp")
@@ -366,7 +369,8 @@ public class ReferencedExeProgram
         }
 
         [TestMethod]
-        [CombinatorialData]
+        [DataRow(true)]
+        [DataRow(false)]
         public void SelfContainedExecutableCannotBeReferencedByNonSelfContainedMTPTestProject(bool setIsTestingPlatformApplicationEarly)
         {
             // The setup of this test is as follows:
@@ -416,7 +420,8 @@ public class ReferencedExeProgram
         }
 
         [TestMethod]
-        [CombinatorialData]
+        [DataRow(true)]
+        [DataRow(false)]
         public void MTPNonSelfContainedExecutableCannotBeReferencedBySelfContained(bool setIsTestingPlatformApplicationEarly)
         {
             // The setup of this test is as follows:
@@ -466,10 +471,17 @@ public class ReferencedExeProgram
 
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
-        [CombinatorialData]
+        [DataRow("nunit", false, false)]
+        [DataRow("nunit", false, true)]
+        [DataRow("nunit", true, false)]
+        [DataRow("nunit", true, true)]
+        [DataRow("mstest", false, false)]
+        [DataRow("mstest", false, true)]
+        [DataRow("mstest", true, false)]
+        [DataRow("mstest", true, true)]
         public void ExeProjectCanReferenceTestProject(
             // Note: xunit.v3 is always a "real" executable even with VSTest. So it's irrelevant here.
-            [CombinatorialValues("nunit", "mstest")] string testTemplateName,
+            string testTemplateName,
             bool setSelfContainedProperty,
             bool buildWithSelfContainedFromCommandLine)
         {
@@ -513,7 +525,8 @@ public class ReferencedExeProgram
         }
 
         [TestMethod]
-        [CombinatorialData]
+        [DataRow(true)]
+        [DataRow(false)]
         public void MTPCanBeBuiltAsSelfContained(bool setIsTestingPlatformApplicationEarly)
         {
             var mtpSelfContained = new TestProject("MTPTestProject")

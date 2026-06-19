@@ -30,7 +30,10 @@ public sealed class RoslynBuildTaskTests : SdkTest
 
     [TestMethod]
     [FullMSBuildOnly]
-    [CombinatorialData]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void FullMSBuild_SdkStyle(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language);
@@ -40,7 +43,10 @@ public sealed class RoslynBuildTaskTests : SdkTest
 
     [TestMethod]
     [FullMSBuildOnly]
-    [CombinatorialData]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void FullMSBuild_SdkStyle_OptOut(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language).WithProjectChanges(static doc =>
@@ -53,7 +59,10 @@ public sealed class RoslynBuildTaskTests : SdkTest
 
     [TestMethod]
     [FullMSBuildOnly]
-    [CombinatorialData]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void FullMSBuild_NonSdkStyle(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language, static project =>
@@ -67,7 +76,14 @@ public sealed class RoslynBuildTaskTests : SdkTest
 
     [TestMethod]
     [FullMSBuildOnly]
-    [CombinatorialData]
+    [DataRow(false, Language.CSharp, false)]
+    [DataRow(false, Language.CSharp, true)]
+    [DataRow(false, Language.VisualBasic, false)]
+    [DataRow(false, Language.VisualBasic, true)]
+    [DataRow(true, Language.CSharp, false)]
+    [DataRow(true, Language.CSharp, true)]
+    [DataRow(true, Language.VisualBasic, false)]
+    [DataRow(true, Language.VisualBasic, true)]
     public void FullMSBuild_SdkStyle_ToolsetPackage(bool useSharedCompilation, Language language, bool useFrameworkCompiler)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);
@@ -80,7 +96,10 @@ public sealed class RoslynBuildTaskTests : SdkTest
     }
 
     [TestMethod]
-    [CombinatorialData]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void DotNet(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language);
@@ -91,7 +110,10 @@ public sealed class RoslynBuildTaskTests : SdkTest
     //  https://github.com/dotnet/sdk/issues/49665
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
-    [CombinatorialData]
+    [DataRow(false, Language.CSharp)]
+    [DataRow(false, Language.VisualBasic)]
+    [DataRow(true, Language.CSharp)]
+    [DataRow(true, Language.VisualBasic)]
     public void DotNet_ToolsetPackage(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);

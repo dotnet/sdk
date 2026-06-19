@@ -23,7 +23,6 @@
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="NuGet.Common" />
-    <PackageReference Include="Combinatorial.MSTest" />
   </ItemGroup>
 
   <ItemGroup>
