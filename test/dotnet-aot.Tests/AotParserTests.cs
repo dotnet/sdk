@@ -246,6 +246,52 @@ public class AotParserTests
         Assert.Contains("Usage:", stdout);
     }
 
+    [Theory]
+    [InlineData("tool list")]
+    [InlineData("tool list --local")]
+    [InlineData("tool run mytool")]
+    [InlineData("tool uninstall mypackage")]
+    [InlineData("tool search mysearchterm")]
+    public void ParseAotToolCommand_HasNoErrors(string commandLine)
+    {
+        // The AOT-capable `tool` subcommands (local list/uninstall, run, search) parse cleanly
+        // because their real implementations are linked into the AOT CLI.
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.Empty(result.Errors);
+    }
+
+    [Theory]
+    [InlineData("tool list")]
+    [InlineData("tool list --local")]
+    public void InvokeAotToolListCommand_ExecutesWithoutManagedFallback(string commandLine)
+    {
+        // `tool list` is AOT-capable: the real ToolListLocalCommand is linked in. It succeeds even
+        // when no manifest is present (empty output), so invoking it should return 0 rather than
+        // throw CommandNotAvailableInAotException. This catches mis-wired actions that parse-only
+        // tests would miss.
+        var (exitCode, _, _) = InvokeWithCapture(commandLine.Split(' '));
+
+        Assert.Equal(0, exitCode);
+    }
+
+    [Theory]
+    [InlineData("tool list --global")]                  // global list dispatches to managed CLI
+    [InlineData("tool list --tool-path somepath")]      // tool-path list dispatches to managed CLI
+    [InlineData("tool uninstall mypackage --global")]   // global uninstall dispatches to managed CLI
+    [InlineData("tool install mypackage")]              // install is not AOT-capable
+    [InlineData("tool update mypackage")]               // update is not AOT-capable
+    [InlineData("tool restore")]                        // restore is not AOT-capable
+    [InlineData("tool execute dotnetsay")]              // execute is not AOT-capable
+    public void InvokeManagedOnlyToolCommand_FallsBackToManaged(string commandLine)
+    {
+        // The global/tool-path variants and install/update/restore depend on NuGet package
+        // install/restore infrastructure that isn't AOT-ready, so they must signal a managed
+        // fallback via CommandNotAvailableInAotException rather than execute.
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.Empty(result.Errors);
+        Assert.Throws<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
     /// <summary>
     ///  Invokes the AOT parser and captures output.
     ///  Uses BufferedReporter for Reporter.Output (used by --version, --info)

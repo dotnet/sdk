@@ -294,6 +294,13 @@ namespace Microsoft.NET.Build.Tests
             if (isSdkProject)
             {
                 ret.TargetFrameworks = target;
+
+                // Pin RuntimeFrameworkVersion for netcoreapp2.0 to avoid NETSDK1061
+                // (restore/build version mismatch from implicit patch roll-forward)
+                if (target == "netcoreapp2.0")
+                {
+                    ret.RuntimeFrameworkVersion = SdkTestContext.LatestRuntimePatchForNetCoreApp2_0;
+                }
             }
             else
             {
