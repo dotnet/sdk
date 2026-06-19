@@ -8,13 +8,14 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests;
 
+[TestClass]
 public class MTPHelpSnapshotTests : SdkTest
 {
-    public MTPHelpSnapshotTests(ITestOutputHelper log) : base(log)
+    public MTPHelpSnapshotTests()
     {
     }
 
-    [Fact]
+    [TestMethod]
     public async Task VerifyMTPHelpOutput()
     {
         TestAsset testInstance = TestAssetsManager

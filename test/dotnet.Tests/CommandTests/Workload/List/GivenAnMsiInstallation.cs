@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -11,8 +11,9 @@ using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
-    [Collection("MsiWorkloadRecords")]
+    [DoNotParallelize]
     [SupportedOSPlatform("windows")]
+    [TestClass]
     public class GivenAnMsiInstallation : IDisposable
     {
         // Override HKLM to HKCU so we can run tests without needing elevation
@@ -22,7 +23,8 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             Registry.CurrentUser,
             @"SOFTWARE\Microsoft\dotnet-test\InstalledWorkloads\Standalone");
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void GivenExistingRecordsItCanDetermineInstalledWorkloads()
         {
             CreateWorkloadRecord("6.0.100", "workload.A");
@@ -34,7 +36,8 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             Assert.Contains(new WorkloadId("workload.C"), records);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void GivenExistingRecordsItCanDeleteRecords()
         {
             CreateWorkloadRecord("6.0.100", "workload.A");
@@ -50,7 +53,8 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             Assert.DoesNotContain(new WorkloadId("workload.B"), records);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void GivenExistingRecordsItOnlyEnumeratesFeatureBandsWithWorkloads()
         {
             CreateWorkloadRecord("6.0.100", "workload.A");

@@ -1,25 +1,17 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
-  </PropertyGroup>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-
-    <!-- Use layout folder for the output folder, to support in-process tests which expect to be running
-         on a valid layout. -->
     <OutputPath>$(TestHostFolder)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <MSTestParallelizeScope></MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
@@ -77,12 +69,27 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
+    <!-- Suppress the old xUnit TestFramework that ComponentMocks brings in transitively;
+         Microsoft.NET.TestFramework.MSTest link-shares the same runner-agnostic types. -->
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <!-- Remove the old xUnit TestFramework from the C# compiler reference list to avoid
+       CS0433 duplicate-type conflicts with Microsoft.NET.TestFramework.MSTest. -->
+  <Target Name="RemoveConflictingTestFrameworkReference"
+          AfterTargets="ResolveAssemblyReferences"
+          BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <ReferencePath Remove="@(ReferencePath)"
+                     Condition="'%(Filename)' == 'Microsoft.NET.TestFramework' AND '%(Extension)' == '.dll'" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Basic.CompilerLog.Util" />
@@ -91,22 +98,26 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
     <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
-    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="Verify.MSTest" />
     <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
-    <PackageReference Include="Xunit.Combinatorial" />
+    <PackageReference Include="Combinatorial.MSTest" />
   </ItemGroup>
 
   <!-- Global usings -->
-  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
   <ItemGroup>
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.DotNet.Cli.Telemetry" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Include="Combinatorial.MSTest" />
     <!-- Aliases -->
     <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->
     <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
   </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <Target Name="CompareCliSnapshots">
     <ItemGroup>
