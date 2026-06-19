@@ -111,7 +111,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifestContentsJson = JsonDocument.Parse(manifestContents);
             manifestContentsJson.RootElement.TryGetProperty("assets", out var assets).Should().BeTrue();
             Assert.AreEqual(JsonValueKind.Array, assets.ValueKind);
-
             var entries = assets.EnumerateArray().Select(e => e.GetProperty("url").GetString()).OrderBy(e => e).ToArray();
             entries.Should().Contain(e => expectedExtensions.Contains(Path.GetExtension(e)));
 
