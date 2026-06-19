@@ -67,7 +67,8 @@ internal sealed class SdkAddCommand : CommandBase<SdkAddCommandDefinitionBase>
             _sdkId.Id,
             userVersion,
             userVersionSpecified,
-            startDirectory);
+            startDirectory,
+            interactive);
 
         SdkAddResult result = ProjectSdkReferenceHelper.AddOrUpdateSdk(
             msbuildProject.ProjectRootElement,
@@ -110,6 +111,7 @@ internal sealed class SdkAddCommand : CommandBase<SdkAddCommandDefinitionBase>
         string? userVersion = GetSpecifiedVersion();
         var fullPath = Path.GetFullPath(path);
         var startDirectory = Path.GetDirectoryName(fullPath) ?? Environment.CurrentDirectory;
+        bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
 
         var file = SourceFile.Load(fullPath);
         var editor = FileBasedAppSourceEditor.Load(file);
@@ -128,7 +130,8 @@ internal sealed class SdkAddCommand : CommandBase<SdkAddCommandDefinitionBase>
             _sdkId.Id,
             userVersion,
             userVersionSpecified,
-            startDirectory);
+            startDirectory,
+            interactive);
 
         SdkAddResult result;
         string? effectiveVersion = userVersionSpecified ? userVersion : version ?? existing?.Version;
@@ -137,7 +140,7 @@ internal sealed class SdkAddCommand : CommandBase<SdkAddCommandDefinitionBase>
             entryPointFileFullPath: fullPath,
             msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>(1)
             {
-                ["NuGetInteractive"] = _parseResult.GetValue(Definition.InteractiveOption).ToString(),
+                ["NuGetInteractive"] = interactive.ToString(),
             }.AsReadOnly()))
         {
             NoCache = true,

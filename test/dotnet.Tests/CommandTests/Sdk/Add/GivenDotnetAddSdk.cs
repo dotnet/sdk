@@ -172,6 +172,33 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void WhenGlobalJsonHasCommentsAndTrailingCommasProjectOmitsVersion()
+    {
+        const string testAsset = "TestAppSimple";
+        var projectDirectory = TestAssetsManager
+            .CopyTestAsset(testAsset)
+            .WithSource()
+            .Path;
+
+        File.WriteAllText(Path.Combine(projectDirectory, "global.json"), """
+            {
+              // pin Cake SDK centrally
+              "msbuild-sdks": {
+                "Cake.Sdk": "6.2.0",
+              },
+            }
+            """);
+
+        var projectFilePath = Path.Combine(projectDirectory, $"{testAsset}.csproj");
+        new DotnetCommand(Log)
+            .WithWorkingDirectory(projectDirectory)
+            .Execute("sdk", "add", "Cake.Sdk", "--no-restore")
+            .Should().Pass();
+
+        File.ReadAllText(projectFilePath).Should().Contain("""<Sdk Name="Cake.Sdk" />""");
+    }
+
+    [Fact]
     public void FileBasedApp_WithoutVersionPreservesPinnedVersion()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
