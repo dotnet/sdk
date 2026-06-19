@@ -19,6 +19,7 @@ pr:
     - src
     - template_feed
     - test
+    - .config
     - '*.yml'
     - '*.props'
     - '*.targets'

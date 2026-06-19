@@ -94,12 +94,33 @@ A NativeAOT shared library (`NativeLib=Shared`) that exports a single
 `[UnmanagedCallersOnly]` entry point: `dotnet_execute`. This layer contains
 the dual-path dispatch logic.
 
-**Fast path** — When `DOTNET_CLI_ENABLEAOT=true`, the AOT bridge compiles a
-minimal `Parser` (guarded by `#if CLI_AOT`) that handles simple commands
-(`--version`, `--info`) entirely in native code. If the parser recognizes the
-command, it executes immediately and returns.
+**Fast path** — When `DOTNET_CLI_ENABLEAOT=true`, the AOT bridge builds the
+**full** command tree (the same `DotNetCommandDefinition` used by the managed
+CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
+can run entirely in AOT (`--version`, `--info`, and the AOT-capable `sln`
+subcommands) execute immediately and return. Every other built-in command is
+wired with a fallback action that throws `CommandNotAvailableInAotException`;
+the bridge catches it (and any unexpected parse-time failure) and transparently
+falls through to the managed CLI.
 
-**Slow path** — When `DOTNET_CLI_ENABLEAOT` is not set or the AOT parser does
+**External command path** — When the parsed command is not a built-in
+(`parseResult.RequiresManagedCommandResolution()`), it is either an external
+tool (`dotnet ef`, a global or local tool, a command on the `PATH`, an app-base
+command, ...) or an implicit file-based app (`dotnet app.cs`). The bridge's
+`TryInvokeExternalCommand` resolves these with the same AOT-safe resolver set
+the managed CLI uses — minus the MSBuild/NuGet project-tools resolver — via
+`CommandResolver.TryResolveCommandSpec(new DefaultCommandResolverPolicy(), ...)`,
+then invokes the resolved `CommandSpec` out-of-process through
+`CommandFactoryUsingResolver` + `Command.Execute()`. The resolution step is
+side-effect free, so the bridge defers to the managed CLI whenever it cannot
+handle the invocation: file-based apps (handled by the managed `run` pipeline),
+commands that only the full project-tools resolver can find, anything that does
+not resolve, or any resolution error. Because the managed CLI re-resolves with
+its full resolver set, deferral produces identical user-facing behavior. Out-of-
+process invocation only happens after a non-null spec, so a command is never
+executed twice.
+
+**Slow path** — When `DOTNET_CLI_ENABLEAOT` is not set or the AOT bridge does
 not handle the command, the bridge calls `ManagedHost.RunApp()`, which uses the
 hostfxr native hosting APIs (`hostfxr_initialize_for_dotnet_command_line` /
 `hostfxr_set_runtime_property_value` / `hostfxr_run_app`) to bootstrap CoreCLR
@@ -111,6 +132,7 @@ exactly as the muxer would configure it for an SDK command.
 sequenceDiagram
     participant dn as dn.exe (Layer 1)
     participant aot as dotnet-aot.dll (Layer 2)
+    participant tool as external tool / process
     participant hfxr as hostfxr
     participant clr as CoreCLR
     participant cli as dotnet.dll (Layer 3)
@@ -118,10 +140,15 @@ sequenceDiagram
     dn->>aot: dotnet_execute(hostPath, dotnetRoot, sdkDir, hostfxrPath, argc, argv)
     aot->>aot: Parser.Parse(args)
 
-    alt DOTNET_CLI_ENABLEAOT=true and command handled by AOT
+    alt DOTNET_CLI_ENABLEAOT=true and built-in command handled by AOT
         aot->>aot: Parser.Invoke(parseResult)
         aot-->>dn: exit code
-    else Command not handled or AOT disabled
+    else External command that resolves in AOT (tool / PATH / app-base)
+        aot->>aot: TryInvokeExternalCommand → TryResolveCommandSpec
+        aot->>tool: Command.Execute() (out of process)
+        tool-->>aot: exit code
+        aot-->>dn: exit code
+    else Command not handled, unresolved, file-based app, or AOT disabled
         aot->>hfxr: hostfxr_initialize_for_dotnet_command_line(args, host_path, dotnet_root)
         aot->>hfxr: hostfxr_set_runtime_property_value(handle, "HOSTFXR_PATH", hostfxrPath)
         aot->>hfxr: hostfxr_run_app(handle)
@@ -151,20 +178,28 @@ the appropriate implementation:
 <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
 
 <Compile Include="..\dotnet\Program.cs" Link="Program.cs" />
-<Compile Include="..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
 <Compile Include="..\dotnet\Parser.cs" Link="Parser.cs" />
+<Compile Include="..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
 ```
 
 In the shared files:
 
-- **`Parser.cs`** — Under `#if CLI_AOT`, defines a minimal parser with only
-  `--version` and `--info`. Under `#else`, defines the full command tree.
+- **`Parser.cs`** — A single shared `Parser` class builds the same full
+  `DotNetCommandDefinition` tree in both modes. Only the action wiring differs,
+  isolated to small inline `#if CLI_AOT` regions: the managed build wires the
+  real command handlers, while the AOT build attaches a managed-fallback handler
+  to every command (overriding it with real implementations where AOT can run
+  the command, e.g. `sln`). The help writer (`DotnetHelpBuilder`) has no
+  conditional compilation: help for the external-tool commands
+  (msbuild/nuget/vstest/format/fsi) renders from AOT because those forwarding
+  apps use AOT-friendly out-of-process codepaths under `#if CLI_AOT`.
 - **`Program.cs`** — Under `#if CLI_AOT`, provides a simple `Main` that
   delegates to the AOT parser. Under `#else`, provides the full CLI entry point
   with telemetry, signal handlers, and workload checks.
-- **`CommandLineInfo.cs`** — Uses `#if CLI_AOT` to substitute lightweight
-  implementations for workload info, localized strings, and OS detection that
-  would otherwise pull in dependencies incompatible with AOT.
+- **`ParserOptionActions.cs`** — The shared `--help`/`--version`/`--info` option
+  actions. `PrintInfoAction` uses `#if !CLI_AOT` to omit the workload and MSBuild
+  details that aren't AOT-compatible yet; the diagnostics and `--cli-schema`
+  actions are `#if !CLI_AOT` (the AOT build defers those to the managed CLI).
 
 ```mermaid
 graph LR
