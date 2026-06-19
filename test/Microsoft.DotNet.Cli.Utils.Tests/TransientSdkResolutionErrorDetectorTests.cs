@@ -46,5 +46,17 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 "error MSB4236: The SDK 'Contoso.Custom.Sdk' specified could not be found. [/work/project.csproj]";
             TransientSdkResolutionErrorDetector.IsTransientError(input).Should().BeFalse();
         }
+
+        [Fact]
+        public void OtherResolverReturningNullIsNotTransient()
+        {
+            // A "returned null" message from a different resolver must not trigger a retry: only the in-box
+            // workload resolver deferral (Microsoft.DotNet.MSBuildWorkloadSdkResolver) is the transient flake.
+            string input =
+                "Sdk.props(20,3): error :   SDK resolver \"Contoso.CustomSdkResolver\" returned null.\r\n" +
+                "Sdk.props(20,11): error MSB4236: The SDK 'Microsoft.NET.Sdk.StaticWebAssets' specified could not be " +
+                "found. [/work/InstantiatePr.csproj]";
+            TransientSdkResolutionErrorDetector.IsTransientError(input).Should().BeFalse();
+        }
     }
 }

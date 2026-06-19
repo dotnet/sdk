@@ -27,11 +27,14 @@ namespace Microsoft.NET.TestFramework
             // The combination below is specific to the transient in-box SDK resolution flake:
             //   - MSB4236 is raised for an SDK that "could not be found",
             //   - for an in-box SDK in the Microsoft.NET.Sdk family, and
-            //   - after the .NET SDK workload resolver deferred resolution by returning null.
-            // Requiring all three avoids retrying legitimate failures such as a NuGet-versioned SDK that is
-            // intentionally absent.
+            //   - after the .NET SDK workload resolver (Microsoft.DotNet.MSBuildWorkloadSdkResolver) deferred
+            //     resolution by returning null.
+            // Keying on the specific resolver name (rather than a bare "returned null" substring) avoids
+            // accidental retries when some other resolver emits a similar message, and requiring all three
+            // avoids retrying legitimate failures such as a NuGet-versioned SDK that is intentionally absent.
             return errorMessage.Contains("MSB4236")
                 && errorMessage.Contains("Microsoft.NET.Sdk")
+                && errorMessage.Contains("Microsoft.DotNet.MSBuildWorkloadSdkResolver")
                 && errorMessage.Contains("returned null");
         }
     }
