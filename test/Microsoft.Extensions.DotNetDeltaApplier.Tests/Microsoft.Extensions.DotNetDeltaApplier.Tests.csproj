@@ -1,9 +1,7 @@
 <Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
-    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://api.nuget.org/v3/index.json</RestoreAdditionalProjectSources>
-
-    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+<TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.Extensions.DotNetDeltaApplier</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
