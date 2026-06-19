@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     public class TemplateEngineSamplesTest : BaseIntegrationTest
     {
         private ILogger? _loggerInstance;
-        private ILogger _log => _loggerInstance ??= new TestLoggerFactory(Log).CreateLogger(nameof(CommonTemplatesTests));
+        private ILogger _log => _loggerInstance ??= new TestLoggerFactory(Log).CreateLogger(nameof(TemplateEngineSamplesTest));
         private static SharedHomeDirectory s_sharedHome = null!;
 
         [ClassInitialize]
