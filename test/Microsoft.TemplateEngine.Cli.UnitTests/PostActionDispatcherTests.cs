@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
@@ -10,16 +10,32 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
-    public class PostActionDispatcherTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class PostActionDispatcherTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
+        // mirrors the per-class lifetime that xUnit's IClassFixture provides.
+        private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
+            new(() => new EnvironmentSettingsHelper(NullMessageSink.Instance));
 
-        public PostActionDispatcherTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        private EnvironmentSettingsHelper _environmentSettingsHelper = null!;
+
+        [TestInitialize]
+        public void TestInitialize()
         {
-            _environmentSettingsHelper = environmentSettingsHelper;
+            _environmentSettingsHelper = s_environmentSettingsHelper.Value;
         }
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            if (s_environmentSettingsHelper.IsValueCreated)
+            {
+                s_environmentSettingsHelper.Value.Dispose();
+            }
+        }
+
+        [TestMethod]
         public void CanProcessSuccessPostAction()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -41,16 +57,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => string.Empty);
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Success, result);
-            Assert.Single(postActionProcessor.Calls);
-            Assert.Equal(engineEnvironmentSettings, postActionProcessor.Calls.Single().EngineEnvironmentSettings);
-            Assert.Equal(postAction, postActionProcessor.Calls.Single().PostAction);
-            Assert.Equal(creationEffects, postActionProcessor.Calls.Single().CreationEffects);
-            Assert.Equal(creationResult, postActionProcessor.Calls.Single().CreationResult);
-            Assert.Equal("TestPath", postActionProcessor.Calls.Single().OutputPath);
+            Assert.AreEqual(PostActionExecutionStatus.Success, result);
+            Assert.HasCount(1, postActionProcessor.Calls);
+            Assert.AreEqual(engineEnvironmentSettings, postActionProcessor.Calls.Single().EngineEnvironmentSettings);
+            Assert.AreEqual(postAction, postActionProcessor.Calls.Single().PostAction);
+            Assert.AreEqual(creationEffects, postActionProcessor.Calls.Single().CreationEffects);
+            Assert.AreEqual(creationResult, postActionProcessor.Calls.Single().CreationResult);
+            Assert.AreEqual("TestPath", postActionProcessor.Calls.Single().OutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanDryRunSuccessPostAction()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -72,11 +88,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => string.Empty);
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Success, result);
-            Assert.Empty(postActionProcessor.Calls);
+            Assert.AreEqual(PostActionExecutionStatus.Success, result);
+            Assert.IsEmpty(postActionProcessor.Calls);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessFailedPostAction()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -98,15 +114,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => string.Empty);
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Failure, result);
-            Assert.Equal(engineEnvironmentSettings, postActionProcessor.Calls.Single().EngineEnvironmentSettings);
-            Assert.Equal(postAction, postActionProcessor.Calls.Single().PostAction);
-            Assert.Equal(creationEffects, postActionProcessor.Calls.Single().CreationEffects);
-            Assert.Equal(creationResult, postActionProcessor.Calls.Single().CreationResult);
-            Assert.Equal("TestPath", postActionProcessor.Calls.Single().OutputPath);
+            Assert.AreEqual(PostActionExecutionStatus.Failure, result);
+            Assert.AreEqual(engineEnvironmentSettings, postActionProcessor.Calls.Single().EngineEnvironmentSettings);
+            Assert.AreEqual(postAction, postActionProcessor.Calls.Single().PostAction);
+            Assert.AreEqual(creationEffects, postActionProcessor.Calls.Single().CreationEffects);
+            Assert.AreEqual(creationResult, postActionProcessor.Calls.Single().CreationResult);
+            Assert.AreEqual("TestPath", postActionProcessor.Calls.Single().OutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanDryRunFailedPostAction()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -129,11 +145,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => string.Empty);
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Success, result);
-            Assert.Empty(postActionProcessor.Calls);
+            Assert.AreEqual(PostActionExecutionStatus.Success, result);
+            Assert.IsEmpty(postActionProcessor.Calls);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessUnknownPostAction()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -159,11 +175,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => string.Empty);
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Failure, result);
-            Assert.Empty(postActionProcessor.Calls);
+            Assert.AreEqual(PostActionExecutionStatus.Failure, result);
+            Assert.IsEmpty(postActionProcessor.Calls);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessPostActionThrowingException()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -185,10 +201,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => string.Empty);
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes);
-            Assert.Equal(PostActionExecutionStatus.Failure, result);
+            Assert.AreEqual(PostActionExecutionStatus.Failure, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanContinueOnErrorWhenConfigured()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -228,16 +244,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes);
 
             // in case continue on error is true, success status is returned on failure
-            Assert.Equal(PostActionExecutionStatus.Success, result);
+            Assert.AreEqual(PostActionExecutionStatus.Success, result);
 
             //2 post actions were executed
-            Assert.Single(trueProcessor.Calls);
-            Assert.Single(falseProcessor.Calls);
-            Assert.Equal(postAction1, falseProcessor.Calls[0].PostAction);
-            Assert.Equal(postAction2, trueProcessor.Calls[0].PostAction);
+            Assert.HasCount(1, trueProcessor.Calls);
+            Assert.HasCount(1, falseProcessor.Calls);
+            Assert.AreEqual(postAction1, falseProcessor.Calls[0].PostAction);
+            Assert.AreEqual(postAction2, trueProcessor.Calls[0].PostAction);
         }
 
-        [Fact]
+        [TestMethod]
         public void CannotContinueOnErrorWhenNotConfigured()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -274,15 +290,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => string.Empty);
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes);
-            Assert.Equal(PostActionExecutionStatus.Failure, result);
+            Assert.AreEqual(PostActionExecutionStatus.Failure, result);
 
             //only first post action was executed
-            Assert.Empty(trueProcessor.Calls);
-            Assert.Single(falseProcessor.Calls);
-            Assert.Equal(postAction1, falseProcessor.Calls[0].PostAction);
+            Assert.IsEmpty(trueProcessor.Calls);
+            Assert.HasCount(1, falseProcessor.Calls);
+            Assert.AreEqual(postAction1, falseProcessor.Calls[0].PostAction);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessRunScriptPostAction_WhenRunScriptAllowed()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -311,10 +327,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Yes);
             //expect failure as post action fails
-            Assert.Equal(PostActionExecutionStatus.Failure, result);
+            Assert.AreEqual(PostActionExecutionStatus.Failure, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessRunScriptPostAction_WhenRunScriptNotAllowed()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -342,10 +358,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => string.Empty);
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.No);
-            Assert.Equal(PostActionExecutionStatus.Cancelled, result);
+            Assert.AreEqual(PostActionExecutionStatus.Cancelled, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessRunScriptPostAction_WhenRunScriptPrompt_Yes()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -375,10 +391,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
 
             //expect failure as post action fails
-            Assert.Equal(PostActionExecutionStatus.Failure, result);
+            Assert.AreEqual(PostActionExecutionStatus.Failure, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessRunScriptPostAction_WhenRunScriptPrompt_No()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -406,10 +422,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => "N"); // the user forbids to run post action
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Cancelled, result);
+            Assert.AreEqual(PostActionExecutionStatus.Cancelled, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessRunScriptPostAction_DryRun()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -438,14 +454,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             //run script setting doesn't matter for dry run
             var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Success, result);
+            Assert.AreEqual(PostActionExecutionStatus.Success, result);
             result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Yes);
-            Assert.Equal(PostActionExecutionStatus.Success, result);
+            Assert.AreEqual(PostActionExecutionStatus.Success, result);
             result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.No);
-            Assert.Equal(PostActionExecutionStatus.Success, result);
+            Assert.AreEqual(PostActionExecutionStatus.Success, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessRunScriptPostActionAndFailedPostAction_WhenRunScriptPrompt_No()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -483,12 +499,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => "N"); // the user forbids to run post action
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Cancelled, result);
-            Assert.Single(postActionProcessor.Calls);
-            Assert.Equal(postAction2, postActionProcessor.Calls.Single().PostAction);
+            Assert.AreEqual(PostActionExecutionStatus.Cancelled, result);
+            Assert.HasCount(1, postActionProcessor.Calls);
+            Assert.AreEqual(postAction2, postActionProcessor.Calls.Single().PostAction);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessRunScriptPostActionAndSuccessPostAction_WhenRunScriptPrompt_No()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -526,10 +542,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 () => "N"); // the user forbids to run post action
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
-            Assert.Equal(PostActionExecutionStatus.Cancelled, result);
-            Assert.NotEqual(PostActionExecutionStatus.Failure, result);
-            Assert.Single(postActionProcessor.Calls);
-            Assert.Equal(postAction2, postActionProcessor.Calls.Single().PostAction);
+            Assert.AreEqual(PostActionExecutionStatus.Cancelled, result);
+            Assert.AreNotEqual(PostActionExecutionStatus.Failure, result);
+            Assert.HasCount(1, postActionProcessor.Calls);
+            Assert.AreEqual(postAction2, postActionProcessor.Calls.Single().PostAction);
         }
 
         private class CaptureMePostAction : IPostActionProcessor
