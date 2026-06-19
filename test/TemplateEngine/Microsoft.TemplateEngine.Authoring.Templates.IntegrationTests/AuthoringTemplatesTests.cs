@@ -6,20 +6,17 @@ using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
 {
+    [TestClass]
     public class AuthoringTemplatesTests : TestBase
     {
-        private readonly ILogger _log;
+        public TestContext TestContext { get; set; } = null!;
 
-        public AuthoringTemplatesTests(ITestOutputHelper log)
-        {
-            _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
-        }
+        private ILogger Log => new TestContextLogger(TestContext);
 
-        [Fact]
+        [TestMethod]
         public async Task TemplateJsonTest()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -37,11 +34,11 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
                 ScenarioName = "Basic",
             }
             .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplateJsonTest_WithParameters()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -67,11 +64,11 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplateJsonTest_NoConfigFolder()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -95,11 +92,11 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             }
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplatePackageTest()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -117,11 +114,11 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
                 ScenarioName = "Basic",
             }
             .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplatePackageTest_WithName()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -145,11 +142,11 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             }
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplatePackageTest_NoMSBuildTasks()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -173,11 +170,11 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             }
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplateJsonTest_CLI()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -195,11 +192,11 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
                 VerifyCommandOutput = true,
                 ScenarioName = "CLI",
             };
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplatePackageTest_CLI()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -217,8 +214,8 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
                 VerifyCommandOutput = true,
                 ScenarioName = "CLI",
             };
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
     }
 }

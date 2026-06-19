@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [Fact(DisplayName = nameof(VerifyBasicBatRemCommentHandling))]
+        [TestMethod(DisplayName = nameof(VerifyBasicBatRemCommentHandling))]
         public void VerifyBasicBatRemCommentHandling()
         {
             string originalValue = @"Start
@@ -52,7 +51,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyBatRemCommentRemovalForEachClauseNoEmbedding))]
+        [TestMethod(DisplayName = nameof(VerifyBatRemCommentRemovalForEachClauseNoEmbedding))]
         public void VerifyBatRemCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -124,7 +123,7 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyBatRemCommentRemovalWithNestedClause))]
+        [TestMethod(DisplayName = nameof(VerifyBatRemCommentRemovalWithNestedClause))]
         public void VerifyBatRemCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -170,7 +169,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyBatRemCommentRemovalNestedDoesntRemove))]
+        [TestMethod(DisplayName = nameof(VerifyBatRemCommentRemovalNestedDoesntRemove))]
         public void VerifyBatRemCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -217,7 +216,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyBatRemMixedConditionalsThreeLevelEmbedding))]
+        [TestMethod(DisplayName = nameof(VerifyBatRemMixedConditionalsThreeLevelEmbedding))]
         public void VerifyBatRemMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

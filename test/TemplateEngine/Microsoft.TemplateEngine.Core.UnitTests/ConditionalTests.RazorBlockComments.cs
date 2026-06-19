@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
@@ -203,70 +202,70 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = false
         };
 
-        [Theory(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterIfTrue))]
-        [InlineData(NoDefaultValue, OuterIfTrueExpectedValue)]
-        [InlineData(OuterIfDefaultValue, OuterIfTrueExpectedValue)]
-        [InlineData(OuterElseifDefaultValue, OuterIfTrueExpectedValue)]
-        [InlineData(OuterElseDefaultValue, OuterIfTrueExpectedValue)]
-        [InlineData(InnerIfDefaultValue, OuterIfTrueExpectedValue)]
-        [InlineData(InnerElseifDefaultValue, OuterIfTrueExpectedValue)]
-        [InlineData(InnerElseDefaultValue, OuterIfTrueExpectedValue)]
+        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterIfTrue))]
+        [DataRow(NoDefaultValue, OuterIfTrueExpectedValue)]
+        [DataRow(OuterIfDefaultValue, OuterIfTrueExpectedValue)]
+        [DataRow(OuterElseifDefaultValue, OuterIfTrueExpectedValue)]
+        [DataRow(OuterElseDefaultValue, OuterIfTrueExpectedValue)]
+        [DataRow(InnerIfDefaultValue, OuterIfTrueExpectedValue)]
+        [DataRow(InnerElseifDefaultValue, OuterIfTrueExpectedValue)]
+        [DataRow(InnerElseDefaultValue, OuterIfTrueExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterIfTrue(string source, string expected)
         {
             IProcessor processor = SetupRazorStyleProcessor(OuterIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseifTrueExpectedValue))]
-        [InlineData(NoDefaultValue, OuterElseifTrueExpectedValue)]
-        [InlineData(OuterIfDefaultValue, OuterElseifTrueExpectedValue)]
-        [InlineData(OuterElseifDefaultValue, OuterElseifTrueExpectedValue)]
-        [InlineData(OuterElseDefaultValue, OuterElseifTrueExpectedValue)]
-        [InlineData(InnerIfDefaultValue, OuterElseifTrueExpectedValue)]
-        [InlineData(InnerElseifDefaultValue, OuterElseifTrueExpectedValue)]
-        [InlineData(InnerElseDefaultValue, OuterElseifTrueExpectedValue)]
+        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseifTrueExpectedValue))]
+        [DataRow(NoDefaultValue, OuterElseifTrueExpectedValue)]
+        [DataRow(OuterIfDefaultValue, OuterElseifTrueExpectedValue)]
+        [DataRow(OuterElseifDefaultValue, OuterElseifTrueExpectedValue)]
+        [DataRow(OuterElseDefaultValue, OuterElseifTrueExpectedValue)]
+        [DataRow(InnerIfDefaultValue, OuterElseifTrueExpectedValue)]
+        [DataRow(InnerElseifDefaultValue, OuterElseifTrueExpectedValue)]
+        [DataRow(InnerElseDefaultValue, OuterElseifTrueExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterElseifTrueExpectedValue(string source, string expected)
         {
             IProcessor processor = SetupRazorStyleProcessor(OuterElseifTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerIfTrueExpectedValue))]
-        [InlineData(NoDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(OuterIfDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(OuterElseifDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(OuterElseDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(InnerIfDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(InnerElseifDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(InnerElseDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
+        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerIfTrueExpectedValue))]
+        [DataRow(NoDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(OuterIfDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(OuterElseifDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(OuterElseDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(InnerIfDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(InnerElseifDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(InnerElseDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerIfTrueExpectedValue(string source, string expected)
         {
             IProcessor processor = SetupRazorStyleProcessor(InnerIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseifTrueExpectedValue))]
-        [InlineData(NoDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(OuterIfDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(OuterElseifDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(OuterElseDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(InnerIfDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(InnerElseifDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(InnerElseDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
+        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseifTrueExpectedValue))]
+        [DataRow(NoDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(OuterIfDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(OuterElseifDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(OuterElseDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(InnerIfDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(InnerElseifDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(InnerElseDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseifTrueExpectedValue(string source, string expected)
         {
             IProcessor processor = SetupRazorStyleProcessor(InnerElseIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseHappensExpectedValue))]
-        [InlineData(NoDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(OuterIfDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(OuterElseifDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(OuterElseDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(InnerIfDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(InnerElseifDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(InnerElseDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
+        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseHappensExpectedValue))]
+        [DataRow(NoDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(OuterIfDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(OuterElseifDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(OuterElseDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(InnerIfDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(InnerElseifDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(InnerElseDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseHappensExpectedValue(string source, string expected)
         {
             IProcessor processor = SetupRazorStyleProcessor(AllFalse);
@@ -323,36 +322,36 @@ Trailing stuff";
             ["CLAUSE_2"] = false
         };
 
-        [Theory(DisplayName = nameof(RazorBlockCommentsBasicTestBothClausesTrue))]
-        [InlineData(BasicValue, IfEmitted)]
-        [InlineData(BasicWithDefault, IfEmitted)]
+        [TestMethod(DisplayName = nameof(RazorBlockCommentsBasicTestBothClausesTrue))]
+        [DataRow(BasicValue, IfEmitted)]
+        [DataRow(BasicWithDefault, IfEmitted)]
         public void RazorBlockCommentsBasicTestBothClausesTrue(string test, string expected)
         {
             IProcessor processor = SetupRazorStyleProcessor(BothClausesTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(RazorBlockCommentsBasicTestClauseTwoTrue))]
-        [InlineData(BasicValue, ElseIfEmitted)]
-        [InlineData(BasicWithDefault, ElseIfEmitted)]
+        [TestMethod(DisplayName = nameof(RazorBlockCommentsBasicTestClauseTwoTrue))]
+        [DataRow(BasicValue, ElseIfEmitted)]
+        [DataRow(BasicWithDefault, ElseIfEmitted)]
         public void RazorBlockCommentsBasicTestClauseTwoTrue(string test, string expected)
         {
             IProcessor processor = SetupRazorStyleProcessor(ClauseTwoTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(RazorBlockCommentsBasicTestNeitherClauseTrue))]
-        [InlineData(BasicValue, ElseEmitted)]
-        [InlineData(BasicWithDefault, ElseEmitted)]
+        [TestMethod(DisplayName = nameof(RazorBlockCommentsBasicTestNeitherClauseTrue))]
+        [DataRow(BasicValue, ElseEmitted)]
+        [DataRow(BasicWithDefault, ElseEmitted)]
         public void RazorBlockCommentsBasicTestNeitherClauseTrue(string test, string expected)
         {
             IProcessor processor = SetupRazorStyleProcessor(NeitherClauseTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [Theory]
-        [InlineData(true, "No Auth")]
-        [InlineData(false, "Auth")]
+        [TestMethod]
+        [DataRow(true, "No Auth")]
+        [DataRow(false, "Auth")]
         // File encoding is not maintained when first line of file is a conditional statement
         // https://github.com/dotnet/templating/issues/2217
         public void BomMentained(bool noAuth, string expected)

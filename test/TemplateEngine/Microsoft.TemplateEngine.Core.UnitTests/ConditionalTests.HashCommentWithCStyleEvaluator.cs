@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [Fact(DisplayName = nameof(VerifyBasicHashCommentHandling))]
+        [TestMethod(DisplayName = nameof(VerifyBasicHashCommentHandling))]
         public void VerifyBasicHashCommentHandling()
         {
             string originalValue = @"Start
@@ -60,7 +59,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyHashStyleCommentRemovalForEachClauseNoEmbedding))]
+        [TestMethod(DisplayName = nameof(VerifyHashStyleCommentRemovalForEachClauseNoEmbedding))]
         public void VerifyHashStyleCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -131,7 +130,7 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyHashStyleCommentRemovalWithNestedClause))]
+        [TestMethod(DisplayName = nameof(VerifyHashStyleCommentRemovalWithNestedClause))]
         public void VerifyHashStyleCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -177,7 +176,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyHashStyleCommentRemovalNestedDoesntRemove))]
+        [TestMethod(DisplayName = nameof(VerifyHashStyleCommentRemovalNestedDoesntRemove))]
         public void VerifyHashStyleCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -223,7 +222,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyHashSignMixedConditionalsThreeLevelEmbedding))]
+        [TestMethod(DisplayName = nameof(VerifyHashSignMixedConditionalsThreeLevelEmbedding))]
         public void VerifyHashSignMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

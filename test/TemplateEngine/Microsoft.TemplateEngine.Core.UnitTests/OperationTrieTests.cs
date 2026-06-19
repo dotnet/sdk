@@ -3,15 +3,15 @@
 
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Matching;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
+    [TestClass]
     public class OperationTrieTests
     {
         private delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token);
 
-        [Fact(DisplayName = nameof(VerifyOperationTrieFindsTokenAtStart))]
+        [TestMethod(DisplayName = nameof(VerifyOperationTrieFindsTokenAtStart))]
         public void VerifyOperationTrieFindsTokenAtStart()
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
@@ -24,13 +24,13 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             int currentBufferPosition = 0;
             IOperation? match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
-            Assert.NotNull(match);
-            Assert.Equal("Test1", match.Id);
-            Assert.Equal(0, token);
-            Assert.Equal(4, currentBufferPosition);
+            Assert.IsNotNull(match);
+            Assert.AreEqual("Test1", match.Id);
+            Assert.AreEqual(0, token);
+            Assert.AreEqual(4, currentBufferPosition);
         }
 
-        [Fact(DisplayName = nameof(VerifyOperationTrieFindsTokenAfterStart))]
+        [TestMethod(DisplayName = nameof(VerifyOperationTrieFindsTokenAfterStart))]
         public void VerifyOperationTrieFindsTokenAfterStart()
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
@@ -43,18 +43,18 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             int currentBufferPosition = 0;
             IOperation? match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out _);
 
-            Assert.Null(match);
-            Assert.Equal(0, currentBufferPosition);
+            Assert.IsNull(match);
+            Assert.AreEqual(0, currentBufferPosition);
             currentBufferPosition = 1;
             match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
-            Assert.NotNull(match);
-            Assert.Equal("Test2", match.Id);
-            Assert.Equal(1, token);
-            Assert.Equal(3, currentBufferPosition);
+            Assert.IsNotNull(match);
+            Assert.AreEqual("Test2", match.Id);
+            Assert.AreEqual(1, token);
+            Assert.AreEqual(3, currentBufferPosition);
         }
 
-        [Fact(DisplayName = nameof(VerifyOperationTrieFindsTokenAtEnd))]
+        [TestMethod(DisplayName = nameof(VerifyOperationTrieFindsTokenAtEnd))]
         public void VerifyOperationTrieFindsTokenAtEnd()
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
@@ -67,13 +67,13 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             int currentBufferPosition = 3;
             IOperation? match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
-            Assert.NotNull(match);
-            Assert.Equal("Test2", match.Id);
-            Assert.Equal(0, token);
-            Assert.Equal(buffer.Length, currentBufferPosition);
+            Assert.IsNotNull(match);
+            Assert.AreEqual("Test2", match.Id);
+            Assert.AreEqual(0, token);
+            Assert.AreEqual(buffer.Length, currentBufferPosition);
         }
 
-        [Fact(DisplayName = nameof(VerifyLastInWinsForIdenticalMatching))]
+        [TestMethod(DisplayName = nameof(VerifyLastInWinsForIdenticalMatching))]
         public void VerifyLastInWinsForIdenticalMatching()
         {
 #pragma warning disable IDE0230 // Use UTF-8 string literal
@@ -90,10 +90,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             int currentBufferPosition = 0;
             IOperation? match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
-            Assert.NotNull(match);
-            Assert.Equal("TestOp4", match.Id);
-            Assert.Equal(1, token);
-            Assert.Equal(buffer.Length, currentBufferPosition);
+            Assert.IsNotNull(match);
+            Assert.AreEqual("TestOp4", match.Id);
+            Assert.AreEqual(1, token);
+            Assert.AreEqual(buffer.Length, currentBufferPosition);
         }
 
         private class MockOperation : IOperation

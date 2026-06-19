@@ -8,20 +8,28 @@ using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class LookaroundTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class LookaroundTests : TestBase
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public LookaroundTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        public LookaroundTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        [Fact(DisplayName = nameof(TestLookBehindMatches))]
+        [TestMethod(DisplayName = nameof(TestLookBehindMatches))]
         public void TestLookBehindMatches()
         {
             string value = @"aababcabcacc";
@@ -40,7 +48,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLookAheadMatches))]
+        [TestMethod(DisplayName = nameof(TestLookAheadMatches))]
         public void TestLookAheadMatches()
         {
             string value = @"aababcabcacc";
@@ -59,7 +67,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLookAroundMatches))]
+        [TestMethod(DisplayName = nameof(TestLookAroundMatches))]
         public void TestLookAroundMatches()
         {
             string value = @"aababcabcacc";
@@ -78,7 +86,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLookaroundMatchLengthBehavior))]
+        [TestMethod(DisplayName = nameof(TestLookaroundMatchLengthBehavior))]
         public void TestLookaroundMatchLengthBehavior()
         {
             string value = @"background-color:white;
@@ -103,7 +111,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestFullyOverlappedMatchBehavior))]
+        [TestMethod(DisplayName = nameof(TestFullyOverlappedMatchBehavior))]
         public void TestFullyOverlappedMatchBehavior()
         {
             string value = @"foobarbaz";
@@ -127,7 +135,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLookbehindOverlappedMatchBehavior))]
+        [TestMethod(DisplayName = nameof(TestLookbehindOverlappedMatchBehavior))]
         public void TestLookbehindOverlappedMatchBehavior()
         {
             string value = @"foobarxaz";
@@ -151,7 +159,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLookaheadOverlappedMatchBehavior))]
+        [TestMethod(DisplayName = nameof(TestLookaheadOverlappedMatchBehavior))]
         public void TestLookaheadOverlappedMatchBehavior()
         {
             string value = @"foobarbaz";
@@ -175,7 +183,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestReadAheadBreaksLookBehinds))]
+        [TestMethod(DisplayName = nameof(TestReadAheadBreaksLookBehinds))]
         public void TestReadAheadBreaksLookBehinds()
         {
             string value = @"footbarbaz";
@@ -198,7 +206,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLookBehindWithValueOverlappingPriorMatchGetsSkipped))]
+        [TestMethod(DisplayName = nameof(TestLookBehindWithValueOverlappingPriorMatchGetsSkipped))]
         public void TestLookBehindWithValueOverlappingPriorMatchGetsSkipped()
         {
             string value = @"foobarbaz";
@@ -222,7 +230,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLookBehindCoveringMatchedValueGetsMatched))]
+        [TestMethod(DisplayName = nameof(TestLookBehindCoveringMatchedValueGetsMatched))]
         public void TestLookBehindCoveringMatchedValueGetsMatched()
         {
             string value = @"foobarbaz";
@@ -245,7 +253,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLookAroundsCanBeUsedForInsertion))]
+        [TestMethod(DisplayName = nameof(TestLookAroundsCanBeUsedForInsertion))]
         public void TestLookAroundsCanBeUsedForInsertion()
         {
             string value = @"foobaz";
@@ -267,7 +275,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(TestLongestActualWins))]
+        [TestMethod(DisplayName = nameof(TestLongestActualWins))]
         public void TestLongestActualWins()
         {
             string value = @"foobarbaz";

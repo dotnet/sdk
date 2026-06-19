@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [Fact(DisplayName = nameof(VerifyBasicHamlCommentHandling))]
+        [TestMethod(DisplayName = nameof(VerifyBasicHamlCommentHandling))]
         public void VerifyBasicHamlCommentHandling()
         {
             string originalValue = @"Start
@@ -60,7 +59,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyHamlCommentRemovalForEachClauseNoEmbedding))]
+        [TestMethod(DisplayName = nameof(VerifyHamlCommentRemovalForEachClauseNoEmbedding))]
         public void VerifyHamlCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -131,7 +130,7 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyHamlStyleCommentRemovalWithNestedClause))]
+        [TestMethod(DisplayName = nameof(VerifyHamlStyleCommentRemovalWithNestedClause))]
         public void VerifyHamlStyleCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -177,7 +176,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyHamlStyleCommentRemovalNestedDoesntRemove))]
+        [TestMethod(DisplayName = nameof(VerifyHamlStyleCommentRemovalNestedDoesntRemove))]
         public void VerifyHamlStyleCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -223,7 +222,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyHamlSignMixedConditionalsThreeLevelEmbedding))]
+        [TestMethod(DisplayName = nameof(VerifyHamlSignMixedConditionalsThreeLevelEmbedding))]
         public void VerifyHamlSignMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

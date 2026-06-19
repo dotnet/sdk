@@ -7,20 +7,28 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class PhasedOperationTests : TestBase, IClassFixture<TestLoggerFactory>
+    [TestClass]
+    public class PhasedOperationTests : TestBase
     {
+        private static TestLoggerFactory s_loggerFactory = null!;
         private readonly ILogger _logger;
 
-        public PhasedOperationTests(TestLoggerFactory testLoggerFactory)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_loggerFactory = new TestLoggerFactory();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_loggerFactory?.Dispose();
+
+        public PhasedOperationTests()
         {
-            _logger = testLoggerFactory.CreateLogger();
+            _logger = s_loggerFactory.CreateLogger();
         }
 
-        [Fact(DisplayName = nameof(VerifyPhasedOperationStateProgression))]
+        [TestMethod(DisplayName = nameof(VerifyPhasedOperationStateProgression))]
         public void VerifyPhasedOperationStateProgression()
         {
             string originalValue = @"
