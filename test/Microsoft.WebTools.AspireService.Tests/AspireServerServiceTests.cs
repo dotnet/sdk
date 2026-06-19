@@ -2,18 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+#pragma warning disable MSTESTEXP // TestContext.Current is experimental
 
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 
 namespace Aspire.Tools.Service.UnitTests;
 
-public class AspireServerServiceTests(ITestOutputHelper output)
+[TestClass]
+public class AspireServerServiceTests
 {
+    public TestContext TestContext { get; set; }
+
     private const string Project1Path = @"c:\test\Projects\project1.csproj";
     private const int ProcessId = 34213;
     private const string DcpId = "myid";
@@ -31,7 +36,7 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         env = new List<EnvVar> { new EnvVar { Name = "var1", Value = "value1" } }
     };
 
-    [Fact]
+    [TestMethod]
     public async Task SessionStarted_Test()
     {
         var mocks = new Mocks();
@@ -53,15 +58,15 @@ public class AspireServerServiceTests(ITestOutputHelper output)
 
         var result = await notificationTask.Task;
 
-        Assert.Equal(ProcessId, result.PID);
-        Assert.Equal("1", result.SessionId);
+        Assert.AreEqual(ProcessId, result.PID);
+        Assert.AreEqual("1", result.SessionId);
 
         await server.DisposeAsync();
 
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SessionEndedAsync_Test()
     {
         var mocks = new Mocks();
@@ -84,16 +89,16 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         await server.NotifySessionEndedAsync(DcpId, "1", ProcessId, 130, CancellationToken.None);
 
         var result = await sessionEndNotificationTask.Task;
-        Assert.Equal(ProcessId, result.Pid);
-        Assert.Equal("1", result.SessionId);
-        Assert.Equal(130, result.ExitCode);
+        Assert.AreEqual(ProcessId, result.Pid);
+        Assert.AreEqual("1", result.SessionId);
+        Assert.AreEqual(130, result.ExitCode);
 
         await server.DisposeAsync();
 
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task LaunchProject_Success()
     {
         var mocks = new Mocks();
@@ -107,17 +112,17 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         using HttpClient client = GetHttpClient(tokens);
 
         HttpResponseMessage response;
-        response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.Current.CancellationToken);
+        response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.Equal($"{client.BaseAddress}run_session/2", response.Headers.Location.AbsoluteUri);
+        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+        Assert.AreEqual($"{client.BaseAddress}run_session/2", response.Headers.Location.AbsoluteUri);
 
         await server.DisposeAsync();
 
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task LaunchProject_WithNullArgs_PassesThroughNullArgs()
     {
         var mocks = new Mocks();
@@ -131,17 +136,17 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         using HttpClient client = GetHttpClient(tokens);
 
         HttpResponseMessage response;
-        response = await client.PutAsJsonAsync(VersionedSessionUrl, Project2SessionRequest, TestContext.Current.CancellationToken);
+        response = await client.PutAsJsonAsync(VersionedSessionUrl, Project2SessionRequest, TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.Equal($"{client.BaseAddress}run_session/2", response.Headers.Location.AbsoluteUri);
+        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+        Assert.AreEqual($"{client.BaseAddress}run_session/2", response.Headers.Location.AbsoluteUri);
 
         await server.DisposeAsync();
 
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task LaunchProject_Success_ThenStopProcessRequest()
     {
         var mocks = new Mocks();
@@ -156,23 +161,23 @@ public class AspireServerServiceTests(ITestOutputHelper output)
 
         using HttpClient client = GetHttpClient(tokens);
 
-        var response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.CancellationToken);
+        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
 
         // Now send a stop session
-        response = await client.DeleteAsync(RunSessionRequest.Url + "/2", TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response = await client.DeleteAsync(RunSessionRequest.Url + "/2", TestContext.CancellationToken);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
         // Validate NoContent response if session not found
-        response = await client.DeleteAsync(RunSessionRequest.Url + "/3", TestContext.Current.CancellationToken);
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        response = await client.DeleteAsync(RunSessionRequest.Url + "/3", TestContext.CancellationToken);
+        Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
 
         await server.DisposeAsync();
 
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task LaunchProject_FailedToLaunchProject()
     {
         var mocks = new Mocks();
@@ -185,17 +190,17 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
 
-        var response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.Current.CancellationToken);
+        var response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType.ToString());
-        Assert.Equal("{\"error\":{\"message\":\"Launch project failed\"}}", await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.AreEqual("application/json; charset=utf-8", response.Content.Headers.ContentType.ToString());
+        Assert.AreEqual("{\"error\":{\"message\":\"Launch project failed\"}}", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
         await server.DisposeAsync();
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task LaunchProject_FailNoBearerToken()
     {
         var mocks = new Mocks();
@@ -206,15 +211,15 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         using HttpClient client = GetHttpClient(tokens);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "badToken");
 
-        var response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.Current.CancellationToken);
+        var response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
 
         await server.DisposeAsync();
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task LaunchProject_FailWrongUrl()
     {
         var mocks = new Mocks();
@@ -224,16 +229,16 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
 
-        var response = await client.PutAsJsonAsync("/run_badurl", Project1SessionRequest, TestContext.Current.CancellationToken);
+        var response = await client.PutAsJsonAsync("/run_badurl", Project1SessionRequest, TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 
         await server.DisposeAsync();
 
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task LaunchProject_NotAPUTRequest()
     {
         var mocks = new Mocks();
@@ -243,16 +248,16 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         var tokens = aspireServer.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
 
-        var response = await client.PostAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.Current.CancellationToken);
+        var response = await client.PostAsJsonAsync(VersionedSessionUrl, Project1SessionRequest, TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.MethodNotAllowed, response.StatusCode);
 
         await aspireServer.DisposeAsync();
 
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task StopSession_FailNoBearerToken()
     {
         var mocks = new Mocks();
@@ -263,15 +268,15 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         using HttpClient client = GetHttpClient(tokens);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "badToken");
 
-        var response = await client.DeleteAsync(RunSessionRequest.Url + "/2", TestContext.Current.CancellationToken);
+        var response = await client.DeleteAsync(RunSessionRequest.Url + "/2", TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
 
         await server.DisposeAsync();
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Info_Success()
     {
         var mocks = new Mocks();
@@ -281,15 +286,15 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
 
-        var response = await client.GetAsync(InfoResponse.Url, TestContext.Current.CancellationToken);
+        var response = await client.GetAsync(InfoResponse.Url, TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
         await server.DisposeAsync();
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Info_FailNoBearerToken()
     {
         var mocks = new Mocks();
@@ -300,15 +305,15 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         using HttpClient client = GetHttpClient(tokens);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "badToken");
 
-        var response = await client.GetAsync(InfoResponse.Url, TestContext.Current.CancellationToken);
+        var response = await client.GetAsync(InfoResponse.Url, TestContext.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
 
         await server.DisposeAsync();
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SendLogMessageAsync_Test()
     {
         var mocks = new Mocks();
@@ -330,14 +335,14 @@ public class AspireServerServiceTests(ITestOutputHelper output)
 
         var result = await notificationTask.Task;
 
-        Assert.Equal("My Message", result.LogMessage);
-        Assert.False(result.IsStdErr);
+        Assert.AreEqual("My Message", result.LogMessage);
+        Assert.IsFalse(result.IsStdErr);
         await aspireServer.DisposeAsync();
 
         mocks.Verify();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetEnvironmentForOrchestrator_Tests()
     {
         var mocks = new Mocks();
@@ -347,13 +352,13 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         // First time should create a key
         var envVars = server.GetServerConnectionEnvironment();
 
-        Assert.Equal(3, envVars.Count);
+        Assert.HasCount(3, envVars);
         var token = envVars[1];
-        Assert.NotNull(token.Value);
+        Assert.IsNotNull(token.Value);
 
         // Should return the same
         envVars = server.GetServerConnectionEnvironment();
-        Assert.Equal(token, envVars[1]);
+        Assert.AreEqual(token, envVars[1]);
 
         mocks.Verify();
     }
@@ -365,14 +370,20 @@ public class AspireServerServiceTests(ITestOutputHelper output)
 
         using var ws = new ClientWebSocket();
         ws.Options.SetRequestHeader("Authorization", $"Bearer {tokens.bearerToken}");
+        Exception connectException = null;
         try
         {
-            await ws.ConnectAsync(new Uri($"wss://{tokens.serverAddress}{RunSessionRequest.Url}{SessionNotification.Url}"), httpClient, TestContext.Current.CancellationToken);
+            await ws.ConnectAsync(new Uri($"wss://{tokens.serverAddress}{RunSessionRequest.Url}{SessionNotification.Url}"), httpClient, TestContext.CancellationToken);
         }
         catch (Exception ex)
         {
-            Assert.Fail("Could not connect to session update endpoint: " + ex.ToString());
             connected.SetResult(false);
+            connectException = ex;
+        }
+
+        if (connectException is not null)
+        {
+            Assert.Fail("Could not connect to session update endpoint: " + connectException.ToString());
             return;
         }
 
@@ -381,25 +392,32 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         while (ws.State == WebSocketState.Open)
         {
             string message;
+            bool connectionClosed = false;
             try
             {
                 (message, var messageType) = await GetSocketMsgAsync(ws);
 
                 if (messageType == WebSocketMessageType.Close)
                 {
-                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, TestContext.Current.CancellationToken);
+                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, TestContext.CancellationToken);
                     return;
                 }
             }
             catch
             {
                 // This is expected if the connection is closed
-                Assert.Equal(WebSocketState.Closed, ws.State);
+                connectionClosed = true;
+                message = null;
+            }
+
+            if (connectionClosed)
+            {
+                Assert.AreEqual(WebSocketState.Closed, ws.State);
                 return;
             }
 
             var notification = JsonSerializer.Deserialize<SessionNotification>(message, AspireServerService.JsonSerializerOptions);
-            Assert.NotNull(notification);
+            Assert.IsNotNull(notification);
 
             SessionNotification value = notification.NotificationType switch
             {
@@ -409,7 +427,7 @@ public class AspireServerServiceTests(ITestOutputHelper output)
                 _ => throw new InvalidOperationException($"Unexpected {notification.NotificationType}")
             };
 
-            Assert.NotNull(value);
+            Assert.IsNotNull(value);
             callback.Invoke(value);
         }
     }
@@ -440,7 +458,7 @@ public class AspireServerServiceTests(ITestOutputHelper output)
     private async Task<(string, WebSocketMessageType)> GetSocketMsgAsync(ClientWebSocket client)
     {
         var rcvBuffer = new ArraySegment<byte>(new byte[2048]);
-        WebSocketReceiveResult rcvResult = await client.ReceiveAsync(rcvBuffer, TestContext.Current.CancellationToken);
+        WebSocketReceiveResult rcvResult = await client.ReceiveAsync(rcvBuffer, TestContext.CancellationToken);
         if (rcvResult.MessageType == WebSocketMessageType.Text)
         {
             byte[] msgBytes = rcvBuffer.Skip(rcvBuffer.Offset).Take(rcvResult.Count).ToArray();
@@ -457,7 +475,7 @@ public class AspireServerServiceTests(ITestOutputHelper output)
         var aspireServer = new AspireServerService(serverEvents.Object, displayName: "Test server",
             line =>
             {
-                output.WriteLine(line);
+                TestContext.WriteLine(line);
                 Debug.WriteLine(line);
             });
 
