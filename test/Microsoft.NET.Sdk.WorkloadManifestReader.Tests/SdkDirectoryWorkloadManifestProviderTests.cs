@@ -38,7 +38,7 @@ namespace ManifestReaderTests
         [DataRow(false)]
         public void ItShouldPrioritizeInstallStateOverWorkloadSetUnlessSpecified(bool preferWorkloadSet)
         {
-            Initialize();
+            Initialize(identifier: preferWorkloadSet.ToString());
 
             CreateMockManifest(_manifestRoot, "8.0.400", "ios", "11.0.2", true);
             CreateMockManifest(_manifestRoot, "8.0.400", "ios", "11.0.6", true);
