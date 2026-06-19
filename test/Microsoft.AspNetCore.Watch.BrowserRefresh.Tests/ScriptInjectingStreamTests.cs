@@ -4,7 +4,6 @@
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh;
 
 [TestClass]
-
 public class ScriptInjectingStreamTests
 {
     private static readonly string s_injectedScript = ScriptInjectingStream.InjectedScript;
