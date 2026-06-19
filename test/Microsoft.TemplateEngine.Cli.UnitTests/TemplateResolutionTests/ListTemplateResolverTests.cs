@@ -16,8 +16,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
     [TestClass]
     public class ListTemplateResolverTests : BaseTest
     {
-        public new TestContext TestContext { get; set; } = null!;
-
         [TestMethod]
         public async Task TestGetTemplateResolutionResult_UniqueNameMatchesCorrectly()
         {

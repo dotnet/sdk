@@ -16,8 +16,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
     [TestClass]
     public class TemplateCommandTests : VerifyBase
     {
-        public new TestContext TestContext { get; set; } = null!;
-
         [TestMethod]
         public Task CannotCreateCommandForInvalidParameter()
         {

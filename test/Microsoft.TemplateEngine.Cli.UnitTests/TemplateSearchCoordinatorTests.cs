@@ -23,8 +23,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
     [TestClass]
     public class TemplateSearchCoordinatorTests : BaseTest
     {
-        public new TestContext TestContext { get; set; } = null!;
-
 #pragma warning disable SA1308 // Variable names should not be prefixed
 #pragma warning disable SA1311 // Static readonly fields should begin with upper-case letter
         private static readonly ITemplatePackageInfo s_packOneInfo = new MockTemplatePackageInfo("PackOne", "1.0.0");
