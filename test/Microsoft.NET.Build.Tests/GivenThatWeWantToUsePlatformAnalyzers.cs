@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("16.8")]
-        public void It_referecnes_platform_analyzers()
+        public void It_references_platform_analyzers()
         {
             var testProject = new TestProject
             {
