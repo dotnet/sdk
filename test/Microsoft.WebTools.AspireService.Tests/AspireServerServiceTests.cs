@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
-#pragma warning disable MSTESTEXP // TestContext.Current is experimental
 
 using System.Diagnostics;
 using System.Net;
@@ -481,7 +480,7 @@ public class AspireServerServiceTests
 
         if (waitForListening)
         {
-            await aspireServer.WaitForListeningAsync();
+            await aspireServer.WaitForListeningAsync(TestContext.CancellationToken);
         }
 
         return aspireServer;
@@ -550,12 +549,12 @@ public class AspireServerServiceTests
 
 internal static class AspireServerServiceExtensions
 {
-    public static async Task WaitForListeningAsync(this AspireServerService aspireServer)
+    public static async Task WaitForListeningAsync(this AspireServerService aspireServer, CancellationToken cancellationToken)
     {
         string serverAddress = aspireServer.GetServerVariables().serverAddress;
 
         // We need to wait on the port being available
-        await Helpers.CanConnectToPortAsync(new Uri($"http://{serverAddress}"), 5000, TestContext.Current.CancellationToken);
+        await Helpers.CanConnectToPortAsync(new Uri($"http://{serverAddress}"), 5000, cancellationToken);
 
     }
 
