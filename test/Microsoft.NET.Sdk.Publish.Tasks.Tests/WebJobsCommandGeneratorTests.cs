@@ -11,16 +11,16 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
     {
         [TestMethod]
         // Windows
-        [DataRow("c:/test/WebApplication1.dll", false, ".exe", "dotnet WebApplication1.dll %*")]
+        [DataRow("c:/test/WebApplication1.dll", false, ".exe", "dotnet WebApplication1.dll %*", false)]
 
-        [DataRow("c:/test/WebApplication1.dll", true, ".exe", "WebApplication1.exe %*")]
-        [DataRow("c:/test/WebApplication1.dll", true, "", "WebApplication1 %*")]
+        [DataRow("c:/test/WebApplication1.dll", true, ".exe", "WebApplication1.exe %*", false)]
+        [DataRow("c:/test/WebApplication1.dll", true, "", "WebApplication1 %*", false)]
 
-        [DataRow("c:/test/WebApplication1.exe", true, ".exe", "WebApplication1.exe %*")]
-        [DataRow("c:/test/WebApplication1.exe", false, ".exe", "WebApplication1.exe %*")]
+        [DataRow("c:/test/WebApplication1.exe", true, ".exe", "WebApplication1.exe %*", false)]
+        [DataRow("c:/test/WebApplication1.exe", false, ".exe", "WebApplication1.exe %*", false)]
 
-        [DataRow("/usr/test/WebApplication1.dll", true, ".sh", "WebApplication1.sh %*")]
-        [DataRow("/usr/test/WebApplication1.dll", false, ".sh", "dotnet WebApplication1.dll %*")]
+        [DataRow("/usr/test/WebApplication1.dll", true, ".sh", "WebApplication1.sh %*", false)]
+        [DataRow("/usr/test/WebApplication1.dll", false, ".sh", "dotnet WebApplication1.dll %*", false)]
 
         //Linux
         [DataRow("c:/test/WebApplication1.dll", false, "", "#!/bin/bash\ndotnet WebApplication1.dll \"$@\"", true)]
