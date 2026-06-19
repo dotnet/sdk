@@ -1,10 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockTaskItem.cs" Link="TestUtilities\MockTaskItem.cs" />
@@ -20,10 +26,9 @@
     <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" ExcludeAssets="Runtime" />
     <!-- Needed for AspireLauncherIntegrationTests which exec the Aspire launcher executable. -->
     <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" Aliases="MSTestFramework" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Xunit.Combinatorial" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Spectre.Console.Testing" />
   </ItemGroup>
@@ -39,6 +44,7 @@
       <None Include="@(_FileItem)" Link="test-browser\%(_FileItem.Filename)%(_FileItem.Extension)" CopyToOutputDirectory="PreserveNewest" UseHardlinksIfPossible="true"/>
     </ItemGroup>
   </Target>
+
 
   <Import Project="..\..\src\Dotnet.Watch\Watch\RuntimeDependencies.props" />
 </Project>
