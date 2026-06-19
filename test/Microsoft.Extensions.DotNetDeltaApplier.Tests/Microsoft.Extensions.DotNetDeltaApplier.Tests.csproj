@@ -1,7 +1,7 @@
 <Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
-<TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.Extensions.DotNetDeltaApplier</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
@@ -10,7 +10,6 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\..\src\Dotnet.Watch\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Test.MSTest.Utilities\Microsoft.DotNet.Test.MSTest.Utilities.csproj" />
-    <PackageReference Include="Combinatorial.MSTest" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
