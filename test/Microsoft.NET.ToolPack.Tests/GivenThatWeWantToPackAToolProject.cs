@@ -18,7 +18,12 @@ namespace Microsoft.NET.ToolPack.Tests
         private string _targetFrameworkOrFrameworks = "netcoreapp2.1";
         private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
-            string id = $"{callingMethod}-{_targetFrameworkOrFrameworks}";
+            // Include all distinguishing parameters so each [DataRow] gets a unique test asset
+            // directory. Tests run with method-level parallelization (MSTest.Sdk default), so rows
+            // sharing a directory would race on the copied project files. Sanitize characters that
+            // are unsafe for the directory name and the /bl: binlog argument below.
+            string id = $"{callingMethod}-{multiTarget}-{packageType}-{_targetFrameworkOrFrameworks}"
+                .Replace(' ', '_').Replace(',', '_').Replace(';', '_');
             TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", id)
                 .WithSource()
