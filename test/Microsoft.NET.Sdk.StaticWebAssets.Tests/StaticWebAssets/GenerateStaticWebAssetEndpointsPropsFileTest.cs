@@ -482,9 +482,53 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
 
     }
 
+    [TestMethod]
+    [DoNotParallelize]
+    public void Execute_RelativeTargetPropsFilePath_ResolvesAgainstProjectDirectory_NotProcessCurrentDirectory()
+    {
+        WithDecoyCwdAndProjectDirectory((projectDir, spawnDir) =>
+        {
+            // Arrange
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
+            var task = new GenerateStaticWebAssetEndpointsPropsFile
+            {
+                BuildEngine = buildEngine.Object,
+                TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
+                StaticWebAssets =
+                [
+                    CreateStaticWebAsset(
+                        Path.Combine("wwwroot", "js", "sample.js"),
+                        "MyLibrary",
+                        "Discovered",
+                        Path.Combine("js", "sample.js"),
+                        "All",
+                        "All")
+                ],
+                StaticWebAssetEndpoints =
+                [
+                    CreateStaticWebAssetEndpoint(
+                        Path.Combine("js", "sample.js").Replace('\\', '/'),
+                        Path.Combine("wwwroot", "js", "sample.js"))
+                ],
+                PackagePathPrefix = "staticwebassets",
+                TargetPropsFilePath = "endpoints.props",
+            };
 
+            // Act
+            var result = task.Execute();
 
+            // Assert
+            result.Should().BeTrue();
+            errorMessages.Should().BeEmpty();
+            new FileInfo(Path.Combine(projectDir, "endpoints.props")).Should().Exist(
+                "a relative TargetPropsFilePath must be resolved against TaskEnvironment.ProjectDirectory, not the process CWD");
+            File.Exists(Path.Combine(spawnDir, "endpoints.props")).Should().BeFalse();
+        });
+    }
 
     private static ITaskItem CreateStaticWebAsset(
 
@@ -647,7 +691,29 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
 
     }
 
+    private static void WithDecoyCwdAndProjectDirectory(Action<string, string> body)
+    {
+        var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(GenerateStaticWebAssetEndpointsPropsFileTest), Guid.NewGuid().ToString("N"));
+        var projectDir = Path.Combine(testRoot, "project");
+        var spawnDir = Path.Combine(testRoot, "decoy", "spawn");
+        Directory.CreateDirectory(projectDir);
+        Directory.CreateDirectory(spawnDir);
 
+        var originalCwd = Directory.GetCurrentDirectory();
+        try
+        {
+            Directory.SetCurrentDirectory(spawnDir);
+            body(projectDir, spawnDir);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalCwd);
+            if (Directory.Exists(testRoot))
+            {
+                Directory.Delete(testRoot, recursive: true);
+            }
+        }
+    }
 }
 
 

@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks;
 // process-CWD mutation this test performs.
 
 
+[DoNotParallelize]
 [TestClass]
 
 public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest

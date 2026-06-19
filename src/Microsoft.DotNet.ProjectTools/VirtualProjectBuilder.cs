@@ -6,10 +6,12 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Security;
 using System.Xml;
+#if !CLI_AOT
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+#endif
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.Utilities;
@@ -18,6 +20,7 @@ namespace Microsoft.DotNet.ProjectTools;
 
 public sealed class VirtualProjectBuilder
 {
+
     internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
 
     internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
@@ -159,6 +162,7 @@ public sealed class VirtualProjectBuilder
         return Path.Join(GetTempSubdirectory(), name);
     }
 
+
     public static bool IsValidEntryPointPath(string entryPointFilePath)
     {
         if (!File.Exists(entryPointFilePath))
@@ -198,6 +202,7 @@ public sealed class VirtualProjectBuilder
     /// <c>#:include</c>/<c>#:exclude</c> have their <see cref="CSharpDirective.IncludeOrExclude.ItemType"/> determined
     /// and relative paths resolved relative to their containing file.
     /// </remarks>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private ImmutableArray<CSharpDirective> EvaluateDirectives(
         ProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
@@ -254,6 +259,7 @@ public sealed class VirtualProjectBuilder
         return builder.DrainToImmutable();
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
     {
         return CSharpDirective.IncludeOrExclude.ParseMapping(
@@ -262,6 +268,7 @@ public sealed class VirtualProjectBuilder
             reportError);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static ProjectInstance CreateProjectInstance(
         string entryPointFilePath,
         string targetFramework,
@@ -280,6 +287,7 @@ public sealed class VirtualProjectBuilder
         return projectInstance;
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     internal void CreateProjectInstance(
         ProjectCollection projectCollection,
         ErrorReporter reportError,
@@ -493,6 +501,7 @@ public sealed class VirtualProjectBuilder
         }
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private void CheckDirectives(
         ProjectInstance project,
         ImmutableArray<CSharpDirective> directives,

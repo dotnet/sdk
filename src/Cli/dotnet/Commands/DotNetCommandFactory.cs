@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
@@ -61,16 +62,23 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         var forwardedArgs = parseResult.OptionValuesToBeForwarded(commandDefinition);
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
-            [
-                .. optionsToUseWhenParsingMSBuildFlags,
-                CommonOptions.CreateGetPropertyOption(),
-                CommonOptions.CreateGetItemOption(),
-                CommonOptions.CreateGetTargetResultOption(),
-                CommonOptions.CreateGetResultOutputFileOption(),
-            ]);
-            msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
-            return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
+                [
+                    .. optionsToUseWhenParsingMSBuildFlags,
+                    CommonOptions.CreateGetPropertyOption(),
+                    CommonOptions.CreateGetItemOption(),
+                    CommonOptions.CreateGetTargetResultOption(),
+                    CommonOptions.CreateGetResultOutputFileOption(),
+                ]);
+                msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
+                return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Dynamic code generation is not supported on this platform.");
+            }
         }
         else
         {

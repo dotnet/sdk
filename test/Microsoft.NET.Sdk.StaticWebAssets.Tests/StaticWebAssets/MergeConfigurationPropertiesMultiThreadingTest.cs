@@ -46,6 +46,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 // process-CWD mutation this test performs.
 
 
+[DoNotParallelize]
 [TestClass]
 
 public class MergeConfigurationPropertiesMultiThreadingTest
