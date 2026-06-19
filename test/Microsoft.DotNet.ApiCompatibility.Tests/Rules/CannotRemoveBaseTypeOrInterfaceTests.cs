@@ -83,8 +83,8 @@ namespace CompatTests
             };
             Assert.AreSequenceEqual(expected, differences);
 
-            Assert.Contains(differences.ElementAt(0).Message, "CompatTests.FirstBase");
-            Assert.Contains(differences.ElementAt(1).Message, "CompatTests.IFirstInterface");
+            Assert.Contains("CompatTests.FirstBase", differences.ElementAt(0).Message);
+            Assert.Contains("CompatTests.IFirstInterface", differences.ElementAt(1).Message);
         }
 
         [TestMethod]
@@ -163,8 +163,8 @@ namespace CompatTests
             string firstMessage = differences[0].Message;
             string secondMessage = differences[1].Message;
 
-            Assert.Contains(firstMessage, "CompatTests.FirstBase");
-            Assert.Contains(secondMessage, "CompatTests.IFirstInterface");
+            Assert.Contains("CompatTests.FirstBase", firstMessage);
+            Assert.Contains("CompatTests.IFirstInterface", secondMessage);
 
             Assert.IsGreaterThan(firstMessage.IndexOf("left"), firstMessage.IndexOf("right"));
             Assert.IsGreaterThan(firstMessage.IndexOf("left"), secondMessage.IndexOf("right"));

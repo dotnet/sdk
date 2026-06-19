@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
 
             // No failures while running the package validation on a simple assembly.
             Assert.AreEqual(1, result.ExitCode);
-            Assert.Contains(result.StdOut, "error CP0002: Member 'void PackageValidationTestProject.Program.SomeAPINotInCore()' exists on lib/netstandard2.0/PackageValidationTestProject.dll but not on lib/net8.0/PackageValidationTestProject.dll");
+            Assert.Contains("error CP0002: Member 'void PackageValidationTestProject.Program.SomeAPINotInCore()' exists on lib/netstandard2.0/PackageValidationTestProject.dll but not on lib/net8.0/PackageValidationTestProject.dll", result.StdOut);
         }
 
         [TestMethod]
@@ -96,8 +96,8 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                 .Execute($"-p:PackageVersion=2.0.0;AddBreakingChange=true;PackageValidationBaselinePath={packageValidationBaselinePath}");
 
             Assert.AreEqual(1, result.ExitCode);
-            Assert.Contains(result.StdOut, "error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiNotInLatestVersion()' exists on [Baseline] lib/net8.0/PackageValidationTestProject.dll but not on lib/net8.0/PackageValidationTestProject.dll");
-            Assert.Contains(result.StdOut, "error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiNotInLatestVersion()' exists on [Baseline] lib/netstandard2.0/PackageValidationTestProject.dll but not on lib/netstandard2.0/PackageValidationTestProject.dll");
+            Assert.Contains("error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiNotInLatestVersion()' exists on [Baseline] lib/net8.0/PackageValidationTestProject.dll but not on lib/net8.0/PackageValidationTestProject.dll", result.StdOut);
+            Assert.Contains("error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiNotInLatestVersion()' exists on [Baseline] lib/netstandard2.0/PackageValidationTestProject.dll but not on lib/netstandard2.0/PackageValidationTestProject.dll", result.StdOut);
         }
 
         [TestMethod]
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                 .Execute($"-p:PackageVersion=2.0.0;PackageValidationBaselinePath={nonExistentPackageBaselinePath}");
 
             Assert.AreEqual(1, result.ExitCode);
-            Assert.Contains(result.StdOut, string.Format(Resources.NonExistentPackagePath, nonExistentPackageBaselinePath));
+            Assert.Contains(string.Format(Resources.NonExistentPackagePath, nonExistentPackageBaselinePath), result.StdOut);
 
             // Disables package baseline validation.
             result = new PackCommand(Log, Path.Combine(testAsset.TestRoot, "PackageValidationTestProject.csproj"))
@@ -137,8 +137,8 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                 .Execute($"-p:PackageVersion=2.0.0;ForceStrictModeBaselineValidationProblem=true;EnableStrictModeForBaselineValidation=true;PackageValidationBaselinePath={packageValidationBaselinePath}");
 
             Assert.AreEqual(1, result.ExitCode);
-            Assert.Contains(result.StdOut, "error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiOnlyInLatestVersion()' exists on lib/net8.0/PackageValidationTestProject.dll but not on [Baseline] lib/net8.0/PackageValidationTestProject.dll");
-            Assert.Contains(result.StdOut, "error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiOnlyInLatestVersion()' exists on lib/netstandard2.0/PackageValidationTestProject.dll but not on [Baseline] lib/netstandard2.0/PackageValidationTestProject.dll");
+            Assert.Contains("error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiOnlyInLatestVersion()' exists on lib/net8.0/PackageValidationTestProject.dll but not on [Baseline] lib/net8.0/PackageValidationTestProject.dll", result.StdOut);
+            Assert.Contains("error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiOnlyInLatestVersion()' exists on lib/netstandard2.0/PackageValidationTestProject.dll but not on [Baseline] lib/netstandard2.0/PackageValidationTestProject.dll", result.StdOut);
         }
 
         [TestMethod]

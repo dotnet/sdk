@@ -212,13 +212,13 @@ namespace CompatTests
             string right = " " + expectedRightName;
             if (leftFirst)
             {
-                Assert.Contains(message, left + " ");
-                Assert.EndsWith(message, right);
+                Assert.Contains(left + " ", message);
+                Assert.EndsWith(right, message);
             }
             else
             {
-                Assert.Contains(message, right + " ");
-                Assert.EndsWith(message, left);
+                Assert.Contains(right + " ", message);
+                Assert.EndsWith(left, message);
             }
         }
     }
