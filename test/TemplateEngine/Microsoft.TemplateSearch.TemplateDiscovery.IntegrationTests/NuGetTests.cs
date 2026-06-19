@@ -36,7 +36,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 
                 Assert.AreEqual("Microsoft.DotNet.Common.ProjectTemplates.5.0", packageInfo.Name);
                 Assert.IsNotEmpty(packageInfo.Version);
-                Assert.IsGreaterThan(packageInfo.TotalDownloads, 0);
+                Assert.IsGreaterThan(0, packageInfo.TotalDownloads);
                 Assert.IsTrue(packageInfo.Reserved);
                 Assert.Contains("Microsoft", packageInfo.Owners);
                 packageInfo.Description.Should().NotBeNullOrEmpty();
