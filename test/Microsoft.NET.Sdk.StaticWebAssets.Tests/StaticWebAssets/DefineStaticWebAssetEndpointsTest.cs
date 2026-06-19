@@ -872,4 +872,118 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints.Should().ContainSingle();
         endpoints[0].Route.Should().Be("index.html");
     }
+
+    [Fact]
+    public void ExistingEndpointsMatchingWorksWithNonFallbackTaskEnvironment()
+    {
+        // Verifies that the ExistingEndpoints deduplication logic works correctly
+        // when a non-Fallback TaskEnvironment is injected (as MSBuild does in MT mode).
+        // This guards against regressions in the IMultiThreadableTask contract — the
+        // task must function identically regardless of which TaskEnvironment is set.
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot") + Path.DirectorySeparatorChar;
+        var assetIdentity = Path.Combine(contentRoot, "app.js");
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(AppContext.BaseDirectory),
+            CandidateAssets = [CreateCandidate(assetIdentity, contentRoot, "app.js", lastWrite)],
+            ExistingEndpoints = [CreateExistingEndpoint("app.js", assetIdentity)],
+            ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        errorMessages.Should().BeEmpty();
+        // The endpoint for "app.js" already exists, so no new endpoints should be produced.
+        task.Endpoints.Should().BeEmpty(
+            "the existing endpoint must be matched and deduplicated even with a non-Fallback TaskEnvironment");
+    }
+
+    [Fact]
+    public void ProducesEndpointsCorrectlyWithNonFallbackTaskEnvironmentForPackageAsset()
+    {
+        // Verifies that Package-sourced assets get their BasePath prepended to the route
+        // when running with a non-Fallback TaskEnvironment (as MSBuild does in MT mode).
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot") + Path.DirectorySeparatorChar;
+        var assetIdentity = Path.Combine(contentRoot, "lib.js");
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(AppContext.BaseDirectory),
+            CandidateAssets = [CreateCandidate(assetIdentity, contentRoot, "lib.js", lastWrite, sourceType: StaticWebAsset.SourceTypes.Package, basePath: "_content/MyPkg")],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        errorMessages.Should().BeEmpty();
+        task.Endpoints.Should().ContainSingle();
+
+        var endpoint = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints)[0];
+        endpoint.Route.Should().Be("_content/MyPkg/lib.js",
+            "Package assets must have BasePath prepended to route under MT scheduling");
+        endpoint.AssetFile.Should().Be(assetIdentity);
+    }
+
+    private static ITaskItem CreateCandidate(
+        string identity,
+        string contentRoot,
+        string relativePath,
+        DateTimeOffset lastWriteTime,
+        string sourceType = null,
+        string basePath = "/")
+    {
+        var asset = new StaticWebAsset()
+        {
+            Identity = identity,
+            SourceId = "MyPackage",
+            SourceType = sourceType ?? StaticWebAsset.SourceTypes.Discovered,
+            ContentRoot = contentRoot,
+            BasePath = basePath,
+            RelativePath = relativePath,
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "",
+            CopyToPublishDirectory = "",
+            OriginalItemSpec = identity,
+            Integrity = "integrity",
+            Fingerprint = "fingerprint",
+            FileLength = 10,
+            LastWriteTime = lastWriteTime,
+        };
+
+        return asset.ToTaskItem();
+    }
+
+    private static ITaskItem CreateExistingEndpoint(string route, string assetFile)
+    {
+        return new StaticWebAssetEndpoint
+        {
+            Route = route,
+            AssetFile = assetFile,
+            EndpointProperties = [],
+            ResponseHeaders = [],
+        }.ToTaskItem();
+    }
 }
