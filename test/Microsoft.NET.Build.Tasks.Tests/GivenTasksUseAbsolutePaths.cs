@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 public class GivenTasksUseAbsolutePaths : IDisposable
 {
     private readonly TaskTestEnvironment _env;
-    public TestContext TestContext { get; set; }
+    public TestContext TestContext { get; set; } = null!;
 
     public GivenTasksUseAbsolutePaths()
     {
