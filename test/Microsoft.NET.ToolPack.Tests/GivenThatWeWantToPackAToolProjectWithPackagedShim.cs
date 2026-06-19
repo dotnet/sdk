@@ -10,6 +10,7 @@ using NuGet.Packaging;
 namespace Microsoft.NET.ToolPack.Tests
 {
     [TestClass]
+    [DoNotParallelize]
     public class GivenThatWeWantToPackAToolProjectWithPackagedShim : SdkTest
     {
         private string _testRoot;
