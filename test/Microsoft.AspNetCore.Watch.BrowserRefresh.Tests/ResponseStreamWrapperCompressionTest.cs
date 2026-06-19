@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     [TestClass]
     public class ResponseStreamWrapperCompressionTest
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public async Task WriteAsync_HandlesGzipCompressedHtmlResponse()
         {
@@ -33,7 +35,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(compressedData, CancellationToken.None);
+            await wrapper.WriteAsync(compressedData, TestContext.CancellationToken);
             await wrapper.CompleteAsync();
 
             // Assert
@@ -97,7 +99,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(compressedData, CancellationToken.None);
+            await wrapper.WriteAsync(compressedData, TestContext.CancellationToken);
             await wrapper.CompleteAsync();
 
             var result = outputStream.ToArray();
@@ -157,7 +159,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(data, CancellationToken.None);
+            await wrapper.WriteAsync(data, TestContext.CancellationToken);
             await wrapper.CompleteAsync();
 
             // Assert
@@ -220,7 +222,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(data, CancellationToken.None);
+            await wrapper.WriteAsync(data, TestContext.CancellationToken);
             await wrapper.CompleteAsync();
 
             // Assert
@@ -284,7 +286,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             foreach (var b in compressedData)
             {
                 var single = new byte[] { b };
-                await wrapper.WriteAsync(single, 0, 1, CancellationToken.None);
+                await wrapper.WriteAsync(single, 0, 1, TestContext.CancellationToken);
             }
             await wrapper.CompleteAsync();
 
@@ -369,7 +371,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             while (offset < compressedData.Length)
             {
                 var toWrite = Math.Min(chunkSize, compressedData.Length - offset);
-                await wrapper.WriteAsync(compressedData, offset, toWrite, CancellationToken.None);
+                await wrapper.WriteAsync(compressedData, offset, toWrite, TestContext.CancellationToken);
                 offset += toWrite;
             }
             await wrapper.CompleteAsync();
