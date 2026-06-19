@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffInterfaceTests : DiffBaseTests
 {
     #region Interfaces
 
-    [Fact]
+    [TestMethod]
     public Task InterfaceAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -41,7 +42,7 @@ public class DiffInterfaceTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task InterfaceChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -79,7 +80,7 @@ public class DiffInterfaceTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task InterfaceDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -113,7 +114,8 @@ public class DiffInterfaceTests : DiffBaseTests
                   }
                 """);
 
-    [Fact(Skip = "The resulting inheritance shows more than expected but not wrong, and does not show the nullability constraing")]
+    [TestMethod]
+    [Ignore("The resulting inheritance shows more than expected but not wrong, and does not show the nullability constraing")]
     // Shows: public interface IMyInterface<TKey, TValue> : System.Collections.Generic.IDictionary<TKey, TValue>, System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<TKey, TValue>>
     public Task InterfaceAddWithTypeConstraints() => RunTestAsync(
                 beforeCode: """
