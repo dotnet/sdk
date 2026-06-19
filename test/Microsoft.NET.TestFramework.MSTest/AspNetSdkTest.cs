@@ -54,7 +54,7 @@ public abstract class AspNetSdkTest : SdkTest
                     .SingleOrDefault(e => e.Name.LocalName == "TargetFrameworks");
                 if (targetFrameworks != null)
                 {
-                    targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
+                    targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm ?? string.Empty);
                     targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                     targetFrameworks.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"));
                 }
@@ -80,7 +80,7 @@ public abstract class AspNetSdkTest : SdkTest
             {
                 var targetFramework = project.Descendants()
                    .Single(e => e.Name.LocalName == "TargetFrameworks");
-                targetFramework.Value = targetFramework.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
+                targetFramework.Value = targetFramework.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm ?? string.Empty);
             });
         return projectDirectory;
     }
