@@ -17,13 +17,13 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 [TestClass]
 public class RegistryTests : IDisposable
 {
-    public TestContext TestContext { get; set; } = null!;
+    public TestContext TestContext { get; }
 
-    private TestLoggerFactory _loggerFactory = null!;
+    private readonly TestLoggerFactory _loggerFactory;
 
-    [TestInitialize]
-    public void Initialize()
+    public RegistryTests(TestContext testContext)
     {
+        TestContext = testContext;
         _loggerFactory = new TestLoggerFactory(TestContext);
     }
 
