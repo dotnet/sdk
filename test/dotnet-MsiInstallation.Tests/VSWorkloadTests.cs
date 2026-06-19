@@ -10,7 +10,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
     [TestClass]
     public class VSWorkloadTests : VMTestBase
     {
-        public VSWorkloadTests()
+        [TestInitialize]
+        public void Initialize()
         {
             VM.SetCurrentState("Install VS 17.10 Preview 6");
             DeployStage2Sdk();

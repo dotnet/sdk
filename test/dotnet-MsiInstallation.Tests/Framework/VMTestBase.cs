@@ -12,11 +12,12 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
     [DoNotParallelize]
     public class VMTestBase : SdkTest, IDisposable
     {
-        internal VirtualMachine VM { get; }
+        private VirtualMachine _vm;
+
+        internal VirtualMachine VM => _vm ??= new VirtualMachine(Log);
 
         public VMTestBase()
         {
-            VM = new VirtualMachine(Log);
             _sdkInstallerVersion = new Lazy<string>(() =>
             {
                 if (!string.IsNullOrEmpty(VM.VMTestSettings.SdkInstallerVersion))
@@ -51,7 +52,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         public virtual void Dispose()
         {
-            VM.Dispose();
+            _vm?.Dispose();
         }
 
         protected virtual bool NeedsIncludePreviews => false;
