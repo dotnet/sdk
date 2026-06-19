@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions.Json" />
-    <PackageReference Include="Combinatorial.MSTest" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" />
   </ItemGroup>
 
@@ -38,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Combinatorial.MSTest" />
     <Using Include="Microsoft.NET.TestFramework" />
     <Using Include="Microsoft.NET.TestFramework.Assertions" />
     <Using Include="Microsoft.NET.TestFramework.Commands" />
