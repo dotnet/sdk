@@ -5,11 +5,14 @@ using Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorMultitargetIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorMultitargetIntegrationTest))
+    [TestClass]
+    public class BlazorMultitargetIntegrationTest
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
+        protected override string RestoreNugetPackagePath => nameof(BlazorMultitargetIntegrationTest);
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void MultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
         {
             // Arrange
@@ -29,7 +32,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             browserDependencies.File("captured-references.txt").Should().NotContain("Microsoft.AspNetCore.Components.Server.dll");
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void ReferencedMultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
         {
             // Arrange

@@ -5,7 +5,7 @@ using Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorWasmBaselineTests(ITestOutputHelper log, bool generateBaselines) : AspNetSdkBaselineTest(log, generateBaselines)
+    public class BlazorWasmBaselineTests : AspNetSdkBaselineTest
     {
         protected override string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
 

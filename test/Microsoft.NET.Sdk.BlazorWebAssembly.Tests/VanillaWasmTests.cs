@@ -5,9 +5,11 @@
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class VanillaWasmTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
+    [TestClass]
+    public class VanillaWasmTests : BlazorWasmBaselineTests
     {
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";

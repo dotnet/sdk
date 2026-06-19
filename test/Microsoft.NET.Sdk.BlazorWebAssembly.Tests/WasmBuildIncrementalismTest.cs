@@ -8,9 +8,11 @@ using Microsoft.NET.Sdk.WebAssembly;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmBuildIncrementalismTest(ITestOutputHelper log) : AspNetSdkTest(log)
+    [TestClass]
+    public class WasmBuildIncrementalismTest : AspNetSdkTest
     {
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_IsIncremental()
         {
             // Arrange
@@ -54,7 +56,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_GzipCompression_IsIncremental()
         {
             // Arrange
@@ -91,7 +94,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     .Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(projectDirectory, gzipCompressionDirectory);
-                Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
+                Assert.HasCount(thumbPrint.Count, newThumbPrint);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
                     thumbPrint[j].Equals(newThumbPrint[j]).Should().BeTrue($"because {thumbPrint[j].Hash} should be the same as {newThumbPrint[j].Hash} for file {thumbPrint[j].Path}");
@@ -99,7 +102,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_SatelliteAssembliesFileIsPreserved()
         {
             // Arrange
@@ -163,7 +167,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_SatelliteAssembliesFileIsCreated_IfNewFileIsAdded()
         {
             // Arrange
@@ -214,7 +219,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             kvp.Value.Should().ContainKey("blazorwasm.resources.wasm");
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_SatelliteAssembliesFileIsDeleted_IfAllSatelliteFilesAreRemoved()
         {
             // Arrange

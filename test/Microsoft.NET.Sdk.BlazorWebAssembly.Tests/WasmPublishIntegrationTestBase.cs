@@ -9,7 +9,7 @@ using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<str
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public abstract class WasmPublishIntegrationTestBase(ITestOutputHelper log) : AspNetSdkTest(log)
+    public abstract class WasmPublishIntegrationTestBase : AspNetSdkTest
     {
         protected static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)
         {

@@ -6,9 +6,11 @@ using Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest60(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest60))
+    [TestClass]
+    public class BlazorLegacyIntegrationTest60
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
+        protected override string RestoreNugetPackagePath => nameof(BlazorLegacyIntegrationTest60);
 
         protected override string EmbeddedResourcePrefix =>
             string.Join('.', "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
@@ -16,7 +18,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         protected override string ComputeBaselineFolder() =>
             Path.Combine(SdkTestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build60Hosted_Works()
         {
             // Arrange
@@ -43,8 +46,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("17.13", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/49925")] // https://github.com/dotnet/sdk/issues/44886
-        [SkipOnPlatform(TestPlatforms.Linux | TestPlatforms.OSX, "https://github.com/dotnet/sdk/issues/42145")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [RequiresMSBuildVersion("17.13", Reason = "Needs System.Text.Json 8.0.5")] // https://github.com/dotnet/sdk/issues/44886
+        [Ignore("https://github.com/dotnet/sdk/issues/49925")]
         public void Publish60Hosted_Works()
         {
             // Arrange
