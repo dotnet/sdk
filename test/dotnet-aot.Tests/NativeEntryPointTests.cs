@@ -5,7 +5,6 @@ using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -15,6 +14,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  Note: Tests that hit the managed fallback path (ManagedHost.RunApp) will get the
 ///  "managed fallback not found" error because test env doesn't have dotnet.dll in sdkDir.
 /// </summary>
+[TestClass]
 public class NativeEntryPointTests
 {
     /// <summary>
@@ -73,7 +73,7 @@ public class NativeEntryPointTests
         return sink;
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotEnabled_VersionCommand_ReturnsZero()
     {
         WithEnvRestore(() =>
@@ -87,11 +87,11 @@ public class NativeEntryPointTests
                 hostfxrPath: "",
                 args: ["--version"]);
 
-            Assert.Equal(0, exitCode);
+            Assert.AreEqual(0, exitCode);
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotEnabled_InfoCommand_ReturnsZero()
     {
         WithEnvRestore(() =>
@@ -105,11 +105,11 @@ public class NativeEntryPointTests
                 hostfxrPath: "",
                 args: ["--info"]);
 
-            Assert.Equal(0, exitCode);
+            Assert.AreEqual(0, exitCode);
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotEnabled_UnrecognizedCommand_FallsBack()
     {
         WithEnvRestore(() =>
@@ -125,11 +125,11 @@ public class NativeEntryPointTests
                 hostfxrPath: "",
                 args: ["build"]);
 
-            Assert.Equal(1, exitCode);
+            Assert.AreEqual(1, exitCode);
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotDisabled_VersionCommand_FallsBack()
     {
         WithEnvRestore(() =>
@@ -145,11 +145,11 @@ public class NativeEntryPointTests
                 args: ["--version"]);
 
             // Returns 1 because managed fallback files don't exist
-            Assert.Equal(1, exitCode);
+            Assert.AreEqual(1, exitCode);
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotNotSet_VersionCommand_FallsBack()
     {
         WithEnvRestore(() =>
@@ -164,17 +164,17 @@ public class NativeEntryPointTests
                 args: ["--version"]);
 
             // Default is false → managed fallback → files missing → returns 1
-            Assert.Equal(1, exitCode);
+            Assert.AreEqual(1, exitCode);
         });
     }
 
-    [Theory]
-    [InlineData("true")]
-    [InlineData("True")]
-    [InlineData("TRUE")]
-    [InlineData("1")]
-    [InlineData("yes")]
-    [InlineData("on")]
+    [TestMethod]
+    [DataRow("true")]
+    [DataRow("True")]
+    [DataRow("TRUE")]
+    [DataRow("1")]
+    [DataRow("yes")]
+    [DataRow("on")]
     public void ExecuteCore_AotEnabledVariousFormats_TakesAotPath(string enableValue)
     {
         WithEnvRestore(() =>
@@ -189,11 +189,11 @@ public class NativeEntryPointTests
                 args: ["--version"]);
 
             // All these formats should enable AOT → --version handled → exit 0
-            Assert.Equal(0, exitCode);
+            Assert.AreEqual(0, exitCode);
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_MissingFallbackFiles_ReturnsOneAndWritesError()
     {
         WithEnvRestore(() =>
@@ -213,10 +213,10 @@ public class NativeEntryPointTests
                     hostfxrPath: "",
                     args: ["--version"]);
 
-                Assert.Equal(1, exitCode);
+                Assert.AreEqual(1, exitCode);
                 string stderr = stderrWriter.ToString();
                 // Verify the error mentions the expected fallback files
-                Assert.Contains("dotnet.dll", stderr);
+                stderr.Should().Contain("dotnet.dll");
             }
             finally
             {
@@ -225,7 +225,7 @@ public class NativeEntryPointTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotEnabled_UnsupportedCommand_NoAotErrorLeaked()
     {
         WithEnvRestore(() =>
@@ -248,7 +248,7 @@ public class NativeEntryPointTests
                 string stderr = stderrWriter.ToString();
                 // The only error should be about managed fallback, not AOT parser errors
                 Assert.DoesNotContain("Unrecognized", stderr);
-                Assert.Contains("dotnet.dll", stderr);
+                stderr.Should().Contain("dotnet.dll");
             }
             finally
             {
@@ -257,7 +257,7 @@ public class NativeEntryPointTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotEnabled_FileBasedApp_FallsBackToManaged()
     {
         WithEnvRestore(() =>
@@ -283,8 +283,8 @@ public class NativeEntryPointTests
                     hostfxrPath: "",
                     args: [csFile]);
 
-                Assert.Equal(1, exitCode);
-                Assert.Contains("dotnet.dll", stderrWriter.ToString());
+                Assert.AreEqual(1, exitCode);
+                stderrWriter.ToString().Should().Contain("dotnet.dll");
             }
             finally
             {
@@ -294,7 +294,7 @@ public class NativeEntryPointTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotEnabled_UnresolvedExternalCommand_FallsBackToManaged()
     {
         WithEnvRestore(() =>
@@ -319,8 +319,8 @@ public class NativeEntryPointTests
                     hostfxrPath: "",
                     args: ["some-command-that-does-not-resolve-anywhere-xyz", "arg1"]);
 
-                Assert.Equal(1, exitCode);
-                Assert.Contains("dotnet.dll", stderrWriter.ToString());
+                Assert.AreEqual(1, exitCode);
+                stderrWriter.ToString().Should().Contain("dotnet.dll");
             }
             finally
             {
@@ -329,7 +329,7 @@ public class NativeEntryPointTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotEnabled_ResolvableExternalCommandOnPath_InvokesOutOfProcess()
     {
         WithEnvRestore(() =>
@@ -371,7 +371,7 @@ public class NativeEntryPointTests
                     hostfxrPath: "",
                     args: ["aotpathtool"]);
 
-                Assert.Equal(expectedExitCode, exitCode);
+                Assert.AreEqual(expectedExitCode, exitCode);
             }
             finally
             {
@@ -381,7 +381,7 @@ public class NativeEntryPointTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotEnabled_ResolvableExternalCommand_EmitsParserAndResolutionTelemetry()
     {
         WithEnvRestore(() =>
@@ -423,8 +423,8 @@ public class NativeEntryPointTests
                         hostfxrPath: "",
                         args: ["aotteltool"]));
 
-                Assert.Contains("toplevelparser/command", events);
-                Assert.Contains("commandresolution/commandresolved", events);
+                events.Should().Contain("toplevelparser/command");
+                events.Should().Contain("commandresolution/commandresolved");
             }
             finally
             {
@@ -434,7 +434,7 @@ public class NativeEntryPointTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotDisabled_DefersToManagedHost_DoesNotEmitParserTelemetry()
     {
         WithEnvRestore(() =>
@@ -458,7 +458,7 @@ public class NativeEntryPointTests
     }
 
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_SetsHostfxrPathInAppContext()
     {
         WithEnvRestore(() =>
@@ -473,11 +473,11 @@ public class NativeEntryPointTests
                 hostfxrPath: testPath,
                 args: ["--version"]);
 
-            Assert.Equal(testPath, AppContext.GetData("HOSTFXR_PATH") as string);
+            Assert.AreEqual(testPath, AppContext.GetData("HOSTFXR_PATH") as string);
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_EmptyHostfxrPath_DoesNotSetAppContext()
     {
         WithEnvRestore(() =>
@@ -493,11 +493,11 @@ public class NativeEntryPointTests
                 hostfxrPath: "",
                 args: ["--version"]);
 
-            Assert.Null(AppContext.GetData("HOSTFXR_PATH"));
+            Assert.IsNull(AppContext.GetData("HOSTFXR_PATH"));
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_AotFastPath_CreatesMainActivity()
     {
         WithEnvRestore(() =>
@@ -522,14 +522,14 @@ public class NativeEntryPointTests
                 args: ["--version"]);
 
             var mainActivity = collectedActivities.FirstOrDefault(a => a.OperationName == "main");
-            Assert.NotNull(mainActivity);
-            Assert.Equal(0, mainActivity.GetTagItem("process.exit.code"));
-            Assert.Equal(ActivityStatusCode.Ok, mainActivity.Status);
+            Assert.IsNotNull(mainActivity);
+            Assert.AreEqual(0, mainActivity.GetTagItem("process.exit.code"));
+            Assert.AreEqual(ActivityStatusCode.Ok, mainActivity.Status);
         });
     }
 
 
-    [Fact]
+    [TestMethod]
     public void ExecuteCore_TelemetryOptedOut_NoActivities()
     {
         WithEnvRestore(() =>
