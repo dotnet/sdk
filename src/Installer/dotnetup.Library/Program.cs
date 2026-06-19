@@ -107,21 +107,15 @@ public class DotnetupProgram
 
     private static void DisposeTelemetry()
     {
-        // CI runs are one-and-done — there's no follow-up dotnetup
-        // invocation to drain the AzMonitor exporter's offline store — so
-        // give the batch export processors a longer ceiling to drain
-        // synchronously before the process exits. ForceFlush returns as
-        // soon as the queues are empty, so the larger budget never adds
-        // latency on happy-path runs; it only matters when the queue is
-        // backed up against a slow network. Interactive (non-CI) runs keep
-        // the smaller budget so user-perceived exit time is unaffected.
-        var flushTimeoutMs = DotnetupTelemetry.Instance.IsOneAndDoneEnvironment ? 30_000 : 10;
-
         try
         {
             DotnetupTelemetry.Instance.WriteLogIfNecessary();
-            DotnetupTelemetry.Instance.Flush(flushTimeoutMs);
-            DotnetupTelemetry.Instance.Dispose();
+            DotnetupTelemetry.Instance.Flush();
+
+            if (DotnetupTelemetry.Instance.IsOneAndDoneEnvironment)
+            {
+                DotnetupTelemetry.Instance.Dispose();
+            }
         }
         catch
         {

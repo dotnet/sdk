@@ -17,6 +17,11 @@
       "isVisible": true
     },
     {
+      "id": "ExplicitProgramFile",
+      "isVisible": true,
+      "persistenceScope": "shared"
+    },
+    {
       "id": "CoverageTool",
       "isVisible": true,
       "persistenceScope": "shared"
