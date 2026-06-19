@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     {
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItShouldIgnoreAllDependenciesWithTypeNotEqualToPackageOrUnresolved()
         {
             var testRoot = TestAssetsManager.CreateTestDirectory().Path;
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItShouldIdentifyDefaultImplicitPackages()
         {
             var testRoot = TestAssetsManager.CreateTestDirectory().Path;
@@ -81,7 +81,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItShouldOnlyReturnPackagesInTheSpecifiedTarget()
         {
             var testRoot = TestAssetsManager.CreateTestDirectory().Path;
@@ -349,7 +349,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         [DataRow("latestNet")]
         [DataRow("net6.0")]
         public void ItShouldOnlyReturnTopLevelPackages(string alias)

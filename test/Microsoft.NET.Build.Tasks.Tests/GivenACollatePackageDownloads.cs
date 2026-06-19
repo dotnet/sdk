@@ -115,7 +115,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         // Backslash is only a path separator on Windows. On Linux, TaskItem normalizes '\' to '/'.
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void PathItemSpec_PreservesBackslashOnWindows()
         {
             var pathSpec = "packages\\NuGet.Common";
