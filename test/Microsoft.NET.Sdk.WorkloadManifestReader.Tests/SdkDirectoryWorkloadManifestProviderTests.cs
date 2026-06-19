@@ -72,7 +72,7 @@ namespace ManifestReaderTests
         [DataRow(false)]
         public void ItShouldReturnTheWorkloadVersion(bool useWorkloadSet)
         {
-            Initialize();
+            Initialize(identifier: useWorkloadSet.ToString());
 
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
             CreateMockManifest(_manifestRoot, "8.0.200", "android", "33.0.2-rc.1", true);
