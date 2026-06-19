@@ -19,7 +19,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             await response.WriteAsync(memoryStream, CancellationToken.None);
 
             // Assert
-            Assert.IsGreaterThan(memoryStream.Position, 0);
+            Assert.IsGreaterThan(0, memoryStream.Position);
             memoryStream.Position = 0;
             var result = (CompletedServerResponse)await ServerResponse.ReadAsync(memoryStream, CancellationToken.None);
             result.ReturnCode.Should().Be(42);
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             await request.WriteAsync(memoryStream, CancellationToken.None);
 
             // Assert
-            Assert.IsGreaterThan(memoryStream.Position, 0);
+            Assert.IsGreaterThan(0, memoryStream.Position);
             memoryStream.Position = 0;
             var read = await ServerRequest.ReadAsync(memoryStream, CancellationToken.None);
 
