@@ -12,9 +12,27 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
     [TestClass]
     public class AuthoringTemplatesTests : TestBase
     {
-        public TestContext TestContext { get; set; } = null!;
+        private TestContext _testContext = null!;
+
+        public TestContext TestContext
+        {
+            get => _testContext;
+            set
+            {
+                _testContext = value;
+                VerifyMSTest.Verifier.CurrentTestContext.Value = new VerifyMSTest.TestExecutionContext(value, GetType());
+            }
+        }
 
         private ILogger Log => new TestContextLogger(TestContext);
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+        {
+            // The shared TemplateVerifier engine is compiled against the xUnit Verify adapter; route its directory
+            // verification to the MSTest adapter so the ambient MSTest test context is used under MTP.
+            VerificationEngine.DirectoryVerifier = VerifyMSTest.Verifier.VerifyDirectory;
+        }
 
         [TestMethod]
         public async Task TemplateJsonTest()

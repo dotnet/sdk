@@ -13,6 +13,7 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     [TestClass]
+    [DoNotParallelize]
     public class TemplateCreatorTests
     {
         public TestContext TestContext { get; set; } = null!;

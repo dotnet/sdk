@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
+#endif
 using Microsoft.TemplateEngine.Tests;
 using VerifyTests.DiffPlex;
 
@@ -26,6 +29,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             // Customize diff output of verifier
             VerifyDiffPlex.Initialize(OutputType.Compact);
+
+#if NET
+            // The shared TemplateVerifier engine is compiled against the xUnit Verify adapter; route its directory
+            // verification to the MSTest adapter so the ambient MSTest test context is used under MTP.
+            VerificationEngine.DirectoryVerifier = VerifyMSTest.Verifier.VerifyDirectory;
+#endif
         }
     }
 }

@@ -14,7 +14,17 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     [DoNotParallelize]
     public class End2EndTests : BootstrapperTestBase
     {
-        public TestContext TestContext { get; set; } = null!;
+        private TestContext _testContext = null!;
+
+        public TestContext TestContext
+        {
+            get => _testContext;
+            set
+            {
+                _testContext = value;
+                VerifyMSTest.Verifier.CurrentTestContext.Value = new VerifyMSTest.TestExecutionContext(value, GetType());
+            }
+        }
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)

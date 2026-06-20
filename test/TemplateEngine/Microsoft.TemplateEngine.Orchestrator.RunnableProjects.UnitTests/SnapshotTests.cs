@@ -15,7 +15,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
     [DoNotParallelize]
     public class SnapshotTests : TestBase
     {
-        public TestContext TestContext { get; set; } = null!;
+        private TestContext _testContext = null!;
+
+        public TestContext TestContext
+        {
+            get => _testContext;
+            set
+            {
+                _testContext = value;
+                VerifyMSTest.Verifier.CurrentTestContext.Value = new VerifyMSTest.TestExecutionContext(value, GetType());
+            }
+        }
 
         private ILogger Log => new TestContextLogger(TestContext);
 
