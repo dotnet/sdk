@@ -8,16 +8,27 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class FakeMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class FakeMacroTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public FakeMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public FakeMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Fact(DisplayName = nameof(TestEvaluationOfFakeMacro))]
+        [TestMethod(DisplayName = nameof(TestEvaluationOfFakeMacro))]
         public void TestEvaluationOfFakeMacro()
         {
             string variableName = "myHelloMacro";
@@ -29,11 +40,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             string newValue = (string)variables[variableName];
-            Assert.True(variables.Count == 1);
-            Assert.Equal("Hello name to greet!", newValue);
+            Assert.HasCount(1, variables);
+            Assert.AreEqual("Hello name to greet!", newValue);
         }
 
-        [Fact(DisplayName = nameof(TestDependencyResolutionOfFakeMacro))]
+        [TestMethod(DisplayName = nameof(TestDependencyResolutionOfFakeMacro))]
         public void TestDependencyResolutionOfFakeMacro()
         {
             string variableName = "myHelloMacro";
@@ -48,11 +59,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             macroConfig.ResolveSymbolDependencies(variables.Select(v => v.Key).ToList());
 
-            Assert.True(macroConfig.Dependencies.Count == 1);
-            Assert.Equal(sourceVariable, macroConfig.Dependencies.First());
+            Assert.HasCount(1, macroConfig.Dependencies);
+            Assert.AreEqual(sourceVariable, macroConfig.Dependencies.First());
         }
 
-        [Fact(DisplayName = nameof(TestExceptionOnAccessToDependenciesOfFakeMacro))]
+        [TestMethod(DisplayName = nameof(TestExceptionOnAccessToDependenciesOfFakeMacro))]
         public void TestExceptionOnAccessToDependenciesOfFakeMacro()
         {
             string variableName = "myHelloMacro";
@@ -61,8 +72,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             FakeMacro macro = new();
             FakeMacroConfig macroConfig = new(macro, variableName, sourceVariable);
 
-            var exception = Assert.Throws<ArgumentException>(() => macroConfig.Dependencies);
-            Assert.Equal("The method 'PopulateMacroConfigDependency' must be called prior 'Dependencies' property reading.", exception.Message);
+            var exception = Assert.ThrowsExactly<ArgumentException>(() => macroConfig.Dependencies);
+            Assert.AreEqual("The method 'PopulateMacroConfigDependency' must be called prior 'Dependencies' property reading.", exception.Message);
         }
     }
 }

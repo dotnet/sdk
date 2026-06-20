@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if NET
@@ -8,21 +8,24 @@ using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
-    [Collection("Verify Tests")]
+    [TestClass]
+    [DoNotParallelize]
     public class SnapshotTests : TestBase
     {
-        private readonly ILogger _log;
+        public TestContext TestContext { get; set; } = null!;
 
-        public SnapshotTests(ITestOutputHelper log)
+        private ILogger Log => new TestContextLogger(TestContext);
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
         {
-            _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
+            new VerifySettingsFixture();
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestGeneratedSymbolWithRefToDerivedSymbol()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithGeneratedSymbolWithRefToDerivedSymbol");
@@ -43,11 +46,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestGeneratedSymbolWithRefToDerivedSymbol_DifferentOrder()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithGenSymbolWithRefToDerivedSymbol_DifferentOrder");
@@ -68,11 +71,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestCoalesce_EmptyStringForMultiChoices()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithMultipleChoicesAndCoalesce");
@@ -93,11 +96,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestSingleSelectionForMultiChoices()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithMultipleChoicesAndCoalesce");
@@ -118,11 +121,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestTemplateWithBrokenGeneratedInComputed()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithBrokenGeneratedInComputed");
@@ -144,11 +147,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestTemplateWithComputedInGenerated()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithComputedInGenerated");
@@ -170,11 +173,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                         { "preset", "recommended" }
                     });
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestTemplateWithComputedInDerivedThroughGenerated()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithComputedInDerivedThroughGenerated");
@@ -192,11 +195,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestTemplateWithGeneratedInComputed()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithGeneratedInComputed");
@@ -219,11 +222,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                         { "dependencyInjection", "true" }
                     });
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestTemplateWithGeneratedSwitchInComputed()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithGeneratedSwitchInComputed");
@@ -246,11 +249,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                         { "dependencyInjection", "true" }
                     });
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestTemplateWithCircleDependencyInMacros()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithCircleDependencyInMacros");
@@ -270,11 +273,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestSelectionForMultiChoicesWhenThereAreMultiplePartialMatchesAndOnePreciseMatch()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithMultipleChoicesAndPartialMatches");
@@ -299,8 +302,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(Log);
+            return engine.Execute(options, TestContext.CancellationToken);
         }
     }
 }

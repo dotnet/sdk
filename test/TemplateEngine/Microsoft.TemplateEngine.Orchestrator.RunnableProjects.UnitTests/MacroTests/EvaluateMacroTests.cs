@@ -9,18 +9,29 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class EvaluateMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class EvaluateMacroTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public EvaluateMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public EvaluateMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Theory(DisplayName = nameof(TestEvaluateConfig))]
-        [InlineData("(7 > 3)", true)]
-        [InlineData("(2 == 1)", false)]
+        [TestMethod(DisplayName = nameof(TestEvaluateConfig))]
+        [DataRow("(7 > 3)", true)]
+        [DataRow("(2 == 1)", false)]
         public void TestEvaluateConfig(string predicate, bool expectedResult)
         {
             string variableName = "myPredicate";
@@ -31,22 +42,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             EvaluateMacro macro = new();
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
-            Assert.Equal(variables[variableName], expectedResult);
+            Assert.AreEqual(expectedResult, variables[variableName]);
         }
 
-        [Theory(DisplayName = nameof(TestEvaluateConfig))]
-        [InlineData("(Param == A)", "C++", "A|B", true)]
-        [InlineData("(Param == C)", "C++", "A|B", false)]
-        [InlineData("((Param == A) || (Param == B))", "C++", "A|B", true)]
-        [InlineData("((Param == A) && (Param == B))", "C++", "A|B", true)]
-        [InlineData("((Param == A) && (Param != B))", "C++", "A|B", false)]
-        [InlineData("((Param == A) && (Param == C))", "C++", "A|B", false)]
-        [InlineData("(Param == A)", "C++2", "A|B", true)]
-        [InlineData("(Param == C)", "C++2", "A|B", false)]
-        [InlineData("((Param == A) || (Param == B))", "C++2", "A|B", true)]
-        [InlineData("((Param == A) && (Param == B))", "C++2", "A|B", true)]
-        [InlineData("((Param == A) && (Param != B))", "C++2", "A|B", false)]
-        [InlineData("((Param == A) && (Param == C))", "C++2", "A|B", false)]
+        [TestMethod(DisplayName = nameof(TestEvaluateConfig))]
+        [DataRow("(Param == A)", "C++", "A|B", true)]
+        [DataRow("(Param == C)", "C++", "A|B", false)]
+        [DataRow("((Param == A) || (Param == B))", "C++", "A|B", true)]
+        [DataRow("((Param == A) && (Param == B))", "C++", "A|B", true)]
+        [DataRow("((Param == A) && (Param != B))", "C++", "A|B", false)]
+        [DataRow("((Param == A) && (Param == C))", "C++", "A|B", false)]
+        [DataRow("(Param == A)", "C++2", "A|B", true)]
+        [DataRow("(Param == C)", "C++2", "A|B", false)]
+        [DataRow("((Param == A) || (Param == B))", "C++2", "A|B", true)]
+        [DataRow("((Param == A) && (Param == B))", "C++2", "A|B", true)]
+        [DataRow("((Param == A) && (Param != B))", "C++2", "A|B", false)]
+        [DataRow("((Param == A) && (Param == C))", "C++2", "A|B", false)]
         public void TestEvaluateMultichoice(string condition, string evaluator, string multichoiceValues, bool expectedResult)
         {
             string variableName = "myPredicate";
@@ -62,10 +73,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             EvaluateMacro macro = new();
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
-            Assert.Equal(variables[variableName], expectedResult);
+            Assert.AreEqual(expectedResult, variables[variableName]);
         }
 
-        [Fact]
+        [TestMethod]
         [Obsolete("IMacro.EvaluateConfig is obsolete")]
         public void ObsoleteEvaluateConfigTest()
         {
@@ -77,7 +88,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             EvaluateMacro macro = new();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
-            Assert.Equal(variables[variableName], true);
+            Assert.IsTrue((bool)variables[variableName]!);
         }
     }
 }

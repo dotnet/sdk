@@ -10,6 +10,7 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
+    [TestClass]
     public class CustomConditionalTests
     {
         // defines a template configuration with a custom conditional configuration.
@@ -81,137 +82,137 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [Fact(DisplayName = nameof(TestCustomConditionalSetupNoStyleSpecification))]
+        [TestMethod(DisplayName = nameof(TestCustomConditionalSetupNoStyleSpecification))]
         public void TestCustomConditionalSetupNoStyleSpecification()
         {
             IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(CustomConditionalSetupNoStyleSpecification.ToString(), A.Fake<IDirectory>());
             IList<IOperationProvider> operations = new List<IOperationProvider>(ops);
 
-            Assert.Single(operations);
-            Assert.True(operations[0] is Conditional);
+            Assert.ContainsSingle(operations);
+            Assert.IsTrue(operations[0] is Conditional);
 
             Conditional? conditionalOp = operations[0] as Conditional;
-            Assert.NotNull(conditionalOp);
-            Assert.Single(conditionalOp!.Tokens.ActionableIfTokens);
-            Assert.Equal("<!--#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
+            Assert.IsNotNull(conditionalOp);
+            Assert.ContainsSingle(conditionalOp!.Tokens.ActionableIfTokens);
+            Assert.AreEqual("<!--#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
 
-            Assert.Equal(2, conditionalOp.Tokens.ActionableElseTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.ActionableElseTokens, x => x.Value == "<!--#else");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseTokens, x => x.Value == "#else");
+            Assert.HasCount(2, conditionalOp.Tokens.ActionableElseTokens);
+            Assert.Contains("<!--#else", conditionalOp.Tokens.ActionableElseTokens.Select(x => x.Value));
+            Assert.Contains("#else", conditionalOp.Tokens.ActionableElseTokens.Select(x => x.Value));
 
-            Assert.Equal(2, conditionalOp.Tokens.ActionableElseIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "<!--#elseif");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "#elseif");
+            Assert.HasCount(2, conditionalOp.Tokens.ActionableElseIfTokens);
+            Assert.Contains("<!--#elseif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
+            Assert.Contains("#elseif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
 
-            Assert.Equal(2, conditionalOp.Tokens.EndIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "<!--#endif");
-            Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "#endif");
+            Assert.HasCount(2, conditionalOp.Tokens.EndIfTokens);
+            Assert.Contains("<!--#endif", conditionalOp.Tokens.EndIfTokens.Select(x => x.Value));
+            Assert.Contains("#endif", conditionalOp.Tokens.EndIfTokens.Select(x => x.Value));
 
-            Assert.True(conditionalOp.WholeLine);
-            Assert.True(conditionalOp.TrimWhitespace);
+            Assert.IsTrue(conditionalOp.WholeLine);
+            Assert.IsTrue(conditionalOp.TrimWhitespace);
         }
 
-        [Fact(DisplayName = nameof(TestCustomConditionalSetupExplicitStyleSpecification))]
+        [TestMethod(DisplayName = nameof(TestCustomConditionalSetupExplicitStyleSpecification))]
         public void TestCustomConditionalSetupExplicitStyleSpecification()
         {
             IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(CustomConditionalSetupExplicitStyleSpecification.ToString(), A.Fake<IDirectory>());
             IList<IOperationProvider> operations = new List<IOperationProvider>(ops);
 
-            Assert.Single(operations);
-            Assert.True(operations[0] is Conditional);
+            Assert.ContainsSingle(operations);
+            Assert.IsTrue(operations[0] is Conditional);
 
             Conditional? conditionalOp = operations[0] as Conditional;
-            Assert.NotNull(conditionalOp);
-            Assert.Single(conditionalOp!.Tokens.ActionableIfTokens);
-            Assert.Equal("<!--#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
+            Assert.IsNotNull(conditionalOp);
+            Assert.ContainsSingle(conditionalOp!.Tokens.ActionableIfTokens);
+            Assert.AreEqual("<!--#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
 
-            Assert.Equal(2, conditionalOp.Tokens.ActionableElseTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.ActionableElseTokens, x => x.Value == "<!--#else");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseTokens, x => x.Value == "#else");
+            Assert.HasCount(2, conditionalOp.Tokens.ActionableElseTokens);
+            Assert.Contains("<!--#else", conditionalOp.Tokens.ActionableElseTokens.Select(x => x.Value));
+            Assert.Contains("#else", conditionalOp.Tokens.ActionableElseTokens.Select(x => x.Value));
 
-            Assert.Equal(2, conditionalOp.Tokens.ActionableElseIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "<!--#elseif");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "#elseif");
+            Assert.HasCount(2, conditionalOp.Tokens.ActionableElseIfTokens);
+            Assert.Contains("<!--#elseif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
+            Assert.Contains("#elseif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
 
-            Assert.Equal(2, conditionalOp.Tokens.EndIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "<!--#endif");
-            Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "#endif");
+            Assert.HasCount(2, conditionalOp.Tokens.EndIfTokens);
+            Assert.Contains("<!--#endif", conditionalOp.Tokens.EndIfTokens.Select(x => x.Value));
+            Assert.Contains("#endif", conditionalOp.Tokens.EndIfTokens.Select(x => x.Value));
 
-            Assert.True(conditionalOp.WholeLine);
-            Assert.True(conditionalOp.TrimWhitespace);
+            Assert.IsTrue(conditionalOp.WholeLine);
+            Assert.IsTrue(conditionalOp.TrimWhitespace);
         }
 
-        [Fact(DisplayName = nameof(TestLineCommentConditionalSetup))]
+        [TestMethod(DisplayName = nameof(TestLineCommentConditionalSetup))]
         public void TestLineCommentConditionalSetup()
         {
             IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(LineConditionalSetup.ToString(), A.Fake<IDirectory>());
             IList<IOperationProvider> operations = new List<IOperationProvider>(ops);
 
-            Assert.Equal(3, operations.Count);
-            Assert.True(operations[0] is Conditional);
+            Assert.HasCount(3, operations);
+            Assert.IsTrue(operations[0] is Conditional);
 
             Conditional? conditionalOp = operations[0] as Conditional;
-            Assert.NotNull(conditionalOp);
+            Assert.IsNotNull(conditionalOp);
 
-            Assert.Single(conditionalOp!.Tokens.IfTokens);
-            Assert.Equal("//#if", conditionalOp.Tokens.IfTokens[0].Value);
+            Assert.ContainsSingle(conditionalOp!.Tokens.IfTokens);
+            Assert.AreEqual("//#if", conditionalOp.Tokens.IfTokens[0].Value);
 
-            Assert.Equal(2, conditionalOp.Tokens.ElseIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.ElseIfTokens, x => x.Value == "//#elseif");
-            Assert.Contains(conditionalOp.Tokens.ElseIfTokens, x => x.Value == "//#elif");
+            Assert.HasCount(2, conditionalOp.Tokens.ElseIfTokens);
+            Assert.Contains("//#elseif", conditionalOp.Tokens.ElseIfTokens.Select(x => x.Value));
+            Assert.Contains("//#elif", conditionalOp.Tokens.ElseIfTokens.Select(x => x.Value));
 
-            Assert.Single(conditionalOp.Tokens.ElseTokens);
-            Assert.Equal("//#else", conditionalOp.Tokens.ElseTokens[0].Value);
+            Assert.ContainsSingle(conditionalOp.Tokens.ElseTokens);
+            Assert.AreEqual("//#else", conditionalOp.Tokens.ElseTokens[0].Value);
 
-            Assert.Equal(2, conditionalOp.Tokens.EndIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "//#endif");
-            Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "////#endif");
+            Assert.HasCount(2, conditionalOp.Tokens.EndIfTokens);
+            Assert.Contains("//#endif", conditionalOp.Tokens.EndIfTokens.Select(x => x.Value));
+            Assert.Contains("////#endif", conditionalOp.Tokens.EndIfTokens.Select(x => x.Value));
 
-            Assert.Single(conditionalOp.Tokens.ActionableIfTokens);
-            Assert.Equal("////#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
+            Assert.ContainsSingle(conditionalOp.Tokens.ActionableIfTokens);
+            Assert.AreEqual("////#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
 
-            Assert.Equal(2, conditionalOp.Tokens.ActionableElseIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "////#elseif");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "////#elif");
+            Assert.HasCount(2, conditionalOp.Tokens.ActionableElseIfTokens);
+            Assert.Contains("////#elseif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
+            Assert.Contains("////#elif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
 
-            Assert.Single(conditionalOp.Tokens.ActionableElseTokens);
-            Assert.Equal("////#else", conditionalOp.Tokens.ActionableElseTokens[0].Value);
+            Assert.ContainsSingle(conditionalOp.Tokens.ActionableElseTokens);
+            Assert.AreEqual("////#else", conditionalOp.Tokens.ActionableElseTokens[0].Value);
 
-            Assert.True(conditionalOp.WholeLine);
-            Assert.True(conditionalOp.TrimWhitespace);
+            Assert.IsTrue(conditionalOp.WholeLine);
+            Assert.IsTrue(conditionalOp.TrimWhitespace);
         }
 
-        [Fact(DisplayName = nameof(TestBlockCommentConditionalSetup))]
+        [TestMethod(DisplayName = nameof(TestBlockCommentConditionalSetup))]
         public void TestBlockCommentConditionalSetup()
         {
             IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(BlockConditionalSetup.ToString(), A.Fake<IDirectory>());
             IList<IOperationProvider> operations = new List<IOperationProvider>(ops);
 
-            Assert.Equal(2, operations.Count);  // conditional & pseudo comment balancer
-            Assert.True(operations[0] is Conditional);
+            Assert.HasCount(2, operations);  // conditional & pseudo comment balancer
+            Assert.IsTrue(operations[0] is Conditional);
 
             Conditional? conditionalOp = operations[0] as Conditional;
-            Assert.NotNull(conditionalOp);
+            Assert.IsNotNull(conditionalOp);
 
-            Assert.Equal(2, conditionalOp!.Tokens.EndIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "#endif");
-            Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "/*#endif");
+            Assert.HasCount(2, conditionalOp!.Tokens.EndIfTokens);
+            Assert.Contains("#endif", conditionalOp.Tokens.EndIfTokens.Select(x => x.Value));
+            Assert.Contains("/*#endif", conditionalOp.Tokens.EndIfTokens.Select(x => x.Value));
 
-            Assert.Single(conditionalOp.Tokens.ActionableIfTokens);
-            Assert.Equal("/*#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
+            Assert.ContainsSingle(conditionalOp.Tokens.ActionableIfTokens);
+            Assert.AreEqual("/*#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
 
-            Assert.Equal(4, conditionalOp.Tokens.ActionableElseIfTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "#elseif");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "/*#elseif");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "#elif");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseIfTokens, x => x.Value == "/*#elif");
+            Assert.HasCount(4, conditionalOp.Tokens.ActionableElseIfTokens);
+            Assert.Contains("#elseif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
+            Assert.Contains("/*#elseif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
+            Assert.Contains("#elif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
+            Assert.Contains("/*#elif", conditionalOp.Tokens.ActionableElseIfTokens.Select(x => x.Value));
 
-            Assert.Equal(2, conditionalOp.Tokens.ActionableElseTokens.Count);
-            Assert.Contains(conditionalOp.Tokens.ActionableElseTokens, x => x.Value == "#else");
-            Assert.Contains(conditionalOp.Tokens.ActionableElseTokens, x => x.Value == "/*#else");
+            Assert.HasCount(2, conditionalOp.Tokens.ActionableElseTokens);
+            Assert.Contains("#else", conditionalOp.Tokens.ActionableElseTokens.Select(x => x.Value));
+            Assert.Contains("/*#else", conditionalOp.Tokens.ActionableElseTokens.Select(x => x.Value));
 
-            Assert.True(conditionalOp.WholeLine);
-            Assert.True(conditionalOp.TrimWhitespace);
+            Assert.IsTrue(conditionalOp.WholeLine);
+            Assert.IsTrue(conditionalOp.TrimWhitespace);
         }
     }
 }
