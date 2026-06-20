@@ -263,7 +263,6 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             #:property LangVersion=preview
             #:property TargetFramework=
             #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
-            [TestClass]
             class C;
             """);
 
@@ -299,7 +298,6 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
         File.WriteAllText(programFile, """
             #:property OutputType=Module
             #:property ProduceReferenceAssembly=false
-            [TestClass]
             class C;
             """);
 
