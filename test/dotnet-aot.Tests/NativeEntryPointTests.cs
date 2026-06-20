@@ -116,7 +116,7 @@ public class NativeEntryPointTests
         {
             Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
 
-            // "build" produces parse errors → AOT path skipped → falls to managed fallback
+            // "build" parses cleanly, so the AOT path is taken but cannot execute it and falls back during invocation.
             // Since sdkDir doesn't contain dotnet.dll, this returns 1 (no managed fallback)
             int exitCode = NativeEntryPoint.ExecuteCore(
                 hostPath: "test-host",

@@ -8,7 +8,8 @@ namespace Microsoft.DotNet.Cli.Tests;
 /// <summary>
 ///  Integration tests that run the actual AOT binary (dn.exe / dn) end-to-end.
 ///  These tests require the AOT binary to be present in the SDK layout.
-///  They are traited with "Category=AOT" so they can be filtered in CI.
+///  They are categorized with <c>[TestCategory("AOT")]</c> so they can be filtered in CI
+///  (e.g. by the <c>AOT</c> test category).
 /// </summary>
 [TestCategory("AOT")]
 [TestClass]
