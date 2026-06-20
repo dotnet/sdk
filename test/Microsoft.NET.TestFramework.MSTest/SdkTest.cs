@@ -23,7 +23,12 @@ public abstract class SdkTest
     /// <summary>
     /// Set by the MSTest runtime before each test runs.
     /// </summary>
-    public TestContext TestContext { get; set; } = null!;
+    /// <remarks>
+    /// Declared <see langword="virtual"/> so that derived test classes opting into Verify (via the
+    /// <c>[UsesVerify]</c> marker) can have the Verify.MSTest source generator emit a
+    /// <c>sealed override</c> that captures this <see cref="TestContext"/> for the verifier.
+    /// </remarks>
+    public virtual TestContext TestContext { get; set; } = null!;
 
     protected bool? UsingFullFrameworkMSBuild => SdkTestContext.Current.ToolsetUnderTest?.ShouldUseFullFrameworkMSBuild;
 

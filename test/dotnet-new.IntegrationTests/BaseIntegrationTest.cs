@@ -5,7 +5,8 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public abstract class BaseIntegrationTest : SdkTest
+    [UsesVerify]
+    public abstract partial class BaseIntegrationTest : SdkTest
     {
         public BaseIntegrationTest()
         {
