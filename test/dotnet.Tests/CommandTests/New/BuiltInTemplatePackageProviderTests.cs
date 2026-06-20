@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.New;
@@ -16,7 +16,7 @@ public class BuiltInTemplatePackageProviderTests
     {
         // SDK version (NewCommandParser) must be >= 10.x for both 9.x and 10.x buckets to be included.
         var sdkVersion = typeof(NewCommandParser).Assembly.GetName().Version ?? new();
-        Assert.IsGreaterThanOrEqualTo(sdkVersion.Major, 10, "This test requires running under an SDK whose major version is at least 10.");
+        Assert.IsGreaterThanOrEqualTo(10, sdkVersion.Major, "This test requires running under an SDK whose major version is at least 10.");
 
         // Build synthetic version directories:
         // 9.0 bucket: highest patch should be 200 (release preferred over preview)
@@ -63,7 +63,7 @@ public class BuiltInTemplatePackageProviderTests
     {
         // This is a more direct assertion against the original bug: alpha ordering of keys would have produced "10.0.*" before "9.0.*".
         var sdkVersion = typeof(NewCommandParser).Assembly.GetName().Version ?? new();
-        Assert.IsGreaterThanOrEqualTo(sdkVersion.Major, 10, "This test requires running under an SDK whose major version is at least 10.");
+        Assert.IsGreaterThanOrEqualTo(10, sdkVersion.Major, "This test requires running under an SDK whose major version is at least 10.");
 
         var versionDirInfo = new Dictionary<string, SemanticVersion>
         {

@@ -36,8 +36,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test2");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
 
-                Assert.IsGreaterThan(previousDotnetProjectMatches.Count, 1);
-                Assert.IsGreaterThan(currentDotnetProjectMatches.Count, 1);
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
 
                 Assert.ContainsSingle(failedTestsMatches);
                 Assert.HasCount(2, skippedTestsMatches);
@@ -78,9 +78,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
                 MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test5");
 
-                Assert.IsGreaterThan(previousDotnetProjectMatches.Count, 1);
-                Assert.IsGreaterThan(currentDotnetProjectMatches.Count, 1);
-                Assert.IsGreaterThan(currentDotnetOtherProjectMatches.Count, 1);
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetOtherProjectMatches.Count);
 
                 Assert.HasCount(2, skippedTestsMatches);
                 Assert.HasCount(2, failedTestsMatches);
@@ -185,8 +185,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed TestMethod3");
 
-                Assert.IsGreaterThan(previousDotnetProjectMatches.Count, 1);
-                Assert.IsGreaterThan(currentDotnetProjectMatches.Count, 1);
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
 
                 Assert.HasCount(2, failedTestsMatches);
 
