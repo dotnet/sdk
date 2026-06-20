@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -175,7 +176,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
     internal static IDictionary<string, List<StaticWebAssetEndpoint>> ToAssetFileDictionary(ITaskItem[] candidateEndpoints)
     {
-        var result = new Dictionary<string, List<StaticWebAssetEndpoint>>(candidateEndpoints.Length / 2);
+        var result = new Dictionary<string, List<StaticWebAssetEndpoint>>(candidateEndpoints.Length / 2, OSPath.PathComparer);
 
         foreach (var candidate in candidateEndpoints)
         {
