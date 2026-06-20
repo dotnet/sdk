@@ -74,20 +74,22 @@
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
-    <!-- Suppress the old xUnit TestFramework that ComponentMocks brings in transitively;
-         Microsoft.NET.TestFramework.MSTest link-shares the same runner-agnostic types. -->
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj"
-                      ReferenceOutputAssembly="false" />
+    <!-- ComponentMocks is compiled against the old xUnit Microsoft.NET.TestFramework and needs it at
+         runtime. Reference it directly so it flows into the runtime closure (output + deps.json). It is
+         removed from the C# compiler references below to avoid CS0433 duplicate-type conflicts with
+         Microsoft.NET.TestFramework.MSTest, which link-shares the same runner-agnostic types. -->
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
-  <!-- Remove the old xUnit TestFramework from the C# compiler reference list to avoid
-       CS0433 duplicate-type conflicts with Microsoft.NET.TestFramework.MSTest. -->
+  <!-- Remove the old xUnit TestFramework from the C# compiler reference list (compile only) to avoid
+       CS0433 duplicate-type conflicts with Microsoft.NET.TestFramework.MSTest. The assembly remains in
+       the runtime closure so ComponentMocks can load it at runtime. -->
   <Target Name="RemoveConflictingTestFrameworkReference"
-          AfterTargets="ResolveAssemblyReferences"
+          AfterTargets="FindReferenceAssembliesForReferences"
           BeforeTargets="CoreCompile">
     <ItemGroup>
-      <ReferencePath Remove="@(ReferencePath)"
-                     Condition="'%(Filename)' == 'Microsoft.NET.TestFramework' AND '%(Extension)' == '.dll'" />
+      <ReferencePathWithRefAssemblies Remove="@(ReferencePathWithRefAssemblies)"
+                                      Condition="'%(Filename)' == 'Microsoft.NET.TestFramework' AND '%(Extension)' == '.dll'" />
     </ItemGroup>
   </Target>
 
