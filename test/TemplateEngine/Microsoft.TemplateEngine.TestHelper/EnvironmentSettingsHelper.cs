@@ -16,13 +16,9 @@ namespace Microsoft.TemplateEngine.TestHelper
         private readonly List<string> _foldersToCleanup = new List<string>();
         private readonly SharedTestOutputHelper? _testOutputHelper;
 
-        public EnvironmentSettingsHelper()
+        public EnvironmentSettingsHelper(IMessageSink? messageSink = null)
         {
-        }
-
-        public EnvironmentSettingsHelper(IMessageSink messageSink)
-        {
-            _testOutputHelper = new SharedTestOutputHelper(messageSink);
+            _testOutputHelper = messageSink is not null ? new SharedTestOutputHelper(messageSink) : null;
         }
 
         public IEngineEnvironmentSettings CreateEnvironment(
