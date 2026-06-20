@@ -4,6 +4,11 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- These tests were authored for xUnit, which only parallelizes across classes (methods within a class run
+         sequentially). Many tests within a class share fixed paths (e.g. a fixed binlog name) or test asset
+         directories, so running methods of the same class in parallel causes file-in-use/missing-file races.
+         Override the repo-wide MethodLevel default with ClassLevel to preserve the original xUnit semantics. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
