@@ -31,6 +31,12 @@
     <PackageReference Include="Microsoft.Build.Locator" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Spectre.Console.Testing" />
+    <!-- Microsoft.NET.TestFramework (xUnit v3 based, pulled in transitively for TestAsset/App helpers
+         via Microsoft.DotNet.HotReload.Test.Utilities) needs the xUnit v3 runtime at execution time.
+         The transitive reference is ExcludeAssets="Runtime", so reference the v3 runtime directly to
+         ensure xunit.v3.core is deployed; otherwise the test host crashes on load with
+         FileNotFoundException for 'xunit.v3.core'. -->
+    <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 
   <!-- Copies test browser files to test-browser output directory -->
