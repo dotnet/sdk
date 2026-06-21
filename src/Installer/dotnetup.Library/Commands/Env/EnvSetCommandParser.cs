@@ -8,9 +8,20 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 internal static class EnvSetCommandParser
 {
-    private static readonly string[] s_supportedModes = OperatingSystem.IsWindows()
-        ? ["none", "shell", "full"]
-        : ["none", "shell"];
+    private readonly record struct ModeOption(string Token, DotnetAccessMode Mode, bool WindowsOnly);
+
+    // Single source of truth tying each CLI token to its DotnetAccessMode.
+    private static readonly ModeOption[] s_modes =
+    [
+        new("none", DotnetAccessMode.None, WindowsOnly: false),
+        new("shell", DotnetAccessMode.Shell, WindowsOnly: false),
+        new("full", DotnetAccessMode.Full, WindowsOnly: true),
+    ];
+
+    private static readonly string[] s_supportedModes = s_modes
+        .Where(m => !m.WindowsOnly || OperatingSystem.IsWindows())
+        .Select(m => m.Token)
+        .ToArray();
 
     public static readonly Argument<DotnetAccessMode?> ModeArgument = CreateModeArgument();
 
@@ -37,14 +48,22 @@ internal static class EnvSetCommandParser
         }
 
         var token = result.Tokens[0].Value.ToLowerInvariant();
-        return token switch
+        foreach (var option in s_modes)
         {
-            "none" => DotnetAccessMode.None,
-            "shell" => DotnetAccessMode.Shell,
-            "full" when OperatingSystem.IsWindows() => DotnetAccessMode.Full,
-            "full" => ModeError(result, "'full' mode is only supported on Windows. Use 'shell' on this platform."),
-            _ => ModeError(result, $"Unknown env mode '{token}'. Expected one of: {string.Join(", ", s_supportedModes)}."),
-        };
+            if (!string.Equals(option.Token, token, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (option.WindowsOnly && !OperatingSystem.IsWindows())
+            {
+                return ModeError(result, $"'{token}' mode is only supported on Windows. Use 'shell' on this platform.");
+            }
+
+            return option.Mode;
+        }
+
+        return ModeError(result, $"Unknown env mode '{token}'. Expected one of: {string.Join(", ", s_supportedModes)}.");
     }
 
     private static DotnetAccessMode? ModeError(ArgumentResult result, string message)

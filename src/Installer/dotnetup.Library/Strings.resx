@@ -243,4 +243,39 @@
   <data name="HelpUtilityCommandsTitle" xml:space="preserve">
     <value>Utility Commands:</value>
   </data>
+  <data name="EnvScriptCommandDescription" xml:space="preserve">
+    <value>Generates a shell script that configures the environment for .NET. With no selection flags it follows your configured env settings; pass --dotnet and/or --dotnetup to emit only those parts.</value>
+  </data>
+  <data name="EnvScriptDotnetInstallPathOptionDescription" xml:space="preserve">
+    <value>The path to the .NET installation directory. If not specified, uses the default user install path.</value>
+  </data>
+  <data name="EnvScriptDotnetOptionDescription" xml:space="preserve">
+    <value>Add the managed dotnet to PATH and set DOTNET_ROOT.</value>
+  </data>
+  <data name="EnvScriptDotnetupOptionDescription" xml:space="preserve">
+    <value>Add the dotnetup directory to PATH.</value>
+  </data>
+  <data name="EnvScriptDotnetupOnlyOptionDescription" xml:space="preserve">
+    <value>Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</value>
+  </data>
+  <data name="EnvOutcomeDotnetupOnlyOnPath" xml:space="preserve">
+    <value>dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</value>
+  </data>
+  <data name="EnvOutcomeNeitherOnPath" xml:space="preserve">
+    <value>Neither dotnet nor dotnetup is on your PATH.</value>
+  </data>
+  <data name="EnvOutcomeBothOnPath" xml:space="preserve">
+    <value>dotnet and dotnetup are on your PATH.</value>
+  </data>
+  <data name="EnvOutcomeDotnetOnlyOnPath" xml:space="preserve">
+    <value>dotnet is on your PATH. dotnetup is not.</value>
+  </data>
+  <data name="EnvApplyToTerminalPrompt" xml:space="preserve">
+    <value>To apply the change to this terminal now, run:
+  {0}
+Or open a new terminal.</value>
+  </data>
+  <data name="EnvOpenNewTerminalToTakeEffect" xml:space="preserve">
+    <value>Open a new terminal for the change to take effect.</value>
+  </data>
 </root>

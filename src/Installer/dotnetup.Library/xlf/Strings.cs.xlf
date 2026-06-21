@@ -47,6 +47,65 @@
         <target state="new">Run 'dotnetup install' to install a .NET SDK first.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnvApplyToTerminalPrompt">
+        <source>To apply the change to this terminal now, run:
+  {0}
+Or open a new terminal.</source>
+        <target state="new">To apply the change to this terminal now, run:
+  {0}
+Or open a new terminal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOpenNewTerminalToTakeEffect">
+        <source>Open a new terminal for the change to take effect.</source>
+        <target state="new">Open a new terminal for the change to take effect.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeBothOnPath">
+        <source>dotnet and dotnetup are on your PATH.</source>
+        <target state="new">dotnet and dotnetup are on your PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeDotnetOnlyOnPath">
+        <source>dotnet is on your PATH. dotnetup is not.</source>
+        <target state="new">dotnet is on your PATH. dotnetup is not.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeDotnetupOnlyOnPath">
+        <source>dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</source>
+        <target state="new">dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeNeitherOnPath">
+        <source>Neither dotnet nor dotnetup is on your PATH.</source>
+        <target state="new">Neither dotnet nor dotnetup is on your PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptCommandDescription">
+        <source>Generates a shell script that configures the environment for .NET. With no selection flags it follows your configured env settings; pass --dotnet and/or --dotnetup to emit only those parts.</source>
+        <target state="new">Generates a shell script that configures the environment for .NET. With no selection flags it follows your configured env settings; pass --dotnet and/or --dotnetup to emit only those parts.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetInstallPathOptionDescription">
+        <source>The path to the .NET installation directory. If not specified, uses the default user install path.</source>
+        <target state="new">The path to the .NET installation directory. If not specified, uses the default user install path.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetOptionDescription">
+        <source>Add the managed dotnet to PATH and set DOTNET_ROOT.</source>
+        <target state="new">Add the managed dotnet to PATH and set DOTNET_ROOT.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetupOnlyOptionDescription">
+        <source>Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</source>
+        <target state="new">Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetupOptionDescription">
+        <source>Add the dotnetup directory to PATH.</source>
+        <target state="new">Add the dotnetup directory to PATH.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FormatOptionDescription">
         <source>Output format (text or json).</source>
         <target state="new">Output format (text or json).</target>

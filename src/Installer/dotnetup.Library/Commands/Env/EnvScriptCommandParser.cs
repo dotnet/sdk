@@ -12,18 +12,18 @@ internal static class EnvScriptCommandParser
 
     public static readonly Option<string?> DotnetInstallPathOption = new("--dotnet-install-path", "-d")
     {
-        Description = "The path to the .NET installation directory. If not specified, uses the default user install path.",
+        Description = Strings.EnvScriptDotnetInstallPathOptionDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
 
     public static readonly Option<bool> DotnetOption = new("--dotnet")
     {
-        Description = "Wire the managed dotnet into the environment (DOTNET_ROOT + dotnet on PATH).",
+        Description = Strings.EnvScriptDotnetOptionDescription,
     };
 
     public static readonly Option<bool> DotnetupOption = new("--dotnetup")
     {
-        Description = "Add the dotnetup directory to PATH.",
+        Description = Strings.EnvScriptDotnetupOptionDescription,
     };
 
     /// <summary>
@@ -33,7 +33,7 @@ internal static class EnvScriptCommandParser
     /// </summary>
     public static readonly Option<bool> DotnetupOnlyOption = new("--dotnetup-only")
     {
-        Description = "Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.",
+        Description = Strings.EnvScriptDotnetupOnlyOptionDescription,
         Hidden = true,
     };
 
@@ -46,7 +46,7 @@ internal static class EnvScriptCommandParser
     /// </summary>
     public static Command ConstructCommand(string name, bool hidden = false)
     {
-        Command command = new(name, "Generates a shell script that configures the environment for .NET. With no selection flags it follows your configured env settings; pass --dotnet and/or --dotnetup to emit only those parts.")
+        Command command = new(name, Strings.EnvScriptCommandDescription)
         {
             Hidden = hidden,
         };

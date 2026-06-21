@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -55,29 +56,27 @@ internal static class EnvSettingsWriter
 
             if (activationCommand is not null)
             {
-                Console.WriteLine("To apply the change to this terminal now, run:");
-                Console.WriteLine($"  {activationCommand}");
-                Console.WriteLine("Or open a new terminal.");
+                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.EnvApplyToTerminalPrompt, activationCommand));
             }
             else
             {
-                Console.WriteLine("Open a new terminal for the change to take effect.");
+                Console.WriteLine(Strings.EnvOpenNewTerminalToTakeEffect);
             }
         }
     }
 
     /// <summary>
     /// Describes the resulting environment in outcome terms (what's on PATH) rather than the
-    /// internal setting names, composed from both axes. <c>all</c> shares <c>shell</c>'s wording —
+    /// internal setting names, composed from both axes. <c>full</c> shares <c>shell</c>'s wording —
     /// from the terminal's perspective the available commands are the same; the difference is only
-    /// that <c>all</c> also reaches cmd / GUI apps, which is not worth a distinct line here.
+    /// that <c>full</c> also reaches cmd / GUI apps, which is not worth a distinct line here.
     /// </summary>
     private static string DescribeOutcome(DotnetAccessMode accessMode, bool dotnetupOnPath) =>
         (accessMode, dotnetupOnPath) switch
         {
-            (DotnetAccessMode.None, true) => "dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet <command>'.",
-            (DotnetAccessMode.None, false) => "Neither dotnet nor dotnetup is on your PATH.",
-            (_, true) => "dotnet and dotnetup are on your PATH.",
-            (_, false) => "dotnet is on your PATH. dotnetup is not.",
+            (DotnetAccessMode.None, true) => Strings.EnvOutcomeDotnetupOnlyOnPath,
+            (DotnetAccessMode.None, false) => Strings.EnvOutcomeNeitherOnPath,
+            (_, true) => Strings.EnvOutcomeBothOnPath,
+            (_, false) => Strings.EnvOutcomeDotnetOnlyOnPath,
         };
 }
