@@ -6,6 +6,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <!-- CWD-mutating tests must run serially; emits [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
 
