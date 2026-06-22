@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -15,6 +16,7 @@ using NuGet.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
