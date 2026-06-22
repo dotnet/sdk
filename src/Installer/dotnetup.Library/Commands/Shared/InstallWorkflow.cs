@@ -126,8 +126,7 @@ internal class InstallWorkflow
 
         var pathResolution = _installPathResolver.Resolve(
             _command.InstallPath,
-            globalJson,
-            currentInstallRoot);
+            globalJson);
 
         ValidateInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource, _command.ManifestPath);
 
