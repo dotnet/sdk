@@ -37,6 +37,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--manifest", "<manifestfiles>" }, new string[] { "--property:TargetManifestFiles=<cwd><manifestfiles>" })]
         [InlineData(new string[] { "-v", "minimal" }, new string[] { "--verbosity:minimal" })]
         [InlineData(new string[] { "--verbosity", "minimal" }, new string[] { "--verbosity:minimal" })]
+        [InlineData(new string[] { "--logger:xyz" }, new string[] { "--logger:xyz" })]
         [InlineData(new string[] { "<project>" }, new string[] { "<project>" })]
         [InlineData(new string[] { "<project>", "<extra-args>" }, new string[] { "<project>", "<extra-args>" })]
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
