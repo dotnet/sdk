@@ -618,11 +618,16 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // * If we don't find a more specific (Build or Publish) asset we will return the `All` asset.
     // We assume that the manifest is correct and don't try to deal with errors at this level, if for some reason we find more
     // than one type of asset we will just return all of them.
-    // One exception to this is the `All` kind of assets, where we will just return the first two we find. The reason for it is
-    // to avoid having to allocate a buffer to collect all the `All` assets.
+    // One exception to this is the `All` kind of assets, where we will just keep track of the first two we find. The reason
+    // for it is to avoid having to allocate a buffer to collect all the `All` assets. We only surface those two `All` assets
+    // (so the caller can error out on the ambiguity) when no more specific Build or Publish asset is present in the group.
+    // It is important that we don't surface the `All` ambiguity eagerly: a more specific asset can appear *after* two `All`
+    // assets in the group (for example a project Publish manifest that shadows a package `All` asset and a project build
+    // `All` manifest that all map to the same target path). In that case the specific asset wins and there is no ambiguity.
     internal static IEnumerable<StaticWebAsset> ChooseNearestAssetKind(IEnumerable<StaticWebAsset> group, string assetKind)
     {
-        StaticWebAsset allKindAssetCandidate = null;
+        StaticWebAsset firstAllKindCandidate = null;
+        StaticWebAsset secondAllKindCandidate = null;
 
         var ignoreAllKind = false;
         foreach (var item in group)
@@ -640,20 +645,32 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             }
             else if (!ignoreAllKind && item.IsBuildAndPublish())
             {
-                if (allKindAssetCandidate != null)
+                // Keep track of up to two `All` assets. If we never find a more specific asset, having more than
+                // one `All` asset is an error, and we'll surface both candidates below so the caller can report it.
+                if (firstAllKindCandidate == null)
                 {
-                    // At this point we have more than one `All` asset, which is an error
-                    yield return allKindAssetCandidate;
-                    yield return item;
-                    yield break;
+                    firstAllKindCandidate = item;
                 }
-                allKindAssetCandidate = item;
+                else
+                {
+                    secondAllKindCandidate ??= item;
+                }
             }
         }
 
         if (!ignoreAllKind)
         {
-            yield return allKindAssetCandidate;
+            // No more specific Build or Publish asset was found, so fall back to the `All` asset(s).
+            if (firstAllKindCandidate != null)
+            {
+                yield return firstAllKindCandidate;
+            }
+
+            if (secondAllKindCandidate != null)
+            {
+                // More than one `All` asset and no specific asset: this is a genuine ambiguity.
+                yield return secondAllKindCandidate;
+            }
         }
     }
 

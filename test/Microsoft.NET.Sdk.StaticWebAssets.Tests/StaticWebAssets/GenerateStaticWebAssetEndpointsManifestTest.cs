@@ -218,6 +218,110 @@ public class GenerateStaticWebAssetEndpointsManifestTest
     }
 
     [Fact]
+    public void GeneratesPublishManifest_WhenAllAndPublishAssetsShareTargetPath_PrefersPublishAsset()
+    {
+        // Regression test for https://github.com/dotnet/sdk/issues/54779
+        // A MAUI Blazor Hybrid app that references a Razor class library AND the BlazorWebView package
+        // produces three assets that map to the same target path "_framework/blazor.modules.json":
+        //   * An "All" asset coming from the Microsoft.AspNetCore.Components.WebView package.
+        //   * An "All" project build JS modules manifest.
+        //   * A "Publish" project publish JS modules manifest.
+        // ChooseNearestAssetKind used to surface the "two All assets" ambiguity (yielding both and breaking)
+        // before it ever reached the more specific Publish asset, so SingleOrDefault threw
+        // "Sequence contains more than one element". The Publish asset should win and produce a single endpoint.
+        var relativePath = "_framework/blazor#[.{fingerprint}]?.modules.json";
+
+        // Order matters: the two "All" assets appear before the "Publish" asset, reproducing the original failure.
+        var assets = new[]
+        {
+            CreateAsset(
+                "blazor.modules.json",
+                sourceId: "Microsoft.AspNetCore.Components.WebView",
+                sourceType: "Package",
+                relativePath: "blazor#[.{fingerprint}]?.modules.json",
+                basePath: "_framework",
+                assetKind: "All",
+                assetMode: "All",
+                assetTraitName: "JSModule",
+                assetTraitValue: "JSModuleManifest",
+                integrity: "package-integrity",
+                fingerprint: "packagefp"),
+            CreateAsset(
+                "jsmodules.build.manifest.json",
+                sourceId: "MyApp",
+                sourceType: "Computed",
+                relativePath: relativePath,
+                basePath: "/",
+                assetKind: "All",
+                assetMode: "All",
+                assetTraitName: "JSModule",
+                assetTraitValue: "JSModuleManifest",
+                integrity: "build-integrity",
+                fingerprint: "buildfp"),
+            CreateAsset(
+                "jsmodules.publish.manifest.json",
+                sourceId: "MyApp",
+                sourceType: "Computed",
+                relativePath: relativePath,
+                basePath: "/",
+                assetKind: "Publish",
+                assetMode: "CurrentProject",
+                assetTraitName: "JSModule",
+                assetTraitValue: "JSModuleManifest",
+                integrity: "publish-integrity",
+                fingerprint: "publishfp"),
+        };
+
+        var endpoints = CreateEndpoints(assets);
+        var path = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + "endpoints.json");
+
+        var errors = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(e => errors.Add(e.Message));
+
+        var task = new GenerateStaticWebAssetEndpointsManifest
+        {
+            Assets = assets.Select(a => a.ToTaskItem()).ToArray(),
+            Endpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
+            ManifestType = "Publish",
+            Source = "MyApp",
+            ManifestPath = path,
+            BuildEngine = buildEngine.Object
+        };
+
+        try
+        {
+            // Act - this used to throw "Sequence contains more than one element".
+            var result = task.Execute();
+
+            // Assert
+            errors.Should().BeEmpty();
+            result.Should().BeTrue();
+            new FileInfo(path).Should().Exist();
+            var manifest = File.ReadAllText(path);
+            var json = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(manifest);
+            json.Should().NotBeNull();
+            json.Endpoints.Should().NotBeEmpty();
+
+            // The Publish asset must win over the two "All" assets, so every endpoint for the shared
+            // target path must come from the publish manifest (identified by its unique integrity).
+            json.Endpoints.Should().OnlyContain(e =>
+                e.ResponseHeaders.Any(h => h.Name == "ETag" && h.Value.Contains("publish-integrity")));
+            json.Endpoints.Should().NotContain(e =>
+                e.ResponseHeaders.Any(h => h.Name == "ETag"
+                    && (h.Value.Contains("package-integrity") || h.Value.Contains("build-integrity"))));
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
     public void ExcludesEndpoints_BasedOnExclusionPatterns()
     {
         // Arrange
@@ -458,7 +562,9 @@ public class GenerateStaticWebAssetEndpointsManifestTest
         string assetTraitName = "",
         string assetTraitValue = "",
         string copyToOutputDirectory = "Never",
-        string copytToPublishDirectory = "PreserveNewest")
+        string copytToPublishDirectory = "PreserveNewest",
+        string integrity = "integrity",
+        string fingerprint = "fingerprint")
     {
         var result = new StaticWebAsset()
         {
@@ -480,8 +586,8 @@ public class GenerateStaticWebAssetEndpointsManifestTest
             CopyToPublishDirectory = copytToPublishDirectory,
             OriginalItemSpec = itemSpec,
             // Add these to avoid accessing the disk to compute them
-            Integrity = "integrity",
-            Fingerprint = "fingerprint",
+            Integrity = integrity,
+            Fingerprint = fingerprint,
             FileLength = 10,
             LastWriteTime = new DateTime(2000, 1, 1, 0, 0, 1)
         };
