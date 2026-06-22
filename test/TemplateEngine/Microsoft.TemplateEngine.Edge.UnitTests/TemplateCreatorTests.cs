@@ -640,7 +640,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         [DataRow(true, true, true, null, false, null, /*c_val*/ false, "parA,", false, "")]
         [DataRow(null, true, false, null, true, null, /*c_val*/ true, "", true, "parB")]
         [DataRow(null, true, true, null, false, null, /*c_val*/ true, "", true, "parA")]
-        [DataRow(null, true, false, null, false, false, /*c_val*/ false, "", true, @"Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition): B (parameter)")]
+        [DataRow(null, true, false, null, false, false, /*c_val*/ false, "", true, @"Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameters: parB (parameter): <null>.")]
         public async Task InstantiateAsync_ConditionalParametersWithExternalEvaluation(
             bool? a_val,
             bool? a_enabled,
