@@ -230,7 +230,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestCode = source,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

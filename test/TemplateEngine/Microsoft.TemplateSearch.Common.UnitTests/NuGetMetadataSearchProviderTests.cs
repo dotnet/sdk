@@ -8,20 +8,34 @@ using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.Common.Providers;
-using Xunit;
 
 namespace Microsoft.TemplateSearch.Common.UnitTests
 {
-    public class NuGetMetadataSearchProviderTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class NuGetMetadataSearchProviderTests
     {
+        private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
+            new(() => new EnvironmentSettingsHelper(NullMessageSink.Instance));
+
         private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
-        public NuGetMetadataSearchProviderTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public NuGetMetadataSearchProviderTests()
         {
-            _environmentSettingsHelper = environmentSettingsHelper;
+            _environmentSettingsHelper = s_environmentSettingsHelper.Value;
         }
 
-        [Fact]
+        public TestContext TestContext { get; set; } = null!;
+
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            if (s_environmentSettingsHelper.IsValueCreated)
+            {
+                s_environmentSettingsHelper.Value.Dispose();
+            }
+        }
+
+        [TestMethod]
         public async Task SearchOnlineCache()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
@@ -50,14 +64,14 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.True(searchResult[0].Success);
-            Assert.True(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count > 0);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsTrue(searchResult[0].Success);
+            Assert.IsTrue(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsNotEmpty(searchResult[0].SearchHits);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SearchOverrideCache()
         {
             string searchFilePath = GenerateLocalCache();
@@ -74,19 +88,19 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.CancellationToken);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.True(searchResult[0].Success);
-            Assert.True(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count > 0);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsTrue(searchResult[0].Success);
+            Assert.IsTrue(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsNotEmpty(searchResult[0].SearchHits);
 
             //provider should not copy local file to settings
-            Assert.False(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
+            Assert.IsFalse(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SearchOverrideCache_FailsWhenFileDoesntExist()
         {
             string searchFilePath = "do-not-exist";
@@ -103,20 +117,20 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.CancellationToken);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.False(searchResult[0].Success);
-            Assert.False(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count == 0);
-            Assert.Equal("Local search cache 'do-not-exist' does not exist.", searchResult[0].ErrorMessage);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsFalse(searchResult[0].Success);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsEmpty(searchResult[0].SearchHits);
+            Assert.AreEqual("Local search cache 'do-not-exist' does not exist.", searchResult[0].ErrorMessage);
 
             //provider should not copy local file to settings
-            Assert.False(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
+            Assert.IsFalse(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SearchLocalCache()
         {
             var environment = new MockEnvironment();
@@ -147,33 +161,33 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             }
             var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.False(searchResult[0].Success);
-            Assert.False(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count == 0);
-            Assert.Equal($"Local search cache '{Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")}' does not exist.", searchResult[0].ErrorMessage);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsFalse(searchResult[0].Success);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsEmpty(searchResult[0].SearchHits);
+            Assert.AreEqual($"Local search cache '{Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")}' does not exist.", searchResult[0].ErrorMessage);
 
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", null);
             searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.True(searchResult[0].Success);
-            Assert.True(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count > 0);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsTrue(searchResult[0].Success);
+            Assert.IsTrue(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsNotEmpty(searchResult[0].SearchHits);
 
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", "true");
             searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.True(searchResult[0].Success);
-            Assert.True(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count > 0);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsTrue(searchResult[0].Success);
+            Assert.IsTrue(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsNotEmpty(searchResult[0].SearchHits);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SearchReturnsErrorOnIncorrectCache()
         {
             var jsonObject = JsonNode.Parse(JsonSerializer.Serialize(new { randomField = "smth" }))!;
@@ -193,20 +207,20 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.CancellationToken);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.False(searchResult[0].Success);
-            Assert.False(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.Equal("The template search cache data is not supported.", searchResult[0].ErrorMessage);
-            Assert.True(searchResult[0].SearchHits.Count == 0);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsFalse(searchResult[0].Success);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.AreEqual("The template search cache data is not supported.", searchResult[0].ErrorMessage);
+            Assert.IsEmpty(searchResult[0].SearchHits);
 
             //provider should not copy local file to settings
-            Assert.False(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
+            Assert.IsFalse(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SearchReturnsErrorOnIncorrectV1Cache()
         {
             var jsonObject = JsonNode.Parse(JsonSerializer.Serialize(new { version = "1.0.0.0", randomField = "smth" }))!;
@@ -226,20 +240,20 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.CancellationToken);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.False(searchResult[0].Success);
-            Assert.False(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count == 0);
-            Assert.Equal("The template search cache data is not valid.", searchResult[0].ErrorMessage);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsFalse(searchResult[0].Success);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsEmpty(searchResult[0].SearchHits);
+            Assert.AreEqual("The template search cache data is not valid.", searchResult[0].ErrorMessage);
 
             //provider should not copy local file to settings
-            Assert.False(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
+            Assert.IsFalse(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SearchReturnsErrorOnIncorrectV2Cache()
         {
             var jsonObject = JsonNode.Parse(JsonSerializer.Serialize(new { version = "2.0", randomField = "smth" }))!;
@@ -259,20 +273,20 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.CancellationToken);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.False(searchResult[0].Success);
-            Assert.False(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count == 0);
-            Assert.Equal("The template search cache data is not valid.", searchResult[0].ErrorMessage);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsFalse(searchResult[0].Success);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsEmpty(searchResult[0].SearchHits);
+            Assert.AreEqual("The template search cache data is not valid.", searchResult[0].ErrorMessage);
 
             //provider should not copy local file to settings
-            Assert.False(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
+            Assert.IsFalse(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SearchReturnsErrorOnIncorrectVersionCache()
         {
             var jsonObject = JsonNode.Parse(JsonSerializer.Serialize(new { version = "3.0", TemplatePackages = Array.Empty<string>() }))!;
@@ -292,17 +306,17 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.CancellationToken);
 
-            Assert.NotNull(searchResult);
-            Assert.Single(searchResult);
-            Assert.False(searchResult[0].Success);
-            Assert.False(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.True(searchResult[0].SearchHits.Count == 0);
-            Assert.Equal("The template search cache data is not supported.", searchResult[0].ErrorMessage);
+            Assert.IsNotNull(searchResult);
+            Assert.ContainsSingle(searchResult);
+            Assert.IsFalse(searchResult[0].Success);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
+            Assert.IsEmpty(searchResult[0].SearchHits);
+            Assert.AreEqual("The template search cache data is not supported.", searchResult[0].ErrorMessage);
 
             //provider should not copy local file to settings
-            Assert.False(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
+            Assert.IsFalse(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
         }
 
         private string GenerateLocalCache()

@@ -201,9 +201,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string?> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) });
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.Current.CancellationToken);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects?.CreationResult.PrimaryOutputs.Count);
 
@@ -235,9 +235,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string?> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) });
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.Current.CancellationToken);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict);
+            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.NotNull(result.CreationResult);
 
@@ -283,9 +283,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string?> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) });
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.Current.CancellationToken);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.NotNull(result.CreationEffects);
             Assert.NotNull(result.CreationEffects.CreationResult.PrimaryOutputs);
@@ -317,9 +317,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string?> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) });
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.Current.CancellationToken);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict);
+            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.NotNull(result.CreationResult);
 

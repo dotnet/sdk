@@ -52,7 +52,7 @@ public class FileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBase(log
     /// <summary>
     /// Validates `dotnet watch test` scenario: https://github.com/dotnet/sdk/issues/52528
     /// </summary>
-    [Fact] 
+    [Fact(Skip = "https://github.com/dotnet/sdk/issues/54176")]
     public async Task TestCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchXUnit")
@@ -76,6 +76,7 @@ public class FileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBase(log
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
         await App.WaitUntilOutputContains("Failed!");
+        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
         App.Process.ClearOutput();
 
         UpdateSourceFile(testFile, """

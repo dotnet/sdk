@@ -40,7 +40,7 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
 
         try
         {
-            var watcher = new HotReloadDotNetWatcher(context, Console, processLauncherFactory, targetFrameworkSelectionPrompt: null);
+            var watcher = new HotReloadDotNetWatcher(context, Console, processLauncherFactory, selectionPrompt: null);
             await watcher.WatchAsync(cancellationSource.Token);
         }
         catch (OperationCanceledException) when (shutdownHandler.CancellationToken.IsCancellationRequested)

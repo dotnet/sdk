@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.NetworkInformation;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
 
@@ -47,6 +48,18 @@ public class TelemetryCommonPropertiesTests : SdkTest
         var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"];
 
         Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnNewGuidWhenGettingMacAddressThrowsNetworkInformationException()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => throw new NetworkInformationException(), userLevelCacheWriter: new NothingCache());
+        var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"];
+        var assignedMachineIdOld = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"];
+
+        Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+        Guid.TryParse((string?)assignedMachineIdOld, out var _).Should().BeTrue("it should be a guid");
+        assignedMachineId.Should().NotBe(assignedMachineIdOld, "it should generate a new fallback guid each time");
     }
 
     [Fact]
@@ -231,14 +244,29 @@ public class TelemetryCommonPropertiesTests : SdkTest
     public static TheoryData<Dictionary<string, string>?, string?> LLMTelemetryTestCases => new()
     {
         { new Dictionary<string, string> { {"CLAUDECODE", "1" } }, "claude" },
+        { new Dictionary<string, string> { {"CLAUDE_CODE", "1" } }, "claude" },
         { new Dictionary<string, string> { {"CLAUDE_CODE_ENTRYPOINT", "some_value" } }, "claude" },
+        { new Dictionary<string, string> { {"CLAUDE_CODE_IS_COWORK", "1" } }, "cowork" },
         { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
         { new Dictionary<string, string> { { "CURSOR_AI", "1" } }, "cursor" },
+        { new Dictionary<string, string> { { "CURSOR_TRACE_ID", "abc" } }, "cursor" },
+        { new Dictionary<string, string> { { "CURSOR_AGENT", "1" } }, "cursor" },
         { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
-        { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
-        { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot" },
+        // Existence-based: any non-empty value now matches, even "0"
+        { new Dictionary<string, string> { { "GEMINI_CLI", "0" } }, "gemini" },
+        { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot-cli" },
+        { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot-cli" },
+        { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot-cli" },
+        { new Dictionary<string, string> { { "COPILOT_MODEL", "gpt" } }, "copilot-cli" },
+        { new Dictionary<string, string> { { "COPILOT_ALLOW_ALL", "1" } }, "copilot-cli" },
+        { new Dictionary<string, string> { { "COPILOT_GITHUB_TOKEN", "token" } }, "copilot-cli" },
+        // GitHub Copilot agent mode in VS Code
+        { new Dictionary<string, string> { { "COPILOT_AGENT", "1" } }, "copilot-vscode" },
+        { new Dictionary<string, string> { { "AI_AGENT", "github_copilot_vscode_agent" } }, "copilot-vscode" },
         { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
         { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
+        { new Dictionary<string, string> { { "CODEX_CI", "1" } }, "codex" },
+        { new Dictionary<string, string> { { "CODEX_THREAD_ID", "thread1" } }, "codex" },
         { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
         { new Dictionary<string, string> { { "OR_APP_NAME", "aider" } }, "aider" },
         { new Dictionary<string, string> { { "OR_APP_NAME", "plandex" } }, "plandex" },
@@ -253,24 +281,31 @@ public class TelemetryCommonPropertiesTests : SdkTest
         { new Dictionary<string, string> { { "OR_APP_NAME", "OpenHands" } }, "openhands" },
         { new Dictionary<string, string> { { "OR_APP_NAME", "openhands" } }, "openhands" },
         { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" } }, "goose" },
+        { new Dictionary<string, string> { { "GOOSE_PROVIDER", "openai" } }, "goose" },
         { new Dictionary<string, string> { { "CLINE_TASK_ID", "task123" } }, "cline" },
         { new Dictionary<string, string> { { "ROO_CODE_TASK_ID", "task456" } }, "roo" },
         { new Dictionary<string, string> { { "WINDSURF_SESSION", "session789" } }, "windsurf" },
+        { new Dictionary<string, string> { { "REPL_ID", "repl1" } }, "replit" },
+        { new Dictionary<string, string> { { "AUGMENT_AGENT", "1" } }, "augment" },
+        { new Dictionary<string, string> { { "ANTIGRAVITY_AGENT", "1" } }, "antigravity" },
         { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
         // Test combinations of older tools
         { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
-        { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
+        { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot-cli" },
         { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
-        { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
+        { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot-cli, generic_agent" },
         // Test combinations of newer tools
         { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
         { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
         { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
-        { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
-        { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
-        { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
-        { new Dictionary<string, string> { { "DROID_CLI", "false" } }, null },
-        { new Dictionary<string, string> { { "KIMI_CLI", "false" } }, null },
+        // Existence-based loosened vars now match regardless of value (e.g. "false" is still a non-empty value)
+        { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, "gemini" },
+        { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, "copilot-cli" },
+        { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, "generic_agent" },
+        { new Dictionary<string, string> { { "DROID_CLI", "false" } }, "droid" },
+        { new Dictionary<string, string> { { "KIMI_CLI", "false" } }, "kimi" },
+        // Cowork is distinct from claude and reported independently
+        { new Dictionary<string, string> { { "CLAUDE_CODE_IS_COWORK", "1" }, { "CLAUDE_CODE", "1" } }, "cowork, claude" },
         { new Dictionary<string, string> { { "OR_APP_NAME", "SomeOtherApp" } }, null },
         { new Dictionary<string, string>(), null },
     };

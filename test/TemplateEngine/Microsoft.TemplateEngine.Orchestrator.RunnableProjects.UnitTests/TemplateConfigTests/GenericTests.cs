@@ -93,5 +93,43 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             // Both symbols should be accessible (last-in-wins for case-sensitive dict, both kept)
             Assert.NotEmpty(configModel.Symbols);
         }
+
+        [Fact]
+        public void CanReadTemplateWithExactDuplicateKeys()
+        {
+            // Regression test: template.json with exact duplicate property keys
+            // (e.g. two "defaultName" entries) should load without throwing.
+            // Old NUnit templates from .NET 7 SDK have this issue.
+            // See https://github.com/dotnet/sdk/issues/54160
+            string templateWithExactDuplicates = /*lang=json*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithExactDuplicates",
+                  "identity": "TestAssets.TemplateWithExactDuplicates",
+                  "shortName": "exactdup",
+                  "defaultName": "FirstValue",
+                  "symbols": {
+                    "Framework": {
+                      "type": "parameter",
+                      "datatype": "choice",
+                      "choices": [
+                        { "choice": "net9.0", "description": "Target net9.0" }
+                      ],
+                      "defaultValue": "net9.0"
+                    }
+                  },
+                  "defaultName": "SecondValue"
+                }
+                """;
+
+            var exception = Record.Exception(() => TemplateConfigModel.FromString(templateWithExactDuplicates));
+            Assert.Null(exception);
+
+            TemplateConfigModel configModel = TemplateConfigModel.FromString(templateWithExactDuplicates);
+            Assert.Equal("TemplateWithExactDuplicates", configModel.Name);
+            // Last-wins semantics: "SecondValue" should be the final defaultName
+            Assert.Equal("SecondValue", configModel.DefaultName);
+        }
     }
 }

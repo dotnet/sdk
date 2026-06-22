@@ -213,6 +213,65 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Contain(c => c.Name == "System.Collections.NonGeneric.Reference.Reference" && c.Type == "referenceassembly");
         }
 
+        [Fact]
+        public void ItHandlesProjectNameMatchingDirectReferenceAssemblyName()
+        {
+            // Regression test: if the main project name matches a dependency reference assembly name
+            // (one not in _directReferences, so GetProjectDependencies() won't pre-register it),
+            // DependencyContextBuilder.Build should not throw "An item with the same key has already been added".
+            string mainProjectName = "simpleApp";
+            LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
+            LockFileLookup lockFileLookup = new(lockFile);
+
+            SingleProjectInfo mainProject = SingleProjectInfo.Create(
+                "/usr/Path",
+                mainProjectName,
+                ".dll",
+                "1.0.0",
+                new ITaskItem[] { });
+
+            // Create a dependency reference (ReferenceDependencyPaths) whose assembly name matches the project name.
+            // These are NOT processed by GetProjectDependencies(), so without the fix the project library and the
+            // dependency reference library both get the same name, causing ToDictionary to throw.
+            ITaskItem[] dependencyReferencePaths = new ITaskItem[]
+            {
+                new MockTaskItem(
+                    $"/usr/Path/{mainProjectName}.dll",
+                    new Dictionary<string, string>
+                    {
+                        { "CopyLocal", "true" },
+                        { "Version", "1.0.0" },
+                    }),
+            };
+
+            IEnumerable<ReferenceInfo> dependencyReferences =
+                ReferenceInfo.CreateDependencyReferenceInfos(
+                    dependencyReferencePaths,
+                    referenceSatellitePaths: new ITaskItem[] { },
+                    isRuntimeAssembly: _ => true);
+
+            ProjectContext projectContext = lockFile.CreateProjectContext(
+                FrameworkConstants.CommonFrameworks.Net10_0.GetShortFolderName(),
+                runtime: null,
+                platformLibraryName: Constants.DefaultPlatformLibrary,
+                runtimeFrameworks: null,
+                isSelfContained: false);
+
+            DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: lockFileLookup)
+                .WithDependencyReferences(dependencyReferences)
+                .Build();
+
+            // The project and reference should have distinct names - no duplicate key exception
+            var runtimeLibraryNames = dependencyContext.RuntimeLibraries.Select(l => l.Name).ToList();
+            runtimeLibraryNames.Should().OnlyHaveUniqueItems();
+
+            // The project library should keep the base name (since no NuGet package or direct ref conflicts it)
+            runtimeLibraryNames.Should().Contain(mainProjectName);
+
+            // The reference should have a disambiguated name
+            runtimeLibraryNames.Should().Contain($"{mainProjectName}.Reference");
+        }
+
         // If an assembly is in withResources, it has to be a key in dependencies, even with an empty list.
         private static DependencyContext BuildDependencyContextFromDependenciesWithResources(Dictionary<string, List<string>> dependencies, List<string> withResources, List<string> references, bool dllReference)
         {

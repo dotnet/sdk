@@ -14,12 +14,11 @@ internal sealed class EvaluationResult(
     LoadedProjectGraph projectGraph,
     IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> restoredProjectInstances,
     IReadOnlyDictionary<string, FileItem> files,
-    IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests,
-    ProjectBuildManager buildManager)
+    IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests)
 {
     public IReadOnlyDictionary<string, FileItem> Files => files;
     public LoadedProjectGraph ProjectGraph => projectGraph;
-    public ProjectBuildManager BuildManager => buildManager;
+    public ProjectBuildManager BuildManager => projectGraph.BuildManager;
 
     public readonly FilePathExclusions ItemExclusions
         = projectGraph != null ? FilePathExclusions.Create(projectGraph.Graph) : FilePathExclusions.Empty;
@@ -70,14 +69,11 @@ internal sealed class EvaluationResult(
         var projectLoadingStopwatch = Stopwatch.StartNew();
         var stopwatch = Stopwatch.StartNew();
 
-        var buildReporter = new BuildReporter(projectGraph.Logger, globalOptions, environmentOptions);
-        var buildManager = new ProjectBuildManager(projectGraph.ProjectCollection, buildReporter);
-
         if (restore)
         {
             var restoreRequests = projectGraph.Graph.GraphRoots.Select(node => BuildRequest.Create(node.ProjectInstance, [TargetNames.Restore])).ToArray();
 
-            if (await buildManager.BuildAsync(
+            if (await projectGraph.BuildManager.BuildAsync(
                 restoreRequests,
                 onFailure: failedInstance =>
                 {
@@ -108,7 +104,7 @@ internal sealed class EvaluationResult(
 
         var buildRequests = CreateDesignTimeBuildRequests(projectGraph.Graph, mainProjectTargetFramework, environmentOptions.SuppressHandlingStaticWebAssets).ToImmutableArray();
 
-        var buildResults = await buildManager.BuildAsync(
+        var buildResults = await projectGraph.BuildManager.BuildAsync(
             buildRequests,
             onFailure: failedInstance =>
             {
@@ -132,7 +128,7 @@ internal sealed class EvaluationResult(
 
         BuildReporter.ReportWatchedFiles(logger, fileItems);
 
-        return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, staticWebAssetManifests, buildManager);
+        return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, staticWebAssetManifests);
     }
 
     // internal for testing

@@ -58,7 +58,7 @@ public sealed class C
 dotnet_code_quality.CA1047.api_surface = All
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -94,7 +94,7 @@ End Class"
 dotnet_code_quality.CA1047.api_surface = All
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -171,7 +171,7 @@ End Class"
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

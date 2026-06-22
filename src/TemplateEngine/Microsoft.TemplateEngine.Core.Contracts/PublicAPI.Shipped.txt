@@ -33,7 +33,9 @@ Microsoft.TemplateEngine.Core.Contracts.IValueReadEventArgs
 Microsoft.TemplateEngine.Core.Contracts.IVariableConfig
 Microsoft.TemplateEngine.Core.Contracts.IVariableConfig.Expand.get -> bool
 Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander
+virtual Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander.Invoke(object! sender, Microsoft.TemplateEngine.Core.Contracts.IKeysChangedEventArgs! args) -> void
 Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
+virtual Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander.Invoke(object! sender, Microsoft.TemplateEngine.Core.Contracts.IValueReadEventArgs! args) -> void
 Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.Encoding.get -> System.Text.Encoding!
 Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.LineEndings.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie!
 Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.this[int index].get -> object!

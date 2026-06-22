@@ -148,7 +148,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Assert
             Assert.Equal(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
             stream.WriteStream.Position = 0;
-            var response = await ServerResponse.ReadAsync(stream.WriteStream);
+            var response = await ServerResponse.ReadAsync(stream.WriteStream, TestContext.Current.CancellationToken);
             Assert.Equal(ServerResponse.ResponseType.Rejected, response.Type);
         }
 
@@ -172,7 +172,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Assert
             Assert.Equal(ConnectionResult.Reason.ClientShutdownRequest, connectionResult.CloseReason);
             stream.WriteStream.Position = 0;
-            var response = await ServerResponse.ReadAsync(stream.WriteStream);
+            var response = await ServerResponse.ReadAsync(stream.WriteStream, TestContext.Current.CancellationToken);
             Assert.Equal(ServerResponse.ResponseType.Shutdown, response.Type);
         }
 
@@ -387,7 +387,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             {
                 var dispatcher = new DefaultRequestDispatcher(connectionHost.Object, compilerHost, CancellationToken.None, eventBus, keepAlive);
                 dispatcher.Run();
-            });
+            }, TestContext.Current.CancellationToken);
 
             // Wait for all connections to be created.
             await readySource.Task;

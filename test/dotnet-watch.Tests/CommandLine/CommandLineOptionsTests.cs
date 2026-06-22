@@ -59,7 +59,7 @@ public class CommandLineOptionsTests
     public void ImplicitCommand()
     {
         var options = VerifyOptions([]);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual([], options.CommandArguments);
     }
 
@@ -91,7 +91,7 @@ public class CommandLineOptionsTests
         var options = VerifyOptions([command]);
         var args = options.CommandArguments.ToList();
         Assert.True(options.IsExplicitCommand);
-        Assert.Equal(command, options.Command);
+        Assert.Equal(command, options.Command.Name);
         Assert.Empty(args);
     }
 
@@ -102,7 +102,7 @@ public class CommandLineOptionsTests
         bool beforeCommand)
     {
         var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
-        Assert.Equal("test", options.Command);
+        Assert.Equal("test", options.Command.Name);
         AssertEx.SequenceEqual([], options.CommandArguments);
     }
 
@@ -118,7 +118,7 @@ public class CommandLineOptionsTests
     {
         var options = VerifyOptions(["-lp", "P", "run"]);
         Assert.Equal("P", options.LaunchProfileName);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["-lp", "P"], options.CommandArguments);
     }
 
@@ -127,7 +127,7 @@ public class CommandLineOptionsTests
     {
         var options = VerifyOptions(["run", "-lp", "P"]);
         Assert.Equal("P", options.LaunchProfileName);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["-lp", "P"], options.CommandArguments);
     }
 
@@ -144,7 +144,7 @@ public class CommandLineOptionsTests
         var options = VerifyOptions(["--no-launch-profile", "run"]);
 
         Assert.False(options.LaunchProfileName.HasValue);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
     }
 
@@ -154,7 +154,7 @@ public class CommandLineOptionsTests
         var options = VerifyOptions(["run", "--no-launch-profile"]);
 
         Assert.False(options.LaunchProfileName.HasValue);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
     }
 
@@ -164,7 +164,7 @@ public class CommandLineOptionsTests
         var options = VerifyOptions(["--no-launch-profile", "run", "--no-launch-profile"]);
 
         Assert.False(options.LaunchProfileName.HasValue);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
     }
 
@@ -174,7 +174,7 @@ public class CommandLineOptionsTests
         var options = VerifyOptions(["-watchArg", "--verbose", "run", "-runArg"]);
 
         Assert.Equal(LogLevel.Debug, options.GlobalOptions.LogLevel);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["-watchArg", "-runArg"], options.CommandArguments);
     }
 
@@ -184,7 +184,7 @@ public class CommandLineOptionsTests
         var options = VerifyOptions(["--verbose", "--unknown", "x", "y", "run", "--project", "p"]);
 
         Assert.Equal("p", options.ProjectPath);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["--project", "p", "--unknown", "x", "y"], options.CommandArguments);
     }
 
@@ -194,7 +194,7 @@ public class CommandLineOptionsTests
         var options = VerifyOptions(["-watchArg", "--", "--verbose", "run", "-runArg"]);
 
         Assert.Equal(LogLevel.Information, options.GlobalOptions.LogLevel);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["-watchArg", "--", "--verbose", "run", "-runArg",], options.CommandArguments);
     }
 
@@ -204,7 +204,7 @@ public class CommandLineOptionsTests
         var options = VerifyOptions(["--", "run"]);
 
         Assert.Equal(LogLevel.Information, options.GlobalOptions.LogLevel);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual(["--", "run"], options.CommandArguments);
     }
 
@@ -212,7 +212,7 @@ public class CommandLineOptionsTests
     public void NoOptionsAfterDashDash()
     {
         var options = VerifyOptions(["--"]);
-        Assert.Equal("run", options.Command);
+        Assert.Equal("run", options.Command.Name);
         AssertEx.SequenceEqual([], options.CommandArguments);
     }
 
@@ -283,11 +283,15 @@ public class CommandLineOptionsTests
         var options1 = VerifyOptions(["--", option]);
 
         AssertEx.SequenceEqual(["--", option], options1.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options1.CommandArgumentsWithoutBinLog);
         AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options1.BuildArguments);
 
-        var options2 = VerifyOptions([option, "A", "--", "-bl:XXX"]);
+        var options2 = VerifyOptions(["-bl:1", option, "A", "--", "-bl:XXX"]);
 
-        AssertEx.SequenceEqual([option, "A", "--", "-bl:XXX"], options2.CommandArguments);
+        AssertEx.SequenceEqual(["-bl:1", option, "A", "--", "-bl:XXX"], options2.CommandArguments);
+        AssertEx.SequenceEqual(["A", "--", "-bl:XXX"], options2.CommandArgumentsWithoutBinLog);
+
+        // the last bin log option before "--" is used:
         AssertEx.SequenceEqual(["--property:NuGetInteractive=false", option], options2.BuildArguments);
     }
 

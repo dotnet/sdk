@@ -48,7 +48,7 @@ public partial class WebForm : System.Web.UI.Page
                         GetCSharpResultAt(15, 13, 15, 33, "void HttpResponse.Write(string s)", "void WebForm.Page_Load(object sender, EventArgs eventArgs)", "string Exception.ToString()", "void WebForm.Page_Load(object sender, EventArgs eventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ End Class",
                         GetBasicResultAt(12, 13, 12, 31, "Sub HttpResponse.Write(s As String)", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)", "Function Exception.ToString() As String", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ public partial class WebForm : System.Web.UI.Page
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ Partial Public Class WebForm
 End Class",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -208,7 +208,7 @@ public class Class
                         GetCSharpResultAt(16, 13, 16, 28, "void HttpResponse.Write(string s)", "void Class.Blah(HttpResponse response)", "string Exception.ToString()", "void Class.Blah(HttpResponse response)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -248,7 +248,7 @@ public class Class
                         GetCSharpResultAt(17, 13, 17, 32, "string HtmlSelect.InnerHtml", "void Class.Blah()", "string Exception.Message", "void Class.Blah()"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -288,7 +288,7 @@ public class Class
                         GetCSharpResultAt(17, 13, 17, 38, "string BulletedList.Text", "void Class.Blah()", "string Exception.StackTrace", "void Class.Blah()"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -352,7 +352,7 @@ public class Class
 ",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(2457, "https://github.com/dotnet/roslyn-analyzers/issues/2457")]
@@ -405,7 +405,7 @@ public class Class
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

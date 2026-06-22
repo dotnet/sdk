@@ -58,7 +58,7 @@ class C
                         return solution.WithProjectCompilationOptions(projectId, compilationOptions);
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ class C
                         return solution.WithProjectCompilationOptions(projectId, compilationOptions);
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

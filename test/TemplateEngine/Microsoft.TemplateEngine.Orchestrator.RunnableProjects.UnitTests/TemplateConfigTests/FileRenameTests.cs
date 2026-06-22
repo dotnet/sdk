@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(environment, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, TestContext.Current.CancellationToken);
             IEnumerable<IFileChange2> changes = result.FileChanges.Cast<IFileChange2>();
 
             Assert.Equal(2, result.FileChanges.Count);
@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(environment, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, TestContext.Current.CancellationToken);
             IEnumerable<IFileChange2> changes = result.FileChanges.Cast<IFileChange2>();
 
             Assert.Equal(2, result.FileChanges.Count);

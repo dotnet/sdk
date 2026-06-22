@@ -14,7 +14,7 @@ They are not shipped together with .NET SDK, but available on NuGet.org.
 
 ## Template Samples
 
-We have created [dotnet template samples](https://github.com/dotnet/templating/tree/main/dotnet-template-samples), which shows how you can use the template engine to create new templates. The samples are setup to be stand alone for specific examples. Those templates are not published to NuGet.org.
+We have created [dotnet template samples](../Samples), which shows how you can use the template engine to create new templates. The samples are setup to be stand alone for specific examples. Those templates are not published to NuGet.org.
 
 
 ## Notes

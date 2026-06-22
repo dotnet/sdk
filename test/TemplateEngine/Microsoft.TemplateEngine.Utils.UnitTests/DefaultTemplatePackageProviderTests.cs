@@ -1,23 +1,42 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
-    public class DefaultTemplatePackageProviderTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class DefaultTemplatePackageProviderTests
     {
-        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
+        // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
+        // mirrors the per-class lifetime that xUnit's IClassFixture provides.
+        private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
+            new(() => new EnvironmentSettingsHelper(NullMessageSink.Instance));
 
-        public DefaultTemplatePackageProviderTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
+
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestInitialize]
+        public void TestInitialize()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.Value.CreateEnvironment(
+                hostIdentifier: GetType().Name,
+                virtualize: true);
         }
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            if (s_environmentSettingsHelper.IsValueCreated)
+            {
+                s_environmentSettingsHelper.Value.Dispose();
+            }
+        }
+
+        [TestMethod]
         public async Task ReturnsFoldersAndNuPkgs()
         {
             string testAssetsDir = SdkTestContext.Current.TestAssetsDirectory;
@@ -29,14 +48,14 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             var nupkgs = new[] { Path.Combine(templateEngineTestAssets, "nupkg_templates", "*.nupkg") };
 
             var provider = new DefaultTemplatePackageProvider(null!, _engineEnvironmentSettings, nupkgs, folders);
-            var sources = await provider.GetAllTemplatePackagesAsync(default);
+            var sources = await provider.GetAllTemplatePackagesAsync(TestContext.CancellationToken);
 
             //Total should be 7
-            Assert.Equal(7, sources.Count);
+            Assert.HasCount(7, sources);
 
-            Assert.True(sources[0].LastChangeTime > new DateTime(2000, 1, 1));
-            Assert.False(string.IsNullOrWhiteSpace(sources[0].MountPointUri));
-            Assert.Equal(provider, sources[0].Provider);
+            Assert.IsGreaterThan(new DateTime(2000, 1, 1), sources[0].LastChangeTime);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(sources[0].MountPointUri));
+            Assert.AreEqual(provider, sources[0].Provider);
         }
     }
 }

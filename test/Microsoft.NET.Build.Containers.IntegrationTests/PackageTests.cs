@@ -41,10 +41,8 @@ public class PackageTests
             "Microsoft.Build.Utilities.Core",
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
-            "System.Text.Json",
             "Valleysoft.DockerCredsProvider",
-            "Microsoft.Extensions.Logging",
-            "Microsoft.Extensions.Logging.Abstractions"
+            "Microsoft.Extensions.Logging"
         };
         IReadOnlyList<string> knownProjectReferences = new List<string>()
         {
@@ -102,13 +100,6 @@ public class PackageTests
               "Icon.png",
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",
-              "tasks/net472/Microsoft.NET.Build.Containers.dll",
-              "tasks/net472/Newtonsoft.Json.dll",
-              "tasks/net472/NuGet.Common.dll",
-              "tasks/net472/NuGet.Configuration.dll",
-              "tasks/net472/NuGet.Frameworks.dll",
-              "tasks/net472/NuGet.Packaging.dll",
-              "tasks/net472/NuGet.Versioning.dll",
               $"tasks/{netTFM}/Microsoft.DotNet.Cli.Utils.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.dll",

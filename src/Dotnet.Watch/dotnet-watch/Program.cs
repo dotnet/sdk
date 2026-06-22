@@ -1,10 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
@@ -148,7 +150,14 @@ internal sealed class Program(
 
     private static bool TryFindFileEntryPoint(string workingDirectory, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? entryPointPath)
     {
-        if (options.CommandArguments is not [var firstArg, ..])
+        if (options.Command is not RunCommandDefinition runCommandDefinition)
+        {
+            entryPointPath = null;
+            return false;
+        }
+
+        var runParseResult = runCommandDefinition.Parse(options.CommandArgumentsWithoutBinLog, CommandLineOptions.ParserConfiguration);
+        if (runParseResult.GetValue(runCommandDefinition.ApplicationArguments) is not [var firstArg, ..])
         {
             entryPointPath = null;
             return false;
@@ -265,9 +274,8 @@ internal sealed class Program(
 
             if (IsHotReloadEnabled())
             {
-                using var tfmPrompt = context.Options.NonInteractive ? null
-                    : new SpectreTargetFrameworkSelectionPrompt(console);
-                var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, tfmPrompt);
+                using var selectionPrompt = context.Options.NonInteractive ? null : new SpectreBuildParametersSelectionPrompt(console);
+                var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, selectionPrompt);
                 await watcher.WatchAsync(shutdownHandler.CancellationToken);
             }
             else if (mainProjectOptions.Representation.EntryPointFilePath != null)
@@ -347,6 +355,7 @@ internal sealed class Program(
             options.BuildArguments,
             processRunner,
             buildLogger,
+            options.GlobalOptions,
             environmentOptions);
 
         if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)

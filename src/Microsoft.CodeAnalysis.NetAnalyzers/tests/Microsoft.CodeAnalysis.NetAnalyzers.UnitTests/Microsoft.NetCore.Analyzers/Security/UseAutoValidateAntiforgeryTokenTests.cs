@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -445,7 +445,7 @@ dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false") }
                 GetCSharpResultAt(15, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete")
             );
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1610,7 +1610,7 @@ class TestClass : ControllerBase
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

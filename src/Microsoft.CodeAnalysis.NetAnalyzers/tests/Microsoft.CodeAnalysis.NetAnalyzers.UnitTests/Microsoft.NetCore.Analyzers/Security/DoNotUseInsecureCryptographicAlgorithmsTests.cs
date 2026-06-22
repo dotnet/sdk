@@ -230,7 +230,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "MD5"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -275,7 +275,7 @@ End Namespace"
                         GetBasicResultAt(7, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "MD5"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -494,7 +494,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "SHA1"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -538,7 +538,7 @@ End Namespace"
                         GetBasicResultAt(6, 17, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "SHA1"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -758,7 +758,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 30, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACSHA1"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -804,7 +804,7 @@ End Namespace
                         GetBasicResultAt(7, 21, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACSHA1"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 
@@ -1312,7 +1312,7 @@ namespace TestNamespace
                         GetCSharpResultAt(11, 13, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DES"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1363,7 +1363,7 @@ End Namespace
                         GetBasicResultAt(7, 4, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DES"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1545,7 +1545,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 23, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "RC2"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1594,7 +1594,7 @@ End Namespace
                         GetBasicResultAt(6, 14, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "RC2"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1907,7 +1907,7 @@ namespace TestNamespace
                         GetCSharpResultAt(11, 13, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "TripleDES"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1960,7 +1960,7 @@ End Namespace
                         GetBasicResultAt(7, 4, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "TripleDES"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1986,7 +1986,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2003,7 +2003,7 @@ End Module",
                 {
                     GetBasicResultAt(6, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2028,7 +2028,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2048,7 +2048,7 @@ End Namespace",
                 {
                     GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2070,7 +2070,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(7, 45, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2087,7 +2087,7 @@ End Namespace
                 {
                     GetBasicResultAt(5, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
         //No VB
         [Fact]
@@ -2113,7 +2113,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
         //No VB
         [Fact]
@@ -2136,7 +2136,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2162,7 +2162,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2180,7 +2180,7 @@ End Namespace",
                 {
                     GetBasicResultAt(6, 29, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2205,7 +2205,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2225,7 +2225,7 @@ End Namespace",
                 {
                     GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2247,7 +2247,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(7, 38, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2263,7 +2263,7 @@ End Namespace",
                 {
                     GetBasicResultAt(5, 43, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
         //No VB
         [Fact]
@@ -2289,7 +2289,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2312,7 +2312,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2329,7 +2329,7 @@ End Namespace",
                 {
                     GetBasicResultAt(6, 34, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2355,7 +2355,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2373,7 +2373,7 @@ End Namespace",
                 {
                     GetBasicResultAt(6, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2398,7 +2398,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMARIPEMD160", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2418,7 +2418,7 @@ End Namespace",
                 {
                     GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMARIPEMD160", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2440,7 +2440,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(7, 45, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateHMARIPEMD160", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2456,7 +2456,7 @@ End Namespace",
                 {
                     GetBasicResultAt(5, 34, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateHMARIPEMD160", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
         //No VB
         [Fact]
@@ -2482,7 +2482,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
         //No VB
         [Fact]
@@ -2505,7 +2505,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2563,7 +2563,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2609,7 +2609,7 @@ End Namespace"
                         GetBasicResultAt(6, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2667,7 +2667,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2713,7 +2713,7 @@ End Namespace
                         GetBasicResultAt(6, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2741,7 +2741,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(12, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2763,7 +2763,7 @@ End Namespace",
                 {
                     GetBasicResultAt(10, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2983,7 +2983,7 @@ namespace TestNamespace
                         GetCSharpResultAt(11, 13, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DSA"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -3045,7 +3045,7 @@ End Namespace"
                         GetBasicResultAt(7, 4, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DSA"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -3222,7 +3222,7 @@ namespace TestNamespace
 }"
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -3266,7 +3266,7 @@ Namespace TestNamespace
 End Namespace"
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

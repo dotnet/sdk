@@ -16,9 +16,10 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class ProjectGraphFactory(
     ImmutableArray<ProjectRepresentation> rootProjects,
-    string? virtualProjectTargetFramework,
     ImmutableDictionary<string, string> buildProperties,
-    ILogger logger)
+    ILogger logger,
+    GlobalOptions globalOptions,
+    EnvironmentOptions environmentOptions)
 {
     /// <summary>
     /// Reuse <see cref="ProjectCollection"/> with XML element caching to improve performance.
@@ -37,8 +38,6 @@ internal sealed class ProjectGraphFactory(
         useAsynchronousLogging: false,
         reuseProjectRootElementCache: true);
 
-    private readonly string _virtualProjectTargetFramework = virtualProjectTargetFramework ?? GetProductTargetFramework();
-
     public ILogger Logger => logger;
 
     private static string GetProductTargetFramework()
@@ -51,16 +50,20 @@ internal sealed class ProjectGraphFactory(
     /// <summary>
     /// Tries to create a project graph by running the build evaluation phase on root projects.
     /// </summary>
-    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
+    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, string? virtualProjectTargetFramework, CancellationToken cancellationToken)
     {
+        virtualProjectTargetFramework ??= GetProductTargetFramework();
+
         var entryPoints = rootProjects.Select(p => new ProjectGraphEntryPoint(p.ProjectGraphPath, buildProperties));
         try
         {
             var stopwatch = Stopwatch.StartNew();
             var graph = new LoadedProjectGraph(
-                new ProjectGraph(entryPoints, _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken),
+                new ProjectGraph(entryPoints, _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, virtualProjectTargetFramework, logger), cancellationToken),
                 _collection,
-                logger);
+                logger,
+                globalOptions,
+                environmentOptions);
 
             logger.LogDebug("Project graph loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
             return graph;
@@ -108,7 +111,7 @@ internal sealed class ProjectGraphFactory(
         return null;
     }
 
-    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, ILogger logger)
+    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, string virtualProjectTargetFramework, ILogger logger)
     {
         if (!File.Exists(projectPath))
         {
@@ -125,7 +128,7 @@ internal sealed class ProjectGraphFactory(
 
             var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
                 entryPointFilePath,
-                _virtualProjectTargetFramework,
+                virtualProjectTargetFramework,
                 projectCollection,
                 (path, line, message) =>
                 {

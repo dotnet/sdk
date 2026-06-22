@@ -6,7 +6,7 @@ using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
 
@@ -49,6 +49,8 @@ internal class MsiPackageCache(
     /// <param name="packageId">The ID of the workload pack package containing an MSI.</param>
     /// <param name="packageVersion">The package version.</param>
     /// <param name="manifestPath">The JSON manifest associated with the workload pack MSI.</param>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Newtonsoft.Json is not used in AOT scenarios.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Newtonsoft.Json is not used in trimmed scenarios.")]
     public void CachePayload(string packageId, string packageVersion, string manifestPath)
     {
         if (!File.Exists(manifestPath))
@@ -73,7 +75,7 @@ internal class MsiPackageCache(
 
             // We cannot assume that the MSI adjacent to the manifest is the one to cache. We'll trust
             // the manifest to provide the MSI filename.
-            MsiManifest? msiManifest = JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(manifestPath));
+            MsiManifest? msiManifest = JsonSerializer.Deserialize(File.ReadAllText(manifestPath), InstallerJsonSerializerContext.Default.MsiManifest);
             // Only use the filename+extension of the payload property in case the manifest has been altered.
             string msiPath = Path.Combine(Path.GetDirectoryName(manifestPath)!, Path.GetFileName(msiManifest?.Payload ?? string.Empty));
 
@@ -131,6 +133,8 @@ internal class MsiPackageCache(
         return true;
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Newtonsoft.Json is not used in AOT scenarios.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Newtonsoft.Json is not used in trimmed scenarios.")]
     public bool TryGetMsiPathFromPackageData(string packageDataPath, [NotNullWhen(true)] out string? msiPath, out string manifestPath)
     {
         msiPath = default;
@@ -146,7 +150,7 @@ internal class MsiPackageCache(
 
         // The msi.json manifest contains the name of the actual MSI. The filename does not necessarily match the package
         // ID as it may have been shortened to support VS caching.
-        MsiManifest? msiManifest = JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(manifestPath));
+        MsiManifest? msiManifest = JsonSerializer.Deserialize(File.ReadAllText(manifestPath), InstallerJsonSerializerContext.Default.MsiManifest);
         string possibleMsiPath = Path.Combine(Path.GetDirectoryName(manifestPath)!, msiManifest?.Payload ?? string.Empty);
 
         if (!File.Exists(possibleMsiPath))

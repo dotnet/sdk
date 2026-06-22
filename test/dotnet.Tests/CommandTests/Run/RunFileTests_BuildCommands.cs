@@ -922,5 +922,4 @@ public sealed class RunFileTests_BuildCommands(ITestOutputHelper log) : RunFileT
                 Message: 'Second1'
                 """);
     }
-
 }
