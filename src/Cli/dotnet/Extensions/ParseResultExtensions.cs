@@ -49,9 +49,36 @@ public static class ParseResultExtensions
     /// </remarks>
     public static Token? GetFileBasedAppEntryPointToken(this ParseResult parseResult) =>
         parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
-            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value)
+            && IsValidEntryPointPath(unmatchedCommandOrFile.Value)
             ? unmatchedCommandOrFile
             : null;
+
+    // duplicated from VirtualProjectBuilder to temporarily avoid MSBuild dlls on AOT codepath
+    private static bool IsValidEntryPointPath(string entryPointFilePath)
+    {
+        if (!File.Exists(entryPointFilePath))
+        {
+            return false;
+        }
+
+        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Check if the first two characters are #!
+        try
+        {
+            using var stream = File.OpenRead(entryPointFilePath);
+            int first = stream.ReadByte();
+            int second = stream.ReadByte();
+            return first == '#' && second == '!';
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {
@@ -105,6 +132,15 @@ public static class ParseResultExtensions
 
         return [.. subargsFiltered, .. runArgs];
     }
+
+    public static bool CanBeInvoked(this ParseResult parseResult) =>
+        Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
+        || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
+        || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
+
+    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
+        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
+        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
 
     public static int HandleMissingCommand(this ParseResult parseResult)
     {
@@ -162,15 +198,6 @@ public static class ParseResultExtensions
             return true;
         }
     }
-
-    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
-        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
-        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
-
-    public static bool CanBeInvoked(this ParseResult parseResult) =>
-        Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
-        || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
-        || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
 
     public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult) =>
         parseResult.GetRunPropertyOptions(true)?.Where(property => !property.Contains("="));

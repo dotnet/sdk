@@ -30,6 +30,10 @@
     -->
     <ControlFlowGuard>Guard</ControlFlowGuard>
 
+    <!-- enable size-based diagnostics of the generated binaries -->
+    <IlcGenerateMstatFile>true</IlcGenerateMstatFile>
+    <IlcGenerateDgmlFile>true</IlcGenerateDgmlFile>
+
     <!--
       Declare RuntimeIdentifier so that centralized NuGet restore (via sdk.slnx) generates
       the RID-specific target (e.g. net11.0/win-x64) in project.assets.json. Without this,
