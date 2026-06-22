@@ -37,7 +37,7 @@ public class DotnetupConfigTests : IDisposable
     {
         var config = new DotnetupConfigData
         {
-            PathPreference = PathPreference.ShellProfile,
+            AccessMode = DotnetAccessMode.Shell,
         };
 
         DotnetupConfig.Write(config);
@@ -45,27 +45,27 @@ public class DotnetupConfigTests : IDisposable
 
         var loaded = DotnetupConfig.Read();
         loaded.Should().NotBeNull();
-        loaded!.PathPreference.Should().Be(PathPreference.ShellProfile);
+        loaded!.AccessMode.Should().Be(DotnetAccessMode.Shell);
         loaded.SchemaVersion.Should().Be("1");
     }
 
     [Theory]
-    [InlineData(PathPreference.DotnetupDotnet)]
-    [InlineData(PathPreference.ShellProfile)]
-    [InlineData(PathPreference.FullPathReplacement)]
-    internal void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
+    [InlineData(DotnetAccessMode.None)]
+    [InlineData(DotnetAccessMode.Shell)]
+    [InlineData(DotnetAccessMode.Full)]
+    internal void ReadAccessMode_ReturnsStoredPreference_WhenConfigExists(DotnetAccessMode preference)
     {
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = preference });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = preference });
 
-        var result = DotnetupConfig.ReadPathPreference();
+        var result = DotnetupConfig.ReadAccessMode();
 
         result.Should().Be(preference);
     }
 
     [Fact]
-    public void ReadPathPreference_ReturnsNull_WhenNoConfig()
+    public void ReadAccessMode_ReturnsNull_WhenNoConfig()
     {
-        var result = DotnetupConfig.ReadPathPreference();
+        var result = DotnetupConfig.ReadAccessMode();
 
         result.Should().BeNull();
     }
@@ -74,6 +74,63 @@ public class DotnetupConfigTests : IDisposable
     [Fact]
     public void Read_ReturnsNull_WhenNoConfigFile()
     {
+        DotnetupConfig.Read().Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("DotnetupDotnet", DotnetAccessMode.None)]
+    [InlineData("ShellProfile", DotnetAccessMode.Shell)]
+    [InlineData("FullPathReplacement", DotnetAccessMode.Full)]
+    internal void Read_LegacyConfig_MapsPropertyNameAndEnumSpelling(string legacyEnumValue, DotnetAccessMode expected)
+    {
+        // Simulate a config written by an earlier internal build: the legacy "pathPreference"
+        // property name and the legacy enum spellings, and no "dotnetupOnPath" field.
+        var legacyJson = $$"""
+            {
+              "schemaVersion": "1",
+              "pathPreference": "{{legacyEnumValue}}"
+            }
+            """;
+        File.WriteAllText(DotnetupPaths.ConfigPath, legacyJson);
+
+        var config = DotnetupConfig.Read();
+
+        config.Should().NotBeNull();
+        config!.AccessMode.Should().Be(expected);
+        // A missing dotnetupOnPath defaults to true.
+        config.DotnetupOnPath.Should().BeTrue();
+    }
+
+    [Fact]
+    public void WriteAndRead_RoundTripsDotnetupOnPath()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false });
+
+        var loaded = DotnetupConfig.Read();
+
+        loaded!.DotnetupOnPath.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(1, DotnetAccessMode.None)]
+    [InlineData(2, DotnetAccessMode.Shell)]
+    [InlineData(3, DotnetAccessMode.Full)]
+    internal void Read_LegacyNumericAccessMode_Maps(int numeric, DotnetAccessMode expected)
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, $$"""{ "schemaVersion": "1", "accessMode": {{numeric}} }""");
+
+        DotnetupConfig.Read()!.AccessMode.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Read_OutOfRangeNumericAccessMode_TreatedAsCorrupt()
+    {
+        // An undefined numeric value must not deserialize to an undefined enum; the converter
+        // throws JsonException, which Read() surfaces as a corrupt (null) config.
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": 99 }""");
+
         DotnetupConfig.Read().Should().BeNull();
     }
 

@@ -20,23 +20,59 @@ public class ShellProfileManager
         bool EndsWithTrailingNewLine);
 
     /// <summary>
+    /// Returns the subset of the provider's profile paths that currently contain a managed
+    /// dotnetup block. Useful for drift detection by callers that need to know whether the
+    /// configured shell mode has actually been applied.
+    /// </summary>
+    public static IReadOnlyList<string> GetProfilePathsWithEntries(IEnvShellProvider provider)
+    {
+        var result = new List<string>();
+        foreach (var profilePath in provider.GetProfilePaths())
+        {
+            if (!File.Exists(profilePath))
+            {
+                continue;
+            }
+
+            // Cheap substring check: the begin marker uniquely identifies the managed block.
+            // We intentionally don't parse here — drift detection just needs a yes/no.
+            try
+            {
+                if (File.ReadAllText(profilePath).Contains(BeginMarkerComment, StringComparison.Ordinal))
+                {
+                    result.Add(profilePath);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // If we can't read the file (missing, locked, or access denied), treat it as
+                // "no managed block detected". Drift detection is best-effort, not authoritative.
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Ensures the correct dotnetup profile entry is present in all profile files for the given shell provider.
     /// If an entry already exists, it is replaced in-place. If no entry exists, one is appended.
     /// Existing files are updated via a write-and-replace flow to avoid partially written profiles.
     /// </summary>
     /// <param name="provider">The shell provider to use.</param>
     /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
-    /// <param name="dotnetupOnly">When true, the profile entry only adds dotnetup to PATH (no DOTNET_ROOT or dotnet PATH).</param>
-    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>print-env-script</c>.</param>
+    /// <param name="includeDotnet">When true, the entry sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
+    /// <param name="includeDotnetup">When true, the entry adds the dotnetup directory to PATH.</param>
+    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>env script</c>.</param>
     /// <returns>The list of profile file paths that were modified.</returns>
     public static IReadOnlyList<string> AddProfileEntries(
         IEnvShellProvider provider,
         string dotnetupPath,
-        bool dotnetupOnly = false,
+        bool includeDotnet = true,
+        bool includeDotnetup = true,
         string? dotnetInstallPath = null)
     {
         var profilePaths = provider.GetProfilePaths();
-        var entry = provider.GenerateProfileEntry(dotnetupPath, dotnetupOnly, dotnetInstallPath);
+        var entry = provider.GenerateProfileEntry(dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
         var modifiedFiles = new List<string>();
 
         foreach (var profilePath in profilePaths)

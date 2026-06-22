@@ -31,13 +31,21 @@ internal interface IDotnetEnvironmentManager
     void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null);
 
     /// <summary>
-    /// Applies dotnetup's profile-file modifications for the current user's shell environment,
-    /// which set up the PATH and DOTNET_ROOT environment variables for the user's shell.
-    /// When <paramref name="installType"/> is <see cref="InstallType.System"/>, dotnet is
-    /// assumed to already be on PATH (set up outside the profile), so the entry only adds
-    /// dotnetup to PATH.
+    /// Writes (or rewrites) dotnetup's managed block in the current user's shell profile.
+    /// The two aspects are independent: <paramref name="includeDotnet"/> wires the managed
+    /// dotnet (DOTNET_ROOT + dotnet on PATH); <paramref name="includeDotnetup"/> adds the
+    /// dotnetup directory to PATH. At least one should be true (to remove the block entirely,
+    /// use <see cref="Shell.ShellProfileManager.RemoveProfileEntries"/>).
     /// </summary>
-    void ApplyTerminalProfileModifications(string dotnetRoot, InstallType installType = InstallType.User, IEnvShellProvider? shellProvider = null);
+    void ApplyTerminalProfileModifications(string dotnetRoot, bool includeDotnet = true, bool includeDotnetup = true, IEnvShellProvider? shellProvider = null);
+
+    /// <summary>
+    /// Ensures the dotnetup directory is present (<paramref name="enabled"/> == true) or absent
+    /// (false) on the user-scope <c>PATH</c> environment variable. Windows-only; a no-op on other
+    /// platforms, where dotnetup-on-PATH is handled entirely by the shell profile block. This is
+    /// what lets cmd.exe and GUI-launched apps — which read no shell profile — find dotnetup.
+    /// </summary>
+    void ApplyDotnetupOnUserPath(bool enabled);
 
     /// <summary>
     /// Updates the global.json file to reflect the installed SDK version,

@@ -4,24 +4,28 @@
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
-internal class PrintEnvScriptCommand : CommandBase
+internal class EnvScriptCommand : CommandBase
 {
     private readonly IEnvShellProvider? _shellProvider;
     private readonly string? _dotnetInstallPath;
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
+    private readonly bool _dotnet;
+    private readonly bool _dotnetup;
     private readonly bool _dotnetupOnly;
 
-    public PrintEnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
+    public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
-        _shellProvider = result.GetValue(PrintEnvScriptCommandParser.ShellOption);
-        _dotnetInstallPath = result.GetValue(PrintEnvScriptCommandParser.DotnetInstallPathOption);
-        _dotnetupOnly = result.GetValue(PrintEnvScriptCommandParser.DotnetupOnlyOption);
+        _shellProvider = result.GetValue(EnvScriptCommandParser.ShellOption);
+        _dotnetInstallPath = result.GetValue(EnvScriptCommandParser.DotnetInstallPathOption);
+        _dotnet = result.GetValue(EnvScriptCommandParser.DotnetOption);
+        _dotnetup = result.GetValue(EnvScriptCommandParser.DotnetupOption);
+        _dotnetupOnly = result.GetValue(EnvScriptCommandParser.DotnetupOnlyOption);
     }
 
-    protected override string GetCommandName() => "print-env-script";
+    protected override string GetCommandName() => "env script";
 
     protected override void ExecuteCore()
     {
@@ -47,15 +51,17 @@ internal class PrintEnvScriptCommand : CommandBase
                 $"Unsupported shell '{shellName}'.");
         }
 
+        EnvScriptSelection selection = EnvScriptSelectionResolver.Resolve(_dotnet, _dotnetup, _dotnetupOnly, DotnetupConfig.Read());
+
         // Determine the dotnet install path
         string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();
 
-        // Determine the dotnetup directory so it can be added to PATH
-        string dotnetupDir = ShellProviderHelpers.GetDotnetupDirectoryOrThrow();
+        // Determine the dotnetup directory so it can be added to PATH. Passing an empty
+        // string omits the dotnetup PATH entry from the generated script.
+        string dotnetupDir = selection.IncludeDotnetup ? ShellProviderHelpers.GetDotnetupDirectoryOrThrow() : string.Empty;
 
         // Generate the shell script
-        bool includeDotnet = !_dotnetupOnly;
-        string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet);
+        string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, selection.IncludeDotnet);
 
         WriteScriptToStandardOutput(script);
     }
