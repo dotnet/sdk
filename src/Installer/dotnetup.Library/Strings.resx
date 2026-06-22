@@ -181,7 +181,11 @@
     <value>Isolation Mode</value>
   </data>
   <data name="PathPreferenceShellProfile" xml:space="preserve">
-    <value>Terminal Mode (Suggested)</value>
+    <value>Terminal Mode</value>
+  </data>
+  <data name="PathPreferenceSuggestedSuffix" xml:space="preserve">
+    <value>(Suggested)</value>
+    <comment>Hint appended after the recommended mode name in the init summary, e.g. "Terminal Mode (Suggested)".</comment>
   </data>
   <data name="PathPreferenceFullReplacement" xml:space="preserve">
     <value>Replacement Mode</value>
