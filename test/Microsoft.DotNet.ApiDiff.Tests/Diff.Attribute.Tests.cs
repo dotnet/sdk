@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffAttributeTests : DiffBaseTests
 {
     #region Type attributes
 
-    [Fact]
+    [TestMethod]
     public Task TypeAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -47,7 +48,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task TypeAttributeDeleteAndAdd() =>
         // Added APIs always show up at the end.
         RunTestAsync(
@@ -103,7 +104,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task TypeAttributeSwitch() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -157,7 +158,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task TypeChangeAndAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -204,7 +205,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task TypeChangeButAttributeStays() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -257,7 +258,7 @@ public class DiffAttributeTests : DiffBaseTests
 
     #region Member attributes
 
-    [Fact]
+    [TestMethod]
     public Task MemberAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -300,7 +301,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task MemberAttributeDeleteAndAdd() =>
         // Added APIs always show up at the end.
         RunTestAsync(
@@ -359,7 +360,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task MemberAttributeSwitch() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -416,7 +417,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task MemberChangeAndAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -462,7 +463,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task MemberChangeButAttributeStays() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -514,8 +515,8 @@ public class DiffAttributeTests : DiffBaseTests
 
     #region Parameter attributes
 
-    //[Fact]
-    [Fact(Skip = "Parameter attributes are not showing up in the syntax tree.")]
+    [TestMethod]
+    [Ignore("Parameter attributes are not showing up in the syntax tree.")]
     public Task ParameterAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -565,7 +566,7 @@ public class DiffAttributeTests : DiffBaseTests
 
     #region Attribute list expansion
 
-    [Fact]
+    [TestMethod]
     public Task TypeAttributeListExpansion() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -616,7 +617,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task MethodAttributeListExpansion() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -670,8 +671,8 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    //[Fact]
-    [Fact(Skip = "Parameter attributes are not showing up in the syntax tree.")]
+    [TestMethod]
+    [Ignore("Parameter attributes are not showing up in the syntax tree.")]
     public Task ParameterAttributeListNoExpansion() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -731,7 +732,7 @@ public class DiffAttributeTests : DiffBaseTests
 
     #region Attribute exclusion
 
-    [Fact]
+    [TestMethod]
     public Task SuppressAllDefaultAttributesUsedByTool()
     {
         // The attributes that should get hidden in this test must all be part of
@@ -787,7 +788,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: attributesToExclude);
     }
 
-    [Fact]
+    [TestMethod]
     public Task SuppressNone() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -834,7 +835,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []);
 
-    [Fact]
+    [TestMethod]
     public Task SuppressOnlyCustom() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -880,7 +881,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Overrides the default list
 
-    [Fact]
+    [TestMethod]
     public Task SuppressChangedAttribute() => RunTestAsync(
                 // Includes dummy property addition so that something else shows up in the diff, but not the attribute change.
                 beforeCode: """
@@ -914,7 +915,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: ["T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute"]); // Overrides the default list
 
-    [Fact]
+    [TestMethod]
     public Task SuppressAttributesRepeatedWithDifferentArguments() => RunTestAsync(
                 // Include dummy property
                 beforeCode: """
@@ -948,7 +949,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: ["T:System.Runtime.Versioning.UnsupportedOSPlatformAttribute"]); // Overrides the default list
 
-    [Fact]
+    [TestMethod]
     public Task SuppressTypeAndAttributeUsage() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -979,7 +980,7 @@ public class DiffAttributeTests : DiffBaseTests
 
     #region Attributes with arguments
 
-    [Fact]
+    [TestMethod]
     public Task AttributeWithArguments() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -1029,7 +1030,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """,
                 attributesToExclude: []); // Make sure to show AttributeUsage, which by default is suppressed
 
-    [Fact]
+    [TestMethod]
     public Task AttributesRepeatedWithDifferentArguments() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace

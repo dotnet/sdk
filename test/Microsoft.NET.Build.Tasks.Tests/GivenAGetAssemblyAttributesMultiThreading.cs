@@ -3,13 +3,13 @@
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGetAssemblyAttributesMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void ItResolvesRelativePathsViaTaskEnvironment()
         {
             // Create a temp directory to act as a fake project dir (different from CWD)

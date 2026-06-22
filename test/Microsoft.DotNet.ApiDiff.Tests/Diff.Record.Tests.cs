@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffRecordTests : DiffBaseTests
 {
     #region Records
 
-    [Fact]
+    [TestMethod]
     public Task RecordAdd() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
@@ -49,7 +50,7 @@ public class DiffRecordTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task RecordChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -106,7 +107,7 @@ public class DiffRecordTests : DiffBaseTests
                   }
                 """); // Note they get sorted
 
-    [Fact]
+    [TestMethod]
     public Task RecordDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
