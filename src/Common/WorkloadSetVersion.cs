@@ -67,7 +67,7 @@ internal static class WorkloadSetVersion
         // ('-' or '+'). Split(['-', '+'], 2) removes the delimiter from sections[0], so the
         // character at sections[0].Length in the original string is the delimiter itself.
         string prereleaseSuffix = sections.Length > 1
-            ? workloadSetVersion[sections[0].Length..]
+            ? workloadSetVersion.Substring(sections[0].Length)
             : string.Empty;
 
         // In the package version format the layout is: major.sdkPatch.workloadSetPatch(-prerelease)
