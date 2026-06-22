@@ -37,7 +37,7 @@
          ensure xunit.v3.core (extensibility.core) and xunit.v3.assert are deployed; otherwise the test
          host crashes on load with FileNotFoundException for 'xunit.v3.core' or 'xunit.v3.assert'. -->
     <PackageReference Include="xunit.v3.extensibility.core" />
-    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="xunit.v3.assert" VersionOverride="$(XUnitV3Version)" />
   </ItemGroup>
 
   <!-- Copies test browser files to test-browser output directory -->
