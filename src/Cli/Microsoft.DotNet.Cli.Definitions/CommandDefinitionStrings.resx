@@ -1498,4 +1498,8 @@ If command is specified without the argument, it lists all the template packages
   <data name="SDKSchemaCommandDefinition" xml:space="preserve">
     <value>Display the command schema as JSON.</value>
   </data>
+  <data name="WorkloadSetVersionInPackageVersionFormat" xml:space="preserve">
+    <value>'{0}' is not a valid workload set version. The workload set version should have the form 'major.0.patch' (for example, '10.0.105'). Did you mean '{1}'?</value>
+    <comment>{0} is the version the user provided. {1} is the suggested corrected version.</comment>
+  </data>
 </root>
