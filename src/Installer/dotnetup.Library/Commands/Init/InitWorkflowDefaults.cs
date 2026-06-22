@@ -89,7 +89,7 @@ internal static class InitWorkflowDefaults
     /// </summary>
     public static PathPreference GetDefaultPathPreference(IEnvShellProvider? shellProvider = null)
     {
-        if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
+        if ((shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
         {
             return PathPreference.DotnetupDotnet;
         }
