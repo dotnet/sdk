@@ -54,3 +54,9 @@ dotnet nuget remove source dotnet-tools-transport --configfile %TestExecutionDir
 dotnet nuget remove source dotnet-libraries --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet-eng --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
+
+REM Install Node.js if version is specified (needed for TypeScript compilation tests)
+if "%DOTNET_SDK_TEST_NODE_VERSION%" NEQ "" (
+    PowerShell -ExecutionPolicy ByPass -File "%HELIX_CORRELATION_PAYLOAD%\t\InstallNode.ps1" %DOTNET_SDK_TEST_NODE_VERSION%
+    if exist "%HELIX_CORRELATION_PAYLOAD%\t\nodejs\node.exe" set "PATH=%HELIX_CORRELATION_PAYLOAD%\t\nodejs;%PATH%"
+)

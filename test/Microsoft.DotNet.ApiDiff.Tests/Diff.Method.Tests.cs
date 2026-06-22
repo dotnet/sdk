@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffMethodTests : DiffBaseTests
 {
     #region Methods
 
-    [Fact]
+    [TestMethod]
     public Task MethodAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -38,7 +39,7 @@ public class DiffMethodTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task MethodChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -73,7 +74,7 @@ public class DiffMethodTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task MethodDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -104,7 +105,7 @@ public class DiffMethodTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task MethodReturnChange() =>
         // The DocID remains the same, but the return type changes
         RunTestAsync(
@@ -142,7 +143,7 @@ public class DiffMethodTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task MethodParametersChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -181,7 +182,7 @@ public class DiffMethodTests : DiffBaseTests
 
     #region Exclusions
 
-    [Fact]
+    [TestMethod]
 
     public Task ExcludeModifiedMethod() => RunTestAsync(
                 beforeCode: """
@@ -205,7 +206,7 @@ public class DiffMethodTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["M:MyNamespace.MyClass.MyMethod1", "M:MyNamespace.MyClass.MyMethod2"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeRemovedMethod() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
