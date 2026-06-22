@@ -10,14 +10,11 @@ using static Microsoft.NET.Build.Tasks.ResolveTargetingPackAssets;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAResolveTargetingPackAssetsTask : SdkTest
     {
-        public GivenAResolveTargetingPackAssetsTask(ITestOutputHelper log)
-            : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void Given_ResolvedTargetingPacks_with_valid_PATH_in_PlatformManifest_It_resolves_TargetingPack()
         {
             ResolveTargetingPackAssets task = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
@@ -45,7 +42,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 because: "There should be a cache entry for the overall lookup and for the specific targeting pack");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_Uses_Multiple_Frameworks()
         {
             ResolveTargetingPackAssets task = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
@@ -66,7 +63,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_Passing_ResolvedTargetingPacks_It_Passes_Again_With_Cached_Results()
         {
             ResolveTargetingPackAssets task1 = InitializeMockTargetingPackAssetsDirectory(out string packageDirectory);
@@ -93,7 +90,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 because: "the cache keys should match");
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_Passing_ResolvedTargetingPacks_A_Different_Language_Parses_Again()
         {
             ResolveTargetingPackAssets task1 = InitializeMockTargetingPackAssetsDirectory(out string packageDirectory);
@@ -176,7 +173,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
   <File Type=""Analyzer"" Language=""vb"" Path=""analyzers/dotnet/vb/vbAnalyzer.dll"" PublicKeyToken=""null"" AssemblyName=""vbAnalyzer"" AssemblyVersion=""10.0.18362.3"" FileVersion=""10.0.18362.3"" />
 </FileList>";
 
-        [Fact]
+        [TestMethod]
         public void CachingBehaviorIsControlledByTaskEnvironment()
         {
             ResolveTargetingPackAssets taskNoCaching = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
@@ -194,7 +191,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "caching should be enabled when DOTNETSDK_ALLOW_TARGETING_PACK_CACHING!=0 in TaskEnvironment");
         }
 
-        [Fact]
+        [TestMethod]
         public void RelativeTargetingPackPathsResolveAgainstTaskEnvironmentProjectDirectoryAndArePreservedInOutputs()
         {
             string projectDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -227,7 +224,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().OnlyContain(path => !Path.IsPathRooted(path));
         }
 
-        [Fact]
+        [TestMethod]
         public void SharedCacheKeepsIdenticalRelativeTargetingPackPathsIsolatedByProjectDirectory()
         {
             string firstProjectDir = TestAssetsManager.CreateTestDirectory(identifier: "first").Path;
@@ -278,7 +275,7 @@ $@"<FileList Name=""{assemblyName}"">
   <File Type=""Managed"" Path=""lib/{assemblyName}.dll"" PublicKeyToken=""null"" AssemblyName=""{assemblyName}"" AssemblyVersion=""1.0.0.0"" FileVersion=""1.0.0.0"" />
 </FileList>";
 
-        [Fact]
+        [TestMethod]
         public void It_Hashes_All_Inputs()
         {
             IEnumerable<PropertyInfo> inputProperties;
@@ -290,11 +287,9 @@ $@"<FileList Name=""{assemblyName}"">
             {
                 oldHash = task.GetInputs().CacheKey();
             }
-            catch (ArgumentNullException)
+            catch (ArgumentNullException ex)
             {
-                Assert.Fail(nameof(StronglyTypedInputs) + " is likely not correctly handling null value of one or more optional task parameters");
-
-                throw; // unreachable
+                throw new InvalidOperationException(nameof(StronglyTypedInputs) + " is likely not correctly handling null value of one or more optional task parameters", ex);
             }
 
             foreach (var property in inputProperties)
@@ -359,8 +354,8 @@ $@"<FileList Name=""{assemblyName}"">
             return task;
         }
 
-        [Fact]
-        public static void It_Hashes_All_Inputs_To_FrameworkList()
+        [TestMethod]
+        public void It_Hashes_All_Inputs_To_FrameworkList()
         {
             var constructor = typeof(FrameworkListDefinition).GetConstructors().Single();
 
@@ -404,8 +399,8 @@ $@"<FileList Name=""{assemblyName}"">
             }
         }
 
-        [Fact]
-        public static void StronglyTypedInputs_Includes_All_Inputs_In_CacheKey()
+        [TestMethod]
+        public void StronglyTypedInputs_Includes_All_Inputs_In_CacheKey()
         {
             StronglyTypedInputs defaultObject = new(
                 frameworkReferences: DefaultFrameworkReferences(),
@@ -545,4 +540,3 @@ $@"<FileList Name=""{assemblyName}"">
         };
     }
 }
-
