@@ -406,12 +406,12 @@ public class RunCommand
         var command = CommandFactoryUsingResolver.Create(commandSpec)
             .WorkingDirectory(workingDirectory);
 
-        SetEnvironmentVariables(command, launchSettings);
+        SetEnvironmentVariables(command, launchSettings, EnvironmentVariables);
 
         return command;
     }
 
-    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings)
+    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings, IReadOnlyDictionary<string, string> environmentVariables)
     {
         // Handle Project-specific settings
         if (launchSettings is ProjectLaunchProfile projectSettings)
@@ -432,8 +432,10 @@ public class RunCommand
             }
         }
 
-        // Env variables specified on command line override those specified in launch profile:
-        foreach (var (name, value) in EnvironmentVariables)
+        // Env variables specified on command line (or, for opted-in projects, the final
+        // @(RuntimeEnvironmentVariable) item group after ComputeRunArguments) override those
+        // specified in the launch profile:
+        foreach (var (name, value) in environmentVariables)
         {
             command.EnvironmentVariable(name, value);
         }
@@ -565,6 +567,7 @@ public class RunCommand
     private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
     {
         ICommand command;
+        IReadOnlyDictionary<string, string> runtimeEnvironmentVariables = EnvironmentVariables;
         if (cachedRunProperties != null)
         {
             // We can skip project evaluation if we already evaluated the project during virtual build
@@ -585,11 +588,12 @@ public class RunCommand
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
 
             ProjectInstance project;
+            bool hasRuntimeEnvironmentVariableSupport;
             try
             {
                 project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
                 ValidatePreconditions(project);
-                InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
+                hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
             }
             finally
             {
@@ -597,9 +601,16 @@ public class RunCommand
 
             var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
             command = CreateCommandFromRunProperties(runProperties);
+
+            // For opted-in projects, honor any additions/changes that MSBuild targets (e.g. ComputeRunArguments)
+            // made to the @(RuntimeEnvironmentVariable) item group, rather than only the original -e values.
+            if (hasRuntimeEnvironmentVariableSupport)
+            {
+                runtimeEnvironmentVariables = EnvironmentVariablesToMSBuild.ReadFromItems(project);
+            }
         }
 
-        SetEnvironmentVariables(command, launchSettings);
+        SetEnvironmentVariables(command, launchSettings, runtimeEnvironmentVariables);
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
@@ -681,11 +692,11 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
+        static bool InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
         {
             // Only add environment variables as MSBuild items if the project has opted in via capability
-            if (project.GetItems(Constants.ProjectCapability)
-                .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase)))
+            bool hasRuntimeEnvironmentVariableSupport = EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project);
+            if (hasRuntimeEnvironmentVariableSupport)
             {
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
@@ -704,6 +715,8 @@ public class RunCommand
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }
+
+            return hasRuntimeEnvironmentVariableSupport;
         }
     }
 

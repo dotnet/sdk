@@ -16,6 +16,19 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 internal static class EnvironmentVariablesToMSBuild
 {
     private const string PropsFileName = "dotnet-run-env.props";
+    private const string ValueMetadataName = "Value";
+
+    /// <summary>
+    /// Determines whether the project has opted in to receiving environment variables as MSBuild items
+    /// by declaring the <see cref="Constants.RuntimeEnvironmentVariableSupport"/> project capability.
+    /// </summary>
+    /// <param name="projectInstance">The MSBuild project instance to inspect.</param>
+    /// <returns><see langword="true"/> if the project declares the capability; otherwise <see langword="false"/>.</returns>
+    public static bool HasRuntimeEnvironmentVariableSupport(ProjectInstance projectInstance)
+    {
+        return projectInstance.GetItems(Constants.ProjectCapability)
+            .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase));
+    }
 
     /// <summary>
     /// Adds environment variables as MSBuild items to a ProjectInstance.
@@ -29,9 +42,27 @@ internal static class EnvironmentVariablesToMSBuild
         {
             projectInstance.AddItem(Constants.RuntimeEnvironmentVariable, name, new Dictionary<string, string>
             {
-                ["Value"] = value
+                [ValueMetadataName] = value
             });
         }
+    }
+
+    /// <summary>
+    /// Reads the current <c>@(RuntimeEnvironmentVariable)</c> items from a ProjectInstance into a dictionary.
+    /// This captures any additions or modifications made by MSBuild targets (e.g., <c>ComputeRunArguments</c>)
+    /// so they can be applied to the launched process.
+    /// </summary>
+    /// <param name="projectInstance">The MSBuild project instance to read items from.</param>
+    /// <returns>A dictionary mapping environment variable names to their values.</returns>
+    public static IReadOnlyDictionary<string, string> ReadFromItems(ProjectInstance projectInstance)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var item in projectInstance.GetItems(Constants.RuntimeEnvironmentVariable))
+        {
+            result[item.EvaluatedInclude] = item.GetMetadataValue(ValueMetadataName);
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -137,7 +168,7 @@ internal static class EnvironmentVariablesToMSBuild
         {
             writer.WriteStartElement(Constants.RuntimeEnvironmentVariable);
             writer.WriteAttributeString("Include", name);
-            writer.WriteAttributeString("Value", value);
+            writer.WriteAttributeString(ValueMetadataName, value);
             writer.WriteEndElement();
         }
 
