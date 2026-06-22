@@ -303,8 +303,9 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
         // This combination must be unique across all assets, so this will avoid collisions when two files on
         // the same project have the same contents, when it happens across different projects or between Build/Publish
         // assets.
-        var fileName = $"{pathTemplate}-{asset.Fingerprint}{fileExtension}";
-        var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
+        // pathTemplate is already rooted at the absolute output path (see CreatePathTemplate), so itemSpec is a full
+        // path without recombining with the relative OutputPath or resolving against the process working directory.
+        var itemSpec = $"{pathTemplate}-{asset.Fingerprint}{fileExtension}";
 
         if (previousAsset != null)
         {
