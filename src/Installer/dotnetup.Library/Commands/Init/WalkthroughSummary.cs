@@ -57,13 +57,13 @@ internal static class WalkthroughSummary
         return
         [
             new SummaryChoice(
-                new SelectableOption("y", proceedTitle, proceedDescription, string.Empty),
+                new SelectableOption(proceedTitle, proceedDescription, string.Empty),
                 WalkthroughDecision.Proceed),
             new SummaryChoice(
-                new SelectableOption("c", Strings.SummaryCustomizeTitle, Strings.SummaryCustomizeDescription, string.Empty),
+                new SelectableOption(Strings.SummaryCustomizeTitle, Strings.SummaryCustomizeDescription, string.Empty),
                 WalkthroughDecision.Customize),
             new SummaryChoice(
-                new SelectableOption("x", Strings.SummaryExitTitle, Strings.SummaryExitDescription, string.Empty),
+                new SelectableOption(Strings.SummaryExitTitle, Strings.SummaryExitDescription, string.Empty),
                 WalkthroughDecision.Exit),
         ];
     }
@@ -109,26 +109,16 @@ internal static class WalkthroughSummary
             return;
         }
 
-        string dim = DotnetupTheme.Current.Dim;
         string label = Strings.SummaryChannelLabel.PadRight(LabelWidth);
+        string value = DotnetupTheme.Brand(channel.ChannelLabel.EscapeMarkup());
         string suffix = channel.GlobalJsonPath is not null
-            ? string.Format(
+            ? " " + DotnetupTheme.Dim("(" + string.Format(
                 CultureInfo.InvariantCulture,
-                " [{0}]({1})[/]",
-                dim,
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    Strings.SummaryChannelGlobalJsonSuffix,
-                    channel.GlobalJsonPath.EscapeMarkup()))
+                Strings.SummaryChannelGlobalJsonSuffix,
+                channel.GlobalJsonPath.EscapeMarkup()) + ")")
             : string.Empty;
 
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "{0}[{1}]{2}[/]{3}",
-            label,
-            DotnetupTheme.Current.Brand,
-            channel.ChannelLabel.EscapeMarkup(),
-            suffix));
+        SpectreAnsiConsole.MarkupLine(label + value + suffix);
     }
 
     private static void RenderModeLine(
@@ -136,26 +126,15 @@ internal static class WalkthroughSummary
         PathPreference? configuredPreference)
     {
         string label = Strings.SummaryModeLabel.PadRight(LabelWidth);
-        string recommendedName = PathPreferenceDisplay.GetName(recommended);
-
+        string value = DotnetupTheme.Brand(PathPreferenceDisplay.GetNameWithSuggestedHint(recommended).EscapeMarkup());
         string current = configuredPreference is { } pref
-            ? string.Format(
+            ? "  " + DotnetupTheme.Warning("(" + string.Format(
                 CultureInfo.InvariantCulture,
-                "  [{0}]({1})[/]",
-                DotnetupTheme.Current.Warning,
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    Strings.SummaryModeCurrent,
-                    PathPreferenceDisplay.GetNameWithoutHint(pref).EscapeMarkup()))
+                Strings.SummaryModeCurrent,
+                PathPreferenceDisplay.GetName(pref).EscapeMarkup()) + ")")
             : string.Empty;
 
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "{0}[{1}]{2}[/]{3}",
-            label,
-            DotnetupTheme.Current.Brand,
-            recommendedName.EscapeMarkup(),
-            current));
+        SpectreAnsiConsole.MarkupLine(label + value + current);
     }
 
     private static void RenderMigrationSummary(List<MigrationWorkflow.MigrationSelection> migrations)
@@ -165,29 +144,20 @@ internal static class WalkthroughSummary
             return;
         }
 
-        string dim = DotnetupTheme.Current.Dim;
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine(Strings.SummaryMigrateHeader);
 
         var items = InitWorkflows.FormatMigrationDisplayItems(migrations);
-        int shown = Math.Min(MigrationWorkflow.MigrationPreviewCount, items.Count);
-        for (int i = 0; i < shown; i++)
+        foreach (var item in items.Take(MigrationWorkflow.MigrationPreviewCount))
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "  [{0}]{1}[/] {2}",
-                dim,
-                Constants.Symbols.Bullet,
-                items[i].EscapeMarkup()));
+            SpectreAnsiConsole.MarkupLine("  " + DotnetupTheme.Dim(Constants.Symbols.Bullet) + " " + item.EscapeMarkup());
         }
 
-        if (items.Count > shown)
+        int remaining = items.Count - MigrationWorkflow.MigrationPreviewCount;
+        if (remaining > 0)
         {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "  [{0}]{1}[/]",
-                dim,
-                string.Format(CultureInfo.InvariantCulture, Strings.SummaryMigrateMore, items.Count - shown)));
+            SpectreAnsiConsole.MarkupLine("  " + DotnetupTheme.Dim(
+                string.Format(CultureInfo.InvariantCulture, Strings.SummaryMigrateMore, remaining)));
         }
     }
 }
