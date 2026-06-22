@@ -74,17 +74,25 @@ internal sealed class TimeBasedScheduler
     public const int DefaultFallbackWorkItemCount = 25;
 
     /// <summary>
-    /// Maximum command-line length for filter strings (Windows limit).
+    /// Maximum filter string length on Windows (cmd.exe command line limit is 8191 chars;
+    /// leave ~1200 for the command prefix, env vars, paths, etc.).
     /// </summary>
-    private const int MaxFilterLength = 25000;
+    private const int MaxFilterLengthWindows = 7000;
+
+    /// <summary>
+    /// Maximum filter string length on POSIX (bash/sh support ~128KB+).
+    /// </summary>
+    private const int MaxFilterLengthPosix = 25000;
 
     private readonly TimeSpan _targetTime;
     private readonly int _fallbackWorkItemCount;
+    private readonly int _maxFilterLength;
 
-    public TimeBasedScheduler(TimeSpan? targetTime = null, int fallbackWorkItemCount = DefaultFallbackWorkItemCount)
+    public TimeBasedScheduler(TimeSpan? targetTime = null, int fallbackWorkItemCount = DefaultFallbackWorkItemCount, bool isPosixShell = true)
     {
         _targetTime = targetTime ?? DefaultWorkItemScheduleTime;
         _fallbackWorkItemCount = fallbackWorkItemCount;
+        _maxFilterLength = isPosixShell ? MaxFilterLengthPosix : MaxFilterLengthWindows;
     }
 
     /// <summary>
@@ -135,7 +143,7 @@ internal sealed class TimeBasedScheduler
             int additionalFilterLength = method.FullyQualifiedName.Length + 1; // +1 for separator
             bool exceedsTime = currentItem.TestMethods.Count > 0 &&
                                currentItem.EstimatedDuration + duration > _targetTime;
-            bool exceedsLength = currentFilterLength + additionalFilterLength > MaxFilterLength;
+            bool exceedsLength = currentFilterLength + additionalFilterLength > _maxFilterLength;
 
             if (currentItem.TestMethods.Count > 0 && (exceedsTime || exceedsLength))
             {
@@ -167,7 +175,8 @@ internal sealed class TimeBasedScheduler
     }
 
     /// <summary>
-    /// Count-based fallback: distributes tests evenly across N work items.
+    /// Count-based fallback: distributes tests evenly across N work items,
+    /// while also respecting the command-line filter length limit.
     /// </summary>
     private List<ScheduledWorkItem> ScheduleByCount(List<TestMethodDiscovery.TestMethodInfo> testMethods)
     {
@@ -177,16 +186,22 @@ internal sealed class TimeBasedScheduler
         var workItems = new List<ScheduledWorkItem>();
         var currentItem = new ScheduledWorkItem();
         var defaultDuration = TimeSpan.FromSeconds(5);
+        int currentFilterLength = 0;
 
         foreach (var method in testMethods)
         {
-            currentItem.AddTest(method, defaultDuration);
+            int additionalFilterLength = method.FullyQualifiedName.Length + 1;
 
-            if (currentItem.TestMethods.Count >= testsPerItem)
+            if (currentItem.TestMethods.Count >= testsPerItem ||
+                currentFilterLength + additionalFilterLength > _maxFilterLength)
             {
                 FinalizeWorkItem(workItems, currentItem);
                 currentItem = new ScheduledWorkItem();
+                currentFilterLength = 0;
             }
+
+            currentItem.AddTest(method, defaultDuration);
+            currentFilterLength += additionalFilterLength;
         }
 
         if (currentItem.TestMethods.Count > 0)

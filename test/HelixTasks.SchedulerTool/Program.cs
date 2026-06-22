@@ -102,9 +102,9 @@ class Program
             Console.WriteLine();
         }
 
-        // Run scheduler
+        // Run scheduler (use Windows limit for conservative local testing)
         Console.WriteLine($"=== Scheduling (target: {targetMinutes} min/work item) ===");
-        var scheduler = new TimeBasedScheduler(TimeSpan.FromMinutes(targetMinutes));
+        var scheduler = new TimeBasedScheduler(TimeSpan.FromMinutes(targetMinutes), isPosixShell: !OperatingSystem.IsWindows());
         var workItems = scheduler.Schedule(allMethods, history);
 
         Console.WriteLine($"  Produced {workItems.Count} work items");
