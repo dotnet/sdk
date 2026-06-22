@@ -38,12 +38,6 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadable
 
     public override bool Execute()
     {
-        if (string.IsNullOrWhiteSpace(ManifestPath))
-        {
-            Log.LogError("The 'ManifestPath' parameter is required and cannot be empty or whitespace.");
-            return false;
-        }
-
         AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(ManifestPath);
         if (File.Exists(manifestPath) && File.GetLastWriteTimeUtc(manifestPath) > File.GetLastWriteTimeUtc(TaskEnvironment.GetAbsolutePath(CacheFilePath)))
         {
