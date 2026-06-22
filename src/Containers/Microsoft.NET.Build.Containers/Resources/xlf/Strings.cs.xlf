@@ -179,11 +179,6 @@
         <target state="translated">Image s indexem {0} byla vložena do registru {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">Vytvoření indexu image pro Podman se nepodporuje.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: Nepodařilo se načíst bitovou kopii z místního registru. stdout: {0}</target>

@@ -205,6 +205,10 @@
   <data name="CancellingTestSession" xml:space="preserve">
     <value>Canceling the test session...</value>
   </data>
+  <data name="PressCtrlCAgainToForceExit" xml:space="preserve">
+    <value>Press Ctrl+C again to force exit.</value>
+    <comment>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</comment>
+  </data>
   <data name="CannotAnalyzeVSWorkloadBand" xml:space="preserve">
     <value>Workloads managed by Visual Studio must be uninstalled using the Visual Studio Installer. For the version of Visual Studio managing the SDK '{0}', we could not display workloads to uninstall. This is likely because '{0}' uses a different dotnet root path or custom user profile directory from the current running SDK.
 Paths searched: '{1}', '{2}'.</value>
@@ -492,7 +496,7 @@ This is equivalent to deleting project.assets.json.</value>
     <value>NUMBER</value>
   </data>
   <data name="CmdOptionCannotBeUsedWithTestModulesDescription" xml:space="preserve">
-    <value>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</value>
+    <value>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</value>
   </data>
   <data name="CmdOutdatedDescription" xml:space="preserve">
     <value>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</value>
@@ -2646,6 +2650,10 @@ Proceed?</value>
   </data>
   <data name="MismatchingHandshakeInfo" xml:space="preserve">
     <value>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</value>
+  </data>
+  <data name="MismatchingHandshakeExecutionMode" xml:space="preserve">
+    <value>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</value>
+    <comment>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</comment>
   </data>
   <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
     <value>A message of type '{0}' was received in help mode, which is not expected.</value>

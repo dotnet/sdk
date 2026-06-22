@@ -111,22 +111,33 @@ internal class ChannelVersionResolver
         }
 
         // The only two forms that include a '-' are:
-        //   * "<partial-version>-daily" (e.g. "10.0-daily", "10.0.1xx-daily").
-        //     Daily only applies to partial versions; "10.0.103-daily" is rejected
-        //     because a specific patch is already specific.
+        //   * "<partial-version>-daily" (e.g. "10.0-daily", "10.0.1xx-daily"),
+        //     optionally with a prerelease-label qualifier ("11.0.1xx-preview.5-daily"
+        //     or "11.0.1xx-preview5-daily"). Daily only applies to scopes; a
+        //     specific patch like "10.0.103-daily" is already specific and is
+        //     rejected.
         //   * a fully-qualified version with a prerelease tag (e.g. "10.0.100-preview.1.32640").
         //     The prerelease tag is opaque; we only validate the numeric prefix.
+        if (channel.EndsWith(DailySuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            var basePart = channel.Substring(0, channel.Length - DailySuffix.Length);
+            if (string.IsNullOrEmpty(basePart))
+            {
+                return false;
+            }
+
+            if (UpdateChannel.TrySplitPartialVersionAndPrereleaseLabel(basePart, out var bandPart, out _))
+            {
+                return IsValidPartialVersion(bandPart);
+            }
+
+            return IsValidPartialVersion(basePart);
+        }
+
         var dashIndex = channel.IndexOf('-', StringComparison.Ordinal);
         if (dashIndex >= 0)
         {
             var versionPart = channel.Substring(0, dashIndex);
-            var suffix = channel.Substring(dashIndex);
-
-            if (suffix.Equals(DailySuffix, StringComparison.OrdinalIgnoreCase))
-            {
-                return !string.IsNullOrEmpty(versionPart) && IsValidPartialVersion(versionPart);
-            }
-
             return IsValidNumericVersion(versionPart);
         }
 

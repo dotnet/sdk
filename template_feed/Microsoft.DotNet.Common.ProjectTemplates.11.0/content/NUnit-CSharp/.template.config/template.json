@@ -46,6 +46,24 @@
       "description": "Whether or not to enable packaging (via \"dotnet pack\") for the project.",
       "displayName": "Enable pack"
     },
+    "TestRunner": {
+      "type": "parameter",
+      "datatype": "choice",
+      "enableQuotelessLiterals": true,
+      "description": "Select the runner/platform.",
+      "displayName": "Test runner",
+      "defaultValue": "VSTest",
+      "choices": [
+        {
+          "choice": "Microsoft.Testing.Platform",
+          "description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information."
+        },
+        {
+          "choice": "VSTest",
+          "description": "Use VSTest platform"
+        }
+      ]
+    },
     "HostIdentifier": {
       "type": "bind",
       "binding": "host:HostIdentifier"
@@ -61,9 +79,47 @@
       "type": "parameter",
       "datatype": "text",
       "description": "Sets the LangVersion property in the created project file",
-      "defaultValue": "latest",
+      "defaultValue": "",
       "replaces": "$(ProjectLanguageVersion)",
       "displayName": "Language version"
+    },
+    "csharp9orOlder": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(ISO-1|ISO-2|[1-7]|[8-9]|[8-9]\\.0|7\\.[0-3])$",
+        "source": "langVersion"
+      }
+    },
+    "csharp7orOlder": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(ISO-1|ISO-2|[1-7]|7\\.[0-3])$",
+        "source": "langVersion"
+      }
+    },
+    "csharp10orLater": {
+      "type": "computed",
+      "value": "!csharp9orOlder"
+    },
+    "csharp8orLater": {
+      "type": "computed",
+      "value": "!csharp7orOlder"
+    },
+    "csharpFeature_ImplicitUsings": {
+      "type": "computed",
+      "value": "csharp10orLater == \"true\""
+    },
+    "csharpFeature_Nullable": {
+      "type": "computed",
+      "value": "csharp8orLater == \"true\""
+    },
+    "csharpFeature_FileScopedNamespaces": {
+      "type": "computed",
+      "value": "csharp10orLater == \"true\""
     }
   },
   "primaryOutputs": [
@@ -84,6 +140,25 @@
       "manualInstructions": [{ "text": "Run 'dotnet restore'" }],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "id": "restoreNugetPackages",
+      "continueOnError": true
+    },
+    {
+      "condition": "(TestRunner == \"Microsoft.Testing.Platform\")",
+      "description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
+      "manualInstructions": [{ "text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform" }],
+      "actionId": "695A3659-EB40-4FF5-A6A6-C9C4E629FCB0",
+      "id": "addJsonProperty",
+      "args": {
+        "allowFileCreation": true,
+        "allowPathCreation": true,
+        "jsonFileName": "global.json",
+        "parentPropertyPath": "test",
+        "newJsonPropertyName": "runner",
+        "newJsonPropertyValue": "Microsoft.Testing.Platform",
+        "detectRepositoryRoot": true,
+        "includeAllDirectoriesInSearch": false,
+        "includeAllParentDirectoriesInSearch": true
+      },
       "continueOnError": true
     },
     {

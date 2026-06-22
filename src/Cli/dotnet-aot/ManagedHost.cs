@@ -1,7 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias NativeWrapper;
+
+using System.Diagnostics;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
+using NativeConstants = NativeWrapper::Microsoft.DotNet.NativeWrapper.Constants;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -122,6 +127,7 @@ internal sealed unsafe class ManagedHost : IDisposable
 
         try
         {
+            var _init = Activities.Source.StartActivity("aot-hostfxr-initialization");
             StatusCode result = Interop.hostfxr_initialize_for_dotnet_command_line(
                 args.Length,
                 args,
@@ -130,7 +136,14 @@ internal sealed unsafe class ManagedHost : IDisposable
 
             if (result != StatusCode.Success && handle == 0)
             {
+                _init?.SetStatus(ActivityStatusCode.Error);
+                _init?.Stop();
                 throw new InvalidOperationException($"hostfxr_initialize_for_dotnet_command_line failed. Status: {result} (0x{(uint)result:X8})");
+            }
+            else
+            {
+                _init?.SetStatus(ActivityStatusCode.Ok);
+                _init?.Stop();
             }
 
             try
@@ -141,14 +154,28 @@ internal sealed unsafe class ManagedHost : IDisposable
                 if (!string.IsNullOrEmpty(hostfxrPath))
                 {
                     StatusCode propertyResult = Interop.hostfxr_set_runtime_property_value(
-                        handle, Constants.RuntimeProperty.HostFxrPath, hostfxrPath);
+                        handle, NativeConstants.RuntimeProperty.HostFxrPath, hostfxrPath);
                     if (propertyResult != StatusCode.Success)
                     {
                         throw new InvalidOperationException(
-                            $"hostfxr_set_runtime_property_value failed for {Constants.RuntimeProperty.HostFxrPath}. Status: {propertyResult} (0x{(uint)propertyResult:X8})");
+                            $"hostfxr_set_runtime_property_value failed for {NativeConstants.RuntimeProperty.HostFxrPath}. Status: {propertyResult} (0x{(uint)propertyResult:X8})");
                     }
                 }
 
+                // Propagate OTel trace context to the managed CLI so that its spans
+                // become children of the AOT-side main activity.
+                if (Activity.Current is { } currentActivity)
+                {
+                    string traceparent = $"00-{currentActivity.Context.TraceId}-{currentActivity.Context.SpanId}-{(currentActivity.Context.TraceFlags == ActivityTraceFlags.Recorded ? "01" : "00")}";
+                    Interop.hostfxr_set_runtime_property_value(handle, Activities.TRACEPARENT, traceparent);
+
+                    if (!string.IsNullOrEmpty(currentActivity.Context.TraceState))
+                    {
+                        Interop.hostfxr_set_runtime_property_value(handle, Activities.TRACESTATE, currentActivity.Context.TraceState);
+                    }
+                }
+
+                using var invoke = Activities.Source.StartActivity("aot-coreclr-invocation");
                 StatusCode appResult = Interop.hostfxr_run_app(handle);
                 return (int)appResult;
             }

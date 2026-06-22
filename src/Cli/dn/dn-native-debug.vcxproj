@@ -145,7 +145,6 @@ DOTNET_CLI_ENABLEAOT=true</LocalDebuggerEnvironment>
     <None Include="..\dotnet-aot\ManagedHost.cs" Link="AOT Sources\ManagedHost.cs" />
     <None Include="Program.cs" Link="AOT Sources\dn.Program.cs" />
     <None Include="..\dotnet\Program.cs" Link="Managed Sources\dotnet.Program.cs" />
-    <None Include="..\dotnet\CommandLineInfo.cs" Link="AOT Sources\CommandLineInfo.cs" />
     <None Include="debug-dn.cmd" />
   </ItemGroup>
 
