@@ -55,12 +55,50 @@ public class GlobalJsonInfo
     public string? SdkVersion => GlobalJsonContents?.Sdk?.Version;
     public bool? AllowPrerelease => GlobalJsonContents?.Sdk?.AllowPrerelease;
     public string? RollForward => GlobalJsonContents?.Sdk?.RollForward;
+    /// <summary>
+    /// The "$host$" sentinel in <c>sdk.paths</c> means "use the default host location"
+    /// rather than a literal directory. See
+    /// https://learn.microsoft.com/en-us/dotnet/core/tools/global-json#paths.
+    /// </summary>
+    private const string HostLocationSentinel = "$host$";
+
+    /// <summary>
+    /// The first meaningful (non-null, non-whitespace) entry in <c>sdk.paths</c>, or
+    /// <see langword="null"/> when there are none. <c>sdk.paths</c> is an ordered list, so
+    /// dotnetup honors the first meaningful entry as the desired install location, mirroring
+    /// how the .NET host resolver consumes the list.
+    /// </summary>
+    private string? FirstSdkPathEntry =>
+        GlobalJsonContents?.Sdk?.Paths is { Length: > 0 } paths
+            ? Array.Find(paths, p => !string.IsNullOrWhiteSpace(p))
+            : null;
+
+    /// <summary>
+    /// <see langword="true"/> when the first meaningful <c>sdk.paths</c> entry is the
+    /// "$host$" sentinel, meaning the SDK should resolve to (and be installed at) the default
+    /// host location instead of a literal path. In that case <see cref="SdkPath"/> is
+    /// <see langword="null"/> and the caller substitutes the default install location.
+    /// </summary>
+    public bool UsesDefaultHostLocation =>
+        string.Equals(FirstSdkPathEntry, HostLocationSentinel, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The literal install path declared by <c>sdk.paths</c>, resolved relative to the
+    /// directory containing global.json. Returns <see langword="null"/> when there is no usable
+    /// path, or when the first meaningful entry is the "$host$" sentinel (in which case
+    /// <see cref="UsesDefaultHostLocation"/> is <see langword="true"/>).
+    /// </summary>
     public string? SdkPath
     {
         get
         {
-            return (GlobalJsonContents?.Sdk?.Paths is not null && GlobalJsonContents.Sdk.Paths.Length > 0) ?
-                Path.GetFullPath(GlobalJsonContents.Sdk.Paths[0], Path.GetDirectoryName(GlobalJsonPath)!) : null;
+            var firstEntry = FirstSdkPathEntry;
+            if (firstEntry is null || UsesDefaultHostLocation)
+            {
+                return null;
+            }
+
+            return Path.GetFullPath(firstEntry, Path.GetDirectoryName(GlobalJsonPath)!);
         }
     }
 }

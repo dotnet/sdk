@@ -31,7 +31,8 @@ internal class InstallPathResolver
     /// <summary>
     /// Resolves the install path using the following precedence:
     /// 1. Explicitly provided install path
-    /// 2. Path from global.json (if available)
+    /// 2. global.json's sdk.paths — its first meaningful entry, which is either a literal path
+    ///    or, when that entry is the "$host$" sentinel, the default host install location
     /// 3. Current user installation path (if exists)
     /// 4. Default install path
     /// </summary>
@@ -49,11 +50,8 @@ internal class InstallPathResolver
             ? globalJsonInfo.SdkPath
             : null;
 
-        // Resolution precedence:
-        // 1. Explicit --install-path always wins
-        // 2. global.json sdk-path
-        // 3. Existing user installation
-        // 4. Default install path
+        bool globalJsonUsesDefaultHostLocation = globalJsonInfo?.GlobalJsonPath is not null
+            && globalJsonInfo.UsesDefaultHostLocation;
 
         if (explicitInstallPath is not null)
         {
@@ -62,6 +60,13 @@ internal class InstallPathResolver
         else if (installPathFromGlobalJson is not null)
         {
             return new InstallPathResolutionResult(installPathFromGlobalJson, installPathFromGlobalJson, PathSource.GlobalJson);
+        }
+        else if (globalJsonUsesDefaultHostLocation)
+        {
+            // "$host$" tells us to use the default host location; global.json still drove the
+            // decision, so this is reported as a global.json-sourced path.
+            string defaultPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
+            return new InstallPathResolutionResult(defaultPath, defaultPath, PathSource.GlobalJson);
         }
         else if (currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {

@@ -206,6 +206,65 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         result.PathSource.Should().Be(PathSource.Default);
     }
 
+    /// <summary>
+    /// When global.json's sdk.paths uses the "$host$" sentinel (as the first meaningful entry),
+    /// the install path resolves to the default host location, reported as a global.json source.
+    /// </summary>
+    [Fact]
+    public void Resolve_GlobalJsonHostSentinel_UsesDefaultHostLocation()
+    {
+        var globalJsonInfo = CreateGlobalJsonInfoWithPaths("$host$");
+
+        var result = _resolver.Resolve(
+            explicitInstallPath: null,
+            globalJsonInfo: globalJsonInfo,
+            currentDotnetInstallRoot: null);
+
+        result.Should().NotBeNull();
+        result!.ResolvedInstallPath.Should().Be(new DotnetEnvironmentManager().GetDefaultDotnetInstallPath());
+        result.PathSource.Should().Be(PathSource.GlobalJson);
+    }
+
+    /// <summary>
+    /// "$host$" as the first entry wins over later literal paths: the default host location is
+    /// used and the later path is ignored.
+    /// </summary>
+    [Fact]
+    public void Resolve_GlobalJsonHostSentinelFirst_IgnoresLaterPaths()
+    {
+        var globalJsonInfo = CreateGlobalJsonInfoWithPaths("$host$", GlobalJsonPath);
+
+        var result = _resolver.Resolve(
+            explicitInstallPath: null,
+            globalJsonInfo: globalJsonInfo,
+            currentDotnetInstallRoot: null);
+
+        result!.ResolvedInstallPath.Should().Be(new DotnetEnvironmentManager().GetDefaultDotnetInstallPath());
+        result.ResolvedInstallPath.Should().NotBe(GlobalJsonPath);
+        result.PathSource.Should().Be(PathSource.GlobalJson);
+    }
+
+    /// <summary>
+    /// "$host$" in global.json should win over an existing user install, just like a literal
+    /// global.json path does.
+    /// </summary>
+    [Fact]
+    public void Resolve_GlobalJsonHostSentinel_TakesPrecedenceOverExistingUserInstall()
+    {
+        var installRoot = new DotnetInstallRoot("/user/dotnet", InstallerUtilities.GetDefaultInstallArchitecture());
+        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.User, IsFullyConfigured: true);
+        var globalJsonInfo = CreateGlobalJsonInfoWithPaths("$host$");
+
+        var result = _resolver.Resolve(
+            explicitInstallPath: null,
+            globalJsonInfo: globalJsonInfo,
+            currentDotnetInstallRoot: currentInstall);
+
+        result!.ResolvedInstallPath.Should().Be(new DotnetEnvironmentManager().GetDefaultDotnetInstallPath());
+        result.ResolvedInstallPath.Should().NotBe("/user/dotnet");
+        result.PathSource.Should().Be(PathSource.GlobalJson);
+    }
+
     [Fact]
     public void ResolveCurrentInstallRootPath_UsesSymlinkTargetDirectory()
     {
@@ -270,6 +329,23 @@ public class InstallPathResolverTests(ITestOutputHelper output)
                 {
                     // Use the absolute path directly since it will be resolved relative to tempDir
                     Paths = [sdkPath]
+                }
+            }
+        };
+    }
+
+    private static GlobalJsonInfo CreateGlobalJsonInfoWithPaths(params string[] paths)
+    {
+        string globalJsonPath = Path.Combine(Path.GetTempPath(), "global.json");
+
+        return new GlobalJsonInfo
+        {
+            GlobalJsonPath = globalJsonPath,
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = paths
                 }
             }
         };

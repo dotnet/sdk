@@ -288,4 +288,136 @@ public class LibraryTests
 
         globalJsonInfo.SdkPath.Should().BeNull();
     }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ReturnsNullWhenOnlyHostSentinel()
+    {
+        // $host$ is a sentinel value meaning "use the default host location".
+        // It should not be treated as a literal directory path, so SdkPath is null and
+        // UsesDefaultHostLocation signals that the default location should be used.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { "$host$" }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
+        globalJsonInfo.UsesDefaultHostLocation.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ReturnsNullWhenAllPathsAreHostSentinel()
+    {
+        // All entries are $host$ sentinel values; SdkPath is null and the default host
+        // location should be used.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { "$host$", "$HOST$" }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
+        globalJsonInfo.UsesDefaultHostLocation.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_HonorsHostSentinelWhenItIsFirst()
+    {
+        // sdk.paths is an ordered list. When $host$ is first, it wins: the default host
+        // location is used and any later paths are ignored. SdkPath is null (no literal path)
+        // and UsesDefaultHostLocation is true.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { "$host$", ".dotnet" }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
+        globalJsonInfo.UsesDefaultHostLocation.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_UsesFirstRealPathWhenItPrecedesHostSentinel()
+    {
+        // When a real path is first, it is used and UsesDefaultHostLocation is false.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { ".dotnet", "$host$" }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().Be(Path.Combine(repoDir, ".dotnet"));
+        globalJsonInfo.UsesDefaultHostLocation.Should().BeFalse();
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_SkipsLeadingNullAndWhitespaceEntries()
+    {
+        // Null/empty/whitespace entries (possible via JSON) are skipped when finding the first
+        // meaningful entry. Here that entry is $host$, so the default host location is used.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new string[] { null!, "", "   ", "$host$", ".dotnet" }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
+        globalJsonInfo.UsesDefaultHostLocation.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ReturnsNullWhenAllEntriesAreNullOrWhitespace()
+    {
+        // With no meaningful entries at all, neither a literal path nor the host sentinel apply.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new string[] { null!, "", "   " }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
+        globalJsonInfo.UsesDefaultHostLocation.Should().BeFalse();
+    }
 }
