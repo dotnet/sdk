@@ -21,20 +21,9 @@ internal static class UnsignedDownloadWarning
     /// <summary>
     /// Shows the warning once if any of the given requests is predicted to use the blob feed.
     /// </summary>
-    public static void WarnIfPredicted(IEnumerable<DotnetInstallRequest> requests)
+    public static void WarnIfPredicted(params IEnumerable<DotnetInstallRequest> requests)
     {
         if (requests.Any(UnsignedSourcePolicy.MayDownloadUnsigned) && UnsignedSourcePolicy.TryClaimUnsignedWarning())
-        {
-            Emit();
-        }
-    }
-
-    /// <summary>
-    /// Shows the warning once if the given request is predicted to use the blob feed.
-    /// </summary>
-    public static void WarnIfPredicted(DotnetInstallRequest request)
-    {
-        if (UnsignedSourcePolicy.MayDownloadUnsigned(request) && UnsignedSourcePolicy.TryClaimUnsignedWarning())
         {
             Emit();
         }
