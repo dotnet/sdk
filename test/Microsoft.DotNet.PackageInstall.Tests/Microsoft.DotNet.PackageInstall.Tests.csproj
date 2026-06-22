@@ -1,14 +1,11 @@
-﻿<Project>
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
 
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
 
@@ -16,8 +13,33 @@
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
+    <!-- ComponentMocks is compiled against the old xUnit Microsoft.NET.TestFramework and needs it at
+         runtime. Reference it directly so it flows into the runtime closure (output + deps.json). It is
+         removed from the C# compiler references below to avoid CS0433 duplicate-type conflicts with
+         Microsoft.NET.TestFramework.MSTest, which link-shares the same runner-agnostic types. -->
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+
+  <!-- Remove the old xUnit TestFramework from the C# compiler reference list (compile only) to avoid
+       CS0433 duplicate-type conflicts with Microsoft.NET.TestFramework.MSTest. The assembly remains in
+       the runtime closure so ComponentMocks can load it at runtime. -->
+  <Target Name="RemoveConflictingTestFrameworkReference"
+          AfterTargets="FindReferenceAssembliesForReferences"
+          BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <ReferencePathWithRefAssemblies Remove="@(ReferencePathWithRefAssemblies)"
+                                      Condition="'%(Filename)' == 'Microsoft.NET.TestFramework' AND '%(Extension)' == '.dll'" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
   </ItemGroup>
 
   <ItemGroup>
@@ -175,6 +197,5 @@
     <Copy SourceFiles="@(TestAssetLocalNugetFeed)" DestinationFiles="@(TestAssetLocalNugetFeed->'$(PublishDir)\TestAssetLocalNugetFeed\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

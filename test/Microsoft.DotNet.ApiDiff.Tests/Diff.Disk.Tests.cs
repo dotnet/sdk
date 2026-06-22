@@ -10,6 +10,7 @@ using Moq;
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffDiskTests
 {
     private const string DefaultBeforeFriendlyName = "Before";
@@ -78,7 +79,7 @@ public class DiffDiskTests
     /// This test reads two DLLs, where the only difference between the types in the assembly is one method that is added on the new type.
     /// The output goes to disk.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task DiskRead_DiskWrite()
     {
         using TempDirectory inputFolderPath = new();
@@ -100,7 +101,7 @@ public class DiffDiskTests
     }
 
     // Each assembly should have its own file. Confirm that namespaces spread throughout multiple assemblies does not accidentally overwrite any existing files.
-    [Fact]
+    [TestMethod]
     public async Task DiskRead_DiskWrite_AssembliesWithRepeatedNamespaces()
     {
         string beforeAssembly1Code1 = """
@@ -261,7 +262,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     /// This test reads two DLLs, where the assembly is explicitly excluded.
     /// The output is disk is simply the table of contents markdown file with no assembly list. No other files.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task DiskRead_DiskWrite_ExcludeAssembly()
     {
         using TempDirectory root = new();
@@ -291,7 +292,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     /// <summary>
     ///  Many namespaces belonging to a single assembly should go into the same output markdown file for that assembly.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task DiskRead_DiskWrite_MultiNamespaces()
     {
         using TempDirectory inputFolderPath = new();
@@ -382,7 +383,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     /// This test reads two DLLs, where the only difference between the types in the assembly is one method that is added on the new type.
     /// The output is the Results dictionary.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task DiskRead_MemoryWrite()
     {
         using TempDirectory inputFolderPath = new();
@@ -403,19 +404,19 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
         string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}.md");
         Assert.Contains(tableOfContentsMarkdownFilePath, generator.Results.Keys);
 
-        Assert.Equal(ExpectedTableOfContents, generator.Results[tableOfContentsMarkdownFilePath]);
+        Assert.AreEqual(ExpectedTableOfContents, generator.Results[tableOfContentsMarkdownFilePath]);
 
         string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}_{DefaultAssemblyName}.md");
         Assert.Contains(myAssemblyMarkdownFilePath, generator.Results.Keys);
 
-        Assert.Equal(DefaultExpectedMarkdown, generator.Results[myAssemblyMarkdownFilePath]);
+        Assert.AreEqual(DefaultExpectedMarkdown, generator.Results[myAssemblyMarkdownFilePath]);
     }
 
     /// <summary>
     /// This test reads two DLLs, where the assembly is explicitly excluded.
     /// The output is an empty Results dictionary.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task DiskRead_MemoryWrite_ExcludeAssembly()
     {
         using TempDirectory root = new();
@@ -442,7 +443,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
         string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.FullName, $"{DefaultTableOfContentsTitle}.md");
         Assert.Contains(tableOfContentsMarkdownFilePath, generator.Results.Keys);
 
-        Assert.Equal(ExpectedEmptyTableOfContents, generator.Results[tableOfContentsMarkdownFilePath]);
+        Assert.AreEqual(ExpectedEmptyTableOfContents, generator.Results[tableOfContentsMarkdownFilePath]);
 
         string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath.FullName, $"{DefaultTableOfContentsTitle}_{DefaultAssemblyName}.md");
         Assert.DoesNotContain(myAssemblyMarkdownFilePath, generator.Results.Keys);
@@ -527,18 +528,18 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     private void VerifyDiskWrite(string outputFolderPath, string tableOfContentsTitle, string expectedTableOfContents, Dictionary<string, string> expectedAssemblyMarkdowns)
     {
         string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath, $"{tableOfContentsTitle}.md");
-        Assert.True(File.Exists(tableOfContentsMarkdownFilePath), $"{tableOfContentsMarkdownFilePath} table of contents markdown file does not exist.");
+        Assert.IsTrue(File.Exists(tableOfContentsMarkdownFilePath), $"{tableOfContentsMarkdownFilePath} table of contents markdown file does not exist.");
 
         string actualTableOfContentsText = File.ReadAllText(tableOfContentsMarkdownFilePath);
-        Assert.Equal(expectedTableOfContents, actualTableOfContentsText);
+        Assert.AreEqual(expectedTableOfContents, actualTableOfContentsText);
 
         foreach ((string expectedAssembly, string expectedMarkdown) in expectedAssemblyMarkdowns)
         {
             string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath, $"{tableOfContentsTitle}_{expectedAssembly}.md");
-            Assert.True(File.Exists(myAssemblyMarkdownFilePath), $"{myAssemblyMarkdownFilePath} assembly markdown file does not exist.");
+            Assert.IsTrue(File.Exists(myAssemblyMarkdownFilePath), $"{myAssemblyMarkdownFilePath} assembly markdown file does not exist.");
 
             string actualCode = File.ReadAllText(myAssemblyMarkdownFilePath);
-            Assert.Equal(expectedMarkdown, actualCode);
+            Assert.AreEqual(expectedMarkdown, actualCode);
         }
     }
 

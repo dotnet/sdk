@@ -1,17 +1,24 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <!-- ApiDiff has no MSBuild task, only a CLI tool, so there is no Runtime="NET" taskhost
          path that needs to be exercised from desktop MSBuild. Single-target the netcore TFM. -->
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <OutputType>Exe</OutputType>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Build-ordering dependency on the tool under test. -->
     <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiDiff\Microsoft.DotNet.ApiDiff.Tool\Microsoft.DotNet.ApiDiff.Tool.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
   <!-- Stage the apidiff CLI binary closure under tools\Microsoft.DotNet.ApiDiff.Tool\ so the

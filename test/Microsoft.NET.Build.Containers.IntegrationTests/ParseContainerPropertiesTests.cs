@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Build.Containers.IntegrationTests;
-using Microsoft.NET.Build.Containers.UnitTests;
 using static Microsoft.NET.Build.Containers.KnownStrings;
 using static Microsoft.NET.Build.Containers.KnownStrings.Properties;
 
