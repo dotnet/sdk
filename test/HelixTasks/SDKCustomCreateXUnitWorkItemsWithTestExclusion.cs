@@ -329,8 +329,11 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         }
 
         /// <summary>
-        /// Builds the shell command that locates vstest.console.dll and invokes it with the RSP file.
-        /// Environment variables are set in the shell before invocation.
+        /// Builds the shell command for vstest.console.dll invocation.
+        /// On Windows, writes a .cmd batch script to the payload directory because cmd.exe
+        /// expands %variables% at parse time — `set /p` followed by `%var%` in a single
+        /// compound command doesn't work. The batch file ensures each line is parsed independently.
+        /// On POSIX, inline commands work fine with $() subshell expansion.
         /// </summary>
         private string? BuildVsTestCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout, string rspFileName)
         {
@@ -344,58 +347,50 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             string assemblyName = Path.GetFileName(targetPath);
             string exeName = Path.GetFileNameWithoutExtension(assemblyName);
 
-            var command = new StringBuilder();
-
-            // chmod/codesign for POSIX
             if (IsPosixShell)
             {
+                // POSIX: inline command works because $() is evaluated at execution time
+                var command = new StringBuilder();
+
                 command.Append($"chmod +x {exeName} && ");
                 if (TargetRid.StartsWith("osx"))
                 {
                     command.Append($"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && ");
                 }
-            }
 
-            // Set environment variables
-            if (IsPosixShell)
-            {
                 command.Append($"export HELIX_WORK_ITEM_TIMEOUT={timeout} && ");
                 if (!string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase))
                 {
                     command.Append("export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory && ");
                 }
+
+                command.Append("vstestConsolePath=$(find ${DOTNET_ROOT} -name \"vstest.console.dll\") && ");
+                command.Append($"dotnet exec \"${{vstestConsolePath}}\" @{rspFileName}");
+
+                return command.ToString();
             }
             else
             {
-                command.Append($"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& ");
+                // Windows: write a .cmd batch script because cmd.exe expands %var% at parse time.
+                // Each line in the batch file is parsed independently, so set/use works correctly.
+                string scriptName = $"{workItem.DisplayName}.cmd";
+                var script = new StringBuilder();
+                script.AppendLine("@echo off");
+                script.AppendLine($"set HELIX_WORK_ITEM_TIMEOUT={timeout}");
                 if (!string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase))
                 {
-                    command.Append("set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ");
-                    command.Append("set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ");
+                    script.AppendLine("set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%");
+                    script.AppendLine("set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r");
                 }
-            }
+                script.AppendLine("where /r %DOTNET_ROOT% vstest.console.dll > __vstest_path.txt");
+                script.AppendLine("set /p vstestConsolePath=<__vstest_path.txt");
+                script.AppendLine($"dotnet exec \"%vstestConsolePath%\" @{rspFileName}");
 
-            // Locate vstest.console.dll from DOTNET_ROOT (same approach as Roslyn)
-            if (IsPosixShell)
-            {
-                command.Append("vstestConsolePath=$(find ${DOTNET_ROOT} -name \"vstest.console.dll\") && ");
-            }
-            else
-            {
-                command.Append("where /r %DOTNET_ROOT% vstest.console.dll > __vstest_path.txt&& set /p vstestConsolePath=<__vstest_path.txt&& ");
-            }
+                var scriptPath = Path.Combine(publishDirectory, scriptName);
+                File.WriteAllText(scriptPath, script.ToString());
 
-            // Invoke vstest.console.dll with the RSP file
-            if (IsPosixShell)
-            {
-                command.Append($"dotnet exec \"${{vstestConsolePath}}\" @{rspFileName}");
+                return scriptName;
             }
-            else
-            {
-                command.Append($"dotnet exec \"%vstestConsolePath%\" @{rspFileName}");
-            }
-
-            return command.ToString();
         }
 
         /// <summary>
