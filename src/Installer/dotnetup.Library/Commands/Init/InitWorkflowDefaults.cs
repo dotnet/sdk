@@ -45,9 +45,8 @@ internal static class InitWorkflowDefaults
         }
 
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        var currentInstallRoot = dotnetEnvironment.GetCurrentPathConfiguration();
         var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
-            command.InstallPath, globalJson, currentInstallRoot);
+            command.InstallPath, globalJson);
         var installRoot = new DotnetInstallRoot(
             pathResolution.ResolvedInstallPath,
             InstallerUtilities.GetDefaultInstallArchitecture());
