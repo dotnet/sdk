@@ -22,10 +22,16 @@ internal class InstallWorkflow
     private readonly InstallCommand _command;
     private readonly InstallPathResolver _installPathResolver;
 
+    // Resolved lazily and cached so the (potentially PATH-probing) lookup runs at most
+    // once per workflow, even when recording telemetry for multiple install specs.
+    private readonly Lazy<DotnetInstallRootConfiguration?> _currentInstallRoot;
+
     public InstallWorkflow(InstallCommand command)
     {
         _command = command;
         _installPathResolver = new InstallPathResolver(command.DotnetEnvironment);
+        _currentInstallRoot = new Lazy<DotnetInstallRootConfiguration?>(
+            () => command.DotnetEnvironment.GetCurrentPathConfiguration());
     }
 
     /// <summary>
@@ -122,7 +128,6 @@ internal class InstallWorkflow
         MinimalInstallSpec[] componentSpecs)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        var currentInstallRoot = _command.DotnetEnvironment.GetCurrentPathConfiguration();
 
         var pathResolution = _installPathResolver.Resolve(
             _command.InstallPath,
@@ -137,7 +142,7 @@ internal class InstallWorkflow
         var requests = new List<ResolvedInstallRequest>();
         foreach (var spec in componentSpecs)
         {
-            var resolved = ResolveSpec(spec, installRoot, globalJson, currentInstallRoot, pathResolution);
+            var resolved = ResolveSpec(spec, installRoot, globalJson, pathResolution);
             requests.Add(resolved);
         }
 
@@ -169,7 +174,6 @@ internal class InstallWorkflow
         MinimalInstallSpec spec,
         DotnetInstallRoot installRoot,
         GlobalJsonInfo? globalJson,
-        DotnetInstallRootConfiguration? currentInstallRoot,
         InstallPathResolver.InstallPathResolutionResult pathResolution)
     {
         var component = spec.Component;
@@ -216,7 +220,7 @@ internal class InstallWorkflow
 
         RecordInstallTelemetry(
             component, explicitChannel,
-            _command.InstallPath, globalJson, currentInstallRoot,
+            _command.InstallPath, globalJson,
             pathResolution, channel, resolved);
 
         return resolved;
@@ -320,7 +324,6 @@ internal class InstallWorkflow
         string? requestedVersionOrChannel,
         string? explicitInstallPath,
         GlobalJsonInfo? globalJson,
-        DotnetInstallRootConfiguration? currentInstallRoot,
         InstallPathResolver.InstallPathResolutionResult pathResolution,
         string resolvedChannel,
         ResolvedInstallRequest resolved)
@@ -330,6 +333,8 @@ internal class InstallWorkflow
             : globalJson?.GlobalJsonPath is not null
                 ? "default-globaljson"
                 : "default-latest";
+
+        var currentInstallRoot = _currentInstallRoot.Value;
 
         _command.SetCommandTag(TelemetryTagNames.InstallComponent, component.ToString());
         _command.SetCommandTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
