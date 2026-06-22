@@ -8,12 +8,58 @@ using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.ProjectTools;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Extensions;
 
 public static class ParseResultExtensions
 {
+    public static string RootSubCommandResult(this ParseResult parseResult) => parseResult.RootCommandResult.Children?
+        .Select(child => parseResult.GetSymbolResultValue(child))
+        .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
+
+    public static bool IsTopLevelDotnetCommand(this ParseResult parseResult) =>
+        parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+
+    /// <summary>
+    /// Returns true when the parse result is an unrecognized top-level token that did not match a
+    /// built-in command and so landed on the root's hidden subcommand argument - e.g. an external
+    /// command (<c>dotnet ef</c>) or an implicit file-based app (<c>dotnet app.cs</c>).
+    /// </summary>
+    /// <remarks>
+    /// The managed CLI resolves these via external command resolution or its file-based run pipeline
+    /// (see <c>Program.ExecuteExternalCommand</c>/<c>TryRunFileBasedApp</c>). The NativeAOT entry
+    /// point cannot do either, so it uses this to defer such invocations to the managed CLI rather
+    /// than running the root command's usage action.
+    /// </remarks>
+    public static bool RequiresManagedCommandResolution(this ParseResult parseResult) =>
+        parseResult.CommandResult.Command.Equals(Parser.RootCommand)
+        && !string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand));
+
+    /// <summary>
+    /// Detects whether this parse result looks like an implicit file-based app invocation
+    /// (e.g. <c>dotnet app.cs ...</c>), where the only unmatched token is a first argument that
+    /// resolves to a valid C# entry-point path. Returns the matching token, or <see langword="null"/>.
+    /// </summary>
+    /// <remarks>
+    /// This detection is shared between the managed CLI - which re-dispatches these invocations as
+    /// <c>dotnet run --file app.cs</c> (see <c>Program.TryRunFileBasedApp</c>) - and the NativeAOT
+    /// entry point, which cannot run file-based apps itself and so defers them to the managed CLI.
+    /// </remarks>
+    public static Token? GetFileBasedAppEntryPointToken(this ParseResult parseResult) =>
+        parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value)
+            ? unmatchedCommandOrFile
+            : null;
+
+    private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+    {
+        CommandResult commandResult => commandResult.Command.Name,
+        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
+        _ => parseResult.GetResult(Parser.RootCommand.DotnetSubCommand)?.GetValueOrDefault<string>()
+    };
+
     /// <summary>
     /// Finds the command of the parse result and invokes help for that command.
     /// If no command is specified, invokes help for the application.
@@ -36,6 +82,31 @@ public static class ParseResultExtensions
             .Select(t => t.Value);
         Parser.Parse([.. filteredTokenValues, "-h"]).Invoke();
     }
+
+    public static string[] GetArguments(this ParseResult parseResult) =>
+        parseResult.Tokens.Select(t => t.Value).ToArray().GetSubArguments();
+
+    public static string[] GetSubArguments(this string[] args)
+    {
+        var subargs = args.ToList();
+
+        // Don't remove any arguments that are being passed to the app in dotnet run
+        var dashDashIndex = subargs.IndexOf("--");
+
+        var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : [];
+        subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
+
+        // Remove top level command (ex build or publish).
+        var subargsFiltered = subargs
+            .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg)
+                || Parser.RootCommand.DiagOption.Aliases.Contains(arg)
+                || arg.Equals("dotnet"))
+            .Skip(1);
+
+        return [.. subargsFiltered, .. runArgs];
+    }
+
+#if !CLI_AOT
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
     {
@@ -85,16 +156,9 @@ public static class ParseResultExtensions
         }
     }
 
-    public static string RootSubCommandResult(this ParseResult parseResult) => parseResult.RootCommandResult.Children?
-        .Select(child => parseResult.GetSymbolResultValue(child))
-        .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
-
     public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
         string.IsNullOrEmpty(parseResult.RootSubCommandResult())
         || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
-
-    public static bool IsTopLevelDotnetCommand(this ParseResult parseResult) =>
-        parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
 
     public static bool CanBeInvoked(this ParseResult parseResult) =>
         Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
@@ -107,36 +171,6 @@ public static class ParseResultExtensions
         parseResult.ShowHelp();
         return 1;
     }
-
-    public static string[] GetArguments(this ParseResult parseResult) =>
-        parseResult.Tokens.Select(t => t.Value).ToArray().GetSubArguments();
-
-    public static string[] GetSubArguments(this string[] args)
-    {
-        var subargs = args.ToList();
-
-        // Don't remove any arguments that are being passed to the app in dotnet run
-        var dashDashIndex = subargs.IndexOf("--");
-
-        var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : [];
-        subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
-
-        // Remove top level command (ex build or publish).
-        var subargsFiltered = subargs
-            .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg)
-                || Parser.RootCommand.DiagOption.Aliases.Contains(arg)
-                || arg.Equals("dotnet"))
-            .Skip(1);
-
-        return [.. subargsFiltered, .. runArgs];
-    }
-
-    private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
-    {
-        CommandResult commandResult => commandResult.Command.Name,
-        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
-        _ => parseResult.GetResult(Parser.RootCommand.DotnetSubCommand)?.GetValueOrDefault<string>()
-    };
 
     public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult) =>
         parseResult.GetRunPropertyOptions(true)?.Where(property => !property.Contains("="));
@@ -180,6 +214,7 @@ public static class ParseResultExtensions
             DebugHelper.WaitForDebugger();
         }
     }
+#endif
 
     public static string GetCommandName(this ParseResult parseResult)
     {
@@ -193,12 +228,14 @@ public static class ParseResultExtensions
         }
         parentNames.Reverse();
 
+#if !CLI_AOT
         // Options that perform terminating actions are considered part of the command name as they are essentially subcommands themselves.
         // Example: dotnet --version
         if (parseResult.Action is InvocableOptionAction { Terminating: true } optionAction)
         {
             parentNames.Add(optionAction.Option.Name);
         }
+#endif
 
         return string.Join(' ', parentNames);
     }

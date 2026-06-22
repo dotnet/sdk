@@ -2,28 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
     static class PlatformManifestReader
     {
         static readonly char[] s_manifestLineSeparator = new[] { '|' };
-        public static IEnumerable<ConflictItem> LoadConflictItems(string manifestPath, Logger log)
+        public static IEnumerable<ConflictItem> LoadConflictItems(AbsolutePath? manifestPath, Logger log)
         {
-            if (manifestPath == null)
+            if (manifestPath is not AbsolutePath path)
             {
                 throw new ArgumentNullException(nameof(manifestPath));
             }
 
-            if (!File.Exists(manifestPath))
+            if (!File.Exists(path))
             {
                 string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.CouldNotLoadPlatformManifest,
-                    manifestPath);
+                    path.OriginalValue);
                 log.LogError(errorMessage);
                 yield break;
             }
 
-            using (var manifestStream = File.Open(manifestPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+            using (var manifestStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
             using (var manifestReader = new StreamReader(manifestStream))
             {
                 for (int lineNumber = 0; !manifestReader.EndOfStream; lineNumber++)
@@ -40,7 +41,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     if (lineParts.Length != 4)
                     {
                         string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.ErrorParsingPlatformManifest,
-                            manifestPath,
+                            path.OriginalValue,
                             lineNumber,
                             "fileName|packageId|assemblyVersion|fileVersion");
                         log.LogError(errorMessage);
@@ -57,7 +58,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     if (assemblyVersionString.Length != 0 && !Version.TryParse(assemblyVersionString, out assemblyVersion))
                     {
                         string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.ErrorParsingPlatformManifestInvalidValue,
-                            manifestPath,
+                            path.OriginalValue,
                             lineNumber,
                             "AssemblyVersion",
                             assemblyVersionString);
@@ -67,7 +68,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     if (fileVersionString.Length != 0 && !Version.TryParse(fileVersionString, out fileVersion))
                     {
                         string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.ErrorParsingPlatformManifestInvalidValue,
-                            manifestPath,
+                            path.OriginalValue,
                             lineNumber,
                             "FileVersion",
                             fileVersionString);

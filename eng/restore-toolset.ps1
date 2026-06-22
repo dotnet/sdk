@@ -1,42 +1,5 @@
-# Detect native OS architecture, which may differ from the process architecture
-# (e.g., x64 process running on ARM64 Windows via emulation).
-function Get-NativeMachineArchitecture {
-    try {
-        $osArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
-            return "arm64"
-        }
-        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
-            return "x86"
-        }
-        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
-            return "arm"
-        }
-    }
-    catch {
-        # Fallback for environments where RuntimeInformation is unavailable
-    }
-    return "x64"
-}
-
-function Get-ProcessMachineArchitecture {
-    try {
-        $processArch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
-        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
-            return "arm64"
-        }
-        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
-            return "x86"
-        }
-        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
-            return "arm"
-        }
-    }
-    catch {
-        # Fallback for environments where RuntimeInformation is unavailable
-    }
-    return "x64"
-}
+# Shared dotnetup acquisition helpers (architecture detection, cache freshness, download).
+. (Join-Path $PSScriptRoot 'dotnetup-shared.ps1')
 
 function Get-DotNetInstallFallbackArchitecture {
     if (-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) {
@@ -244,29 +207,12 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$archite
     $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
     $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName "dotnetup")
 
-    # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
-    $skipDownload = $false
-    if (Test-Path $dotnetupExe) {
-        $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
-        if ($age.TotalHours -lt 24) {
-            Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
-            $skipDownload = $true
+    if (-not (Test-ShouldUseCachedDotnetup $dotnetupExe)) {
+        try {
+            Install-DotnetupFromAkaMs $dotnetupDir
         }
-    }
-
-    if ($skipDownload -and ((Get-NativeMachineArchitecture) -ne (Get-ProcessMachineArchitecture))) {
-        Write-Host "Native architecture differs from process architecture; re-downloading dotnetup for the native architecture." -ForegroundColor DarkGray
-        $skipDownload = $false
-    }
-
-    if (-not $skipDownload) {
-        # Acquire the latest dotnetup daily build using the in-repo install script.
-        # get-dotnetup.ps1 may short-circuit without invoking a native process,
-        # leaving $LASTEXITCODE unset; seed it so strict mode can read it.
-        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-        & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
-        if ($lastExitCode -ne 0) {
-            Write-Host "Failed to acquire dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
+        catch {
+            Write-Host "Failed to acquire dotnetup ($($_.Exception.Message)); falling back to dotnet install script." -ForegroundColor Yellow
             InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
             return
         }
