@@ -7,12 +7,11 @@ using static Microsoft.NET.Build.Containers.KnownStrings.Properties;
 
 namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 
-[TestClass]
-[DoNotParallelize]
+[Collection(nameof(MSBuildCollection))]
 public class TargetsTests
 {
-    [TestMethod]
-    [DynamicData(nameof(ContainerAppCommands))]
+    [Theory]
+    [MemberData(nameof(ContainerAppCommands))]
     public void CanDeferContainerAppCommand(
         string os,
         string prop,
@@ -36,23 +35,23 @@ public class TargetsTests
         computedAppCommand.Should().BeEquivalentTo(expectedAppCommandArgs);
     }
 
-    public static IEnumerable<object[]> ContainerAppCommands()
+    public static TheoryData<string, string, bool, string[]> ContainerAppCommands()
     {
         char s = Path.DirectorySeparatorChar;
-        return new[]
+        return new TheoryData<string, string, bool, string[]>
         {
-            new object[] { "win", "SelfContained", true, $"C:{s}app{s}foo.exe" },
-            new object[] { "win", "SelfContained", false, "dotnet", $"C:{s}app{s}foo.dll" },
-            new object[] { "win", "PublishSelfContained", true, $"C:{s}app{s}foo.exe" },
-            new object[] { "win", "PublishSelfContained", false, "dotnet", $"C:{s}app{s}foo.dll" },
-            new object[] { "linux", "SelfContained", true, "/app/foo" },
-            new object[] { "linux", "SelfContained", false, "dotnet", "/app/foo.dll" },
-            new object[] { "linux", "PublishSelfContained", true, "/app/foo" },
-            new object[] { "linux", "PublishSelfContained", false, "dotnet", "/app/foo.dll" },
+            { "win", "SelfContained", true, [$"C:{s}app{s}foo.exe"] },
+            { "win", "SelfContained", false, ["dotnet", $"C:{s}app{s}foo.dll"] },
+            { "win", "PublishSelfContained", true, [$"C:{s}app{s}foo.exe"] },
+            { "win", "PublishSelfContained", false, ["dotnet", $"C:{s}app{s}foo.dll"] },
+            { "linux", "SelfContained", true, ["/app/foo"] },
+            { "linux", "SelfContained", false, ["dotnet", "/app/foo.dll"] },
+            { "linux", "PublishSelfContained", true, ["/app/foo"] },
+            { "linux", "PublishSelfContained", false, ["dotnet", "/app/foo.dll"] },
         };
     }
 
-    [TestMethod]
+    [Fact]
     public void CanDeferToContainerImageNameWhenPresent()
     {
         var customImageName = "my-container-app";
@@ -65,15 +64,15 @@ public class TargetsTests
         instance.Build(new[] { ComputeContainerConfig }, new[] { logger });
         logger.Warnings.Should().HaveCount(1, "a warning for the use of the old ContainerImageName property should have been created");
         logger.Warnings[0].Code.Should().Be(KnownStrings.ErrorCodes.CONTAINER003);
-        Assert.AreEqual(customImageName, instance.GetPropertyValue(ContainerRepository));
+        Assert.Equal(customImageName, instance.GetPropertyValue(ContainerRepository));
     }
 
-    [DataRow("WebApplication44", "webapplication44", true)]
-    [DataRow("friendly-suspicious-alligator", "friendly-suspicious-alligator", true)]
-    [DataRow("*friendly-suspicious-alligator", "", false)]
-    [DataRow("web/app2+7", "web/app2-7", true)]
-    [DataRow("Microsoft.Apps.Demo.ContosoWeb", "microsoft-apps-demo-contosoweb", true)]
-    [TestMethod]
+    [InlineData("WebApplication44", "webapplication44", true)]
+    [InlineData("friendly-suspicious-alligator", "friendly-suspicious-alligator", true)]
+    [InlineData("*friendly-suspicious-alligator", "", false)]
+    [InlineData("web/app2+7", "web/app2-7", true)]
+    [InlineData("Microsoft.Apps.Demo.ContosoWeb", "microsoft-apps-demo-contosoweb", true)]
+    [Theory]
     public void CanNormalizeInputContainerNames(string projectName, string expectedContainerImageName, bool shouldPass)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -83,16 +82,16 @@ public class TargetsTests
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
         instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().Be(shouldPass, String.Join(Environment.NewLine, logger.AllMessages));
-        Assert.AreEqual(expectedContainerImageName, instance.GetPropertyValue(ContainerRepository));
+        Assert.Equal(expectedContainerImageName, instance.GetPropertyValue(ContainerRepository));
     }
 
-    [DataRow("7.0.100", true)]
-    [DataRow("8.0.100", true)]
-    [DataRow("7.0.100-preview.7", true)]
-    [DataRow("7.0.100-rc.1", true)]
-    [DataRow("6.0.100", false)]
-    [DataRow("7.0.100-preview.1", false)]
-    [TestMethod]
+    [InlineData("7.0.100", true)]
+    [InlineData("8.0.100", true)]
+    [InlineData("7.0.100-preview.7", true)]
+    [InlineData("7.0.100-rc.1", true)]
+    [InlineData("6.0.100", false)]
+    [InlineData("7.0.100-preview.1", false)]
+    [Theory]
     public void CanWarnOnInvalidSDKVersions(string sdkVersion, bool isAllowed)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -116,9 +115,9 @@ public class TargetsTests
         }
     }
 
-    [DataRow(true)]
-    [DataRow(false)]
-    [TestMethod]
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
     public void GetsConventionalLabelsByDefault(bool shouldEvaluateLabels)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -141,9 +140,9 @@ public class TargetsTests
 
     private static bool LabelMatch(string label, string value, ProjectItemInstance item) => item.EvaluatedInclude == label && item.GetMetadata("Value") is { } v && v.EvaluatedValue == value;
 
-    [DataRow(true)]
-    [DataRow(false)]
-    [TestMethod]
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
     public void ShouldNotIncludeSourceControlLabelsUnlessUserOptsIn(bool includeSourceControl)
     {
         var commitHash = "abcdef";
@@ -173,9 +172,9 @@ public class TargetsTests
         };
     }
 
-    [DataRow("https://git.cosmere.com/shard/whimsy.git", "https://git.cosmere.com/shard/whimsy")]
-    [DataRow("https://repos.git.cosmere.com/shard/whimsy.git", "https://repos.git.cosmere.com/shard/whimsy")]
-    [TestMethod]
+    [InlineData("https://git.cosmere.com/shard/whimsy.git", "https://git.cosmere.com/shard/whimsy")]
+    [InlineData("https://repos.git.cosmere.com/shard/whimsy.git", "https://repos.git.cosmere.com/shard/whimsy")]
+    [Theory]
     public void ShouldTrimTrailingGitSuffixFromRepoUrls(string repoUrl, string expectedLabel)
     {
         var commitHash = "abcdef";
@@ -198,9 +197,9 @@ public class TargetsTests
             .And.ContainSingle(label => LabelMatch("org.opencontainers.image.source", expectedLabel, label), String.Join(",", logger.AllMessages));
     }
 
-    [DataRow(true)]
-    [DataRow(false)]
-    [TestMethod]
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
     public void ShouldIncludeBaseImageLabelsUnlessUserOptsOut(bool includeBaseImageLabels)
     {
         var expectedBaseImage = "mcr.microsoft.com/dotnet/runtime:7.0";
@@ -226,9 +225,9 @@ public class TargetsTests
         };
     }
 
-    [DataRow(true)]
-    [DataRow(false)]
-    [TestMethod]
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
     public void ShouldIncludeSDKAndRuntimeVersionLabelsUnlessUserOptsOut(bool includeToolsetVersionLabels)
     {
         var runtimeMajorMinor = "7.0";
@@ -259,27 +258,27 @@ public class TargetsTests
         };
     }
 
-    [DataRow("7.0.100", "v7.0", "7.0")]
-    [DataRow("7.0.100-preview.7", "v7.0", "7.0")]
-    [DataRow("7.0.100-rc.1", "v7.0", "7.0")]
-    [DataRow("8.0.100", "v8.0", "8.0")]
-    [DataRow("8.0.100", "v7.0", "7.0")]
-    [DataRow("8.0.100-preview.7", "v8.0", "8.0.0-preview.7")]
-    [DataRow("8.0.100-rc.1", "v8.0", "8.0.0-rc.1")]
-    [DataRow("8.0.100-rc.1", "v7.0", "7.0")]
-    [DataRow("8.0.200", "v8.0", "8.0")]
-    [DataRow("8.0.200", "v7.0", "7.0")]
-    [DataRow("8.0.200-preview3", "v7.0", "7.0")]
-    [DataRow("8.0.200-preview3", "v8.0", "8.0")]
-    [DataRow("6.0.100", "v6.0", "6.0")]
-    [DataRow("6.0.100-preview.1", "v6.0", "6.0")]
-    [DataRow("8.0.100-dev", "v8.0", "8.0-preview")]
-    [DataRow("8.0.100-ci", "v8.0", "8.0-preview")]
-    [DataRow("8.0.100-rtm.23502.3", "v8.0", "8.0")]
-    [DataRow("8.0.100-servicing.23502.3", "v8.0", "8.0")]
-    [DataRow("8.0.100-alpha.12345", "v8.0", "8.0-preview")]
-    [DataRow("9.0.100-alpha.12345", "v9.0", "9.0-preview")]
-    [TestMethod]
+    [InlineData("7.0.100", "v7.0", "7.0")]
+    [InlineData("7.0.100-preview.7", "v7.0", "7.0")]
+    [InlineData("7.0.100-rc.1", "v7.0", "7.0")]
+    [InlineData("8.0.100", "v8.0", "8.0")]
+    [InlineData("8.0.100", "v7.0", "7.0")]
+    [InlineData("8.0.100-preview.7", "v8.0", "8.0.0-preview.7")]
+    [InlineData("8.0.100-rc.1", "v8.0", "8.0.0-rc.1")]
+    [InlineData("8.0.100-rc.1", "v7.0", "7.0")]
+    [InlineData("8.0.200", "v8.0", "8.0")]
+    [InlineData("8.0.200", "v7.0", "7.0")]
+    [InlineData("8.0.200-preview3", "v7.0", "7.0")]
+    [InlineData("8.0.200-preview3", "v8.0", "8.0")]
+    [InlineData("6.0.100", "v6.0", "6.0")]
+    [InlineData("6.0.100-preview.1", "v6.0", "6.0")]
+    [InlineData("8.0.100-dev", "v8.0", "8.0-preview")]
+    [InlineData("8.0.100-ci", "v8.0", "8.0-preview")]
+    [InlineData("8.0.100-rtm.23502.3", "v8.0", "8.0")]
+    [InlineData("8.0.100-servicing.23502.3", "v8.0", "8.0")]
+    [InlineData("8.0.100-alpha.12345", "v8.0", "8.0-preview")]
+    [InlineData("9.0.100-alpha.12345", "v9.0", "9.0-preview")]
+    [Theory]
     public void CanComputeTagsForSupportedSDKVersions(string sdkVersion, string tfm, string expectedTag)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -296,14 +295,14 @@ public class TargetsTests
         computedTag.Should().EndWith(expectedTag);
     }
 
-    [DataRow("v8.0", "linux-x64", null)]
-    [DataRow("v8.0", "linux-musl-x64", null)]
-    [DataRow("v8.0", "win-x64", "ContainerUser")]
-    [DataRow("v7.0", "linux-x64", null)]
-    [DataRow("v7.0", "win-x64", null)]
-    [DataRow("v9.0", "linux-x64", null)]
-    [DataRow("v9.0", "win-x64", "ContainerUser")]
-    [TestMethod]
+    [InlineData("v8.0", "linux-x64", null)]
+    [InlineData("v8.0", "linux-musl-x64", null)]
+    [InlineData("v8.0", "win-x64", "ContainerUser")]
+    [InlineData("v7.0", "linux-x64", null)]
+    [InlineData("v7.0", "win-x64", null)]
+    [InlineData("v9.0", "linux-x64", null)]
+    [InlineData("v9.0", "win-x64", "ContainerUser")]
+    [Theory]
     public void CanComputeContainerUser(string tfm, string rid, string? expectedUser)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -320,11 +319,11 @@ public class TargetsTests
         computedTag.Should().Be(expectedUser);
     }
 
-    [DataRow("linux-x64", "linux-x64")]
-    [DataRow("linux-arm64", "linux-arm64")]
-    [DataRow("windows-x64", "linux-x64")]
-    [DataRow("windows-arm64", "linux-arm64")]
-    [TestMethod]
+    [InlineData("linux-x64", "linux-x64")]
+    [InlineData("linux-arm64", "linux-arm64")]
+    [InlineData("windows-x64", "linux-x64")]
+    [InlineData("windows-arm64", "linux-arm64")]
+    [Theory]
     public void WindowsUsersGetLinuxContainers(string sdkPortableRid, string expectedRid)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -339,16 +338,16 @@ public class TargetsTests
         computedRid.Should().Be(expectedRid);
     }
 
-    [DataRow("8.0.100", "v7.0", "", "7.0")]
-    [DataRow("8.0.100-preview.2", "v8.0", "", "8.0.0-preview.2")]
-    [DataRow("8.0.100-preview.2", "v8.0", "jammy", "8.0.0-preview.2-jammy")]
-    [DataRow("8.0.100-preview.2", "v8.0", "jammy-chiseled", "8.0.0-preview.2-jammy-chiseled")]
-    [DataRow("8.0.100-rc.2", "v8.0", "jammy-chiseled", "8.0.0-rc.2-jammy-chiseled")]
-    [DataRow("8.0.100", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
-    [DataRow("8.0.200", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
-    [DataRow("8.0.300", "v8.0", "noble-chiseled", "8.0-noble-chiseled-extra")]
-    [DataRow("8.0.300", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
-    [TestMethod]
+    [InlineData("8.0.100", "v7.0", "", "7.0")]
+    [InlineData("8.0.100-preview.2", "v8.0", "", "8.0.0-preview.2")]
+    [InlineData("8.0.100-preview.2", "v8.0", "jammy", "8.0.0-preview.2-jammy")]
+    [InlineData("8.0.100-preview.2", "v8.0", "jammy-chiseled", "8.0.0-preview.2-jammy-chiseled")]
+    [InlineData("8.0.100-rc.2", "v8.0", "jammy-chiseled", "8.0.0-rc.2-jammy-chiseled")]
+    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [InlineData("8.0.200", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [InlineData("8.0.300", "v8.0", "noble-chiseled", "8.0-noble-chiseled-extra")]
+    [InlineData("8.0.300", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [Theory]
     public void CanTakeContainerBaseFamilyIntoAccount(string sdkVersion, string tfmMajMin, string containerFamily, string expectedTag)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -364,13 +363,13 @@ public class TargetsTests
         computedBaseImageTag.Should().EndWith(expectedTag);
     }
 
-    [DataRow("v6.0", "linux-musl-x64", "mcr.microsoft.com/dotnet/runtime:6.0-alpine")]
-    [DataRow("v6.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime:6.0")]
-    [DataRow("v7.0", "linux-musl-x64", "mcr.microsoft.com/dotnet/runtime:7.0-alpine")]
-    [DataRow("v7.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime:7.0")]
-    [DataRow("v8.0", "linux-musl-x64", "mcr.microsoft.com/dotnet/runtime:8.0-alpine")]
-    [DataRow("v8.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime:8.0")]
-    [TestMethod]
+    [InlineData("v6.0", "linux-musl-x64", "mcr.microsoft.com/dotnet/runtime:6.0-alpine")]
+    [InlineData("v6.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime:6.0")]
+    [InlineData("v7.0", "linux-musl-x64", "mcr.microsoft.com/dotnet/runtime:7.0-alpine")]
+    [InlineData("v7.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime:7.0")]
+    [InlineData("v8.0", "linux-musl-x64", "mcr.microsoft.com/dotnet/runtime:8.0-alpine")]
+    [InlineData("v8.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime:8.0")]
+    [Theory]
     public void MuslRidsGetAlpineContainers(string tfm, string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -386,9 +385,9 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow("linux-musl-x64;linux-musl-arm64", "mcr.microsoft.com/dotnet/runtime:8.0-alpine")]
-    [DataRow("linux-x64;linux-arm64", "mcr.microsoft.com/dotnet/runtime:8.0")]
-    [TestMethod]
+    [InlineData("linux-musl-x64;linux-musl-arm64", "mcr.microsoft.com/dotnet/runtime:8.0-alpine")]
+    [InlineData("linux-x64;linux-arm64", "mcr.microsoft.com/dotnet/runtime:8.0")]
+    [Theory]
     public void AllMuslRidsGetAlpineContainers(string rids, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -404,7 +403,7 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [TestMethod]
+    [Fact]
     public void NotAllMuslRidsLogsError()
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -419,9 +418,9 @@ public class TargetsTests
         logger.Errors.Should().ContainSingle(error => error.Message == Resources.Strings.InvalidTargetRuntimeIdentifiers);
     }
 
-    [DataRow("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
-    [DataRow("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled")]
-    [TestMethod]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled")]
+    [Theory]
     public void AOTAppsGetExpectedImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -440,9 +439,9 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
-    [DataRow("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
-    [TestMethod]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
+    [Theory]
     public void AOTAppsWithCulturesGetExtraImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -461,9 +460,9 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
-    [DataRow("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
-    [TestMethod]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
+    [Theory]
     public void TrimmedAppsWithCulturesGetExtraImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -482,9 +481,9 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
-    [DataRow("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
-    [TestMethod]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
+    [Theory]
     public void TrimmedAppsWithoutCulturesGetbaseImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -503,16 +502,16 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow(true, false, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
-    [DataRow(true, false, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
-    [DataRow(false, true, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
-    [DataRow(false, true, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData(true, false, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData(true, false, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData(false, true, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData(false, true, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
 
-    [DataRow(true, false, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
-    [DataRow(true, false, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
-    [DataRow(false, true, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
-    [DataRow(false, true, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
-    [TestMethod]
+    [InlineData(true, false, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
+    [InlineData(true, false, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
+    [InlineData(false, true, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
+    [InlineData(false, true, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
+    [Theory]
     public void TheBigMatrixOfTrimmingInference(bool trimmed, bool aot, string rid, bool invariant, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -532,9 +531,9 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine")]
-    [DataRow("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0")]
-    [TestMethod]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0")]
+    [Theory]
     public void AOTAppsLessThan8DoNotGetAOTImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -553,7 +552,7 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [TestMethod]
+    [Fact]
     public void FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtras()
     {
         var expectedImage = "mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled-extra";
@@ -572,7 +571,7 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [TestMethod]
+    [Fact]
     public void FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtras()
     {
         var expectedImage = "mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra";
@@ -594,9 +593,9 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine")]
-    [DataRow("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0")]
-    [TestMethod]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0")]
+    [Theory]
     public void AOTAppsLessThan8WithCulturesDoNotGetExtraImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -615,10 +614,10 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled-extra")]
-    [DataRow("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:9.0-noble-chiseled-extra")]
-    [DataRow("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra")]
-    [TestMethod]
+    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled-extra")]
+    [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:9.0-noble-chiseled-extra")]
+    [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra")]
+    [Theory]
     public void FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater(string sdkVersion, string tfm, string containerFamily, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -636,10 +635,10 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [DataRow("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra")]
-    [DataRow("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled-extra")]
-    [DataRow("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra")]
-    [TestMethod]
+    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra")]
+    [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled-extra")]
+    [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra")]
+    [Theory]
     public void FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater(string sdkVersion, string tfm, string containerFamily, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
@@ -660,7 +659,7 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [TestMethod]
+    [Fact]
     public void AspNetFDDAppsGetAspNetBaseImage()
     {
         var expectedImage = "mcr.microsoft.com/dotnet/aspnet:8.0";

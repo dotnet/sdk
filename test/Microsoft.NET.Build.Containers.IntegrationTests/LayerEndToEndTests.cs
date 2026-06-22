@@ -7,18 +7,19 @@ using System.Security.Cryptography;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-[TestClass]
-[DoNotParallelize] // mutates the static ContentStore.ArtifactRoot
-public sealed class LayerEndToEndTests : SdkTest, IDisposable
+public sealed class LayerEndToEndTests : IDisposable
 {
-    public LayerEndToEndTests()
+    private ITestOutputHelper _testOutput;
+
+    public LayerEndToEndTests(ITestOutputHelper testOutput)
     {
+        _testOutput = testOutput;
         testSpecificArtifactRoot = new();
         priorArtifactRoot = ContentStore.ArtifactRoot;
         ContentStore.ArtifactRoot = testSpecificArtifactRoot.Path;
     }
 
-    [TestMethod]
+    [Fact]
     public void SingleFileInFolder()
     {
         using TransientTestFolder folder = new();
@@ -33,17 +34,17 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
         Console.WriteLine(l.Descriptor);
 
         //Assert.AreEqual("application/vnd.oci.image.layer.v1.tar", l.Descriptor.MediaType); // TODO: configurability
-        Assert.IsTrue(l.Descriptor.Size is >= 135 and <= 500, $"'l.Descriptor.Size' should be between 135 and 500, but is {l.Descriptor.Size}"); // TODO: determinism!
+        Assert.True(l.Descriptor.Size is >= 135 and <= 500, $"'l.Descriptor.Size' should be between 135 and 500, but is {l.Descriptor.Size}"); // TODO: determinism!
         //Assert.AreEqual("sha256:26140bc75f2fcb3bf5da7d3b531d995c93d192837e37df0eb5ca46e2db953124", l.Descriptor.Digest); // TODO: determinism!
 
         VerifyDescriptorInfo(l);
 
         var allEntries = LoadAllTarEntries(l.BackingFile);
-        Assert.IsTrue(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
-        Assert.IsTrue(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
+        Assert.True(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
+        Assert.True(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
     }
 
-    [TestMethod]
+    [Fact]
     public void SingleFileInFolderWindows()
     {
         using TransientTestFolder folder = new();
@@ -56,10 +57,10 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
         Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2);
 
         var allEntries = LoadAllTarEntries(l.BackingFile);
-        Assert.IsTrue(allEntries.TryGetValue("Files", out var filesEntry) && filesEntry.EntryType == TarEntryType.Directory, "Missing Files directory entry");
-        Assert.IsTrue(allEntries.TryGetValue("Files/app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing Files/app directory entry");
-        Assert.IsTrue(allEntries.TryGetValue("Files/app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing Files/app/TestFile.txt file entry");
-        Assert.IsTrue(allEntries.TryGetValue("Hives", out var hivesEntry) && hivesEntry.EntryType == TarEntryType.Directory, "Missing Hives directory entry");
+        Assert.True(allEntries.TryGetValue("Files", out var filesEntry) && filesEntry.EntryType == TarEntryType.Directory, "Missing Files directory entry");
+        Assert.True(allEntries.TryGetValue("Files/app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing Files/app directory entry");
+        Assert.True(allEntries.TryGetValue("Files/app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing Files/app/TestFile.txt file entry");
+        Assert.True(allEntries.TryGetValue("Hives", out var hivesEntry) && hivesEntry.EntryType == TarEntryType.Directory, "Missing Hives directory entry");
 
         // Enable after https://github.com/dotnet/runtime/issues/81699 is resolved
         // foreach (var entry in allEntries.Values)
@@ -71,7 +72,7 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
         // }
     }
 
-    [TestMethod] // https://github.com/dotnet/sdk/issues/40511
+    [Fact] // https://github.com/dotnet/sdk/issues/40511
     public void SingleFileInHiddenFolder()
     {
         using TransientTestFolder folder = new();
@@ -92,13 +93,13 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
         VerifyDescriptorInfo(l);
 
         var allEntries = LoadAllTarEntries(l.BackingFile);
-        Assert.IsTrue(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
-        Assert.IsTrue(allEntries.TryGetValue("app/wwwroot", out var wwwrootEntry) && wwwrootEntry.EntryType == TarEntryType.Directory, "Missing app/wwwroot directory entry");
-        Assert.IsTrue(allEntries.TryGetValue("app/wwwroot/.well-known", out var wellKnownEntry) && wellKnownEntry.EntryType == TarEntryType.Directory, "Missing app/wwwroot/.well-known directory entry");
-        Assert.IsTrue(allEntries.TryGetValue("app/wwwroot/.well-known/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing app/wwwroot/.well-known/TestFile.txt file entry");
+        Assert.True(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
+        Assert.True(allEntries.TryGetValue("app/wwwroot", out var wwwrootEntry) && wwwrootEntry.EntryType == TarEntryType.Directory, "Missing app/wwwroot directory entry");
+        Assert.True(allEntries.TryGetValue("app/wwwroot/.well-known", out var wellKnownEntry) && wellKnownEntry.EntryType == TarEntryType.Directory, "Missing app/wwwroot/.well-known directory entry");
+        Assert.True(allEntries.TryGetValue("app/wwwroot/.well-known/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing app/wwwroot/.well-known/TestFile.txt file entry");
     }
 
-    [TestMethod]
+    [Fact]
     public void UserIdIsAppliedToFiles()
     {
         using TransientTestFolder folder = new();
@@ -110,17 +111,17 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
         var userId = 1234;
         Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2, userId: userId);
         var allEntries = LoadAllTarEntries(l.BackingFile);
-        Assert.IsTrue(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
-        Assert.IsTrue(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
-        foreach (var entry in allEntries.Values)
+        Assert.True(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
+        Assert.True(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
+        Assert.All(allEntries.Values, entry =>
         {
-            Assert.AreEqual(userId, entry.Uid, $"Expected UID {userId} for entry {entry.Name}, but got {entry.Uid}");
-        }
+            Assert.True(entry.Uid == userId, $"Expected UID {userId} for entry {entry.Name}, but got {entry.Uid}");
+        });
     }
 
     private static void VerifyDescriptorInfo(Layer l)
     {
-        Assert.AreEqual(l.Descriptor.Size, new FileInfo(l.BackingFile).Length);
+        Assert.Equal(l.Descriptor.Size, new FileInfo(l.BackingFile).Length);
 
         byte[] hashBytes;
         byte[] uncompressedHashBytes;
@@ -137,8 +138,8 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
             }
         }
 
-        Assert.AreEqual(Convert.ToHexStringLower(hashBytes), l.Descriptor.Digest.Substring("sha256:".Length));
-        Assert.AreEqual(Convert.ToHexStringLower(uncompressedHashBytes), l.Descriptor.UncompressedDigest?.Substring("sha256:".Length));
+        Assert.Equal(Convert.ToHexStringLower(hashBytes), l.Descriptor.Digest.Substring("sha256:".Length));
+        Assert.Equal(Convert.ToHexStringLower(uncompressedHashBytes), l.Descriptor.UncompressedDigest?.Substring("sha256:".Length));
     }
 
     TransientTestFolder? testSpecificArtifactRoot;

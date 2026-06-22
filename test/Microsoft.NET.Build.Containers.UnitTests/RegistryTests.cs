@@ -17,14 +17,14 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 [TestClass]
 public class RegistryTests : IDisposable
 {
-    public TestContext TestContext { get; }
-
     private readonly TestLoggerFactory _loggerFactory;
+
+    public TestContext TestContext { get; }
 
     public RegistryTests(TestContext testContext)
     {
         TestContext = testContext;
-        _loggerFactory = new TestLoggerFactory(TestContext);
+        _loggerFactory = new TestLoggerFactory(testContext);
     }
 
     public void Dispose()
@@ -35,11 +35,11 @@ public class RegistryTests : IDisposable
     [DataRow("us-south1-docker.pkg.dev", true)]
     [DataRow("us.gcr.io", false)]
     [TestMethod]
-    public void CheckIfGoogleArtifactRegistry(string registryName, bool isECR)
+    public void CheckIfGoogleArtifactRegistry(string registryName, bool expectedIsGoogleArtifactRegistry)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfGoogleArtifactRegistry));
         Registry registry = new(registryName, logger, RegistryMode.Push);
-        Assert.AreEqual(isECR, registry.IsGoogleArtifactRegistry);
+        Assert.AreEqual(expectedIsGoogleArtifactRegistry, registry.IsGoogleArtifactRegistry);
     }
 
     [TestMethod]
@@ -440,7 +440,7 @@ public class RegistryTests : IDisposable
                     using Stream stream = serverIsHttps ? new SslStream(client.GetStream(), leaveInnerStreamOpen: false) : client.GetStream();
                     if (stream is SslStream sslStream)
                     {
-                        await sslStream.AuthenticateAsServerAsync(sslOptions!, default(CancellationToken));
+                        await sslStream.AuthenticateAsServerAsync(sslOptions!, TestContext.CancellationToken);
                     }
                     byte[] buffer = new byte[10];
                     await stream.ReadAtLeastAsync(buffer, buffer.Length, cancellationToken: TestContext.CancellationToken); // Wait for the request.
@@ -491,8 +491,7 @@ public class RegistryTests : IDisposable
                     Assert.IsNotNull(exception);
                 }
 
-                Assert.IsExactInstanceOfType<HttpRequestException>(exception);
-                HttpRequestException requestException = (HttpRequestException)exception;
+                HttpRequestException requestException = Assert.IsExactInstanceOfType<HttpRequestException>(exception);
                 Assert.AreEqual(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
 
                 // The FallbackToHttpMessageHandler should fall back (if this registry was configured as insecure).

@@ -1,14 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-[TestClass]
 public class PackageTests
 {
-    [TestMethod]
+    [Fact]
     public void SanityTest_ContainerizeDependencies()
     {
         IReadOnlyList<string> knownPackageReferences = new List<string>()
@@ -34,7 +33,7 @@ public class PackageTests
         projectReferences.Should().BeEquivalentTo(knownProjectReferences, $"Known project references for containerize project are different from actual. Check if this is expected. If the new project reference is expected, add it to {nameof(knownProjectReferences)} and verify they are included to NuGet package in package.csproj correctly");
     }
 
-    [TestMethod]
+    [Fact]
     public void SanityTest_NET_Build_ContainersDependencies()
     {
         IReadOnlyList<string> knownPackageReferences = new List<string>()
@@ -62,7 +61,7 @@ public class PackageTests
         projectReferences.Should().BeEquivalentTo(knownProjectReferences, $"Known project references for Microsoft.NET.Build.Containers project are different from actual. Check if this is expected. If the new project reference is expected, add it to {nameof(knownProjectReferences)} and verify they are included to NuGet package in package.csproj correctly");
     }
 
-    [TestMethod]
+    [Fact]
     public void PackageContentTest()
     {
         string ignoredZipFileEntriesPrefix = "package/services/metadata";

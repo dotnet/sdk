@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffPropertyTests : DiffBaseTests
 {
-    [Fact]
+    [TestMethod]
     public Task PropertyAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -34,7 +35,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertyChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -65,7 +66,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertyDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -94,7 +95,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertySetAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -125,7 +126,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertySetRemove() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -156,7 +157,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertySetVisibilityProtected() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -187,7 +188,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertySetVisibilityPrivate() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -218,7 +219,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertyReturnChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -249,7 +250,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertyNullabilityAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -280,7 +281,7 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task PropertyNullabilityRemove() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -313,7 +314,7 @@ public class DiffPropertyTests : DiffBaseTests
 
     #region Exclusions
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeAddedProperty() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -335,7 +336,7 @@ public class DiffPropertyTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeModifiedProperty() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -358,7 +359,7 @@ public class DiffPropertyTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty1", "P:MyNamespace.MyClass.MyProperty2"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeRemovedProperty() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace

@@ -1,25 +1,24 @@
 <Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
+
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <IsTestProject>true</IsTestProject>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Containers\Microsoft.NET.Build.Containers\Microsoft.NET.Build.Containers.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Test.MSTest.Utilities\Microsoft.DotNet.Test.MSTest.Utilities.csproj" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Microsoft.DotNet.Test.MSTest.Utilities" />
   </ItemGroup>
 
 </Project>

@@ -29,7 +29,7 @@ public sealed class ProjectInitializer
         combinedContent.AddRange(targetsContent[1..]);
         var tempTargetLocation = Path.Combine(TestSettings.TestArtifactsDirectory, "Containers", "Microsoft.NET.Build.Containers.targets");
         string? directoryName = Path.GetDirectoryName(tempTargetLocation);
-        Assert.IsNotNull(directoryName);
+        Assert.NotNull(directoryName);
         Directory.CreateDirectory(directoryName);
         File.WriteAllLines(tempTargetLocation, combinedContent);
         return tempTargetLocation;

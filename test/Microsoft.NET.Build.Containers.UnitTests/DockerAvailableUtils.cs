@@ -3,26 +3,30 @@
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
-/// <summary>
-/// MSTest condition attribute that ignores a test when Docker (or Podman) is unavailable on the
-/// host, optionally also when running under Podman or without the containerd image store. Apply it
-/// alongside <c>[TestMethod]</c> (this is the MSTest counterpart of the xUnit Docker-gated
-/// <c>[Fact]</c>/<c>[Theory]</c> attributes).
-/// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-public class DockerAvailableConditionAttribute : ConditionBaseAttribute
+public sealed class DockerUnavailableCondition : ConditionBaseAttribute
 {
-    public static string LocalRegistry => DockerCliStatus.LocalRegistry;
-
-    public DockerAvailableConditionAttribute(bool skipPodman = false, bool checkContainerdStoreAvailability = false)
-        : base(ConditionMode.Include)
+    public DockerUnavailableCondition()
+        : base(ConditionMode.Exclude)
     {
-        IgnoreMessage = DockerCliStatus.GetSkipReason(skipPodman, checkContainerdStoreAvailability);
+        IgnoreMessage = "Skipping test because Docker is not available on this host.";
     }
 
-    public override bool IsConditionMet => IgnoreMessage is null;
+    public override string GroupName => nameof(DockerUnavailableCondition);
 
-    public override string GroupName => nameof(DockerAvailableConditionAttribute);
+    public override bool IsConditionMet => !DockerCliStatus.IsAvailable;
+}
+
+public sealed class PodmanCliCondition : ConditionBaseAttribute
+{
+    public PodmanCliCondition()
+        : base(ConditionMode.Exclude)
+    {
+        IgnoreMessage = "Skipping test with podman cli.";
+    }
+
+    public override string GroupName => nameof(PodmanCliCondition);
+
+    public override bool IsConditionMet => DockerCliStatus.Command == DockerCli.PodmanCommand;
 }
 
 // tiny optimization - since there are many instances of this attribute we should only get
@@ -40,28 +44,5 @@ static file class DockerCliStatus
         DockerCli cli = new(new TestLoggerFactory());
         IsAvailable = cli.IsAvailable();
         Command = cli.GetCommand();
-    }
-
-    /// <summary>
-    /// Returns the reason the test should be ignored, or <see langword="null"/> if the test should run.
-    /// </summary>
-    public static string? GetSkipReason(bool skipPodman, bool checkContainerdStoreAvailability)
-    {
-        if (!IsAvailable)
-        {
-            return "Skipping test because Docker is not available on this host.";
-        }
-
-        if (checkContainerdStoreAvailability && Command != DockerCli.PodmanCommand && !DockerCli.IsContainerdStoreEnabledForDocker())
-        {
-            return "Skipping test because Docker daemon is not using containerd as the storage driver.";
-        }
-
-        if (skipPodman && Command == DockerCli.PodmanCommand)
-        {
-            return $"Skipping test with {Command} cli.";
-        }
-
-        return null;
     }
 }

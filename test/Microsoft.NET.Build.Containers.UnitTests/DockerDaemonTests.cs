@@ -4,17 +4,16 @@
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]
-[DoNotParallelize] // mutates the DOCKER_HOST environment variable
 public class DockerDaemonTests : IDisposable
 {
-    public TestContext TestContext { get; set; } = null!;
+    private readonly TestLoggerFactory _loggerFactory;
 
-    private TestLoggerFactory _loggerFactory = null!;
+    public TestContext TestContext { get; }
 
-    [TestInitialize]
-    public void Initialize()
+    public DockerDaemonTests(TestContext testContext)
     {
-        _loggerFactory = new TestLoggerFactory(TestContext);
+        TestContext = testContext;
+        _loggerFactory = new TestLoggerFactory(testContext);
     }
 
     public void Dispose()
@@ -23,7 +22,8 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableCondition(skipPodman: true)] // podman is a local cli not meant for connecting to remote Docker daemons.
+    [DockerUnavailableCondition]
+    [PodmanCliCondition] // podman is a local cli not meant for connecting to remote Docker daemons.
     public async Task Can_detect_when_no_daemon_is_running()
     {
         // mimic no daemon running by setting the DOCKER_HOST to a nonexistent socket
@@ -40,7 +40,6 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task Can_detect_when_daemon_is_running()
     {

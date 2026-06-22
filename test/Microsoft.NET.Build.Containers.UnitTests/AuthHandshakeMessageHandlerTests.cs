@@ -10,10 +10,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.NET.Build.Containers.UnitTests
 {
     [TestClass]
-    [DoNotParallelize] // mutates process-wide environment variables and a static auth-header cache
+    // These tests mutate process-global environment variables (REGISTRY_AUTH_FILE and the
+    // registry credential vars) and rely on AuthHandshakeMessageHandler's static auth-header
+    // cache keyed by a shared registry name. Under MSTest method-level parallelism (the repo
+    // default) the methods/data rows race on that global state, so run them sequentially.
+    [DoNotParallelize]
     public class AuthHandshakeMessageHandlerTests
     {
-        public TestContext TestContext { get; set; } = null!;
+        public TestContext TestContext { get; set; } = default!;
 
         private const string TestRegistryName = "registry.test";
         private const string RequestUrl = $"https://{TestRegistryName}/v2";

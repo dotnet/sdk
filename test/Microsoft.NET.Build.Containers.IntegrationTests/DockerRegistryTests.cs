@@ -1,28 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.Build.Containers.UnitTests;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
-[TestClass]
-[DoNotParallelize]
-public class DockerRegistryTests : SdkTest
+[Collection("Docker tests")]
+public class DockerRegistryTests
 {
-    private TestLoggerFactory _loggerFactory = null!;
+    private ITestOutputHelper _testOutput;
+    private readonly TestLoggerFactory _loggerFactory;
 
-    [TestInitialize]
-    public void Initialize()
+    public DockerRegistryTests(ITestOutputHelper testOutput)
     {
-        _loggerFactory = new TestLoggerFactory(TestContext);
+        _testOutput = testOutput;
+        _loggerFactory = new TestLoggerFactory(testOutput);
     }
 
-    [TestMethod]
-    [DockerAvailableCondition]
-    [Ignore("https://github.com/dotnet/sdk/issues/49300")]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49300")]
     public async Task GetFromRegistry()
     {
-        var loggerFactory = new TestLoggerFactory(Log);
+        var loggerFactory = new TestLoggerFactory(_testOutput);
         var logger = loggerFactory.CreateLogger(nameof(GetFromRegistry));
         Registry registry = new(DockerRegistryManager.LocalRegistry, logger, RegistryMode.Push);
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
@@ -36,12 +33,10 @@ public class DockerRegistryTests : SdkTest
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
 
-        Assert.IsNotNull(downloadedImage);
+        Assert.NotNull(downloadedImage);
     }
 
-    [TestMethod]
-    [DockerAvailableCondition]
-    [Ignore("https://github.com/dotnet/sdk/issues/42820")]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/42820")]
     public async Task WriteToPrivateBasicRegistry()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(WriteToPrivateBasicRegistry));
@@ -58,10 +53,10 @@ public class DockerRegistryTests : SdkTest
             var registryCertFile = Path.Combine(registryCertsDir.FullName, "domain.crt");
 
             // export dev cert, using --no-password also generates a matching key file
-            new DotnetCommand(Log, $"dev-certs", "https", "--trust").Execute().Should().Pass();
-            new DotnetCommand(Log, $"dev-certs", "https", "--export-path", registryCertFile, "--format", "PEM", "--no-password").Execute().Should().Pass();
+            new DotnetCommand(_testOutput, $"dev-certs", "https", "--trust").Execute().Should().Pass();
+            new DotnetCommand(_testOutput, $"dev-certs", "https", "--export-path", registryCertFile, "--format", "PEM", "--no-password").Execute().Should().Pass();
             // start up an authenticated registry using that dev cert
-            ContainerCli.RunCommand(Log,
+            ContainerCli.RunCommand(_testOutput,
                 "-d", "--rm",
                 "--name", "auth-registry",
                 "-p", "5555:5000",
@@ -75,9 +70,9 @@ public class DockerRegistryTests : SdkTest
                 "registry:2")
             .WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
             // verify that the registry container started successfully
-            ContainerCli.InspectCommand(Log, "auth-registry").Execute().Should().Pass();
+            ContainerCli.InspectCommand(_testOutput, "auth-registry").Execute().Should().Pass();
             // login to that registry
-            ContainerCli.LoginCommand(Log, "--username", "testuser", "--password", "testpassword", registryName).Execute().Should().Pass();
+            ContainerCli.LoginCommand(_testOutput, "--username", "testuser", "--password", "testpassword", registryName).Execute().Should().Pass();
             // push an image to that registry using username/password
             Registry localAuthed = new(new Uri($"https://{registryName}"), logger, RegistryMode.Push, settings: new() { ParallelUploadEnabled = false, ForceChunkedUpload = true });
             var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
@@ -97,7 +92,7 @@ public class DockerRegistryTests : SdkTest
         finally
         {
             //stop the registry
-            ContainerCli.StopCommand(Log, "auth-registry").WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
+            ContainerCli.StopCommand(_testOutput, "auth-registry").WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
         }
     }
 }

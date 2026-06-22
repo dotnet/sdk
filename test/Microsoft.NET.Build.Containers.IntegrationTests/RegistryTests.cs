@@ -5,25 +5,25 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-[TestClass]
-public class RegistryTests : SdkTest, IDisposable
+public class RegistryTests : IDisposable
 {
-    private TestLoggerFactory _loggerFactory = null!;
+    private ITestOutputHelper _testOutput;
+    private readonly TestLoggerFactory _loggerFactory;
 
-    [TestInitialize]
-    public void Initialize()
+    public RegistryTests(ITestOutputHelper testOutput)
     {
-        _loggerFactory = new TestLoggerFactory(TestContext);
+        _testOutput = testOutput;
+        _loggerFactory = new TestLoggerFactory(testOutput);
     }
 
     public void Dispose()
     {
-        _loggerFactory?.Dispose();
+        _loggerFactory.Dispose();
     }
 
-    [DataRow("quay.io/centos/centos")]
-    [DataRow("registry.access.redhat.com/ubi8/dotnet-70")]
-    [TestMethod]
+    [InlineData("quay.io/centos/centos")]
+    [InlineData("registry.access.redhat.com/ubi8/dotnet-70")]
+    [Theory]
     public async Task CanReadManifestFromRegistry(string fullyQualifiedContainerName)
     {
         bool parsed = ContainerHelpers.TryParseFullyQualifiedContainerName(fullyQualifiedContainerName,
@@ -32,10 +32,10 @@ public class RegistryTests : SdkTest, IDisposable
                                                                            out string? containerTag,
                                                                            out string? containerDigest,
                                                                            out bool isRegistrySpecified);
-        Assert.IsTrue(parsed);
-        Assert.IsTrue(isRegistrySpecified);
-        Assert.IsNotNull(containerRegistry);
-        Assert.IsNotNull(containerName);
+        Assert.True(parsed);
+        Assert.True(isRegistrySpecified);
+        Assert.NotNull(containerRegistry);
+        Assert.NotNull(containerName);
         containerTag ??= "latest";
 
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanReadManifestFromRegistry));
@@ -48,8 +48,8 @@ public class RegistryTests : SdkTest, IDisposable
             containerTag,
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
-            cancellationToken: TestContext.CancellationToken);
+            cancellationToken: TestContext.Current.CancellationToken);
 
-        Assert.IsNotNull(downloadedImage);
+        Assert.NotNull(downloadedImage);
     }
 }

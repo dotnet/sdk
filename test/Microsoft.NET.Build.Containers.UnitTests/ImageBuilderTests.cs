@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
@@ -9,16 +9,22 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 [TestClass]
 public class ImageBuilderTests
 {
-    public TestContext TestContext { get; set; } = null!;
-
-    private TestLoggerFactory _loggerFactory = null!;
+    private readonly TestLoggerFactory _loggerFactory;
 
     private static readonly string StaticKnownDigestValue = "sha256:338c0b702da88157ba4bb706678e43346ece2e4397b888d59fb2d9f6113c8070";
 
-    [TestInitialize]
-    public void Initialize()
+    public TestContext TestContext { get; }
+
+    public ImageBuilderTests(TestContext testContext)
     {
-        _loggerFactory = new TestLoggerFactory(TestContext);
+        TestContext = testContext;
+        _loggerFactory = new TestLoggerFactory(testContext);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        _loggerFactory.Dispose();
     }
 
     [TestMethod]
@@ -602,7 +608,7 @@ public class ImageBuilderTests
 
         baseConfigBuilder.SetUser(userId);
         var config = JsonNode.Parse(baseConfigBuilder.Build().Config);
-        config!["config"]?["User"]?.GetValue<string>().Should().Be(expected: userId, because: "The precedence of SetUser should override inferred user ids");
+        Assert.AreEqual(userId, config!["config"]?["User"]?.GetValue<string>());
     }
 
     [TestMethod]
@@ -686,7 +692,7 @@ public class ImageBuilderTests
         Assert.IsNotNull(result);
         var labels = result["config"]?["Labels"]?.AsObject();
         var digest = labels?.AsEnumerable().First(label => label.Key == "org.opencontainers.image.base.digest").Value!;
-        digest.GetValue<string>().Should().Be(StaticKnownDigestValue);
+        Assert.AreEqual(StaticKnownDigestValue, digest.GetValue<string>());
     }
 
     private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
