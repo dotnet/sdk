@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -13,11 +13,9 @@ using Microsoft.DotNet.PackageValidation.Validators;
 
 namespace Microsoft.DotNet.PackageValidation.Tests
 {
+    [TestClass]
     public class CompatibleFrameworkInPackageValidatorTests : SdkTest
     {
-        public CompatibleFrameworkInPackageValidatorTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
         private (SuppressibleTestLog, CompatibleFrameworkInPackageValidator) CreateLoggerAndValidator()
         {
@@ -31,7 +29,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             return (log, validator);
         }
 
-        [Fact]
+        [TestMethod]
         public void CompatibleFrameworksInPackage()
         {
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
@@ -56,19 +54,19 @@ namespace PackageValidationTests
             TestAsset asset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
             PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
-            Assert.Equal(string.Empty, result.StdErr);
+            Assert.AreEqual(string.Empty, result.StdErr);
             Package package = Package.Create(packCommand.GetNuGetPackage(), null);
             (SuppressibleTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
 
             validator.Validate(new PackageValidatorOption(package));
 
-            Assert.NotEmpty(log.errors);
+            Assert.IsNotEmpty(log.errors);
             // TODO: add asserts for assembly and header metadata.
             string assemblyName = $"{asset.TestProject.Name}.dll";
             Assert.Contains($"CP0002 Member 'void PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/{ToolsetInfo.CurrentTargetFramework}/{assemblyName}", log.errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleCompatibleFrameworksInPackage()
         {
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
@@ -97,13 +95,13 @@ namespace PackageValidationTests
             TestAsset asset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
             PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
-            Assert.Equal(string.Empty, result.StdErr);
+            Assert.AreEqual(string.Empty, result.StdErr);
             Package package = Package.Create(packCommand.GetNuGetPackage(), null);
             (SuppressibleTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
 
             validator.Validate(new PackageValidatorOption(package));
 
-            Assert.NotEmpty(log.errors);
+            Assert.IsNotEmpty(log.errors);
             string assemblyName = $"{asset.TestProject.Name}.dll";
             // TODO: add asserts for assembly and header metadata.
             Assert.Contains($"CP0002 Member 'void PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/netcoreapp3.1/{assemblyName}", log.errors);

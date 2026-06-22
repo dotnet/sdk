@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffAssemblyTests : DiffBaseTests
 {
-    [Fact]
+    [TestMethod]
     public Task AssemblyAdd() => RunTestAsync(
                 before: [],
                 after: [("MyAddedAssembly.dll", """
@@ -27,7 +28,7 @@ public class DiffAssemblyTests : DiffBaseTests
                     """ }
                 });
 
-    [Fact]
+    [TestMethod]
     public Task AssemblyChange() => RunTestAsync(
                 before: [("MyBeforeAssembly.dll", """
                 namespace MyNamespace
@@ -64,7 +65,7 @@ public class DiffAssemblyTests : DiffBaseTests
                     """ }
                 });
 
-    [Fact]
+    [TestMethod]
     public Task AssemblyDelete() => RunTestAsync(
                 before: [("MyRemovedAssembly.dll", """
                 namespace MyNamespace
@@ -86,7 +87,7 @@ public class DiffAssemblyTests : DiffBaseTests
                     """ }
                 });
 
-    [Fact]
+    [TestMethod]
     public Task AssemblyUnchanged() => RunTestAsync(
                 before: [("MyAssembly.dll", """
                 namespace MyNamespace

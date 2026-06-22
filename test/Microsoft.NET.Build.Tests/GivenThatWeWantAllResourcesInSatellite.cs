@@ -7,13 +7,12 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantAllResourcesInSatellite : SdkTest
     {
-        public GivenThatWeWantAllResourcesInSatellite(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
         public void It_retrieves_strings_successfully()
         {
             TestSatelliteResources(Log, TestAssetsManager);
