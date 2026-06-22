@@ -6,9 +6,10 @@ using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests;
 
-public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class GivenSdkArchives : SdkTest
 {
-    [Fact]
+    [TestMethod]
     public void ItHasDeduplicatedAssemblies()
     {
         // Find and extract archive
