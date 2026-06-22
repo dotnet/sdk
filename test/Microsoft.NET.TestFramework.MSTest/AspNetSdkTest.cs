@@ -25,7 +25,7 @@ public abstract class AspNetSdkTest : SdkTest
 
     protected AspNetSdkTest()
     {
-        var assembly = Assembly.GetCallingAssembly();
+        var assembly = GetType().Assembly;
         var testAssemblyMetadata = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
         DefaultTfm = testAssemblyMetadata.SingleOrDefault(a => a.Key == "AspNetTestTfm")?.Value;
     }
