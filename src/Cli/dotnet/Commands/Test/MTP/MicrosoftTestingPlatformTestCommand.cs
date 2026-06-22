@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.Runtime.CompilerServices;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -33,7 +34,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         ITestHandler testHandler = buildOptions.PathOptions.TestModules is { } testModules
             ? new TestModulesFilterHandler(testModules, parseResult)
-            : new MSBuildHandler(buildOptions);
+            : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions)
+                : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
 
         if (!testHandler.Initialize())
         {

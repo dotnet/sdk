@@ -10,15 +10,12 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
     /// <c>dotnet exec Microsoft.DotNet.GenAPI.Tool.dll</c> against a real built assembly and
     /// asserting on the produced reference source, exactly as a customer would.
     /// </summary>
+    [TestClass]
     public class GenAPIToolIntegrationTests : SdkTest
     {
         private const string TestAssetName = "GenAPITaskTestProject";
 
-        public GenAPIToolIntegrationTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact] 
+        [TestMethod]
         public void GenAPITool_GeneratesSourceForAssembly()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_GeneratesSourceForAssembly));
@@ -34,7 +31,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
                 .And.NotContain("InternalMultiply");
         }
 
-        [Fact] 
+        [TestMethod]
         public void GenAPITool_HeaderFile_IsPrependedToOutput()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_HeaderFile_IsPrependedToOutput));
@@ -49,7 +46,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
             File.ReadAllText(generated).Should().StartWith(headerLine);
         }
 
-        [Fact] 
+        [TestMethod]
         public void GenAPITool_RespectInternals_IncludesInternalMembers()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_RespectInternals_IncludesInternalMembers));
