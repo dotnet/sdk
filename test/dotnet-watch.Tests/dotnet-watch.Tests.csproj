@@ -34,9 +34,10 @@
     <!-- Microsoft.NET.TestFramework (xUnit v3 based, pulled in transitively for TestAsset/App helpers
          via Microsoft.DotNet.HotReload.Test.Utilities) needs the xUnit v3 runtime at execution time.
          The transitive reference is ExcludeAssets="Runtime", so reference the v3 runtime directly to
-         ensure xunit.v3.core is deployed; otherwise the test host crashes on load with
-         FileNotFoundException for 'xunit.v3.core'. -->
+         ensure xunit.v3.core (extensibility.core) and xunit.v3.assert are deployed; otherwise the test
+         host crashes on load with FileNotFoundException for 'xunit.v3.core' or 'xunit.v3.assert'. -->
     <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="xunit.v3.assert" />
   </ItemGroup>
 
   <!-- Copies test browser files to test-browser output directory -->
