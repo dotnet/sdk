@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffTypeTests : DiffBaseTests
 {
     #region Nested types
 
-    [Fact]
+    [TestMethod]
     public Task NestedTypeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -42,7 +43,7 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task NestedTypeChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -83,7 +84,7 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task NestedTypeRemove() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -118,7 +119,7 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task NestedTypeMemberAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -156,7 +157,7 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task NestedTypeMemberChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -196,7 +197,7 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task NestedTypeMemberRemove() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -238,7 +239,7 @@ public class DiffTypeTests : DiffBaseTests
 
     #region Exclusions
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeAddedType() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -262,7 +263,7 @@ public class DiffTypeTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["T:MyNamespace.MyStruct"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeModifiedType() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -289,7 +290,7 @@ public class DiffTypeTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["T:MyNamespace.MyStruct1", "T:MyNamespace.MyStruct2"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeRemovedType() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -314,7 +315,7 @@ public class DiffTypeTests : DiffBaseTests
     // GenAPI emits a curated set of internal compiler attributes (e.g. IsExternalInit) by default so that the
     // generated reference source keeps compiling. ApiDiff shares the GenAPI backend but builds its own filters
     // without that inclusion, so such internal types must not surface as API differences.
-    [Fact]
+    [TestMethod]
     public Task InternalCompilerTypeAddNotShown() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -344,7 +345,7 @@ public class DiffTypeTests : DiffBaseTests
 
     #region Other
 
-    [Fact]
+    [TestMethod]
     public Task TypeKindChange() =>
         // Name remains the same (as well as DocID), but the kind changes
         RunTestAsync(
@@ -377,7 +378,7 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task ShowPartial() => RunTestAsync(
                 beforeCode: "",
                 afterCode: """

@@ -98,7 +98,12 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
         MSBuildPath = msbuildPath ?? defaultMSBuildPath;
 
-        EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
+        // Only force MSBUILDUSESERVER on when DOTNET_CLI_USE_MSBUILD_SERVER opts in; otherwise leave
+        // any user-provided MSBUILDUSESERVER value untouched so it can toggle the server on its own.
+        if (UseMSBuildServer)
+        {
+            EnvironmentVariable("MSBUILDUSESERVER", "1");
+        }
 
         // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set, the caller requires it (e.g. the AOT CLI, which
         // cannot host MSBuild in-process), or we're asked to execute a non-default binary, call MSBuild out-of-proc.
@@ -181,7 +186,14 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         }
         else
         {
-            return ExecuteInProc(GetAllArguments());
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                return ExecuteInProc(GetAllArguments());
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Can't invoke MSBuild in-process because this runtime doesn't support dynamic code generation.");
+            }
         }
     }
 
@@ -190,6 +202,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// Sets up the local environment with required MSBuild environment variables before handing off execution entirely to MSBuild.
     /// After execution, the original environment variables are restored for any remaining cleanup work the dotnet CLI needs to perform.
     /// </summary>
+    [RequiresDynamicCode("Calls MSBuildApp.Main, which is not AOT-safe")]
     public int ExecuteInProc(string[] arguments)
     {
         // Save current environment variables before overwriting them.
