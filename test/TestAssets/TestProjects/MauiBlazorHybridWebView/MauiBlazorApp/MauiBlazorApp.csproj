@@ -1,0 +1,47 @@
+<!--
+  Simulates the MAUI Blazor Hybrid app (Maui.Controls.Sample). It references a Razor class library
+  (project reference) and the simulated BlazorWebView package (package reference). The package
+  supplies JSModuleManifestRelativePath/CompressionEnabled via its build props.
+
+  The real consuming-project setup lives in dotnet/maui (update this asset to match if it changes):
+    src/BlazorWebView/src/Maui/build/Microsoft.AspNetCore.Components.WebView.Maui.targets
+    src/Controls/samples/Controls.Sample/Maui.Controls.Sample.csproj
+  See https://github.com/dotnet/maui/issues/35953 (the gallery regression, worked around with
+  JSModulesEnabled=false) and https://github.com/dotnet/sdk/issues/54779.
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+
+    <!-- MAUI BlazorWebView apps are the static web assets root. -->
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
+
+    <BlazorWebViewPackageVersion Condition="'$(BlazorWebViewPackageVersion)' == ''">1.0.0</BlazorWebViewPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MauiRazorClassLibrary\MauiRazorClassLibrary.csproj" />
+    <PackageReference Include="BlazorWebViewPackage" Version="$(BlazorWebViewPackageVersion)" />
+  </ItemGroup>
+
+  <Target Name="EnsurePackagesExist" BeforeTargets="Restore">
+    <ItemGroup>
+      <LocalPackages Include="$(AspNetTestPackageSource)\BlazorWebViewPackage.$(BlazorWebViewPackageVersion).nupkg" />
+    </ItemGroup>
+
+    <Error Condition="!Exists('%(LocalPackages.Identity)')"
+      Text="Package %(LocalPackages.Identity) does not exist. Ensure the test calls CreatePackCommand(ProjectDirectory, &quot;BlazorWebViewPackage&quot;)" />
+
+    <Error Condition="'$(RestorePackagesPath)' != '$(AspNetNugetIsolationPath)'"
+      Text="Packages are not being restored into the expected directory. Ensure that NUGET_PACKAGES and AspNetNugetIsolationPath are set as environment variables. The test should extend IsolatedNuGetPackageFolderAspNetSdkBaselineTest. RestorePackagesPath = '$(RestorePackagesPath)', AspNetNugetIsolationPath = '$(AspNetNugetIsolationPath)'" />
+  </Target>
+
+</Project>
