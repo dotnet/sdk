@@ -31,4 +31,16 @@ public static class Env
 
     public static string? GetEnvironmentVariable(string name) =>
         s_environment.GetEnvironmentVariable(name);
+
+    public static bool AnyEnvironmentVariablesSet(IEnumerable<string> variableNames)
+    {
+        foreach (var name in variableNames)
+        {
+            if (GetEnvironmentVariable(name) != null)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

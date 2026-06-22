@@ -253,6 +253,11 @@ internal class UpdateWorkflow
 
         var resolvedRequest = new ResolvedInstallRequest(installRequest, latestVersion);
 
+        if (UnsignedSourcePolicy.MayDownloadUnsigned(installRequest))
+        {
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
+        }
+
         InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, noProgress);
         AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {spec.VersionOrChannel} to {latestVersion}."));
         return true;

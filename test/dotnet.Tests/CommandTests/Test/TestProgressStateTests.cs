@@ -176,12 +176,33 @@ public class TestProgressStateTests
             stopwatch: stopwatchMock.Object,
             isDiscovery: true);
 
-        state.DiscoverTest(displayName, uid);
+        state.DiscoverTest(displayName, uid, filePath: null, lineNumber: null);
 
         state.DiscoveredTests.Should().Be(1);
         state.DiscoveredTestNames.Count.Should().Be(1);
         state.DiscoveredTestNames[0].DisplayName.Should().Be(displayName);
         state.DiscoveredTestNames[0].UID.Should().Be(uid);
+        state.DiscoveredTestNames[0].FilePath.Should().BeNull();
+        state.DiscoveredTestNames[0].LineNumber.Should().BeNull();
+    }
+
+    [Fact]
+    public void DiscoverTest_WithFilePathAndLineNumber_StoresLocation()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(
+            id: 1,
+            assembly: "assembly.dll",
+            targetFramework: null,
+            architecture: null,
+            stopwatch: stopwatchMock.Object,
+            isDiscovery: true);
+
+        state.DiscoverTest("MyTest", "uid-1", filePath: "C:/repo/MyTests.cs", lineNumber: 42);
+
+        state.DiscoveredTestNames.Count.Should().Be(1);
+        state.DiscoveredTestNames[0].FilePath.Should().Be("C:/repo/MyTests.cs");
+        state.DiscoveredTestNames[0].LineNumber.Should().Be(42);
     }
 
     [Fact]

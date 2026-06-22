@@ -202,6 +202,26 @@
         <target state="translated">Нежелательность выделения массивов нулевой длины</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
+        <source>When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</source>
+        <target state="new">When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
+        <source>Use 'Regex.Match' and check 'Success'</source>
+        <target state="new">Use 'Regex.Match' and check 'Success'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
+        <source>Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</source>
+        <target state="new">Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
+        <source>Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</source>
+        <target state="new">Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
         <target state="translated">Метод "{0}" является небезопасным при десериализации ненадежных данных без использования SerializationBinder для ограничения типа объектов в графе десериализованных объектов.</target>

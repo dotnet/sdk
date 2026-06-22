@@ -228,7 +228,6 @@ infrastructure issues unrelated to the PR.
 Example reasons:
 
 - `/ba-g deadletter` - Helix work item crashed with "DeadLetter" status.
-- `/ba-g docs-only change` - PR did not change any source code.
 - `/ba-g insufficient info in logs` - No good unique pattern in the logs to open a known issue.
 - `/ba-g recently fixed known issue #<number>` - The known issue fix was already merged, but CI ran
   before it.

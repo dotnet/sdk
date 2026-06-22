@@ -145,7 +145,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             void Verify()
             {
-                new FileInfo(satelliteAssemblyFile).Should().Exist();
+                // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+                new FileInfo(satelliteAssemblyFile).Should().NotExist();
 
                 var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
                 var satelliteResources = bootJsonFile.resources.satelliteResources;
@@ -199,7 +200,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            new FileInfo(satelliteAssemblyFile).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(satelliteAssemblyFile).Should().NotExist();
             bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             satelliteResources = bootJsonFile.resources.satelliteResources;
             satelliteResources.Should().HaveCount(1);
@@ -238,7 +240,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            new FileInfo(satelliteAssemblyFile).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(satelliteAssemblyFile).Should().NotExist();
 
             var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             var satelliteResources = bootJsonFile.resources.satelliteResources;

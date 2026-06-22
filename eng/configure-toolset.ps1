@@ -4,6 +4,9 @@
 
 $script:useInstalledDotNetCli = $false
 
+# Shared dotnetup acquisition helpers (architecture detection, cache freshness, download).
+. (Join-Path $PSScriptRoot 'dotnetup-shared.ps1')
+
 # Pre-install the bootstrap SDK pinned in global.json using dotnetup into the
 # repo-local .dotnet directory that arcade's InitializeDotnetCli will pick up.
 #
@@ -27,24 +30,13 @@ function InstallBootstrapSdkWithDotnetup() {
     $dotnetupDir = Join-Path $PSScriptRoot 'dotnetup'
     $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName 'dotnetup')
 
-    # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
-    $skipDownload = $false
-    if (Test-Path $dotnetupExe) {
-        $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
-        if ($age.TotalHours -lt 24) {
-            Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
-            $skipDownload = $true
+    if (-not (Test-ShouldUseCachedDotnetup $dotnetupExe)) {
+        try {
+            Install-DotnetupFromAkaMs $dotnetupDir
         }
-    }
-
-    if (-not $skipDownload) {
-        # Seed $LASTEXITCODE so strict mode can read it if the called script
-        # short-circuits without invoking a native process.
-        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-        & (Join-Path $RepoRoot 'scripts\get-dotnetup.ps1') -InstallDir $dotnetupDir
-        if ($LASTEXITCODE -ne 0) {
-            Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup (exit code '$LASTEXITCODE')."
-            ExitWithExitCode $LASTEXITCODE
+        catch {
+            Write-Host "Failed to acquire dotnetup: $($_.Exception.Message). Will fall back to standard dotnet-install script." -ForegroundColor Yellow
+            return
         }
     }
 

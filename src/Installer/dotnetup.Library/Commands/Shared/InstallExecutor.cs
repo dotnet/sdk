@@ -41,6 +41,11 @@ internal class InstallExecutor
         SpectreAnsiConsole.MarkupLine(
             $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
 
+        if (requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r.Request)))
+        {
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
+        }
+
         InstallBatchResult batchResult;
         {
             IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();

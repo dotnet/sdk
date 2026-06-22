@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.SdkThatDoesNotExist", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, version),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory, SolutionFilePath = solutionFilePath },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().StartWith(environment.TestDirectory.FullName);
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, version),
                 new MockContext { ProjectFilePath = projectFilePath, SolutionFilePath = solutionFilePath },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().StartWith(environment.TestDirectory.FullName);
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "999.99.99"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     MSBuildVersion = new Version(1, 0),
                     ProjectFileDirectory = environment.TestDirectory
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     MSBuildVersion = new Version(20, 0, 0, 0),
                     ProjectFileDirectory = environment.TestDirectory,
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
@@ -247,7 +247,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 context,
-                new MockFactory());
+                new MockFactory())!;
             result.Success.Should().BeTrue();
             result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
             result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
@@ -280,7 +280,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     ProjectFileDirectory = environment.TestDirectory,
                     IsRunningInVisualStudio = false
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -317,7 +317,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     ProjectFileDirectory = environment.TestDirectory,
                     IsRunningInVisualStudio = true
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
@@ -354,7 +354,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "1.0.0"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -377,7 +377,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "1.0.0"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -399,7 +399,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "99.99.99"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -421,7 +421,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "99.99.99"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -448,7 +448,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -476,7 +476,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -506,7 +506,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     var result = (MockResult)resolver.Resolve(
                         new SdkReference("Some.Test.Sdk", null, null),
                         new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                        new MockFactory());
+                        new MockFactory())!;
 
                     string m = $"{message} ({i})";
                     var expected = disallowPreviews ? rtm : preview;
@@ -550,7 +550,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(preview.FullName);
@@ -579,7 +579,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);

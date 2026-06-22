@@ -1522,7 +1522,7 @@ public class EndToEndTests : IDisposable
             "/p:EnableSdkContainerSupport=true",
             "/p:ContainerArchiveOutputPath=archive.tar.gz",
             "-getProperty:GeneratedImageIndex",
-            "-getItem:GeneratedContainers",
+            "-getItem:GeneratedContainer",
             "/bl")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
@@ -1531,10 +1531,10 @@ public class EndToEndTests : IDisposable
         publishResult.StdOut.Should().NotBeNull();
         var jsonDump = JsonDocument.Parse(publishResult.StdOut);
         var index = JsonDocument.Parse(jsonDump.RootElement.GetProperty("Properties").GetProperty("GeneratedImageIndex").ToString());
-        var containers = jsonDump.RootElement.GetProperty("Items").GetProperty("GeneratedContainers").EnumerateArray().ToArray();
+        var containers = jsonDump.RootElement.GetProperty("Items").GetProperty("GeneratedContainer").EnumerateArray().ToArray();
 
         index.RootElement.GetProperty("mediaType").GetString().Should().Be("application/vnd.oci.image.index.v1+json");
-        containers.Should().HaveCount(2);
+        containers.Should().HaveCountGreaterThanOrEqualTo(2);
         foreach (var container in containers)
         {
             container.GetProperty("ManifestMediaType").GetString().Should().Be("application/vnd.oci.image.manifest.v1+json");

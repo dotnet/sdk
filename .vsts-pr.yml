@@ -22,7 +22,9 @@ pr:
     - '*.yml'
     - '*.props'
     - '*.targets'
+    - global.json
     exclude:
+    - .github/ISSUE_TEMPLATE/*
     - documentation/*
     - README.md
     - CODEOWNERS
@@ -32,12 +34,6 @@ pr:
     - /eng/pipelines/templates/jobs/dotnetup/*
     - src/Installer/*
     - test/dotnetup.Tests/*
-
-parameters:
-- name: enableArm64Job
-  displayName: Enables the ARM64 job
-  type: boolean
-  default: true
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -54,6 +50,9 @@ stages:
 - stage: build
   displayName: Build
   jobs:
+  ############### HELIX JOB MONITOR ###############
+  - template: /eng/common/core-templates/job/helix-job-monitor.yml
+
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
@@ -68,7 +67,7 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
       helixTargetQueue: ubuntu.2204.amd64.open
 
@@ -79,20 +78,19 @@ stages:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
-      helixTargetQueue: osx.15.amd64.open
-  ### ARM64 ###
-  - ${{ if eq(parameters.enableArm64Job, true) }}:
+      helixTargetQueue: osx.15.arm64.open
+  ### x64 (CI only) ###
+  - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
       parameters:
         pool:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
-        helixTargetQueue: osx.15.arm64.open
+        helixTargetQueue: osx.15.amd64.open
         macOSJobParameterSets:
         - categoryName: TestBuild
-          targetArchitecture: arm64
-          runtimeIdentifier: osx-arm64
+          runtimeIdentifier: osx-x64
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml

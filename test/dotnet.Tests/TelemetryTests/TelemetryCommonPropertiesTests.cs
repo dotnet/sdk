@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.NetworkInformation;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
 
@@ -47,6 +48,18 @@ public class TelemetryCommonPropertiesTests : SdkTest
         var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"];
 
         Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnNewGuidWhenGettingMacAddressThrowsNetworkInformationException()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => throw new NetworkInformationException(), userLevelCacheWriter: new NothingCache());
+        var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"];
+        var assignedMachineIdOld = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"];
+
+        Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+        Guid.TryParse((string?)assignedMachineIdOld, out var _).Should().BeTrue("it should be a guid");
+        assignedMachineId.Should().NotBe(assignedMachineIdOld, "it should generate a new fallback guid each time");
     }
 
     [Fact]
@@ -237,6 +250,8 @@ public class TelemetryCommonPropertiesTests : SdkTest
         { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
         { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
         { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot" },
+        { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot" },
+        { new Dictionary<string, string> { { "COPILOT_AGENT", "1" } }, "copilot" },
         { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
         { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
         { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },

@@ -2087,6 +2087,18 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="PreferJsonElementParseFix" xml:space="preserve">
     <value>Use 'JsonElement.Parse'</value>
   </data>
+  <data name="AvoidRedundantRegexIsMatchBeforeMatchTitle" xml:space="preserve">
+    <value>Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</value>
+  </data>
+  <data name="AvoidRedundantRegexIsMatchBeforeMatchMessage" xml:space="preserve">
+    <value>Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</value>
+  </data>
+  <data name="AvoidRedundantRegexIsMatchBeforeMatchDescription" xml:space="preserve">
+    <value>When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</value>
+  </data>
+  <data name="AvoidRedundantRegexIsMatchBeforeMatchFix" xml:space="preserve">
+    <value>Use 'Regex.Match' and check 'Success'</value>
+  </data>
   <data name="UseConcreteTypeDescription" xml:space="preserve">
     <value>Using concrete types avoids virtual or interface call overhead and enables inlining.</value>
   </data>

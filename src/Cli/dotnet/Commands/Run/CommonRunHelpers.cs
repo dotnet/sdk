@@ -37,11 +37,17 @@ internal static class CommonRunHelpers
         }
     }
 
+#if !CLI_AOT
     /// <summary>
     /// Creates a TerminalLogger or ConsoleLogger based on the provided MSBuild arguments.
     /// If the environment is detected to be an LLM environment, the logger is adjusted to
     /// better suit that environment.
     /// </summary>
+    /// <remarks>
+    /// This uses the in-process MSBuild logging APIs (<c>Microsoft.Build.*</c>) and so is excluded
+    /// from the AOT build, which only ever forwards MSBuild out-of-process.
+    /// </remarks>
     public static Microsoft.Build.Framework.ILogger GetConsoleLogger(MSBuildArgs args) =>
         Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. AdjustMSBuildForLLMs(args).OtherMSBuildArgs]);
+#endif
 }

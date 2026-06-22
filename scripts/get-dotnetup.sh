@@ -139,12 +139,20 @@ detect_rid() {
             ;;
     esac
 
-    # Detect architecture
-    case "$(uname -m)" in
+    # Detect architecture. On macOS, `uname -m` reports x86_64 when the shell is
+    # running under Rosetta 2, so prefer the native hardware capability signal.
+    local machine_arch
+    if [ "$os" = "osx" ] && [ "$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)" = "1" ]; then
+        machine_arch="arm64"
+    else
+        machine_arch="$(uname -m)"
+    fi
+
+    case "$machine_arch" in
         x86_64|amd64)    arch="x64" ;;
         aarch64|arm64)   arch="arm64" ;;
         *)
-            err "Unsupported architecture: $(uname -m). Use --runtime-id to specify a RID manually."
+            err "Unsupported architecture: $machine_arch. Use --runtime-id to specify a RID manually."
             exit 1
             ;;
     esac

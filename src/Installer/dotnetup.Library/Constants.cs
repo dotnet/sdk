@@ -55,6 +55,7 @@ internal static class Constants
         public const string StoragePathEnvVar = "DOTNET_CLI_TELEMETRY_STORAGE_PATH";
         public const string DisableTraceExportEnvVar = "DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT";
         public const string DiskLogPathEnvVar = "DOTNET_CLI_TELEMETRY_LOG_PATH";
+        public const string EnableOtlpExporterEnvVar = "DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER";
 
         /// <summary>
         /// Opt-in env var that enables network export of OTel spans via the

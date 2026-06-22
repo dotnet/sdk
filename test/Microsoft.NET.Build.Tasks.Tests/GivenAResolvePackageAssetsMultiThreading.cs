@@ -58,7 +58,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void OutputMatchesBetweenSingleAndMultiProcessMode()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "rpa-parity-" + Guid.NewGuid().ToString("N"));
+            var otherDir = Path.Combine(Path.GetTempPath(), "rpa-parity-decoy-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(projectDir);
+            Directory.CreateDirectory(otherDir);
+            var savedCwd = Directory.GetCurrentDirectory();
             try
             {
                 var objDir = Path.Combine(projectDir, "obj");
@@ -72,21 +75,23 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     objDir);
                 File.WriteAllText(Path.Combine(objDir, "project.assets.json"), assetsJson);
 
-                // --- Run 1: Single-process mode (TaskEnvironment from CWD == projectDir) ---
+                // --- Multi-process mode: CWD == projectDir; TaskEnvironment.Fallback reads live CWD ---
+                Directory.SetCurrentDirectory(projectDir);
                 var singleTask = CreateResolvePackageAssetsTask(projectDir, objDir);
-                singleTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+                singleTask.TaskEnvironment = TaskEnvironment.Fallback;
                 singleTask.DisablePackageAssetsCache = true;
 
                 var singleResult = singleTask.Execute();
                 singleResult.Should().BeTrue("single-process mode should succeed");
 
-                // --- Run 2: Multi-process mode (explicit project directory == same dir) ---
+                // --- Multi-threaded mode: CWD == otherDir; isolated TaskEnvironment carries projectDir ---
+                Directory.SetCurrentDirectory(otherDir);
                 var multiTask = CreateResolvePackageAssetsTask(projectDir, objDir);
-                multiTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+                multiTask.TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir);
                 multiTask.DisablePackageAssetsCache = true;
 
                 var multiResult = multiTask.Execute();
-                multiResult.Should().BeTrue("multi-process mode should succeed");
+                multiResult.Should().BeTrue("multi-threaded mode should succeed");
 
                 // Compare all [Output] properties via reflection
                 var outputProperties = typeof(ResolvePackageAssets)
@@ -124,7 +129,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             finally
             {
+                Directory.SetCurrentDirectory(savedCwd);
                 try { Directory.Delete(projectDir, true); } catch { }
+                try { Directory.Delete(otherDir, true); } catch { }
             }
         }
 
