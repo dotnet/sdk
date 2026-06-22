@@ -963,6 +963,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
     public void ArtifactAdded(bool outOfProcess, string? assembly, string? targetFramework, string? architecture, string? executionId, string? testName, string path)
         => _artifacts.Add(new TestRunArtifact(outOfProcess, assembly, targetFramework, architecture, executionId, testName, path));
 
+    internal void WriteMessage(string text) =>
+        _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            terminal.Append(text);
+        });
+
     /// <summary>
     /// Let the user know that cancellation was triggered.
     /// </summary>
