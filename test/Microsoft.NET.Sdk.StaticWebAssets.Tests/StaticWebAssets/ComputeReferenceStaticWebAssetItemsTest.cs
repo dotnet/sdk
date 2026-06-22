@@ -431,6 +431,63 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[0].GetMetadata("AssetGroups").Should().Be("MyGroup");
         }
 
+        [Fact]
+        public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectoryNotProcessCurrentDirectory()
+        {
+            var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ComputeReferenceStaticWebAssetItemsTest), Guid.NewGuid().ToString("N"));
+            var projectDir = Path.Combine(testRoot, "project");
+            var spawnDir = Path.Combine(testRoot, "decoy", "spawn");
+            Directory.CreateDirectory(projectDir);
+            Directory.CreateDirectory(spawnDir);
+
+            var relativeOriginalItemSpec = Path.Combine("wwwroot", "candidate.js");
+
+            var projectRootedOriginalItemSpec = Path.GetFullPath(Path.Combine(projectDir, relativeOriginalItemSpec));
+            var spawnRootedOriginalItemSpec = Path.GetFullPath(Path.Combine(spawnDir, relativeOriginalItemSpec));
+            projectRootedOriginalItemSpec.Should().NotBe(spawnRootedOriginalItemSpec,
+                "the test setup must place project and decoy in different parents so a relative path resolves differently against each");
+
+            var originalCurrentDirectory = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(spawnDir);
+
+                var errorMessages = new List<string>();
+                var buildEngine = new Mock<IBuildEngine>();
+                buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                    .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+                var task = new ComputeReferenceStaticWebAssetItems
+                {
+                    BuildEngine = buildEngine.Object,
+                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
+                    Source = "MyPackage",
+                    Assets = new[] { CreateCandidate(relativeOriginalItemSpec, "MyPackage", "Discovered", "candidate.js", "All", "All") },
+                    Patterns = new ITaskItem[] { },
+                    AssetKind = "Build",
+                    ProjectMode = "Default",
+                    MakeReferencedAssetOriginalItemSpecAbsolute = true
+                };
+
+                var result = task.Execute();
+
+                result.Should().Be(true);
+                errorMessages.Should().BeEmpty();
+                task.StaticWebAssets.Should().HaveCount(1);
+
+                // OriginalItemSpec must resolve against TaskEnvironment.ProjectDirectory, not the process CWD (the decoy spawnDir).
+                task.StaticWebAssets[0].GetMetadata("OriginalItemSpec").Should().Be(projectRootedOriginalItemSpec);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalCurrentDirectory);
+                if (Directory.Exists(testRoot))
+                {
+                    Directory.Delete(testRoot, recursive: true);
+                }
+            }
+        }
+
         private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,
