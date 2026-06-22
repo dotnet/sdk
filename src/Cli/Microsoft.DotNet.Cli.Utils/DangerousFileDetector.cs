@@ -31,28 +31,14 @@ internal class DangerousFileDetector : IDangerousFileDetector
         private const uint ZoneUntrusted = 4;
         private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
 
+        private static readonly object s_loadLock = new();
         private static bool s_attemptedLoad;
         private static ComClassFactory? s_classFactory = null;
 
         [SupportedOSPlatform("windows")]
         public static unsafe bool IsDangerous(string filename)
         {
-            if (!s_attemptedLoad)
-            {
-                s_attemptedLoad = true;
-                if (!ComClassFactory.TryCreate(CLSID.InternetSecurityManager, out s_classFactory, out HRESULT result))
-                {
-                    // When the COM is missing(Class not registered error), it is in a locked down
-                    // version like Nano Server
-
-                    if (result != HRESULT.REGDB_E_CLASSNOTREG)
-                    {
-                        result.ThrowOnFailure();
-                    }
-                }
-            }
-
-            if (s_classFactory is not { } factory)
+            if (EnsureClassFactory() is not { } factory)
             {
                 return false;
             }
@@ -74,6 +60,36 @@ internal class DangerousFileDetector : IDangerousFileDetector
 
             // By default all file types that get here are considered dangerous
             return true;
+        }
+
+        /// <summary>
+        ///  Lazily creates the <see cref="IInternetSecurityManager"/> class factory in a thread-safe
+        ///  manner. <see cref="IsDangerous(string)"/> can be called concurrently from multiple threads;
+        ///  without synchronization a thread could observe <see cref="s_attemptedLoad"/> as
+        ///  <see langword="true"/> while another thread is still populating <see cref="s_classFactory"/>,
+        ///  incorrectly treating a dangerous file as safe.
+        /// </summary>
+        private static ComClassFactory? EnsureClassFactory()
+        {
+            lock (s_loadLock)
+            {
+                if (!s_attemptedLoad)
+                {
+                    s_attemptedLoad = true;
+                    if (!ComClassFactory.TryCreate(CLSID.InternetSecurityManager, out s_classFactory, out HRESULT result))
+                    {
+                        // When the COM is missing(Class not registered error), it is in a locked down
+                        // version like Nano Server
+
+                        if (result != HRESULT.REGDB_E_CLASSNOTREG)
+                        {
+                            result.ThrowOnFailure();
+                        }
+                    }
+                }
+
+                return s_classFactory;
+            }
         }
     }
 #endif
