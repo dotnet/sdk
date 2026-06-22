@@ -1,11 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffDestructorTests : DiffBaseTests
 {
-    [Fact]
+    [TestMethod]
     public Task DestructorAdd() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
@@ -36,7 +37,7 @@ public class DiffDestructorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task DestructorDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace

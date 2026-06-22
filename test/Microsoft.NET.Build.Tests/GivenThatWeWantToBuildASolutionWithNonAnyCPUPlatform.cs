@@ -3,13 +3,12 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildASolutionWithNonAnyCPUPlatform : SdkTest
     {
-        public GivenThatWeWantToBuildASolutionWithNonAnyCPUPlatform(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
         public void It_builds_solution_successfully()
         {
             var testAsset = TestAssetsManager
