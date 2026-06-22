@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Build.Tasks;
@@ -300,9 +301,9 @@ public class CopyPreservingRelativeSymlinksTests : SdkTest
         task.CopiedFiles.Should().BeEmpty();
     }
 
-    private (string sourceDir, string destDir) CreateSourceAndDestDirs()
+    private (string sourceDir, string destDir) CreateSourceAndDestDirs([CallerMemberName] string testName = "")
     {
-        var testDir = TestAssetsManager.CreateTestDirectory().Path;
+        var testDir = TestAssetsManager.CreateTestDirectory(testName).Path;
         var sourceDir = Path.Combine(testDir, "source");
         var destDir = Path.Combine(testDir, "dest");
         Directory.CreateDirectory(sourceDir);
