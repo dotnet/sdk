@@ -1,24 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.WebTools.AspireServer.UnitTests</RootNamespace>
-    <OutputType>Exe</OutputType>
-    <EnableDefaultScopedCssItems>false</EnableDefaultScopedCssItems>
-
-    <!-- Suppress pack warnings for this test project. Microsoft.NET.Sdk.Web defaults 
-         WarnOnPackingNonPackableProject=true, but test projects have IsPackable=false by default,
-         which would generate warnings/errors during pack operations that we want to suppress. -->
-    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <Import Project="..\..\src\Dotnet.Watch\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
