@@ -6,6 +6,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGetPackageDirectoryMultiThreading
     {
         // When the caller passes a relative PackageFolders
@@ -13,11 +14,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         // [Output] items' PackageDirectory metadata. The relative prefix is substituted back into
         // NuGet's absolutized result via string surgery, so this exercises that surgery across a
         // range of folder shapes (nested, forward slashes, trailing separators).
-        [Theory]
-        [InlineData("packages")]               // flat relative folder
-        [InlineData("nested/packages")]        // nested with forward slash
-        [InlineData("a/b/c/packages")]         // deeply nested
-        [InlineData("packages/")]              // trailing separator
+        [TestMethod]
+        [DataRow("packages")]               // flat relative folder
+        [DataRow("nested/packages")]        // nested with forward slash
+        [DataRow("a/b/c/packages")]         // deeply nested
+        [DataRow("packages/")]              // trailing separator
         public void PackageDirectoryMetadata_PreservesRelativeFolderShape_WhenInputIsRelative(string relativeFolder)
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "gpd-rel-" + Guid.NewGuid().ToString("N"));
@@ -73,7 +74,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         // empty user-package-folder is tolerated by NuGet's VersionFolderPathResolver (it stores
         // the empty string and probes harmlessly fail), so the task must still reach NuGet and
         // resolve packages from the remaining (valid) fallback folders.
-        [Fact]
+        [TestMethod]
         public void EmptyPackageFolderEntry_DoesNotThrow_AndValidFallbackResolves()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "gpd-empty-" + Guid.NewGuid().ToString("N"));
@@ -116,7 +117,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         // Happy-path regression guard: when all PackageFolders are already absolute (the realistic
         // production case), the migration must produce the same absolute PackageDirectory metadata
         // it would have pre-migration, and must NOT root anything against TaskEnvironment.ProjectDirectory.
-        [Fact]
+        [TestMethod]
         public void AbsolutePackageFolders_ProduceAbsoluteMetadata_AndDoNotLeakProjectDirectory()
         {
             var packagesDir = Path.Combine(Path.GetTempPath(), "gpd-abs-pkgs-" + Guid.NewGuid().ToString("N"));
