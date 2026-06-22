@@ -110,6 +110,62 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         }
 
         [Fact]
+        public async Task GetBrowserRefreshConfigWorks()
+        {
+            // Arrange
+            Environment.SetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT", "ws://localhost:5000");
+            Environment.SetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_KEY", "testkey123");
+            try
+            {
+                var requestDelegate = GetRequestDelegate();
+                var context = new DefaultHttpContext();
+                context.Request.Path = "/_framework/browser-refresh-config";
+                var responseBody = new MemoryStream();
+                context.Response.Body = responseBody;
+
+                // Act
+                await requestDelegate(context);
+
+                // Assert
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                Assert.Equal("no-store", context.Response.Headers["Cache-Control"]);
+                Assert.Equal("application/json; charset=utf-8", context.Response.Headers["Content-Type"]);
+
+                var json = Encoding.UTF8.GetString(responseBody.ToArray());
+                Assert.Contains("\"webSocketUrls\":\"ws://localhost:5000\"", json);
+                Assert.Contains("\"serverKey\":\"testkey123\"", json);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT", null);
+                Environment.SetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_KEY", null);
+            }
+        }
+
+        [Fact]
+        public async Task GetBrowserRefreshConfigWorks_WhenEnvVarsNotSet()
+        {
+            // Arrange
+            Environment.SetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT", null);
+            Environment.SetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_KEY", null);
+
+            var requestDelegate = GetRequestDelegate();
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/_framework/browser-refresh-config";
+            var responseBody = new MemoryStream();
+            context.Response.Body = responseBody;
+
+            // Act
+            await requestDelegate(context);
+
+            // Assert
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            var json = Encoding.UTF8.GetString(responseBody.ToArray());
+            Assert.Contains("\"webSocketUrls\":\"\"", json);
+            Assert.Contains("\"serverKey\":\"\"", json);
+        }
+
+        [Fact]
         public async Task GetUnknownUrlWorks()
         {
             // Arrange
