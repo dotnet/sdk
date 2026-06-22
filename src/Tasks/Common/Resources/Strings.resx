@@ -1042,5 +1042,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</value>
     <comment>{StrBegins="NETSDK1241: "}</comment>
   </data>
-  <!-- The latest message added is TargetFrameworkEmpty. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="MonoRuntimeNotSupportedForPlatform" xml:space="preserve">
+    <value>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</value>
+    <comment>{StrBegins="NETSDK1242: "}</comment>
+  </data>
+  <!-- The latest message added is MonoRuntimeNotSupportedForPlatform. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
