@@ -436,7 +436,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[0].GetMetadata("AssetGroups").Should().Be("MyGroup");
         }
 
-        [Fact]
+        [TestMethod]
+        [DoNotParallelize]
         public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectoryNotProcessCurrentDirectory()
         {
             var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ComputeReferenceStaticWebAssetItemsTest), Guid.NewGuid().ToString("N"));
