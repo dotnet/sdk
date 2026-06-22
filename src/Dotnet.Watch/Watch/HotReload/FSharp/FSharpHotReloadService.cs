@@ -1030,11 +1030,12 @@ internal sealed class FSharpHotReloadService
 
         if (!_sessionObjectProjects.Contains(projectInfo.ProjectId))
         {
-            // AddProject captures the project's committed baseline from the built output on disk.
-            // At this point the output is still the pre-edit build (forced compilation of the
-            // edited sources happens after EnsureSession), so the baseline matches what the
-            // running process loaded.
-            var add = host.SessionAddProject(_sessionObject!, projectInput!, projectInfo.TargetPath, CancellationToken.None);
+            // AddProject captures the project's committed baseline from the intermediate assembly
+            // on disk. At this point it is still the pre-edit build (forced compilation of the
+            // edited sources happens after EnsureSession), and at generation 0 the intermediate
+            // assembly is a byte copy of the bin output the running process loaded, so the baseline
+            // matches the loaded module.
+            var add = host.SessionAddProject(_sessionObject!, projectInput!, projectInfo.IntermediateAssemblyPath, CancellationToken.None);
             if (!add.IsSuccess)
             {
                 status = MapErrorStatus(add.ErrorCase);
@@ -1051,10 +1052,10 @@ internal sealed class FSharpHotReloadService
             _sessionObjectProjects = _sessionObjectProjects.Add(projectInfo.ProjectId);
             _cachedProjectInputs = _cachedProjectInputs.SetItem(projectInfo.ProjectId, projectInput!);
 
-            // Record the module id of the output AddProject just baselined — the id the running
-            // process loads. Forced design-time rebuilds (for example after a no-op or
-            // dependency-only emit) move the on-disk MVID without the process reloading, so
-            // later emits must keep targeting this baseline id rather than the disk's.
+            // Record the module id of the bin output the running process actually loaded. Per-edit
+            // compiles now target the intermediate assembly only and never rewrite this bin file,
+            // so its MVID stays the loaded module's across the whole session; emits keep targeting
+            // this baseline id.
             if (TryGetModuleVersionId(projectInfo.TargetPath) is { } baselineModuleId)
             {
                 _runtimeModuleIds = _runtimeModuleIds.SetItem(projectInfo.ProjectId, baselineModuleId);
@@ -1355,10 +1356,15 @@ internal sealed class FSharpHotReloadService
                 UseShellExecute = false,
             };
 
-            // Use full build semantics so F# project outputs (DLL/PDB) are refreshed for delta emission.
-            // -t:Compile can leave HotReload target outputs stale for SDK-style F# projects.
+            // Compile only the intermediate assembly: fsc refreshes obj/<name>.dll and its .pdb,
+            // which the hot reload session reads (FSharpProjectInfo.IntermediateAssemblyPath). The
+            // full Build target would also copy the result over the bin output the running process
+            // has loaded; Windows locks that file against writes while the app runs, so the copy
+            // fails and every edit is blocked. -t:Compile leaves the loaded module untouched and
+            // works the same on every OS.
             startInfo.ArgumentList.Add("build");
             startInfo.ArgumentList.Add(projectInfo.ProjectPath);
+            startInfo.ArgumentList.Add("-t:Compile");
             startInfo.ArgumentList.Add("-nologo");
             startInfo.ArgumentList.Add("-consoleLoggerParameters:NoSummary;Verbosity=minimal");
             startInfo.ArgumentList.Add("-p:NuGetInteractive=true");
@@ -2211,10 +2217,13 @@ internal sealed class FSharpHotReloadService
 
             try
             {
+                // The snapshot's output path is what the session reads back at emit time, so it must
+                // be the intermediate assembly the per-edit compile refreshes, not the bin copy
+                // (which stays at generation 0 because the running process locks it on Windows).
                 var args = EnsureHotReloadFlag(projectInfo.CommandLineArgs);
                 var projectIdentifier = _workspaceProjectAddOrUpdate.Invoke(
                     _workspaceProjects,
-                    [projectInfo.ProjectPath, projectInfo.TargetPath, args.ToArray()]);
+                    [projectInfo.ProjectPath, projectInfo.IntermediateAssemblyPath, args.ToArray()]);
 
                 if (projectIdentifier == null)
                 {

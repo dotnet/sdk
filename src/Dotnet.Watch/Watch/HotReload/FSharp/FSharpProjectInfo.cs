@@ -17,6 +17,70 @@ internal sealed record FSharpProjectInfo(
     string DotnetFscCompilerPath,
     ImmutableArray<string> CommandLineArgs)
 {
+    /// <summary>
+    /// The fsc intermediate output assembly: the <c>-o:</c> target from the captured command-line
+    /// args, which the F# SDK targets place under <c>obj/</c>. Unlike <see cref="TargetPath"/>
+    /// (the <c>bin/</c> copy the launched process loads, and which Windows locks against writes
+    /// while the app runs), this file is never loaded by the running process, so a hot reload
+    /// recompile can refresh it in place. At generation 0 it is a byte copy of <see cref="TargetPath"/>,
+    /// so its module id matches the loaded module. Falls back to <see cref="TargetPath"/> when no
+    /// output argument is present.
+    /// </summary>
+    public string IntermediateAssemblyPath
+    {
+        get
+        {
+            foreach (var arg in CommandLineArgs)
+            {
+                if (TryResolveOutputArgument(arg) is { } resolved)
+                {
+                    return resolved;
+                }
+            }
+
+            return TargetPath;
+        }
+    }
+
+    private string? TryResolveOutputArgument(string arg)
+    {
+        string? value = null;
+        if (arg.StartsWith("-o:", StringComparison.OrdinalIgnoreCase))
+        {
+            value = arg.Substring("-o:".Length);
+        }
+        else if (arg.StartsWith("--out:", StringComparison.OrdinalIgnoreCase))
+        {
+            value = arg.Substring("--out:".Length);
+        }
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        value = value.Trim().Trim('"');
+        if (value.Length == 0)
+        {
+            return null;
+        }
+
+        if (!Path.IsPathRooted(value))
+        {
+            var projectDirectory = Path.GetDirectoryName(ProjectPath) ?? Directory.GetCurrentDirectory();
+            value = Path.Combine(projectDirectory, value);
+        }
+
+        try
+        {
+            return Path.GetFullPath(value);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public static ImmutableDictionary<ProjectInstanceId, FSharpProjectInfo> Collect(ProjectGraph projectGraph, ILogger logger)
     {
         var trace = IsTraceEnabled();
