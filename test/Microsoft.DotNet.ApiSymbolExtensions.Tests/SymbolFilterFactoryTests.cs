@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,35 +8,37 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
+[TestClass]
+
 public class SymbolFilterFactoryTests
 {
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void Test_FilterFromFiles(bool includeCustomType)
     {
         Test_FilterFromFiles_Internal(includeCustomType, accessibilitySymbolFilter: null);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void Test_FilterFromFiles_CustomAccessibilityFilter(bool includeCustomType)
     {
         Test_FilterFromFiles_Internal(includeCustomType, new AccessibilitySymbolFilter(includeInternalSymbols: true));
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void Test_FilterFromList(bool includeCustomType)
     {
         Test_FilterFromList_Internal(includeCustomType, accessibilitySymbolFilter: null);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public void Test_FilterFromList_WithCustomAccessibilityFilter(bool includeCustomType)
     {
         Test_FilterFromList_Internal(includeCustomType, new AccessibilitySymbolFilter(includeInternalSymbols: true));
@@ -87,27 +89,27 @@ public class SymbolFilterFactoryTests
 
     private void Test_GetFilter_Internal(CompositeSymbolFilter compositeFilter, bool includeCustomType)
     {
-        Assert.NotNull(compositeFilter);
+        Assert.IsNotNull(compositeFilter);
 
-        Assert.Equal(3, compositeFilter.Filters.Count);
+        Assert.HasCount(3, compositeFilter.Filters);
 
         DocIdSymbolFilter docIdFilter = compositeFilter.Filters[0] as DocIdSymbolFilter;
-        Assert.NotNull(docIdFilter);
+        Assert.IsNotNull(docIdFilter);
 
         ImplicitSymbolFilter implicitFilter = compositeFilter.Filters[1] as ImplicitSymbolFilter;
-        Assert.NotNull(implicitFilter);
+        Assert.IsNotNull(implicitFilter);
 
         AccessibilitySymbolFilter accessibilityFilter = compositeFilter.Filters[2] as AccessibilitySymbolFilter;
-        Assert.NotNull(accessibilityFilter);
+        Assert.IsNotNull(accessibilityFilter);
 
         IAssemblySymbol assemblySymbol = SymbolFactory.GetAssemblyFromSyntax(@"
 namespace MyNamespace
 {
     public class MyClass { }
 }");
-        Assert.NotNull(assemblySymbol);
+        Assert.IsNotNull(assemblySymbol);
         INamedTypeSymbol myClass = assemblySymbol.GetTypeByMetadataName("MyNamespace.MyClass");
-        Assert.NotNull(myClass);
-        Assert.Equal(includeCustomType, docIdFilter.Include(myClass));
+        Assert.IsNotNull(myClass);
+        Assert.AreEqual(includeCustomType, docIdFilter.Include(myClass));
     }
 }

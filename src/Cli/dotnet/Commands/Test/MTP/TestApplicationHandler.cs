@@ -463,6 +463,14 @@ internal sealed class TestApplicationHandler
         return false;
     }
 
+    internal void WriteMessage(string? text)
+    {
+        if (!string.IsNullOrEmpty(text))
+        {
+            _output.WriteMessage(text);
+        }
+    }
+
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
