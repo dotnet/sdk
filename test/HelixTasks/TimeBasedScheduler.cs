@@ -73,17 +73,10 @@ internal sealed class TimeBasedScheduler
     /// </summary>
     public const int DefaultFallbackWorkItemCount = 25;
 
-    /// <summary>
-    /// Maximum number of test methods per filter string before splitting.
-    /// With the response file approach, this is no longer constrained by
-    /// command-line length. We use a generous limit to avoid degenerate cases.
-    /// </summary>
-    private const int MaxFilterLength = 100000;
-
     private readonly TimeSpan _targetTime;
     private readonly int _fallbackWorkItemCount;
 
-    public TimeBasedScheduler(TimeSpan? targetTime = null, int fallbackWorkItemCount = DefaultFallbackWorkItemCount, bool isPosixShell = true)
+    public TimeBasedScheduler(TimeSpan? targetTime = null, int fallbackWorkItemCount = DefaultFallbackWorkItemCount)
     {
         _targetTime = targetTime ?? DefaultWorkItemScheduleTime;
         _fallbackWorkItemCount = fallbackWorkItemCount;
@@ -124,7 +117,6 @@ internal sealed class TimeBasedScheduler
 
         var workItems = new List<ScheduledWorkItem>();
         var currentItem = new ScheduledWorkItem();
-        int currentFilterLength = 0;
 
         foreach (var method in testMethods)
         {
@@ -133,29 +125,23 @@ internal sealed class TimeBasedScheduler
                 ? info.Duration
                 : averageDuration;
 
-            // Check if adding this test would exceed limits
-            int additionalFilterLength = method.FullyQualifiedName.Length + 1; // +1 for separator
+            // Check if adding this test would exceed the time budget
             bool exceedsTime = currentItem.TestMethods.Count > 0 &&
                                currentItem.EstimatedDuration + duration > _targetTime;
-            bool exceedsLength = currentFilterLength + additionalFilterLength > MaxFilterLength;
 
-            if (currentItem.TestMethods.Count > 0 && (exceedsTime || exceedsLength))
+            if (exceedsTime)
             {
-                // Flush current work item
                 FinalizeWorkItem(workItems, currentItem);
                 currentItem = new ScheduledWorkItem();
-                currentFilterLength = 0;
             }
 
             currentItem.AddTest(method, duration);
-            currentFilterLength += additionalFilterLength;
 
             // Special case: single test exceeds target time — give it a dedicated work item
             if (currentItem.TestMethods.Count == 1 && duration > _targetTime)
             {
                 FinalizeWorkItem(workItems, currentItem);
                 currentItem = new ScheduledWorkItem();
-                currentFilterLength = 0;
             }
         }
 
@@ -169,8 +155,7 @@ internal sealed class TimeBasedScheduler
     }
 
     /// <summary>
-    /// Count-based fallback: distributes tests evenly across N work items,
-    /// while also respecting the command-line filter length limit.
+    /// Count-based fallback: distributes tests evenly across N work items.
     /// </summary>
     private List<ScheduledWorkItem> ScheduleByCount(List<TestMethodDiscovery.TestMethodInfo> testMethods)
     {
@@ -180,22 +165,16 @@ internal sealed class TimeBasedScheduler
         var workItems = new List<ScheduledWorkItem>();
         var currentItem = new ScheduledWorkItem();
         var defaultDuration = TimeSpan.FromSeconds(5);
-        int currentFilterLength = 0;
 
         foreach (var method in testMethods)
         {
-            int additionalFilterLength = method.FullyQualifiedName.Length + 1;
-
-            if (currentItem.TestMethods.Count >= testsPerItem ||
-                currentFilterLength + additionalFilterLength > MaxFilterLength)
+            if (currentItem.TestMethods.Count >= testsPerItem)
             {
                 FinalizeWorkItem(workItems, currentItem);
                 currentItem = new ScheduledWorkItem();
-                currentFilterLength = 0;
             }
 
             currentItem.AddTest(method, defaultDuration);
-            currentFilterLength += additionalFilterLength;
         }
 
         if (currentItem.TestMethods.Count > 0)

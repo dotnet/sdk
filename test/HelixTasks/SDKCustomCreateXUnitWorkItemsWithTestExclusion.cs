@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             // Schedule using time-based bin-packing
             var targetTime = TimeSpan.FromMinutes(TargetMinutesPerWorkItem);
-            var scheduler = new TimeBasedScheduler(targetTime, isPosixShell: IsPosixShell);
+            var scheduler = new TimeBasedScheduler(targetTime);
             var workItems = scheduler.Schedule(allTestMethods, history);
 
             Log.LogMessage("Time-based scheduler produced {0} work items for {1} test methods.", workItems.Count, allTestMethods.Count);
