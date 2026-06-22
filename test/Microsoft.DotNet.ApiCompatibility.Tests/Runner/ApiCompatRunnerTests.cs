@@ -10,6 +10,7 @@ using Moq;
 
 namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
 {
+    [TestClass]
     public class ApiCompatRunnerTests
     {
         private static ApiCompatRunner MockApiCompatRunner(MetadataInformation left = default,
@@ -54,7 +55,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
                 assemblyLoaderFactoryMock.Object);
         }
 
-        [Fact]
+        [TestMethod]
         public void EnqueueWorkItem_NoDuplicateLeftsForDifferentRights_SingleLeftWithMultipleRights()
         {
             ApiCompatRunner apiCompatRunner = MockApiCompatRunner();
@@ -66,11 +67,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left, new ApiCompatRunnerOptions(), right1));
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left, new ApiCompatRunnerOptions(), right2));
 
-            Assert.Single(apiCompatRunner.WorkItems);
-            Assert.Equal(2, apiCompatRunner.WorkItems.First().Right.Count);
+            Assert.ContainsSingle(apiCompatRunner.WorkItems);
+            Assert.HasCount(2, apiCompatRunner.WorkItems.First().Right);
         }
 
-        [Fact]
+        [TestMethod]
         public void EnqueueWorkItem_NoDuplicateRightsForSpecificLeft_SingleRight()
         {
             ApiCompatRunner apiCompatRunner = MockApiCompatRunner();
@@ -81,11 +82,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left, new ApiCompatRunnerOptions(), right));
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left, new ApiCompatRunnerOptions(), right));
 
-            Assert.Single(apiCompatRunner.WorkItems);
-            Assert.Single(apiCompatRunner.WorkItems.First().Right);
+            Assert.ContainsSingle(apiCompatRunner.WorkItems);
+            Assert.ContainsSingle(apiCompatRunner.WorkItems.First().Right);
         }
 
-        [Fact]
+        [TestMethod]
         public void EnqueueWorkItem_DifferentAssemblies_EqualNumberOfWorkItems()
         {
             ApiCompatRunner apiCompatRunner = MockApiCompatRunner();
@@ -97,20 +98,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left1, new ApiCompatRunnerOptions(), right));
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left2, new ApiCompatRunnerOptions(), right));
 
-            Assert.Equal(2, apiCompatRunner.WorkItems.Count());
+            Assert.HasCount(2, apiCompatRunner.WorkItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteWorkItems_NoWorkItemsEnqueued_EmptyWorkItems()
         {
             ApiCompatRunner apiCompatRunner = MockApiCompatRunner();
 
-            Assert.Empty(apiCompatRunner.WorkItems);
+            Assert.IsEmpty(apiCompatRunner.WorkItems);
             apiCompatRunner.ExecuteWorkItems();
-            Assert.Empty(apiCompatRunner.WorkItems);
+            Assert.IsEmpty(apiCompatRunner.WorkItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void ExecuteWorkItems_WorkItemsEnqueued_EmptyWorkItems()
         {
             MetadataInformation left = new("A.dll", @"lib\netstandard2.0\A.dll", references: new string[] { @"ref\net6.0\System.Runtime.dll", @"ref\net6.0\System.Collections.dll" });
@@ -121,7 +122,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left, options, right));
             apiCompatRunner.ExecuteWorkItems();
 
-            Assert.Empty(apiCompatRunner.WorkItems);
+            Assert.IsEmpty(apiCompatRunner.WorkItems);
         }
     }
 }
