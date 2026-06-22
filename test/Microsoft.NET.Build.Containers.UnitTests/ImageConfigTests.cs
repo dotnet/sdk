@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
+[TestClass]
 public class ImageConfigTests
 {
     private const string SampleImageConfig = """
@@ -43,15 +44,15 @@ public class ImageConfigTests
                 }
                 """;
 
-    [InlineData("User")]
-    [InlineData("Volumes")]
-    [InlineData("StopSignal")]
-    [Theory]
+    [DataRow("User")]
+    [DataRow("Volumes")]
+    [DataRow("StopSignal")]
+    [TestMethod]
     public void PassesThroughPropertyEvenThoughPropertyIsntExplicitlyHandled(string property)
     {
         ImageConfig c = new(SampleImageConfig);
         JsonNode after = JsonNode.Parse(c.BuildConfig())!;
         JsonNode? prop = after["config"]?[property];
-        Assert.NotNull(prop);
+        Assert.IsNotNull(prop);
     }
 }

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.ApiCompatibility.Runner;
@@ -9,6 +9,7 @@ using Moq;
 
 namespace Microsoft.DotNet.PackageValidation.Validators.Tests
 {
+    [TestClass]
     public class BaselinePackageValidatorTests
     {
         private (SuppressibleTestLog, BaselinePackageValidator) CreateLoggerAndValidator()
@@ -20,7 +21,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
             return (log, validator);
         }
 
-        [Fact]
+        [TestMethod]
         public void TfmDroppedInLatestVersion()
         {
             Package baselinePackage = new(string.Empty, "TestPackage", "1.0.0",
@@ -37,11 +38,11 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
                 enqueueApiCompatWorkItems: false,
                 baselinePackage: baselinePackage));
 
-            Assert.NotEmpty(log.errors);
+            Assert.IsNotEmpty(log.errors);
             Assert.Contains(DiagnosticIds.TargetFrameworkDropped + " " + string.Format(Resources.MissingTargetFramework, ".NETStandard,Version=v2.0"), log.errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void BaselineFrameworksExcluded()
         {
             Package baselinePackage = new(string.Empty, "TestPackage", "1.0.0",
@@ -61,11 +62,11 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
                 targetFrameworkFilter: targetFrameworkRegexFilter));
 
             Assert.Contains(string.Format(Resources.BaselineTargetFrameworksIgnored, "netcoreapp3.1"), log.info);
-            Assert.Empty(log.warnings);
-            Assert.Empty(log.errors);
+            Assert.IsEmpty(log.warnings);
+            Assert.IsEmpty(log.errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void BaselineFrameworkIgnoredButPresentInCurrentPackage()
         {
             Package baselinePackage = new(string.Empty, "TestPackage", "1.0.0",
@@ -92,7 +93,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
             Assert.Contains(DiagnosticIds.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage + " " +
                 string.Format(Resources.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage, "portable-net45+win8+wp8+wpa81"),
                 log.warnings);
-            Assert.Empty(log.errors);
+            Assert.IsEmpty(log.errors);
         }
     }
 }
