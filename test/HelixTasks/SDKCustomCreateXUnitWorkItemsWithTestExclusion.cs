@@ -233,47 +233,181 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
                     continue;
 
-                // Write the filter to a response file in the publish directory,
-                // bypassing cmd.exe's 8191-char command line limit entirely.
-                string? rspFileName = null;
-                string filterString = workItem.GetFilterString();
-                if (!string.IsNullOrEmpty(filterString))
-                {
-                    rspFileName = $"{workItem.DisplayName}.filter.rsp";
-                    var rspPath = Path.Combine(publishDirectory, rspFileName);
-                    File.WriteAllText(rspPath, $"--filter\n\"{filterString}\"");
-                }
-
-                var command = BuildTimeBasedCommand(xunitProject, workItem, timeout, rspFileName);
-                if (command is null)
+                if (!xunitProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
                     continue;
 
-                taskItems.Add(new Microsoft.Build.Utilities.TaskItem(workItem.DisplayName, new Dictionary<string, string>()
+                xunitProject.TryGetMetadata("IsMTPProject", out string isMTPProjectMetadata);
+                bool isMTPProject = string.Equals(isMTPProjectMetadata, "true", StringComparison.OrdinalIgnoreCase);
+
+                string assemblyName = Path.GetFileName(targetPath);
+
+                // MTP projects use dotnet exec directly — they already handle arguments without
+                // spawning a child process, so no CreateProcess limit issue.
+                if (isMTPProject)
                 {
-                    { "Identity", workItem.DisplayName },
-                    { "PayloadDirectory", publishDirectory },
-                    { "Command", command },
-                    { "Timeout", timeout.ToString() },
-                }));
+                    string? mtpRspFileName = null;
+                    string filterString = workItem.GetFilterString();
+                    if (!string.IsNullOrEmpty(filterString))
+                    {
+                        mtpRspFileName = $"{workItem.DisplayName}.filter.rsp";
+                        var rspPath = Path.Combine(publishDirectory, mtpRspFileName);
+                        File.WriteAllText(rspPath, $"--filter\n\"{filterString}\"");
+                    }
+
+                    var command = BuildMtpCommand(xunitProject, workItem, timeout, mtpRspFileName);
+                    if (command is null)
+                        continue;
+
+                    taskItems.Add(new Microsoft.Build.Utilities.TaskItem(workItem.DisplayName, new Dictionary<string, string>()
+                    {
+                        { "Identity", workItem.DisplayName },
+                        { "PayloadDirectory", publishDirectory },
+                        { "Command", command },
+                        { "Timeout", timeout.ToString() },
+                    }));
+                }
+                else
+                {
+                    // xUnit/MSTest projects: write a vstest.console.dll RSP file containing ALL
+                    // arguments (assembly, loggers, blame, filter). This completely avoids both
+                    // cmd.exe's 8191-char limit and the CreateProcess 32K-char limit because
+                    // vstest.console.dll reads the RSP natively.
+                    string rspFileName = $"{workItem.DisplayName}.rsp";
+                    var rspPath = Path.Combine(publishDirectory, rspFileName);
+                    var rspContent = BuildVsTestRspContent(assemblyName, workItem, timeout);
+                    File.WriteAllText(rspPath, rspContent);
+
+                    var command = BuildVsTestCommand(xunitProject, workItem, timeout, rspFileName);
+                    if (command is null)
+                        continue;
+
+                    taskItems.Add(new Microsoft.Build.Utilities.TaskItem(workItem.DisplayName, new Dictionary<string, string>()
+                    {
+                        { "Identity", workItem.DisplayName },
+                        { "PayloadDirectory", publishDirectory },
+                        { "Command", command },
+                        { "Timeout", timeout.ToString() },
+                    }));
+                }
             }
 
             return taskItems.ToArray();
         }
 
         /// <summary>
-        /// Builds the execution command for a time-based work item.
-        /// The filter is passed via a response file (@file.rsp) to avoid
-        /// cmd.exe command line length limits on Windows.
+        /// Builds the vstest.console.dll RSP file content with all test arguments.
+        /// This is read natively by vstest.console.dll — no command-line length limits apply.
         /// </summary>
-        private string? BuildTimeBasedCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout, string? rspFileName)
+        private string BuildVsTestRspContent(string assemblyName, ScheduledWorkItem workItem, TimeSpan timeout)
+        {
+            var builder = new StringBuilder();
+
+            // Assembly to test
+            builder.AppendLine($"\"{assemblyName}\"");
+
+            // Loggers
+            builder.AppendLine("/Logger:trx");
+            builder.AppendLine("/Logger:\"console;verbosity=detailed\"");
+
+            // Results directory
+            builder.AppendLine("/ResultsDirectory:.");
+
+            // Blame with hang detection (80% of timeout for hang, matching existing behavior)
+            var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
+            builder.AppendLine($"/Blame:\"CollectHangDump;TestTimeout={((int)blameHangTimeout.TotalMinutes)}minutes\"");
+
+            // Test case filter
+            string filterString = workItem.GetFilterString();
+            if (!string.IsNullOrEmpty(filterString))
+            {
+                builder.Append("/TestCaseFilter:\"");
+                builder.Append(filterString);
+                builder.AppendLine("\"");
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Builds the shell command that locates vstest.console.dll and invokes it with the RSP file.
+        /// Environment variables are set in the shell before invocation.
+        /// </summary>
+        private string? BuildVsTestCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout, string rspFileName)
         {
             if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
                 return null;
             if (!xunitProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
                 return null;
 
-            xunitProject.TryGetMetadata("IsMTPProject", out string isMTPProjectMetadata);
-            bool isMTPProject = string.Equals(isMTPProjectMetadata, "true", StringComparison.OrdinalIgnoreCase);
+            xunitProject.TryGetMetadata("ExcludeAdditionalParameters", out string excludeAdditionalParameters);
+
+            string assemblyName = Path.GetFileName(targetPath);
+            string exeName = Path.GetFileNameWithoutExtension(assemblyName);
+
+            var command = new StringBuilder();
+
+            // chmod/codesign for POSIX
+            if (IsPosixShell)
+            {
+                command.Append($"chmod +x {exeName} && ");
+                if (TargetRid.StartsWith("osx"))
+                {
+                    command.Append($"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && ");
+                }
+            }
+
+            // Set environment variables
+            if (IsPosixShell)
+            {
+                command.Append($"export HELIX_WORK_ITEM_TIMEOUT={timeout} && ");
+                if (!string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    command.Append("export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory && ");
+                }
+            }
+            else
+            {
+                command.Append($"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& ");
+                if (!string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    command.Append("set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ");
+                    command.Append("set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ");
+                }
+            }
+
+            // Locate vstest.console.dll from DOTNET_ROOT (same approach as Roslyn)
+            if (IsPosixShell)
+            {
+                command.Append("vstestConsolePath=$(find ${DOTNET_ROOT} -name \"vstest.console.dll\") && ");
+            }
+            else
+            {
+                command.Append("where /r %DOTNET_ROOT% vstest.console.dll > __vstest_path.txt&& set /p vstestConsolePath=<__vstest_path.txt&& ");
+            }
+
+            // Invoke vstest.console.dll with the RSP file
+            if (IsPosixShell)
+            {
+                command.Append($"dotnet exec \"${{vstestConsolePath}}\" @{rspFileName}");
+            }
+            else
+            {
+                command.Append($"dotnet exec \"%vstestConsolePath%\" @{rspFileName}");
+            }
+
+            return command.ToString();
+        }
+
+        /// <summary>
+        /// Builds the execution command for an MTP (Microsoft.Testing.Platform) project.
+        /// MTP uses dotnet exec directly and handles the filter without spawning child processes.
+        /// </summary>
+        private string? BuildMtpCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout, string? rspFileName)
+        {
+            if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
+                return null;
+            if (!xunitProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
+                return null;
 
             xunitProject.TryGetMetadata("EnableTrxReport", out string enableTrxReportMetadata);
             bool enableTrxReport = string.Equals(enableTrxReportMetadata, "true", StringComparison.OrdinalIgnoreCase);
@@ -281,63 +415,37 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             xunitProject.TryGetMetadata("ExcludeAdditionalParameters", out string excludeAdditionalParameters);
 
             string assemblyName = Path.GetFileName(targetPath);
-
-            // Reference the response file instead of inline filter
-            string testFilter = rspFileName is not null ? $"@{rspFileName}" : "";
-
-            string testExecutionDirectory = string.Empty;
-            string msbuildAdditionalSdkResolverFolder = string.Empty;
-
-            if (!string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                testExecutionDirectory = IsPosixShell
-                    ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory"
-                    : "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%";
-                msbuildAdditionalSdkResolverFolder = IsPosixShell
-                    ? ""
-                    : "-e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r";
-            }
-
             string exeName = Path.GetFileNameWithoutExtension(assemblyName);
             string chmodPrefix = IsPosixShell ? $"chmod +x {exeName} && " : "";
             string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx")
                 ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && "
                 : "";
 
-            if (isMTPProject)
+            string envPrefix;
+            if (IsPosixShell)
             {
-                string envPrefix;
-                if (IsPosixShell)
-                {
-                    string testExecEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory ";
-                    envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecEnv}";
-                }
-                else
-                {
-                    string testExecEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ";
-                    string msbuildEnv = string.IsNullOrEmpty(msbuildAdditionalSdkResolverFolder) ? "" : "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ";
-                    envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& {testExecEnv}{msbuildEnv}";
-                }
-
-                string diagArg = IsPosixShell
-                    ? "--diagnostic --diagnostic-output-directory $HELIX_WORKITEM_UPLOAD_ROOT"
-                    : "--diagnostic --diagnostic-output-directory %HELIX_WORKITEM_UPLOAD_ROOT%";
-
-                string trxArg = enableTrxReport ? "--report-trx " : "";
-
-                return $"{chmodPrefix}{codesignPrefix}{envPrefix}{PathToDotnet} exec {assemblyName} " +
-                       $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg}";
+                string testExecEnv = string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase)
+                    ? "" : "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory ";
+                envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecEnv}";
             }
             else
             {
-                var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
-                string enableDiagLogging = IsPosixShell
-                    ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log"
-                    : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
-
-                return $"{chmodPrefix}{codesignPrefix}{PathToDotnet} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                       $"--results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging}";
+                string testExecEnv = string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase)
+                    ? "" : "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ";
+                string msbuildEnv = string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase)
+                    ? "" : "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ";
+                envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& {testExecEnv}{msbuildEnv}";
             }
+
+            string diagArg = IsPosixShell
+                ? "--diagnostic --diagnostic-output-directory $HELIX_WORKITEM_UPLOAD_ROOT"
+                : "--diagnostic --diagnostic-output-directory %HELIX_WORKITEM_UPLOAD_ROOT%";
+
+            string trxArg = enableTrxReport ? "--report-trx " : "";
+            string testFilter = rspFileName is not null ? $"@{rspFileName}" : "";
+
+            return $"{chmodPrefix}{codesignPrefix}{envPrefix}{PathToDotnet} exec {assemblyName} " +
+                   $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg}";
         }
 
         /// <summary>
