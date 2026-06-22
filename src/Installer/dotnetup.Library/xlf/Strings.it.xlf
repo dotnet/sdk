@@ -173,9 +173,14 @@
         <note />
       </trans-unit>
       <trans-unit id="PathPreferenceShellProfile">
-        <source>Terminal Mode (Suggested)</source>
-        <target state="new">Terminal Mode (Suggested)</target>
+        <source>Terminal Mode</source>
+        <target state="new">Terminal Mode</target>
         <note />
+      </trans-unit>
+      <trans-unit id="PathPreferenceSuggestedSuffix">
+        <source>(Suggested)</source>
+        <target state="new">(Suggested)</target>
+        <note>Hint appended after the recommended mode name in the init summary, e.g. "Terminal Mode (Suggested)".</note>
       </trans-unit>
       <trans-unit id="PathReplacementModeUnixError">
         <source>Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</source>

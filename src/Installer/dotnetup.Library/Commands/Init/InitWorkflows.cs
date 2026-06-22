@@ -368,13 +368,13 @@ internal class InitWorkflows
 
         var options = new List<SelectableOption>
         {
-            new("i", Strings.PathPreferenceDotnetupDotnet, Strings.PathDescriptionDotnetupDotnet, isolationTooltip),
-            new("t", Strings.PathPreferenceShellProfile,   isWindows ? Strings.PathDescriptionShellProfile : Strings.PathDescriptionShellProfileBase,   terminalTooltip),
+            new(Strings.PathPreferenceDotnetupDotnet, Strings.PathDescriptionDotnetupDotnet, isolationTooltip),
+            new(Strings.PathPreferenceShellProfile, isWindows ? Strings.PathDescriptionShellProfile : Strings.PathDescriptionShellProfileBase, terminalTooltip),
         };
 
         if (isWindows)
         {
-            options.Add(new("r", Strings.PathPreferenceFullReplacement, Strings.PathDescriptionFullReplacement, Strings.PathTooltipFullReplacement));
+            options.Add(new(Strings.PathPreferenceFullReplacement, Strings.PathDescriptionFullReplacement, Strings.PathTooltipFullReplacement));
         }
 
         int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
