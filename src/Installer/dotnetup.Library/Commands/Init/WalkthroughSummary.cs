@@ -128,7 +128,7 @@ internal static class WalkthroughSummary
         string label = Strings.SummaryModeLabel.PadRight(LabelWidth);
         string value = DotnetupTheme.Brand(PathPreferenceDisplay.GetNameWithSuggestedHint(recommended).EscapeMarkup());
         string current = configuredPreference is { } pref
-            ? "  " + DotnetupTheme.Warning("(" + string.Format(
+            ? "  " + DotnetupTheme.Dim("(" + string.Format(
                 CultureInfo.InvariantCulture,
                 Strings.SummaryModeCurrent,
                 PathPreferenceDisplay.GetName(pref).EscapeMarkup()) + ")")
