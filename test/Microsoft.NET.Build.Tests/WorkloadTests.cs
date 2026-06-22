@@ -133,6 +133,28 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("android");
         }
 
+        [Fact(Skip = "https://github.com/xamarin/xamarin-macios/issues/18634")]
+        public void It_should_not_require_ios_workload_when_building_framework_specific_target_in_maui_multitarget_project()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "MauiWorkloadTest",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-ios",
+                IsSdkProject = true,
+                IsExe = true
+            };
+            testProject.AdditionalProperties["UseMaui"] = "true";
+            testProject.AdditionalProperties["SingleProject"] = "true";
+
+            var testAsset = TestAssetsManager
+                .CreateTestProject(testProject);
+
+            new BuildCommand(testAsset)
+                .ExecuteWithoutRestore($"/p:TargetFramework={ToolsetInfo.CurrentTargetFramework}")
+                .Should()
+                .Pass();
+        }
+
         [Fact]
         public void It_should_fail_to_build_when_multitargeted_to_unknown_platforms()
         {
