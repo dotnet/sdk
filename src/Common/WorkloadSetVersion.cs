@@ -63,7 +63,9 @@ internal static class WorkloadSetVersion
             return false;
         }
 
-        // Re-attach any pre-release or build-metadata suffix (including the leading '-' or '+').
+        // Re-attach any pre-release or build-metadata suffix, including the leading delimiter
+        // ('-' or '+'). Split(['-', '+'], 2) removes the delimiter from sections[0], so the
+        // character at sections[0].Length in the original string is the delimiter itself.
         string prereleaseSuffix = sections.Length > 1
             ? workloadSetVersion[sections[0].Length..]
             : string.Empty;

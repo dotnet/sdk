@@ -161,25 +161,26 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             throw new GracefulException(CliCommandStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
 
+        // CS0436: WorkloadSetVersion is defined in both dotnet.csproj (linked source) and
+        // Microsoft.DotNet.Cli.Definitions (also links the same source). Both definitions are
+        // identical, so using the local one here is correct.
+#pragma warning disable CS0436
         if (SpecifiedWorkloadSetVersionOnCommandLine)
         {
             foreach (var version in _workloadSetVersionFromCommandLine!)
             {
-#pragma warning disable CS0436 // Same source file linked in both dotnet.csproj and Microsoft.DotNet.Cli.Definitions; both definitions are identical
                 if (!version.Contains('@') && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(version, out var suggestedVersion))
-#pragma warning restore CS0436
                 {
                     throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, version, suggestedVersion), isUserError: true);
                 }
             }
         }
 
-#pragma warning disable CS0436 // Same source file linked in both dotnet.csproj and Microsoft.DotNet.Cli.Definitions; both definitions are identical
         if (SpecifiedWorkloadSetVersionInGlobalJson && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(_workloadSetVersionFromGlobalJson!, out var suggestedGlobalJsonVersion))
-#pragma warning restore CS0436
         {
             throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormatGlobalJson, _workloadSetVersionFromGlobalJson, suggestedGlobalJsonVersion, _globalJsonPath), isUserError: true);
         }
+#pragma warning restore CS0436
 
         //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
     }
