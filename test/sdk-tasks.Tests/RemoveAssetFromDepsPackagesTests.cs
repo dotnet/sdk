@@ -5,7 +5,8 @@ using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
-public class RemoveAssetFromDepsPackagesTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class RemoveAssetFromDepsPackagesTests : SdkTest
 {
     private const string SampleDepsJson = """
         {
@@ -25,7 +26,7 @@ public class RemoveAssetFromDepsPackagesTests(ITestOutputHelper log) : SdkTest(l
         }
         """;
 
-    [Fact]
+    [TestMethod]
     public void ItRemovesSpecificAssetFromDeps()
     {
       var dir = TestAssetsManager.CreateTestDirectory().Path;
@@ -39,7 +40,7 @@ public class RemoveAssetFromDepsPackagesTests(ITestOutputHelper log) : SdkTest(l
         result.Should().Contain("MyApp.dll");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItRemovesWildcardSection()
     {
       var dir = TestAssetsManager.CreateTestDirectory().Path;
@@ -53,7 +54,7 @@ public class RemoveAssetFromDepsPackagesTests(ITestOutputHelper log) : SdkTest(l
         result.Should().Contain("runtime");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItDoesNotModifyFileWhenAssetNotFound()
     {
       var dir = TestAssetsManager.CreateTestDirectory().Path;

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe);
 
-            Assert.Empty(compilation.GetDiagnostics());
+            AssertNoDiagnostics(compilation);
 
             string assemblyDir = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid().ToString("D").Substring(0, 4)}-{assemblyName}");
             Directory.CreateDirectory(assemblyDir);
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
 
-            Assert.Empty(compilation.GetDiagnostics());
+            AssertNoDiagnostics(compilation);
 
             MemoryStream stream = new();
             compilation.Emit(stream);
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe);
 
-            Assert.Empty(compilation.GetDiagnostics());
+            AssertNoDiagnostics(compilation);
 
             return compilation.Assembly;
         }
@@ -72,9 +72,19 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
 
             compilation = compilation.AddReferences(compilationWithReferences.ToMetadataReference());
 
-            Assert.Empty(compilation.GetDiagnostics());
+            AssertNoDiagnostics(compilation);
 
             return compilation.Assembly;
+        }
+
+        private static void AssertNoDiagnostics(CSharpCompilation compilation)
+        {
+            ImmutableArray<Diagnostic> diagnostics = compilation.GetDiagnostics();
+            if (!diagnostics.IsEmpty)
+            {
+                throw new InvalidOperationException(
+                    $"Expected no compilation diagnostics but found:{Environment.NewLine}{string.Join(Environment.NewLine, diagnostics)}");
+            }
         }
 
         private static CSharpCompilation CreateCSharpCompilationFromSyntax(string syntax, string name, bool enableNullable, byte[] publicKey, bool allowUnsafe, IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null)
