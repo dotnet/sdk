@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,18 +9,20 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class DangerousFileDetectorTests : SdkTest
     {
         private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
 
-        public DangerousFileDetectorTests(ITestOutputHelper log) : base(log)
+        public DangerousFileDetectorTests()
         {
         }
 
 #if NETCOREAPP
         [SupportedOSPlatform("windows")]
 #endif
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItShouldDetectFileWithMarkOfTheWeb()
         {
             var testFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());
@@ -42,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenThereIsNoFileItReturnsFalse()
         {
             var testFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());
@@ -50,7 +52,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             new DangerousFileDetector().IsDangerous(testFile).Should().BeFalse();
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void WhenRunOnNonWindowsReturnFalse()
         {
             var testFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());

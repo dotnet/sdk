@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -10,11 +10,9 @@ namespace Microsoft.NET.Build.Tests
     using System.Runtime.InteropServices;
     using ArtifactsTestExtensions;
 
+    [TestClass]
     public class ArtifactsOutputPathTests : SdkTest
     {
-        public ArtifactsOutputPathTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
         (List<TestProject> testProjects, TestAsset testAsset) GetTestProjects(bool putArtifactsInProjectFolder = false, [CallerMemberName] string callingMethod = "")
         {
@@ -74,7 +72,7 @@ namespace Microsoft.NET.Build.Tests
             return (testProjects, testAsset);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItUsesArtifactsOutputPathForBuild()
         {
             var (testProjects, testAsset) = GetTestProjects();
@@ -96,7 +94,8 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/45057")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/45057")]
         public void ItUsesArtifactsOutputPathForPublish()
         {
             var (testProjects, testAsset) = GetTestProjects();
@@ -121,7 +120,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItUseArtifactsOutputPathForPack()
         {
             var (testProjects, testAsset) = GetTestProjects();
@@ -160,7 +159,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ArtifactsPathCanBeInProjectFolder()
         {
             var (testProjects, testAsset) = GetTestProjects(putArtifactsInProjectFolder: true);
@@ -187,7 +186,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectsCanSwitchOutputFormats()
         {
             var testProject = new TestProject()
@@ -234,7 +233,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectsCanCustomizeOutputPathBasedOnTargetFramework()
         {
             var testProject = new TestProject("CustomizeArtifactsPath")
@@ -329,7 +328,7 @@ namespace Microsoft.NET.Build.Tests
             return testAsset;
         }
 
-        [Fact]
+        [TestMethod]
         public void ArtifactsPathCanBeSet()
         {
             var artifactsFolder = TestAssetsManager.CreateTestDirectory(identifier: "ArtifactsPath").Path;
@@ -348,7 +347,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void BinOutputNameCanBeSet()
         {
             var testAsset = CreateCustomizedTestProject("ArtifactsBinOutputName", "binaries");
@@ -363,7 +362,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishOutputNameCanBeSet()
         {
             var testAsset = CreateCustomizedTestProject("ArtifactsPublishOutputName", "published_app");
@@ -379,7 +378,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void PackageOutputNameCanBeSet()
         {
             var testAsset = CreateCustomizedTestProject("ArtifactsPackageOutputName", "package_output");
@@ -395,7 +394,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectNameCanBeSet()
         {
             var testAsset = CreateCustomizedTestProject("ArtifactsProjectName", "Apps\\MyApp");
@@ -411,7 +410,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void PackageValidationSucceeds()
         {
             var testProject = new TestProject()
@@ -441,7 +440,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItErrorsIfArtifactsPathIsSetInProject()
         {
             var testProject = new TestProject();
@@ -461,7 +460,7 @@ namespace Microsoft.NET.Build.Tests
                 .NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItErrorsIfUseArtifactsOutputIsSetInProject()
         {
             var testProject = new TestProject();
@@ -481,7 +480,7 @@ namespace Microsoft.NET.Build.Tests
                 .NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItErrorsIfUseArtifactsOutputIsSetAndThereIsNoDirectoryBuildProps()
         {
             var testProject = new TestProject();
@@ -497,7 +496,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1200");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/40160")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/40160")]
         public void ItCanBuildWithMicrosoftBuildArtifactsSdk()
         {
             var testAsset = TestAssetsManager.CopyTestAsset("ArtifactsSdkTest")
@@ -532,7 +532,8 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/50140")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/50140")]
         public void PublishingRegistersWrittenFilesForProperCleanup()
         {
             var testProject = new TestProject()
@@ -605,7 +606,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ArtifactsPathIsAddedAsSourceRoot()
         {
             var testProject = new TestProject()
@@ -644,7 +645,7 @@ namespace Microsoft.NET.Build.Tests
                 $"SourceRoot should contain the artifacts path: {expectedArtifactsPath}");
         }
 
-        [Fact]
+        [TestMethod]
         public void ArtifactsPathIsAddedAsSourceRootWithRelativePath()
         {
             // This tests the scenario from the issue where ArtifactsPath with relative paths should be canonicalized

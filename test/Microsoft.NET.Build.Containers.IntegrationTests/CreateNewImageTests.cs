@@ -6,7 +6,6 @@ using FakeItEasy;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.IntegrationTests;
-using Microsoft.NET.Build.Containers.UnitTests;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
