@@ -74,25 +74,19 @@ internal sealed class TimeBasedScheduler
     public const int DefaultFallbackWorkItemCount = 25;
 
     /// <summary>
-    /// Maximum filter string length on Windows (cmd.exe command line limit is 8191 chars;
-    /// leave ~1200 for the command prefix, env vars, paths, etc.).
+    /// Maximum number of test methods per filter string before splitting.
+    /// With the response file approach, this is no longer constrained by
+    /// command-line length. We use a generous limit to avoid degenerate cases.
     /// </summary>
-    private const int MaxFilterLengthWindows = 7000;
-
-    /// <summary>
-    /// Maximum filter string length on POSIX (bash/sh support ~128KB+).
-    /// </summary>
-    private const int MaxFilterLengthPosix = 25000;
+    private const int MaxFilterLength = 100000;
 
     private readonly TimeSpan _targetTime;
     private readonly int _fallbackWorkItemCount;
-    private readonly int _maxFilterLength;
 
     public TimeBasedScheduler(TimeSpan? targetTime = null, int fallbackWorkItemCount = DefaultFallbackWorkItemCount, bool isPosixShell = true)
     {
         _targetTime = targetTime ?? DefaultWorkItemScheduleTime;
         _fallbackWorkItemCount = fallbackWorkItemCount;
-        _maxFilterLength = isPosixShell ? MaxFilterLengthPosix : MaxFilterLengthWindows;
     }
 
     /// <summary>
@@ -143,7 +137,7 @@ internal sealed class TimeBasedScheduler
             int additionalFilterLength = method.FullyQualifiedName.Length + 1; // +1 for separator
             bool exceedsTime = currentItem.TestMethods.Count > 0 &&
                                currentItem.EstimatedDuration + duration > _targetTime;
-            bool exceedsLength = currentFilterLength + additionalFilterLength > _maxFilterLength;
+            bool exceedsLength = currentFilterLength + additionalFilterLength > MaxFilterLength;
 
             if (currentItem.TestMethods.Count > 0 && (exceedsTime || exceedsLength))
             {
@@ -193,7 +187,7 @@ internal sealed class TimeBasedScheduler
             int additionalFilterLength = method.FullyQualifiedName.Length + 1;
 
             if (currentItem.TestMethods.Count >= testsPerItem ||
-                currentFilterLength + additionalFilterLength > _maxFilterLength)
+                currentFilterLength + additionalFilterLength > MaxFilterLength)
             {
                 FinalizeWorkItem(workItems, currentItem);
                 currentItem = new ScheduledWorkItem();

@@ -230,11 +230,22 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 if (!projectMetadata.TryGetValue(primaryAssembly, out var xunitProject))
                     continue;
 
-                var command = BuildTimeBasedCommand(xunitProject, workItem, timeout);
-                if (command is null)
+                if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
                     continue;
 
-                if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
+                // Write the filter to a response file in the publish directory,
+                // bypassing cmd.exe's 8191-char command line limit entirely.
+                string? rspFileName = null;
+                string filterString = workItem.GetFilterString();
+                if (!string.IsNullOrEmpty(filterString))
+                {
+                    rspFileName = $"{workItem.DisplayName}.filter.rsp";
+                    var rspPath = Path.Combine(publishDirectory, rspFileName);
+                    File.WriteAllText(rspPath, $"--filter\n\"{filterString}\"");
+                }
+
+                var command = BuildTimeBasedCommand(xunitProject, workItem, timeout, rspFileName);
+                if (command is null)
                     continue;
 
                 taskItems.Add(new Microsoft.Build.Utilities.TaskItem(workItem.DisplayName, new Dictionary<string, string>()
@@ -251,8 +262,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
         /// <summary>
         /// Builds the execution command for a time-based work item.
+        /// The filter is passed via a response file (@file.rsp) to avoid
+        /// cmd.exe command line length limits on Windows.
         /// </summary>
-        private string? BuildTimeBasedCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout)
+        private string? BuildTimeBasedCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout, string? rspFileName)
         {
             if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
                 return null;
@@ -268,8 +281,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             xunitProject.TryGetMetadata("ExcludeAdditionalParameters", out string excludeAdditionalParameters);
 
             string assemblyName = Path.GetFileName(targetPath);
-            string filterString = workItem.GetFilterString();
-            string testFilter = string.IsNullOrEmpty(filterString) ? "" : $"--filter \"{filterString}\"";
+
+            // Reference the response file instead of inline filter
+            string testFilter = rspFileName is not null ? $"@{rspFileName}" : "";
 
             string testExecutionDirectory = string.Empty;
             string msbuildAdditionalSdkResolverFolder = string.Empty;
