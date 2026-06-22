@@ -17,6 +17,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 // [assembly:CollectionBehavior(DisableTestParallelization = true)] in
 // LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
 // process-CWD mutation these tests perform.
+[DoNotParallelize]
 [TestClass]
 public class StaticWebAssetTaskEnvironmentTests
 {
