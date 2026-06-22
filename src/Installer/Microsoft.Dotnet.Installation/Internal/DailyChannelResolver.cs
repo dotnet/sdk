@@ -101,7 +101,7 @@ internal sealed class DailyChannelResolver : IDisposable
         if (UpdateChannel.TrySplitPartialVersionAndPrereleaseLabel(scope, out var bandPart, out var prereleaseLabel))
         {
             string akaMsLabel = prereleaseLabel.Replace(".", string.Empty, StringComparison.Ordinal);
-            string normalizedBand = EnsureFeatureBand(NormalizePartialVersion(bandPart));
+            string normalizedBand = EnsureFeatureBandForPreviewDaily(NormalizePartialVersion(bandPart));
             partialVersion = $"{normalizedBand}-{akaMsLabel}";
         }
         else
@@ -113,12 +113,14 @@ internal sealed class DailyChannelResolver : IDisposable
     }
 
     /// <summary>
-    /// Ensures a partial version has a feature-band component. <c>"11.0"</c> →
-    /// <c>"11.0.1xx"</c>; <c>"11.0.2xx"</c> passes through unchanged. Used when the
-    /// aka.ms path requires a feature band (prerelease-qualified daily channels) but
-    /// the user supplied only major.minor.
+    /// Injects the default <c>.1xx</c> feature band into a bare major.minor partial version:
+    /// <c>"11.0"</c> → <c>"11.0.1xx"</c>; <c>"11.0.2xx"</c> passes through unchanged. Only valid
+    /// for prerelease-qualified daily channels, where the requested version is at the start of a
+    /// major version's life and <c>.1xx</c> is the only band aka.ms publishes a shortlink for.
+    /// Do not use for non-prerelease daily scopes (e.g. <c>"10.0-daily"</c>), which can resolve to
+    /// a later band such as <c>10.0.4xx</c>.
     /// </summary>
-    private static string EnsureFeatureBand(string partialVersion)
+    private static string EnsureFeatureBandForPreviewDaily(string partialVersion)
     {
         var parts = partialVersion.Split('.');
         return parts.Length == 2 ? $"{partialVersion}.1xx" : partialVersion;

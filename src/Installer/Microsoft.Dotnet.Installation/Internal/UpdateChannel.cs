@@ -45,7 +45,10 @@ internal class UpdateChannel
 
     /// <summary>
     /// Tries to split a daily-scope string into a partial-version prefix and a
-    /// prerelease label. Accepts both <c>preview5</c> and <c>preview.5</c>
+    /// prerelease label. The <paramref name="scope"/> is a channel name with the
+    /// <c>-daily</c> suffix already removed: a partial version (e.g. <c>"11.0"</c> or
+    /// <c>"11.0.1xx"</c>) optionally followed by a prerelease label, never a
+    /// fully-qualified version. Accepts both <c>preview5</c> and <c>preview.5</c>
     /// spellings of the label (e.g. <c>"11.0.1xx-preview.5"</c> →
     /// <c>("11.0.1xx", "preview.5")</c>; <c>"11.0.1xx-preview5"</c> →
     /// <c>("11.0.1xx", "preview.5")</c>). The returned <paramref name="prereleaseLabel"/>

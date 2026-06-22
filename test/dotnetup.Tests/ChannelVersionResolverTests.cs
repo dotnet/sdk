@@ -183,6 +183,8 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("11.0.1xx-preview-daily", false)]  // Phase label missing number
         [InlineData("11.0.1xx-5-daily", false)]  // Phase label missing letters
         [InlineData("11.0.103-preview.5-daily", false)]  // Specific patch + phase still rejected
+        [InlineData("invalid.invalid.1xx-daily", false)]  // Non-numeric scope
+        [InlineData("bad.0.1xx-preview.5-daily", false)]  // Valid phase label but invalid band still rejected
         public void IsValidChannelFormat_InvalidInputs_ReturnsFalse(string channel, bool expected)
         {
             Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));
