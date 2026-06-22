@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Package;
@@ -21,6 +22,7 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
 
     public string GetVirtualProjectPath(string entryPointFilePath) => VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath);
 
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Can't change the annotation on the NuGet-owned interface definition.")]
     public ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection)
     {
         if (!Path.IsPathFullyQualified(entryPointFilePath))
@@ -40,6 +42,7 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
         return projectRootElement;
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Can't change the annotation on the NuGet-owned interface definition.")]
     public void SaveProject(string entryPointFilePath, ProjectRootElement projectRootElement)
     {
         VirtualProjectPackageReflector.ReflectChangesToDirectives(projectRootElement, entryPointFilePath);
