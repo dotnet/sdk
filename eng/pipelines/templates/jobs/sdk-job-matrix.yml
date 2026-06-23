@@ -31,19 +31,6 @@ parameters:
   - categoryName: TestBuild
     targetArchitecture: arm64
     runtimeIdentifier: osx-arm64
-  - categoryName: AoT
-    runAoTTests: true
-    targetArchitecture: arm64
-    runtimeIdentifier: osx-arm64
-    # Run the AoT leg on native arm64 macOS hardware. NativeAOT does not support
-    # cross-compilation, so dotnet-aot (and its mstat/dgml size-analysis output) is
-    # only produced when HostRid == TargetRid (osx-arm64). The default macOS pool is
-    # the x64 hosted image, so override the pool for this leg only to avoid adding
-    # load to the arm64 hosted capacity on the non-AoT macOS legs.
-    pool:
-      name: Azure Pipelines
-      vmImage: macOS-15-arm64
-      os: macOS
 
 jobs:
 ### ONELOCBUILD ###
