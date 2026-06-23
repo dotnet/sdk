@@ -3828,7 +3828,7 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""
 
 {s_msBuildPlatforms}") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(51652, "https://github.com/dotnet/roslyn/issues/51652")]
@@ -4287,7 +4287,7 @@ using System.Runtime.Versioning;
 [*]
 {editorconfigText}
 "));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyAnalyzerCSAsync(string sourceCode, string editorconfigText)
@@ -4298,7 +4298,7 @@ using System.Runtime.Versioning;
 [*]
 {editorconfigText}
 "));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyAnalyzerVBAsync(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
@@ -4312,7 +4312,7 @@ using System.Runtime.Versioning;
 [*]
 {editorconfigText}
 "));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static VerifyVB.Test PopulateTestVb(string sourceCode, params DiagnosticResult[] expected)

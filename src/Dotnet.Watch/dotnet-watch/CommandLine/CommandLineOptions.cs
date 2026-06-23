@@ -5,9 +5,13 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
+using Microsoft.Build.Logging;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.Extensions.Logging;
 
@@ -17,12 +21,19 @@ internal sealed class CommandLineOptions
 {
     private static readonly ImmutableArray<string> s_binaryLogOptionNames = ["-bl", "/bl", "-binaryLogger", "--binaryLogger", "/binaryLogger"];
 
+    public static readonly ParserConfiguration ParserConfiguration = new()
+    {
+        // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
+        EnablePosixBundling = false,
+    };
+
     public bool List { get; init; }
     public required GlobalOptions GlobalOptions { get; init; }
 
     public string? FilePath { get; init; }
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
+    public string? Device { get; init; }
     public Optional<string?> LaunchProfileName { get; init; }
 
     /// <summary>
@@ -31,11 +42,16 @@ internal sealed class CommandLineOptions
     public required IReadOnlyList<string> CommandArguments { get; init; }
 
     /// <summary>
+    /// <see cref="CommandArguments"/> excluding binlog options. Workaround for https://github.com/dotnet/sdk/issues/49989.
+    /// </summary>
+    public required IReadOnlyList<string> CommandArgumentsWithoutBinLog { get; init; }
+
+    /// <summary>
     /// Arguments passed to `dotnet build` and to design-time build evaluation.
     /// </summary>
     public required IReadOnlyList<string> BuildArguments { get; init; }
 
-    public required string Command { get; init; }
+    public required Command Command { get; init; }
 
     public required bool IsExplicitCommand { get; init; }
 
@@ -49,14 +65,8 @@ internal sealed class CommandLineOptions
         var rootCommandInvoked = false;
         definition.SetAction(parseResult => rootCommandInvoked = true);
 
-        ParserConfiguration parseConfig = new()
-        {
-            // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
-            EnablePosixBundling = false,
-        };
-
         // parse without forwarded options first:
-        var parseResult = definition.Parse(args, parseConfig);
+        var parseResult = definition.Parse(args, ParserConfiguration);
         if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
@@ -65,7 +75,10 @@ internal sealed class CommandLineOptions
 
         // determine subcommand:
         var command = GetSubcommand(parseResult, out bool isExplicitCommand);
-        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null);
+
+        // Options that the subcommand forwards to build command.
+        // Exclude --framework option as it is passed to `dotnet build` and `dotnet run` explicitly by the watcher.
+        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null && o.Name != CommonOptions.FrameworkOptionName);
 
         foreach (var buildOption in buildOptions)
         {
@@ -73,7 +86,7 @@ internal sealed class CommandLineOptions
         }
 
         // reparse with forwarded options:
-        parseResult = definition.Parse(args, parseConfig);
+        parseResult = definition.Parse(args, ParserConfiguration);
         if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
@@ -109,17 +122,23 @@ internal sealed class CommandLineOptions
             command,
             isExplicitCommand,
             out var binLogToken,
-            out var binLogPath);
+            out var binLogPath,
+            out var commandArgumentsWithoutBinLog);
 
-        // We assume that forwarded options, if any, are intended for dotnet build.
-        var buildArguments = buildOptions.Select(option => option.ForwardingFunction!(parseResult)).SelectMany(args => args).ToList();
+        // We assume that forwarded options, if any, are intended for `dotnet build`.
+        // Exclude --target option since we need to control the targets being built.
+        var msbuildCommandDefinition = new MSBuildCommandDefinition();
+
+        var buildArguments = buildOptions
+            .Select(option => option.ForwardingFunction!(parseResult))
+            .SelectMany(args => args)
+            .Where(arg => !msbuildCommandDefinition.Parse(arg).HasOption(msbuildCommandDefinition.TargetOption))
+            .ToList();
 
         if (binLogToken != null)
         {
             buildArguments.Add(binLogToken);
         }
-
-        var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
 
         var logLevel = parseResult.GetValue(definition.VerboseOption)
             ? LogLevel.Debug
@@ -139,47 +158,47 @@ internal sealed class CommandLineOptions
                 LogLevel = logLevel,
                 NoHotReload = parseResult.GetValue(definition.NoHotReloadOption),
                 NonInteractive = parseResult.GetValue(definition.NonInteractiveOption),
-                BinaryLogPath = ParseBinaryLogFilePath(binLogPath),
+                BinaryLogPath = ParseBinaryLogFilePath(binLogPath, logger),
             },
 
             CommandArguments = commandArguments,
-            Command = command.Name,
+            CommandArgumentsWithoutBinLog = commandArgumentsWithoutBinLog,
+            Command = command,
             IsExplicitCommand = isExplicitCommand,
 
             ProjectPath = projectValue,
             FilePath = parseResult.GetValue(definition.FileOption),
             LaunchProfileName = launchProfile,
             BuildArguments = buildArguments,
-            TargetFramework = targetFrameworkOption != null ? parseResult.GetValue(targetFrameworkOption) : null,
+            TargetFramework = parseResult.GetValue(definition.FrameworkOption),
+            Device = parseResult.GetValue(definition.DeviceOption),
         };
     }
 
     /// <summary>
-    /// Parses the value of msbuild option `-binaryLogger[:[LogFile=]output.binlog[;ProjectImports={None,Embed,ZipFile}]]`.
-    /// Emulates https://github.com/dotnet/msbuild/blob/7f69ea906c29f2478cc05423484ad185de66e124/src/Build/Logging/BinaryLogger/BinaryLogger.cs#L481.
-    /// See https://github.com/dotnet/msbuild/issues/12256
+    /// Parses the value of msbuild option `-binaryLogger`.
     /// </summary>
-    internal static string? ParseBinaryLogFilePath(string? value)
-        => value switch
+    internal static string? ParseBinaryLogFilePath(string? value, ILogger logger)
+    {
+        try
         {
-            null => null,
-            _ => (from parameter in value.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                  where !string.Equals(parameter, "ProjectImports=None", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "ProjectImports=Embed", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "ProjectImports=ZipFile", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "OmitInitialInfo", StringComparison.OrdinalIgnoreCase)
-                  let path = (parameter.StartsWith("LogFile=", StringComparison.OrdinalIgnoreCase) ? parameter["LogFile=".Length..] : parameter).Trim('"')
-                  let pathWithExtension = path.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) ? path : $"{path}.binlog"
-                  select pathWithExtension)
-                 .LastOrDefault("msbuild.binlog")
-        };
+            return value != null ? BinaryLogger.ParseParameters(value).LogFilePath ?? "msbuild.binlog" : null;
+        }
+        catch (Build.Framework.LoggerException e)
+        {
+            // MSB4234: Invalid binary logger parameter(s): "{0}". Expected: ProjectImports={{None,Embed,ZipFile}} and/or [LogFile=]filePath.binlog (the log file name or path, must have the ".binlog" extension)
+            logger.LogError(e.Message);
+            return null;
+        }
+    }
 
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
         Command command,
         bool isExplicitCommand,
         out string? binLogToken,
-        out string? binLogPath)
+        out string? binLogPath,
+        out IReadOnlyList<string> argumentsWithoutBinLog)
     {
         var definition = (DotnetWatchCommandDefinition)parseResult.CommandResult.Command;
 
@@ -196,7 +215,7 @@ internal sealed class CommandLineOptions
             {
                 continue;
             }
-            
+
             // forward forwardable option if the subcommand supports it:
             if (!command.Options.Any(option => option.Name == optionResult.Option.Name))
             {
@@ -245,9 +264,14 @@ internal sealed class CommandLineOptions
         var seenCommand = false;
         var dashDashInserted = false;
 
+
+        var argumentsWithoutBinLogBuilder = new List<string>();
+        argumentsWithoutBinLogBuilder.AddRange(arguments);
+
         for (int i = 0; i < parseResult.UnmatchedTokens.Count; i++)
         {
             var token = parseResult.UnmatchedTokens[i];
+            var isBinLogToken = false;
 
             if (i < unmatchedTokensBeforeDashDash)
             {
@@ -273,6 +297,9 @@ internal sealed class CommandLineOptions
                             binLogToken = token;
                             binLogPath = token[(name.Length + 1)..];
                         }
+
+                        isBinLogToken = true;
+                        break;
                     }
                 }
             }
@@ -280,12 +307,19 @@ internal sealed class CommandLineOptions
             if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
             {
                 arguments.Add("--");
+                argumentsWithoutBinLogBuilder.Add("--");
                 dashDashInserted = true;
             }
 
             arguments.Add(token);
+
+            if (!isBinLogToken)
+            {
+                argumentsWithoutBinLogBuilder.Add(token);
+            }
         }
 
+        argumentsWithoutBinLog = argumentsWithoutBinLogBuilder;
         return arguments;
     }
 
@@ -351,7 +385,9 @@ internal sealed class CommandLineOptions
             IsMainProject = true,
             Representation = project,
             WorkingDirectory = workingDirectory,
-            Command = Command,
+            TargetFramework = TargetFramework,
+            Device = Device,
+            Command = Command.Name,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],
             LaunchProfileName = LaunchProfileName,

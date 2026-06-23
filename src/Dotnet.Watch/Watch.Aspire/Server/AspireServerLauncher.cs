@@ -3,12 +3,6 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
-using System.Threading.Channels;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
-using Microsoft.DotNet.HotReload;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Microsoft.DotNet.Watch;
 

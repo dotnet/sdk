@@ -1,17 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
-
 namespace Microsoft.DotNet.Watch;
 
 internal static class ProcessUtilities
 {
-    public const int SIGKILL = 9;
-    public const int SIGTERM = 15;
-    
     public static string? SendWindowsCtrlCEvent(int processId)
     {
         const uint CTRL_C_EVENT = 0;
@@ -30,14 +23,6 @@ internal static class ProcessUtilities
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
-    }
-
-    public static string? SendPosixSignal(int processId, int signal)
-    {
-        return sys_kill(processId, signal) == 0 ? null : GetLastPInvokeErrorMessage();
-
-        [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
-        static extern int sys_kill(int pid, int sig);
     }
 
     private static string GetLastPInvokeErrorMessage()

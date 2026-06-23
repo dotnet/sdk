@@ -38,7 +38,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         : base(result)
     {
         _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
-        _forwardArguments = result.GetValue(Definition.CommandArgument) ?? Enumerable.Empty<string>();
+        _forwardArguments = result.GetValue(Definition.CommandArgument) ?? [];
         _allowRollForward = result.GetValue(Definition.RollForwardOption);
         _configFile = result.GetValue(Definition.ConfigOption);
         _sources = result.GetValue(Definition.SourceOption) ?? [];
@@ -123,8 +123,9 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
             //  other feeds, but this is probably OK.
             var downloadPackageLocation = new PackageLocation(
                 nugetConfig: _configFile != null ? new(_configFile) : null,
-                sourceFeedOverrides: [packageSource.Source],
-                additionalFeeds: _addSource);
+                sourceFeedOverrides: _sources,
+                additionalFeeds: _addSource,
+                packageSourceOverrides: [packageSource]);
 
             toolPackage = _toolPackageDownloader.InstallPackage(
                 downloadPackageLocation,

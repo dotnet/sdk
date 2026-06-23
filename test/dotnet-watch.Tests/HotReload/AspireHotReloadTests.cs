@@ -5,174 +5,177 @@
 
 using System.Text.RegularExpressions;
 
-namespace Microsoft.DotNet.Watch.UnitTests
+namespace Microsoft.DotNet.Watch.UnitTests;
+
+public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
+    public async Task Aspire_BuildError_ManualRestart()
     {
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
-        public async Task Aspire_BuildError_ManualRestart()
-        {
-            var tfm = ToolsetInfo.CurrentTargetFramework;
-            var testAsset = TestAssets.CopyTestAsset("WatchAspire")
-                .WithSource();
+        var testAsset = TestAssets.CopyTestAsset("WatchAspire")
+            .WithSource();
 
-            var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
-            var serviceProjectPath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "WatchAspire.ApiService.csproj");
-            var serviceSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
+        var serviceProjectDisplay = $"WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})";
+        var webProjectDisplay = $"WatchAspire.Web ({ToolsetInfo.CurrentTargetFramework})";
+        var hostProjectDisplay = $"WatchAspire.AppHost ({ToolsetInfo.CurrentTargetFramework})";
 
-            var webSourcePath = Path.Combine(testAsset.Path, "WatchAspire.Web", "Program.cs");
-            var webProjectPath = Path.Combine(testAsset.Path, "WatchAspire.Web", "WatchAspire.Web.csproj");
+        var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
+        var serviceProjectPath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "WatchAspire.ApiService.csproj");
+        var serviceSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
 
-            App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
+        var webSourcePath = Path.Combine(testAsset.Path, "WatchAspire.Web", "Program.cs");
+        var webProjectPath = Path.Combine(testAsset.Path, "WatchAspire.Web", "WatchAspire.Web.csproj");
 
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
-            // check that Aspire server output is logged via dotnet-watch reporter:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-            // wait until after all DCP sessions have started:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Session started");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
+        // check that Aspire server output is logged via dotnet-watch reporter:
+        await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
 
-            // MigrationService terminated:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
+        // wait until after all DCP sessions have started:
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Session started");
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
 
-            // working directory of the service should be its project directory:
-            await App.WaitUntilOutputContains($"ApiService working directory: '{Path.GetDirectoryName(serviceProjectPath)}'");
+        // MigrationService terminated:
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
 
-            // Service -- valid code change:
-            UpdateSourceFile(
-                serviceSourcePath,
-                serviceSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)"));
+        // working directory of the service should be its project directory:
+        await App.WaitUntilOutputContains($"ApiService working directory: '{Path.GetDirectoryName(serviceProjectPath)}'");
 
-            await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
+        // Service -- valid code change:
+        UpdateSourceFile(
+            serviceSourcePath,
+            serviceSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)"));
 
-            await App.WaitUntilOutputContains("Using Aspire process launcher.");
+        await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
 
-            // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
-            Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
-            App.Process.ClearOutput();
+        await App.WaitUntilOutputContains("Using Aspire process launcher.");
 
-            // rude edit with build error:
-            UpdateSourceFile(
-                serviceSourcePath,
-                serviceSource.Replace("record WeatherForecast", "record WeatherForecast2"));
+        // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
+        Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
+        App.Process.ClearOutput();
 
-            // the prompt is printed into stdout while the error is printed into stderr, so they might arrive in any order:
-            await App.WaitUntilOutputContains("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
-            await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
+        // rude edit with build error:
+        UpdateSourceFile(
+            serviceSourcePath,
+            serviceSource.Replace("record WeatherForecast", "record WeatherForecast2"));
 
-            await App.WaitUntilOutputContains($"dotnet watch ❌ {serviceSourcePath}(40,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
-            await App.WaitUntilOutputContains("dotnet watch ⌚ Affected projects:");
-            await App.WaitUntilOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
-            App.Process.ClearOutput();
+        // the prompt is printed into stdout while the error is printed into stderr, so they might arrive in any order:
+        await App.WaitUntilOutputContains("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
+        await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
 
-            App.SendKey('y');
+        await App.WaitUntilOutputContains($"dotnet watch ❌ [{serviceProjectDisplay}] {serviceSourcePath}(40,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
+        await App.WaitUntilOutputContains("dotnet watch ⌚ Affected projects:");
+        await App.WaitUntilOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
+        App.Process.ClearOutput();
 
-            await App.WaitUntilOutputContains(MessageDescriptor.FixBuildError);
+        App.SendKey('y');
 
-            await App.WaitUntilOutputContains("Application is shutting down...");
+        await App.WaitUntilOutputContains(MessageDescriptor.FixBuildError);
 
-            await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
+        await App.WaitUntilOutputContains("Application is shutting down...");
 
-            await App.WaitUntilOutputContains(MessageDescriptor.Building);
-            await App.WaitUntilOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
-            App.Process.ClearOutput();
+        await App.WaitUntilOutputContains(MessageDescriptor.Exited, serviceProjectDisplay);
 
-            // fix build error:
-            UpdateSourceFile(
-                serviceSourcePath,
-                serviceSource.Replace("WeatherForecast", "WeatherForecast2"));
+        await App.WaitUntilOutputContains(MessageDescriptor.Building);
+        await App.WaitUntilOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
+        App.Process.ClearOutput();
 
-            await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
+        // fix build error:
+        UpdateSourceFile(
+            serviceSourcePath,
+            serviceSource.Replace("WeatherForecast", "WeatherForecast2"));
 
-            await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded);
-            await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRebuilt);
-            await App.WaitUntilOutputContains($"Starting: '{serviceProjectPath}'");
+        await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
 
-            // Wait for the process to start before shutting down, so we can reliably verify Exited message below.
-            // The agent startup hook might not be initialized yet (signal handlers registered),
-            // so the process might need to be forcefully killed. We could wait until the agent is initialized
-            // but it's good to test this scenario.
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, $"WatchAspire.ApiService ({tfm})");
+        await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded);
+        await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRebuilt);
+        await App.WaitUntilOutputContains($"Starting: '{serviceProjectPath}'");
 
-            App.Process.ClearOutput();
+        // Wait for the process to start before shutting down, so we can reliably verify Exited message below.
+        // The agent startup hook might not be initialized yet (signal handlers registered),
+        // so the process might need to be forcefully killed. We could wait until the agent is initialized
+        // but it's good to test this scenario.
+        await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, serviceProjectDisplay);
 
-            App.SendControlC();
+        App.Process.ClearOutput();
 
-            await App.WaitUntilOutputContains(MessageDescriptor.ShutdownRequested);
+        App.SendControlC();
 
-            await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
-            await App.WaitUntilOutputContains($"[WatchAspire.Web ({tfm})] Exited");
-            await App.WaitUntilOutputContains($"[WatchAspire.AppHost ({tfm})] Exited");
+        await App.WaitUntilOutputContains(MessageDescriptor.ShutdownRequested);
 
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Waiting for server to shutdown ...");
+        // Not checking specific exited message since on shutdown we might see non-zero exit codes
+        await App.WaitUntilOutputContains($"[{serviceProjectDisplay}] Exited");
+        await App.WaitUntilOutputContains($"[{webProjectDisplay}] Exited");
+        await App.WaitUntilOutputContains($"[{hostProjectDisplay}] Exited");
 
-            // TODO: these are not reliably reported: https://github.com/dotnet/sdk/issues/53308
-            //await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
-            //await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Stop session");
-            //await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Stop session");
+        await App.WaitUntilOutputContains("dotnet watch ⭐ Disposing server ...");
 
-            // Note: do not check that 'sessionTerminated' notification is received.
-            // It might get cancelled and not delivered on shutdown.
-        }
+        // TODO: these are not reliably reported: https://github.com/dotnet/sdk/issues/53308
+        //await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Stop session");
+        //await App.WaitUntilOutputContains("dotnet watch ⭐ [#2] Stop session");
+        //await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Stop session");
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
-        public async Task Aspire_NoEffect_AutoRestart()
-        {
-            var tfm = ToolsetInfo.CurrentTargetFramework;
-            var testAsset = TestAssets.CopyTestAsset("WatchAspire")
-                .WithSource();
+        // Note: do not check that 'sessionTerminated' notification is received.
+        // It might get cancelled and not delivered on shutdown.
+    }
 
-            var webSourcePath = Path.Combine(testAsset.Path, "WatchAspire.Web", "Program.cs");
-            var webProjectPath = Path.Combine(testAsset.Path, "WatchAspire.Web", "WatchAspire.Web.csproj");
-            var webSource = File.ReadAllText(webSourcePath, Encoding.UTF8);
+    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
+    public async Task Aspire_NoEffect_AutoRestart()
+    {
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+        var testAsset = TestAssets.CopyTestAsset("WatchAspire")
+            .WithSource();
 
-            App.Start(testAsset, ["-lp", "http", "--non-interactive"], relativeProjectDirectory: "WatchAspire.AppHost");
+        var webSourcePath = Path.Combine(testAsset.Path, "WatchAspire.Web", "Program.cs");
+        var webProjectPath = Path.Combine(testAsset.Path, "WatchAspire.Web", "WatchAspire.Web.csproj");
+        var webSource = File.ReadAllText(webSourcePath, Encoding.UTF8);
 
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        App.Start(testAsset, ["-lp", "http", "--non-interactive"], relativeProjectDirectory: "WatchAspire.AppHost");
 
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
-            await App.WaitUntilOutputContains(MessageDescriptor.Exited, $"WatchAspire.MigrationService ({tfm})");
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-            // migration service output should not be printed to dotnet-watch output, it should be sent via DCP as a notification:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'serviceLogs': log_message='      Migration complete', is_std_err=False");
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
+        await App.WaitUntilOutputContains(MessageDescriptor.Exited, $"WatchAspire.MigrationService ({tfm})");
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
 
-            // wait until after DCP sessions have been started for all projects:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
+        // migration service output should not be printed to dotnet-watch output, it should be sent via DCP as a notification:
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Sending 'serviceLogs': log_message='      Migration complete', is_std_err=False");
 
-            App.AssertOutputDoesNotContain(new Regex("^ +Migration complete"));
+        // wait until after DCP sessions have been started for all projects:
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
 
-            App.Process.ClearOutput();
+        App.AssertOutputDoesNotContain(new Regex("^ +Migration complete"));
 
-            // no-effect edit:
-            UpdateSourceFile(webSourcePath, src => src.Replace("/* top-level placeholder */", "builder.Services.AddRazorComponents();"));
+        App.Process.ClearOutput();
 
-            await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
-            await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
-            await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
-            App.AssertOutputDoesNotContain("⚠");
+        // no-effect edit:
+        UpdateSourceFile(webSourcePath, src => src.Replace("/* top-level placeholder */", "builder.Services.AddRazorComponents();"));
 
-            // The process exited and should not participate in Hot Reload:
-            App.AssertOutputDoesNotContain($"[WatchAspire.MigrationService ({tfm})]");
-            App.AssertOutputDoesNotContain("dotnet watch ⭐ [#1]");
+        await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
+        await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Session started");
+        await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
+        App.AssertOutputDoesNotContain("⚠");
 
-            App.Process.ClearOutput();
+        // The process exited and should not participate in Hot Reload:
+        App.AssertOutputDoesNotContain($"[WatchAspire.MigrationService ({tfm})]");
+        App.AssertOutputDoesNotContain("dotnet watch ⭐ [#1]");
 
-            // lambda body edit:
-            UpdateSourceFile(webSourcePath, src => src.Replace("Hello world!", "<Updated>"));
+        App.Process.ClearOutput();
 
-            await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
-            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Updates applied.");
-            App.AssertOutputDoesNotContain(MessageDescriptor.ProjectsRebuilt);
-            App.AssertOutputDoesNotContain(MessageDescriptor.ProjectsRestarted);
-            App.AssertOutputDoesNotContain("⚠");
+        // lambda body edit:
+        UpdateSourceFile(webSourcePath, src => src.Replace("Hello world!", "<Updated>"));
 
-            // The process exited and should not participate in Hot Reload:
-            App.AssertOutputDoesNotContain($"[WatchAspire.MigrationService ({tfm})]");
-            App.AssertOutputDoesNotContain("dotnet watch ⭐ [#1]");
-        }
+        await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Updates applied.");
+        App.AssertOutputDoesNotContain(MessageDescriptor.ProjectsRebuilt);
+        App.AssertOutputDoesNotContain(MessageDescriptor.ProjectsRestarted);
+        App.AssertOutputDoesNotContain("⚠");
+
+        // The process exited and should not participate in Hot Reload:
+        App.AssertOutputDoesNotContain($"[WatchAspire.MigrationService ({tfm})]");
+        App.AssertOutputDoesNotContain("dotnet watch ⭐ [#1]");
     }
 }

@@ -1,26 +1,29 @@
-﻿<Project>
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
     <RunSettingsFilePath>$(MSBuildThisFileDirectory)\dotnet-MsiInstallation.Tests.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>$(SdkTargetFramework)-windows</TargetFramework>
+    <!-- Use plain TFM on non-Windows so NuGet restore can evaluate the project -->
+    <TargetFramework Condition="'$(TargetOS)' == 'windows'">$(SdkTargetFramework)-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetOS)' != 'windows'">$(SdkTargetFramework)</TargetFramework>
+    <!-- Disable test infrastructure on non-Windows so it doesn't inject usings/entry points -->
+    <IsTestApplication Condition="'$(TargetOS)' != 'windows'">false</IsTestApplication>
+    <IsTestProject Condition="'$(TargetOS)' != 'windows'">false</IsTestProject>
+    <IsUnitTestProject Condition="'$(TargetOS)' != 'windows'">false</IsUnitTestProject>
   </PropertyGroup>
 
   <PropertyGroup>
     <RootNamespace>Microsoft.DotNet.MsiInstallerTests</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="NuGet.LibraryModel" />
     <PackageReference Include="NuGet.Versioning" />
@@ -30,11 +33,23 @@
     <PackageReference Include="Microsoft.Management.Infrastructure" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+  </ItemGroup>
+
+  <!-- Remove ALL compile items and global usings added by test infrastructure (must be after Sdk.targets) -->
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
+    <Compile Remove="@(Compile)" />
+    <Using Remove="@(Using)" />
+  </ItemGroup>
 
 </Project>

@@ -12,6 +12,6 @@ internal sealed class ListPackageCommandDefinition() : PackageListCommandDefinit
 
     public ListCommandDefinition Parent => (ListCommandDefinition)Parents.Single();
 
-    public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.SlnOrProjectArgument);
+    public override Argument<string>? GetProjectOrFileArgument()
+        => Parent.SlnOrProjectOrFileArgument;
 }

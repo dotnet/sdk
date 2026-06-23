@@ -870,7 +870,8 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var staticLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".lib" : ".a";
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}{staticLibSuffix}");
+            var nativeLibPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
+            var publishedDll = Path.Combine(publishDirectory, $"{nativeLibPrefix}{projectName}{staticLibSuffix}");
 
             // The lib exist and should be native
             File.Exists(publishedDll).Should().BeTrue();
@@ -923,7 +924,8 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var sharedLibSuffix = GetSharedLibSuffix();
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
+            var nativeLibPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
+            var publishedDll = Path.Combine(publishDirectory, $"{nativeLibPrefix}{projectName}{sharedLibSuffix}");
 
             // The lib exist and should be native
             File.Exists(publishedDll).Should().BeTrue();
@@ -1031,13 +1033,13 @@ namespace Microsoft.NET.Publish.Tests
             if (target == null)
             {
                 target = new XElement(ns + "Target",
-                    new XAttribute("BeforeTargets", "PrepareForILLink"),
+                    new XAttribute("AfterTargets", "ComputeResolvedFilesToPublishList"),
                     new XAttribute("Name", targetName));
                 project.Root.Add(target);
             }
 
             target.Add(new XElement(ns + "ItemGroup",
-                new XElement("ManagedAssemblyToLink",
+                new XElement("ResolvedFileToPublish",
                     new XAttribute("Condition", $"'%(FileName)' == '{assemblyName}'"),
                     new XAttribute(key, value))));
         }
@@ -1054,6 +1056,99 @@ namespace Microsoft.NET.Publish.Tests
                 .Where(i => i.metadata["TargetFramework"] == targetFramework)
                 .Select(i => i.metadata["ILCompilerPackVersion"])
                 .Single();
+        }
+
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        public void NativeAot_app_publishes_with_app_and_package_satellite_assemblies()
+        {
+            var projectName = "NativeAotAppWithSatellites";
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["SatelliteResourceLanguages"] = "fr;de";
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                testProject.AdditionalProperties["StripSymbols"] = "true";
+            }
+            testProject.PackageReferences.Add(new TestPackageReference("System.Spatial", "5.8.3"));
+
+            // Override Program.cs to look up French resource strings at runtime
+            // from both app-authored and package-provided satellite assemblies
+            testProject.SourceFiles[$"{projectName}.cs"] = $@"
+using System;
+using System.Globalization;
+using System.Resources;
+class Test
+{{
+    static int Main()
+    {{
+        // Verify app-authored satellite resources resolve in French
+        var appRm = new ResourceManager(""{projectName}.Strings"", typeof(Test).Assembly);
+        var appValue = appRm.GetString(""HelloWorld"", CultureInfo.GetCultureInfo(""fr""));
+        Console.WriteLine(appValue);
+        if (appValue != ""Bonjour"") return 1;
+
+        // Verify package (System.Spatial) satellite resources resolve in French
+        var spatialAsm = typeof(System.Spatial.GeographyPoint).Assembly;
+        var pkgRm = new ResourceManager(""System.Spatial"", spatialAsm);
+        var pkgValue = pkgRm.GetString(""Validator_SridMismatch"", CultureInfo.GetCultureInfo(""fr""));
+        if (string.IsNullOrEmpty(pkgValue)) return 2;
+        Console.WriteLine(""PackageSatelliteOK"");
+        return 0;
+    }}
+}}";
+
+            // Neutral-culture fallback resource
+            testProject.EmbeddedResources["Strings.resx"] = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<root>
+  <resheader name=""resmimetype""><value>text/microsoft-resx</value></resheader>
+  <resheader name=""version""><value>2.0</value></resheader>
+  <resheader name=""reader""><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name=""writer""><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name=""HelloWorld"" xml:space=""preserve""><value>Hello</value></data>
+</root>";
+
+            // French satellite resource
+            testProject.EmbeddedResources["Strings.fr.resx"] = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<root>
+  <resheader name=""resmimetype""><value>text/microsoft-resx</value></resheader>
+  <resheader name=""version""><value>2.0</value></resheader>
+  <resheader name=""reader""><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name=""writer""><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name=""HelloWorld"" xml:space=""preserve""><value>Bonjour</value></data>
+</root>";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
+
+            // NativeAOT embeds satellite assemblies into the native binary, so they
+            // should NOT appear as separate files in the publish directory (dotnet/runtime#124191).
+            File.Exists(Path.Combine(publishDirectory, "fr", $"{projectName}.resources.dll")).Should().BeFalse("fr app satellite should be embedded, not published separately");
+            File.Exists(Path.Combine(publishDirectory, "fr", "System.Spatial.resources.dll")).Should().BeFalse("fr package satellite should be embedded, not published separately");
+            File.Exists(Path.Combine(publishDirectory, "de", "System.Spatial.resources.dll")).Should().BeFalse("de package satellite should be embedded, not published separately");
+
+            // Satellite for a non-selected culture (ja) should be absent
+            File.Exists(Path.Combine(publishDirectory, "ja", "System.Spatial.resources.dll")).Should().BeFalse("ja System.Spatial satellite should be filtered out");
+
+            // Published output should be a native image
+            var publishedExe = Path.Combine(publishDirectory, $"{projectName}{Constants.ExeSuffix}");
+            File.Exists(publishedExe).Should().BeTrue();
+            IsNativeImage(publishedExe).Should().BeTrue();
+
+            // Running the native image should resolve French resources correctly
+            // from both app-authored and package-provided satellites
+            new RunExeCommand(Log, publishedExe)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Bonjour")
+                .And.HaveStdOutContaining("PackageSatelliteOK");
         }
 
         private void CheckIlcVersions(TestAsset testAsset, string targetFramework, string rid, string expectedVersion, bool useRuntimePackLayout)

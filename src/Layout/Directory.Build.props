@@ -30,10 +30,8 @@
     <ExeExtension>.exe</ExeExtension>
     <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
 
-    <TargetRid Condition="'$(TargetRid)' == ''">$(OSName)-$(TargetArchitecture)</TargetRid>
     <ProductMonikerRid>$(TargetRid)</ProductMonikerRid>
 
-    <PortableTargetRid Condition="'$(PortableTargetRid)' == ''">$(OSName)-$(TargetArchitecture)</PortableTargetRid>
     <PortableProductMonikerRid>$(PortableTargetRid)</PortableProductMonikerRid>
   </PropertyGroup>
 
@@ -85,6 +83,10 @@
     <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\csc.dll" />
     <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\vbc.dll" />
     <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\VBCSCompiler.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" />
   </ItemGroup>
 
 </Project>

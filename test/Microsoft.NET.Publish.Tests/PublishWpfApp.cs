@@ -11,7 +11,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
+        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901", Skip = "https://github.com/dotnet/wpf/issues/11651")]
         public void It_publishes_and_runs_self_contained_wpf_app()
         {
             var testDir = TestAssetsManager.CreateTestDirectory();

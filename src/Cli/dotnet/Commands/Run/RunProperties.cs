@@ -39,6 +39,7 @@ internal sealed record RunProperties(
         return true;
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     internal static RunProperties FromProject(ProjectInstance project)
     {
         if (!TryFromProject(project, out var result))

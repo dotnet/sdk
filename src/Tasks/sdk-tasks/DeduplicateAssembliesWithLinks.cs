@@ -69,7 +69,7 @@ public sealed class DeduplicateAssembliesWithLinks : Task
             try
             {
                 var fileInfo = new FileInfo(filePath);
-                var hash = ComputeFileHash(filePath);
+                var hash = FileHasher.ComputeFileHash(filePath);
                 var entry = new FileEntry(
                     filePath,
                     hash,
@@ -147,21 +147,6 @@ public sealed class DeduplicateAssembliesWithLinks : Task
             var relativePath = Path.GetRelativePath(duplicateDirectory, primaryFilePath);
             File.CreateSymbolicLink(duplicateFilePath, relativePath);
         }
-    }
-
-    private static string ComputeFileHash(string filePath)
-    {
-        var xxHash = new XxHash64();
-        using var stream = File.OpenRead(filePath);
-
-        byte[] buffer = new byte[65536]; // 64KB buffer
-        int bytesRead;
-        while ((bytesRead = stream.Read(buffer)) > 0)
-        {
-            xxHash.Append(buffer[..bytesRead]);
-        }
-
-        return Convert.ToHexString(xxHash.GetCurrentHash());
     }
 
     private static int GetPathDepth(string filePath, string rootDirectory)

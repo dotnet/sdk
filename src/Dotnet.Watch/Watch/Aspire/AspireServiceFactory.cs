@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Channels;
@@ -46,7 +47,7 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
         private volatile bool _isDisposed;
 
         // The number of sessions whose initialization is in progress.
-        private int _pendingSessionInitializationCount;
+        private volatile int _pendingSessionInitializationCount;
 
         // Blocks disposal until no session initialization is in progress.
         private readonly SemaphoreSlim _postDisposalSessionInitializationCompleted = new(initialCount: 0, maxCount: 1);
@@ -69,14 +70,16 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
             _logger.LogDebug("Disposing service factory ...");
 
-            // stop accepting requests - triggers cancellation token for in-flight operations:
-            await _service.DisposeAsync();
-
-            // should not receive any more requests at this point:
             _isDisposed = true;
 
+            // should not receive any more requests at this point, triggers cancellation of any in-flight operations:
+            _service.InitiateShutdown();
+
             // wait for all in-flight process initialization to complete:
-            await _postDisposalSessionInitializationCompleted.WaitAsync(CancellationToken.None);
+            if (_pendingSessionInitializationCount > 0)
+            {
+                await _postDisposalSessionInitializationCompleted.WaitAsync(CancellationToken.None);
+            }
 
             // terminate all active sessions:
             ImmutableArray<Session> sessions;
@@ -91,6 +94,9 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
             _postDisposalSessionInitializationCompleted.Dispose();
 
+            // terminate the web server:
+            await _service.DisposeAsync();
+
             _logger.LogDebug("Service factory disposed");
         }
 
@@ -102,8 +108,6 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
         /// </summary>
         async ValueTask<string> IAspireServerEvents.StartProjectAsync(string dcpId, ProjectLaunchRequest projectLaunchInfo, CancellationToken cancellationToken)
         {
-            ObjectDisposedException.ThrowIf(_isDisposed, this);
-
             var projectOptions = GetProjectOptions(projectLaunchInfo);
             var sessionId = Interlocked.Increment(ref _sessionIdDispenser).ToString(CultureInfo.InvariantCulture);
             await StartProjectAsync(dcpId, sessionId, projectOptions, isRestart: false, cancellationToken);
@@ -112,18 +116,18 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
         public async ValueTask StartProjectAsync(string dcpId, string sessionId, ProjectOptions projectOptions, bool isRestart, CancellationToken cancellationToken)
         {
-            // Neither request from DCP nor restart should happen once the disposal has started.
-            ObjectDisposedException.ThrowIf(_isDisposed, this);
-
-            _logger.LogDebug("[#{SessionId}] Starting: '{Path}'", sessionId, projectOptions.Representation.ProjectOrEntryPointFilePath);
-
-            RunningProject? runningProject = null;
-            var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
-
             Interlocked.Increment(ref _pendingSessionInitializationCount);
-
             try
             {
+                // Abort before launching if cancellation has been requested.
+                // This is important after shutdown has been initiated to avoid creating orphaned processes.
+                cancellationToken.ThrowIfCancellationRequested();
+
+                _logger.LogDebug("[#{SessionId}] Starting: '{Path}'", sessionId, projectOptions.Representation.ProjectOrEntryPointFilePath);
+
+                RunningProject? runningProject = null;
+                var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
+
                 runningProject = await _projectLauncher.TryLaunchProcessAsync(
                     projectOptions,
                     onOutput: line =>
@@ -169,32 +173,32 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
 
                     _sessions[sessionId] = new Session(dcpId, sessionId, runningProject, outputReader);
                 }
+
+                _logger.LogDebug("[#{SessionId}] Session started", sessionId);
+
+                async Task StartChannelReader(CancellationToken cancellationToken)
+                {
+                    try
+                    {
+                        await foreach (var line in outputChannel.Reader.ReadAllAsync(cancellationToken))
+                        {
+                            await _service.NotifyLogMessageAsync(dcpId, sessionId, isStdErr: line.IsError, data: line.Content, cancellationToken);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        if (!cancellationToken.IsCancellationRequested)
+                        {
+                            _logger.LogError("Unexpected error reading output of session '{SessionId}': {Exception}", sessionId, e);
+                        }
+                    }
+                }
             }
             finally
             {
                 if (Interlocked.Decrement(ref _pendingSessionInitializationCount) == 0 && _isDisposed)
                 {
                     _postDisposalSessionInitializationCompleted.Release();
-                }
-            }
-
-            _logger.LogDebug("[#{SessionId}] Session started", sessionId);
-
-            async Task StartChannelReader(CancellationToken cancellationToken)
-            {
-                try
-                {
-                    await foreach (var line in outputChannel.Reader.ReadAllAsync(cancellationToken))
-                    {
-                        await _service.NotifyLogMessageAsync(dcpId, sessionId, isStdErr: line.IsError, data: line.Content, cancellationToken);
-                    }
-                }
-                catch (Exception e)
-                {
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        _logger.LogError("Unexpected error reading output of session '{SessionId}': {Exception}", sessionId, e);
-                    }
                 }
             }
         }

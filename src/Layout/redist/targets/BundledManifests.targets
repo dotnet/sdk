@@ -51,46 +51,7 @@
       <Version>[%(Version)]</Version>
     </PackageDownload>
 
-    <PackageReference Include="Microsoft.DotNet.SignCheck" GeneratePathProperty="true" />
   </ItemGroup>
-
-  <Target Name="ValidateBundledManifestSigning"
-          Condition=" '$(OS)' == 'Windows_NT' and
-          '$(Architecture)' != 'arm' and
-          $(BUILD_SOURCEBRANCH) != '' and
-          $(BUILD_SOURCEBRANCH.Contains('release')) "
-          BeforeTargets="GenerateWorkloadManifestsWxs">
-    <PropertyGroup>
-      <SignCheckExe>$(PkgMicrosoft_DotNet_SignCheck)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckExe>
-      <SignCheckLog Condition="'$(SignCheckLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.log</SignCheckLog>
-      <SignCheckErrorLog Condition="'$(SignCheckErrorLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.errors.log</SignCheckErrorLog>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <!-- Don't try to validate signing for workload manifests that will be signed as part of post-build signing -->
-      <BundledManifestsToValidateSigning Include="@(BundledManifests)">
-        <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</RestoredMsiPathInNupkg>
-      </BundledManifestsToValidateSigning>
-
-      <SignCheckWorkloadManifestMsiInputFiles Include="@(BundledManifestsToValidateSigning->'%(RestoredMsiPathInNupkg)')" />
-    </ItemGroup>
-
-    <Exec Condition="'@(SignCheckWorkloadManifestMsiInputFiles->Count())' != '0'"
-                   Command="$(SignCheckExe) ^
-                   --recursive ^
-                   -f UnsignedFiles ^
-                   -i @(SignCheckWorkloadManifestMsiInputFiles, ' ') ^
-                   -l $(SignCheckLog) ^
-                   -e $(SignCheckErrorLog)" />
-
-    <Error
-      Text="Signing validation failed for workload manifest MSI. Check $(SignCheckErrorLog) for more information."
-      Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
-
-    <Message
-      Text="##vso[artifact.upload containerfolder=LogFiles;artifactname=LogFiles]{SignCheckErrorLog}"
-      Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
-  </Target>
 
   <Target Name="LayoutManifests">
     <ItemGroup>

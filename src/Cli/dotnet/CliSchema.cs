@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -31,8 +32,20 @@ internal static class CliSchema
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     });
 
-    public record ArgumentDetails(string? description, int order, bool hidden, string? helpName, string valueType, bool hasDefaultValue, object? defaultValue, ArityDetails arity);
-    public record ArityDetails(int minimum, int? maximum);
+    public record ArgumentDetails(
+        string? description,
+        int order,
+        bool hidden,
+        string? helpName,
+        string valueType,
+        bool hasDefaultValue,
+        object? defaultValue,
+        ArityDetails arity);
+
+    public record ArityDetails(
+        int minimum,
+        int? maximum);
+
     public record OptionDetails(
         string? description,
         bool hidden,
@@ -43,8 +56,8 @@ internal static class CliSchema
         object? defaultValue,
         ArityDetails arity,
         bool required,
-        bool recursive
-    );
+        bool recursive);
+
     public record CommandDetails(
         string? description,
         bool hidden,
@@ -52,6 +65,7 @@ internal static class CliSchema
         Dictionary<string, ArgumentDetails>? arguments,
         Dictionary<string, OptionDetails>? options,
         Dictionary<string, CommandDetails>? subcommands);
+
     public record RootCommandDetails(
         string name,
         string version,
@@ -63,22 +77,21 @@ internal static class CliSchema
         Dictionary<string, CommandDetails>? subcommands
     ) : CommandDetails(description, hidden, aliases, arguments, options, subcommands);
 
-
-    public static void PrintCliSchema(CommandResult commandResult, TextWriter outputWriter, ITelemetry? telemetryClient)
+    public static void PrintCliSchema(ParseResult parseResult, TextWriter outputWriter, ITelemetryClient? telemetryClient)
     {
-        var command = commandResult.Command;
+        var command = parseResult.CommandResult.Command;
         RootCommandDetails transportStructure = CreateRootCommandDetails(command);
         var result = JsonSerializer.Serialize(transportStructure, s_jsonContext.RootCommandDetails);
         outputWriter.Write(result.AsSpan());
         outputWriter.Flush();
-        var commandString = CommandHierarchyAsString(commandResult);
-        var telemetryProperties = new Dictionary<string, string> { { "command", commandString } };
-        telemetryClient?.TrackEvent("schema", telemetryProperties, null);
+        var commandString = parseResult.GetCommandName();
+        var telemetryProperties = new Dictionary<string, string?> { { "command", commandString } };
+        telemetryClient?.TrackEvent("schema", telemetryProperties);
     }
 
     public static object GetJsonSchema()
     {
-        var node = s_jsonContext.Options.GetJsonSchemaAsNode(typeof(RootCommandDetails), new JsonSchemaExporterOptions());
+          var node = s_jsonContext.RootCommandDetails.GetJsonSchemaAsNode(new JsonSchemaExporterOptions());
         return node.ToJsonString(s_jsonContext.Options);
     }
 
@@ -186,10 +199,15 @@ internal static class CliSchema
     /// <summary>
     /// Maps some types that don't serialize well to more human-readable strings.
     /// For example, <see cref="VerbosityOptions"/> is serialized as a string instead of an integer.
+    /// Enums in general are rendered as their name: besides being more readable, this avoids
+    /// requiring the source-generated <see cref="CliSchemaJsonSerializerContext"/> to carry metadata
+    /// for every enum type that might appear as an option/argument default (which is also required
+    /// for the schema to serialize under NativeAOT).
     /// </summary>
     private static object? HumanizeValue(object? v) => v switch
     {
         VerbosityOptions o => Enum.GetName(o),
+        Enum e => e.ToString(),
         null => null,
         _ => v // For other types, return as is
     };
@@ -204,21 +222,6 @@ internal static class CliSchema
                 argument.HasDefaultValue ? HumanizeValue(argument.GetDefaultValue()) : null,
                 CreateArityDetails(argument.Arity)
             );
-
-    // Produces a string that represents the command call.
-    // For example, calling the workload install command produces `dotnet workload install`.
-    private static string CommandHierarchyAsString(CommandResult commandResult)
-    {
-        var commands = new List<string>();
-        var currentResult = commandResult;
-        while (currentResult is not null)
-        {
-            commands.Add(currentResult.Command.Name);
-            currentResult = currentResult.Parent as CommandResult;
-        }
-
-        return string.Join(" ", commands.AsEnumerable().Reverse());
-    }
 }
 
 [JsonSerializable(typeof(CliSchema.RootCommandDetails))]

@@ -202,6 +202,26 @@
         <target state="translated">Vyhněte se alokacím polí s nulovou délkou</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
+        <source>When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</source>
+        <target state="new">When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
+        <source>Use 'Regex.Match' and check 'Success'</source>
+        <target state="new">Use 'Regex.Match' and check 'Success'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
+        <source>Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</source>
+        <target state="new">Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
+        <source>Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</source>
+        <target state="new">Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
         <target state="translated">Když se deserializují nedůvěryhodná data bez SerializationBinderu, který omezí typ objektu v grafu deserializovaných objektů, není metoda {0} bezpečná.</target>
@@ -603,12 +623,12 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
-        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
         <target state="translated">Použijte doporučený vzor vyřazení, abyste měli jistotu, že objekt vytvořený pomocí {0} se vyřadí na všech cestách. Pokud je to možné, zabalte vytváření do příkazu nebo deklarace using. Jinak použijte vzor try-finally s vyhrazenou místní proměnnou deklarovanou před oblastí try a nepodmíněným voláním Dispose pro hodnotu, která není null, v oblasti finally, třeba x?.Dispose(). Pokud se objekt explicitně vyřadí v oblasti try nebo se vlastnictví vyřazení převede na jiný objekt nebo metodu, přiřaďte ihned po takové operaci místní proměnné hodnotu null, aby ve finally nedošlo k dvojímu vyřazení.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
-        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
         <target state="translated">Použijte doporučený vzor vyřazení, abyste měli jistotu, že objekt vytvořený pomocí {0} se vyřadí na všech cestách výjimky. Pokud je to možné, zabalte vytváření do příkazu nebo deklarace using. Jinak použijte vzor try-finally s vyhrazenou místní proměnnou deklarovanou před oblastí try a nepodmíněným voláním Dispose pro hodnotu, která není null, v oblasti finally, třeba x?.Dispose(). Pokud se objekt explicitně vyřadí v oblasti try nebo se vlastnictví vyřazení převede na jiný objekt nebo metodu, přiřaďte ihned po takové operaci místní proměnné hodnotu null, aby ve finally nedošlo k dvojímu vyřazení.</target>
         <note />
       </trans-unit>
@@ -1926,6 +1946,26 @@ Rozšíření a uživatelem definované převody se u obecných typů nepodporuj
       <trans-unit id="MissHttpVerbAttributeMessage">
         <source>Action method {0} needs to specify the HTTP request kind explicitly</source>
         <target state="translated">Metoda akce {0} musí explicitně určit druh požadavku HTTP.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="translated">Přidat '#!' (shebang)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramDescription">
+        <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
+        <target state="translated">Pokud se program založený na souborech skládá z více souborů, měl by soubor vstupního bodu začínat řádkem shebang ('#!'), aby byl jasně odlišen od ostatních zahrnutých souborů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramMessage">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="translated">Vstupní bod programu založeného na souborech by měl začínat znaky '#!'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramTitle">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="translated">Vstupní bod programu založeného na souborech by měl začínat znaky '#!'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">

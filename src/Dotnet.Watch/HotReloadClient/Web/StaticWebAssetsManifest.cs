@@ -92,7 +92,7 @@ internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string
         }
         catch (FileNotFoundException)
         {
-            logger.LogDebug("File '{FilePath}' does not exist.", path);
+            logger.Log(LogEvents.ManifestFileNotFound, path);
             return null;
         }
         catch (Exception e)

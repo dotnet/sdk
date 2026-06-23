@@ -50,30 +50,14 @@ internal sealed class NamedPipeClientTransport : ClientTransport
     public override async Task WaitForConnectionAsync(CancellationToken cancellationToken)
     {
         _logger.LogDebug("Waiting for application to connect to pipe '{NamedPipeName}'.", _namedPipeName);
-
-        try
-        {
-            await _pipe.WaitForConnectionAsync(cancellationToken);
-        }
-        catch (Exception e) when (e is not OperationCanceledException)
-        {
-            // The process may die while we're waiting for the connection and the pipe may be disposed.
-            // Log and let subsequent ReadAsync return null gracefully.
-            if (IsExpectedPipeException(e, cancellationToken))
-            {
-                _logger.LogDebug("Pipe connection ended: {Message}", e.Message);
-                return;
-            }
-
-            throw;
-        }
+        await _pipe.WaitForConnectionAsync(cancellationToken);
     }
 
     /// <summary>
     /// Returns true if the exception is expected when the pipe is disposed or the process has terminated.
     /// On Unix named pipes can also throw SocketException with ErrorCode 125 (Operation canceled) when disposed.
     /// </summary>
-    private static bool IsExpectedPipeException(Exception e, CancellationToken cancellationToken)
+    public override bool IsExpectedConnectionTermination(Exception e, CancellationToken cancellationToken)
     {
         return e is ObjectDisposedException or EndOfStreamException or SocketException { ErrorCode: 125 }
             || cancellationToken.IsCancellationRequested;
@@ -93,16 +77,8 @@ internal sealed class NamedPipeClientTransport : ClientTransport
 
     public override async ValueTask<ClientTransportResponse?> ReadAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            var type = (ResponseType)await _pipe.ReadByteAsync(cancellationToken);
-            return new ClientTransportResponse(type, _pipe, disposeStream: false);
-        }
-        catch (Exception e) when (e is not OperationCanceledException && IsExpectedPipeException(e, cancellationToken))
-        {
-            // Pipe has been disposed or the process has terminated.
-            return null;
-        }
+        var type = (ResponseType)await _pipe.ReadByteAsync(cancellationToken);
+        return new ClientTransportResponse(type, _pipe, disposeStream: false);
     }
 
     public override void Dispose()

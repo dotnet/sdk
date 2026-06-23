@@ -209,7 +209,7 @@ class C
                     // Not everything is fixed; we use markup to indicate the remaining ones.
                     MarkupHandling = MarkupMode.Allow,
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -300,7 +300,7 @@ End Class
                     // Not everything is fixed; we use markup to indicate the remaining ones.
                     MarkupHandling = MarkupMode.Allow,
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

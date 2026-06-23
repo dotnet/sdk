@@ -7,6 +7,7 @@ namespace Microsoft.DotNet.Watch;
 
 /// <summary>
 /// Intercepts select log messages reported by watch and forwards them to <see cref="WatchStatusWriter"/> to be sent to an external listener.
+/// Does not own (dispose) <paramref name="writer"/> and <paramref name="underlyingFactory"/>.
 /// </summary>
 internal sealed class StatusReportingLoggerFactory(WatchStatusWriter writer, LoggerFactory underlyingFactory) : ILoggerFactory
 {

@@ -7,8 +7,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 {
     public enum TriggerEvent
     {
-        HotReloadSessionStarting,
-        HotReloadSessionStarted,
+        RuntimeProcessLauncherCreated,
         WaitingForChanges,
     }
 
@@ -40,8 +39,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         w.Observer.RegisterAction(trigger switch
         {
-            TriggerEvent.HotReloadSessionStarting => MessageDescriptor.HotReloadSessionStartingNotification,
-            TriggerEvent.HotReloadSessionStarted => MessageDescriptor.HotReloadSessionStarted,
+            TriggerEvent.RuntimeProcessLauncherCreated => MessageDescriptor.RuntimeProcessLauncherCreatedNotification,
             TriggerEvent.WaitingForChanges => MessageDescriptor.WaitingForChanges,
             _ => throw new InvalidOperationException(),
         }, () =>
@@ -52,7 +50,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 return;
             }
 
-            // service should have been created before Hot Reload session started:
+            // service should have been created after MessageDescriptor.RuntimeProcessLauncherCreatedNotification has been received:
             Assert.NotNull(w.Service);
 
             w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token).Wait();

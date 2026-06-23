@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.IO.Compression;
+using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
@@ -27,23 +28,28 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             new FileInfo(packagePath).Should().Exist();
 
-            // Extract the props file from the nupkg and verify SourceType
+            // Extract the JSON manifest from the nupkg and verify SourceType
             using var archive = ZipFile.OpenRead(packagePath);
-            var propsEntry = archive.Entries.FirstOrDefault(
-                e => e.FullName.Equals("build/Microsoft.AspNetCore.StaticWebAssets.props", StringComparison.OrdinalIgnoreCase));
+            var manifestEntry = archive.Entries.FirstOrDefault(
+                e => e.FullName.Equals("build/FrameworkAssetsLib.PackageAssets.json", StringComparison.OrdinalIgnoreCase));
 
-            propsEntry.Should().NotBeNull("the nupkg should contain a StaticWebAssets.props file");
+            manifestEntry.Should().NotBeNull("the nupkg should contain a PackageAssets.json file");
 
-            using var stream = propsEntry.Open();
-            using var reader = new StreamReader(stream);
-            var propsContent = reader.ReadToEnd();
+            using var stream = manifestEntry.Open();
+            var manifest = JsonSerializer.Deserialize(stream,
+                StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetPackageManifest);
+
+            manifest.Should().NotBeNull();
+            manifest.Assets.Should().NotBeEmpty();
 
             // JS files should be marked as Framework
-            propsContent.Should().Contain("<SourceType>Framework</SourceType>",
+            manifest.Assets.Values.Should().Contain(
+                a => a.SourceType == "Framework",
                 "JS assets matching the FrameworkPattern should have SourceType=Framework");
 
             // CSS files should remain as Package
-            propsContent.Should().Contain("<SourceType>Package</SourceType>",
+            manifest.Assets.Values.Should().Contain(
+                a => a.SourceType == "Package",
                 "CSS assets not matching the FrameworkPattern should have SourceType=Package");
         }
 
@@ -69,45 +75,26 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     Path.Combine("staticwebassets", "js", "framework.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "FrameworkAssetsLib.props"),
-                    Path.Combine("buildMultiTargeting", "FrameworkAssetsLib.props"),
-                    Path.Combine("buildTransitive", "FrameworkAssetsLib.props"),
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "FrameworkAssetsLib.targets"),
+                    Path.Combine("build", "FrameworkAssetsLib.PackageAssets.json"),
+                    Path.Combine("buildMultiTargeting", "FrameworkAssetsLib.targets"),
+                    Path.Combine("buildTransitive", "FrameworkAssetsLib.targets"),
                 });
         }
 
         [Fact]
         public void Build_Consumer_MaterializesFrameworkAssets()
         {
-            var testAsset = "FrameworkAssetsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            // Pack the library first
-            var pack = CreatePackCommand(ProjectDirectory, "FrameworkAssetsLib");
-            ExecuteCommand(pack).Should().Pass();
-
-            // Restore and build the consumer
-            var restore = CreateRestoreCommand(ProjectDirectory, "FrameworkAssetsConsumer");
-            ExecuteCommand(restore).Should().Pass();
-
-            var build = CreateBuildCommand(ProjectDirectory, "FrameworkAssetsConsumer");
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-
-            // Verify the build manifest exists and contains our framework asset
-            var manifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
-            new FileInfo(manifestPath).Should().Exist();
-
-            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
-            manifest.Should().NotBeNull();
+            var (intermediateOutputPath, _) = BuildFrameworkAssetsConsumer();
+            var manifest = LoadBuildManifest(intermediateOutputPath);
 
             // The framework JS asset should be materialized (SourceType changed from Framework to Discovered)
             var frameworkAssets = manifest.Assets
                 .Where(a => a.RelativePath.Contains("framework.js"))
                 .ToList();
 
-            frameworkAssets.Should().NotBeEmpty("framework.js should appear in the build manifest");
+            frameworkAssets.Should().HaveCountGreaterThan(0, "framework.js should appear in the build manifest");
 
             // After materialization, the framework asset should have SourceType=Discovered
             // and be under the fx/ intermediate directory
@@ -124,7 +111,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 .Where(a => a.RelativePath.Contains("site.css"))
                 .ToList();
 
-            cssAssets.Should().NotBeEmpty("site.css should appear in the build manifest");
+            cssAssets.Should().HaveCountGreaterThan(0, "site.css should appear in the build manifest");
             cssAssets.Should().OnlyContain(a => a.SourceType == "Package",
                 "CSS assets should remain as Package type since they don't match the FrameworkPattern");
         }
@@ -132,52 +119,22 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         [Fact]
         public void Build_Consumer_MaterializedFrameworkAsset_FileExistsOnDisk()
         {
-            var testAsset = "FrameworkAssetsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            // Pack the library first
-            var pack = CreatePackCommand(ProjectDirectory, "FrameworkAssetsLib");
-            ExecuteCommand(pack).Should().Pass();
-
-            // Restore and build the consumer
-            var restore = CreateRestoreCommand(ProjectDirectory, "FrameworkAssetsConsumer");
-            ExecuteCommand(restore).Should().Pass();
-
-            var build = CreateBuildCommand(ProjectDirectory, "FrameworkAssetsConsumer");
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var (intermediateOutputPath, _) = BuildFrameworkAssetsConsumer();
 
             // The materialized file should exist on disk under the staticwebassets/fx directory
             var fxDir = Path.Combine(intermediateOutputPath, "staticwebassets", "fx", "FrameworkAssetsLib");
             var materializedFile = Directory.GetFiles(fxDir, "framework.js", SearchOption.AllDirectories);
 
             materializedFile.Should().HaveCount(1, "framework.js should be materialized exactly once");
-            File.ReadAllText(materializedFile[0]).Should().NotBeEmpty();
+            File.ReadAllText(materializedFile[0]).Should().Contain("framework",
+                "materialized file should contain the original framework.js content");
         }
 
         [Fact]
         public void Build_Consumer_EndpointsRemapped_ForFrameworkAssets()
         {
-            var testAsset = "FrameworkAssetsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            // Pack the library first
-            var pack = CreatePackCommand(ProjectDirectory, "FrameworkAssetsLib");
-            ExecuteCommand(pack).Should().Pass();
-
-            // Restore and build the consumer
-            var restore = CreateRestoreCommand(ProjectDirectory, "FrameworkAssetsConsumer");
-            ExecuteCommand(restore).Should().Pass();
-
-            var build = CreateBuildCommand(ProjectDirectory, "FrameworkAssetsConsumer");
-            ExecuteCommand(build).Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-
-            // Read the build manifest to check endpoints
-            var manifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
-            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
+            var (intermediateOutputPath, _) = BuildFrameworkAssetsConsumer();
+            var manifest = LoadBuildManifest(intermediateOutputPath);
 
             // Check that the framework asset in the manifest has been remapped to the materialized path
             var frameworkAssets = manifest.Assets
@@ -185,7 +142,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     && a.Identity.Contains(Path.Combine("staticwebassets", "fx", "FrameworkAssetsLib")))
                 .ToList();
 
-            frameworkAssets.Should().NotBeEmpty(
+            frameworkAssets.Should().HaveCountGreaterThan(0,
                 "the manifest should contain a materialized framework asset under staticwebassets/fx/");
 
             // Endpoints for the route should exist (some may be compressed variants)
@@ -193,7 +150,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 ?.Where(e => e.Route.Contains("framework.js"))
                 .ToList();
 
-            fxEndpoints.Should().NotBeNull().And.NotBeEmpty(
+            fxEndpoints.Should().NotBeNull().And.HaveCountGreaterThan(0,
                 "there should be at least one endpoint for framework.js");
 
             // At least one endpoint should reference the materialized asset (not all will — compressed endpoints point elsewhere)
@@ -201,29 +158,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 .Where(e => e.AssetFile.Contains(Path.Combine("staticwebassets", "fx", "FrameworkAssetsLib")))
                 .ToList();
 
-            endpointsPointingToMaterialized.Should().NotBeEmpty(
+            endpointsPointingToMaterialized.Should().HaveCountGreaterThan(0,
                 "at least one endpoint for framework.js should point to the materialized file path under staticwebassets/fx/");
         }
 
         [Fact]
         public void Build_Consumer_IsIncremental()
         {
-            var testAsset = "FrameworkAssetsSample";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            var (intermediateOutputPath, _) = BuildFrameworkAssetsConsumer();
 
-            // Pack the library first
-            var pack = CreatePackCommand(ProjectDirectory, "FrameworkAssetsLib");
-            ExecuteCommand(pack).Should().Pass();
-
-            // Restore once
-            var restore = CreateRestoreCommand(ProjectDirectory, "FrameworkAssetsConsumer");
-            ExecuteCommand(restore).Should().Pass();
-
-            // First build
-            var build1 = CreateBuildCommand(ProjectDirectory, "FrameworkAssetsConsumer");
-            ExecuteCommand(build1).Should().Pass();
-
-            var intermediateOutputPath = build1.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var fxDir = Path.Combine(intermediateOutputPath, "staticwebassets", "fx", "FrameworkAssetsLib");
             var materializedFile = Directory.GetFiles(fxDir, "framework.js", SearchOption.AllDirectories).Single();
             var firstWriteTime = File.GetLastWriteTimeUtc(materializedFile);
@@ -235,6 +178,32 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var secondWriteTime = File.GetLastWriteTimeUtc(materializedFile);
             secondWriteTime.Should().Be(firstWriteTime,
                 "framework asset should not be re-copied on incremental build");
+        }
+
+        private (string intermediateOutputPath, BuildCommand build) BuildFrameworkAssetsConsumer()
+        {
+            var testAsset = "FrameworkAssetsSample";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var pack = CreatePackCommand(ProjectDirectory, "FrameworkAssetsLib");
+            ExecuteCommand(pack).Should().Pass();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "FrameworkAssetsConsumer");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "FrameworkAssetsConsumer");
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            return (intermediateOutputPath, build);
+        }
+
+        private StaticWebAssetsManifest LoadBuildManifest(string intermediateOutputPath)
+        {
+            var manifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath));
+            manifest.Should().NotBeNull();
+            return manifest;
         }
     }
 }

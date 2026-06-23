@@ -42,7 +42,12 @@ internal partial class AspireServerService : IAsyncDisposable
     private readonly string _currentSecret;
     private readonly string _displayName;
 
-    private readonly CancellationTokenSource _shutdownCancellationTokenSource = new();
+    /// <summary>
+    /// Triggered when the shutdown process has been initiated.
+    /// During this time all requests respond with <see cref="HttpStatusCode.ServiceUnavailable"/>.
+    /// </summary>
+    private readonly CancellationTokenSource _shutdownCancellationSource = new();
+
     private readonly int _port;
     private readonly X509Certificate2 _certificate;
     private readonly string _certificateEncodedBytes;
@@ -91,12 +96,20 @@ internal partial class AspireServerService : IAsyncDisposable
         _requestListener = StartListeningAsync();
     }
 
+    public void InitiateShutdown()
+    {
+        Log("Server shutdown initiated.");
+        _shutdownCancellationSource.Cancel();
+
+        // TODO: send message to DCP
+        // https://github.com/dotnet/aspire/issues/14987
+    }
+
     public async ValueTask DisposeAsync()
     {
-        // Shutdown the service:
-        _shutdownCancellationTokenSource.Cancel();
+        Log("Disposing server ...");
 
-        Log("Waiting for server to shutdown ...");
+        _shutdownCancellationSource.Cancel();
 
         try
         {
@@ -111,7 +124,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
         _socketConnectionManager.Dispose();
         _certificate.Dispose();
-        _shutdownCancellationTokenSource.Dispose();
+        _shutdownCancellationSource.Dispose();
     }
 
     /// <inheritdoc/>
@@ -214,14 +227,14 @@ internal partial class AspireServerService : IAsyncDisposable
         var app = builder.Build();
 
         app.MapGet("/", () => _displayName);
-        app.MapGet(InfoResponse.Url, GetInfoAsync);
+        app.MapGet(InfoResponse.Url, HandleInfoRequestAsync);
 
         // Set up the run session endpoints
         var runSessionApi = app.MapGroup(RunSessionRequest.Url);
 
-        runSessionApi.MapPut("/", RunSessionPutAsync);
-        runSessionApi.MapDelete("/{sessionId}", RunSessionDeleteAsync);
-        runSessionApi.Map(SessionNotification.Url, RunSessionNotifyAsync);
+        runSessionApi.MapPut("/", HandleStartSessionRequestAsync);
+        runSessionApi.MapDelete("/{sessionId}", HandleStopSessionRequestAsync);
+        runSessionApi.Map(SessionNotification.Url, HandleSessionNotifyRequestAsync);
 
         app.UseWebSockets(new WebSocketOptions
         {
@@ -229,62 +242,48 @@ internal partial class AspireServerService : IAsyncDisposable
         });
 
         // Run the application async. It will shutdown when the cancel token is signaled
-        return app.RunAsync(_shutdownCancellationTokenSource.Token);
+        return app.RunAsync(_shutdownCancellationSource.Token);
     }
 
-    private async Task RunSessionPutAsync(HttpContext context)
+    private bool TryAcceptRequest(HttpContext context)
     {
+        if (_shutdownCancellationSource.IsCancellationRequested)
+        {
+            Log("Service unavailable -- shutdown in progress.");
+            context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+            return false;
+        }
+
         // Check the authentication header
         if (!IsValidAuthentication(context))
         {
             Log("Authorization failure");
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+            return false;
         }
-        else
-        {
-            await HandleStartSessionRequestAsync(context);
-        }
+
+        return true;
     }
 
-    private async Task RunSessionDeleteAsync(HttpContext context, string sessionId)
+    private async Task HandleInfoRequestAsync(HttpContext context)
     {
-        // Check the authentication header
-        if (!IsValidAuthentication(context))
+        if (!TryAcceptRequest(context))
         {
-            Log("Authorization failure");
-            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-        }
-        else
-        {
-            await HandleStopSessionRequestAsync(context, sessionId);
-        }
-    }
-
-    private async Task GetInfoAsync(HttpContext context)
-    {
-        // Check the authentication header
-        if (!IsValidAuthentication(context))
-        {
-            Log("Authorization failure");
-            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-        }
-        else
-        {
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            await context.Response.WriteAsJsonAsync(InfoResponse.Instance, JsonSerializerOptions, _shutdownCancellationTokenSource.Token);
-        }
-    }
-
-    private async Task RunSessionNotifyAsync(HttpContext context)
-    {
-        // Check the authentication header
-        if (!IsValidAuthentication(context))
-        {
-            Log("Authorization failure");
-            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
             return;
         }
-        else if (!context.WebSockets.IsWebSocketRequest)
+
+        context.Response.StatusCode = (int)HttpStatusCode.OK;
+        await context.Response.WriteAsJsonAsync(InfoResponse.Instance, JsonSerializerOptions, _shutdownCancellationSource.Token);
+    }
+
+    private async Task HandleSessionNotifyRequestAsync(HttpContext context)
+    {
+        if (!TryAcceptRequest(context))
+        {
+            return;
+        }
+
+        if (!context.WebSockets.IsWebSocketRequest)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
@@ -323,6 +322,11 @@ internal partial class AspireServerService : IAsyncDisposable
 
     private async Task HandleStartSessionRequestAsync(HttpContext context)
     {
+        if (!TryAcceptRequest(context))
+        {
+            return;
+        }
+
         string? projectPath = null;
 
         try
@@ -333,7 +337,7 @@ internal partial class AspireServerService : IAsyncDisposable
             }
 
             // Get the project launch request data
-            var projectLaunchRequest = await context.GetProjectLaunchInformationAsync(_shutdownCancellationTokenSource.Token);
+            var projectLaunchRequest = await context.GetProjectLaunchInformationAsync(_shutdownCancellationSource.Token);
             if (projectLaunchRequest == null)
             {
                 // Unknown or unsupported version
@@ -343,7 +347,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
             projectPath = projectLaunchRequest.ProjectPath;
 
-            var sessionId = await _aspireServerEvents.StartProjectAsync(context.GetDcpId(), projectLaunchRequest, _shutdownCancellationTokenSource.Token);
+            var sessionId = await _aspireServerEvents.StartProjectAsync(context.GetDcpId(), projectLaunchRequest, _shutdownCancellationSource.Token);
 
             context.Response.StatusCode = (int)HttpStatusCode.Created;
             context.Response.Headers.Location = $"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}/{sessionId}";
@@ -370,14 +374,14 @@ internal partial class AspireServerService : IAsyncDisposable
                 Error = new ErrorDetail { ErrorCode = errorCode, Message = ex.GetMessageFromException() }
             };
 
-            await response.WriteAsJsonAsync(error, JsonSerializerOptions, _shutdownCancellationTokenSource.Token);
+            await response.WriteAsJsonAsync(error, JsonSerializerOptions, _shutdownCancellationSource.Token);
         }
         else
         {
             errorResponse = Encoding.UTF8.GetBytes(ex.GetMessageFromException());
             response.ContentType = "text/plain";
             response.ContentLength = errorResponse.Length;
-            await response.WriteAsync(ex.GetMessageFromException(), _shutdownCancellationTokenSource.Token);
+            await response.WriteAsync(ex.GetMessageFromException(), _shutdownCancellationSource.Token);
         }
     }
 
@@ -394,7 +398,7 @@ internal partial class AspireServerService : IAsyncDisposable
         try
         {
             using var cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellationToken, _shutdownCancellationTokenSource.Token, connection.HttpRequestAborted);
+                cancellationToken, _shutdownCancellationSource.Token, connection.HttpRequestAborted);
 
             await _webSocketAccess.WaitAsync(cancelTokenSource.Token);
             await connection.Socket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, endOfMessage: true, cancelTokenSource.Token);
@@ -415,8 +419,13 @@ internal partial class AspireServerService : IAsyncDisposable
         return success;
     }
 
-    private async ValueTask HandleStopSessionRequestAsync(HttpContext context, string sessionId)
+    private async Task HandleStopSessionRequestAsync(HttpContext context, string sessionId)
     {
+        if (!TryAcceptRequest(context))
+        {
+            return;
+        }
+
         try
         {
             if (_isDisposed)
@@ -424,7 +433,7 @@ internal partial class AspireServerService : IAsyncDisposable
                 throw new ObjectDisposedException(nameof(AspireServerService), "Received 'DELETE /run_session' request after the service has been disposed.");
             }
 
-            var sessionExists = await _aspireServerEvents.StopSessionAsync(context.GetDcpId(), sessionId, _shutdownCancellationTokenSource.Token);
+            var sessionExists = await _aspireServerEvents.StopSessionAsync(context.GetDcpId(), sessionId, _shutdownCancellationSource.Token);
             context.Response.StatusCode = (int)(sessionExists ? HttpStatusCode.OK : HttpStatusCode.NoContent);
         }
         catch (Exception e) when (e is not OperationCanceledException)

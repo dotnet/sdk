@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
 using Microsoft.CodeAnalysis.CSharp;
@@ -344,18 +345,31 @@ internal sealed partial class CSharpCompilerCommand
 
     private static string ComputeRuntimeVersion()
     {
-        var executingRuntimeVersion = RuntimeInformation.FrameworkDescription.Split(' ').Last();
-        var executingRuntimeMajorVersion = executingRuntimeVersion.Split('.').First();
-        var tfmMajorVersion = TargetFrameworkVersion.Split('.').First();
+        var result = GetConfiguredRuntimeVersion() ?? GetExecutingRuntimeVersion();
+        Debug.Assert(!string.IsNullOrWhiteSpace(result));
+        return result;
 
-        // If the target framework is still net10.0 while the runtime is already 11.0.x, we need to force-use 10.0.x runtime.
-        if (tfmMajorVersion != executingRuntimeMajorVersion)
+        static string? GetConfiguredRuntimeVersion()
         {
-            return tfmMajorVersion + ".0.0";
+            string runtimeConfigPath = Path.Combine(SdkPath, "dotnet.runtimeconfig.json");
+            if (!File.Exists(runtimeConfigPath)) return null;
+
+            using var stream = File.OpenRead(runtimeConfigPath);
+            using var jsonDoc = JsonDocument.Parse(stream);
+
+            JsonElement root = jsonDoc.RootElement;
+            if (!root.TryGetProperty("runtimeOptions", out JsonElement runtimeOptions) ||
+                !runtimeOptions.TryGetProperty("framework", out JsonElement framework)) return null;
+
+            string? runtimeVersion = framework.GetProperty("version").GetString();
+            return runtimeVersion;
         }
 
-        // Otherwise, we can use the current runtime.
-        return executingRuntimeVersion;
+        static string? GetExecutingRuntimeVersion()
+        {
+            var executingRuntimeVersion = Path.GetFileName(Path.GetDirectoryName(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()));
+            return executingRuntimeVersion;
+        }
     }
 
     /// <summary>

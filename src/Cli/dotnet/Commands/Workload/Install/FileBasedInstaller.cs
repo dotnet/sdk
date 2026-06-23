@@ -61,11 +61,12 @@ internal class FileBasedInstaller : IInstaller
         _tempPackagesDir = new DirectoryPath(tempDirPath ?? TemporaryDirectory.CreateSubdirectory());
         ILogger logger = verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
         _restoreActionConfig = restoreActionConfig;
-        _nugetPackageDownloader = nugetPackageDownloader ??
-                                  new NuGetPackageDownloader.NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
-                                      new FirstPartyNuGetPackageSigningVerifier(), logger,
-                                      restoreActionConfig: _restoreActionConfig,
-                                      verbosityOptions: nugetPackageDownloaderVerbosity);
+        _nugetPackageDownloader = nugetPackageDownloader ?? NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
+            _tempPackagesDir,
+            verifyNuGetSignatures: false,
+            verboseLogger: logger,
+            restoreActionConfig: _restoreActionConfig);
+
         bool userLocal = WorkloadFileBasedInstall.IsUserLocal(_dotnetDir, sdkFeatureBand.ToString());
         _workloadRootDir = userLocal ? _userProfileDir : _dotnetDir;
         _workloadMetadataDir = Path.Combine(_workloadRootDir, "metadata", "workloads");

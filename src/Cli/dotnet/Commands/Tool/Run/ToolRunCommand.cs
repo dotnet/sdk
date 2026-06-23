@@ -34,7 +34,7 @@ internal sealed class ToolRunCommand : CommandBase<ToolRunCommandDefinition>
     public static int ExecuteCommand(LocalToolsCommandResolver commandResolver, string? toolCommandName, IEnumerable<string>? argumentsToForward, bool allowRollForward)
     {
         using var _ = Activities.Source.StartActivity("execute-local-tool");
-        CommandSpec commandSpec = commandResolver.ResolveStrict(new CommandResolverArguments()
+        CommandSpec? commandSpec = commandResolver.ResolveStrict(new CommandResolverArguments()
         {
             // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
             CommandName = $"dotnet-{toolCommandName}",

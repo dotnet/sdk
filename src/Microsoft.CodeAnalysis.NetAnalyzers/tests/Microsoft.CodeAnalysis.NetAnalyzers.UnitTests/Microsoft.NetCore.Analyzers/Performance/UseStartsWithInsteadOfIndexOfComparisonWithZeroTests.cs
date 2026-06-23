@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyCodeFixCSAsync(string source, string fixedSource, ReferenceAssemblies referenceAssemblies)
@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,13 +9,11 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThereAreDefaultItems : SdkTest
     {
-        public GivenThereAreDefaultItems(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_ignores_excluded_folders()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -49,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_excludes_items_in_a_custom_outputpath()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -87,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_excluded_folders_to_be_overridden()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -133,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_items_outside_project_root_to_be_included()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -171,7 +169,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_a_project_subfolder_to_be_excluded()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -206,7 +204,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_files_in_the_obj_folder_to_be_explicitly_included()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -244,7 +242,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_a_CSharp_file_to_be_used_as_an_EmbeddedResource()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -292,7 +290,7 @@ namespace Microsoft.NET.Build.Tests
             embeddedResourceItems.Should().BeEquivalentTo(expectedEmbeddedResourceItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_a_CSharp_file_to_be_used_as_Content()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -354,7 +352,7 @@ namespace Microsoft.NET.Build.Tests
             noneItems.Should().BeEquivalentTo(expectedNoneItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_include_items_in_any_group_if_group_specific_default_include_properties_are_false()
         {
             var testProject = new TestProject()
@@ -437,7 +435,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void Default_items_have_the_correct_relative_paths()
         {
             Action<XDocument> projectChanges = project =>
@@ -484,7 +482,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
         public void Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used()
         {
             Action<XDocument> projectChanges = project =>
@@ -508,7 +507,7 @@ namespace Microsoft.NET.Build.Tests
             GivenThatWeWantAllResourcesInSatellite.TestSatelliteResources(Log, TestAssetsManager, projectChanges, setup, "ExplicitCompileDefaultEmbeddedResource");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_gives_an_error_message_if_duplicate_compile_items_are_included()
         {
             var testProject = new TestProject()
@@ -539,7 +538,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("EnableDefaultCompileItems");
         }
 
-        [Fact]
+        [TestMethod]
         public void Implicit_package_references_are_overridden_by_PackageReference_includes_in_the_project_file()
         {
             var testProject = new TestProject()
@@ -577,7 +576,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("'NETStandard.Library'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ImplicitFrameworkReferencesAreOverriddenByProjectFile()
         {
             var testProject = new TestProject()
@@ -615,7 +614,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1086");
         }
 
-        [Fact]
+        [TestMethod]
         public void DuplicateFrameworkReferencesCauseError()
         {
             var testProject = new TestProject()
@@ -651,9 +650,9 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1087");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void Implicit_NetCoreApp_reference_can_be_overridden(bool disableImplicitFrameworkReferences)
         {
             var testProject = new TestProject()
@@ -690,7 +689,7 @@ namespace Microsoft.NET.Build.Tests
             netCoreAppLibrary.Version.ToString().Should().Be(explicitPackageVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void DuplicatePackageReferencesCanBeUsed()
         {
             var testProject = new TestProject()
@@ -747,7 +746,7 @@ public class Class1
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_includes_Windows_App_SDK_items_in_the_correct_groups_if_Windows_App_SDK_is_present()
         {
             var testProject = new TestProject()
@@ -800,7 +799,7 @@ public class Class1
             getContentItems.Should().BeEquivalentTo(imageFiles);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_include_Windows_App_SDK_items_if_Windows_App_SDK_is_absent()
         {
             var testProject = new TestProject()
@@ -854,7 +853,7 @@ public class Class1
                 .BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_excludes_items_in_publish_directory()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -881,6 +880,32 @@ public class Class1
 
             // The appsettings.json file in the PublishDir should not be included in None items
             noneItems.Should().NotContain(item => item.Contains("appsettings.json"));
+        }
+
+        [TestMethod]
+        public void It_does_not_exclude_source_files_when_publish_dir_is_project_root()
+        {
+            Action<GetValuesCommand> setup = getValuesCommand =>
+            {
+                WriteFile(Path.Combine(getValuesCommand.ProjectRootPath, "Code", "Class1.cs"),
+                    "public class Class1 {}");
+            };
+
+            Action<XDocument> projectChanges = project =>
+            {
+                var ns = project.Root.Name.Namespace;
+
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.Add(propertyGroup);
+                // PublishDir set to the project directory itself (simulates 'dotnet publish -o .')
+                propertyGroup.Add(new XElement(ns + "PublishDir", ".\\"));
+            };
+
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);
+
+            RemoveGeneratedCompileItems(compileItems);
+
+            compileItems.Should().BeEquivalentTo(new[] { Path.Combine("Code", "Class1.cs"), "Helper.cs" });
         }
 
         void RemoveGeneratedCompileItems(List<string> compileItems)

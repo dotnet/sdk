@@ -10,6 +10,10 @@ namespace Microsoft.DotNet.Watch;
 
 internal abstract class WebApplicationAppModel(DotNetWatchContext context) : HotReloadAppModel
 {
+    public const string ServerLogComponentName = "BrowserRefreshServer";
+    public const string ConnectionServerLogComponentName = "BrowserConnection:Server";
+    public const string ConnectionAgentLogComponentName = "BrowserConnection:Agent";
+
     // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
     private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
     private const string MiddlewareTargetFramework = "net6.0";
@@ -23,7 +27,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// </summary>
     public abstract ProjectGraphNode LaunchingProject { get; }
 
-    protected abstract ImmutableArray<(HotReloadClient client, string name)> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
+    protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 
     public async sealed override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
     {
@@ -49,13 +53,14 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {
-        var logger = context.LoggerFactory.CreateLogger(BrowserRefreshServer.ServerLogComponentName, projectNode.GetDisplayName());
+        var logger = context.LoggerFactory.CreateLogger(ServerLogComponentName, projectNode.GetDisplayName());
 
         if (IsServerSupported(projectNode, logger))
         {
             return new BrowserRefreshServer(
                 logger,
-                context.LoggerFactory,
+                connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
+                connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
                 middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
                 dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
                 webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
@@ -64,6 +69,9 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 
         return null;
     }
+
+    private static string GetBrowserLoggerName(int connectionId)
+        => $"Browser #{connectionId}";
 
     public bool IsServerSupported(ProjectGraphNode projectNode, ILogger logger)
     {
@@ -95,7 +103,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             return false;
         }
 
-        logger.Log(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+        logger.Log(MessageDescriptor.UsingBrowserRefreshMiddleware);
         return true;
     }
 }

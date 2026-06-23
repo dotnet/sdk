@@ -44,5 +44,10 @@ internal abstract class ClientTransport : IDisposable
     /// </summary>
     public abstract ValueTask<ClientTransportResponse?> ReadAsync(CancellationToken cancellationToken);
 
+    /// <summary>
+    /// True if <paramref name="exception"/> and <paramref name="cancellationToken"/> indicate an expected connection termination signal.
+    /// </summary>
+    public abstract bool IsExpectedConnectionTermination(Exception exception, CancellationToken cancellationToken);
+
     public abstract void Dispose();
 }

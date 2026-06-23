@@ -202,6 +202,26 @@
         <target state="translated">Evite alocações de matriz de comprimento zero</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
+        <source>When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</source>
+        <target state="new">When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
+        <source>Use 'Regex.Match' and check 'Success'</source>
+        <target state="new">Use 'Regex.Match' and check 'Success'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
+        <source>Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</source>
+        <target state="new">Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
+        <source>Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</source>
+        <target state="new">Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
         <target state="translated">O método '{0}' não é seguro durante a desserialização de dados não confiáveis sem um SerializationBinder para restringir o tipo de objetos no grafo de objetos desserializado.</target>
@@ -603,12 +623,12 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
-        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
         <target state="translated">Use o padrão de descarte recomendado para garantir que o objeto criado por '{0}' seja descartado em todos os caminhos. Se possível, encapsule a criação em uma instrução 'using' ou em uma declaração 'using'. Caso contrário, use um padrão try-finally, com uma variável local dedicada declarada antes da região try e uma invocação de Dispose incondicional em um valor que não seja nulo na região 'finally', como 'x?.Dispose()'. Se o objeto for descartado explicitamente dentro da região try ou se a propriedade do descarte for transferida para outro objeto ou método, atribua 'null' à variável local logo após essa operação para evitar um descarte duplo em 'finally'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
-        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
         <target state="translated">Use o padrão de descarte recomendado para garantir que o objeto criado por '{0}' seja descartado em todos os caminhos de exceção. Se possível, encapsule a criação em uma instrução 'using' ou em uma declaração 'using'. Caso contrário, use um padrão try-finally, com uma variável local dedicada declarada antes da região try e uma invocação de Dispose incondicional em um valor que não seja nulo na região 'finally', como 'x?.Dispose()'. Se o objeto for descartado explicitamente dentro da região try ou se a propriedade do descarte for transferida para outro objeto ou método, atribua 'null' à variável local logo após essa operação para evitar um descarte duplo em 'finally'.</target>
         <note />
       </trans-unit>
@@ -1926,6 +1946,26 @@ As ampliação e conversões definidas pelo usuário não são compatíveis com 
       <trans-unit id="MissHttpVerbAttributeMessage">
         <source>Action method {0} needs to specify the HTTP request kind explicitly</source>
         <target state="translated">O método de ação {0} precisa especificar explicitamente o tipo de solicitação HTTP</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="translated">Adicionar ''#!'' (shebang)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramDescription">
+        <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
+        <target state="translated">Quando um programa baseado em arquivos tem vários arquivos, o arquivo de ponto de entrada deve começar com uma linha shebang ('#!') para diferenciá-lo claramente dos outros arquivos incluídos.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramMessage">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="translated">O ponto de entrada do programa baseado em arquivos deve começar com ''#!''</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramTitle">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="translated">O ponto de entrada do programa baseado em arquivos deve começar com ''#!''</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">

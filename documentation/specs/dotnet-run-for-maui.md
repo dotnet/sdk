@@ -1,4 +1,4 @@
-# `dotnet run` for .NET MAUI Scenarios
+# `dotnet run` and `dotnet test` for .NET MAUI Scenarios
 
 The current state of `dotnet run` for .NET MAUI projects is summarized
 by this issue from 2021:
@@ -104,14 +104,57 @@ devices`, or `xcrun devicectl list devices`._
   `$(RunCommand)` and `$(RunArguments)` using the value supplied by
   `-p:Device`.
 
-## New `dotnet run` Command-line Switches
+## `dotnet test` Behavior
+
+`dotnet test` on a multi-targeted project already runs tests for all
+target frameworks. This is existing behavior which differs from `dotnet
+run`, which previously errored when multiple `$(TargetFrameworks)` were
+present and `-f` was not supplied.
+
+For .NET MAUI projects, `dotnet test` extends this behavior with
+device selection:
+
+* **No `$(TargetFramework)` prompt by default** — unlike `dotnet run`,
+  `dotnet test` does _not_ prompt for a target framework. It iterates
+  over all `$(TargetFrameworks)` as it does today.
+
+* **Device prompt per target framework** — for each target framework
+  that provides a `ComputeAvailableDevices` MSBuild target (e.g.,
+  `net11.0-android`, `net11.0-ios`), the user is prompted to select a
+  device. This means a project targeting both Android and iOS may
+  prompt twice.
+
+  * In non-interactive mode, this will error with a friendly message
+    suggesting the `--device` switch, same as `dotnet run`.
+
+* **`--device` forces a `$(TargetFramework)` prompt** — if `--device`
+  is passed, the user _must_ be prompted to select a single
+  `$(TargetFramework)`, because the device identifier is
+  platform-specific and the SDK cannot determine which target framework
+  it applies to.
+
+  * In non-interactive mode with `--device` but no `-f`, this will
+    error suggesting to supply `-f`.
+
+* **`-f` works as normal** — passing `-f` limits the test run to a
+  single target framework. If that framework provides
+  `ComputeAvailableDevices`, the user may be prompted for a device.
+
+* **`--list-devices`** works the same as with `dotnet run`.
+
+* **`-e` / `--environment`** — `dotnet test` already supports `-e` to
+  pass environment variables to the test process. This existing
+  behavior is unchanged.
+
+## New Command-line Switches
 
 So far, it feels like no new subcommand is needed. In interactive
 mode, `dotnet run` will now prompt to select a `$(TargetFramework)`
 for all multi-targeted projects. Platform-specific projects like
-Android, iOS, etc. will prompt for device selection.
+Android, iOS, etc. will prompt for device selection. `dotnet test`
+shares the `--list-devices` and `--device` switches described below.
 
-`dotnet run --list-devices` will:
+`dotnet run --list-devices` (or `dotnet test --list-devices`) will:
 
 * Prompt for `$(TargetFramework)` for multi-targeted projects just
   like when `--list-devices` is omitted.

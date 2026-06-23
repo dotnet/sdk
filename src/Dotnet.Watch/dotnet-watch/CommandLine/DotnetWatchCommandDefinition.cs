@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Watch;
@@ -15,12 +16,62 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
     public readonly Option<bool> NoHotReloadOption = new("--no-hot-reload") { Description = Resources.Help_NoHotReload, Arity = ArgumentArity.Zero };
     public readonly Option<bool> NonInteractiveOption = new("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
 
+    /// <summary>
+    /// Specifies target framework. The watcher passes the value explicitly instead of forwarding the subcommand's --framework option.
+    /// </summary>
+    public readonly Option<string?> FrameworkOption = new(CommonOptions.FrameworkOptionName, "-f")
+    {
+        Description = CommandDefinitionStrings.BuildFrameworkOptionDescription,
+        HelpName = CommandDefinitionStrings.FrameworkArgumentName,
+    };
+
+    /// <summary>
+    /// Specifies the device to run on. The watcher passes the value explicitly instead of forwarding the subcommand's --device option.
+    /// </summary>
+    public readonly Option<string?> DeviceOption = new("--device")
+    {
+        Description = Resources.Help_Device,
+        HelpName = "DEVICE_ID",
+    };
+
     // Options we need to know about. They are passed through to the subcommand if the subcommand supports them.
-    public readonly Option<string> ShortProjectOption = new("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-    public readonly Option<string> LongProjectOption = new("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-    public readonly Option<string> FileOption = new("--file") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-    public readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-    public readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
+
+    public readonly Option<string> ShortProjectOption = new("-p")
+    {
+        Hidden = true,
+        Arity = ArgumentArity.ZeroOrOne,
+        AllowMultipleArgumentsPerToken = false
+    };
+
+    public readonly Option<string> LongProjectOption = new("--project")
+    {
+        Description = CommandDefinitionStrings.CmdProjectDescriptionFormat,
+        HelpName = CommandDefinitionStrings.CommandOptionProjectHelpName,
+        Arity = ArgumentArity.ZeroOrOne,
+        AllowMultipleArgumentsPerToken = false
+    };
+
+    public readonly Option<string> FileOption = new("--file")
+    {
+        Description = CommandDefinitionStrings.CommandOptionFileDescription,
+        HelpName = CommandDefinitionStrings.CommandOptionFileHelpName,
+        Arity = ArgumentArity.ZeroOrOne,
+        AllowMultipleArgumentsPerToken = false
+    };
+
+    public readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
+    {
+        Description = CommandDefinitionStrings.CommandOptionLaunchProfileDescription,
+        HelpName = CommandDefinitionStrings.CommandOptionLaunchProfileHelpName,
+        Arity = ArgumentArity.ZeroOrOne,
+        AllowMultipleArgumentsPerToken = false
+    };
+
+    public readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
+    {
+        Description = CommandDefinitionStrings.CommandOptionNoLaunchProfileDescription,
+        Arity = ArgumentArity.Zero
+    };
 
     public DotnetWatchCommandDefinition()
         : base(Resources.Help)
@@ -37,6 +88,8 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
         Options.Add(ListOption);
         Options.Add(NoHotReloadOption);
         Options.Add(NonInteractiveOption);
+        Options.Add(FrameworkOption);
+        Options.Add(DeviceOption);
 
         Options.Add(LongProjectOption);
         Options.Add(ShortProjectOption);
@@ -74,5 +127,7 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
            option == VerboseOption ||
            option == ListOption ||
            option == NoHotReloadOption ||
-           option == NonInteractiveOption;
+           option == NonInteractiveOption ||
+           option == FrameworkOption ||
+           option == DeviceOption;
 }

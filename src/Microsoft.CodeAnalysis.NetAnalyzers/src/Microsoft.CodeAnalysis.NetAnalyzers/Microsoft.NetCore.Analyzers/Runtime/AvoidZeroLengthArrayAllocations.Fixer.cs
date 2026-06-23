@@ -74,7 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // When Type is null in cases like 'T[] goo = { }', use ConvertedType instead (https://github.com/dotnet/roslyn/issues/23545).
             // When Type isn't null, do not use ConvertedType. For cases like `object[] goo = new string[0]`,
             // we want to return the string type symbol, not the object one.
-            var arrayType = (IArrayTypeSymbol?)(typeInfo.Type ?? typeInfo.ConvertedType);
+            var arrayType = (typeInfo.Type ?? typeInfo.ConvertedType) as IArrayTypeSymbol;
             return arrayType?.ElementType;
         }
 

@@ -3,94 +3,112 @@
 
 #nullable disable
 
-namespace Microsoft.DotNet.Watch.UnitTests
+namespace Microsoft.DotNet.Watch.UnitTests;
+
+public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+    [Theory]
+    [InlineData("PublishAot", "True")]
+    [InlineData("PublishTrimmed", "True")]
+    [InlineData("StartupHookSupport", "False")]
+    [InlineData("Optimize", "True")]
+    [InlineData("MetadataUpdaterSupport", "False")]
+    public async Task ChangeFileInAotProject(string propertyName, string propertyValue)
     {
-        [Theory]
-        [InlineData("PublishAot", "True")]
-        [InlineData("PublishTrimmed", "True")]
-        [InlineData("StartupHookSupport", "False")]
-        public async Task ChangeFileInAotProject(string propertyName, string propertyValue)
+        var tfvParsed = Version.Parse(ToolsetInfo.CurrentTargetFrameworkVersion);
+        var isNet11OrNewer = tfvParsed.Major >= 11;
+
+        // Optimize check only applies to < .NET 11; MetadataUpdaterSupport only to >= .NET 11.
+        if (propertyName == "Optimize" && isNet11OrNewer)
+            return;
+        if (propertyName == "MetadataUpdaterSupport" && !isNet11OrNewer)
+            return;
+
+        var projectDisplay = $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})";
+
+        var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{propertyName};{propertyValue}")
+            .WithSource()
+            .WithProjectChanges(project =>
+            {
+                project.Root.Descendants()
+                    .First(e => e.Name.LocalName == "PropertyGroup")
+                    .Add(XElement.Parse($"<{propertyName}>{propertyValue}</{propertyName}>"));
+            });
+
+        var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+        App.Start(testAsset, ["--non-interactive"]);
+
+        // The warning message suggests which property to set to fix the issue.
+        var (suggestedProperty, suggestedValue) = propertyName switch
         {
-            var tfm = ToolsetInfo.CurrentTargetFramework;
+            "Optimize" => (PropertyNames.Optimize, "False"),
+            "MetadataUpdaterSupport" => (PropertyNames.MetadataUpdaterSupport, "True"),
+            _ => (PropertyNames.StartupHookSupport, "True"),
+        };
+        var message = MessageDescriptor.ProjectDoesNotSupportHotReload_Property.GetMessage((propertyName, propertyValue, suggestedProperty, suggestedValue));
+        await App.WaitForOutputLineContaining($"[{projectDisplay}] {message}");
+        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+        App.Process.ClearOutput();
 
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{propertyName};{propertyValue}")
-                .WithSource()
-                .WithProjectChanges(project =>
-                {
-                    project.Root.Descendants()
-                        .First(e => e.Name.LocalName == "PropertyGroup")
-                        .Add(XElement.Parse($"<{propertyName}>{propertyValue}</{propertyName}>"));
-                });
+        UpdateSourceFile(programPath, content => content.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"<updated>\");"));
 
-            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+        await App.WaitForOutputLineContaining($"[{projectDisplay}] [auto-restart] {programPath}(1,1): error ENC0097"); //  Applying source changes while the application is running is not supported by the runtime.
+        await App.WaitForOutputLineContaining("<updated>");
+    }
 
-            App.Start(testAsset, ["--non-interactive"]);
+    [Fact]
+    public async Task ChangeFileInFSharpProject()
+    {
+        var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+            .WithSource();
 
-            await App.WaitForOutputLineContaining($"[WatchHotReloadApp ({tfm})] " + MessageDescriptor.ProjectDoesNotSupportHotReload.GetMessage($"'{propertyName}' property is '{propertyValue}'"));
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
-            App.Process.ClearOutput();
+        App.Start(testAsset, []);
 
-            UpdateSourceFile(programPath, content => content.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"<updated>\");"));
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
-            await App.WaitForOutputLineContaining($"[auto-restart] {programPath}(1,1): error ENC0097"); //  Applying source changes while the application is running is not supported by the runtime.
-            await App.WaitForOutputLineContaining("<updated>");
-        }
+        UpdateSourceFile(Path.Combine(testAsset.Path, "Program.fs"), content => content.Replace("Hello World!", "<Updated>"));
 
-        [Fact]
-        public async Task ChangeFileInFSharpProject()
-        {
-            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
-                .WithSource();
+        await App.WaitUntilOutputContains("<Updated>");
+    }
 
-            App.Start(testAsset, []);
+    [Fact]
+    public async Task ChangeFileInFSharpProjectWithLoop()
+    {
+        var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
+            .WithSource();
 
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+        var source = """
+        module ConsoleApplication.Program
 
-            UpdateSourceFile(Path.Combine(testAsset.Path, "Program.fs"), content => content.Replace("Hello World!", "<Updated>"));
+        open System
+        open System.Threading
 
-            await App.WaitUntilOutputContains("<Updated>");
-        }
+        [<EntryPoint>]
+        let main argv =
+            printfn "Waiting"
+            Thread.Sleep(Timeout.Infinite)
+            0
+        """;
 
-        [Fact]
-        public async Task ChangeFileInFSharpProjectWithLoop()
-        {
-            var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
-                .WithSource();
+        var sourcePath = Path.Combine(testAsset.Path, "Program.fs");
 
-            var source = """
-            module ConsoleApplication.Program
+        File.WriteAllText(sourcePath, source);
 
-            open System
-            open System.Threading
+        App.Start(testAsset, ["--non-interactive"]);
 
-            [<EntryPoint>]
-            let main argv =
-                printfn "Waiting"
-                Thread.Sleep(Timeout.Infinite)
-                0
-            """;
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        App.Process.ClearOutput();
 
-            var sourcePath = Path.Combine(testAsset.Path, "Program.fs");
+        UpdateSourceFile(sourcePath, content => content.Replace("Waiting", "<Updated>"));
 
-            File.WriteAllText(sourcePath, source);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains("<Updated>");
+        App.Process.ClearOutput();
 
-            App.Start(testAsset, ["--non-interactive"]);
+        UpdateSourceFile(sourcePath, content => content.Replace("<Updated>", "<Updated2>"));
 
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
-            App.Process.ClearOutput();
-
-            UpdateSourceFile(sourcePath, content => content.Replace("Waiting", "<Updated>"));
-
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
-            await App.WaitUntilOutputContains("<Updated>");
-            App.Process.ClearOutput();
-
-            UpdateSourceFile(sourcePath, content => content.Replace("<Updated>", "<Updated2>"));
-
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
-            await App.WaitUntilOutputContains("<Updated2>");
-        }
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains("<Updated2>");
     }
 }
