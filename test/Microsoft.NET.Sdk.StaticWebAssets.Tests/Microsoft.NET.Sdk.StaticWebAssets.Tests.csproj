@@ -9,6 +9,15 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
   </PropertyGroup>
 
+  <!-- These integration tests share on-disk test asset directories and NuGet caches across
+       test methods (for example via the BuildFrameworkAssetsConsumer helper), so they must run
+       sequentially. Under xUnit this was enforced by
+       [assembly: CollectionBehavior(DisableTestParallelization = true)]. Override the repo-wide
+       MethodLevel default (test/Directory.Build.props) so MSTest.Sdk emits [assembly: DoNotParallelize]. -->
+  <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PackageId>testSdkStaticWebAssets</PackageId>
   </PropertyGroup>
