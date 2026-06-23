@@ -39,9 +39,9 @@ internal sealed class ScheduledWorkItem
         if (TestMethods.Count == 0)
             return string.Empty;
 
-        // Use FullyQualifiedName~ (contains) filter for each method
-        // Group by assembly to produce efficient filter expressions
-        return string.Join("|", TestMethods.Select(m => m.FullyQualifiedName));
+        // Use FullyQualifiedName~ (contains) so that parameterized tests ([Theory]/[InlineData])
+        // are matched. A method "Ns.Class.Method" must also match "Ns.Class.Method(arg1, arg2)".
+        return string.Join("|", TestMethods.Select(m => $"FullyQualifiedName~{m.FullyQualifiedName}"));
     }
 
     /// <summary>
