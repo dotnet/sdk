@@ -301,7 +301,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
-    private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
+    internal static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         bool isGzip = IsGzipArchive(archivePath);
 
@@ -323,9 +323,13 @@ internal class DotnetArchiveExtractor : IDisposable
 
     /// <summary>
     /// Wraps an already-open tar archive stream for reading, layering in gzip decompression when needed.
+    /// The returned <see cref="OwnedTarStream"/> is always safe to dispose without closing the underlying
+    /// <paramref name="archiveStream"/>.
     /// </summary>
-    private static Stream OpenTarReadStream(Stream archiveStream, bool isGzip)
-        => isGzip ? new GZipStream(archiveStream, CompressionMode.Decompress, leaveOpen: true) : archiveStream;
+    private static OwnedTarStream OpenTarReadStream(Stream archiveStream, bool isGzip)
+        => isGzip
+            ? new OwnedTarStream(new GZipStream(archiveStream, CompressionMode.Decompress, leaveOpen: true))
+            : new OwnedTarStream(archiveStream, ownsStream: false);
 
     /// <summary>
     /// Counts the number of entries in a tar archive for progress reporting.
@@ -333,65 +337,40 @@ internal class DotnetArchiveExtractor : IDisposable
     private static long CountTarEntries(Stream archiveStream, bool isGzip)
     {
         long totalFiles = 0;
-        Stream tarStream = OpenTarReadStream(archiveStream, isGzip);
-        try
+        using OwnedTarStream tarStream = OpenTarReadStream(archiveStream, isGzip);
+        using var tarReader = new TarReader(tarStream.Stream, leaveOpen: true);
+        while (tarReader.GetNextEntry() is not null)
         {
-            using var tarReader = new TarReader(tarStream, leaveOpen: true);
-            while (tarReader.GetNextEntry() is not null)
-            {
-                totalFiles++;
-            }
+            totalFiles++;
         }
-        finally
-        {
-            // Only dispose the gzip wrapper; the shared archive stream stays open for the next pass.
-            if (isGzip) { tarStream.Dispose(); }
-        }
+
         return totalFiles;
     }
 
-    /// <summary>
-    /// Extracts the contents of a tar file to the target directory.
-    /// Exposed as internal static for testing.
-    /// </summary>
-    internal static void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
-    {
-        bool isGzip = IsGzipArchive(tarPath);
-        using var archiveStream = new FileStream(tarPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        ExtractTarContents(archiveStream, isGzip, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
-    }
 
     private static void ExtractTarContents(Stream archiveStream, bool isGzip, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler, Action<string>? onEntryExtracted, Func<string, bool>? shouldSkipEntry)
     {
-        Stream tarStream = OpenTarReadStream(archiveStream, isGzip);
-        try
+        using OwnedTarStream tarStream = OpenTarReadStream(archiveStream, isGzip);
+        using var tarReader = new TarReader(tarStream.Stream, leaveOpen: true);
+        TarEntry? entry;
+
+        // Defer hard link creation until after all regular files are extracted,
+        // since the target file may not exist yet when the hard link entry is encountered.
+        var deferredHardLinks = new List<(string DestPath, string TargetPath)>();
+
+        while ((entry = tarReader.GetNextEntry()) is not null)
         {
-            using var tarReader = new TarReader(tarStream, leaveOpen: true);
-            TarEntry? entry;
-
-            // Defer hard link creation until after all regular files are extracted,
-            // since the target file may not exist yet when the hard link entry is encountered.
-            var deferredHardLinks = new List<(string DestPath, string TargetPath)>();
-
-            while ((entry = tarReader.GetNextEntry()) is not null)
+            bool skip = shouldSkipEntry?.Invoke(entry.Name) ?? false;
+            if (!skip)
             {
-                bool skip = shouldSkipEntry?.Invoke(entry.Name) ?? false;
-                if (!skip)
-                {
-                    ProcessTarEntry(entry, targetDir, muxerHandler, deferredHardLinks);
-                }
-
-                onEntryExtracted?.Invoke(entry.Name);
-                installTask?.Value += 1;
+                ProcessTarEntry(entry, targetDir, muxerHandler, deferredHardLinks);
             }
 
-            CreateDeferredHardLinks(deferredHardLinks);
+            onEntryExtracted?.Invoke(entry.Name);
+            installTask?.Value += 1;
         }
-        finally
-        {
-            // Only dispose the gzip wrapper; the shared archive stream is owned by the caller.
-            if (isGzip) { tarStream.Dispose(); }
-        }
+
+        CreateDeferredHardLinks(deferredHardLinks);
     }
 
     private static void ProcessTarEntry(TarEntry entry, string targetDir, MuxerHandler? muxerHandler, List<(string DestPath, string TargetPath)> deferredHardLinks)

@@ -233,7 +233,7 @@ public class DotnetArchiveExtractorTests
             ("shared/readme.txt", readOnlyMode, isDirectory: false));
 
         // Act — ExtractToFile should apply Mode via UnixCreateMode
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null);
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null);
 
         // Assert
         var dotnetPath = Path.Combine(extractDir, "bin", "dotnet");
@@ -271,7 +271,7 @@ public class DotnetArchiveExtractorTests
             ("mydir/", dirMode, isDirectory: true));
 
         // Act
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null);
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null);
 
         // Assert
         var dirPath = Path.Combine(extractDir, "mydir");
@@ -304,7 +304,7 @@ public class DotnetArchiveExtractorTests
             ("sub/nested.txt", defaultMode, isDirectory: false));
 
         // Act
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null);
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null);
 
         // Assert
         var helloPath = Path.Combine(extractDir, "hello.txt");
@@ -355,7 +355,7 @@ public class DotnetArchiveExtractorTests
         };
 
         // Act
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null,
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null,
             muxerHandler: null, onEntryExtracted: entry => extractedEntries.Add(entry), shouldSkipEntry: shouldSkip);
 
         // Assert — existing subcomponent content should be preserved (not overwritten)
@@ -408,7 +408,7 @@ public class DotnetArchiveExtractorTests
         };
 
         // Act
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null,
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null,
             muxerHandler: null, onEntryExtracted: null, shouldSkipEntry: shouldSkip);
 
         // Assert — root-level file should be extracted even though skip predicate is active
@@ -493,6 +493,10 @@ public class DotnetArchiveExtractorTests
         extractor.Prepare();
         var downloadedPath = mockDownloader.DownloadCalls[0].DestinationPath;
         var decompressedTarPath = Path.Combine(Path.GetDirectoryName(downloadedPath)!, Path.GetFileNameWithoutExtension(downloadedPath));
+
+        // Pre-create a directory at the path where the old implementation would have placed
+        // the decompressed .tar staging file. This verifies that the current streaming approach
+        // does not depend on that path being available as a regular file.
         Directory.CreateDirectory(decompressedTarPath);
         extractor.Commit();
 
