@@ -14,18 +14,19 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    [DoNotParallelize]
+    [TestClass]
     public class ToolPackageInstallToManagedLocationInstaller : SdkTest
     {
-        public ToolPackageInstallToManagedLocationInstaller(ITestOutputHelper log) : base(log)
-        {
-        }
+        public ToolPackageInstallToManagedLocationInstaller() { }
 
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
+            string testDirectory = TestAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
 
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
 
@@ -64,12 +65,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             }
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
+            string testDirectory = TestAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
 
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
 

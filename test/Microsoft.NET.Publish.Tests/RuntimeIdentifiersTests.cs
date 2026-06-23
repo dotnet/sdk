@@ -39,7 +39,7 @@ namespace Microsoft.NET.Publish.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new RestoreCommand(testAsset);
 
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.RecordProperties("RuntimeIdentifier");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
@@ -141,7 +141,7 @@ namespace Microsoft.NET.Publish.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: publishNoBuild ? "nobuild" : string.Empty);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: publishNoBuild ? "nobuild" : string.Empty);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -211,7 +211,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             string identifier = $"PublishRuntimeIdentifierOverrides-{publishRuntimeIdentifierIsGlobal}-{runtimeIdentifierIsGlobal}";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: identifier);
             var publishCommand = new DotnetPublishCommand(Log);
             publishCommand
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
@@ -242,7 +242,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.RecordProperties("RuntimeIdentifier");
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new DotnetPublishCommand(Log);
             publishCommand
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, MethodBase.GetCurrentMethod().Name))
@@ -275,7 +275,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.RecordProperties("SelfContained");
             testProject.RecordPropertiesBeforeTarget("Publish");
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{property}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{property}");
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -303,7 +303,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -329,7 +329,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["RuntimeIdentifiers"] = compatibleRid + ";" + compatibleRid;
             testProject.RuntimeIdentifier = compatibleRid;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -353,13 +353,93 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;
             testProject.AdditionalProperties["PublishReadyToRun"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
                 .Execute()
                 .Should()
                 .Pass();
+        }
+
+        [Fact]
+        public void UseDefaultPublishRuntimeIdentifierFalsePreventsInference()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            // PublishSingleFile would normally trigger PublishRuntimeIdentifier inference
+            testProject.AdditionalProperties["PublishSingleFile"] = "true";
+            testProject.AdditionalProperties["UseDefaultPublishRuntimeIdentifier"] = "false";
+            testProject.RecordProperties("PublishRuntimeIdentifier");
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: ToolsetInfo.CurrentTargetFramework);
+            properties["PublishRuntimeIdentifier"].Should().BeEmpty();
+        }
+
+        [Fact]
+        public void PublishRuntimeIdentifierIsAppendedToRuntimeIdentifiersByDefault()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = "linux-x64";
+            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = "win-x64";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimeIdentifiers")
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var rids = getValuesCommand.GetValues();
+            rids.Should().Contain("linux-x64");
+            rids.Should().Contain("win-x64");
+        }
+
+        [Fact]
+        public void AppendPublishRuntimeIdentifierToRuntimeIdentifiersFalseOptOut()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = "linux-x64";
+            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["AppendPublishRuntimeIdentifierToRuntimeIdentifiers"] = "false";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimeIdentifiers")
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var rids = getValuesCommand.GetValues();
+            rids.Should().Equal(["linux-x64"]);
         }
     }
 }

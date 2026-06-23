@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-
-// There are tests which modify static Telemetry.CurrentSessionId and they cannot run in parallel
+// There are tests which modify static TelemetryClient.CurrentSessionId. They cannot run in parallel.
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -18,7 +16,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [Fact]
         public void ItRunsSpecifiedTargetsWithPropertiesCorrectly()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildBareBonesProject")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildBareBonesProject")
                                         .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -56,7 +54,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             const string MSBuildHelpText = " Any extra options that should be passed to MSBuild. See 'dotnet msbuild -h' for available options.";
 
-            var projectDirectory = _testAssetsManager.CreateTestDirectory(identifier: commandName);
+            var projectDirectory = TestAssetsManager.CreateTestDirectory(identifier: commandName);
             var result = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory.Path)
                 .Execute(commandName, "--help");
@@ -78,7 +76,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
 
             // this is a workaround for https://github.com/Microsoft/msbuild/issues/1622
-            var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithUnresolvablePackageReference", identifier: propertyFormat.GetHashCode().ToString())
+            var testInstance = TestAssetsManager.CopyTestAsset("LibraryWithUnresolvablePackageReference", identifier: propertyFormat.GetHashCode().ToString())
                                         .WithSource();
 
             var root = testInstance.Path;
@@ -98,7 +96,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             string AppArgumentsText = "Arguments passed to the application that is being run.";
 
-            var projectDirectory = _testAssetsManager.CreateTestDirectory("RunContainsAppArgumentsText");
+            var projectDirectory = TestAssetsManager.CreateTestDirectory("RunContainsAppArgumentsText");
             var result = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory.Path)
                 .Execute("run", "--help");
@@ -106,11 +104,5 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             result.ExitCode.Should().Be(0);
             result.StdOut.Should().Contain(AppArgumentsText);
         }
-
-
-
-
     }
-
-
 }

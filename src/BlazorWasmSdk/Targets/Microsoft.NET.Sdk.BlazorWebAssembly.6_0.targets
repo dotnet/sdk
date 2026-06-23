@@ -27,10 +27,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Paths to tools, tasks, and extensions are calculated relative to the BlazorWebAssemblySdkDirectoryRoot. This can be modified to test a local build. -->
     <BlazorWebAssemblySdkDirectoryRoot Condition="'$(BlazorWebAssemblySdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</BlazorWebAssemblySdkDirectoryRoot>
-    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net10.0</_BlazorWebAssemblySdkTasksTFM>
+    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net11.0</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' != 'Core'">net472</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\$(_BlazorWebAssemblySdkTasksTFM)\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll</_BlazorWebAssemblySdkTasksAssembly>
-    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net10.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
+    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net11.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
@@ -41,6 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
     <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
     <_TargetingNET100OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))</_TargetingNET100OrLater>
+    <_TargetingNET110OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))</_TargetingNET110OrLater>
 
     <SelfContained>true</SelfContained>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -73,6 +74,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DisableAutoWasmBuildApp>true</DisableAutoWasmBuildApp>
     <DisableAutoWasmPublishApp>true</DisableAutoWasmPublishApp>
   </PropertyGroup>
+
+  <!-- Blazor routing regex constraint support via runtimeconfig.json -->
+  <ItemGroup Condition="'$(BlazorRoutingEnableRegexConstraint)' != ''">
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport"
+      Value="$(BlazorRoutingEnableRegexConstraint)"
+      Trim="true" />
+  </ItemGroup>
 
   <!-- Wire-up static web assets -->
   <PropertyGroup>
@@ -107,7 +115,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild" BeforeTargets="_RazorPrepareForRun">
+  <!--
+    For .NET 11+, blazor.webassembly.js is usually provided as a framework static web asset from the package
+    and is automatically materialized by UpdateExistingPackageStaticWebAssets. No custom detection needed.
+    For projects (including some .NET 11+ projects) that still use pre-.NET11 packages, we resolve it from
+    BlazorWebAssemblyJSPath set by the package .props file.
+  -->
+  <Target Name="_ResolveBlazorWasmOutputs"
+    Condition="'$(BlazorWebAssemblyJSPath)' != '' Or '$(_TargetingNET110OrLater)' != 'true'"
+    DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild"
+    BeforeTargets="_RazorPrepareForRun">
     <ItemGroup>
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSMapPath)" Condition="Exists('$(BlazorWebAssemblyJSMapPath)')" />

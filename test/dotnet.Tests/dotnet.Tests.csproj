@@ -14,12 +14,12 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
 
     <!-- Use layout folder for the output folder, to support in-process tests which expect to be running
          on a valid layout. -->
     <OutputPath>$(TestHostFolder)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +30,14 @@
     <None Include="ShellShimTests\WpfBinaryTestAssets\testwpf.dll" TargetPath="WpfBinaryTestAssets\testwpf.dll" CopyToOutputDirectory="PreserveNewest" />
     <None Include="CollectCodeCoverage.runsettings" CopyToOutputDirectory="PreserveNewest" />
     <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
+    <Compile Remove="WindowsInstallerTests.cs" />
+    <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
+    <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
+    <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -81,9 +89,9 @@
     <PackageReference Include="Moq" />
     <PackageReference Include="MSBuild.StructuredLogger" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
-    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
-    <PackageReference Include="Verify.Xunit" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />

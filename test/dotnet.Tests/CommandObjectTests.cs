@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tests
 
         private class ResolveNothingCommandResolverPolicy : ICommandResolverPolicy
         {
-            public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
+            public CompositeCommandResolver CreateCommandResolver(string sdkRoot = null, string currentWorkingDirectory = null)
             {
                 var compositeCommandResolver = new CompositeCommandResolver();
                 compositeCommandResolver.AddCommandResolver(new ResolveNothingCommandResolver());

@@ -60,7 +60,7 @@
     <PackageReference Include="NuGet.Build.Tasks.Pack" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
@@ -113,7 +113,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.NET.Build.Tasks.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.NET.Build.Tasks.Tests" />
     <InternalsVisibleTo Include="Microsoft.NET.Build.Tests" />
     <InternalsVisibleTo Include="Microsoft.NET.ToolPack.Tests" />
   </ItemGroup>
@@ -140,7 +140,6 @@
       </LayoutFile>
 
       <!-- Include some of the Sdks from the Stage 0 CLI for performance tests-->
-      <Stage0SdkFile Include="$(_Stage0SdksFolder)\FSharp.NET.Sdk\**" SdkName="FSharp.NET.Sdk" />
       <Stage0SdkFile Include="$(_Stage0SdksFolder)\Microsoft.NET.Sdk.WindowsDesktop\**" SdkName="Microsoft.NET.Sdk.WindowsDesktop" />
       <LayoutFile Include="@(Stage0SdkFile)">
         <TargetPath>..\%(Stage0SdkFile.SdkName)\%(Stage0SdkFile.RecursiveDir)%(Stage0SdkFile.Filename)%(Stage0SdkFile.Extension)</TargetPath>

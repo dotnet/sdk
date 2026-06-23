@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -504,7 +505,7 @@ public enum E3
                 csTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(21, 5, "E3", "Zero"));
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -550,7 +551,7 @@ End Enum"},
                 vbTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(18, 5, "E3", "Zero"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpMultipleZeroResultAt(int line, int column, string typeName)

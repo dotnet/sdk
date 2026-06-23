@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -3271,8 +3272,8 @@ End Class
 
         private static async Task TestCSAsync(string source)
         {
-            await GetTestCS(source, source, ReferenceAssemblies.Net.Net50).RunAsync();
-            await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+            await GetTestCS(source, source, ReferenceAssemblies.Net.Net50).RunAsync(TestContext.Current.CancellationToken);
+            await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task TestCSAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
@@ -3285,8 +3286,8 @@ End Class
                 test.ExpectedDiagnostics.Add(expected);
             }
 
-            await test.RunAsync();
-            await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
+            await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task TestCSTopLevelAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
@@ -3299,7 +3300,7 @@ End Class
                 test.ExpectedDiagnostics.Add(expected);
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static VerifyVB.Test GetTestVB(string source, string corrected, ReferenceAssemblies referenceAssemblies)
@@ -3316,8 +3317,8 @@ End Class
 
         private static async Task TestVBAsync(string source)
         {
-            await GetTestVB(source, source, ReferenceAssemblies.Net.Net50).RunAsync();
-            await GetTestVB(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+            await GetTestVB(source, source, ReferenceAssemblies.Net.Net50).RunAsync(TestContext.Current.CancellationToken);
+            await GetTestVB(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task TestVBAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
@@ -3330,8 +3331,8 @@ End Class
                 test.ExpectedDiagnostics.Add(expected);
             }
 
-            await test.RunAsync();
-            await GetTestVB(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
+            await GetTestVB(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult[] GetChainedCSDiagnostics(string hashAlgorithmTypeName)

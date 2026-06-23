@@ -23,7 +23,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                             .WithProjectChanges(project =>
                             {
                                 var ns = project.Root.Name.Namespace;

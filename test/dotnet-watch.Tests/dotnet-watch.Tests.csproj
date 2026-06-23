@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -6,8 +6,8 @@
     <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
-    <Compile Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockTaskItem.cs" Link="TestUtilities\MockTaskItem.cs" />
+    <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
+    <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockTaskItem.cs" Link="TestUtilities\MockTaskItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <!--
@@ -18,6 +18,8 @@
     <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\DotNetWatchTasks\DotNetWatchTasks.csproj" ExcludeAssets="Runtime" Private="false" />
     <ProjectReference Include="..\dotnet-watch-test-browser\dotnet-watch-test-browser.csproj" ReferenceOutputAssembly="false" OutputItemType="TestBrowserOutput" />
     <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" ExcludeAssets="Runtime" />
+    <!-- Needed for AspireLauncherIntegrationTests which exec the Aspire launcher executable. -->
+    <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Build.Locator" />

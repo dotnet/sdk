@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ShouldForwardDotnetRootEnvironmentVariablesIfNotProvided()
         {
-            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 

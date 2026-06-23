@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -710,7 +711,7 @@ namespace VulnerableWebApp
 
             csharpTest.ExpectedDiagnostics.AddRange(new[] { GetCSharpResultAt(13, 13, 12, 28, "DbSqlQuery<object> DbSet<object>.SqlQuery(string sql, params object[] parameters)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)") });
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -3187,7 +3188,7 @@ public class Class1
                     {
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -3697,7 +3698,7 @@ public class MyController
                 },
             };
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -3844,7 +3845,7 @@ public class MyController
                         GetCSharpResultAt(16, 33, 11, 24, "SqlCommand.SqlCommand(string cmdText)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)")
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4491, "https://github.com/dotnet/roslyn-analyzers/issues/4491")]

@@ -54,7 +54,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies()
         {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 
@@ -84,7 +84,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies_noopt()
         {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 
@@ -127,7 +127,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
         public void compose_multifile()
         {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests", "multifile")
                 .WithSource();
 
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void It_uses_star_versions_correctly()
         {
-            TestAsset targetManifestsAsset = _testAssetsManager
+            TestAsset targetManifestsAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 
@@ -215,7 +215,7 @@ namespace Microsoft.NET.Publish.Tests
         [CoreMSBuildOnlyFact]
         public void It_creates_profiling_symbols()
         {
-            TestAsset targetManifestsAsset = _testAssetsManager
+            TestAsset targetManifestsAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 
@@ -278,7 +278,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: isExe.ToString());
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: isExe.ToString());
 
             var outputFolder = Path.Combine(testProjectInstance.TestRoot, "o");
             var workingDir = Path.Combine(testProjectInstance.TestRoot, "w");
@@ -307,7 +307,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             const string TargetFramework = "netcoreapp3.1";
 
-            TestAsset targetManifestsAsset = _testAssetsManager
+            TestAsset targetManifestsAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 

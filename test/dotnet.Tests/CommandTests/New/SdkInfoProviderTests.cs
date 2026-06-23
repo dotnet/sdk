@@ -20,8 +20,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 // make sure current process path is not picked up as the dontet executable location
                 ISdkInfoProvider sp = new SdkInfoProvider(() => string.Empty);
 
-                string currentVersion = await sp.GetCurrentVersionAsync(default);
-                IEnumerable<string> allVersions = await sp.GetInstalledVersionsAsync(default);
+                string currentVersion = await sp.GetCurrentVersionAsync(TestContext.Current.CancellationToken);
+                IEnumerable<string> allVersions = await sp.GetInstalledVersionsAsync(TestContext.Current.CancellationToken);
 
                 currentVersion.Should().NotBeNullOrEmpty("Current Sdk version should be populated");
                 allVersions.ToList().Should().NotBeNull();

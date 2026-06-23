@@ -17,7 +17,7 @@ internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
 
     public override LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
-        var profile = JsonSerializer.Deserialize<ProjectLaunchProfile>(json);
+        var profile = JsonSerializer.Deserialize(json, LaunchProfileJsonSerializerContext.Default.ProjectLaunchProfile);
         if (profile == null)
         {
             return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);

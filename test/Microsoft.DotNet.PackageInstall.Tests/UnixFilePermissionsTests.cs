@@ -5,9 +5,10 @@ using Microsoft.DotNet.Cli.NugetPackageDownloader;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    [TestClass]
     public class UnixFilePermissionsTests
     {
-        [Fact]
+        [TestMethod]
         public void GivenXmlPathItShouldDeserialize()
         {
             var fileList = FileList.Deserialize("UnixFilePermissionsSample.xml");

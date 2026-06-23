@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,13 +9,12 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildADesktopLibrary : SdkTest
     {
-        public GivenThatWeWantToBuildADesktopLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_gets_implicit_designtime_facades_when_package_reference_uses_system_runtime()
         {
             // The repro here is very sensitive to the target framework and packages used. This specific case
@@ -41,12 +40,13 @@ namespace Microsoft.NET.Build.Tests
                     }
                 }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(netFrameworkLibrary, "FacadesFromTargetFramework");
+            var testAsset = TestAssetsManager.CreateTestProject(netFrameworkLibrary, "FacadesFromTargetFramework");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_can_use_HttpClient_and_exchange_the_type_with_a_NETStandard_library()
         {
             var netStandardLibrary = new TestProject()
@@ -85,7 +85,7 @@ public class NETFramework
 }
 ";
 
-            var testAsset = _testAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeHttpClient")
+            var testAsset = TestAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeHttpClient")
                 .WithProjectChanges((projectPath, project) =>
                 {
                     if (Path.GetFileName(projectPath).Equals(netFrameworkLibrary.Name + ".csproj", StringComparison.OrdinalIgnoreCase))
@@ -108,12 +108,12 @@ public class NETFramework
 
         }
 
-        [Theory]
-        [InlineData("RazorSimpleMvc22", "netcoreapp2.2", "SimpleMvc22")]
-        [InlineData("DesktopReferencingNetStandardLibrary", "net46", "Library")]
+        [TestMethod]
+        [DataRow("RazorSimpleMvc22", "netcoreapp2.2", "SimpleMvc22")]
+        [DataRow("DesktopReferencingNetStandardLibrary", "net46", "Library")]
         public void PackageReferences_with_private_assets_do_not_appear_in_deps_file(string asset, string targetFramework, string exeName)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(asset)
                 .WithSource();
 
@@ -136,9 +136,9 @@ public class NETFramework
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void PackageWithoutAssets_ShouldNotShowUpInDepsJson(bool trimLibrariesWithoutAssets)
         {
             var testProject = new TestProject()
@@ -152,7 +152,7 @@ public class NETFramework
                 testProject.AdditionalProperties["TrimDepsJsonLibrariesWithoutAssets"] = "False";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
@@ -171,7 +171,7 @@ public class NETFramework
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void XUnitCoreIsNotTrimmed()
         {
             //  Regression test for https://github.com/dotnet/sdk/issues/49248
@@ -181,7 +181,7 @@ public class NETFramework
             testProject.PackageReferences.Add(new TestPackageReference("xunit.extensibility.core", "2.9.3"));
             testProject.PackageReferences.Add(new TestPackageReference("xunit.extensibility.execution", "2.9.3"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
@@ -193,7 +193,7 @@ public class NETFramework
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectNameCanMatchPackageReferenceName()
         {
             var testProject = new TestProject()
@@ -205,13 +205,14 @@ public class NETFramework
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.AdditionalProperties["PackageId"] = "Newtonsoft.Json*";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_can_reference_a_netstandard2_library_and_exchange_types()
         {
             var netStandardLibrary = new TestProject()
@@ -245,7 +246,7 @@ public class NETFramework
     }
 }
 ";
-            var testAsset = _testAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeNETStandard2");
+            var testAsset = TestAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeNETStandard2");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -255,7 +256,8 @@ public class NETFramework
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_can_use_ValueTuple_and_exchange_the_type_with_a_NETStandard_library()
         {
             var referenceAssemblies = ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version47);
@@ -301,7 +303,7 @@ public class NETFramework
     }
 }
 ";
-            var testAsset = _testAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeValueTuple");
+            var testAsset = TestAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeValueTuple");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -311,10 +313,11 @@ public class NETFramework
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_can_preserve_compilation_context_and_reference_netstandard_library()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopReferencingNetStandardLibrary")
                 .WithSource();
 
@@ -330,7 +333,8 @@ public class NETFramework
             }
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_resolves_assembly_conflicts_with_a_NETFramework_library()
         {
             TestProject project = new()
@@ -346,7 +350,7 @@ public static class {project.Name}
     {ConflictResolutionAssets.ConflictResolutionTestMethod}
 }}";
 
-            var testAsset = _testAssetsManager.CreateTestProject(project)
+            var testAsset = TestAssetsManager.CreateTestProject(project)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -379,9 +383,10 @@ public static class {project.Name}
                 .NotHaveStdOutContaining("MSB3243");
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void It_uses_hintpath_when_replacing_simple_name_references(bool useFacades)
         {
             TestProject project = new()
@@ -402,7 +407,7 @@ public static class {project.Name}
             }
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPaths", identifier: useFacades ? "_useFacades" : "")
+            var testAsset = TestAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPaths", identifier: useFacades ? "_useFacades" : "")
                 .WithProjectChanges((path, p) =>
                 {
                     if (Path.GetFileNameWithoutExtension(path) == project.Name)
@@ -459,7 +464,7 @@ public static class {project.Name}
                 .Should().Be(correctHttpReference);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_tolerates_newline_in_hint_path()
         {
             string hintPath = BuildReferencedBuildAndReturnOutputDllPath();
@@ -470,7 +475,7 @@ public static class {project.Name}
                 TargetFrameworks = "net462",
             };
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPathsWithNewLines")
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPathsWithNewLines")
                 .WithProjectChanges((path, p) =>
                 {
                     XNamespace ns = p.Root.Name.Namespace;
@@ -498,7 +503,7 @@ public static class {project.Name}
                 TargetFrameworks = "net462",
             };
 
-            TestAsset referencedTestAsset = _testAssetsManager
+            TestAsset referencedTestAsset = TestAssetsManager
                 .CreateTestProject(referencedProject, "SimpleNamesWithHintPathsWithNewLinesReferenced");
 
             var referencedbuildCommand =
@@ -512,7 +517,8 @@ public static class {project.Name}
         }
 
         //  Regression test for https://github.com/dotnet/sdk/issues/1730
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void A_target_can_depend_on_RunResolvePublishAssemblies()
         {
             TestProject testProject = new()
@@ -522,7 +528,7 @@ public static class {project.Name}
                 IsExe = false
             };
 
-            var testInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(p =>
                 {
                     var pns = p.Root.Name.Namespace;

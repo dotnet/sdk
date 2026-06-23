@@ -33,7 +33,7 @@ namespace Microsoft.NET.Publish.Tests
             string rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             List<string> args = new() { "/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={rid}" };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             new PublishCommand(testAsset)
                 .Execute(args.ToArray())
                 .Should()

@@ -1,0 +1,18 @@
+<Project>
+
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- TemplateEngine assembly signing for InternalsVisibleTo -->
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+
+    <NoWarn>$(NoWarn);IDE0005;0649;CA2016;CA5394;CA1802</NoWarn>
+  </PropertyGroup>
+
+  <!-- Add Microsoft.NET.TestFramework to test projects (not library projects like TestHelper/Mocks)
+       so that Shared/TestBase.cs can use SdkTestContext for Helix-compatible path resolution. -->
+  <ItemGroup Condition="'$(IsPackable)' != 'true'">
+    <ProjectReference Include="$(RepoRoot)test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -9,7 +9,7 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
     [Fact]
     public void WhenPackageIsRemovedWithoutProjectArgument()
     {
-        var projectDirectory = _testAssetsManager
+        var projectDirectory = TestAssetsManager
             .CopyTestAsset("TestAppSimple")
             .WithSource().Path;
 
@@ -31,7 +31,7 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
     [Fact]
     public void WhenPackageIsRemovedWithProjectOption()
     {
-        var projectDirectory = _testAssetsManager
+        var projectDirectory = TestAssetsManager
             .CopyTestAsset("TestAppSimple")
             .WithSource().Path;
 
@@ -53,7 +53,7 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
     [Fact]
     public void WhenNoPackageIsPassedCommandFails()
     {
-        var projectDirectory = _testAssetsManager
+        var projectDirectory = TestAssetsManager
             .CopyTestAsset("TestAppSimple")
             .WithSource()
             .Path;
@@ -68,7 +68,7 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
     [Fact]
     public void WhenMultiplePackagesArePassedCommandFails()
     {
-        var projectDirectory = _testAssetsManager
+        var projectDirectory = TestAssetsManager
             .CopyTestAsset("TestAppSimple")
             .WithSource()
             .Path;

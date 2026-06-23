@@ -7,25 +7,26 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithoutTransitiveProjectRefs : SdkTest
     {
-        public GivenThatWeWantToBuildAnAppWithoutTransitiveProjectRefs(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("17.15")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.15")]
         public void It_builds_the_project_successfully_when_RAR_finds_all_references()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/p:DisableTransitiveProjectReferences=true" });
         }
 
-        [RequiresMSBuildVersionFact("17.15")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.15")]
         public void It_builds_the_project_successfully_with_static_graph_and_isolation()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph" });
         }
 
-        [RequiresMSBuildVersionFact("17.15")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.15")]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
             var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/bl:build-{}.binlog" });
@@ -57,7 +58,7 @@ namespace Microsoft.NET.Build.Tests
         private (TestAsset TestAsset, IReadOnlyDictionary<string, DirectoryInfo> OutputDirectories)
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(string[] msbuildArguments, [CallerMemberName] string callingMethod = "")
         {
-            var testAsset = _testAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
 
             testAsset.Restore(Log, "1");
 
@@ -143,10 +144,10 @@ namespace Microsoft.NET.Build.Tests
             return (testAsset, outputDirectories);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_project_successfully_when_RAR_does_not_find_all_references()
         {
-            var testAsset = _testAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
+            var testAsset = TestAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
 
             testAsset.Restore(Log, "1");
 

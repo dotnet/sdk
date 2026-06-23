@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         [Fact]
         public void ItAcceptsPrefixedOption()
         {
-            var rootPath = _testAssetsManager.CreateTestDirectory().Path;
+            var rootPath = TestAssetsManager.CreateTestDirectory().Path;
 
             new DotnetCommand(Log, "nuget")
                 .WithWorkingDirectory(rootPath)
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         public void ItHasAWhySubcommand()
         {
             var testAssetName = "NewtonSoftDependentProject";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         [Fact]
         public void ItHasAWhySubcommand_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, $"""
                 #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         [Fact]
         public void ItHasAWhySubcommand_FileBasedApp_WithOptionsBeforePath()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, $"""
                 #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         {
             // Arrange
             var testAssetName = "TestAppSimple";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         public void ItCanUpdatePackages_FileBasedApp()
         {
             // Arrange
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();

@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
@@ -21,6 +22,9 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed partial class CSharpCompilerCommand
 {
+    [JsonSerializable(typeof(string))]
+    private partial class CSharpCompilerCommandJsonSerializerContext : JsonSerializerContext;
+
     private static readonly SearchValues<char> s_additionalShouldSurroundWithQuotes = SearchValues.Create('=', ',');
 
     /// <summary>

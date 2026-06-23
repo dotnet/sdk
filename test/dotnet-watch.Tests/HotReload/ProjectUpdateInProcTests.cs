@@ -116,10 +116,15 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
 
         AssertEx.ContainsSubstring("Resolving 'Dependency, Version=1.0.0.0'", w.Reporter.ProcessOutput);
 
+        // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
+        // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
+        // completes because it's not awaited (line 497 of CompilationHandler.cs).
+        using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await managedCodeChangesApplied.WaitAsync(waitCts.Token);
+
         Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
         Assert.Equal(1, projectsRebuilt.CurrentCount);
         Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, managedCodeChangesApplied.CurrentCount);
     }
 
     [Fact]
@@ -174,9 +179,14 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
 
         AssertEx.ContainsSubstring("Resolving 'Newtonsoft.Json, Version=13.0.0.0'", w.Reporter.ProcessOutput);
 
+        // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
+        // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
+        // completes because it's not awaited (line 497 of CompilationHandler.cs).
+        using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await managedCodeChangesApplied.WaitAsync(waitCts.Token);
+
         Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
         Assert.Equal(0, projectsRebuilt.CurrentCount);
         Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, managedCodeChangesApplied.CurrentCount);
     }
 }

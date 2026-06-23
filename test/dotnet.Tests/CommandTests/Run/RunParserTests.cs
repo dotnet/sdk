@@ -5,14 +5,23 @@ using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
-    public class RunParserTests
+    public class RunParserTests : IDisposable
     {
+        private readonly ITestOutputHelper output;
+        private readonly string _previousWorkingDirectory;
+
         public RunParserTests(ITestOutputHelper output)
         {
             this.output = output;
+
+            // Reset current working directory after tests run to avoid breaking other tests
+            _previousWorkingDirectory = Directory.GetCurrentDirectory();
         }
 
-        private readonly ITestOutputHelper output;
+        public void Dispose()
+        {
+            Directory.SetCurrentDirectory(_previousWorkingDirectory);
+        }
 
         [Fact]
         public void RunParserCanGetArgumentFromDoubleDash()
@@ -21,9 +30,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
-            Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = Path.Combine(newWorkingDir, "HelloWorld.csproj");
-                
+
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "foo" });
             runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
@@ -37,7 +45,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = @".\HelloWorld.csproj";
-                
             // Should not throw on Windows
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
             runCommand.ProjectFileFullPath.Should().NotBeNull();
@@ -52,7 +59,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = @".\HelloWorld.csproj";
-                
             // Should not throw on Linux with backslash separators
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
             runCommand.ProjectFileFullPath.Should().NotBeNull();
