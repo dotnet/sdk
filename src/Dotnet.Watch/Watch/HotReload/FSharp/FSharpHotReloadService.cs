@@ -2461,38 +2461,54 @@ internal sealed class FSharpHotReloadService
         /// </summary>
         private static string? TryFormatRudeEdits(object? error)
         {
-            try
-            {
-                var item = error?.GetType().GetProperty("Item")?.GetValue(error);
-                if (item is not System.Collections.IEnumerable edits)
-                {
-                    return null;
-                }
-
-                var lines = new List<string>();
-                foreach (var edit in edits)
-                {
-                    if (edit == null)
-                    {
-                        continue;
-                    }
-
-                    var editType = edit.GetType();
-                    var id = editType.GetProperty("Id")?.GetValue(edit) as string;
-                    var message = editType.GetProperty("Message")?.GetValue(edit) as string;
-
-                    if (!string.IsNullOrEmpty(id) || !string.IsNullOrEmpty(message))
-                    {
-                        lines.Add(string.IsNullOrEmpty(id) ? message! : $"{id}: {message}");
-                    }
-                }
-
-                return lines.Count > 0 ? string.Join(Environment.NewLine, lines) : null;
-            }
-            catch
+            if (error == null)
             {
                 return null;
             }
+
+            // Preferred: read the structured FSharpHotReloadRudeEdit list (Id + Message). Use the
+            // no-arg get_Item() accessor rather than GetProperty("Item"), which can throw
+            // AmbiguousMatchException on an F# single-field union case.
+            try
+            {
+                var item = error.GetType().GetMethod("get_Item", Type.EmptyTypes)?.Invoke(error, null);
+                if (item is System.Collections.IEnumerable edits)
+                {
+                    var lines = new List<string>();
+                    foreach (var edit in edits)
+                    {
+                        if (edit == null)
+                        {
+                            continue;
+                        }
+
+                        var editType = edit.GetType();
+                        var id = editType.GetProperty("Id")?.GetValue(edit) as string ?? "";
+                        var message = editType.GetProperty("Message")?.GetValue(edit) as string ?? "";
+
+                        if (id.Length > 0 || message.Length > 0)
+                        {
+                            lines.Add(id.Length == 0 ? message : $"{id}: {message}");
+                        }
+                    }
+
+                    if (lines.Count > 0)
+                    {
+                        return string.Join(Environment.NewLine, lines);
+                    }
+                }
+            }
+            catch
+            {
+                // Fall through to the tidy-dump fallback below.
+            }
+
+            // Fallback: the default F# record/DU ToString() is multi-line and noisy; collapse it to
+            // a single tidy line so the reason is still readable for the user.
+            var text = error.ToString();
+            return string.IsNullOrWhiteSpace(text)
+                ? null
+                : System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
         }
 
         private static string FormatTokenSet(ImmutableArray<int> tokens)
