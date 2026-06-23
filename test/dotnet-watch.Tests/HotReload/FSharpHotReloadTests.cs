@@ -139,6 +139,10 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
 
         await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
         AssertFSharpEditAppliedInPlace();
+
+        // The apply log alone does not prove the delta took effect: assert the running loop
+        // now prints the edited string in place (it printed "Waiting" before the edit).
+        await App.AssertOutputLineStartsWith("<UpdatedInPlace>");
     }
 
     [Fact]
