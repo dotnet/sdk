@@ -206,7 +206,6 @@ For each finding, give a **severity** marker and a **confidence** level, and sta
 
 - ❌ **error** — Must fix before merge. Bugs, security issues, broken invariants, regression-coverage gaps for behavior changes.
 - ⚠️ **warning** — Should fix. Performance issues, missing validation, inconsistency with established SDK patterns.
-- 💡 **suggestion** — Consider changing. Minor readability wins, optional optimizations. (Non-blocking; label clearly as follow-up.)
 
 **Confidence: High / Medium / Low.** Do **not** drop a real concern just because it is an edge case or you could not fully confirm it — surface it with an honest confidence label and say what you did and did not verify (e.g. "confirmed the span semantics in code but did not execute a repro"). A real-but-uncertain issue flagged as Low confidence is valuable; an invented one is not. Every finding — at any confidence — must still cite a concrete file:line and a real mechanism. Reserve Low confidence for genuine uncertainty, not for hedging on something you have actually verified.
 
