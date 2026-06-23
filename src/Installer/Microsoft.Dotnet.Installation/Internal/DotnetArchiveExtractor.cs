@@ -347,7 +347,6 @@ internal class DotnetArchiveExtractor : IDisposable
         return totalFiles;
     }
 
-
     private static void ExtractTarContents(Stream archiveStream, bool isGzip, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler, Action<string>? onEntryExtracted, Func<string, bool>? shouldSkipEntry)
     {
         using OwnedTarStream tarStream = OpenTarReadStream(archiveStream, isGzip);
