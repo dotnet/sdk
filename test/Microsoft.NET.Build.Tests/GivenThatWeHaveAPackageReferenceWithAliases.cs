@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,13 +7,13 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeHaveAPackageReferenceWithAliases : SdkTest
     {
 
-        public GivenThatWeHaveAPackageReferenceWithAliases(ITestOutputHelper log) : base(log)
-        { }
-
-        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/39172")]
+        [RequiresMSBuildVersion("16.8.0")]
         public void CanBuildProjectWithPackageReferencesWithConflictingTypes()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -52,7 +52,9 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/39172")]
+        [RequiresMSBuildVersion("16.8.0")]
         public void CanBuildProjectWithMultiplePackageReferencesWithAliases()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -97,7 +99,9 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/39172")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/39172")]
+        [RequiresMSBuildVersion("16.8.0")]
         public void CanBuildProjectWithAPackageReferenceWithMultipleAliases()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;

@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger)
+public class AspireLauncherIntegrationTests(ITestOutputHelper logger) : WatchSdkTest(logger)
 {
     private WatchableApp CreateHostApp()
         => new(
