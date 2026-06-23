@@ -11,6 +11,14 @@
     <IsDebianBaseDistro Condition="$(HostRid.StartsWith('ubuntu')) or $(HostRid.StartsWith('debian'))">true</IsDebianBaseDistro>
     <IsRPMBasedDistro Condition="$(HostRid.StartsWith('rhel'))">true</IsRPMBasedDistro>
     <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
+
+    <!-- Whether the dotnet-aot NativeAOT shared library can be published into the SDK layout.
+         NativeAOT requires a toolchain capable of producing binaries for the target platform.
+         For Windows and Linux that means the build must be native (TargetRid == HostRid).
+         macOS is special: the Xcode/clang toolchain on a macOS host can target both osx-x64
+         and osx-arm64, so same-OS cross-architecture publishing is supported there (for example
+         an osx-x64 host producing osx-arm64). -->
+    <CanPublishDotnetAot Condition="('$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')))) or ($(HostRid.StartsWith('osx')) and $(TargetRid.StartsWith('osx')))">true</CanPublishDotnetAot>
   </PropertyGroup>
 
   <PropertyGroup>
