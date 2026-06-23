@@ -7,12 +7,13 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class EnumsMustMatchTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new EnumsMustMatch(settings, context));
 
-        [Fact]
-        public static void DifferencesReported()
+        [TestMethod]
+        public void DifferencesReported()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -47,11 +48,11 @@ namespace CompatTests
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.EnumValuesMustMatch, string.Empty, DifferenceType.Changed, "F:CompatTests.First.A"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
-        public static void RemovedEnum()
+        [TestMethod]
+        public void RemovedEnum()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -83,11 +84,11 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
 
-            Assert.NotEmpty(differences);
+            Assert.IsNotEmpty(differences);
         }
 
-        [Fact]
-        public static void AddedEnum()
+        [TestMethod]
+        public void AddedEnum()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -118,11 +119,11 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
-        public static void BackingStoreChanged()
+        [TestMethod]
+        public void BackingStoreChanged()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -156,7 +157,7 @@ namespace CompatTests
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.EnumTypesMustMatch, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
     }
 }

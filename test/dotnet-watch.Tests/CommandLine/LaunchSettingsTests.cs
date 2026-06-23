@@ -1,36 +1,35 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias MSTestFramework;
+
 #nullable disable
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class DotNetWatcherTests : DotNetWatchTestBase
 {
     private const string AppName = "WatchKitchenSink";
 
-    public DotNetWatcherTests(ITestOutputHelper logger)
-        : base(logger)
-    {
-    }
-
-    [Fact]
+    [TestMethod]
     public async Task RunsWithDotnetWatchEnvVariable()
     {
-        Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");
+        Assert.IsTrue(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");
 
         var testAsset = TestAssets.CopyTestAsset(AppName)
             .WithSource();
 
         App.Start(testAsset, []);
-        Assert.Equal("1", await App.AssertOutputLineStartsWith("DOTNET_WATCH = "));
+        Assert.AreEqual("1", await App.AssertOutputLineStartsWith("DOTNET_WATCH = "));
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenNotExplicitlySpecified(bool hotReload)
     {
-        Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
+        Assert.IsTrue(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
         var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
             .WithSource();
@@ -41,14 +40,15 @@ public class DotNetWatcherTests : DotNetWatchTestBase
         }
 
         App.Start(testAsset, []);
-        Assert.Equal("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
+        Assert.AreEqual("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecified(bool hotReload)
     {
-        Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
+        Assert.IsTrue(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
         var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
             .WithSource();
@@ -61,14 +61,15 @@ public class DotNetWatcherTests : DotNetWatchTestBase
         App.WatchArgs.Add("--launch-profile");
         App.WatchArgs.Add("Second");
         App.Start(testAsset, []);
-        Assert.Equal("<<<Second>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
+        Assert.AreEqual("<<<Second>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecifiedButNotPresentIsEmpty(bool hotReload)
     {
-        Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
+        Assert.IsTrue(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
         var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
             .WithSource();
@@ -79,11 +80,12 @@ public class DotNetWatcherTests : DotNetWatchTestBase
         }
 
         App.Start(testAsset, ["--", "--launch-profile", "Third"]);
-        Assert.Equal("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
+        Assert.AreEqual("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task RunsWithIterationEnvVariable(bool hotReload)
     {
         var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -107,7 +109,7 @@ public class DotNetWatcherTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains("DOTNET_WATCH_ITERATION = 2");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
@@ -118,7 +120,7 @@ public class DotNetWatcherTests : DotNetWatchTestBase
         await App.AssertOutputLineEquals("Environment: Development");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings_WhenUsingProjectOption()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
@@ -135,7 +137,7 @@ public class DotNetWatcherTests : DotNetWatchTestBase
         await App.AssertOutputLineEquals("Environment: Development");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings_WhenUsingFileOption()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
@@ -155,7 +157,9 @@ public class DotNetWatcherTests : DotNetWatchTestBase
         await App.AssertOutputLineEquals("Environment: Development");
     }
 
-    [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/29047")]
+    [TestMethod]
+    [MSTestFramework::Microsoft.NET.TestFramework.CoreMSBuildOnly]
+    [Ignore("https://github.com/dotnet/sdk/issues/29047")]
     public async Task Run_WithHotReloadEnabled_DoesNotReadConsoleIn_InNonInteractiveMode()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
@@ -170,6 +174,6 @@ public class DotNetWatcherTests : DotNetWatchTestBase
         var inputString = "This is a test input";
 
         await standardInput.WriteLineAsync(inputString);
-        Assert.Equal(inputString, await App.AssertOutputLineStartsWith("Echo: "));
+        Assert.AreEqual(inputString, await App.AssertOutputLineStartsWith("Echo: "));
     }
 }

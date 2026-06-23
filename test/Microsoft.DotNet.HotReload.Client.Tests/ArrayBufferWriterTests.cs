@@ -212,7 +212,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
     {
         var output = new ArrayBufferWriter<T>();
         var span = output.GetSpan();
-        Assert.AreEqual(256, span.Length);
+        Assert.HasCount(256, span.ToArray());
     }
 
     [TestMethod]
@@ -221,7 +221,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
     {
         var output = new ArrayBufferWriter<T>();
         var span = output.GetSpan(sizeHint);
-        Assert.AreEqual(sizeHint <= 256 ? 256 : sizeHint, span.Length);
+        Assert.HasCount(sizeHint <= 256 ? 256 : sizeHint, span.ToArray());
     }
 
     [TestMethod]
@@ -229,7 +229,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
     {
         var output = new ArrayBufferWriter<T>(100);
         var span = output.GetSpan();
-        Assert.AreEqual(100, span.Length);
+        Assert.HasCount(100, span.ToArray());
     }
 
     [TestMethod]
@@ -239,13 +239,13 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         {
             var output = new ArrayBufferWriter<T>(256);
             var span = output.GetSpan(sizeHint);
-            Assert.AreEqual(sizeHint <= 256 ? 256 : sizeHint + 256, span.Length);
+            Assert.HasCount(sizeHint <= 256 ? 256 : sizeHint + 256, span.ToArray());
         }
 
         {
             var output = new ArrayBufferWriter<T>(1000);
             var span = output.GetSpan(sizeHint);
-            Assert.AreEqual(sizeHint <= 1000 ? 1000 : sizeHint + 1000, span.Length);
+            Assert.HasCount(sizeHint <= 1000 ? 1000 : sizeHint + 1000, span.ToArray());
         }
     }
 
@@ -254,7 +254,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
     {
         var output = new ArrayBufferWriter<T>();
         var memory = output.GetMemory();
-        Assert.AreEqual(256, memory.Length);
+        Assert.HasCount(256, memory.ToArray());
 
         var segment = output.GetArraySegment();
         Assert.HasCount(memory.Length, segment);
@@ -266,7 +266,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
     {
         var output = new ArrayBufferWriter<T>();
         var memory = output.GetMemory(sizeHint);
-        Assert.AreEqual(sizeHint <= 256 ? 256 : sizeHint, memory.Length);
+        Assert.HasCount(sizeHint <= 256 ? 256 : sizeHint, memory.ToArray());
 
         var segment = output.GetArraySegment(sizeHint);
         Assert.HasCount(memory.Length, segment);
@@ -285,7 +285,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
     {
         var output = new ArrayBufferWriter<T>(100);
         var memory = output.GetMemory();
-        Assert.AreEqual(100, memory.Length);
+        Assert.HasCount(100, memory.ToArray());
 
         var segment = output.GetArraySegment();
         Assert.HasCount(memory.Length, segment);
@@ -298,7 +298,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         {
             var output = new ArrayBufferWriter<T>(256);
             var memory = output.GetMemory(sizeHint);
-            Assert.AreEqual(sizeHint <= 256 ? 256 : sizeHint + 256, memory.Length);
+            Assert.HasCount(sizeHint <= 256 ? 256 : sizeHint + 256, memory.ToArray());
 
             var segment = output.GetArraySegment();
             Assert.HasCount(memory.Length, segment);
@@ -307,7 +307,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         {
             var output = new ArrayBufferWriter<T>(1000);
             var memory = output.GetMemory(sizeHint);
-            Assert.AreEqual(sizeHint <= 1000 ? 1000 : sizeHint + 1000, memory.Length);
+            Assert.HasCount(sizeHint <= 1000 ? 1000 : sizeHint + 1000, memory.ToArray());
 
             var segment = output.GetArraySegment();
             Assert.HasCount(memory.Length, segment);
@@ -347,7 +347,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             var segment = output.GetArraySegment();
             Span<T> memorySpan = memory.Span;
             Assert.IsGreaterThan(0, span.Length);
-            Assert.AreEqual(span.Length, memorySpan.Length);
+            Assert.HasCount(span.Length, memorySpan.ToArray());
             Assert.HasCount(span.Length, segment);
 
             for (int i = 0; i < span.Length; i++)
@@ -378,7 +378,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             Span<T> memorySpan = memory.Span;
             Assert.IsGreaterThanOrEqualTo(500, span.Length);
             Assert.IsGreaterThanOrEqualTo(500, memorySpan.Length);
-            Assert.AreEqual(span.Length, memorySpan.Length);
+            Assert.HasCount(span.Length, memorySpan.ToArray());
             Assert.HasCount(span.Length, segment);
             for (int i = 0; i < span.Length; i++)
             {
@@ -391,7 +391,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             segment = output.GetArraySegment(500);
             memorySpan = memory.Span;
             Assert.IsGreaterThanOrEqualTo(500, memorySpan.Length);
-            Assert.AreEqual(span.Length, memorySpan.Length);
+            Assert.HasCount(span.Length, memorySpan.ToArray());
             for (int i = 0; i < memorySpan.Length; i++)
             {
                 Assert.AreEqual(default, memorySpan[i]);
