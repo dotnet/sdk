@@ -18,6 +18,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// Verifies TaskEnvironment-based path resolution against ProjectDirectory (not process CWD)
     /// and that output metadata preserves the original path form.
     /// </summary>
+    [DoNotParallelize]
     [TestClass]
     public class GivenAResolveAppHostsMultiThreading : IDisposable
     {
