@@ -3,6 +3,11 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
+    <!-- These are heavy integration tests that build and run apps (dotnet watch, file watchers, ports).
+         Under xUnit they ran with class-level parallelism (classes in parallel, methods within a class
+         serialized). MSTest.Sdk defaults to MethodLevel (see test/Directory.Build.props), which
+         over-subscribes the machine and causes Helix work-item timeouts. Restore class-level scope. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="Microsoft.NET.TestFramework" />
