@@ -520,12 +520,11 @@
     them entirely in native code, falling back to the managed dotnet.dll for other commands.
     The output is placed next to dotnet.dll so it's packaged with the SDK.
 
-    Only runs where a NativeAOT toolchain for the target is available (see CanPublishDotnetAot
-    in Directory.Build.props): native Windows/Linux builds (TargetRid == HostRid) and macOS,
-    where same-OS cross-architecture publishing is supported (e.g. osx-x64 host -> osx-arm64).
+    Only runs for native builds (TargetRid == HostRid) on supported platforms.
+    Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
   -->
   <Target Name="PublishDotnetAot"
-          Condition="'$(CanPublishDotnetAot)' == 'true'">
+          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))">
     <PropertyGroup>
       <!-- Define platform-specific native library naming -->
       <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
