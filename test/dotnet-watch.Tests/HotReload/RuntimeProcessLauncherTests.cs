@@ -13,7 +13,6 @@ public class RuntimeProcessLauncherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -174,7 +173,6 @@ public class RuntimeProcessLauncherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -275,7 +273,6 @@ public class RuntimeProcessLauncherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {

@@ -15,7 +15,6 @@ public class FileExclusionTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {

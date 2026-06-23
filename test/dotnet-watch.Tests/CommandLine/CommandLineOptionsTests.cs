@@ -97,7 +97,6 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public void WatchOptions_NotPassedThrough(
         [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
@@ -311,7 +310,6 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public void OptionsSpecifiedBeforeOrAfterRun(bool afterRun)
     {
@@ -340,7 +338,6 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public void OptionDuplicates_Allowed_Bool(
         ArgPosition position,

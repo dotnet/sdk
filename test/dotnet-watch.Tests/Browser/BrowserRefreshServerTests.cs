@@ -17,7 +17,6 @@ public class BrowserRefreshServerTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task ConfigureLaunchEnvironmentAsync(LogLevel logLevel, bool enableHotReload) 
     {

@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             _engineEnvironmentSettings = new EnvironmentSettingsHelper().CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionPostActionFindSolutionFileAtOutputPath))]
+        [TestMethod]
         public void AddProjectToSolutionPostActionFindSolutionFileAtOutputPath()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual(solutionFileFullPath, solutionFiles[0]);
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionPostActionPrefersSlnOverSlnx))]
+        [TestMethod]
         public void AddProjectToSolutionPostActionPrefersSlnOverSlnx()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual(slnFileFullPath, solutionFiles[0]);
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionPostActionFindsOneProjectToAdd))]
+        [TestMethod]
         public void AddProjectToSolutionPostActionFindsOneProjectToAdd()
         {
             string outputBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual(creationResult.PrimaryOutputs[0].Path, foundProjectFiles?[0]);
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionPostActionFindsMultipleProjectsToAdd))]
+        [TestMethod]
         public void AddProjectToSolutionPostActionFindsMultipleProjectsToAdd()
         {
             string outputBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.DoesNotContain(creationResult.PrimaryOutputs[1].Path, foundProjectFiles.ToList());
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionPostActionDoesntFindProjectOutOfRange))]
+        [TestMethod]
         public void AddProjectToSolutionPostActionDoesntFindProjectOutOfRange()
         {
             IPostAction postAction = new MockPostAction(default, default, default, default, default!)
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.IsEmpty(foundProjectFiles);
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionPostActionFindsMultipleProjectsToAddWithOutputBasePath))]
+        [TestMethod]
         public void AddProjectToSolutionPostActionFindsMultipleProjectsToAddWithOutputBasePath()
         {
             string outputBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.DoesNotContain(dontFindMeFullPath1, foundProjectFiles.ToList());
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionPostActionWithoutPrimaryOutputIndexesWithOutputBasePath))]
+        [TestMethod]
         public void AddProjectToSolutionPostActionWithoutPrimaryOutputIndexesWithOutputBasePath()
         {
             string outputBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.Contains(outputFileFullPath1, foundProjectFiles.ToList());
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionCanTargetASingleProjectWithAJsonArray))]
+        [TestMethod]
         public void AddProjectToSolutionCanTargetASingleProjectWithAJsonArray()
         {
             var callback = new MockAddProjectToSolutionCallback();
@@ -222,7 +222,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual(slnFileFullPath, callback.Solution);
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionCanTargetASingleProjectWithTheProjectName))]
+        [TestMethod]
         public void AddProjectToSolutionCanTargetASingleProjectWithTheProjectName()
         {
             var callback = new MockAddProjectToSolutionCallback();
@@ -251,7 +251,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual(slnFileFullPath, callback.Solution);
         }
 
-        [TestMethod(DisplayName = nameof(AddProjectToSolutionCanPlaceProjectInSolutionRoot))]
+        [TestMethod]
         public void AddProjectToSolutionCanPlaceProjectInSolutionRoot()
         {
             var callback = new MockAddProjectToSolutionCallback();

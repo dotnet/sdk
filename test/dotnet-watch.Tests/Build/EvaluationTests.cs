@@ -126,7 +126,6 @@ public class EvaluationTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task StaticAssets(bool isWeb, [CombinatorialValues(true, false, null)] bool? enableStaticWebAssets)
     {
@@ -312,7 +311,6 @@ public class EvaluationTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task SingleTargetRoot_MultiTargetedDependency(bool specifyTargetFramework)
     {

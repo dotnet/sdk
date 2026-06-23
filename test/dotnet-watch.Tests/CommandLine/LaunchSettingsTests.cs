@@ -25,7 +25,6 @@ public class DotNetWatcherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenNotExplicitlySpecified(bool hotReload)
     {
@@ -44,7 +43,6 @@ public class DotNetWatcherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecified(bool hotReload)
     {
@@ -65,7 +63,6 @@ public class DotNetWatcherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecifiedButNotPresentIsEmpty(bool hotReload)
     {
@@ -84,7 +81,6 @@ public class DotNetWatcherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task RunsWithIterationEnvVariable(bool hotReload)
     {

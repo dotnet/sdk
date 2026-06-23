@@ -50,7 +50,6 @@ public class ProjectUpdateTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task Update(bool isDirectoryProps)
     {

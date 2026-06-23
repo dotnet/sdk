@@ -41,7 +41,6 @@ public class MetadataUpdateHandlerTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task Exception(bool verbose)
     {

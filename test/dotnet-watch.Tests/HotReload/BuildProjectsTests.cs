@@ -169,7 +169,6 @@ public class BuildProjects
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task FileBasedApp_NoFrameworkProperties(bool isMain)
     {
@@ -199,7 +198,6 @@ public class BuildProjects
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task FileBasedApp_TargetFrameworkProperty(bool nonInteractive)
     {
@@ -230,7 +228,6 @@ public class BuildProjects
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task FileBasedApp_TargetFrameworksProperty(bool nonInteractive)
     {

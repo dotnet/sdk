@@ -16,7 +16,6 @@ public class BuildParametersSelectionPromptTests
     ];
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task SelectsFrameworkByArrowKeysAndEnter([CombinatorialRange(0, count: 3)] int index)
     {
@@ -38,7 +37,6 @@ public class BuildParametersSelectionPromptTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task PreviousFrameworkSelectionIsReusedWhenUnchanged([CombinatorialRange(0, count: 3)] int index)
     {

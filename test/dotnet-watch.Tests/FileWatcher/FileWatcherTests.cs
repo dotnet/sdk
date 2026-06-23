@@ -163,7 +163,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task NewFile(bool usePolling)
     {
@@ -189,7 +188,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task NewFileInNewDirectory(bool usePolling, bool nested)
     {
@@ -234,7 +232,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task ChangeFile(bool usePolling)
     {
@@ -252,7 +249,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task MoveFile(bool usePolling)
     {
@@ -283,7 +279,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task FileInSubdirectory(bool usePolling, bool watchSubdirectories)
     {
@@ -336,7 +331,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task NoNotificationIfDisabled(bool usePolling)
     {
@@ -365,7 +359,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task DisposedNoEvents(bool usePolling)
     {
@@ -392,7 +385,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task MultipleFiles(bool usePolling)
     {
@@ -422,7 +414,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task MultipleTriggers(bool usePolling)
     {
@@ -482,7 +473,6 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task DeleteSubfolder(bool usePolling)
     {

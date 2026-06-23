@@ -54,7 +54,6 @@ public class AutoRestartTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     [Ignore("https://github.com/dotnet/sdk/issues/51469")]
     public async Task AutoRestartOnRuntimeRudeEdit(bool nonInteractive)
@@ -162,7 +161,6 @@ public class AutoRestartTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-
     [CombinatorialData]
     public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
     {
