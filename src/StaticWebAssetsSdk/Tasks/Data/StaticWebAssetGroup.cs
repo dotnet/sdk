@@ -4,10 +4,11 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-internal sealed class StaticWebAssetGroup
+public sealed class StaticWebAssetGroup : IEquatable<StaticWebAssetGroup>
 {
     private ITaskItem _originalItem;
     private string _name;
@@ -75,5 +76,74 @@ internal sealed class StaticWebAssetGroup
         }
 
         return result;
+    }
+
+    // Materializes the groups into an array suitable for persisting in the manifest,
+    // ensuring each member is fully realized (no lazy ITaskItem reference is retained).
+    public static StaticWebAssetGroup[] FromItemGroupToArray(ITaskItem[] items)
+    {
+        if (items == null || items.Length == 0)
+        {
+            return [];
+        }
+
+        var groups = FromItemGroup(items);
+        var result = new StaticWebAssetGroup[groups.Count];
+        var index = 0;
+        foreach (var group in groups.Values)
+        {
+            result[index++] = new StaticWebAssetGroup
+            {
+                Name = group.Name,
+                Value = group.Value,
+                SourceId = group.SourceId,
+                Deferred = group.Deferred,
+            };
+        }
+
+        Array.Sort(result, static (l, r) =>
+        {
+            var bySource = string.CompareOrdinal(l.SourceId, r.SourceId);
+            return bySource != 0 ? bySource : string.CompareOrdinal(l.Name, r.Name);
+        });
+
+        return result;
+    }
+
+    public ITaskItem ToTaskItem()
+    {
+        var item = new TaskItem(Name);
+        item.SetMetadata(nameof(Value), Value ?? "");
+        item.SetMetadata(nameof(SourceId), SourceId ?? "");
+        item.SetMetadata(nameof(Deferred), Deferred ? "true" : "false");
+        return item;
+    }
+
+    public bool Equals(StaticWebAssetGroup other) =>
+        other != null
+        && string.Equals(Name, other.Name, StringComparison.Ordinal)
+        && string.Equals(Value, other.Value, StringComparison.Ordinal)
+        && string.Equals(SourceId, other.SourceId, StringComparison.Ordinal)
+        && Deferred == other.Deferred;
+
+    public override bool Equals(object obj) => Equals(obj as StaticWebAssetGroup);
+
+    public override int GetHashCode()
+    {
+#if NET6_0_OR_GREATER
+        var hash = new HashCode();
+        hash.Add(Name);
+        hash.Add(Value);
+        hash.Add(SourceId);
+        hash.Add(Deferred);
+        return hash.ToHashCode();
+#else
+        var hashCode = 1845001352;
+        hashCode = hashCode * -1521134295 + (Name != null ? StringComparer.Ordinal.GetHashCode(Name) : 0);
+        hashCode = hashCode * -1521134295 + (Value != null ? StringComparer.Ordinal.GetHashCode(Value) : 0);
+        hashCode = hashCode * -1521134295 + (SourceId != null ? StringComparer.Ordinal.GetHashCode(SourceId) : 0);
+        hashCode = hashCode * -1521134295 + Deferred.GetHashCode();
+        return hashCode;
+#endif
     }
 }

@@ -698,6 +698,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
+      StaticWebAssetGroups="@(StaticWebAssetGroup)"
       ManifestPath="$(StaticWebAssetBuildManifestPath)"
       ManifestCacheFilePath="$(StaticWebAssetsBuildManifestCacheFilePath)">
     </GenerateStaticWebAssetsManifest>
@@ -738,6 +739,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_CachedBuildStaticWebAssetEndpoints Condition="'@(_CachedBuildStaticWebAssetEndpoints)' == ''" Include="@(StaticWebAssetEndpoint)" />
       <_CachedBuildStaticWebAssetReferencedProjectsConfiguration Condition="'@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)' == ''" Include="@(StaticWebAssetProjectConfiguration)" />
       <_CachedBuildStaticWebAssetDiscoveryPatterns Condition="'@(_CachedBuildStaticWebAssetDiscoveryPatterns)' == ''" Include="@(StaticWebAssetDiscoveryPattern)" />
+      <_CachedBuildStaticWebAssetGroups Condition="'@(_CachedBuildStaticWebAssetGroups)' == ''" Include="@(StaticWebAssetGroup)" />
     </ItemGroup>
 
     <ItemGroup>

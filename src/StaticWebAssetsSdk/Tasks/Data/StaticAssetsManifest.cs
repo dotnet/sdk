@@ -20,7 +20,8 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
         ReferencedProjectConfiguration[] referencedProjectConfigurations,
         StaticWebAssetsDiscoveryPattern[] discoveryPatterns,
         StaticWebAsset[] assets,
-        StaticWebAssetEndpoint[] endpoints)
+        StaticWebAssetEndpoint[] endpoints,
+        StaticWebAssetGroup[] groups = null)
     {
         var result = new StaticWebAssetsManifest()
         {
@@ -32,7 +33,8 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
             ReferencedProjectsConfiguration = referencedProjectConfigurations,
             DiscoveryPatterns = discoveryPatterns,
             Assets = assets,
-            Endpoints = endpoints
+            Endpoints = endpoints,
+            Groups = groups ?? []
         };
         result.Hash = result.ComputeManifestHash();
         return result;
@@ -51,6 +53,7 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
         JsonSerializer.Serialize(writer, DiscoveryPatterns);
         JsonSerializer.Serialize(writer, Assets);
         JsonSerializer.Serialize(writer, Endpoints);
+        JsonSerializer.Serialize(writer, Groups);
         writer.Flush();
         stream.Seek(0, SeekOrigin.Begin);
 
@@ -82,6 +85,8 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
     public StaticWebAsset[] Assets { get; set; }
 
     public StaticWebAssetEndpoint[] Endpoints { get; set; }
+
+    public StaticWebAssetGroup[] Groups { get; set; } = [];
 
     public static StaticWebAssetsManifest FromJsonBytes(byte[] jsonBytes)
     {
@@ -133,7 +138,8 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
         && EqualityComparer<ReferencedProjectConfiguration[]>.Default.Equals(ReferencedProjectsConfiguration, other.ReferencedProjectsConfiguration)
         && EqualityComparer<StaticWebAssetsDiscoveryPattern[]>.Default.Equals(DiscoveryPatterns, other.DiscoveryPatterns)
         && EqualityComparer<StaticWebAsset[]>.Default.Equals(Assets, other.Assets)
-        && EqualityComparer<StaticWebAssetEndpoint[]>.Default.Equals(Endpoints, other.Endpoints);
+        && EqualityComparer<StaticWebAssetEndpoint[]>.Default.Equals(Endpoints, other.Endpoints)
+        && EqualityComparer<StaticWebAssetGroup[]>.Default.Equals(Groups, other.Groups);
 
     public override int GetHashCode()
     {
@@ -149,6 +155,7 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
         hash.Add(DiscoveryPatterns);
         hash.Add(Assets);
         hash.Add(Endpoints);
+        hash.Add(Groups);
         return hash.ToHashCode();
 #else
         var hashCode = 1467594941;
@@ -162,6 +169,7 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
         hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetsDiscoveryPattern[]>.Default.GetHashCode(DiscoveryPatterns);
         hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAsset[]>.Default.GetHashCode(Assets);
         hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetEndpoint[]>.Default.GetHashCode(Endpoints);
+        hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetGroup[]>.Default.GetHashCode(Groups);
         return hashCode;
 #endif
     }

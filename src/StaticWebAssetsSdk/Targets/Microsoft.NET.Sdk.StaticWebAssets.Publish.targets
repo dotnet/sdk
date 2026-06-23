@@ -103,6 +103,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_CachedBuildStaticWebAssetEndpoints Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'" Remove="@(_CachedBuildStaticWebAssetEndpoints)" />
       <_CachedBuildStaticWebAssetDiscoveryPatterns Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'" Remove="@(_CachedBuildStaticWebAssetDiscoveryPatterns)" />
       <_CachedBuildStaticWebAssetReferencedProjectsConfiguration Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'" Remove="@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)" />
+      <_CachedBuildStaticWebAssetGroups Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'" Remove="@(_CachedBuildStaticWebAssetGroups)" />
     </ItemGroup>
 
     <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)"
@@ -111,6 +112,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Endpoints" ItemName="_CachedBuildStaticWebAssetEndpoints" />
       <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedBuildStaticWebAssetDiscoveryPatterns" />
       <Output TaskParameter="ReferencedProjectsConfiguration" ItemName="_CachedBuildStaticWebAssetReferencedProjectsConfiguration" />
+      <Output TaskParameter="StaticWebAssetGroups" ItemName="_CachedBuildStaticWebAssetGroups" />
     </ReadStaticWebAssetsManifestFile>
 
     <ItemGroup>
@@ -125,6 +127,28 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetEndpoint Include="@(_CachedBuildStaticWebAssetEndpoints)" />
       <StaticWebAssetDiscoveryPattern Include="@(_CachedBuildStaticWebAssetDiscoveryPatterns)" />
       <StaticWebAssetProjectConfiguration Include="@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)" />
+    </ItemGroup>
+
+    <!-- The build manifest intentionally retains every variant of a grouped asset so that transitive
+         consumers can re-resolve groups against their own asset graph. Re-apply the resolved (no longer
+         deferred) group decision that was computed by the unscoped build-time filter so that the variant
+         the group excluded does not survive into the publish pipeline. Doing it here, using the values
+         persisted in the build manifest, keeps build and publish consistent even for groups owned by a
+         referenced project or NuGet package (whose SourceId is not the consuming project). -->
+    <FilterStaticWebAssetGroups
+      Condition="'@(_CachedBuildStaticWebAssetGroups)' != ''"
+      Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      StaticWebAssetGroups="@(_CachedBuildStaticWebAssetGroups)">
+      <Output TaskParameter="FilteredAssets" ItemName="_BuildManifestGroupFilteredAssets" />
+      <Output TaskParameter="SurvivingEndpoints" ItemName="_BuildManifestGroupSurvivingEndpoints" />
+    </FilterStaticWebAssetGroups>
+
+    <ItemGroup Condition="'@(_CachedBuildStaticWebAssetGroups)' != ''">
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAsset Include="@(_BuildManifestGroupFilteredAssets)" />
+      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_BuildManifestGroupSurvivingEndpoints)" />
     </ItemGroup>
   </Target>
 
