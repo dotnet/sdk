@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
     outputs:
       pr_number: ${{ steps.info.outputs.pr_number }}
       head_ref: ${{ steps.info.outputs.head_ref }}
@@ -46,8 +46,25 @@ jobs:
               return;
             }
 
-            if (pr.data.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
-              core.setFailed('Pull request head branch is in a fork. Cannot update baselines automatically.');
+            // Commits cannot be applied to a pull request whose head branch lives in a fork. Detect that and explain how to proceed.
+            const baseRepo = `${context.repo.owner}/${context.repo.repo}`;
+            const headRepo = pr.data.head.repo ? pr.data.head.repo.full_name : null;
+            if (headRepo !== baseRepo) {
+              const body = [
+                `❌ The baseline update can't run on this pull request because its head branch lives in a fork`,
+                `(\`${headRepo || 'a deleted fork'}\`), not in \`${baseRepo}\`.`,
+                ``,
+                `The GitHub Actions runner can only push to \`${baseRepo}\`; it has no access to push commits to your fork.`,
+                `To use this, push your branch directly to the \`${baseRepo}\` remote and open the pull request from that`,
+                `branch (based off \`${baseRepo}\`), then re-run this workflow.`,
+              ].join('\n');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+              core.setFailed(`Pull request head branch is in a fork (${headRepo || 'deleted'}); the runner cannot push to it.`);
               return;
             }
 
@@ -151,9 +168,10 @@ jobs:
         if: steps.evaluate.outputs.status == 'success' && steps.check.outputs.changes == 'true'
         run: |
           mkdir -p __artifacts
-          mv __changed-files.txt __artifacts/changed-files.txt
+          # __changed-files.txt is only used to build the tarball; it is intentionally not included in the
+          # uploaded artifact because the 'apply' job derives the file list from the extracted tree, not this file.
           git diff --stat -- test/ > __artifacts/diff-summary.txt
-          tar -czf __artifacts/baselines.tar.gz -T __artifacts/changed-files.txt
+          tar -czf __artifacts/baselines.tar.gz -T __changed-files.txt
           printf 'diff_summary<<EOF\n%s\nEOF\n' "$(cat __artifacts/diff-summary.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Upload baseline artifacts
@@ -202,7 +220,10 @@ jobs:
         with:
           token: ${{ github.token }}
           fetch-depth: 0
-          ref: ${{ needs.metadata.outputs.head_ref }}
+          # Check out the PR head commit by pull-request ref (mirrors the generate job). The branch NAME
+          # (head_ref) is only resolvable for same-repo PRs; refs/pull/<n>/head resolves for any open PR, so
+          # the checkout no longer fails on fork PRs or when the head branch was renamed/deleted.
+          ref: refs/pull/${{ needs.metadata.outputs.pr_number }}/head
           persist-credentials: false
 
       - name: Download baseline artifacts
@@ -212,34 +233,44 @@ jobs:
           name: static-web-assets-baselines
           path: artifact
 
-      - name: Apply generated baselines
+      - name: Checkout trusted validation script
         if: needs.generate.outputs.changes == 'true'
-        run: |
-          tar -xzf artifact/baselines.tar.gz
+        uses: actions/checkout@v6
+        with:
+          # Always use the canonical validator from the repository's default branch (main), never the PR's copy and
+          # never a release branch's copy when this workflow is dispatched from one.
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          path: _validator
+          sparse-checkout: |
+            .github/scripts/validate-change-archive.py
+          sparse-checkout-cone-mode: false
 
       - name: Validate and stage baseline files
         if: needs.generate.outputs.changes == 'true'
         run: |
           set -euo pipefail
-          shopt -s globstar
 
-          if [ ! -f artifact/changed-files.txt ]; then
-            echo "Expected changed-files.txt is missing" >&2
+          # The artifact comes from the untrusted 'generate' job. Validate and extract it with the shared script
+          # checked out separately above from the trusted default branch (never the PR's copy), then stage only
+          # the repository-relative paths it approves.
+          if ! python3 _validator/.github/scripts/validate-change-archive.py \
+              --archive artifact/baselines.tar.gz \
+              --dest . \
+              --scope test \
+              --ext .json \
+              > __staged-files.nul; then
+            echo "Artifact validation failed." >&2
             exit 1
           fi
 
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            if [[ "$file" != test/**/*.json ]]; then
-              echo "Disallowed file in artifact: $file" >&2
-              exit 1
-            fi
-            if [ ! -f "$file" ]; then
-              echo "File listed in artifact is missing: $file" >&2
-              exit 1
-            fi
-            git add "$file"
-          done < artifact/changed-files.txt
+          mapfile -d '' -t staged_files < __staged-files.nul
+          rm -f __staged-files.nul
+          if [ ${#staged_files[@]} -eq 0 ]; then
+            echo "No baseline files were present in the artifact." >&2
+            exit 1
+          fi
+          git -c core.hooksPath=/dev/null -c core.attributesFile=/dev/null add -- "${staged_files[@]}"
 
       - name: Prepare commit message
         id: commit-message
@@ -300,7 +331,10 @@ jobs:
             fi
           done
 
-          git commit -m "${COMMIT_MESSAGE}"
+          # Defense in depth: disable hooks and gitattributes-driven filters so a
+          # commit can never execute repository- or artifact-supplied code, even
+          # if an unexpected file slipped into .git/ earlier.
+          git -c core.hooksPath=/dev/null -c core.attributesFile=/dev/null commit -m "${COMMIT_MESSAGE}"
 
       - name: Push baseline changes
         if: steps.commit.outcome == 'success'

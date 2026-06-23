@@ -8,16 +8,19 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.Tests
 {
-    public class DotnetRestorePostActionTests : IClassFixture<EnvironmentSettingsHelper>
-    {
-        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public DotnetRestorePostActionTests(EnvironmentSettingsHelper environmentSettingsHelper)
+    [TestClass]
+    public class DotnetRestorePostActionTests
+    {
+        private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
+
+        [TestInitialize]
+        public void TestInit()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = new EnvironmentSettingsHelper().CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Fact(DisplayName = nameof(DotnetRestoreCanTargetASingleProjectWithAJsonArray))]
+        [TestMethod(DisplayName = nameof(DotnetRestoreCanTargetASingleProjectWithAJsonArray))]
         public void DotnetRestoreCanTargetASingleProjectWithAJsonArray()
         {
             var callback = new MockDotnetRestoreCallback();
@@ -39,10 +42,10 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.Equal(projFileFullPath, callback.Target);
+            Assert.AreEqual(projFileFullPath, callback.Target);
         }
 
-        [Fact(DisplayName = nameof(DotnetRestoreCanTargetASingleProjectWithTheProjectName))]
+        [TestMethod(DisplayName = nameof(DotnetRestoreCanTargetASingleProjectWithTheProjectName))]
         public void DotnetRestoreCanTargetASingleProjectWithTheProjectName()
         {
             var callback = new MockDotnetRestoreCallback();
@@ -64,7 +67,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.Equal(projFileFullPath, callback.Target);
+            Assert.AreEqual(projFileFullPath, callback.Target);
         }
 
         private class MockDotnetRestoreCallback

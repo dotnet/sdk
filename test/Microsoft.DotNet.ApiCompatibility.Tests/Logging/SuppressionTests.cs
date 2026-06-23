@@ -3,6 +3,7 @@
 
 namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
 {
+    [TestClass]
     public class SuppressionTests
     {
         public static IEnumerable<object[]> GetEqualData()
@@ -34,26 +35,26 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             yield return new object[] { new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll" }, new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true } };
         }
 
-        [Theory]
-        [MemberData(nameof(GetEqualData))]
+        [TestMethod]
+        [DynamicData(nameof(GetEqualData))]
         public void CheckSuppressionsAreEqual(Suppression suppression, Suppression other)
         {
-            Assert.True(suppression.Equals(other));
-            Assert.True(other.Equals(suppression));
+            Assert.IsTrue(suppression.Equals(other));
+            Assert.IsTrue(other.Equals(suppression));
         }
 
-        [Theory]
-        [MemberData(nameof(GetDifferentData))]
+        [TestMethod]
+        [DynamicData(nameof(GetDifferentData))]
         public void CheckSuppressionsAreNotEqual(Suppression suppression, Suppression other)
         {
-            Assert.False(suppression.Equals(other));
-            Assert.False(other.Equals(suppression));
+            Assert.IsFalse(suppression.Equals(other));
+            Assert.IsFalse(other.Equals(suppression));
         }
 
-        [Fact]
+        [TestMethod]
         public void CheckSuppressionIsNotEqualWithNull()
         {
-            Assert.False(new Suppression("PK0004").Equals(null));
+            Assert.IsFalse(new Suppression("PK0004").Equals(null));
         }
     }
 }

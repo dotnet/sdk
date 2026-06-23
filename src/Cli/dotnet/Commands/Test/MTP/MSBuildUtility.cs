@@ -14,6 +14,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -26,6 +27,7 @@ internal static class MSBuildUtility
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
     static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
@@ -76,6 +78,7 @@ internal static class MSBuildUtility
         return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
     {
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
@@ -110,6 +113,7 @@ internal static class MSBuildUtility
     /// Builds each TFM separately with its selected device/RuntimeIdentifier injected, then
     /// evaluates each to get test modules. This ensures device-provided RIDs are part of the build.
     /// </summary>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) BuildPerTfmWithDevices(
         string projectFilePath,
         BuildOptions buildOptions,
@@ -373,6 +377,7 @@ internal static class MSBuildUtility
         return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static (ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsProperties(
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,

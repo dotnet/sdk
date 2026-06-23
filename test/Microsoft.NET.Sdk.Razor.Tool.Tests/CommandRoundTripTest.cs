@@ -11,9 +11,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
     /// <summary>
     /// Verifies that the discover command produces JSON that the generate command can consume.
     /// </summary>
+    [TestClass]
     public class CommandRoundTripTest
     {
-        [Fact]
+        [TestMethod]
         public void DiscoverThenGenerate_ManifestIsConsumedByGenerateCommand()
         {
             // Arrange - find framework ref assemblies
@@ -23,8 +24,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var runtimeRefDir = GetLatestRefPackDirectory(dotnetRoot, "Microsoft.NETCore.App.Ref");
             var aspnetRefDir = GetLatestRefPackDirectory(dotnetRoot, "Microsoft.AspNetCore.App.Ref");
 
-            Assert.True(Directory.Exists(runtimeRefDir), $"Runtime ref pack not found at {runtimeRefDir}");
-            Assert.True(Directory.Exists(aspnetRefDir), $"ASP.NET ref pack not found at {aspnetRefDir}");
+            Assert.IsTrue(Directory.Exists(runtimeRefDir), $"Runtime ref pack not found at {runtimeRefDir}");
+            Assert.IsTrue(Directory.Exists(aspnetRefDir), $"ASP.NET ref pack not found at {aspnetRefDir}");
 
             var assemblies = Directory.GetFiles(runtimeRefDir, "*.dll")
                 .Concat(Directory.GetFiles(aspnetRefDir, "*.dll"))
@@ -38,8 +39,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 // Run the discover command to produce a manifest
                 var manifestPath = Path.Combine(tempDir, "manifest.json");
                 var discoverExitCode = RunDiscoverCommand(assemblies, tempDir, manifestPath);
-                Assert.True(discoverExitCode == 0, $"Discover command failed with exit code {discoverExitCode}");
-                Assert.True(File.Exists(manifestPath), "Manifest file was not created");
+                Assert.AreEqual(0, discoverExitCode, $"Discover command failed with exit code {discoverExitCode}");
+                Assert.IsTrue(File.Exists(manifestPath), "Manifest file was not created");
 
                 // Check that the AnchorTagHelper was discovered
                 var manifestFile = File.ReadAllText(manifestPath);
@@ -74,11 +75,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 var generateExitCode = application.Execute(args.ToArray());
 
                 // Make sure the generate command succeeded and produced output
-                Assert.True(generateExitCode == 0, $"Generate command failed with exit code {generateExitCode}. Error: {errorWriter}");
-                Assert.True(File.Exists(outputPath), "Generated C# file was not created");
+                Assert.AreEqual(0, generateExitCode, $"Generate command failed with exit code {generateExitCode}. Error: {errorWriter}");
+                Assert.IsTrue(File.Exists(outputPath), "Generated C# file was not created");
 
                 var generatedCode = File.ReadAllText(outputPath);
-                Assert.NotEmpty(generatedCode);
+                Assert.IsNotEmpty(generatedCode);
 
                 // The generated code should reference the AnchorTagHelper since we used asp-action/asp-controller
                 Assert.Contains("global::Microsoft.AspNetCore.Mvc.TagHelpers.AnchorTagHelper", generatedCode);
