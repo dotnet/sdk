@@ -7,26 +7,28 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class FSharpHotReloadServiceTests
 {
-    [Theory]
-    [InlineData("/tmp/Program.fs", false)]
-    [InlineData("/tmp/Program.fsi", false)]
-    [InlineData("/tmp/Project.fsproj", false)]
-    [InlineData("/tmp/.Program.fs.swp", false)]
-    [InlineData("/tmp/payload.txt", true)]
-    [InlineData("/tmp/view.xaml", true)]
+    [TestMethod]
+    [DataRow("/tmp/Program.fs", false)]
+    [DataRow("/tmp/Program.fsi", false)]
+    [DataRow("/tmp/Project.fsproj", false)]
+    [DataRow("/tmp/.Program.fs.swp", false)]
+    [DataRow("/tmp/payload.txt", true)]
+    [DataRow("/tmp/view.xaml", true)]
     public void IsManagedDependencyCandidatePath_ClassifiesProjectAndTempFiles(string path, bool expected)
     {
         var method = typeof(FSharpHotReloadService).GetMethod(
             "IsManagedDependencyCandidatePath",
             BindingFlags.Static | BindingFlags.NonPublic)!;
 
-        var result = Assert.IsType<bool>(method.Invoke(null, [path]));
-        Assert.Equal(expected, result);
+        var raw = method.Invoke(null, [path]);
+        Assert.IsInstanceOfType(raw, typeof(bool));
+        Assert.AreEqual(expected, (bool)raw!);
     }
 
-    [Fact]
+    [TestMethod]
     public void TryGetChangedRunningFSharpProject_MatchesDependencyByProjectDirectoryFallback()
     {
         var projectDirectory = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests");
@@ -60,11 +62,12 @@ public class FSharpHotReloadServiceTests
 
         var result = method.Invoke(service, [changedFiles, runningProjects]);
 
-        Assert.NotNull(result);
-        Assert.Equal(projectId, Assert.IsType<ProjectInstanceId>(result));
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOfType(result, typeof(ProjectInstanceId));
+        Assert.AreEqual(projectId, (ProjectInstanceId)result!);
     }
 
-    [Fact]
+    [TestMethod]
     public void TryGetChangedRunningFSharpProject_MatchesCommandLineDependencyOutsideProjectDirectory()
     {
         var projectDirectory = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests-cmdline");
@@ -107,11 +110,12 @@ public class FSharpHotReloadServiceTests
 
         var result = method.Invoke(service, [changedFiles, runningProjects]);
 
-        Assert.NotNull(result);
-        Assert.Equal(projectId, Assert.IsType<ProjectInstanceId>(result));
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOfType(result, typeof(ProjectInstanceId));
+        Assert.AreEqual(projectId, (ProjectInstanceId)result!);
     }
 
-    [Fact]
+    [TestMethod]
     public void TryGetChangedRunningFSharpProject_IgnoresEditorTempFiles()
     {
         var projectDirectory = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests-temp");
@@ -145,12 +149,12 @@ public class FSharpHotReloadServiceTests
 
         var result = method.Invoke(service, [changedFiles, runningProjects]);
 
-        Assert.Null(result);
+        Assert.IsNull(result);
     }
 
-    [Theory]
-    [InlineData("0")]
-    [InlineData("false")]
+    [TestMethod]
+    [DataRow("0")]
+    [DataRow("false")]
     public async Task KillSwitch_DisablesEntireBridge(string killSwitchValue)
     {
         var originalValue = Environment.GetEnvironmentVariable("DOTNET_WATCH_FSHARP_HOTRELOAD");
@@ -188,10 +192,10 @@ public class FSharpHotReloadServiceTests
             var result = await service.TryEmitUpdatesAsync([changedFile], runningProjects, CancellationToken.None);
 
             // Disabled: the service behaves as if no F# projects exist.
-            Assert.Equal(FSharpManagedUpdateStatus.NoChanges, result.Status);
-            Assert.Empty(result.Updates);
-            Assert.Null(result.ProjectPath);
-            Assert.False(service.OwnsChangedFile(changedFile));
+            Assert.AreEqual(FSharpManagedUpdateStatus.NoChanges, result.Status);
+            Assert.IsTrue(result.Updates.IsEmpty);
+            Assert.IsNull(result.ProjectPath);
+            Assert.IsFalse(service.OwnsChangedFile(changedFile));
         }
         finally
         {
@@ -199,7 +203,7 @@ public class FSharpHotReloadServiceTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void TryGetCommandLineDependencyPath_ParsesResourceLogicalNameSuffix()
     {
         var method = typeof(FSharpHotReloadService).GetMethod(
@@ -210,9 +214,11 @@ public class FSharpHotReloadServiceTests
         var expectedPath = Path.GetFullPath(Path.Combine(projectDirectory, "Views", "MainPage.xaml"));
         var arguments = new object?[] { "--resource:Views/MainPage.xaml,MainPage.xaml", projectDirectory, null };
 
-        var parsed = Assert.IsType<bool>(method.Invoke(null, arguments));
+        var raw = method.Invoke(null, arguments);
+        Assert.IsInstanceOfType(raw, typeof(bool));
+        Assert.IsTrue((bool)raw!);
 
-        Assert.True(parsed);
-        Assert.Equal(expectedPath, Assert.IsType<string>(arguments[2]));
+        Assert.IsInstanceOfType(arguments[2], typeof(string));
+        Assert.AreEqual(expectedPath, (string)arguments[2]!);
     }
 }

@@ -5,9 +5,10 @@ using System.Reflection;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class FSharpReflectionHostTests
 {
-    [Fact]
+    [TestMethod]
     public void TryGetFSharpOptionValue_HandlesStaticIsSomeAccessor()
     {
         var assembly = typeof(MessageDescriptor).Assembly;
@@ -22,14 +23,14 @@ public class FSharpReflectionHostTests
 
         var someArgs = new object?[] { someValue, null };
         var someResult = (bool)tryGetOptionValue.Invoke(null, someArgs)!;
-        Assert.True(someResult);
-        Assert.Equal("workspace", someArgs[1]);
+        Assert.IsTrue(someResult);
+        Assert.AreEqual("workspace", someArgs[1]);
 
         var noneValue = StaticAccessorOption.None;
         var noneArgs = new object?[] { noneValue, null };
         var noneResult = (bool)tryGetOptionValue.Invoke(null, noneArgs)!;
-        Assert.False(noneResult);
-        Assert.Null(noneArgs[1]);
+        Assert.IsFalse(noneResult);
+        Assert.IsNull(noneArgs[1]);
     }
 
     private sealed class StaticAccessorOption

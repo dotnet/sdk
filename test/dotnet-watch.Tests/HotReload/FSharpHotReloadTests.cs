@@ -7,7 +7,8 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class FSharpHotReloadTests : DotNetWatchTestBase
 {
     private static string DescriptorPattern(MessageDescriptor descriptor)
         => Regex.Replace(Regex.Escape(descriptor.Format), @"\\\{[0-9]+\}", ".*");
@@ -19,7 +20,7 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         var managedApplied = App.Process.Output.Any(appliedPattern.IsMatch);
         var restartApplied = App.Process.Output.Any(line => line.Contains(MessageDescriptor.RestartNeededToApplyChanges.GetMessage(), StringComparison.Ordinal));
 
-        Assert.True(managedApplied || restartApplied, "Expected either managed hot reload apply or restart fallback.");
+        Assert.IsTrue(managedApplied || restartApplied, "Expected either managed hot reload apply or restart fallback.");
 
         if (managedApplied)
         {
@@ -55,11 +56,11 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
     {
         var sdkDirectory = SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest;
         var fsharpCompilerServicePath = Path.Combine(sdkDirectory, "FSharp", "FSharp.Compiler.Service.dll");
-        Assert.True(File.Exists(fsharpCompilerServicePath), $"Missing FSharp.Compiler.Service.dll at '{fsharpCompilerServicePath}'.");
+        Assert.IsTrue(File.Exists(fsharpCompilerServicePath), $"Missing FSharp.Compiler.Service.dll at '{fsharpCompilerServicePath}'.");
         return fsharpCompilerServicePath;
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFileInFSharpProjectWithLoop_AppliesOrRestarts()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -104,7 +105,7 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.AssertOutputLineStartsWith("<Updated2>");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFileInFSharpProjectWithLoop_FirstEditAppliesInPlace()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -145,7 +146,7 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.AssertOutputLineStartsWith("<UpdatedInPlace>");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeComputationExpressionUsageInFSharpProject_AppliesInPlace()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -202,7 +203,7 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.WaitForOutputLineContaining(new Regex("^Welcome, watch$|^watch$"));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFileInFSharpProject_WhitespaceOnlyEditDoesNotRestart()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -249,7 +250,7 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         App.AssertOutputDoesNotContain(MessageDescriptor.RestartNeededToApplyChanges.GetMessage());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeDependencyFileInFSharpProject_DoesNotRestart_AndSourceEditsStillApplyInPlace()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -307,7 +308,7 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.AssertOutputLineStartsWith("<UpdatedAfterDependencyEdit>");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeXamlDependencyInFSharpProject_DoesNotRestart_AndSourceEditsStillApplyInPlace()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -363,7 +364,7 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.AssertOutputLineStartsWith("<UpdatedAfterXamlEdit>");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFilesInFSharpAppAndLib_InterleavedEditsApplyInPlace()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpAppWithLib")
@@ -408,7 +409,7 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.AssertOutputLineStartsWith("App2[LibEdit2]");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFileInFSharpProject_RudeEditTriggersRestart()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
