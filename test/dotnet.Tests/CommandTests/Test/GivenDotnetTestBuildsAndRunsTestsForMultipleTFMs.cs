@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
@@ -8,15 +8,16 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestBuildsAndRunsTestsForMultipleTFMs : SdkTest
     {
-        public GivenDotnetTestBuildsAndRunsTestsForMultipleTFMs(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestBuildsAndRunsTestsForMultipleTFMs()
         {
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunMultipleProjectWithDifferentTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
@@ -35,11 +36,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test2");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
 
-                Assert.True(previousDotnetProjectMatches.Count > 1);
-                Assert.True(currentDotnetProjectMatches.Count > 1);
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
 
-                Assert.Single(failedTestsMatches);
-                Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
+                Assert.ContainsSingle(failedTestsMatches);
+                Assert.HasCount(2, skippedTestsMatches);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -52,9 +53,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunProjectWithMultipleTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
@@ -77,15 +78,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
                 MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test5");
 
-                Assert.True(previousDotnetProjectMatches.Count > 1);
-                Assert.True(currentDotnetProjectMatches.Count > 1);
-                Assert.True(currentDotnetOtherProjectMatches.Count > 1);
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetOtherProjectMatches.Count);
 
-                Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
-                Assert.Multiple(() => Assert.Equal(2, failedTestsMatches.Count));
-                Assert.Multiple(() => Assert.Equal(2, timeoutTestsMatches.Count));
-                Assert.Multiple(() => Assert.Equal(2, errorTestsMatches.Count));
-                Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
+                Assert.HasCount(2, skippedTestsMatches);
+                Assert.HasCount(2, failedTestsMatches);
+                Assert.HasCount(2, timeoutTestsMatches);
+                Assert.HasCount(2, errorTestsMatches);
+                Assert.HasCount(2, skippedTestsMatches);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -98,9 +99,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void RunProjectWithMultipleTFMs_ParallelizationTest_RunInParallelShouldFail(bool testTfmsInParallel)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
@@ -137,9 +138,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunProjectWithMultipleTFMsWithArchOption_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
@@ -164,9 +165,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunProjectWithMSTestMetaPackageAndMultipleTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
@@ -184,10 +185,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed TestMethod3");
 
-                Assert.True(previousDotnetProjectMatches.Count > 1);
-                Assert.True(currentDotnetProjectMatches.Count > 1);
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
 
-                Assert.Multiple(() => Assert.Equal(2, failedTestsMatches.Count));
+                Assert.HasCount(2, failedTestsMatches);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")

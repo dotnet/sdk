@@ -29,7 +29,7 @@ internal static class PipeUtilities
                 }
 
                 var value = JsonSerializer.Deserialize<WatchStatusEvent>(line);
-                Assert.NotNull(value);
+                Assert.IsNotNull(value);
 
                 lines.Add(value);
             }
