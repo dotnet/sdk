@@ -345,7 +345,6 @@
     <Project Path="benchmarks/MicroBenchmark/MicroBenchmark.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test/UnitTests.proj" />
     <Project Path="test/Microsoft.NET.Build.Extensions.Tasks.Tests/Microsoft.NET.Build.Extensions.Tasks.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Build.Tasks.Tests/Microsoft.NET.Build.Tasks.Tests.csproj" />
     <Project Path="test/ArgumentForwarding.Tests/ArgumentForwarding.Tests.csproj" />
