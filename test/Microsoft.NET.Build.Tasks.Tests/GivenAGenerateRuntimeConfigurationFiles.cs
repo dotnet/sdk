@@ -3,6 +3,8 @@
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [DoNotParallelize]
+    [TestClass]
     public class GivenAGenerateRuntimeConfigurationFiles
     {
         private readonly string _runtimeConfigPath;
@@ -27,7 +29,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanGenerateWithoutAssetFile()
         {
             var task = new TestableGenerateRuntimeConfigurationFiles
@@ -67,7 +69,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             File.Exists(_runtimeConfigDevPath).Should().BeFalse("No nuget involved, so no extra probing path");
         }
 
-        [Fact]
+        [TestMethod]
         public void Given3RuntimeFrameworksItCanGenerateWithoutAssetFile()
         {
             var task = new TestableGenerateRuntimeConfigurationFiles
@@ -127,7 +129,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     "There is no Microsoft.NETCore.App. And it is under frameworkS.");
         }
 
-        [Fact]
+        [TestMethod]
         public void Given2RuntimeFrameworksItCanGenerateWithoutAssetFile()
         {
             var task = new TestableGenerateRuntimeConfigurationFiles
@@ -174,7 +176,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     "There is no Microsoft.NETCore.App.");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenTargetMonikerItGeneratesShortName()
         {
             var task = new TestableGenerateRuntimeConfigurationFiles

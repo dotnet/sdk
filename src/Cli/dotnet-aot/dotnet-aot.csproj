@@ -19,6 +19,8 @@
     <DefineConstants>$(DefineConstants);DotnetCsproj;CLI_AOT</DefineConstants>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Can toggle this on to get an inventory of dependencies that don't explicitly mark AOT support -->
+    <!-- <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility> -->
 
     <!-- Strong naming deprecated on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>

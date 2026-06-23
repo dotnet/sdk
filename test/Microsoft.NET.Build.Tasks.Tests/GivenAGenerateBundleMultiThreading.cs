@@ -5,14 +5,9 @@
 
 using System.Runtime.CompilerServices;
 using FluentAssertions;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    [CollectionDefinition(nameof(CwdSensitiveCollection), DisableParallelization = true)]
-    public sealed class CwdSensitiveCollection
-    {
-    }
 
     /// <summary>
     /// Behavioral tests for <see cref="GenerateBundle"/>'s migration to <c>IMultiThreadableTask</c>.
@@ -27,7 +22,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// location different from the <c>TaskEnvironment.ProjectDirectory</c> so a bug that fell
     /// back to <c>Environment.CurrentDirectory</c> / <c>Path.GetFullPath</c> would surface here.
     /// </summary>
-    [Collection(nameof(CwdSensitiveCollection))]
+    [DoNotParallelize]
+    [TestClass]
     public class GivenAGenerateBundleMultiThreading : IDisposable
     {
         private readonly List<string> _tempDirs = new();
@@ -41,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Directory.CreateDirectory(_tempRoot);
         }
 
-        [Fact]
+        [TestMethod]
         public void ResolveOutputDir_RoutesRelativePathThroughTaskEnvironment_NotProcessCwd()
         {
             string projectDir = CreateTempDirectory("proj");
@@ -61,9 +57,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "relative OutputDir must not leak the process CWD into the resolved path");
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
         public void ResolveOutputDir_DefaultsToProjectDirectory_WhenOutputDirIsNullOrEmpty(string outputDir)
         {
             string projectDir = CreateTempDirectory("proj");
