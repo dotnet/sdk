@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             }
         }
 
-        [TestMethod(DisplayName = nameof(AddRefFindsOneDefaultProjFileInOutputDirectory))]
+        [TestMethod]
         public void AddRefFindsOneDefaultProjFileInOutputDirectory()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.ContainsSingle(projFilesFound);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefFindsOneNameConfiguredProjFileInOutputDirectory))]
+        [TestMethod]
         public void AddRefFindsOneNameConfiguredProjFileInOutputDirectory()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.ContainsSingle(projFilesFound);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefFindsOneNameConfiguredProjFileWhenMultipleExtensionsAreAllowed))]
+        [TestMethod]
         public void AddRefFindsOneNameConfiguredProjFileWhenMultipleExtensionsAreAllowed()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.ContainsSingle(projFilesFound);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefIgnoresOtherProjectTypesWhenMultipleTypesAreAllowed))]
+        [TestMethod]
         public void AddRefIgnoresOtherProjectTypesWhenMultipleTypesAreAllowed()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.ContainsSingle(projFilesFound);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefFindsOneDefaultProjFileInAncestorOfOutputDirectory))]
+        [TestMethod]
         public void AddRefFindsOneDefaultProjFileInAncestorOfOutputDirectory()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.ContainsSingle(projFilesFound);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefFindsMultipleDefaultProjFilesInOutputDirectory))]
+        [TestMethod]
         public void AddRefFindsMultipleDefaultProjFilesInOutputDirectory()
         {
             string projFilesOriginalContent = TestCsprojFile;
@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.HasCount(2, projFilesFound);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefFindsMultipleDefaultProjFilesInAncestorOfOutputDirectory))]
+        [TestMethod]
         public void AddRefFindsMultipleDefaultProjFilesInAncestorOfOutputDirectory()
         {
             string projFilesOriginalContent = TestCsprojFile;
@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.HasCount(2, projFilesFound);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefCanHandleProjectFileRenames))]
+        [TestMethod]
         public void AddRefCanHandleProjectFileRenames()
         {
             var callback = new MockAddProjectReferenceCallback();
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual(referencedProjFileFullPath, callback.Reference);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefCanHandleProjectFilesWithoutRenames))]
+        [TestMethod]
         public void AddRefCanHandleProjectFilesWithoutRenames()
         {
             var callback = new MockAddProjectReferenceCallback();
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual(referencedProjFileFullPath, callback.Reference);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefCanHandleExistingProjectFiles))]
+        [TestMethod]
         public void AddRefCanHandleExistingProjectFiles()
         {
             var callback = new MockAddProjectReferenceCallback();
@@ -250,7 +250,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual(referencedProjectFileFullPath, callback.Reference);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefCanTargetASingleProjectWithAJsonArray))]
+        [TestMethod]
         public void AddRefCanTargetASingleProjectWithAJsonArray()
         {
             var callback = new MockAddProjectReferenceCallback();
@@ -276,7 +276,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual("System.Net.Json", callback.Reference);
         }
 
-        [TestMethod(DisplayName = nameof(AddRefCanTargetASingleProjectWithTheProjectName))]
+        [TestMethod]
         public void AddRefCanTargetASingleProjectWithTheProjectName()
         {
             var callback = new MockAddProjectReferenceCallback();
