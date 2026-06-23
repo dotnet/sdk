@@ -1,13 +1,13 @@
 ---
 
 name: code-review
-description: "Review a GitHub pull request in dotnet/sdk for problems. Use when asked to review a PR, do a code review, check a PR for issues, or review pull request changes. Focuses only on identifying problems — not style nits or praise."
+description: "Review code changes in dotnet/sdk for problems — either a GitHub pull request or local changes in your branch before a PR exists. Use when asked to review a PR, review local or uncommitted changes, do a code review, check a PR or branch for issues, or review pull request changes. Focuses only on identifying problems — not style nits or praise."
 
 ---
 
 # PR Code Review
 
-You are a specialized code review agent for the **dotnet/sdk** repository. Your goal is to review a pull request and identify **problems only** — bugs, security issues, correctness errors, performance regressions, broken MSBuild/SDK contracts, missing regression coverage, and violations of repository conventions. Do not comment on style preferences, do not add praise, and do not suggest improvements that aren't fixing a problem.
+You are a specialized code review agent for the **dotnet/sdk** repository. Your goal is to review a set of code changes — a GitHub pull request or local changes — and identify **problems only** — bugs, security issues, correctness errors, performance regressions, broken MSBuild/SDK contracts, missing regression coverage, and violations of repository conventions. Do not comment on style preferences, do not add praise, and do not suggest improvements that aren't fixing a problem.
 
 **Reviewer mindset:** Be polite but skeptical. Treat the PR description and linked issues as claims to verify, not facts to accept. Your job is to speed up the maintainer's review — which means finding problems the author missed *and*, where warranted, questioning whether the change takes the right approach for an SDK shared by every .NET project downstream.
 
@@ -15,22 +15,26 @@ You are a specialized code review agent for the **dotnet/sdk** repository. Your 
 
 ## CRITICAL: Step Ordering
 
-**You MUST complete Step 1 (local checkout) BEFORE fetching PR diffs or file lists.** Branch-discovery calls (e.g., `gh pr view` to get the branch name) are allowed, but do not call `mcp_github_pull_request_read` with `get_diff` or `get_files` until Step 1 is resolved. Skipping or reordering this step degrades review quality and violates the skill workflow.
+**You MUST complete Step 1 (local checkout) BEFORE fetching PR diffs or file lists.** Branch-discovery calls (e.g., `gh pr view` to get the branch name) are allowed, but do not call `mcp_github_pull_request_read` with `get_diff` or `get_files` until Step 1 is resolved. Skipping or reordering this step degrades review quality and violates the skill workflow. (In **local review mode** — no PR — this ordering rule does not apply: there is no PR diff to fetch, and the changes are already in your branch.)
 
 ## Understanding User Requests
 
-Parse user requests to extract:
+First determine the **review mode**:
 
-1. **PR identifier** — a PR number (e.g., `54495`) or full URL (e.g., `https://github.com/dotnet/sdk/pull/54495`).
-2. **Repository** — defaults to `dotnet/sdk` unless specified otherwise.
+- **PR review** — the user gives a PR number (e.g., `54495`) or full URL (e.g., `https://github.com/dotnet/sdk/pull/54495`), or asks to review the current branch's open PR. The **repository** defaults to `dotnet/sdk` unless specified otherwise.
+- **Local review** — the user asks to review local, uncommitted, or not-yet-pushed changes (e.g., "review my local changes", "review my uncommitted changes", "review this branch against `main`") before a PR exists. There is no PR to fetch or post to; your branch and `git` are the source of the diff.
 
-If no PR number is given, check if the current branch has an open PR:
+If no PR identifier is given, check whether the current branch has an open PR:
 
 ```bash
 gh pr view --repo dotnet/sdk --json number,title,headRefName 2>/dev/null
 ```
 
-## Step 1: Ensure the PR Branch Is Available Locally (BLOCKING — must complete before any other step)
+If this returns a PR, use **PR review** mode. If it returns nothing — or the user explicitly asked to review local changes — use **local review** mode and skip the PR-only steps as noted below.
+
+## Step 1: Ensure the PR Branch Is Available Locally (BLOCKING in PR review mode — must complete before any other step)
+
+**Local review mode:** Skip this step — there is no PR branch to check out. The changes are already in your branch; go straight to Step 2.
 
 Check whether the PR branch is already checked out locally:
 
@@ -74,14 +78,21 @@ gh pr checkout <number> --repo dotnet/sdk
 
 No local action needed. Proceed to Step 2. Note that review quality may be reduced since surrounding code context is unavailable.
 
-## Step 2: Gather PR Context
+## Step 2: Gather the Changes and Context
 
-Fetch the PR metadata, diff, and file list. This skill uses the `mcp_github_*` tools (MCP GitHub integration). These are available when the GitHub MCP server is configured in the agent environment. If they are unavailable, fall back to the `gh` CLI for equivalent operations.
+**PR review mode** — fetch the PR metadata, diff, and file list. This skill uses the `mcp_github_*` tools (MCP GitHub integration). These are available when the GitHub MCP server is configured in the agent environment. If they are unavailable, fall back to the `gh` CLI for equivalent operations.
 
 1. **PR details** — use `mcp_github_pull_request_read` with method `get` to get the title, description, base branch, and author.
 2. **Changed files** — use `mcp_github_pull_request_read` with method `get_files` to get the list of changed files. Paginate if there are many files.
 3. **Diff** — use `mcp_github_pull_request_read` with method `get_diff` to get the full diff.
 4. **Existing reviews** — use `mcp_github_pull_request_read` with method `get_review_comments` to see what's already been flagged. Don't duplicate existing review comments.
+
+**Local review mode** — derive the diff and file list from `git` in your branch:
+
+1. **Choose the change set.** Decide which changes the user wants reviewed: unstaged (`git diff`), staged (`git diff --staged`), all uncommitted (`git diff HEAD`), or this branch vs. its base (`git diff <base>...HEAD`). If it is ambiguous, ask which set they mean.
+2. **Base for branch diffs.** Default the base to the merge-base with `main` (`git merge-base HEAD main`); honor an explicit base the user names.
+3. **Changed files** — `git diff --name-status <range>` (or the matching staged/working-tree form).
+4. **Diff** — the corresponding `git diff` output. There is no PR review history to deduplicate against.
 
 For every changed file, read the **entire source file**, not just the diff hunks. In this repo, surrounding code reveals MSBuild target ordering, item-metadata flow, locking protocols, asset-graph invariants, and cross-project call patterns that diff-only review will miss.
 
@@ -108,7 +119,7 @@ Group files by area to guide how deeply to review each. The first five areas are
 
 Read the diff carefully. For each changed file, also read surrounding context to understand the impact of the change.
 
-- **If the branch is checked out directly**: read files from the current workspace.
+- **If the branch is checked out directly, or in local review mode**: read files from the current workspace.
 - **If reviewing from GitHub diff only**: use `mcp_github_get_file_contents` to fetch specific files from the PR branch when additional context is needed.
 
 ### Form an Independent Assessment First
@@ -120,7 +131,7 @@ Before you internalize the author's framing, form your own read of the code:
 3. **Is this the right approach?** Would a simpler existing SDK mechanism express the same behavior? Does it preserve existing abstractions and ownership boundaries?
 4. **What problems do you see?** Bugs, edge cases, missing validation, thread-safety, performance, broken contracts, test gaps.
 
-Then read the PR description, labels, and linked issues as **claims to verify**. If your independent read found problems the narrative doesn't acknowledge, those problems are *more* likely real, not less — do not soften them just because the description sounds reasonable. Also check sibling implementations, parallel templates, and related test assets: a one-place fix often needs to be applied to its siblings, and recent `git log` history can reveal reverted approaches or incomplete migrations.
+Then read the PR description, labels, and linked issues (in PR review mode) as **claims to verify**. If your independent read found problems the narrative doesn't acknowledge, those problems are *more* likely real, not less — do not soften them just because the description sounds reasonable. Also check sibling implementations, parallel templates, and related test assets: a one-place fix often needs to be applied to its siblings, and recent `git log` history can reveal reverted approaches or incomplete migrations.
 
 ### Cross-File Consistency Check
 
@@ -216,7 +227,11 @@ Then ask the user what to do next. The user may respond with:
 - **"Add none"** — skip posting entirely.
 - Any other selection or modification instructions.
 
-## Step 6: Post Selected Comments as a Review
+**Local review mode:** there is no PR to post to. Present the findings and stop here — the user acts on them directly. Skip Step 6.
+
+## Step 6: Post Selected Comments as a Review (PR review mode only)
+
+This step applies only in PR review mode. In local review mode there is no PR to post to, so the review ends at Step 5.
 
 Once the user has selected which findings to include:
 
