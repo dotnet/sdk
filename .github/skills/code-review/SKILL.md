@@ -27,7 +27,7 @@ Parse user requests to extract:
 If no PR number is given, check if the current branch has an open PR:
 
 ```bash
-gh pr view --json number,title,headRefName 2>/dev/null
+gh pr view --repo dotnet/sdk --json number,title,headRefName 2>/dev/null
 ```
 
 ## Step 1: Ensure the PR Branch Is Available Locally (BLOCKING — must complete before any other step)
