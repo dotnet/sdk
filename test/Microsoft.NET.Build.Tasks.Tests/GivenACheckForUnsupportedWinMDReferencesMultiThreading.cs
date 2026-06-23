@@ -5,9 +5,11 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [DoNotParallelize]
+    [TestClass]
     public class GivenACheckForUnsupportedWinMDReferencesMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void RelativeManagedReferencePath_ResolvesFromTaskEnvironment()
         {
             using var tte = new TaskTestEnvironment();
