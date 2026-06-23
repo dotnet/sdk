@@ -1,10 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
+    <!-- These are heavy integration tests that build and run apps (dotnet watch, file watchers, ports).
+         Under xUnit they ran with class-level parallelism (classes in parallel, methods within a class
+         serialized). MSTest.Sdk defaults to MethodLevel (see test/Directory.Build.props), which
+         over-subscribes the machine and causes Helix work-item timeouts. Restore class-level scope. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
+  <ItemGroup>
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockTaskItem.cs" Link="TestUtilities\MockTaskItem.cs" />
@@ -20,12 +31,18 @@
     <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" ExcludeAssets="Runtime" />
     <!-- Needed for AspireLauncherIntegrationTests which exec the Aspire launcher executable. -->
     <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" Aliases="MSTestFramework" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Xunit.Combinatorial" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Spectre.Console.Testing" />
+    <!-- Microsoft.NET.TestFramework (xUnit v3 based, pulled in transitively for TestAsset/App helpers
+         via Microsoft.DotNet.HotReload.Test.Utilities) needs the xUnit v3 runtime at execution time.
+         The transitive reference is ExcludeAssets="Runtime", so reference the v3 runtime directly to
+         ensure xunit.v3.core (extensibility.core) and xunit.v3.assert are deployed; otherwise the test
+         host crashes on load with FileNotFoundException for 'xunit.v3.core' or 'xunit.v3.assert'. -->
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="xunit.v3.assert" VersionOverride="$(XUnitV3Version)" />
   </ItemGroup>
 
   <!-- Copies test browser files to test-browser output directory -->
@@ -39,6 +56,7 @@
       <None Include="@(_FileItem)" Link="test-browser\%(_FileItem.Filename)%(_FileItem.Extension)" CopyToOutputDirectory="PreserveNewest" UseHardlinksIfPossible="true"/>
     </ItemGroup>
   </Target>
+
 
   <Import Project="..\..\src\Dotnet.Watch\Watch\RuntimeDependencies.props" />
 </Project>
