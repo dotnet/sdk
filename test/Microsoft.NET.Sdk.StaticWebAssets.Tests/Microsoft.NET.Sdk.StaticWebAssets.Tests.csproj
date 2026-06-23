@@ -3,6 +3,10 @@
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <!-- Tests modify process-global state (the process current directory); run serially
+         ([assembly: DoNotParallelize] in AssemblyInfo.cs). Clearing the scope suppresses
+         the default [assembly: Parallelize] that MSTest.Sdk would otherwise emit. -->
+    <MSTestParallelizeScope></MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>
