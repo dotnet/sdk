@@ -5,13 +5,10 @@
 
 namespace Microsoft.NET.Restore.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToIgnoreObsoleteDotNetCliToolPackages : SdkTest
     {
-        public GivenThatWeWantToIgnoreObsoleteDotNetCliToolPackages(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_issues_warning_and_skips_restore_for_obsolete_DotNetCliToolReference()
         {
             const string obsoletePackageId = "Banana.CommandLineTool";
@@ -45,7 +42,7 @@ namespace Microsoft.NET.Restore.Tests
                 .HaveStdOutContaining($"warning NETSDK1059: The tool '{obsoletePackageId}' is now included in the .NET SDK. Information on resolving this warning is available at (https://aka.ms/dotnetclitools-in-box).");
 
             string toolAssetsFilePath = Path.Combine(SdkTestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant(), "99.99.99", toolProject.TargetFrameworks, "project.assets.json");
-            Assert.False(File.Exists(toolAssetsFilePath), "Tool assets path should not have been generated");
+            Assert.IsFalse(File.Exists(toolAssetsFilePath), "Tool assets path should not have been generated");
         }
     }
 }
