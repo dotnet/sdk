@@ -364,7 +364,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     command.Append("export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory && ");
                 }
 
-                command.Append("vstestConsolePath=$(find ${DOTNET_ROOT} -name \"vstest.console.dll\") && ");
+                // Search the correlation payload dotnet (not DOTNET_ROOT which may be system-installed)
+                command.Append("vstestConsolePath=$(find $HELIX_CORRELATION_PAYLOAD/d -name \"vstest.console.dll\") && ");
                 command.Append($"dotnet exec \"${{vstestConsolePath}}\" @{rspFileName}");
 
                 return command.ToString();
@@ -382,7 +383,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     script.AppendLine("set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%");
                     script.AppendLine("set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r");
                 }
-                script.AppendLine("where /r %DOTNET_ROOT% vstest.console.dll > __vstest_path.txt");
+                script.AppendLine("where /r %HELIX_CORRELATION_PAYLOAD%\\d vstest.console.dll > __vstest_path.txt");
                 script.AppendLine("set /p vstestConsolePath=<__vstest_path.txt");
                 script.AppendLine($"dotnet exec \"%vstestConsolePath%\" @{rspFileName}");
 
