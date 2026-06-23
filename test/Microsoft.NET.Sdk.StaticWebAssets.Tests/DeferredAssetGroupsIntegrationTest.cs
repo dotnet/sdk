@@ -172,7 +172,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private TestAsset CreateTwoVariantDeferredGroupProject(string keepValue, [CallerMemberName] string callerName = "")
         {
             var testAsset = "RazorAppWithP2PReference";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, callerName, identifier: $"TwoVariant_{keepValue}")
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{callerName}_TwoVariant_{keepValue}")
                 .WithProjectChanges((path, document) =>
                 {
                     if (Path.GetFileName(path) == "ClassLibrary.csproj")
