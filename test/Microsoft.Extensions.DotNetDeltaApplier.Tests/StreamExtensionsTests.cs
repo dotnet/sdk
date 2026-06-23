@@ -5,8 +5,34 @@ using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class StreamExtensionsTests
 {
+    private static readonly bool[] s_bools = [true, false];
+
+    // Expands a set of values into the cartesian product with useBinaryWriter/useBinaryReader,
+    // replacing the xUnit.Combinatorial [CombinatorialData]/[CombinatorialValues] behavior.
+    private static IEnumerable<object[]> Expand<T>(IEnumerable<T> values)
+        => from value in values
+           from useBinaryWriter in s_bools
+           from useBinaryReader in s_bools
+           select new object[] { value!, useBinaryWriter, useBinaryReader };
+
+    public static IEnumerable<object[]> StringData
+        => Expand(new[] { "", "\u1234", "hello" });
+
+    public static IEnumerable<object[]> SevenBitEncodedIntData
+        => Expand(new[] { -1, -127, -128, -255, -256, int.MinValue, 0, 1, 10, 127, 128, 255, 256, int.MaxValue });
+
+    public static IEnumerable<object[]> ByteData
+        => Expand(new byte[] { 0, 255 });
+
+    public static IEnumerable<object[]> Int32Data
+        => Expand(new[] { int.MinValue, 0, int.MaxValue });
+
+    public static IEnumerable<object[]> BoolData
+        => Expand(new[] { true, false });
+
     private static async Task TestAsync<T>(
         T expected,
         Action<BinaryWriter, T> syncWrite,
@@ -42,14 +68,14 @@ public class StreamExtensionsTests
             actual = await asyncRead(stream, CancellationToken.None);
         }
 
-        Assert.Equal(expected, actual);
-        Assert.Equal(bytesWritten, stream.Position);
+        Assert.AreEqual(expected, actual);
+        Assert.AreEqual(bytesWritten, stream.Position);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DynamicData(nameof(StringData))]
     public async Task ReadWrite_String(
-        [CombinatorialValues("", "\u1234", "hello")] string expected,
+        string expected,
         bool useBinaryWriter,
         bool useBinaryReader)
     {
@@ -63,10 +89,10 @@ public class StreamExtensionsTests
             useBinaryReader);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DynamicData(nameof(SevenBitEncodedIntData))]
     public async Task ReadWrite_7BitEncodedInt(
-        [CombinatorialValues(-1, -127, -128, -255, -256, int.MinValue, 0, 1, 10, 127, 128, 255, 256, int.MaxValue)] int expected,
+        int expected,
         bool useBinaryWriter,
         bool useBinaryReader)
     {
@@ -80,10 +106,10 @@ public class StreamExtensionsTests
             useBinaryReader);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DynamicData(nameof(ByteData))]
     public async Task ReadWrite_Byte(
-        [CombinatorialValues(0, 255)] byte expected,
+        byte expected,
         bool useBinaryWriter,
         bool useBinaryReader)
     {
@@ -97,10 +123,10 @@ public class StreamExtensionsTests
             useBinaryReader);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DynamicData(nameof(Int32Data))]
     public async Task ReadWrite_Int32(
-        [CombinatorialValues(int.MinValue, 0, int.MaxValue)] int expected,
+        int expected,
         bool useBinaryWriter,
         bool useBinaryReader)
     {
@@ -114,8 +140,8 @@ public class StreamExtensionsTests
             useBinaryReader);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DynamicData(nameof(BoolData))]
     public async Task ReadWrite_Bool(
         bool expected,
         bool useBinaryWriter,
@@ -131,10 +157,11 @@ public class StreamExtensionsTests
             useBinaryReader);
     }
 
-    [Theory]
-    [CombinatorialData]
-    public async Task ReadWrite_Int32Array(
-        [CombinatorialValues(0, 1, 1234)] int length)
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(1234)]
+    public async Task ReadWrite_Int32Array(int length)
     {
         var expected = Enumerable.Range(0, length).ToArray();
 
@@ -144,13 +171,14 @@ public class StreamExtensionsTests
         stream.Position = 0;
 
         var actual = await stream.ReadIntArrayAsync(CancellationToken.None);
-        Assert.Equal(expected, actual);
+        Assert.AreSequenceEqual(expected, actual);
     }
 
-    [Theory]
-    [CombinatorialData]
-    public async Task ReadWrite_ByteArray(
-        [CombinatorialValues(0, 1, 1234)] int length)
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(1234)]
+    public async Task ReadWrite_ByteArray(int length)
     {
         var expected = Enumerable.Range(0, length).Select(i => (byte)i).ToArray();
 
@@ -160,10 +188,10 @@ public class StreamExtensionsTests
         stream.Position = 0;
 
         var actual = await stream.ReadByteArrayAsync(CancellationToken.None);
-        Assert.Equal(expected, actual);
+        Assert.AreSequenceEqual(expected, actual);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ReadWrite_Guid()
     {
         var expected = Guid.NewGuid();
@@ -174,6 +202,6 @@ public class StreamExtensionsTests
         stream.Position = 0;
 
         var actual = await stream.ReadGuidAsync(CancellationToken.None);
-        Assert.Equal(expected, actual);
+        Assert.AreEqual(expected, actual);
     }
 }

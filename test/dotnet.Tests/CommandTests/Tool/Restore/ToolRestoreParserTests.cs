@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
@@ -8,36 +8,31 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
+    [TestClass]
     public class ToolRestoreParserTests
     {
-        private readonly ITestOutputHelper output;
 
-        public ToolRestoreParserTests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanGetManifestFilePath()
         {
             var result = Parser.Parse("dotnet tool restore --tool-manifest folder/my-manifest.format");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.ToolManifestOption).Should().Be("folder/my-manifest.format");
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanGetFollowingArguments()
         {
             var result =
                 Parser.Parse(
                     @"dotnet tool restore --configfile C:\TestAssetLocalNugetFeed");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanParseSourceOption()
         {
             const string expectedSourceValue = "TestSourceValue";
@@ -45,11 +40,11 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse($"dotnet tool restore --add-source {expectedSourceValue}");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.AddSourceOption).First().Should().Be(expectedSourceValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanParseMultipleSourceOption()
         {
             const string expectedSourceValue1 = "TestSourceValue1";
@@ -61,69 +56,69 @@ namespace Microsoft.DotNet.Tests.ParserTests
                     $"--add-source {expectedSourceValue1} " +
                     $"--add-source {expectedSourceValue2}");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.AddSourceOption)[0].Should().Be(expectedSourceValue1);
             result.GetRequiredValue(definition.AddSourceOption)[1].Should().Be(expectedSourceValue2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanParseVerbosityOption()
         {
             const string expectedVerbosityLevel = "diag";
 
             var result = Parser.Parse($"dotnet tool restore --verbosity {expectedVerbosityLevel}");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             Enum.GetName(result.GetRequiredValue(definition.VerbosityOption)).Should().Be(expectedVerbosityLevel);
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanParseNoCacheOption()
         {
             var result =
                 Parser.Parse(@"dotnet tool restore --no-cache");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.RestoreOptions.NoCacheOption).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanParseNoHttpCacheOption()
         {
             var result =
                 Parser.Parse(@"dotnet tool restore --no-http-cache");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.RestoreOptions.NoHttpCacheOption).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanParseIgnoreFailedSourcesOption()
         {
             var result =
                 Parser.Parse(@"dotnet tool restore --ignore-failed-sources");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.RestoreOptions.IgnoreFailedSourcesOption).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanParseDisableParallelOption()
         {
             var result =
                 Parser.Parse(@"dotnet tool restore --disable-parallel");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.RestoreOptions.DisableParallelOption).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ToolRestoreParserCanParseInteractiveRestoreOption()
         {
             var result =
                 Parser.Parse(@"dotnet tool restore --interactive");
 
-            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.RestoreOptions.InteractiveOption).Should().BeTrue();
         }
     }

@@ -5,14 +5,15 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class SourceFileUpdateTests_HotReloadNotSupported : DotNetWatchTestBase
 {
-    [Theory]
-    [InlineData("PublishAot", "True")]
-    [InlineData("PublishTrimmed", "True")]
-    [InlineData("StartupHookSupport", "False")]
-    [InlineData("Optimize", "True")]
-    [InlineData("MetadataUpdaterSupport", "False")]
+    [TestMethod]
+    [DataRow("PublishAot", "True")]
+    [DataRow("PublishTrimmed", "True")]
+    [DataRow("StartupHookSupport", "False")]
+    [DataRow("Optimize", "True")]
+    [DataRow("MetadataUpdaterSupport", "False")]
     public async Task ChangeFileInAotProject(string propertyName, string propertyValue)
     {
         var tfvParsed = Version.Parse(ToolsetInfo.CurrentTargetFrameworkVersion);
@@ -57,7 +58,7 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
         await App.WaitForOutputLineContaining("<updated>");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFileInFSharpProject()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -72,7 +73,7 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
         await App.WaitUntilOutputContains("<Updated>");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFileInFSharpProjectWithLoop()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
