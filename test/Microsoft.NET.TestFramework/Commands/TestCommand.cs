@@ -174,7 +174,8 @@ namespace Microsoft.NET.TestFramework.Commands
                 return false;
             }
 
-            return !NuGetTransientErrorDetector.IsTransientError(result.StdOut);
+            return !NuGetTransientErrorDetector.IsTransientError(result.StdOut)
+                && !TransientSdkResolutionErrorDetector.IsTransientError(result.StdOut);
         }
 
         public virtual CommandResult Execute(IEnumerable<string> args)

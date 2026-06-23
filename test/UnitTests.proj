@@ -180,7 +180,9 @@
 
       <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />
       <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\SetupHelixEnvironment.cmd" />
+      <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\InstallNode.ps1" />
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\SetupHelixEnvironment.sh" />
+      <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\installnode.sh" />
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\helix-debug-entitlements.plist" />
     </ItemGroup>
 
@@ -223,8 +225,15 @@
 
   <Target Name="AppendHelixPreCommand" BeforeTargets="CoreTest" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
-      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
-      <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
+      <!-- Node.js version for TypeScript tests on Helix (Microsoft.TypeScript.MSBuild requires Node 20+) -->
+      <NodeVersion>22.22.3</NodeVersion>
+      <_NodeArchitecture Condition="'$(TargetArchitecture)' != ''">$(TargetArchitecture)</_NodeArchitecture>
+      <_NodeArchitecture Condition="'$(TargetArchitecture)' == ''">x64</_NodeArchitecture>
+      <!-- Install Node.js for TypeScript compilation tests.
+           Done inside SetupHelixEnvironment scripts to avoid PATH semicolons
+           conflicting with HelixPreCommands separator. -->
+      <HelixPreCommands Condition="!$(IsPosixShell)">set DOTNET_SDK_TEST_NODE_VERSION=$(NodeVersion);call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
+      <HelixPreCommands Condition="$(IsPosixShell)">export DOTNET_SDK_TEST_NODE_VERSION=$(NodeVersion);export DOTNET_SDK_TEST_NODE_ARCH=$(_NodeArchitecture);. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
       <!-- Install wasm-tools workload on Helix for AoT tests (see: https://github.com/dotnet/sdk/issues/22655).
            This must happen on Helix (not the build machine) because cross-arch builds produce a dotnet binary
            that cannot execute on the build machine's architecture.
