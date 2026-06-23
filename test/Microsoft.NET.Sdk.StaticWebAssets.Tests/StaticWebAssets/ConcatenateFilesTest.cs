@@ -1,14 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.Razor.Test
 {
+    [TestClass]
     public class ConcatenateCssFilesTest
     {
+        public TestContext TestContext { get; set; } = null!;
         private static readonly string BundleContent =
     @"/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
 .counter {
@@ -49,7 +57,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
 }
 ";
 
-        [Fact]
+        [TestMethod]
         public void BundlesScopedCssFiles_ProducesEmpyBundleIfNoFilesAvailable()
         {
             // Arrange
@@ -70,7 +78,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             File.ReadAllText(expectedFile).Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void BundlesScopedCssFiles_ProducesBundle()
         {
             // Arrange
@@ -129,7 +137,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
                     ["CopyToPublishDirectory"] = "PreserveNewest"
                 });
 
-        [Fact]
+        [TestMethod]
         public void BundlesScopedCssFiles_IncludesOtherBundles()
         {
             // Arrange
@@ -167,21 +175,21 @@ namespace Microsoft.NET.Sdk.Razor.Test
             actualContents.Should().Contain(BundleWithImportsContent);
         }
 
-        [Theory]
-        [InlineData("", "", "TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("/", "/", "TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("app", "_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("app", "/_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("app", "/_content/", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("/app", "_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("/app", "/_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("/app", "/_content/", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("app/", "_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("app/", "/_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("app/", "/_content/", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("/company/app/", "_content", "../../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("/company/app/", "/_content", "../../_content/TestFiles/Generated/lib.bundle.scp.css")]
-        [InlineData("/company/app/", "/_content/", "../../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [TestMethod]
+        [DataRow("", "", "TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("/", "/", "TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("app", "_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("app", "/_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("app", "/_content/", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("/app", "_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("/app", "/_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("/app", "/_content/", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("app/", "_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("app/", "/_content", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("app/", "/_content/", "../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("/company/app/", "_content", "../../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("/company/app/", "/_content", "../../_content/TestFiles/Generated/lib.bundle.scp.css")]
+        [DataRow("/company/app/", "/_content/", "../../_content/TestFiles/Generated/lib.bundle.scp.css")]
         public void BundlesScopedCssFiles_HandlesBasePathCombinationsCorrectly(string finalBasePath, string libraryBasePath, string expectedImport)
         {
             // Arrange
@@ -224,7 +232,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             actualContents.Should().BeVisuallyEquivalentTo(expectedContent);
         }
 
-        [Fact]
+        [TestMethod]
         public void BundlesScopedCssFiles_BundlesFilesInOrder()
         {
             // Arrange
@@ -257,7 +265,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             actualContents.Should().Contain(BundleContent);
         }
 
-        [Fact]
+        [TestMethod]
         public void BundlesScopedCssFiles_DoesNotOverrideBundleForSameContents()
         {
             // Arrange
@@ -295,7 +303,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             lastModified.Should().BeSameDateAs(File.GetLastWriteTimeUtc(expectedFile));
         }
 
-        [Fact]
+        [TestMethod]
         public async System.Threading.Tasks.Task BundlesScopedCssFiles_UpdatesBundleWhenContentsChange()
         {
             // Arrange
@@ -338,7 +346,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
                     "TestFiles/Generated/FetchData.razor.rz.scp.css"),
             };
 
-            await System.Threading.Tasks.Task.Delay(1000, TestContext.Current.CancellationToken);
+            await System.Threading.Tasks.Task.Delay(1000, TestContext.CancellationToken);
             taskInstance.Execute();
 
             // Assert
