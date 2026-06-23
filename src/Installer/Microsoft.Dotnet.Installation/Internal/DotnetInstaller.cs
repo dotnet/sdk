@@ -17,7 +17,6 @@ internal class DotnetInstaller : IDotnetInstaller
     public void Install(DotnetInstallRoot dotnetRoot, InstallComponent component, ReleaseVersion version)
     {
         using var op = Metrics.Track("install/complete", activityName: "DotnetInstaller.Install");
-        op.Tag("install.root", dotnetRoot.Path);
         op.Tag("install.arch", dotnetRoot.Architecture.ToString());
         op.Tag("install.component", component.ToString());
         op.Tag("install.version", version.ToString());
