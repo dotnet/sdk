@@ -294,6 +294,49 @@ When a project targets multiple frameworks (`TargetFrameworks`), each inner buil
 
 Groups are keyed by `(SourceId, Name)` and stored in a `Dictionary<(string SourceId, string Name), StaticWebAssetGroup>`. They travel alongside assets in manifests and allow a consuming project to read provider-specific settings without coupling to the provider's implementation. An asset's `AssetGroups` property (semicolon-separated `Name=Value` pairs) can reference these groups.
 
+#### Deferred Groups and `SkipDeferred` Filtering
+
+A group can be marked **`Deferred`**. Deferred groups model assets whose final resolution depends on the
+*consumer* — most often a **fallback** asset that a package ships but that must be **excluded** once the
+consuming project (or one of its references) supplies a more specific asset for the same target path.
+
+`FilterStaticWebAssetGroups` (`Tasks/FilterStaticWebAssetGroups.cs`) applies group declarations and runs
+in two modes, controlled by its `SkipDeferred` parameter:
+
+- **`SkipDeferred="true"`** (pre-filter pass): groups marked `Deferred` are **skipped** — their exclusions
+  are *not* applied yet. The **publish** path runs in this mode
+  (`Microsoft.NET.Sdk.StaticWebAssets.Publish.targets`).
+- **`SkipDeferred="false"`** (final pass): all groups must be concrete; an error is raised if any group is
+  still `Deferred`.
+
+> **Failure mode (target-path collision) — and where it is actually fixed.** The build manifest
+> (`staticwebassets.build.json`) intentionally **retains every variant** of a grouped asset so that
+> transitive consumers can re-resolve the group against their own asset graph. At **build**, the unscoped
+> `FilterStaticWebAssetGroups` pass resolves the deferred group and drops the excluded fallback. At
+> **publish**, the SDK reloads that build manifest but historically **never re-resolved the deferred group**:
+> there is no publish-side resolution pass, and the publish `FilterStaticWebAssetGroups` is *consumer-scoped*
+> (`Source="$(PackageId)"`), so it structurally **cannot** filter a group owned by a referenced project or
+> package. The fallback therefore survives and reaches `GenerateStaticWebAssetEndpointsManifest` *alongside*
+> the consumer's own asset — two assets at the same target path + `AssetKind` slot — and
+> `ChooseNearestAssetKind(...).SingleOrDefault()` throws `Sequence contains more than one element`. **Key
+> signal: the project builds fine; only publish fails.**
+> **Where it was actually fixed (and the precision point).** The durable fix does **not** carry the resolution
+> forward — it stops the second asset from being emitted at all. The producing package's build targets run
+> *inside the consumer's build*, so they can gate the fallback on whether the consumer already contributes an
+> asset (e.g. `@(_ExistingBuildJSModules) == ''`) and materialize it **only when there is none**. Then exactly
+> one asset ever lands on the route and there is nothing to collide — no deferred group, no SDK change. This is
+> what landed for dotnet/sdk#54779: dotnet/aspnetcore#67375 (merged; backport dotnet/aspnetcore#67401) removes
+> the deferred-group machinery from the `Microsoft.AspNetCore.Components.WebView` package and makes the
+> `blazor.modules.json` fallback **conditional**. A *different* SDK-side fix that re-applies the resolved
+> groups at publish (dotnet/sdk#54941) was built and **empirically verified to work**, but it de-duplicates two
+> assets after the fact rather than preventing the second one, and was **not merged** (superseded). Two further
+> approaches were tried and **rejected in review**: softening the throwing task, and retyping the package's
+> asset as a **`Framework`** asset while still emitting it **unconditionally** (that just relabels one of two
+> assets — the collision survives). The distinction that matters: a *conditional* package fallback (one asset,
+> correct) versus an *unconditional* package remodel (two assets, still broken). See the triage heuristic in
+> [AGENTS.md](AGENTS.md).
+
+
 ### Discovery Patterns
 
 `StaticWebAssetsDiscoveryPattern` (`Tasks/Data/StaticWebAssetsDiscoveryPattern.cs`) describes a glob pattern for discovering files dynamically at runtime (for the dev server).
