@@ -129,12 +129,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetProjectConfiguration Include="@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)" />
     </ItemGroup>
 
-    <!-- The build manifest intentionally retains every variant of a grouped asset so that transitive
-         consumers can re-resolve groups against their own asset graph. Re-apply the resolved (no longer
-         deferred) group decision that was computed by the unscoped build-time filter so that the variant
-         the group excluded does not survive into the publish pipeline. Doing it here, using the values
-         persisted in the build manifest, keeps build and publish consistent even for groups owned by a
-         referenced project or NuGet package (whose SourceId is not the consuming project). -->
+    <!-- During publish, after LoadStaticWebAssetsBuildManifest has reloaded the build manifest, the build
+         manifest intentionally retains every variant of a grouped asset so that transitive consumers can
+         re-resolve groups against their own asset graph. Re-apply the resolved (no longer deferred) group
+         decision that was computed by the unscoped build-time filter so that the variant the group excluded
+         does not survive into the publish pipeline. This only affects the current (consuming) project's
+         publish output; transitive consumers re-import the deferred group definitions and re-resolve on their
+         own. Doing it here, using the values persisted in the build manifest, keeps build and publish
+         consistent even for groups owned by a referenced project or NuGet package (whose SourceId is not the
+         consuming project). -->
     <FilterStaticWebAssetGroups
       Condition="'@(_CachedBuildStaticWebAssetGroups)' != ''"
       Assets="@(StaticWebAsset)"

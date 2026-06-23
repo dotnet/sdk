@@ -78,8 +78,10 @@ public sealed class StaticWebAssetGroup : IEquatable<StaticWebAssetGroup>
         return result;
     }
 
-    // Materializes the groups into an array suitable for persisting in the manifest,
-    // ensuring each member is fully realized (no lazy ITaskItem reference is retained).
+    // Materializes the groups into an array suitable for persisting in the manifest.
+    // Each member is rebuilt from its values so no lazy ITaskItem reference is retained:
+    // the original ITaskItem is not serializable and would otherwise dangle across the
+    // build/publish boundary once the in-memory item collection is gone.
     public static StaticWebAssetGroup[] FromItemGroupToArray(ITaskItem[] items)
     {
         if (items == null || items.Length == 0)

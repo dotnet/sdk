@@ -181,6 +181,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 Path.Combine(classLibDir, "StaticWebAssets.Groups.targets"),
                 $$"""
                 <Project>
+                  <!-- SharedVariantsValue is the value the deferred 'SharedVariants' group resolves to.
+                       ResolveSharedVariants (hooked into FilterDeferredStaticWebAssetGroupsDependsOn) flips
+                       the group from Deferred to this concrete value so a single variant wins. -->
                   <PropertyGroup>
                     <SharedVariantsValue Condition="'$(SharedVariantsValue)' == ''">{{keepValue}}</SharedVariantsValue>
                     <FilterDeferredStaticWebAssetGroupsDependsOn>
