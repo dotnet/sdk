@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Remove.Package.Tests
 {
+    [TestClass]
     public class GivenDotnetRemovePackage : SdkTest
     {
         private Func<string, string> HelpText = (defaultVal) => $@"Description:
@@ -38,13 +39,13 @@ Commands:
   package <PACKAGE_NAME>      Remove a NuGet package reference from the project.
   reference <PROJECT_PATH>    Remove a project-to-project reference from the project";
 
-        public GivenDotnetRemovePackage(ITestOutputHelper log) : base(log)
+        public GivenDotnetRemovePackage()
         {
         }
 
-        [Theory]
-        [InlineData("--help")]
-        [InlineData("-h")]
+        [TestMethod]
+        [DataRow("--help")]
+        [DataRow("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
         {
             var cmd = new DotnetCommand(Log).Execute($"remove", "package", helpArg);
@@ -52,9 +53,9 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("unknownCommandName")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
         {
             var cmd = new DotnetCommand(Log)
@@ -63,7 +64,7 @@ Commands:
             cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenReferencedPackageIsPassedItGetsRemoved()
         {
             var projectDirectory = TestAssetsManager
@@ -86,7 +87,7 @@ Commands:
             remove.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenReferencedPackageIsRemovedUsingPositionalProjectArgumentItGetsRemoved()
         {
             const string testAsset = "TestAppSimple";
@@ -113,7 +114,7 @@ Commands:
             remove.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -135,7 +136,7 @@ Commands:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void FileBasedApp_Multiple()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -163,7 +164,7 @@ Commands:
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void FileBasedApp_None()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
