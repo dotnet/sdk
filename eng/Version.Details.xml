@@ -374,6 +374,10 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>901ca941248413c79832d2fdbd709da0c4386353</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.McpServer.ProjectTemplates.10.0" Version="10.0.9">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
+      <Sha>901ca941248413c79832d2fdbd709da0c4386353</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="10.0.0-preview.26315.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5ef850130ff4fc29043271f51ca415a885b39d41</Sha>
