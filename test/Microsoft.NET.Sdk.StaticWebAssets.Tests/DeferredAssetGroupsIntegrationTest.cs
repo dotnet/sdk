@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,6 +9,7 @@ using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -94,7 +95,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             existingEndpoints.Should().NotBeEmpty("endpoints for existing non-grouped assets should be unaffected");
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_DeferredGroupWithTwoVariantsOnSameRoute_KeepsSingleVariant()
         {
             // Two grouped variants (V4/V5) of a referenced project's asset collapse to the same route
@@ -129,10 +130,49 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             uncompressedEndpoints.Should().ContainSingle("exactly one uncompressed endpoint should exist for the shared route");
         }
 
-        private TestAsset CreateTwoVariantDeferredGroupProject(string keepValue)
+        [TestMethod]
+        public void Publish_NoBuild_DeferredGroupWithTwoVariantsOnSameRoute_KeepsSingleVariant()
+        {
+            // This test covers the disk-manifest path (ReadStaticWebAssetsManifestFile →
+            // LoadStaticWebAssetsBuildManifest) that is exercised when publishing with NoBuild=true.
+            // After a regular build, the resolved groups are persisted in staticwebassets.build.json.
+            // A subsequent NoBuild publish must re-apply those groups from the manifest on disk and
+            // exclude the losing variant, preventing 'Sequence contains more than one element' in
+            // GenerateStaticWebAssetEndpointsManifest. See https://github.com/dotnet/sdk/issues/54940.
+            var projectDirectory = CreateTwoVariantDeferredGroupProject(keepValue: "V5");
+
+            var build = CreateBuildCommand(projectDirectory, "AppWithP2PReference");
+            ExecuteCommand(build).Should().Pass();
+
+            var publish = CreatePublishCommand(projectDirectory, "AppWithP2PReference");
+            ExecuteCommand(publish, "/p:NoBuild=true").Should().Pass();
+
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+
+            var publishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
+            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(publishManifestPath));
+
+            // Exactly one primary asset should survive on the shared route, and it must be the V5 variant.
+            var primaryAssets = publishManifest.Assets
+                .Where(a => a.RelativePath.EndsWith("shared.js") && a.AssetRole == "Primary")
+                .ToList();
+            primaryAssets.Should().ContainSingle("only the winning (V5) variant should survive NoBuild publish on the shared route");
+            primaryAssets[0].AssetGroups.Should().Contain("V5");
+            primaryAssets[0].AssetGroups.Should().NotContain("V4", "the V4 variant should have been excluded by the deferred group");
+
+            var endpoints = LoadPublishEndpointsManifest(intermediateOutputPath);
+
+            // Exactly one uncompressed endpoint on the collapsed route — the buggy path produced two.
+            var uncompressedEndpoints = endpoints
+                .Where(e => e.Route.EndsWith("shared.js") && e.Selectors.Length == 0)
+                .ToList();
+            uncompressedEndpoints.Should().ContainSingle("exactly one uncompressed endpoint should exist for the shared route");
+        }
+
+        private TestAsset CreateTwoVariantDeferredGroupProject(string keepValue, [CallerMemberName] string callerName = "")
         {
             var testAsset = "RazorAppWithP2PReference";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"TwoVariant_{keepValue}")
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, callerName, identifier: $"TwoVariant_{keepValue}")
                 .WithProjectChanges((path, document) =>
                 {
                     if (Path.GetFileName(path) == "ClassLibrary.csproj")
