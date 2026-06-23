@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using System.Xml;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
@@ -56,7 +57,10 @@ internal static class EnvironmentVariablesToMSBuild
     /// <returns>A dictionary mapping environment variable names to their values.</returns>
     public static IReadOnlyDictionary<string, string> ReadFromItems(ProjectInstance projectInstance)
     {
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        // Match the comparer used when parsing -e/--environment so that casing is handled
+        // consistently (environment variables are case-insensitive on Windows).
+        var result = new Dictionary<string, string>(
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         foreach (var item in projectInstance.GetItems(Constants.RuntimeEnvironmentVariable))
         {
             result[item.EvaluatedInclude] = item.GetMetadataValue(ValueMetadataName);
