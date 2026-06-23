@@ -555,11 +555,20 @@ internal sealed class FSharpHotReloadService
             }
             else
             {
-                _logger.LogDebug(
-                    "F# managed hot reload requires restart for '{ProjectPath}': {ErrorCase} ({ErrorText})",
-                    projectInfo.ProjectPath,
-                    emit.ErrorCase,
-                    emit.ErrorText);
+                // Surface the rude-edit reason to the user (the structured FSHRDL id + message),
+                // not just at Debug, so an edit that forces a restart explains why. Mirrors how the
+                // C# path reports rude edits rather than silently restarting.
+                if (!string.IsNullOrEmpty(emit.ErrorText))
+                {
+                    _logger.LogWarning("F# hot reload cannot apply the edit; a restart is required: {Message}", emit.ErrorText);
+                }
+                else
+                {
+                    _logger.LogDebug(
+                        "F# managed hot reload requires restart for '{ProjectPath}': {ErrorCase}",
+                        projectInfo.ProjectPath,
+                        emit.ErrorCase);
+                }
             }
 
             // Session-object mode keeps the module id recorded at baseline capture while the
@@ -2376,6 +2385,15 @@ internal sealed class FSharpHotReloadService
                 var error = result.GetType().GetProperty("ErrorValue")?.GetValue(result);
                 var errorText = error?.ToString() ?? "Unknown error";
                 var errorCase = ParseErrorCase(errorText);
+
+                // FSharpHotReloadError.UnsupportedEdit carries a structured FSharpHotReloadRudeEdit
+                // list (Id + Severity + Message). Render the per-edit reason cleanly instead of the
+                // default DU/record ToString() dump so the host can surface an actionable message.
+                if (errorCase == "UnsupportedEdit")
+                {
+                    errorText = TryFormatRudeEdits(error) ?? errorText;
+                }
+
                 return new FSharpInvocationResult(false, null, errorCase, errorText);
             }
             catch (Exception ex)
@@ -2433,6 +2451,48 @@ internal sealed class FSharpHotReloadService
             var delimiters = new[] { ' ', '(', ':' };
             var index = text.IndexOfAny(delimiters);
             return index > 0 ? text[..index] : text;
+        }
+
+        /// <summary>
+        /// Renders the FSharpHotReloadError.UnsupportedEdit payload (an FSharpList of
+        /// FSharpHotReloadRudeEdit records, each with Id/Severity/Message/SymbolName) to a clean
+        /// "{Id}: {Message}" reason string via reflection. Returns null on any shape mismatch so the
+        /// caller falls back to the default ToString(), keeping the bridge robust across FCS versions.
+        /// </summary>
+        private static string? TryFormatRudeEdits(object? error)
+        {
+            try
+            {
+                var item = error?.GetType().GetProperty("Item")?.GetValue(error);
+                if (item is not System.Collections.IEnumerable edits)
+                {
+                    return null;
+                }
+
+                var lines = new List<string>();
+                foreach (var edit in edits)
+                {
+                    if (edit == null)
+                    {
+                        continue;
+                    }
+
+                    var editType = edit.GetType();
+                    var id = editType.GetProperty("Id")?.GetValue(edit) as string;
+                    var message = editType.GetProperty("Message")?.GetValue(edit) as string;
+
+                    if (!string.IsNullOrEmpty(id) || !string.IsNullOrEmpty(message))
+                    {
+                        lines.Add(string.IsNullOrEmpty(id) ? message! : $"{id}: {message}");
+                    }
+                }
+
+                return lines.Count > 0 ? string.Join(Environment.NewLine, lines) : null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private static string FormatTokenSet(ImmutableArray<int> tokens)
