@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [TestMethod(DisplayName = nameof(VerifyBasicHashCommentHandling))]
+        [TestMethod]
         public void VerifyBasicHashCommentHandling()
         {
             string originalValue = @"Start
@@ -59,7 +59,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyHashStyleCommentRemovalForEachClauseNoEmbedding))]
+        [TestMethod]
         public void VerifyHashStyleCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -130,7 +130,7 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyHashStyleCommentRemovalWithNestedClause))]
+        [TestMethod]
         public void VerifyHashStyleCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -176,7 +176,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyHashStyleCommentRemovalNestedDoesntRemove))]
+        [TestMethod]
         public void VerifyHashStyleCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -222,7 +222,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyHashSignMixedConditionalsThreeLevelEmbedding))]
+        [TestMethod]
         public void VerifyHashSignMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

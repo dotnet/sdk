@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorFalse))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorFalse()
         {
             VariableCollection vc = new VariableCollection
@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsFalse(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorAndEqualsNot))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorAndEqualsNot()
         {
             VariableCollection vc = new VariableCollection
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorUsedVariablesSet))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorUsedVariablesSet()
         {
             VariableCollection vc = new VariableCollection
@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(keys.SequenceEqual(new[] { "FIRST_IF", "SECOND_IF" }));
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorBitShiftAddEquals))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorBitShiftAddEquals()
         {
             VariableCollection vc = new VariableCollection
@@ -165,7 +165,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorMultipleNotEqualsAnd))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorMultipleNotEqualsAnd()
         {
             VariableCollection vc = new VariableCollection
@@ -178,7 +178,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorStringEquals))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorStringEquals()
         {
             VariableCollection vc = new VariableCollection
@@ -190,7 +190,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorNumerics))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorNumerics()
         {
             VariableCollection vc = new VariableCollection();
@@ -199,7 +199,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorShifts))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorShifts()
         {
             VariableCollection vc = new VariableCollection
@@ -212,7 +212,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyCpp2EvaluatorMath))]
+        [TestMethod]
         public void VerifyCpp2EvaluatorMath()
         {
             VariableCollection vc = new VariableCollection();
@@ -221,7 +221,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsTrue(result);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyEvaluableExpressionNoVarsCollectionProvided))]
+        [TestMethod]
         public void VerifyEvaluableExpressionNoVarsCollectionProvided()
         {
             VariableCollection vc = new VariableCollection();
@@ -234,7 +234,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.IsEmpty(vc);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyEvaluableExpressionVarsCollectionProvided))]
+        [TestMethod]
         public void VerifyEvaluableExpressionVarsCollectionProvided()
         {
             VariableCollection vc = new VariableCollection()

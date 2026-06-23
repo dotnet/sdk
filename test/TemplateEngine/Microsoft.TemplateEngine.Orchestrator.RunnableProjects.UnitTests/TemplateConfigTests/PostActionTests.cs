@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [TestMethod(DisplayName = nameof(TestPostActionConditioning))]
+        [TestMethod]
         [DataRow(true, true, 2, new[] { "Action1", "Default instructions (action 1)" }, new[] { "Action2", "Default instructions (action 2)" })]
         [DataRow(true, false, 1, new[] { "Action1", "Default instructions (action 1)" }, null)]
         [DataRow(false, true, 1, new[] { "Action2", "Default instructions (action 2)" }, null)]
@@ -195,7 +195,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [TestMethod(DisplayName = nameof(TestPostActionInstructionsConditioning))]
+        [TestMethod]
         [DataRow(true, true, 2, "Windows", "Windows instructions (action 1)", "Windows instructions (action 2)")]
         [DataRow(true, true, 2, "Linux", "Linux instructions (action 1)", "Linux instructions (action 2)")]
         [DataRow(true, true, 2, "Mac", "Mac instructions (action 1)", "Mac instructions (action 2)")]

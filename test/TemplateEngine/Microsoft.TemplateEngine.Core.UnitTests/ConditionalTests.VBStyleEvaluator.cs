@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifTrueCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifTrueCondition()
         {
             string value = @"Hello
@@ -32,7 +32,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifFalseCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifFalseCondition()
         {
             string value = @"Hello
@@ -55,7 +55,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifTrueAndFalseCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifTrueAndFalseCondition()
         {
             string value = @"Hello
@@ -82,7 +82,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifNotNotTrueAndFalseCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifNotNotTrueAndFalseCondition()
         {
             string value = @"Hello
@@ -110,7 +110,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifTrueAndAlsoTrueCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifTrueAndAlsoTrueCondition()
         {
             string value = @"Hello
@@ -138,7 +138,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifTrueAndAlsoNotFalseCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifTrueAndAlsoNotFalseCondition()
         {
             string value = @"Hello
@@ -166,7 +166,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifNotFalseAndNotFalseAndNotFalseCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifNotFalseAndNotFalseAndNotFalseCondition()
         {
             string value = @"Hello
@@ -195,7 +195,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifNotFalseAndNotFalseAndNotTrueCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifNotFalseAndNotFalseAndNotTrueCondition()
         {
             string value = @"Hello
@@ -223,7 +223,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifNotFalseOrTrueCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifNotFalseOrTrueCondition()
         {
             string value = @"Hello
@@ -251,7 +251,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifNotFalseOrElseTrueCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifNotFalseOrElseTrueCondition()
         {
             string value = @"Hello
@@ -279,7 +279,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifNotNotFalseAndNotFalseAndNotTrueCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifNotNotFalseAndNotFalseAndNotTrueCondition()
         {
             string value = @"Hello
@@ -308,7 +308,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifExponentiateEqualsCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifExponentiateEqualsCondition()
         {
             string value = @"Hello
@@ -337,7 +337,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VBVerifyIfEndifNotExponentiateNotEqualsCondition))]
+        [TestMethod]
         public void VBVerifyIfEndifNotExponentiateNotEqualsCondition()
         {
             string value = @"Hello

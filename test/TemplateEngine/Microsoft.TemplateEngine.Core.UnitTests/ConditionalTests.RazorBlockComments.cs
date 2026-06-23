@@ -202,7 +202,7 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = false
         };
 
-        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterIfTrue))]
+        [TestMethod]
         [DataRow(NoDefaultValue, OuterIfTrueExpectedValue)]
         [DataRow(OuterIfDefaultValue, OuterIfTrueExpectedValue)]
         [DataRow(OuterElseifDefaultValue, OuterIfTrueExpectedValue)]
@@ -216,7 +216,7 @@ Trailing stuff
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseifTrueExpectedValue))]
+        [TestMethod]
         [DataRow(NoDefaultValue, OuterElseifTrueExpectedValue)]
         [DataRow(OuterIfDefaultValue, OuterElseifTrueExpectedValue)]
         [DataRow(OuterElseifDefaultValue, OuterElseifTrueExpectedValue)]
@@ -230,7 +230,7 @@ Trailing stuff
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerIfTrueExpectedValue))]
+        [TestMethod]
         [DataRow(NoDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
         [DataRow(OuterIfDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
         [DataRow(OuterElseifDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
@@ -244,7 +244,7 @@ Trailing stuff
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseifTrueExpectedValue))]
+        [TestMethod]
         [DataRow(NoDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
         [DataRow(OuterIfDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
         [DataRow(OuterElseifDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
@@ -258,7 +258,7 @@ Trailing stuff
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseHappensExpectedValue))]
+        [TestMethod]
         [DataRow(NoDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
         [DataRow(OuterIfDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
         [DataRow(OuterElseifDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
@@ -322,7 +322,7 @@ Trailing stuff";
             ["CLAUSE_2"] = false
         };
 
-        [TestMethod(DisplayName = nameof(RazorBlockCommentsBasicTestBothClausesTrue))]
+        [TestMethod]
         [DataRow(BasicValue, IfEmitted)]
         [DataRow(BasicWithDefault, IfEmitted)]
         public void RazorBlockCommentsBasicTestBothClausesTrue(string test, string expected)
@@ -331,7 +331,7 @@ Trailing stuff";
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(RazorBlockCommentsBasicTestClauseTwoTrue))]
+        [TestMethod]
         [DataRow(BasicValue, ElseIfEmitted)]
         [DataRow(BasicWithDefault, ElseIfEmitted)]
         public void RazorBlockCommentsBasicTestClauseTwoTrue(string test, string expected)
@@ -340,7 +340,7 @@ Trailing stuff";
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(RazorBlockCommentsBasicTestNeitherClauseTrue))]
+        [TestMethod]
         [DataRow(BasicValue, ElseEmitted)]
         [DataRow(BasicWithDefault, ElseEmitted)]
         public void RazorBlockCommentsBasicTestNeitherClauseTrue(string test, string expected)

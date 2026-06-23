@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         }
 
         // Demonstrate that conditional operations processing is correctly enabled & disabled with Emit flags.
-        [TestMethod(DisplayName = nameof(TurnOffConditionalTest))]
+        [TestMethod]
         public void TurnOffConditionalTest()
         {
             string originalValue = @"lead stuff
@@ -86,7 +86,7 @@ Final stuff";
         }
 
         // Demonstrate that conditional operations processing is correctly enabled & disabled with the noEmit flags.
-        [TestMethod(DisplayName = nameof(TurnOffConditionalAndFlagsDontEmitTest))]
+        [TestMethod]
         public void TurnOffConditionalAndFlagsDontEmitTest()
         {
             string originalValue = @"lead stuff
@@ -144,7 +144,7 @@ Final stuff";
         }
 
         // Demonstrate that the newlines for the noEmit flags do not get emitted.
-        [TestMethod(DisplayName = nameof(ValidateDontEmitFlagDoesntAddNewline))]
+        [TestMethod]
         public void ValidateDontEmitFlagDoesntAddNewline()
         {
             string originalValue = @"Start

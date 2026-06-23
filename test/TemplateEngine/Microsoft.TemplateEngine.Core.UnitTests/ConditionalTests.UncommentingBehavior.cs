@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [TestMethod(DisplayName = nameof(VerifyMixedConditionalsThreeLevelEmbedding))]
+        [TestMethod]
         public void VerifyMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content
@@ -57,7 +57,7 @@ moar trailing content";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(MixedTokenFormsTest))]
+        [TestMethod]
         public void MixedTokenFormsTest()
         {
             IList<string> testCases = new List<string>();
@@ -147,7 +147,7 @@ Past endif
             }
         }
 
-        [TestMethod(DisplayName = nameof(MultiTokenFormsBaseTest))]
+        [TestMethod]
         public void MultiTokenFormsBaseTest()
         {
             IList<string> testCases = new List<string>();
@@ -196,7 +196,7 @@ Past endif
         /// Tests that the if block is uncommented in each of the scenarios
         /// because the if token is special and the clause is true in each case.
         /// </summary>
-        [TestMethod(DisplayName = nameof(VerifySpecialIfTrueUncomments))]
+        [TestMethod]
         [DataRow(
             @"Hello
 ////#if (VALUE_IF)
@@ -324,7 +324,7 @@ Past endif
         /// Tests that the elseif block is uncommented in each of the scenarios
         /// because the elseif token is special and the clause is true in each case.
         /// </summary>
-        [TestMethod(DisplayName = nameof(VerifySpecialElseifTrueUncomments))]
+        [TestMethod]
         public void VerifySpecialElseifTrueUncomments()
         {
             IList<string> testCases = new List<string>();
@@ -461,7 +461,7 @@ Past endif
         /// Tests that the else block is uncommented in each of the scenarios
         /// because the if and elseif conditions (if present) are false in each case.
         /// </summary>
-        [TestMethod(DisplayName = nameof(VerifySpecialElseTrueUncomments))]
+        [TestMethod]
         public void VerifySpecialElseTrueUncomments()
         {
             IList<string> testCases = new List<string>();
@@ -597,7 +597,7 @@ Past endif
         /// <summary>
         /// The #if condition is false, so don't emit its value in any way.
         /// </summary>
-        [TestMethod(DisplayName = nameof(VerifyFalseIfDoesNotUncomment))]
+        [TestMethod]
         public void VerifyFalseIfDoesNotUncomment()
         {
             string ifOnlyValue = @"Hello
@@ -628,7 +628,7 @@ Past endif
         /// The #if condition is false, so don't emit its value in any way.
         /// But emit the else value without modification (because its not the special #else).
         /// </summary>
-        [TestMethod(DisplayName = nameof(VerifyFalseIfDoesNotUncommentButElseIsEmitted))]
+        [TestMethod]
         public void VerifyFalseIfDoesNotUncommentButElseIsEmitted()
         {
             string ifElseValue = @"Hello
@@ -665,7 +665,7 @@ Past endif
         ///     its the special #else
         ///     and the if and elseif conditions are false.
         /// </summary>
-        [TestMethod(DisplayName = nameof(VerifyElseUncomments))]
+        [TestMethod]
         public void VerifyElseUncomments()
         {
             string ifElseValue = @"Hello
@@ -721,7 +721,7 @@ Past endif
         /// Tests that the first elseif block is uncommented
         /// It's the one with the true condition.
         /// </summary>
-        [TestMethod(DisplayName = nameof(VerifyFirstElseifUncomments))]
+        [TestMethod]
         public void VerifyFirstElseifUncomments()
         {
             string ifElseifElseValue = @"Hello
@@ -766,7 +766,7 @@ Past endif
         /// Tests the multiple special elseif's are respected. In this test, the 2nd elseif is special and should have its content uncommented.
         /// TODO: make more test with multiple elseif's.
         /// </summary>
-        [TestMethod(DisplayName = nameof(VerifySecondElseifUncomments))]
+        [TestMethod]
         public void VerifySecondElseifUncomments()
         {
             string ifElseifElseValue = @"Hello
@@ -807,7 +807,7 @@ Past endif
             RunAndVerify(ifElseifElseValue, expectedValue, processor, 28);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyElseIfUncomments))]
+        [TestMethod]
         public void VerifyElseIfUncomments()
         {
             string value = @"Hello

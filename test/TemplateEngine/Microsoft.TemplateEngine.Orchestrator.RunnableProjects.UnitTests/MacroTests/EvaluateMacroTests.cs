@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(TestEvaluateConfig))]
+        [TestMethod]
         [DataRow("(7 > 3)", true)]
         [DataRow("(2 == 1)", false)]
         public void TestEvaluateConfig(string predicate, bool expectedResult)

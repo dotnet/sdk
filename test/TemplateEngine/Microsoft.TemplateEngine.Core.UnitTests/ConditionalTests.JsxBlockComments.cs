@@ -202,7 +202,7 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = false
         };
 
-        [TestMethod(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestOuterIfTrue))]
+        [TestMethod]
         [DataRow(JsxNoDefaultValue, JsxOuterIfTrueExpectedValue)]
         [DataRow(JsxOuterIfDefaultValue, JsxOuterIfTrueExpectedValue)]
         [DataRow(JsxOuterElseifDefaultValue, JsxOuterIfTrueExpectedValue)]
@@ -216,7 +216,7 @@ Trailing stuff
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseifTrueExpectedValue))]
+        [TestMethod]
         [DataRow(JsxNoDefaultValue, JsxOuterElseifTrueExpectedValue)]
         [DataRow(JsxOuterIfDefaultValue, JsxOuterElseifTrueExpectedValue)]
         [DataRow(JsxOuterElseifDefaultValue, JsxOuterElseifTrueExpectedValue)]
@@ -230,7 +230,7 @@ Trailing stuff
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerIfTrueExpectedValue))]
+        [TestMethod]
         [DataRow(JsxNoDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
         [DataRow(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
         [DataRow(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
@@ -244,7 +244,7 @@ Trailing stuff
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerElseifTrueExpectedValue))]
+        [TestMethod]
         [DataRow(JsxNoDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
         [DataRow(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
         [DataRow(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
@@ -258,7 +258,7 @@ Trailing stuff
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerElseHappensExpectedValue))]
+        [TestMethod]
         [DataRow(JsxNoDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
         [DataRow(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
         [DataRow(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
@@ -322,7 +322,7 @@ Trailing stuff";
             ["CLAUSE_2"] = false
         };
 
-        [TestMethod(DisplayName = nameof(JsxBlockCommentsBasicTestBothClausesTrue))]
+        [TestMethod]
         [DataRow(JsxBasicValue, JsxIfEmitted)]
         [DataRow(JsxBasicWithDefault, JsxIfEmitted)]
         public void JsxBlockCommentsBasicTestBothClausesTrue(string test, string expected)
@@ -331,7 +331,7 @@ Trailing stuff";
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(JsxBlockCommentsBasicTestClauseTwoTrue))]
+        [TestMethod]
         [DataRow(JsxBasicValue, JsxElseIfEmitted)]
         [DataRow(JsxBasicWithDefault, JsxElseIfEmitted)]
         public void JsxBlockCommentsBasicTestClauseTwoTrue(string test, string expected)
@@ -340,7 +340,7 @@ Trailing stuff";
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(JsxBlockCommentsBasicTestNeitherClauseTrue))]
+        [TestMethod]
         [DataRow(JsxBasicValue, JsxElseEmitted)]
         [DataRow(JsxBasicWithDefault, JsxElseEmitted)]
         public void JsxBlockCommentsBasicTestNeitherClauseTrue(string test, string expected)

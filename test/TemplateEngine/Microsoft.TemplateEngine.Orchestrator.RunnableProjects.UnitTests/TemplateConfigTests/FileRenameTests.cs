@@ -144,7 +144,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("./dontrenameme.txt", dict["./dontrenameme.txt"]);
         }
 
-        [TestMethod(DisplayName = nameof(CanReadFilenameReplacementConfig))]
+        [TestMethod]
         public void CanReadFilenameReplacementConfig()
         {
             string configContent = /*lang=json*/ """
@@ -191,7 +191,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("testgeneratedfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
         }
 
-        [TestMethod(DisplayName = nameof(CanReadFilenameReplacementConfigWithForms))]
+        [TestMethod]
         public void CanReadFilenameReplacementConfigWithForms()
         {
             string configContent = /*lang=json*/ """
@@ -253,7 +253,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("testgeneratedfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
         }
 
-        [TestMethod(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames()
         {
             //environment
@@ -359,7 +359,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("foo-bar_testName.txt", allChanges["other_name.txt"]);
         }
 
-        [TestMethod(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_Forms))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_Forms()
         {
             //environment
@@ -416,7 +416,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("testproject2_file.txt", allChanges["replace2_file.txt"]);
         }
 
-        [TestMethod(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_WhenFormsResultInSameValue))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_WhenFormsResultInSameValue()
         {
             //environment
@@ -470,7 +470,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("testproject2_file.txt", allChanges["replace2_file.txt"]);
         }
 
-        [TestMethod(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_Multiple))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_Multiple()
         {
             //environment
@@ -521,7 +521,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("ReplaceValue2_file.txt", allChanges["Replace2_file.txt"]);
         }
 
-        [TestMethod(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_DirectoryRename))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_DirectoryRename()
         {
             //environment

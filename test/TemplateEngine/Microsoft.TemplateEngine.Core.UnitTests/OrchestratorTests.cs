@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             _logger = _engineEnvironmentSettings.Host.Logger;
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRun))]
+        [TestMethod]
         public void VerifyRun()
         {
             Util.Orchestrator orchestrator = new Util.Orchestrator(_logger, new MockFileSystem());

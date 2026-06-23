@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [TestMethod(DisplayName = nameof(VerifyBasicQuadCommentRemoval))]
+        [TestMethod]
         public void VerifyBasicQuadCommentRemoval()
         {
             string originalValue = @"Start
@@ -50,7 +50,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyQuadCommentRemovalForEachClauseNoEmbedding))]
+        [TestMethod]
         public void VerifyQuadCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -121,7 +121,7 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyQuadCommentRemovalWithNestedClause))]
+        [TestMethod]
         public void VerifyQuadCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -167,7 +167,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyQuadCommentRemovalNestedDoesntRemove))]
+        [TestMethod]
         public void VerifyQuadCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -214,7 +214,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyQuadCommentRemovalOnlyNestedRemoves))]
+        [TestMethod]
         public void VerifyQuadCommentRemovalOnlyNestedRemoves()
         {
             string originalValue = @"Start

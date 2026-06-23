@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             _logger = s_loggerFactory.CreateLogger();
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupTrue))]
+        [TestMethod]
         public void VerifyInlineMarkupTrue()
         {
             string originalValue = @"<root>
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupSelfClosedFalse))]
+        [TestMethod]
         public void VerifyInlineMarkupSelfClosedFalse()
         {
             string originalValue = @"<root>
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupElementWithChildrenFalse))]
+        [TestMethod]
         public void VerifyInlineMarkupElementWithChildrenFalse()
         {
             string originalValue = @"<root>
@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupFalse))]
+        [TestMethod]
         public void VerifyInlineMarkupFalse()
         {
             string originalValue = @"<root>
@@ -133,7 +133,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupExpandedConditions1))]
+        [TestMethod]
         public void VerifyInlineMarkupExpandedConditions1()
         {
             string originalValue = @"<root>
@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupExpandedConditions2))]
+        [TestMethod]
         public void VerifyInlineMarkupExpandedConditions2()
         {
             string originalValue = @"<root>
@@ -171,7 +171,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupExpandedConditionsEscaping))]
+        [TestMethod]
         public void VerifyInlineMarkupExpandedConditionsEscaping()
         {
             string originalValue = @"<root>
@@ -189,7 +189,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupExpandedConditionsVersion))]
+        [TestMethod]
         public void VerifyInlineMarkupExpandedConditionsVersion()
         {
             string originalValue = @"<root>
@@ -207,7 +207,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupExpandedConditionsUndefinedSymbolEmitsOriginal))]
+        [TestMethod]
         public void VerifyInlineMarkupExpandedConditionsUndefinedSymbolEmitsOriginal()
         {
             string originalValue = @"<root>
@@ -223,7 +223,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999, true);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupExpandedConditionsUndefinedSymbolEmitsOriginal2))]
+        [TestMethod]
         public void VerifyInlineMarkupExpandedConditionsUndefinedSymbolEmitsOriginal2()
         {
             string originalValue = @"<PaketExePath Condition="" '$(PaketExePath)' == '' "">$(PaketToolsPath)paket.exe</PaketExePath>";
@@ -235,7 +235,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999, true);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupExpandedConditionsNumerics))]
+        [TestMethod]
         public void VerifyInlineMarkupExpandedConditionsNumerics()
         {
             string originalValue = @"<root>
@@ -253,7 +253,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupExpandedConditions3))]
+        [TestMethod]
         public void VerifyInlineMarkupExpandedConditions3()
         {
             string originalValue = @"<root>
@@ -291,7 +291,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupRejectGetsProcessed))]
+        [TestMethod]
         public void VerifyInlineMarkupRejectGetsProcessed()
         {
             string originalValue = @"<root>
@@ -306,7 +306,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyInlineMarkupRejectGetsProcessedWithLookaround))]
+        [TestMethod]
         public void VerifyInlineMarkupRejectGetsProcessedWithLookaround()
         {
             string originalValue = @"<root>

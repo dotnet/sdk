@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(TestEvaluationOfFakeMacro))]
+        [TestMethod]
         public void TestEvaluationOfFakeMacro()
         {
             string variableName = "myHelloMacro";
@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Assert.AreEqual("Hello name to greet!", newValue);
         }
 
-        [TestMethod(DisplayName = nameof(TestDependencyResolutionOfFakeMacro))]
+        [TestMethod]
         public void TestDependencyResolutionOfFakeMacro()
         {
             string variableName = "myHelloMacro";
@@ -63,7 +63,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Assert.AreEqual(sourceVariable, macroConfig.Dependencies.First());
         }
 
-        [TestMethod(DisplayName = nameof(TestExceptionOnAccessToDependenciesOfFakeMacro))]
+        [TestMethod]
         public void TestExceptionOnAccessToDependenciesOfFakeMacro()
         {
             string variableName = "myHelloMacro";

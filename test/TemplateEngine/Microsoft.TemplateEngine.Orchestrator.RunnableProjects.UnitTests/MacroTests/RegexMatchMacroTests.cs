@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(TestRegexMatchMacroTrue))]
+        [TestMethod]
         public void TestRegexMatchMacroTrue()
         {
             const string variableName = "isMatch";
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Assert.AreEqual(expectedValue, newValue);
         }
 
-        [TestMethod(DisplayName = nameof(TestRegexMatchMacroFalse))]
+        [TestMethod]
         public void TestRegexMatchMacroFalse()
         {
             const string variableName = "isMatch";

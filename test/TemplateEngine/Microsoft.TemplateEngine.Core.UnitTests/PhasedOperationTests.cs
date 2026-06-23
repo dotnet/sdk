@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             _logger = s_loggerFactory.CreateLogger();
         }
 
-        [TestMethod(DisplayName = nameof(VerifyPhasedOperationStateProgression))]
+        [TestMethod]
         public void VerifyPhasedOperationStateProgression()
         {
             string originalValue = @"

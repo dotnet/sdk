@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             _logger = s_loggerFactory.CreateLogger();
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTrimWhitespaceForward))]
+        [TestMethod]
         public void VerifyTrimWhitespaceForward()
         {
             MockOperation o = new MockOperation(
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("    There", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTrimWhitespaceBackward))]
+        [TestMethod]
         public void VerifyTrimWhitespaceBackward()
         {
             MockOperation o = new MockOperation(
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("Hello    \r\n", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTrimWhitespaceBothDirections))]
+        [TestMethod]
         public void VerifyTrimWhitespaceBothDirections()
         {
             MockOperation o = new MockOperation(
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTrimWhitespaceNeitherDirection))]
+        [TestMethod]
         public void VerifyTrimWhitespaceNeitherDirection()
         {
             MockOperation o = new MockOperation(
@@ -128,7 +128,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("Hello    \r\n        \r\n    You", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyConsumeWholeLine))]
+        [TestMethod]
         public void VerifyConsumeWholeLine()
         {
             MockOperation o = new MockOperation(
@@ -153,7 +153,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyWhitespaceHandlerConsumeWholeLine))]
+        [TestMethod]
         [DataRow(false, false, false)]
         [DataRow(false, false, true)]
         [DataRow(false, true, false)]
@@ -186,7 +186,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyWhitespaceHandlerTrim))]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(false, true)]
         [DataRow(true, false)]
@@ -216,7 +216,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("Hello    \r\n    You", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyWhitespaceHandlerTrimForwardButNotBack))]
+        [TestMethod]
         public void VerifyWhitespaceHandlerTrimForwardButNotBack()
         {
             MockOperation o = new MockOperation(
@@ -241,7 +241,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("Hello    \r\n        You", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyWhitespaceHandlerTrimBackButNotForward))]
+        [TestMethod]
         public void VerifyWhitespaceHandlerTrimBackButNotForward()
         {
             MockOperation o = new MockOperation(
@@ -266,7 +266,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual("Hello    \r\n     \r\n    You", outcomeString);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyWhitespaceHandlerTrimBackAndForward))]
+        [TestMethod]
         public void VerifyWhitespaceHandlerTrimBackAndForward()
         {
             MockOperation o = new MockOperation(

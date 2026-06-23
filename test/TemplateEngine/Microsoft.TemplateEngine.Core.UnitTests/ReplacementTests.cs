@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyReplacement))]
+        [TestMethod]
         public void VerifyReplacement()
         {
             string value = @"test value test";
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyNoReplacement))]
+        [TestMethod]
         public void VerifyNoReplacement()
         {
             string value = @"test value test";
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTornReplacement))]
+        [TestMethod]
         public void VerifyTornReplacement()
         {
             string value = @"test value test";
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTinyPageReplacement))]
+        [TestMethod]
         public void VerifyTinyPageReplacement()
         {
             string value = @"test value test";

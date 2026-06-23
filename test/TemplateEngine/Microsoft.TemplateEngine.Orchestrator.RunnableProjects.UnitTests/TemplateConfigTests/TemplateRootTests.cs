@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         // Tests source paths when the mount point root is the same as the template root.
-        [TestMethod(DisplayName = nameof(CheckTemplateSourcesRelativeToTemplateRoot))]
+        [TestMethod]
         [DataRow(true, "things/")]
         [DataRow(true, "things/stuff/")]
         [DataRow(true, "./")]
@@ -170,7 +170,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [TestMethod(DisplayName = nameof(CheckTemplateSourcesRelativeToTemplateRootMultipleDirsUnderMountPoint))]
+        [TestMethod]
         [DataRow(true, "things/")]
         [DataRow(true, "things/stuff/")]
         [DataRow(true, "./")]

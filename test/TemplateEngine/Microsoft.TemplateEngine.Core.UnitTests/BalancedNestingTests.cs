@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         // The initial construction of the BalancedNesting operation is supposed to have comment fixing off by default.
         // (Usually, it gets toggled by conditional processing).
         // This test ensures that it's off by default.
-        [TestMethod(DisplayName = nameof(VerifyPseudoCommentFixingIsOffByDefault))]
+        [TestMethod]
         public void VerifyPseudoCommentFixingIsOffByDefault()
         {
             string originalValue = @"<!-- commented with trailing pseudo comment -- >";
@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyPseudoCommentFixingDoesNotOccurWhenExplicitlyOff))]
+        [TestMethod]
         public void VerifyPseudoCommentFixingDoesNotOccurWhenExplicitlyOff()
         {
             string originalValue = @"<!-- commented with trailing pseudo comment -- >";
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyPseudoCommentFixingOccursWhenExplicitlyOn))]
+        [TestMethod]
         public void VerifyPseudoCommentFixingOccursWhenExplicitlyOn()
         {
             string originalValue = @"<!-- commented with trailing pseudo comment -- >";
@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         // Inner pseudo comments should never get fixed, regardless of whether outer comment fixing occurs,
         // and regardless of whether comment fixing is turned on or off.
-        [TestMethod(DisplayName = nameof(VerifyInnerPseudoCommentIsNotFixed))]
+        [TestMethod]
         public void VerifyInnerPseudoCommentIsNotFixed()
         {
             string originalValue = @"<!-- <!-- commented with trailing pseudo comment -- > -->";
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         // Inner pseudo comments should never get fixed, regardless of whether outer comment fixing occurs,
         // and regardless of whether comment fixing is turned on or off.
-        [TestMethod(DisplayName = nameof(VerifyInnerPseudoCommentIsNotFixedWhenOuterCommentIsFixed))]
+        [TestMethod]
         public void VerifyInnerPseudoCommentIsNotFixedWhenOuterCommentIsFixed()
         {
             string originalValue = @"<!-- <!-- commented with trailing pseudo comment -- > -- >";
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         // This tests that the values remain unchanged -
         // (which isn't ideal, but as good as we can hope for without significant performance loss).
         // The trailing pseudo comment is not an outer-balanced comment, and so remains unchanged.
-        [TestMethod(DisplayName = nameof(VerifyUnbalancedLeadHeavyCommentsAreHandledSanely))]
+        [TestMethod]
         public void VerifyUnbalancedLeadHeavyCommentsAreHandledSanely()
         {
             string originalValue = @"<!-- <!-- two lead comments, 1 trailing pseudo comment -- >";
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         // This situation is also indicative of an authoring problem.
         // The first pseudo-comment is made real because it's balanced with the leading comment.
         // But the second (pseudo) comment is unbalanced and remains unchanged.
-        [TestMethod(DisplayName = nameof(VerifyUnbalancedTrailingHeavyPseudoCommentsAreHandledSanely))]
+        [TestMethod]
         public void VerifyUnbalancedTrailingHeavyPseudoCommentsAreHandledSanely()
         {
             string originalValue = @"<!-- one lead comment, two trailing pseudo comments -- > -- >";
@@ -115,7 +115,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         // This situation is also indicative of an authoring problem.
         // The first pseudo-comment is made real because it's balanced with the leading comment.
         // But the second (real) end comment is unbalanced and remains unchanged.
-        [TestMethod(DisplayName = nameof(VerifyUnbalancedTrailingHeavyRealCommentIsHandledSanely))]
+        [TestMethod]
         public void VerifyUnbalancedTrailingHeavyRealCommentIsHandledSanely()
         {
             string originalValue = @"<!-- one lead comment, two trailing pseudo comments -- > -->";

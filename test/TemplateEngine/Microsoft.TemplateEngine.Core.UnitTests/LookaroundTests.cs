@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookBehindMatches))]
+        [TestMethod]
         public void TestLookBehindMatches()
         {
             string value = @"aababcabcacc";
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookAheadMatches))]
+        [TestMethod]
         public void TestLookAheadMatches()
         {
             string value = @"aababcabcacc";
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookAroundMatches))]
+        [TestMethod]
         public void TestLookAroundMatches()
         {
             string value = @"aababcabcacc";
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookaroundMatchLengthBehavior))]
+        [TestMethod]
         public void TestLookaroundMatchLengthBehavior()
         {
             string value = @"background-color:white;
@@ -111,7 +111,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestFullyOverlappedMatchBehavior))]
+        [TestMethod]
         public void TestFullyOverlappedMatchBehavior()
         {
             string value = @"foobarbaz";
@@ -135,7 +135,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookbehindOverlappedMatchBehavior))]
+        [TestMethod]
         public void TestLookbehindOverlappedMatchBehavior()
         {
             string value = @"foobarxaz";
@@ -159,7 +159,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookaheadOverlappedMatchBehavior))]
+        [TestMethod]
         public void TestLookaheadOverlappedMatchBehavior()
         {
             string value = @"foobarbaz";
@@ -183,7 +183,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestReadAheadBreaksLookBehinds))]
+        [TestMethod]
         public void TestReadAheadBreaksLookBehinds()
         {
             string value = @"footbarbaz";
@@ -206,7 +206,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookBehindWithValueOverlappingPriorMatchGetsSkipped))]
+        [TestMethod]
         public void TestLookBehindWithValueOverlappingPriorMatchGetsSkipped()
         {
             string value = @"foobarbaz";
@@ -230,7 +230,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookBehindCoveringMatchedValueGetsMatched))]
+        [TestMethod]
         public void TestLookBehindCoveringMatchedValueGetsMatched()
         {
             string value = @"foobarbaz";
@@ -253,7 +253,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLookAroundsCanBeUsedForInsertion))]
+        [TestMethod]
         public void TestLookAroundsCanBeUsedForInsertion()
         {
             string value = @"foobaz";
@@ -275,7 +275,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(TestLongestActualWins))]
+        [TestMethod]
         public void TestLongestActualWins()
         {
             string value = @"foobarbaz";

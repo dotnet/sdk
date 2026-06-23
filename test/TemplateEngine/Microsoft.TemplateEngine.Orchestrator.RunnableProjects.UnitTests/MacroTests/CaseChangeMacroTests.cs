@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(TestCaseChangeToLowerConfig))]
+        [TestMethod]
         public void TestCaseChangeToLowerConfig()
         {
             string variableName = "myString";
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Assert.AreEqual(sourceValue.ToLower(), convertedValue);
         }
 
-        [TestMethod(DisplayName = nameof(TestCaseChangeToUpperConfig))]
+        [TestMethod]
         public void TestCaseChangeToUpperConfig()
         {
             string variableName = "myString";

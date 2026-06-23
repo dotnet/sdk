@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(TestJoinConstantAndReferenceSymbolConfig))]
+        [TestMethod]
         [DataRow(",", true)]
         [DataRow("", true)]
         [DataRow(null, true)]

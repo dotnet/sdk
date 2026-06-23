@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [TestMethod(DisplayName = nameof(VerifyBasicHamlCommentHandling))]
+        [TestMethod]
         public void VerifyBasicHamlCommentHandling()
         {
             string originalValue = @"Start
@@ -59,7 +59,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyHamlCommentRemovalForEachClauseNoEmbedding))]
+        [TestMethod]
         public void VerifyHamlCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -130,7 +130,7 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyHamlStyleCommentRemovalWithNestedClause))]
+        [TestMethod]
         public void VerifyHamlStyleCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -176,7 +176,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyHamlStyleCommentRemovalNestedDoesntRemove))]
+        [TestMethod]
         public void VerifyHamlStyleCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -222,7 +222,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyHamlSignMixedConditionalsThreeLevelEmbedding))]
+        [TestMethod]
         public void VerifyHamlSignMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRegionExclude))]
+        [TestMethod]
         public void VerifyRegionExclude()
         {
             string value = @"test value value x test foo bar";
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRegionInclude))]
+        [TestMethod]
         public void VerifyRegionInclude()
         {
             string value = @"test value value x test foo bar";
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRegionStrayEnd))]
+        [TestMethod]
         public void VerifyRegionStrayEnd()
         {
             string value = @"test foo value bar foo";
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRegionIncludeToggle))]
+        [TestMethod]
         public void VerifyRegionIncludeToggle()
         {
             string value = @"test region value x test region bar";
@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRegionExcludeToggle))]
+        [TestMethod]
         public void VerifyRegionExcludeToggle()
         {
             string value = @"test region value x test region bar";
@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRegionIncludeWhitespaceFixup))]
+        [TestMethod]
         public void VerifyRegionIncludeWhitespaceFixup()
         {
             string value = @"test value value x test foo bar";
@@ -142,7 +142,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRegionIncludeWhitespaceFixup2))]
+        [TestMethod]
         public void VerifyRegionIncludeWhitespaceFixup2()
         {
             string value = @"Hello
@@ -168,7 +168,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyRegionIncludeWholeLine))]
+        [TestMethod]
         public void VerifyRegionIncludeWholeLine()
         {
             string value = @"Hello
@@ -193,7 +193,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyNoRegion))]
+        [TestMethod]
         public void VerifyNoRegion()
         {
             string value = @"Hello
@@ -220,7 +220,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTornRegion1))]
+        [TestMethod]
         public void VerifyTornRegion1()
         {
             string value = @"Hello
@@ -245,7 +245,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTornRegion2))]
+        [TestMethod]
         public void VerifyTornRegion2()
         {
             string value = @"Hello
@@ -270,7 +270,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTornRegion3))]
+        [TestMethod]
         public void VerifyTornRegion3()
         {
             string value = @"Hello
@@ -295,7 +295,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTinyPageRegion))]
+        [TestMethod]
         public void VerifyTinyPageRegion()
         {
             string value = @"Hello
@@ -320,7 +320,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTornPageInCloseSeekRegion))]
+        [TestMethod]
         public void VerifyTornPageInCloseSeekRegion()
         {
             string value = @"Hello

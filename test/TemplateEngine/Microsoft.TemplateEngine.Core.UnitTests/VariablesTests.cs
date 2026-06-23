@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyVariables))]
+        [TestMethod]
         public void VerifyVariables()
         {
             string value = @"test VAL test";

@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [TestMethod(DisplayName = nameof(TestCustomConditionalSetupNoStyleSpecification))]
+        [TestMethod]
         public void TestCustomConditionalSetupNoStyleSpecification()
         {
             IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(CustomConditionalSetupNoStyleSpecification.ToString(), A.Fake<IDirectory>());
@@ -112,7 +112,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.IsTrue(conditionalOp.TrimWhitespace);
         }
 
-        [TestMethod(DisplayName = nameof(TestCustomConditionalSetupExplicitStyleSpecification))]
+        [TestMethod]
         public void TestCustomConditionalSetupExplicitStyleSpecification()
         {
             IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(CustomConditionalSetupExplicitStyleSpecification.ToString(), A.Fake<IDirectory>());
@@ -142,7 +142,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.IsTrue(conditionalOp.TrimWhitespace);
         }
 
-        [TestMethod(DisplayName = nameof(TestLineCommentConditionalSetup))]
+        [TestMethod]
         public void TestLineCommentConditionalSetup()
         {
             IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(LineConditionalSetup.ToString(), A.Fake<IDirectory>());
@@ -182,7 +182,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.IsTrue(conditionalOp.TrimWhitespace);
         }
 
-        [TestMethod(DisplayName = nameof(TestBlockCommentConditionalSetup))]
+        [TestMethod]
         public void TestBlockCommentConditionalSetup()
         {
             IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(BlockConditionalSetup.ToString(), A.Fake<IDirectory>());

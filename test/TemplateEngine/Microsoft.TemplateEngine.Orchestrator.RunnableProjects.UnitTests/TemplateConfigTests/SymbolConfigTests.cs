@@ -535,7 +535,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         // Test that when a config doesn't include a name parameter, one gets added - with the proper value forms.
-        [TestMethod(DisplayName = nameof(NameSymbolGetsAddedWithDefaultValueForms))]
+        [TestMethod]
         public void NameSymbolGetsAddedWithDefaultValueForms()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithFormsButNotIdentity);
@@ -556,7 +556,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         // Test that when a symbol doesn't explicitly include the "identity" value form, it gets added as the first form.
-        [TestMethod(DisplayName = nameof(ParameterSymbolWithoutIdentityValueFormGetsIdentityAddedAsFirst))]
+        [TestMethod]
         public void ParameterSymbolWithoutIdentityValueFormGetsIdentityAddedAsFirst()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithFormsButNotIdentity);
@@ -572,7 +572,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         // Tests that a name symbol with explicitly defined value forms but no identity form
         // gets the identity form added as the first form.
-        [TestMethod(DisplayName = nameof(ArrayConfigNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst))]
+        [TestMethod]
         public void ArrayConfigNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigWithNameSymbolAndValueFormsButNotIdentity);
@@ -590,7 +590,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigWithNameSymbolAndValueFormsWithIdentity);
@@ -608,7 +608,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalse);
@@ -626,7 +626,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrue);
@@ -644,7 +644,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue))]
+        [TestMethod]
         public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigWithObjectValueFormDefinitionAddIdentityTrue);
@@ -663,7 +663,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse))]
+        [TestMethod]
         public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigWithObjectValueFormDefinitionAddIdentityFalse);
@@ -681,7 +681,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[2]);
         }
 
-        [TestMethod(DisplayName = nameof(NameSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
+        [TestMethod]
         public void NameSymbolObjectValueFormDefinitionInfersAddIdentityTrue()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
@@ -700,7 +700,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(NameSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms))]
+        [TestMethod]
         public void NameSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
@@ -719,7 +719,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ParameterSymbolWithNoValueFormsGetsIdentityFormAdded))]
+        [TestMethod]
         public void ParameterSymbolWithNoValueFormsGetsIdentityFormAdded()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigForSymbolWithoutValueForms);
@@ -736,7 +736,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         // Test that when a symbol explicitly includes the "identity" value form, the value forms for the symbol remain unmodified.
-        [TestMethod(DisplayName = nameof(ParameterSymbolWithArrayIdentityValueFormRetainsFormsUnmodified))]
+        [TestMethod]
         public void ParameterSymbolWithArrayIdentityValueFormRetainsFormsUnmodified()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithValueFormsIncludingIdentity);
@@ -754,7 +754,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityTrue))]
+        [TestMethod]
         public void ObjectValueFormDefinitionRespectsAddIdentityTrue()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigWithObjectValueFormDefinitionAddIdentityTrue);
@@ -772,7 +772,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityFalse))]
+        [TestMethod]
         public void ObjectValueFormDefinitionRespectsAddIdentityFalse()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigWithObjectValueFormDefinitionAddIdentityFalse);
@@ -789,7 +789,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[2]);
         }
 
-        [TestMethod(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalse);
@@ -806,7 +806,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrue);
@@ -823,7 +823,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ParameterSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms))]
+        [TestMethod]
         public void ParameterSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ParameterConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
@@ -841,7 +841,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
-        [TestMethod(DisplayName = nameof(ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
+        [TestMethod]
         public void ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ParameterConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);

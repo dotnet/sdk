@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     [TestClass]
     public class TokenTrieTests
     {
-        [TestMethod(DisplayName = nameof(VerifyTokenTrieLookArounds))]
+        [TestMethod]
         [DataRow("Hello There!", 0, 5, true, null, "Hello", null)]
         [DataRow("Hello There!", 0, 6, true, "Hello", " ", null)]
         [DataRow("Hello There!", 1, 1, false, "Hello", " ", null)]
@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual(expectedPosition, pos);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTokenTrieAtBegin))]
+        [TestMethod]
         public void VerifyTokenTrieAtBegin()
         {
             byte[] hello = "hello"u8.ToArray();
@@ -83,7 +83,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual(-1, token);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTokenTrieNotEnoughBufferLeft))]
+        [TestMethod]
         public void VerifyTokenTrieNotEnoughBufferLeft()
         {
             byte[] hello = "hello"u8.ToArray();
@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual(-1, token);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyTokenTrieCombine))]
+        [TestMethod]
         public void VerifyTokenTrieCombine()
         {
             byte[] hello = "hello"u8.ToArray();

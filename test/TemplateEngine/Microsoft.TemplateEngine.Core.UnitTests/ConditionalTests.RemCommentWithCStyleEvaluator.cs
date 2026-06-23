@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [TestMethod(DisplayName = nameof(VerifyBasicBatRemCommentHandling))]
+        [TestMethod]
         public void VerifyBasicBatRemCommentHandling()
         {
             string originalValue = @"Start
@@ -51,7 +51,7 @@ End";
             RunAndVerify(originalNoCommentRemoval, expectedValueNoCommentRemoval, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyBatRemCommentRemovalForEachClauseNoEmbedding))]
+        [TestMethod]
         public void VerifyBatRemCommentRemovalForEachClauseNoEmbedding()
         {
             string originalValue = @"Start
@@ -123,7 +123,7 @@ End";
             RunAndVerify(originalValue, elseExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyBatRemCommentRemovalWithNestedClause))]
+        [TestMethod]
         public void VerifyBatRemCommentRemovalWithNestedClause()
         {
             string originalValue = @"Start
@@ -169,7 +169,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyBatRemCommentRemovalNestedDoesntRemove))]
+        [TestMethod]
         public void VerifyBatRemCommentRemovalNestedDoesntRemove()
         {
             string originalValue = @"Start
@@ -216,7 +216,7 @@ End";
             RunAndVerify(originalValue, outerTrueInnerTrueExpectedValue, processor, 9999);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyBatRemMixedConditionalsThreeLevelEmbedding))]
+        [TestMethod]
         public void VerifyBatRemMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

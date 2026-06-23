@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
     [TestClass]
     public class JSONSchemaTests : TestBase
     {
-        [TestMethod(DisplayName = nameof(IsJSONSchemaValid))]
+        [TestMethod]
         [DataRow(@"SchemaTests/BasicTest.json")]
         [DataRow(@"SchemaTests/GeneratorTest.json")]
         [DataRow(@"SchemaTests/StarterWebTest.json")]

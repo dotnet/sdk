@@ -142,7 +142,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [TestMethod(DisplayName = nameof(SplitConfigCantReferenceFileOutsideBasePath))]
+        [TestMethod]
         public void SplitConfigCantReferenceFileOutsideBasePath()
         {
             string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.AreEqual("Failed to load additional configuration file ../../improper.template.json, the file does not exist.", e.Message);
         }
 
-        [TestMethod(DisplayName = nameof(SplitConfigReadFailsIfAReferencedFileIsMissing))]
+        [TestMethod]
         public void SplitConfigReadFailsIfAReferencedFileIsMissing()
         {
             string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();

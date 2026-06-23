@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     {
         private delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token);
 
-        [TestMethod(DisplayName = nameof(VerifyOperationTrieFindsTokenAtStart))]
+        [TestMethod]
         public void VerifyOperationTrieFindsTokenAtStart()
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual(4, currentBufferPosition);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyOperationTrieFindsTokenAfterStart))]
+        [TestMethod]
         public void VerifyOperationTrieFindsTokenAfterStart()
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual(3, currentBufferPosition);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyOperationTrieFindsTokenAtEnd))]
+        [TestMethod]
         public void VerifyOperationTrieFindsTokenAtEnd()
         {
             OperationTrie trie = OperationTrie.Create(new IOperation[]
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.AreEqual(buffer.Length, currentBufferPosition);
         }
 
-        [TestMethod(DisplayName = nameof(VerifyLastInWinsForIdenticalMatching))]
+        [TestMethod]
         public void VerifyLastInWinsForIdenticalMatching()
         {
 #pragma warning disable IDE0230 // Use UTF-8 string literal
