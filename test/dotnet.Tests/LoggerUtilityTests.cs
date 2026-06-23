@@ -18,6 +18,9 @@ public sealed class LoggerUtilityTests
     [InlineData("--terminalLoggerParameters:verbosity=quiet", "--terminalLoggerParameters:verbosity=quiet")]
     [InlineData("-clp:NoSummary", "-clp:NoSummary")]
     [InlineData("--consoleLoggerParameters:NoSummary", "--consoleLoggerParameters:NoSummary")]
+    [InlineData("-noconsolelogger", "-noconsolelogger")]
+    [InlineData("-noConsoleLogger", "-noConsoleLogger")]
+    [InlineData("/noconsolelogger", "/noconsolelogger")]
     public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
     {
         LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
@@ -30,6 +33,8 @@ public sealed class LoggerUtilityTests
     [InlineData("-tl:invalid")]
     [InlineData("-tlp")]
     [InlineData("-clp")]
+    [InlineData("-noconsolelogger:false")]
+    [InlineData("--noconsolelogger")]
     [InlineData("--unknownLogger:off")]
     public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
     {

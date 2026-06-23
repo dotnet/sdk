@@ -682,11 +682,14 @@ public class RunCommand
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
 
-            List<ILogger> loggersForBuild = [
-                CommonRunHelpers.GetConsoleLogger(
+            List<ILogger> loggersForBuild = [];
+            if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
+            {
+                loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
                     buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
-                )
-            ];
+                ));
+            }
+
             if (binaryLogger is not null)
             {
                 loggersForBuild.Add(binaryLogger);

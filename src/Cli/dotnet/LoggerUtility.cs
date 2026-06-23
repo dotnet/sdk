@@ -109,10 +109,21 @@ internal static class LoggerUtility
             || arg.StartsWith("-bl:", comp) || arg.Equals("-bl", comp);
     }
 
+    internal static bool HasNoConsoleLoggerArgument(IEnumerable<string>? args) =>
+        args?.Any(IsNoConsoleLoggerArgument) == true;
+
+    internal static bool IsNoConsoleLoggerArgument(string arg)
+    {
+        return TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue) &&
+            prefix is "-" or "/" &&
+            !hasValue &&
+            switchName.Equals("noConsoleLogger", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool TryGetLoggerArgument(string arg, [NotNullWhen(true)] out string? loggerArg)
     {
         loggerArg = arg;
-        if (IsBinLogArgument(arg))
+        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg))
         {
             return true;
         }

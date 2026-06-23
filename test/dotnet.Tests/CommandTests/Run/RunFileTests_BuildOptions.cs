@@ -762,6 +762,27 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     }
 
     [Fact]
+    public void NoConsoleLogger_Run_SuppressesBuildOutput()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-v:n")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Hello from Program")
+            .And.HaveStdOutContaining("Program.dll")
+            .And.HaveStdOutContaining("CoreCompile");
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-v:n", "-noconsolelogger")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+    }
+
+    [Fact]
     public void LoggerArgument_Run_PreservesApplicationArguments()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

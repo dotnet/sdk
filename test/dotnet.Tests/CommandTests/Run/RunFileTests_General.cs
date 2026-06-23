@@ -875,7 +875,6 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("clean", "someArg", "Program.cs", "'someArg'")]
     [InlineData("publish", "someArg", "Program.cs", "'someArg'")]
     [InlineData("build", "Program.cs", "-fl", "'-fl'")]
-    [InlineData("build", "Program.cs", "-noconsolelogger", "'-noconsolelogger'")]
     [InlineData("build", "Program.cs", "-notALogger:NoSummary", "'-notALogger:NoSummary'")]
     [InlineData("build", "Program.cs", "Program.cs", "'Program.cs'")]
     public void ExtraArgWithFileEntryPoint_Warns(string command, string arg1, string arg2, string unsupportedArgs)

@@ -161,6 +161,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         .AsReadOnly());
 
+        NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
+
         Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
