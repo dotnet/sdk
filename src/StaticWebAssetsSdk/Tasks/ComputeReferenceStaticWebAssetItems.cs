@@ -8,8 +8,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ComputeReferenceStaticWebAssetItems : Task
+[MSBuildMultiThreadableTask]
+public class ComputeReferenceStaticWebAssetItems : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] Assets { get; set; }
 
@@ -45,7 +49,7 @@ public class ComputeReferenceStaticWebAssetItems : Task
     {
         try
         {
-            var existingAssets = StaticWebAsset.AssetsByTargetPath(Assets, Source, AssetKind);
+            var existingAssets = StaticWebAsset.AssetsByTargetPath(Assets, Source, AssetKind, TaskEnvironment);
 
             var resultAssets = new List<StaticWebAsset>(existingAssets.Count);
             var groupSet = new HashSet<string>(StringComparer.Ordinal);
@@ -73,7 +77,7 @@ public class ComputeReferenceStaticWebAssetItems : Task
                                 }
                                 if (MakeReferencedAssetOriginalItemSpecAbsolute)
                                 {
-                                    groupedAsset.OriginalItemSpec = Path.GetFullPath(groupedAsset.OriginalItemSpec);
+                                    groupedAsset.OriginalItemSpec = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(groupedAsset.OriginalItemSpec));
                                 }
                                 resultAssets.Add(groupedAsset);
                             }
@@ -97,7 +101,7 @@ public class ComputeReferenceStaticWebAssetItems : Task
                     }
                     if (MakeReferencedAssetOriginalItemSpecAbsolute)
                     {
-                        selected.OriginalItemSpec = Path.GetFullPath(selected.OriginalItemSpec);
+                        selected.OriginalItemSpec = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(selected.OriginalItemSpec));
                     }
                     else
                     {

@@ -7,7 +7,6 @@ using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI.Tests;
 using Moq;
-using VerifyTests;
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
@@ -67,11 +66,11 @@ public abstract class DiffBaseTests
         {
             if (string.IsNullOrEmpty(expectedCode))
             {
-                Assert.False(generator.Results.TryGetValue(expectedAssemblyName, out string? _), $"Assembly should've been absent among the results: {expectedAssemblyName}");
+                Assert.IsFalse(generator.Results.TryGetValue(expectedAssemblyName, out string? _), $"Assembly should've been absent among the results: {expectedAssemblyName}");
             }
             else
             {
-                Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
+                Assert.IsTrue(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
                 string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
                 if (!fullExpectedCode.Equals(actualCode))
                 {

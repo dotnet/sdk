@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class NuGetTransientErrorDetectorTests
     {
-        [Fact]
+        [TestMethod]
         public void Error1()
         {
             string input =
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             NuGetTransientErrorDetector.IsTransientError(input).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void Error2()
         {
             string input =
@@ -81,7 +82,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             NuGetTransientErrorDetector.IsTransientError(input).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void Error3()
         {
             string input =
@@ -100,7 +101,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             NuGetTransientErrorDetector.IsTransientError(input).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void NoTransientError()
         {
             string input =
