@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
-        [ArchitectureCondition(ConditionMode.Exclude, Architecture.Arm64)]
+        [Microsoft.NET.TestFramework.ArchitectureCondition(ConditionMode.Exclude, Architecture.Arm64)]
         public async Task CanRunDiscoveryTool()
         {
             string testDir = CreateTemporaryFolder();
