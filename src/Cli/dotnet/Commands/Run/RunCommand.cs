@@ -824,7 +824,7 @@ public class RunCommand
         SeparateApplicationLoggerArguments(parseResult, applicationArguments, out var loggerArgs, out var nonLoggerArgs);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
-        if (loggerArgs.Count > 0)
+        if (loggerArgs.Length > 0)
         {
             msbuildProperties.AddRange(loggerArgs);
         }
@@ -916,7 +916,7 @@ public class RunCommand
             }
 
             Debug.Assert(nonLoggerArgs[0] == "-");
-            nonLoggerArgs[0] = entryPointFilePath;
+            nonLoggerArgs = nonLoggerArgs.SetItem(0, entryPointFilePath);
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
@@ -949,8 +949,8 @@ public class RunCommand
         static void SeparateApplicationLoggerArguments(
             ParseResult parseResult,
             IReadOnlyList<string> applicationArguments,
-            out List<string> loggerArgs,
-            out List<string> nonLoggerArgs)
+            out ImmutableArray<string> loggerArgs,
+            out ImmutableArray<string> nonLoggerArgs)
         {
             var applicationArgumentsAfterDoubleDash = GetApplicationArgumentsAfterDoubleDash(parseResult);
             if (applicationArgumentsAfterDoubleDash is null)

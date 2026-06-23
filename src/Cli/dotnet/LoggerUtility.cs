@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
@@ -79,21 +80,25 @@ internal static class LoggerUtility
         }
     }
 
-    internal static void SeparateLoggerArguments(IEnumerable<string>? args, out List<string> loggerArgs, out List<string> nonLoggerArgs)
+    internal static void SeparateLoggerArguments(IEnumerable<string>? args, out ImmutableArray<string> loggerArgs, out ImmutableArray<string> nonLoggerArgs)
     {
-        loggerArgs = new List<string>();
-        nonLoggerArgs = new List<string>();
+        var loggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
+        var nonLoggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
+
         foreach (var arg in args ?? [])
         {
             if (TryGetLoggerArgument(arg, out string? loggerArg))
             {
-                loggerArgs.Add(loggerArg);
+                loggerArgsBuilder.Add(loggerArg);
             }
             else
             {
-                nonLoggerArgs.Add(arg);
+                nonLoggerArgsBuilder.Add(arg);
             }
         }
+
+        loggerArgs = loggerArgsBuilder.ToImmutable();
+        nonLoggerArgs = nonLoggerArgsBuilder.ToImmutable();
     }
 
     internal static bool IsBinLogArgument(string arg)
@@ -167,7 +172,7 @@ internal static class LoggerUtility
             prefix = "--";
             value = arg[2..];
         }
-        else if (arg.StartsWith("-", StringComparison.Ordinal) || arg.StartsWith("/", StringComparison.Ordinal))
+        else if (arg.StartsWith('-') || arg.StartsWith('/'))
         {
             prefix = arg[..1];
             value = arg[1..];
