@@ -16,10 +16,9 @@ public class BuildParametersSelectionPromptTests
     ];
 
     [TestMethod]
-    [DataRow(0)]
-    [DataRow(1)]
-    [DataRow(2)]
-    public async Task SelectsFrameworkByArrowKeysAndEnter(int index)
+
+    [CombinatorialData]
+    public async Task SelectsFrameworkByArrowKeysAndEnter([CombinatorialRange(0, count: 3)] int index)
     {
         var console = new SpectreTestConsole();
         console.Profile.Capabilities.Interactive = true;
@@ -39,10 +38,9 @@ public class BuildParametersSelectionPromptTests
     }
 
     [TestMethod]
-    [DataRow(0)]
-    [DataRow(1)]
-    [DataRow(2)]
-    public async Task PreviousFrameworkSelectionIsReusedWhenUnchanged(int index)
+
+    [CombinatorialData]
+    public async Task PreviousFrameworkSelectionIsReusedWhenUnchanged([CombinatorialRange(0, count: 3)] int index)
     {
         var console = new SpectreTestConsole();
         console.Profile.Capabilities.Interactive = true;

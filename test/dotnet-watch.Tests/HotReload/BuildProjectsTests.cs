@@ -169,8 +169,8 @@ public class BuildProjects
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task FileBasedApp_NoFrameworkProperties(bool isMain)
     {
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [isMain]);
@@ -199,8 +199,8 @@ public class BuildProjects
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task FileBasedApp_TargetFrameworkProperty(bool nonInteractive)
     {
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);
@@ -230,8 +230,8 @@ public class BuildProjects
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task FileBasedApp_TargetFrameworksProperty(bool nonInteractive)
     {
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);

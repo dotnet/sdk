@@ -25,8 +25,8 @@ public class DotNetWatcherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenNotExplicitlySpecified(bool hotReload)
     {
         Assert.IsTrue(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
@@ -44,8 +44,8 @@ public class DotNetWatcherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecified(bool hotReload)
     {
         Assert.IsTrue(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
@@ -65,8 +65,8 @@ public class DotNetWatcherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecifiedButNotPresentIsEmpty(bool hotReload)
     {
         Assert.IsTrue(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
@@ -84,8 +84,8 @@ public class DotNetWatcherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task RunsWithIterationEnvVariable(bool hotReload)
     {
         var testAsset = TestAssets.CopyTestAsset(AppName)

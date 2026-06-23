@@ -163,8 +163,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task NewFile(bool usePolling)
     {
         var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
@@ -189,10 +189,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true, true)]
-    [DataRow(true, false)]
-    [DataRow(false, true)]
-    [DataRow(false, false)]
+
+    [CombinatorialData]
     public async Task NewFileInNewDirectory(bool usePolling, bool nested)
     {
         if (!usePolling && !(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)))
@@ -236,8 +234,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task ChangeFile(bool usePolling)
     {
         var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
@@ -254,8 +252,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task MoveFile(bool usePolling)
     {
         var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
@@ -285,10 +283,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true, true)]
-    [DataRow(true, false)]
-    [DataRow(false, true)]
-    [DataRow(false, false)]
+
+    [CombinatorialData]
     public async Task FileInSubdirectory(bool usePolling, bool watchSubdirectories)
     {
         var dir = TestAssetManager.CreateTestDirectory(identifier: $"{usePolling}{watchSubdirectories}").Path;
@@ -340,8 +336,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task NoNotificationIfDisabled(bool usePolling)
     {
         var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
@@ -369,8 +365,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task DisposedNoEvents(bool usePolling)
     {
         var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
@@ -396,8 +392,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task MultipleFiles(bool usePolling)
     {
         var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
@@ -426,8 +422,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task MultipleTriggers(bool usePolling)
     {
         var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
@@ -486,8 +482,8 @@ public class FileWatcherTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+
+    [CombinatorialData]
     public async Task DeleteSubfolder(bool usePolling)
     {
         var dir = TestAssetManager.CreateTestDirectory(usePolling.ToString()).Path;
