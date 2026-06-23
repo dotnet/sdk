@@ -1,12 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.DotNet.Watch.UnitTests;
+namespace Microsoft.DotNet.Test.MSTest.Utilities;
 
-internal class TestLogger(TestContext? output = null) : ILogger
+/// <summary>
+/// An <see cref="ILogger"/> that captures messages in memory and optionally echoes them to an
+/// MSTest <see cref="TestContext"/>. Designed to be shared across MSTest.Sdk test projects so
+/// the same pattern doesn't have to be duplicated per project.
+/// </summary>
+public class TestLogger(TestContext? testContext = null) : ILogger
 {
     public readonly object Guard = new();
     private readonly List<string> _messages = [];
@@ -31,7 +37,7 @@ internal class TestLogger(TestContext? output = null) : ILogger
             HasWarning |= logLevel is LogLevel.Warning;
 
             _messages.Add(message);
-            output?.WriteLine(message);
+            testContext?.WriteLine(message);
         }
     }
 
@@ -46,8 +52,21 @@ internal class TestLogger(TestContext? output = null) : ILogger
     }
 
     public IDisposable? BeginScope<TState>(TState state)
-        where TState : notnull => throw new NotImplementedException();
+        where TState : notnull => NullScope.Instance;
 
     public bool IsEnabled(LogLevel logLevel)
         => IsEnabledImpl(logLevel);
+
+    private sealed class NullScope : IDisposable
+    {
+        public static readonly NullScope Instance = new();
+
+        private NullScope()
+        {
+        }
+
+        public void Dispose()
+        {
+        }
+    }
 }

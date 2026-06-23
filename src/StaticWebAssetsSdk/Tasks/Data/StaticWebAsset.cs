@@ -1699,6 +1699,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
+        => AssetsByTargetPath(assets, source, assetKind, TaskEnvironment.Fallback);
+
+    internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind, TaskEnvironment env)
     {
         // We return either the selected asset or a list with all the candidates that were found to be ambiguous
         var result = new Dictionary<string, (StaticWebAsset selected, List<StaticWebAsset> all)>();
@@ -1713,7 +1716,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             {
                 continue;
             }
-            var asset = FromTaskItem(candidate);
+            var asset = FromTaskItem(candidate, env);
             var key = asset.ComputeTargetPath("", '/');
             if (!result.TryGetValue(key, out var existing))
             {

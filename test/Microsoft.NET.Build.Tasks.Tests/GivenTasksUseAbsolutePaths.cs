@@ -17,15 +17,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 /// These tests create files in a "project" directory, then verify task behavior by
 /// passing RELATIVE paths and expecting tasks to resolve them via TaskEnvironment.
 /// </summary>
+[DoNotParallelize]
+[TestClass]
 public class GivenTasksUseAbsolutePaths : IDisposable
 {
     private readonly TaskTestEnvironment _env;
-    private readonly ITestOutputHelper _output;
+    public TestContext TestContext { get; set; } = null!;
 
-    public GivenTasksUseAbsolutePaths(ITestOutputHelper output)
+    public GivenTasksUseAbsolutePaths()
     {
         _env = new TaskTestEnvironment();
-        _output = output;
     }
 
     public void Dispose()
@@ -35,18 +36,18 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region Infrastructure Verification Tests
 
-    [Fact]
+    [TestMethod]
     public void TestEnvironment_ProjectAndSpawnDirectories_AreDifferent()
     {
         _env.ProjectDirectory.Should().NotBe(_env.SpawnDirectory);
         Directory.Exists(_env.ProjectDirectory).Should().BeTrue();
         Directory.Exists(_env.SpawnDirectory).Should().BeTrue();
 
-        _output.WriteLine($"Project directory: {_env.ProjectDirectory}");
-        _output.WriteLine($"Spawn directory: {_env.SpawnDirectory}");
+        TestContext.WriteLine($"Project directory: {_env.ProjectDirectory}");
+        TestContext.WriteLine($"Spawn directory: {_env.SpawnDirectory}");
     }
 
-    [Fact]
+    [TestMethod]
     public void TestEnvironment_DemonstratesPathDifference()
     {
         var projectFile = _env.CreateProjectFile("test.txt", "content");
@@ -58,15 +59,15 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         File.Exists(correctPath).Should().BeTrue("file was created in project directory");
         File.Exists(incorrectPath).Should().BeFalse("file should not exist in spawn directory");
 
-        _output.WriteLine($"Correct path (in project): {correctPath}");
-        _output.WriteLine($"Incorrect path (in spawn): {incorrectPath}");
+        TestContext.WriteLine($"Correct path (in project): {correctPath}");
+        TestContext.WriteLine($"Incorrect path (in spawn): {incorrectPath}");
     }
 
     #endregion
 
     #region AllowEmptyTelemetry - No File I/O
 
-    [Fact]
+    [TestMethod]
     public void AllowEmptyTelemetry_NoFileIO_ShouldSucceed()
     {
         var task = new AllowEmptyTelemetry
@@ -82,7 +83,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region CheckForTargetInAssetsFile
 
-    [Fact]
+    [TestMethod]
     public void CheckForTargetInAssetsFile_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         var assetsContent = @"{
@@ -116,7 +117,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region GenerateRuntimeConfigurationFiles
 
-    [Fact]
+    [TestMethod]
     public void GenerateRuntimeConfigurationFiles_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         _env.CreateProjectDirectory("obj");
@@ -152,7 +153,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region GenerateToolsSettingsFile
 
-    [Fact]
+    [TestMethod]
     public void GenerateToolsSettingsFile_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         _env.CreateProjectDirectory("obj");
@@ -180,7 +181,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region GetAssemblyAttributes
 
-    [Fact]
+    [TestMethod]
     public void GetAssemblyAttributes_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         _env.CreateProjectDirectory("obj");
@@ -205,7 +206,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region ResolvePackageAssets
 
-    [Fact]
+    [TestMethod]
     public void ResolvePackageAssets_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         var assetsContent = @"{
@@ -238,8 +239,8 @@ public class GivenTasksUseAbsolutePaths : IDisposable
             DefaultImplicitPackages = ""
         };
 
-        _output.WriteLine($"Current directory: {Environment.CurrentDirectory}");
-        _output.WriteLine($"Project directory: {_env.ProjectDirectory}");
+        TestContext.WriteLine($"Current directory: {Environment.CurrentDirectory}");
+        TestContext.WriteLine($"Project directory: {_env.ProjectDirectory}");
 
         var result = task.Execute();
 
@@ -250,7 +251,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region ResolvePackageDependencies
 
-    [Fact]
+    [TestMethod]
     public void ResolvePackageDependencies_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         var assetsContent = @"{
@@ -284,7 +285,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region SelectRuntimeIdentifierSpecificItems
 
-    [Fact]
+    [TestMethod]
     public void SelectRuntimeIdentifierSpecificItems_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         var runtimeGraphContent = @"{
@@ -318,7 +319,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         task.SelectedItems[0].ItemSpec.Should().Be("Item1");
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectRuntimeIdentifierSpecificItems_IgnoresDecoyRuntimeGraphInCwd()
     {
         // Correct graph (project dir): linux-x64 imports linux, so an item with RID "linux" is compatible.
@@ -368,7 +369,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region ResolveOverlappingItemGroupConflicts
 
-    [Fact]
+    [TestMethod]
     public void ResolveOverlappingItemGroupConflicts_WithRelativeHintPaths_ShouldResolveFromProjectDirectory()
     {
         const string winnerPath = "libs/winner.dll";
@@ -400,7 +401,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         task.RemovedItemGroup2[0]!.GetMetadata("HintPath").Should().Be(loserPath, "outputs should preserve original metadata");
     }
 
-    [Fact]
+    [TestMethod]
     public void AbsoluteHintPaths_AreLeftUnchanged()
     {
         var winnerPath = _env.CreateProjectFile("libs/winner.dll", string.Empty);
@@ -429,7 +430,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         task.RemovedItemGroup2[0]!.GetMetadata("HintPath").Should().Be(loserPath, "outputs should preserve original (absolute) metadata");
     }
 
-    [Fact]
+    [TestMethod]
     public void ConflictItem_WithoutTaskEnvironment_ShouldKeepExistingRelativePathBehavior()
     {
         const string existingPath = "libs/existing.dll";
@@ -446,7 +447,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         conflictItem.DisplayName.Should().Be($"CopyLocal:{existingPath}", "display strings should not be absolutized");
     }
 
-    [Fact]
+    [TestMethod]
     public void ConflictItem_WithTaskEnvironment_ExistsResolvesRelativePathToProjectDirectory()
     {
         const string relativePath = "libs/existing.dll";
@@ -462,7 +463,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
             "Exists must resolve the relative HintPath against the TaskEnvironment's project directory, not the process CWD");
     }
 
-    [Fact]
+    [TestMethod]
     public void ConflictItem_WithTaskEnvironment_FileVersionReadsFileViaProjectDirectory()
     {
         // Copy a real managed assembly (this test assembly) into the project directory so
@@ -487,7 +488,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
             "FileVersion must be obtainable via TaskEnvironment-resolved path even when the process CWD is wrong");
     }
 
-    [Fact]
+    [TestMethod]
     public void ConflictItem_WithTaskEnvironment_SourcePathAndDisplayNamePreserveOriginalRelativePath()
     {
         const string relativePath = "libs/existing.dll";
@@ -509,7 +510,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
             "DisplayName is used in diagnostics and must not leak the absolutized path");
     }
 
-    [Fact]
+    [TestMethod]
     public void ConflictItem_WithTaskEnvironment_HonorsMetadataAndDoesNotAccessFile()
     {
         // Point at a file that does NOT exist anywhere; if anything other than Exists touches the
@@ -549,7 +550,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region Demonstration: Absolute vs Relative Paths
 
-    [Fact]
+    [TestMethod]
     public void AbsolutePath_AlwaysPointsToCorrectFile()
     {
         var content = "test content";
@@ -560,11 +561,11 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var readContent = File.ReadAllText(absolutePath);
         readContent.Should().Be(content);
 
-        _output.WriteLine($"Absolute path: {absolutePath}");
-        _output.WriteLine($"Successfully read file content: {readContent}");
+        TestContext.WriteLine($"Absolute path: {absolutePath}");
+        TestContext.WriteLine($"Successfully read file content: {readContent}");
     }
 
-    [Fact]
+    [TestMethod]
     public void MockTaskEnvironment_ResolvesRelativeToProjectDirectory()
     {
         var content = "test content";
@@ -578,7 +579,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
         File.Exists(resolvedPath).Should().BeTrue();
 
-        _output.WriteLine($"TaskEnvironment resolved: {resolvedPath}");
+        TestContext.WriteLine($"TaskEnvironment resolved: {resolvedPath}");
     }
 
     #endregion

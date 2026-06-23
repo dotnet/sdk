@@ -12,9 +12,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 #if NET
     [SupportedOSPlatform("windows")]
 #endif
+    [TestClass]
     public class ProcessExtensionsTests
     {
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItReturnsTheParentProcessId()
         {
             int expectedParentProcessId = Process.GetCurrentProcess().Id;
@@ -27,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             int ppid = parentProcess.Id;
             childProcess.Kill();
 
-            Assert.Equal(expectedParentProcessId, ppid);
+            Assert.AreEqual(expectedParentProcessId, ppid);
         }
     }
 }

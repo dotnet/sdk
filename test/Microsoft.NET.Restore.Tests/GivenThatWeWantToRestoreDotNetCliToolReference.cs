@@ -9,16 +9,13 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Restore.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToRestoreDotNetCliToolReference : SdkTest
     {
         private const string ProjectToolVersion = "1.0.0";
         private const string ExpectedProjectToolRestoreTargetFrameworkMoniker = "netcoreapp2.2";
 
-        public GivenThatWeWantToRestoreDotNetCliToolReference(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_can_restore_with_netcoreapp2_2()
         {
             TestProject toolProject = new()
