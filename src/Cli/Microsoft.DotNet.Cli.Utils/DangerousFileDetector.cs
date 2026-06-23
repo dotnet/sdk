@@ -63,9 +63,12 @@ internal class DangerousFileDetector : IDangerousFileDetector
                 return false;
             }
 
-            // First check the zone, if they are not an untrusted zone, they aren't dangerous
+            // First check the zone, if they are not an untrusted zone, they aren't dangerous.
+            // Pass dwFlags as 0 (not MUTZ_ISFILE) so that MapUrlToZone reads the Zone.Identifier
+            // alternate data stream (Mark of the Web). MUTZ_ISFILE would map the zone based solely
+            // on the file location and ignore the Zone.Identifier stream.
             filename = Path.GetFullPath(filename);
-            hr = securityManager.Pointer->MapUrlToZone(filename, out uint zone, PInvoke.MUTZ_ISFILE);
+            hr = securityManager.Pointer->MapUrlToZone(filename, out uint zone, 0);
 
             if (zone < (uint)URLZONE.URLZONE_INTERNET)
             {
