@@ -583,6 +583,16 @@
     <!-- Make dotnet-aot native shared library executable (only if it exists for this RID) -->
     <Exec Command="chmod 755 $(OutputPath)$(_DotnetAotNativeLibName)"
           Condition="Exists('$(OutputPath)$(_DotnetAotNativeLibName)')" />
+    <!-- The 'aspnetcoretools' aggregate ships native AOT SDK tool executables
+         (dotnet-dev-certs, dotnet-user-jwts, dotnet-user-secrets). Their nupkg does
+         not carry the Unix execute bit, and the blanket 'chmod 644' above clears it,
+         so re-add execute permission; the SDK execs these tools directly. -->
+    <ItemGroup>
+      <_BundledAotToolExecutable Include="$(OutputPath)DotnetTools/aspnetcoretools/**/dotnet-*"
+                                 Exclude="$(OutputPath)DotnetTools/aspnetcoretools/**/*.*" />
+    </ItemGroup>
+    <Exec Command="chmod 755 '%(_BundledAotToolExecutable.FullPath)'"
+          Condition="'@(_BundledAotToolExecutable)' != ''" />
   </Target>
 
   <Target Name="DeleteSymbolsFromPublishDir" DependsOnTargets="GenerateCliRuntimeConfigurationFiles">
