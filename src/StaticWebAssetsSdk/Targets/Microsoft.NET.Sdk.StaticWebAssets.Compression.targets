@@ -166,8 +166,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(PublishCompressionFormats);gzip;brotli</PublishCompressionFormats>
     <DisableBuildCompression Condition="'$(DisableBuildCompression)' == ''">false</DisableBuildCompression>
     <CompressDiscoveredAssetsDuringBuild Condition="$(CompressDiscoveredAssetsDuringBuild) == ''">true</CompressDiscoveredAssetsDuringBuild>
-    <!-- Support passing in a custom compression level to brotli and respect the old internal flag for blazor -->
-    <BrotliCompressionLevel Condition="'$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</BrotliCompressionLevel>
+    <StaticWebAssetsCompressionMaxDegreeOfParallelism Condition="'$(StaticWebAssetsCompressionMaxDegreeOfParallelism)' == ''">-1</StaticWebAssetsCompressionMaxDegreeOfParallelism>
 
     <!-- Attach weak ETag to compressed assets -->
     <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == '' and '$(_TargetingNET100OrLater)' == 'true'">EndpointProperty</LinkAlternativeRepresentationsToOriginalResource>
@@ -273,12 +272,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BrotliCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'br'" />
     </ItemGroup>
 
+    <PropertyGroup>
+      <_EffectiveStaticWebAssetsBrotliCompressionLevel Condition="'$(StaticWebAssetsBrotliCompressionLevel)' != ''">$(StaticWebAssetsBrotliCompressionLevel)</_EffectiveStaticWebAssetsBrotliCompressionLevel>
+      <_EffectiveStaticWebAssetsBrotliCompressionLevel Condition="'$(_EffectiveStaticWebAssetsBrotliCompressionLevel)' == '' and '$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</_EffectiveStaticWebAssetsBrotliCompressionLevel>
+      <_EffectiveStaticWebAssetsBrotliCompressionLevel Condition="'$(_EffectiveStaticWebAssetsBrotliCompressionLevel)' == '' and '$(BrotliCompressionLevel)' != ''">$(BrotliCompressionLevel)</_EffectiveStaticWebAssetsBrotliCompressionLevel>
+      <_EffectiveStaticWebAssetsBrotliCompressionLevel Condition="'$(_EffectiveStaticWebAssetsBrotliCompressionLevel)' == ''">SmallestSize</_EffectiveStaticWebAssetsBrotliCompressionLevel>
+    </PropertyGroup>
+
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssets)' != ''"
-      FilesToCompress="@(_GZipCompressedStaticWebAssets)" />
+      FilesToCompress="@(_GZipCompressedStaticWebAssets)"
+      MaxDegreeOfParallelism="$(StaticWebAssetsCompressionMaxDegreeOfParallelism)" />
 
     <BrotliCompress Condition="'@(_BrotliCompressedStaticWebAssets)' != ''"
       FilesToCompress="@(_BrotliCompressedStaticWebAssets)"
-      CompressionLevel="$(BrotliCompressionLevel)"
+      CompressionLevel="$(_EffectiveStaticWebAssetsBrotliCompressionLevel)"
+      MaxDegreeOfParallelism="$(StaticWebAssetsCompressionMaxDegreeOfParallelism)"
       ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)" />
@@ -397,12 +405,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BrotliCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'br'" />
     </ItemGroup>
 
+    <PropertyGroup>
+      <_EffectiveStaticWebAssetsBrotliCompressionLevel Condition="'$(StaticWebAssetsBrotliCompressionLevel)' != ''">$(StaticWebAssetsBrotliCompressionLevel)</_EffectiveStaticWebAssetsBrotliCompressionLevel>
+      <_EffectiveStaticWebAssetsBrotliCompressionLevel Condition="'$(_EffectiveStaticWebAssetsBrotliCompressionLevel)' == '' and '$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</_EffectiveStaticWebAssetsBrotliCompressionLevel>
+      <_EffectiveStaticWebAssetsBrotliCompressionLevel Condition="'$(_EffectiveStaticWebAssetsBrotliCompressionLevel)' == '' and '$(BrotliCompressionLevel)' != ''">$(BrotliCompressionLevel)</_EffectiveStaticWebAssetsBrotliCompressionLevel>
+      <_EffectiveStaticWebAssetsBrotliCompressionLevel Condition="'$(_EffectiveStaticWebAssetsBrotliCompressionLevel)' == ''">SmallestSize</_EffectiveStaticWebAssetsBrotliCompressionLevel>
+    </PropertyGroup>
+
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssetsForPublish)' != ''"
-      FilesToCompress="@(_GZipCompressedStaticWebAssetsForPublish)" />
+      FilesToCompress="@(_GZipCompressedStaticWebAssetsForPublish)"
+      MaxDegreeOfParallelism="$(StaticWebAssetsCompressionMaxDegreeOfParallelism)" />
 
     <BrotliCompress Condition="'@(_BrotliCompressedStaticWebAssetsForPublish)' != ''"
       FilesToCompress="@(_BrotliCompressedStaticWebAssetsForPublish)"
-      CompressionLevel="$(_BlazorBrotliCompressionLevel)"
+      CompressionLevel="$(_EffectiveStaticWebAssetsBrotliCompressionLevel)"
+      MaxDegreeOfParallelism="$(StaticWebAssetsCompressionMaxDegreeOfParallelism)"
       ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)" />
