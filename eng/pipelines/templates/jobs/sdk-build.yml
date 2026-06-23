@@ -170,7 +170,7 @@ jobs:
             -configuration $(buildConfiguration) \
             ${{ parameters.publishArgument }} \
             ${{ parameters.signArgument }} \
-            '/p:Projects=$(Build.SourcesDirectory)/sdk.slnx;$(Build.SourcesDirectory)/test/UnitTests.proj' \
+            '/p:Projects="$(Build.SourcesDirectory)/sdk.slnx;$(Build.SourcesDirectory)/test/UnitTests.proj"' \
             /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
             /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
             /p:PgoInstrument=${{ parameters.pgoInstrument }} \
