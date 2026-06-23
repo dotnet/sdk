@@ -39,7 +39,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // one endpoint (the app's own generated manifest) is produced for the route.
             var result = PublishMauiHybridApp(
                 packageVersion: "1.0.0",
-                out var intermediateOutputPath);
+                out var intermediateOutputPath,
+                out var publishOutputPath);
 
             result.Should().Pass();
 
@@ -54,6 +55,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             AssetsAtTargetPath(intermediateOutputPath, ModulesManifestRoute)
                 .Should().Contain(a => a.SourceType == "Computed",
                     "the app's own generated manifest should win over the package fallback");
+
+            LoadPublishedModulesManifest(publishOutputPath).Should().BeEquivalentTo(
+                [
+                    "MauiBlazorApp.lib.module.js",
+                    "_content/MauiRazorClassLibrary/MauiRazorClassLibrary.lib.module.js"
+                ],
+                "the generated app manifest should include the app and referenced RCL JS modules");
         }
 
         [Fact]
@@ -64,6 +72,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var result = PublishMauiHybridApp(
                 packageVersion: "2.0.0",
                 out var intermediateOutputPath,
+                out var publishOutputPath,
                 removeAppJsModules: true);
 
             result.Should().Pass();
@@ -80,11 +89,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             AssetsAtTargetPath(intermediateOutputPath, ModulesManifestRoute)
                 .Should().OnlyContain(a => a.SourceType == "Discovered",
                     "only the materialized package fallback should remain when the app has no JS modules");
+
+            LoadPublishedModulesManifest(publishOutputPath).Should().BeEmpty(
+                "the package fallback manifest content is an empty modules list");
         }
 
         private CommandResult PublishMauiHybridApp(
             string packageVersion,
             out string intermediateOutputPath,
+            out string publishOutputPath,
             bool removeAppJsModules = false)
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("MauiBlazorHybridWebView", identifier: packageVersion);
@@ -110,6 +123,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var result = ExecuteCommand(publish, properties);
 
             intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
             return result;
         }
 
@@ -129,6 +143,16 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 File.ReadAllBytes(path),
                 StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointsManifest);
             return manifest?.Endpoints ?? [];
+        }
+
+        private static string[] LoadPublishedModulesManifest(string publishOutputPath)
+        {
+            var modulesManifestPath = Path.Combine(
+                publishOutputPath,
+                "wwwroot",
+                ModulesManifestRoute.Replace('/', Path.DirectorySeparatorChar));
+            new FileInfo(modulesManifestPath).Should().Exist("publish should produce {0}", ModulesManifestRoute);
+            return JsonSerializer.Deserialize<string[]>(File.ReadAllBytes(modulesManifestPath)) ?? [];
         }
     }
 }
