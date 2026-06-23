@@ -65,7 +65,7 @@ git status --porcelain
 If there are uncommitted changes, warn the user and stash them:
 
 ```bash
-git stash push -m "auto-stash before PR review of #<number>"
+git stash push --include-untracked -m "auto-stash before PR review of #<number>"
 ```
 
 Then check out the PR branch (this handles both same-repo and fork PRs):
