@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
@@ -8,7 +8,8 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
-[Collection(TestConstants.UsesStaticTelemetryState)]
+[DoNotParallelize]
+[TestClass]
 public class TelemetryCommandTests : SdkTest
 {
     private readonly FakeRecordEventNameTelemetry _fakeTelemetry;
@@ -17,14 +18,14 @@ public class TelemetryCommandTests : SdkTest
 
     public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
 
-    public TelemetryCommandTests(ITestOutputHelper log) : base(log)
+    public TelemetryCommandTests()
     {
         _fakeTelemetry = new FakeRecordEventNameTelemetry();
         TelemetryEventEntry.Subscribe(_fakeTelemetry.TrackEvent);
         TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
     }
 
-    [Fact]
+    [TestMethod]
     public void NoTelemetryIfCommandIsInvalid()
     {
         string[] args = { "publish", "-r" };
@@ -32,7 +33,7 @@ public class TelemetryCommandTests : SdkTest
         a.Should().NotThrow<ArgumentOutOfRangeException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void NoTelemetryIfCommandIsInvalid2()
     {
         string[] args = { "restore", "-v" };
@@ -40,7 +41,7 @@ public class TelemetryCommandTests : SdkTest
         a.Should().NotThrow<ArgumentOutOfRangeException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void TopLevelCommandNameShouldBeSentToTelemetry()
     {
         string[] args = { "help" };
@@ -51,7 +52,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("HELP"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetNewCommandFirstArgumentShouldBeSentToTelemetry()
     {
         const string argumentToSend = "console";
@@ -66,7 +67,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("NEW"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetHelpCommandFirstArgumentShouldBeSentToTelemetry()
     {
         const string argumentToSend = "something";
@@ -81,7 +82,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("HELP"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetAddCommandFirstArgumentShouldBeSentToTelemetry()
     {
         const string argumentToSend = "package";
@@ -96,7 +97,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("ADD"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetAddCommandFirstArgumentShouldBeSentToTelemetry2()
     {
         const string argumentToSend = "reference";
@@ -111,7 +112,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("ADD"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetRemoveCommandFirstArgumentShouldBeSentToTelemetry()
     {
         const string argumentToSend = "package";
@@ -126,7 +127,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("REMOVE"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetListCommandFirstArgumentShouldBeSentToTelemetry()
     {
         const string argumentToSend = "reference";
@@ -140,7 +141,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("LIST"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetSlnCommandFirstArgumentShouldBeSentToTelemetry()
     {
         const string argumentToSend = "list";
@@ -155,7 +156,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("SOLUTION"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetNugetCommandFirstArgumentShouldBeSentToTelemetry()
     {
         const string argumentToSend = "push";
@@ -172,7 +173,8 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("NUGET"));
     }
 
-    [Fact(Skip = "https://github.com/dotnet/sdk/issues/47862")]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/47862")]
     public void DotnetNewCommandLanguageOpinionShouldBeSentToTelemetry()
     {
         const string optionKey = "language";
@@ -187,7 +189,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("NEW"));
     }
 
-    [Fact]
+    [TestMethod]
     public void AnyDotnetCommandVerbosityOpinionShouldBeSentToTelemetry()
     {
         const string optionKey = "verbosity";
@@ -203,7 +205,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("RESTORE"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetBuildAndPublishCommandOpinionsShouldBeSentToTelemetry()
     {
         const string optionKey = "configuration";
@@ -219,7 +221,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("BUILD"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetPublishCommandRuntimeOpinionsShouldBeSentToTelemetry()
     {
         const string optionKey = "runtime";
@@ -235,7 +237,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("PUBLISH"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetBuildAndPublishCommandOpinionsShouldBeSentToTelemetryWhenThereIsMultipleOption()
     {
         string[] args = { "build", "--configuration", "Debug", "--runtime", $"{ToolsetInfo.LatestMacRuntimeIdentifier}-x64" };
@@ -255,7 +257,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("BUILD"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetRunCleanTestCommandOpinionsShouldBeSentToTelemetryWhenThereIsMultipleOption()
     {
         string[] args = { "clean", "--configuration", "Debug", "--framework", ToolsetInfo.CurrentTargetFramework };
@@ -275,7 +277,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("CLEAN"));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetUpdatePackageVulnerableOptionShouldBeSentToTelemetry()
     {
         const string optionKey = "vulnerable";
@@ -289,7 +291,8 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["verb"] == Sha256Hasher.Hash("PACKAGE UPDATE"));
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void InternalreportinstallsuccessCommandCollectExeNameWithEventname()
     {
         FakeRecordEventNameTelemetry fakeTelemetry = new();
@@ -303,7 +306,7 @@ public class TelemetryCommandTests : SdkTest
                             e.Properties["exeName"] == Sha256Hasher.Hash("DOTNET-SDK-LATEST-WIN-X64.EXE"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ExceptionShouldBeSentToTelemetry()
     {
         Exception? caughtException = null;
