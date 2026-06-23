@@ -29,7 +29,7 @@
 
   <PropertyGroup>
     <OutputPath>$(BaseOutputPath)</OutputPath>
-    <DefineConstants>$(DefineConstants);EXTENSIONS</DefineConstants>
+    <DefineConstants>$(DefineConstants);EXTENSIONS;MSBUILD_BUILD_TASKS</DefineConstants>
     <IsPackable>true</IsPackable>
     <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
   </PropertyGroup>
@@ -52,6 +52,8 @@
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <Compile Include="..\Common\**\*.cs" LinkBase="Common" />
+    <!-- MSBuildUtilities.cs is shared with the Microsoft.DotNet.FileBasedPrograms source package; MSBUILD_BUILD_TASKS
+         (defined above) selects the Microsoft.DotNet.Cli namespace for this build-tasks copy. See https://github.com/dotnet/sdk/issues/51487. -->
     <Compile Include="$(RepoRoot)src\Common\MSBuildUtilities.cs" LinkBase="Common" />
   </ItemGroup>
 
