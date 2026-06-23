@@ -7,6 +7,7 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class CannotChangeGenericConstraintsTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotChangeGenericConstraints(settings, context));
@@ -210,8 +211,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             },
         };
 
-        [Theory]
-        [MemberData(nameof(TestCases))]
+        [TestMethod]
+        [DynamicData(nameof(TestCases))]
         public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -220,11 +221,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Equal(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
 
-        [Theory]
-        [MemberData(nameof(StrictMode))]
+        [TestMethod]
+        [DynamicData(nameof(StrictMode))]
         public void EnsureDiagnosticIsReportedInStrictMode(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -235,7 +236,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Equal(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
     }
 }

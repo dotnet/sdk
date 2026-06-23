@@ -48,7 +48,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string workingDir = Path.Combine(_fixture.BaseWorkingDirectory, testName);
             Directory.CreateDirectory(workingDir);
 
-            new DotnetNewCommand(_log, args)
+            // Run instantiation without the implicit post-action restore: that restore is redundant with the
+            // explicit DotnetRestoreCommand below, and its transient in-box SDK resolution failures surface as
+            // stderr while 'dotnet new' still exits 0, which cannot be retried at the command level. The explicit
+            // restore and build (which retry transient SDK resolution failures) provide the actual coverage.
+            new DotnetNewCommand(_log, [.. args, "--no-restore"])
                 .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDir)
                 .Execute()

@@ -10,14 +10,15 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [Collection(TestConstants.UsesStaticTelemetryState)]
+    [DoNotParallelize]
+    [TestClass]
     public class DotnetMsbuildInProcTests : SdkTest
     {
-        public DotnetMsbuildInProcTests(ITestOutputHelper log) : base(log)
+        public DotnetMsbuildInProcTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTelemetryIsEnabledTheLoggerIsAddedToTheCommandLine()
         {
             string[] allArgs = GetArgsForMSBuild(() => true, out TelemetryClient telemetry);
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTelemetryIsDisabledTheLoggerIsNotAddedToTheCommandLine()
         {
             string[] allArgs = GetArgsForMSBuild(() => false);

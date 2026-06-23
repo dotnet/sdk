@@ -11,24 +11,19 @@ using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
 namespace Microsoft.DotNet.Tests.CommandLineParserTests
 {
+    [TestClass]
     public class MSBuildArgumentCommandLineParserTests
     {
-        private readonly ITestOutputHelper output;
 
-        public MSBuildArgumentCommandLineParserTests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
-        [Theory]
-        [InlineData(new string[] { "-property:prop1=true", "-p:prop2=false" }, true)]
-        [InlineData(new string[] { "-property:prop1=true", "-p:prop2=false" }, false)]
-        [InlineData(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, false)]
-        [InlineData(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, true)]
-        [InlineData(new string[] { "-detailedSummary" }, true)]
-        [InlineData(new string[] { "-clp:NoSummary" }, true)]
-        [InlineData(new string[] { "-orc" }, true)]
-        [InlineData(new string[] { "-orc" }, false)]
+        [TestMethod]
+        [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, true)]
+        [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, false)]
+        [DataRow(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, false)]
+        [DataRow(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, true)]
+        [DataRow(new string[] { "-detailedSummary" }, true)]
+        [DataRow(new string[] { "-clp:NoSummary" }, true)]
+        [DataRow(new string[] { "-orc" }, true)]
+        [DataRow(new string[] { "-orc" }, false)]
         public void MSBuildArgumentsAreForwardedCorrectly(string[] arguments, bool buildCommand)
         {
             RestoringCommand command = buildCommand ?
@@ -43,14 +38,14 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
             }
         }
 
-        [Theory]
-        [InlineData(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, new string[] { "--property:teamcity_buildConfName=\"Build, Test and Publish\"" })]
-        [InlineData(new string[] { "-p:prop1=true", "-p:prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
-        [InlineData(new string[] { "-p:prop1=\".;/opt/usr\"" }, new string[] { "--property:prop1=\".;/opt/usr\"" })]
-        [InlineData(new string[] { "-p:prop1=true;prop2=false;prop3=\"wut\";prop4=\"1;2;3\"" }, new string[] { "--property:prop1=true", "--property:prop2=false", "--property:prop3=\"wut\"", "--property:prop4=\"1;2;3\"" })]
-        [InlineData(new string[] { "-p:prop4=\"1;2;3\"" }, new string[] { "--property:prop4=\"1;2;3\"" })]
-        [InlineData(new string[] { "-p:prop4=\"1 ;2 ;3 \"" }, new string[] { "--property:prop4=\"1 ;2 ;3 \"" })]
-        [InlineData(new string[] { "-p:RuntimeIdentifiers=linux-x64;linux-arm64" }, new string[] { "--property:RuntimeIdentifiers=linux-x64;linux-arm64" })]
+        [TestMethod]
+        [DataRow(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, new string[] { "--property:teamcity_buildConfName=\"Build, Test and Publish\"" })]
+        [DataRow(new string[] { "-p:prop1=true", "-p:prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
+        [DataRow(new string[] { "-p:prop1=\".;/opt/usr\"" }, new string[] { "--property:prop1=\".;/opt/usr\"" })]
+        [DataRow(new string[] { "-p:prop1=true;prop2=false;prop3=\"wut\";prop4=\"1;2;3\"" }, new string[] { "--property:prop1=true", "--property:prop2=false", "--property:prop3=\"wut\"", "--property:prop4=\"1;2;3\"" })]
+        [DataRow(new string[] { "-p:prop4=\"1;2;3\"" }, new string[] { "--property:prop4=\"1;2;3\"" })]
+        [DataRow(new string[] { "-p:prop4=\"1 ;2 ;3 \"" }, new string[] { "--property:prop4=\"1 ;2 ;3 \"" })]
+        [DataRow(new string[] { "-p:RuntimeIdentifiers=linux-x64;linux-arm64" }, new string[] { "--property:RuntimeIdentifiers=linux-x64;linux-arm64" })]
         public void Can_pass_msbuild_properties_safely(string[] tokens, string[] forwardedTokens)
         {
             var option = CommonOptions.CreatePropertyOption();

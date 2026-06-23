@@ -5,6 +5,8 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [DoNotParallelize]
+    [TestClass]
     public class GivenAPickBestRidMultiThreading
     {
         private const string RuntimeGraphContent = @"{
@@ -16,7 +18,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }";
 
-        [Fact]
+        [TestMethod]
         public void ItResolvesRelativeRuntimeGraphPathAgainstProjectDirectory()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "pickbestrid-relpath-" + Guid.NewGuid().ToString("N"));
@@ -53,7 +55,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void MissingFileErrorContainsOriginalRelativePathNotAbsolutized()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "pickbestrid-err-" + Guid.NewGuid().ToString("N"));
@@ -86,9 +88,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
         public void EmptyRuntimeGraphPathLogsMissingFileError(string? runtimeGraphPath)
         {
             var mockEngine = new MockBuildEngine();

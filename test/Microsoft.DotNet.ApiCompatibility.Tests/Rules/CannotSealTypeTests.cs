@@ -7,12 +7,13 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class CannotSealTypeTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotSealType(settings, context));
 
-        [Theory]
-        [MemberData(nameof(SealNonInheritableTypeNotReportedData))]
+        [TestMethod]
+        [DynamicData(nameof(SealNonInheritableTypeNotReportedData))]
         public void SealNonInheritableTypeNotReported(string leftSyntax, string rightSyntax)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -23,12 +24,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
             foreach (CompatDifference difference in differences)
             {
-                Assert.NotEqual(DiagnosticIds.CannotSealType, difference.DiagnosticId);
+                Assert.AreNotEqual(DiagnosticIds.CannotSealType, difference.DiagnosticId);
             }
         }
 
-        [Theory]
-        [MemberData(nameof(SealInheritableTypeReportedData))]
+        [TestMethod]
+        [DynamicData(nameof(SealInheritableTypeReportedData))]
         public void SealInheritableTypeReported(string leftSyntax, string rightSyntax)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -41,9 +42,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             Assert.Contains(difference, differences);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void SealInheritableTypeInternalsVisibleReported(bool includeInternals)
         {
             string leftSyntax = @"
@@ -72,7 +73,7 @@ namespace CompatTests
 
             if (!includeInternals)
             {
-                Assert.Empty(differences);
+                Assert.IsEmpty(differences);
             }
             else
             {
@@ -81,12 +82,12 @@ namespace CompatTests
                      CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
                 };
 
-                Assert.Equal(expected, differences);
+                Assert.AreSequenceEqual(expected, differences);
             }
 
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleRightsAreReportedCorrectly()
         {
             string leftSyntax = @"
@@ -144,10 +145,10 @@ namespace CompatTests
                 new CompatDifference(left.MetadataInformation, right.ElementAt(3).MetadataInformation, DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
                 new CompatDifference(left.MetadataInformation, right.ElementAt(3).MetadataInformation, DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.#ctor"),
             };
-            Assert.Equal(expectedDiffs, differences);
+            Assert.AreSequenceEqual(expectedDiffs, differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleRightsNoDifferences()
         {
             string leftSyntax = @"
@@ -192,11 +193,11 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftContainer, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Theory]
-        [MemberData(nameof(StrictModeSealedLeftIsReportedData))]
+        [TestMethod]
+        [DynamicData(nameof(StrictModeSealedLeftIsReportedData))]
         public void StrictModeSealedLeftIsReported(string leftSyntax, string rightSyntax)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -207,7 +208,7 @@ namespace CompatTests
 
             CompatDifference expectedDifference = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotSealType, string.Empty, DifferenceType.Changed, "T:CompatTests.First");
             Assert.Contains(expectedDifference, differences);
-            Assert.True(differences[0].Message.IndexOf("left") < differences[0].Message.IndexOf("right"));
+            Assert.IsLessThan(differences[0].Message.IndexOf("right"), differences[0].Message.IndexOf("left"));
         }
 
         public static IEnumerable<object[]> StrictModeSealedLeftIsReportedData()
