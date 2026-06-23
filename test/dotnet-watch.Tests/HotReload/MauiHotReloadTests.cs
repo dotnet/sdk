@@ -1,18 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class MauiHotReloadTests : DotNetWatchTestBase
 {
     /// <summary>
     /// Currently only works on Windows.
     /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
     /// </summary>
-    [PlatformSpecificTheory(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/54150")]
-    [CombinatorialData]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [Ignore("https://github.com/dotnet/sdk/issues/54150")]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task MauiBlazor(bool selectTfm)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor", identifier: selectTfm.ToString())
@@ -24,7 +28,7 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
         };
 
         var result = workloadInstallCommandSpec.Execute();
-        Assert.Equal(0, result.ExitCode);
+        Assert.AreEqual(0, result.ExitCode);
 
         var platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows10.0.19041.0" : "maccatalyst";
         var tfm = $"{ToolsetInfo.CurrentTargetFramework}-{platform}";
@@ -45,8 +49,8 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // only the selected target framework is built:
-        Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", tfm, "win-x64", "maui-blazor.dll")));
-        Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", tfm, "maccatalyst-x64", "maui-blazor.dll")));
+        Assert.AreEqual(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", tfm, "win-x64", "maui-blazor.dll")));
+        Assert.AreEqual(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", tfm, "maccatalyst-x64", "maui-blazor.dll")));
 
         // update code file:
         var razorPath = Path.Combine(testAsset.Path, "Components", "Pages", "Home.razor");
@@ -84,7 +88,7 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
     /// Tests device selection in dotnet-watch using the DotnetRunDevices test asset,
     /// which provides ComputeAvailableDevices and DeployToDevice MSBuild targets.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task SelectsDevice()
     {
         var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")
@@ -116,7 +120,7 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
     /// KeyPressed channel is used for the first Spectre prompt, the second prompt
     /// must also receive key events from the same channel.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task SelectsFrameworkThenDevice()
     {
         var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")
@@ -157,7 +161,7 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
     /// dotnet-run process. This causes a stdin race: dotnet-watch's Console.ReadKey()
     /// loop steals all key presses from the child process's device prompt.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task SelectsFrameworkThenDevice_WorkloadConditionalTarget()
     {
         var testAsset = TestAssets.CopyTestAsset("DotnetRunDevicesWorkload")
@@ -194,7 +198,7 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
         await App.WaitUntilOutputContains("Device: test-device-1");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task AutoSelectsSingleDevice()
     {
         var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")

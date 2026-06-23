@@ -6,9 +6,10 @@ using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace dotnet.Tests.ToolSearchTests
 {
+    [TestClass]
     public class NugetSearchApiDeserializerTests
     {
-        [Fact]
+        [TestMethod]
         public void ItCanDeserialize()
         {
             var json = File.ReadAllText("queryResultSample.json");

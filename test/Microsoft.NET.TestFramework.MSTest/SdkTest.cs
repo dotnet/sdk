@@ -23,7 +23,7 @@ public abstract class SdkTest
     /// <summary>
     /// Set by the MSTest runtime before each test runs.
     /// </summary>
-    public TestContext TestContext { get; set; } = null!;
+    public virtual TestContext TestContext { get; set; } = null!;
 
     protected bool? UsingFullFrameworkMSBuild => SdkTestContext.Current.ToolsetUnderTest?.ShouldUseFullFrameworkMSBuild;
 
