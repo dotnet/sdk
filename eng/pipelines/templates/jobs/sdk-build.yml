@@ -92,96 +92,129 @@ jobs:
           checkDownloadedFiles: true
         displayName: 🟣 Download Manifest MSI Packages
 
-    ############### BUILDING ###############
+    ############### BUILDING (+ TESTING) ###############
+    # EXPERIMENT: The former separate 'Build' and 'Queue Tests' steps are combined into a
+    # single build.{ps1,sh} invocation to evaluate eliminating the duplicate restore/build
+    # between them (the test publish in test/UnitTests.proj re-restores and recompiles the
+    # product with a RuntimeIdentifier, which previously happened only in the second step).
+    #
+    # When running tests, the full sdk.slnx is built with -test. sdk.slnx now includes
+    # test/UnitTests.proj (the Helix orchestrator) so that test queuing happens as part of
+    # the same invocation. Per-project in-process test execution is suppressed via the
+    # RunTests guard in eng/XUnitV3/XUnitV3.Runner.targets (keyed off CustomHelixTargetQueue),
+    # so the individual *.Tests.csproj do not run on the build agent; UnitTests.proj still
+    # submits them to Helix.
+    #
+    # Build-only legs (runTests=false) build sdk.slnf, which is sdk.slnx minus
+    # test/UnitTests.proj, so they neither queue Helix work nor pull in the orchestrator.
     - ${{ if eq(parameters.pool.os, 'windows') }}:
-      - powershell: eng/common/build.ps1
-          -restore -build -pack -ci -nativeToolsOnMachine
-          -configuration $(buildConfiguration)
-          ${{ parameters.publishArgument }}
-          ${{ parameters.signArgument }}
-          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
-          /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-          /p:PgoInstrument=${{ parameters.pgoInstrument }}
-          ${{ parameters.runtimeSourceProperties }}
-          ${{ parameters.officialBuildProperties }}
-          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: 🟣 Build
-        env:
-          BuildConfig: $(buildConfiguration)
-          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
-          MSBUILDALWAYSRETRY: true
-
-    - ${{ else }}:
-      - script: |
-          source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
-          source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
-          initDistroRidGlobal "$os" "$arch" ""
-
-          . $(Build.SourcesDirectory)/eng/common/build.sh \
-          -restore -build -pack -ci \
-          -configuration $(buildConfiguration) \
-          ${{ parameters.publishArgument }} \
-          ${{ parameters.signArgument }} \
-          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
-          /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
-          /p:PgoInstrument=${{ parameters.pgoInstrument }} \
-          /p:TargetRid=${{ parameters.runtimeIdentifier }} \
-          ${{ parameters.osProperties }} \
-          ${{ parameters.runtimeSourceProperties }} \
-          ${{ parameters.officialBuildProperties }} \
-          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: 🟣 Build
-        env:
-          BuildConfig: $(buildConfiguration)
-          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
-          MSBUILDALWAYSRETRY: true
-          TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
-
-    ############### TESTING ###############
-    - ${{ if eq(parameters.runTests, true) }}:
-
-      # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
-      - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - ${{ if eq(parameters.runTests, true) }}:
         - powershell: eng/common/build.ps1
-            -restore -test -ci -prepareMachine -nativeToolsOnMachine
+            -restore -build -pack -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
-            /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
-            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
+            ${{ parameters.publishArgument }}
+            ${{ parameters.signArgument }}
+            /p:Projects=$(Build.SourcesDirectory)/sdk.slnx
+            /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+            /p:PgoInstrument=${{ parameters.pgoInstrument }}
             ${{ parameters.runtimeSourceProperties }}
+            ${{ parameters.officialBuildProperties }}
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /p:EnableHelixJobMonitor=true
-            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Queue Tests
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Build.binlog
+          displayName: 🟣 Build and Test
           env:
-            # Required by Arcade for running in Helix.
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: $(HelixApiAccessToken)
-            RunAoTTests: ${{ parameters.runAoTTests }}
+            BuildConfig: $(buildConfiguration)
             TestFullMSBuild: ${{ parameters.testFullMSBuild }}
-
-      - ${{ else }}:
-        # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
-        # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
-        # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
-        - script: eng/common/build.sh
-            -restore -test -ci -prepareMachine
-            -configuration $(buildConfiguration)
-            '/p:Projects="${{ parameters.testProjects }}"'
-            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
-            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-            /p:TargetRid=${{ parameters.runtimeIdentifier }}
-            ${{ parameters.osProperties }}
-            ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
-            /p:EnableHelixJobMonitor=true
-            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Queue Tests
-          env:
+            MSBUILDALWAYSRETRY: true
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
+      - ${{ else }}:
+        - powershell: eng/common/build.ps1
+            -restore -build -pack -ci -nativeToolsOnMachine
+            -configuration $(buildConfiguration)
+            ${{ parameters.publishArgument }}
+            ${{ parameters.signArgument }}
+            /p:Projects=$(Build.SourcesDirectory)/sdk.slnf
+            /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+            /p:PgoInstrument=${{ parameters.pgoInstrument }}
+            ${{ parameters.runtimeSourceProperties }}
+            ${{ parameters.officialBuildProperties }}
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+          displayName: 🟣 Build
+          env:
+            BuildConfig: $(buildConfiguration)
+            TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+            MSBUILDALWAYSRETRY: true
+
+    - ${{ else }}:
+      # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
+      # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
+      - ${{ if eq(parameters.runTests, true) }}:
+        - script: |
+            source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
+            source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
+            initDistroRidGlobal "$os" "$arch" ""
+
+            . $(Build.SourcesDirectory)/eng/common/build.sh \
+            -restore -build -pack -test -ci -prepareMachine \
+            -configuration $(buildConfiguration) \
+            ${{ parameters.publishArgument }} \
+            ${{ parameters.signArgument }} \
+            '/p:Projects=$(Build.SourcesDirectory)/sdk.slnx' \
+            /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
+            /p:PgoInstrument=${{ parameters.pgoInstrument }} \
+            /p:TargetRid=${{ parameters.runtimeIdentifier }} \
+            ${{ parameters.osProperties }} \
+            ${{ parameters.runtimeSourceProperties }} \
+            ${{ parameters.officialBuildProperties }} \
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) \
+            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}" \
+            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }} \
+            /p:EnableHelixJobMonitor=true \
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Build.binlog
+          displayName: 🟣 Build and Test
+          env:
+            BuildConfig: $(buildConfiguration)
+            OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+            MSBUILDALWAYSRETRY: true
+            TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
+            # Required by Arcade for running in Helix.
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            HelixAccessToken: $(HelixApiAccessToken)
+            RunAoTTests: ${{ parameters.runAoTTests }}
+      - ${{ else }}:
+        - script: |
+            source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
+            source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
+            initDistroRidGlobal "$os" "$arch" ""
+
+            . $(Build.SourcesDirectory)/eng/common/build.sh \
+            -restore -build -pack -ci \
+            -configuration $(buildConfiguration) \
+            ${{ parameters.publishArgument }} \
+            ${{ parameters.signArgument }} \
+            '/p:Projects=$(Build.SourcesDirectory)/sdk.slnf' \
+            /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
+            /p:PgoInstrument=${{ parameters.pgoInstrument }} \
+            /p:TargetRid=${{ parameters.runtimeIdentifier }} \
+            ${{ parameters.osProperties }} \
+            ${{ parameters.runtimeSourceProperties }} \
+            ${{ parameters.officialBuildProperties }} \
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+          displayName: 🟣 Build
+          env:
+            BuildConfig: $(buildConfiguration)
+            OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+            MSBUILDALWAYSRETRY: true
             TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### POST ###############
