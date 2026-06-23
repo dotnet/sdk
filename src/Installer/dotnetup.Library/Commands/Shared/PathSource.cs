@@ -14,9 +14,6 @@ internal enum PathSource
     /// <summary>The install path came from a global.json sdk-path.</summary>
     GlobalJson,
 
-    /// <summary>An existing user-level .NET installation was found and reused.</summary>
-    ExistingUserInstall,
-
     /// <summary>The user was prompted interactively and chose a path.</summary>
     InteractivePrompt,
 
