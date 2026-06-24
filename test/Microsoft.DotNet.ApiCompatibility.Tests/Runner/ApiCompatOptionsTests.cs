@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
 {
+    [TestClass]
     public class ApiCompatOptionsTests
     {
-        [Fact]
+        [TestMethod]
         public void Ctor_ValidArguments_PropertiesSet()
         {
             bool enableStrictMode = true;
@@ -13,8 +14,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
 
             ApiCompatRunnerOptions options = new(enableStrictMode, isBaselineComparison);
 
-            Assert.Equal(enableStrictMode, options.EnableStrictMode);
-            Assert.Equal(isBaselineComparison, options.IsBaselineComparison);
+            Assert.AreEqual(enableStrictMode, options.EnableStrictMode);
+            Assert.AreEqual(isBaselineComparison, options.IsBaselineComparison);
         }
     }
 }
