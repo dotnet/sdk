@@ -6,9 +6,10 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    [TestClass]
     public class ToolPackageInstanceTests
     {
-        [Fact]
+        [TestMethod]
         public void MissingToolSettingsFileMessageIncludesPackageAndVersion()
         {
             var message = ToolPackageInstance.GetMissingToolSettingsFileMessage(
