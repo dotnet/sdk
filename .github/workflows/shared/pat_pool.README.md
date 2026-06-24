@@ -51,8 +51,8 @@ The [`pat_pool.md`](./pat_pool.md) workflow import defines a custom job with a `
 ```yml
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
-# Ensure this agentic jobs run from the isolated
-# `copilot-pat-pool` environment where the PAT pool is available.
+# Ensure agentic jobs run from the isolated `copilot-pat-pool`
+# environment where the PAT pool is available.
 # When org-level billing is available, this will be removed.
 # See `shared/pat_pool.README.md` for more information.
 # ###############################################################

@@ -25,11 +25,11 @@ on:
   status-comment: false
 
 # ###############################################################
-# Override COPILOT_GITHUB_TOKEN with a random PAT from the pool.
-# Ensure this agentic jobs run from the isolated
-# `copilot-pat-pool` environment where the PAT pool is available.
-# This stop-gap will be removed when org billing is available.
-# See: .github/workflows/shared/pat_pool.README.md for more info.
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Ensure agentic jobs run from the isolated `copilot-pat-pool`
+# environment where the PAT pool is available.
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
 # ###############################################################
 
 imports:
