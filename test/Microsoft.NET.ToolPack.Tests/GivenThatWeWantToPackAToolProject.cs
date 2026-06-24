@@ -19,8 +19,8 @@ namespace Microsoft.NET.ToolPack.Tests
         private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
             // Include all distinguishing parameters so each [DataRow] gets a unique test asset
-            // directory. Tests run with method-level parallelization (MSTest.Sdk default), so rows
-            // sharing a directory would race on the copied project files. Sanitize characters that
+            // directory. Tests run in parallel, so rows sharing a directory would race on the
+            // copied project files. Sanitize characters that
             // are unsafe for the directory name and the /bl: binlog argument below.
             string id = $"{callingMethod}-{multiTarget}-{packageType}-{_targetFrameworkOrFrameworks}"
                 .Replace(' ', '_').Replace(',', '_').Replace(';', '_');

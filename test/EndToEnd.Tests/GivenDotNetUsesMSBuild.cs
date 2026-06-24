@@ -3,8 +3,6 @@
 
 #nullable disable
 
-[assembly: DoNotParallelize]
-
 namespace EndToEnd.Tests
 {
     [TestClass]

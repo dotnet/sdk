@@ -28,9 +28,12 @@
   <!-- MSTest.Sdk defaults. Applied to projects that opt in via <Project Sdk="MSTest.Sdk">,
        which sets UsingMSTestSdk=true in its Sdk.props before this file is evaluated. -->
   <PropertyGroup Condition="'$(UsingMSTestSdk)' == 'true'">
-    <!-- Run tests in parallel at the method level by default. MSTest.TestAdapter
-         emits the corresponding [assembly: Parallelize(Scope = MethodLevel)] attribute. -->
-    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
+    <!-- Run tests in parallel at the class level by default. MSTest.TestAdapter
+         emits the corresponding [assembly: Parallelize(Scope = ClassLevel)] attribute.
+         Class-level scope runs test methods within a class sequentially while running
+         different classes in parallel, which avoids the intra-class races that method-level
+         parallelism would otherwise require [DoNotParallelize] to guard against. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
 
     <!-- Promote info-severity MSTest analyzer rules to warnings and critical rules to errors. -->
     <MSTestAnalysisMode>Recommended</MSTestAnalysisMode>

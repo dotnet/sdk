@@ -22,7 +22,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// location different from the <c>TaskEnvironment.ProjectDirectory</c> so a bug that fell
     /// back to <c>Environment.CurrentDirectory</c> / <c>Path.GetFullPath</c> would surface here.
     /// </summary>
-    [DoNotParallelize]
     [TestClass]
     public class GivenAGenerateBundleMultiThreading : IDisposable
     {
