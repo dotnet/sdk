@@ -282,7 +282,9 @@ while :; do
             ;;
         noble) # Ubuntu 24.04
             __CodeName=noble
-            __LLDB_Package="liblldb-19-dev"
+            if [[ -z "$__LLDB_Package" ]]; then
+                __LLDB_Package="liblldb-19-dev"
+            fi
             ;;
         stretch) # Debian 9
             __CodeName=stretch
@@ -364,7 +366,7 @@ while :; do
             ;;
         freebsd14)
             __CodeName=freebsd
-            __FreeBSDBase="14.3-RELEASE"
+            __FreeBSDBase="14.2-RELEASE"
             __FreeBSDABI="14"
             __SkipUnmount=1
             ;;
@@ -618,15 +620,15 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
         [[ -z "$PKG_FILE" ]] && { echo "ERROR: Package $pkg not found"; exit 1; }
 
         if [[ "$__hasWget" == 1 ]]; then
-            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir/usr/local" -xzpf -
+            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir" -xzpf -
         else
-            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir/usr/local" -xzpf -
+            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir" -xzpf -
         fi
     done
 
     echo "Creating versionless symlinks for shared libraries..."
     # Find all versioned .so files and create the base .so symlink
-    for lib in "$__RootfsDir"/usr/lib/lib*.so.*; do
+    for lib in "$__RootfsDir/usr/lib/libc++.so."* "$__RootfsDir/usr/lib/libc++abi.so."* "$__RootfsDir/usr/lib/libpthread.so."*; do
         if [ -f "$lib" ]; then
             # Extract the filename (e.g., libc++.so.12.0)
             VERSIONED_NAME=$(basename "$lib")
@@ -636,10 +638,6 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
             ln -sf "$VERSIONED_NAME" "$__RootfsDir/usr/lib/$BASE_NAME"
         fi
     done
-
-    echo "Cleaning up unnecessary paths"
-    # we don't use executables and kernel in rootfs (as we use host's compiler with -sysroot)
-    rm -rf "$__RootfsDir/usr/share" "$__RootfsDir/usr/bin"
 elif [[ "$__CodeName" == "illumos" ]]; then
     mkdir "$__RootfsDir/tmp"
     pushd "$__RootfsDir/tmp"
