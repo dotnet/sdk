@@ -38,6 +38,12 @@ internal class InstallWorkflow
     /// </summary>
     public void Execute(MinimalInstallSpec[] componentSpecs)
     {
+        if (_command.LocalInstall)
+        {
+            ExecuteLocalSdkInstall(componentSpecs);
+            return;
+        }
+
         bool runOnboarding = ShouldRunFirstUseOnboarding(_command.Interactive, _command.InstallPath, _command.MigrateFromSystem);
         bool promptForStarterChannel = ShouldPromptForStarterChannel(runOnboarding, componentSpecs);
         List<ResolvedInstallRequest> requests;
@@ -122,11 +128,17 @@ internal class InstallWorkflow
         MinimalInstallSpec[] componentSpecs)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        return GenerateInstallRequests(componentSpecs, globalJson, pathResolutionOverride: null);
+    }
+
+    private List<ResolvedInstallRequest> GenerateInstallRequests(
+        MinimalInstallSpec[] componentSpecs,
+        GlobalJsonInfo? globalJson,
+        InstallPathResolver.InstallPathResolutionResult? pathResolutionOverride)
+    {
         var currentInstallRoot = _command.DotnetEnvironment.GetCurrentPathConfiguration();
 
-        var pathResolution = _installPathResolver.Resolve(
-            _command.InstallPath,
-            globalJson);
+        var pathResolution = pathResolutionOverride ?? _installPathResolver.Resolve(_command.InstallPath, globalJson);
 
         ValidateInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource, _command.ManifestPath);
 
@@ -142,6 +154,41 @@ internal class InstallWorkflow
         }
 
         return requests;
+    }
+
+    private void ExecuteLocalSdkInstall(MinimalInstallSpec[] componentSpecs)
+    {
+        if (componentSpecs is not [{ Component: InstallComponent.SDK }])
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ContextResolutionFailed,
+                "The --local option only supports installing one .NET SDK.");
+        }
+
+        string? requestedChannel = componentSpecs[0].VersionOrChannel;
+        var plan = LocalSdkSetupPlan.Create(Environment.CurrentDirectory, requestedChannel);
+        LocalSdkHostValidator.EnsureHostSupportsSdkPaths();
+
+        var pathResolution = new InstallPathResolver.InstallPathResolutionResult(
+            plan.LocalDotnetPath,
+            plan.LocalDotnetPath,
+            PathSource.GlobalJson);
+
+        var requests = GenerateInstallRequests(componentSpecs, plan.GlobalJsonInfo, pathResolution);
+        ExecuteInstallRequests(requests);
+
+        var resolvedRequest = requests[0];
+        var settings = LocalSdkSetupSettings.Create(
+            requestedChannel,
+            plan.GlobalJsonExisted,
+            plan.GlobalJsonInfo,
+            resolvedRequest.ResolvedVersion);
+
+        GlobalJsonModifier.ApplyLocalSdkSetup(plan.GlobalJsonPath, settings);
+        GitIgnoreUpdater.EnsureDotnetDirectoryIgnored(plan.ProjectDirectory);
+
+        SpectreAnsiConsole.MarkupLine(
+            $"Configured {DotnetupTheme.Dim(plan.GlobalJsonPath.EscapeMarkup())} to use {DotnetupTheme.Accent(".dotnet".EscapeMarkup())} before the host SDK fallback.");
     }
 
     internal static bool ShouldRunFirstUseOnboarding(bool interactive, string? installPath, bool migrateFromSystem = false)
@@ -189,6 +236,7 @@ internal class InstallWorkflow
                 + "a daily-build scope like '10.0-daily' or '10.0.1xx-daily', or a fully-qualified version like '10.0.103'.");
         }
 
+        bool useGlobalJsonSource = isFromGlobalJson || _command.LocalInstall;
         var request = new DotnetInstallRequest(
             installRoot,
             new UpdateChannel(channel),
@@ -197,8 +245,8 @@ internal class InstallWorkflow
             {
                 ManifestPath = _command.ManifestPath,
                 RequireMuxerUpdate = _command.RequireMuxerUpdate,
-                InstallSource = isFromGlobalJson ? InstallRequestSource.GlobalJson : InstallRequestSource.Explicit,
-                GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
+                InstallSource = useGlobalJsonSource ? InstallRequestSource.GlobalJson : InstallRequestSource.Explicit,
+                GlobalJsonPath = (useGlobalJsonSource || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
                 Untracked = _command.Untracked,
                 Verbosity = _command.Verbosity
             });

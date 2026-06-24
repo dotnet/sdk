@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -37,11 +36,13 @@ public class DotnetCommandStdinForwardingTests
         {
             DotnetCommandTests.CreateStdinEchoFakeDotnet(tempDir.FullName);
 
-            string dotnetupPath = DotnetupTestUtilities.GetDotnetupExecutablePath();
             string testInput = "HelloInteractive_" + Guid.NewGuid().ToString("N")[..8];
 
             using var process = new Process();
-            process.StartInfo.FileName = dotnetupPath;
+            string[] args = OperatingSystem.IsWindows()
+                ? ["dotnet", "/c", "findstr /r ."]
+                : ["dotnet"];
+            DotnetupTestUtilities.ConfigureDotnetupProcess(process.StartInfo, args);
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.RedirectStandardInput = true;
@@ -53,19 +54,6 @@ public class DotnetCommandStdinForwardingTests
             process.StartInfo.Environment["PATH"] = tempDir.FullName + Path.PathSeparator + currentPath;
             process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
             process.StartInfo.Environment["NO_COLOR"] = "1";
-
-            if (OperatingSystem.IsWindows())
-            {
-                // Fake dotnet.exe is cmd.exe; forward /c "findstr /r ." to echo stdin.
-                // findstr reads from stdin and echoes lines matching regex "." (non-empty).
-                process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                    ["dotnet", "/c", "findstr /r ."]);
-            }
-            else
-            {
-                // Fake dotnet is a shell script that cats stdin to stdout.
-                process.StartInfo.Arguments = "dotnet";
-            }
 
             process.Start();
 

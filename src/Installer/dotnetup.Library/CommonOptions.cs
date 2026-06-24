@@ -59,6 +59,12 @@ internal class CommonOptions
         Description = "The path to install .NET to",
     };
 
+    public static readonly Option<bool> LocalInstallOption = new("--local")
+    {
+        Description = "Install the SDK into a project-local .dotnet directory and configure global.json sdk.paths.",
+        Arity = ArgumentArity.Zero
+    };
+
     public static readonly Option<IEnvShellProvider?> ShellOption = new("--shell", "-s")
     {
         Description = $"The shell to use for profile-based environment configuration (supported: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}). If not specified, the current shell will be detected.",

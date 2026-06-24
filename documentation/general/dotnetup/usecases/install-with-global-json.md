@@ -23,6 +23,41 @@ Installed .NET SDK 10.0.102 to C:\Users\you\.dotnet
 
 These SDKs are installed into the 'dotnetup install root' and are available for use in your projects. `dotnetup` tracks which versions and channels are required by your projects and ensures that when you install or update new versions that none of your existing projects needs are broken.
 
+## Project-local SDK installs
+
+Use `--local` when you want the SDK installed into the repository itself instead of the default dotnetup install root:
+
+```
+$ dotnetup sdk install 10.0.100 --local
+Installing .NET SDK 10.0.100 to C:\src\myproject\.dotnet...
+Installed at C:\src\myproject\.dotnet:
+  .NET SDK 10.0.100
+Configured C:\src\myproject\global.json to use .dotnet before the host SDK fallback.
+```
+
+`--local`:
+
+- Installs the SDK into `.dotnet` next to the nearest `global.json`. If no `global.json` exists, dotnetup creates one in the current directory.
+- Writes portable SDK resolution settings:
+
+  ```json
+  {
+    "sdk": {
+      "version": "10.0.100",
+      "rollForward": "disable",
+      "paths": [".dotnet", "$host$"]
+    }
+  }
+  ```
+
+- Preserves existing top-level `global.json` sections such as `msbuild-sdks` and `tools`.
+- Adds `.dotnet/` to the adjacent `.gitignore` so the SDK is not committed.
+- Does not update PATH, DOTNET_ROOT, shell profiles, or dotnetup default-install settings.
+
+The `paths` feature is evaluated by the `dotnet` host. The machine still needs a .NET 10 or later host on PATH so normal `dotnet` commands can understand `sdk.paths` and find the project-local SDK.
+
+`--local` configures a single SDK version. Exact version requests write `rollForward: "disable"`; floating channels write a roll-forward policy matching the requested scope and store the resolved SDK version in `global.json`.
+
 ## Channel Resolution from global.json
 
 The combination of `sdk.version` and `sdk.rollForward` determines the channel that dotnetup tracks:

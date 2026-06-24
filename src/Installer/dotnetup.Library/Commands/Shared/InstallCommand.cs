@@ -16,6 +16,7 @@ internal abstract class InstallCommand : CommandBase
 {
     public string? InstallPath { get; }
     public string? ManifestPath { get; }
+    public bool LocalInstall { get; }
     public bool Interactive { get; }
     public bool NoProgress { get; }
     public Verbosity Verbosity { get; }
@@ -34,6 +35,8 @@ internal abstract class InstallCommand : CommandBase
     {
         InstallPath = parseResult.GetValue(CommonOptions.InstallPathOption);
         ManifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);
+        LocalInstall = parseResult.GetResult(CommonOptions.LocalInstallOption) is not null
+            && parseResult.GetValue(CommonOptions.LocalInstallOption);
         Interactive = parseResult.GetValue(CommonOptions.InteractiveOption);
         NoProgress = parseResult.GetValue(CommonOptions.NoProgressOption);
         Verbosity = parseResult.GetValue(CommonOptions.VerbosityOption);

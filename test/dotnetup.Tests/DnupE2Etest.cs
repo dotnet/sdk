@@ -167,12 +167,11 @@ public class InstallEndToEndTests
     /// <param name="tempRoot">Temporary directory for test scripts</param>
     private static void VerifyEnvScriptWorks(string shell, string installPath, string? expectedVersion, string tempRoot)
     {
-        string dotnetupPath = DotnetupTestUtilities.GetDotnetupExecutablePath();
-
         // Determine shell-specific settings
         string shellExecutable;
         string scriptPath;
         string scriptContent;
+        string? managedDotnetupRuntimeDirectory = DotnetupTestUtilities.GetManagedDotnetupRuntimeDirectory();
 
         if (shell == "bash" || shell == "zsh")
         {
@@ -186,6 +185,28 @@ public class InstallEndToEndTests
             }
 
             static string Escape(string s) => s.Replace("'", "'\\''");
+            string dotnetupInvocation = DotnetupTestUtilities.GetDotnetupScriptInvocation(
+                shell,
+                ["print-env-script", "--shell", shell, "--dotnet-install-path", installPath]);
+            string managedDotnetupPathCleanup = managedDotnetupRuntimeDirectory is null
+                ? string.Empty
+                : $"""
+                # Remove the test-only managed dotnetup runtime path. A NativeAOT dotnetup binary does not add this.
+                _clean_path=""
+                _old_ifs=$IFS
+                IFS=:
+                for _entry in $PATH; do
+                    if [ "$_entry" != '{Escape(managedDotnetupRuntimeDirectory)}' ]; then
+                        if [ -z "$_clean_path" ]; then
+                            _clean_path=$_entry
+                        else
+                            _clean_path=$_clean_path:$_entry
+                        fi
+                    fi
+                done
+                IFS=$_old_ifs
+                export PATH=$_clean_path
+                """;
 
             // Use a temp file to capture dotnetup output instead of process substitution.
             // Process substitution failures are silently ignored by `source`, making
@@ -196,11 +217,12 @@ public class InstallEndToEndTests
             scriptContent = $@"#!/bin/{shell}
 set -e
 # Generate env script to a file (errors will be caught by set -e)
-'{Escape(dotnetupPath)}' print-env-script --shell {shell} --dotnet-install-path '{Escape(installPath)}' > '{Escape(envScriptOutput)}'
+            {dotnetupInvocation} > '{Escape(envScriptOutput)}'
 # Source the generated env script
 source '{Escape(envScriptOutput)}'
-# Clear cached dotnet path to ensure we use the newly configured PATH
-hash -d dotnet 2>/dev/null || true
+            {managedDotnetupPathCleanup}
+            # Clear cached dotnet path to ensure we use the newly configured PATH
+            hash -d dotnet 2>/dev/null || true
 # Capture versions into variables first to avoid nested quoting issues on macOS bash 3.2
 _path_ver=$(dotnet --version)
 _root_ver=""$DOTNET_ROOT/dotnet""
@@ -215,8 +237,6 @@ echo ""DOTNET_ROOT=$DOTNET_ROOT""
         }
         else // pwsh / powershell
         {
-            static string Escape(string s) => s.Replace("'", "''");
-
             // Prefer pwsh (PowerShell Core, cross-platform) over powershell.exe (Windows PowerShell 5.1).
             // The generated env script uses standard PowerShell syntax compatible with both.
             shellExecutable = ResolvePowerShellExecutable()!;
@@ -226,10 +246,22 @@ echo ""DOTNET_ROOT=$DOTNET_ROOT""
                 return;
             }
 
+            string dotnetupInvocation = DotnetupTestUtilities.GetDotnetupScriptInvocation(
+                "pwsh",
+                ["print-env-script", "--shell", "pwsh", "--dotnet-install-path", installPath]);
+            string managedDotnetupPathCleanup = managedDotnetupRuntimeDirectory is null
+                ? string.Empty
+                : $$"""
+                # Remove the test-only managed dotnetup runtime path. A NativeAOT dotnetup binary does not add this.
+                $env:PATH = (($env:PATH -split [IO.Path]::PathSeparator) |
+                    Where-Object { $_ -ne '{{managedDotnetupRuntimeDirectory.Replace("'", "''")}}' }) -join [IO.Path]::PathSeparator
+                """;
+
             scriptPath = Path.Combine(tempRoot, "test-env.ps1");
             scriptContent = $@"
 $ErrorActionPreference = 'Stop'
-iex (& '{Escape(dotnetupPath)}' print-env-script --shell pwsh --dotnet-install-path '{Escape(installPath)}' | Out-String)
+iex ({dotnetupInvocation} | Out-String)
+{managedDotnetupPathCleanup}
 # Verify both dotnet and DOTNET_ROOT/dotnet return the same version
 Write-Output ""DOTNET_VERSION=$(dotnet --version)""
 Write-Output ""DOTNET_ROOT_VERSION=$(& ""$env:DOTNET_ROOT/dotnet"" --version)""
@@ -971,6 +1003,81 @@ public class LifecycleEndToEndTests
             "SDK install spec should record the global.json path");
         sdkSpec.GlobalJsonPath.Should().Be(globalJsonPath,
             "SDK install spec should record the correct global.json path");
+    }
+
+    [Fact]
+    public void SdkInstallLocal_CreatesGlobalJsonAndInstallsToProjectDotnetDirectory()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        string projectDir = Path.Combine(testEnv.TempRoot, "local-project");
+        Directory.CreateDirectory(projectDir);
+        string expectedInstallPath = Path.Combine(projectDir, ".dotnet");
+        string globalJsonPath = Path.Combine(projectDir, "global.json");
+
+        var sdkArgs = new List<string>(["sdk", "install", "9.0.103",
+            "--local",
+            "--interactive", "false",
+            "--no-progress"]);
+        if (!string.IsNullOrEmpty(testEnv.ManifestPath))
+        {
+            sdkArgs.AddRange(["--manifest-path", testEnv.ManifestPath]);
+        }
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            [.. sdkArgs], captureOutput: true, workingDirectory: projectDir);
+        exitCode.Should().Be(0, $"SDK local install failed. Output:\n{output}");
+
+        Directory.Exists(Path.Combine(expectedInstallPath, "sdk", "9.0.103")).Should().BeTrue(
+            "local SDK install should land under the project .dotnet directory");
+
+        string globalJson = File.ReadAllText(globalJsonPath);
+        globalJson.Should().Contain("\"version\": \"9.0.103\"");
+        globalJson.Should().Contain("\"rollForward\": \"disable\"");
+        globalJson.Should().Contain("\"paths\"");
+        globalJson.Should().Contain("\".dotnet\"");
+        globalJson.Should().Contain("\"$host$\"");
+
+        File.ReadAllText(Path.Combine(projectDir, ".gitignore"))
+            .Should().Contain(".dotnet/");
+
+        File.WriteAllText(globalJsonPath, """
+            {
+              "sdk": {
+                "version": "9.0.103",
+                "rollForward": "latestFeature"
+              },
+              "msbuild-sdks": {
+                "Example.Sdk": "1.2.3"
+              },
+              "tools": {
+                "example": "preserve-me"
+              }
+            }
+            """);
+
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            [.. sdkArgs], captureOutput: true, workingDirectory: projectDir);
+        exitCode.Should().Be(0, $"SDK local install should repair an existing global.json without paths. Output:\n{output}");
+
+        globalJson = File.ReadAllText(globalJsonPath);
+        globalJson.Should().Contain("\"rollForward\": \"disable\"");
+        globalJson.Should().Contain("\"paths\"");
+        globalJson.Should().Contain("\"Example.Sdk\": \"1.2.3\"");
+        globalJson.Should().Contain("\"example\": \"preserve-me\"");
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var manifestData = manifest.ReadManifest();
+        var installSpecs = manifestData.DotnetRoots
+            .Where(r => DotnetupUtilities.PathsEqual(r.Path, expectedInstallPath))
+            .SelectMany(r => r.InstallSpecs)
+            .ToList();
+
+        installSpecs.Should().ContainSingle(s => s.Component == InstallComponent.SDK);
+        var sdkSpec = installSpecs.First(s => s.Component == InstallComponent.SDK);
+        sdkSpec.InstallSource.Should().Be(InstallSource.GlobalJson);
+        sdkSpec.GlobalJsonPath.Should().Be(globalJsonPath);
     }
 
     [Fact]
