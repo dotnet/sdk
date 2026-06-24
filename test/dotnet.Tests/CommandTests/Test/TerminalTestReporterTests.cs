@@ -7,6 +7,7 @@ using Moq;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class TerminalTestReporterTests
 {
     /// <summary>
@@ -20,7 +21,7 @@ public class TerminalTestReporterTests
     /// behavior triggered when handshake failures are reported lives in
     /// <c>GivenDotnetTestRunsConsoleAppWithoutHandshake</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void AssemblyRunCompleted_WhenExecutionIdUnknown_DoesNotThrowAndReportsHandshakeFailure()
     {
         var console = new Mock<IConsole>(MockBehavior.Loose);
@@ -57,7 +58,7 @@ public class TerminalTestReporterTests
     /// <c>[+P/xF/?S]</c> (mirroring <c>SimpleTerminal.RenderProgress</c>). The full-ANSI path
     /// uses <c>[✓P/xF/↓S]</c> and is exercised end-to-end by acceptance tests.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void AssemblyRunCompleted_WithShowAssemblyStartAndComplete_PrintsPerAssemblyCounts()
     {
         var capturingConsole = new CapturingConsole();
@@ -97,7 +98,7 @@ public class TerminalTestReporterTests
     /// <see cref="AssemblyRunCompleted_WithShowAssemblyStartAndComplete_PrintsPerAssemblyCounts"/>
     /// for why the SimpleAnsi (ASCII) variant is asserted here.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void TestExecutionCompleted_WithMultipleAssemblies_PrintsPerAssemblyCountsInSummary()
     {
         var capturingConsole = new CapturingConsole();
@@ -150,7 +151,7 @@ public class TerminalTestReporterTests
     /// When an assembly's tests were retried, the per-assembly summary should append a
     /// "/r{N}" segment to the compact counts block so users can tell the final counts came from retries.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void AssemblyRunCompleted_WhenTestsWereRetried_ShowsRetriedCount()
     {
         var capturingConsole = new CapturingConsole();

@@ -13,6 +13,7 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
+    [TestClass]
     public class AliasAssignmentTests
     {
         private static HashSet<string> InitiallyTakenAliases
@@ -46,7 +47,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         }
 
         // also asserts that "--param:<name>" is used if <name> is taken
-        [Fact(DisplayName = nameof(LongNameOverrideTakesPrecendence))]
+        [TestMethod]
         public void LongNameOverrideTakesPrecendence()
         {
             IReadOnlyList<CliTemplateParameter> paramList = new List<CliTemplateParameter>()
@@ -61,10 +62,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("-f", result["foo"].Aliases);
             Assert.Contains("--foo", result["bar"].Aliases);
             Assert.Contains("-fo", result["bar"].Aliases); // the short name is based on the long name override if it exists
-            Assert.DoesNotContain(result, r => r.Value.Errors.Any());
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
-        [Fact(DisplayName = nameof(ShortNameOverrideTakesPrecedence))]
+        [TestMethod]
         public void ShortNameOverrideTakesPrecedence()
         {
             IReadOnlyList<CliTemplateParameter> paramList = new List<CliTemplateParameter>()
@@ -79,10 +80,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("-fo", result["foo"].Aliases);
             Assert.Contains("--bar", result["bar"].Aliases);
             Assert.Contains("-f", result["bar"].Aliases);
-            Assert.DoesNotContain(result, r => r.Value.Errors.Any());
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
-        [Fact(DisplayName = nameof(ShortNameExcludedWithEmptyStringOverride))]
+        [TestMethod]
         public void ShortNameExcludedWithEmptyStringOverride()
         {
             IReadOnlyList<CliTemplateParameter> paramList = new List<CliTemplateParameter>()
@@ -96,11 +97,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("--foo", result["foo"].Aliases);
             Assert.Contains("-f", result["foo"].Aliases);
             Assert.Contains("--bar", result["bar"].Aliases);
-            Assert.Single(result["bar"].Aliases);
-            Assert.DoesNotContain(result, r => r.Value.Errors.Any());
+            Assert.HasCount(1, result["bar"].Aliases);
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
-        [Fact(DisplayName = nameof(ParameterNameCannotContainColon))]
+        [TestMethod]
         public void ParameterNameCannotContainColon()
         {
             IReadOnlyList<CliTemplateParameter> paramList = new List<CliTemplateParameter>()
@@ -109,12 +110,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             };
 
             var result = AliasAssignmentCoordinator.AssignAliasesForParameter(paramList, InitiallyTakenAliases).ToDictionary(r => r.Parameter.Name, r => r);
-            Assert.Empty(result["foo:bar"].Aliases);
-            Assert.Single(result["foo:bar"].Errors);
+            Assert.IsEmpty(result["foo:bar"].Aliases);
+            Assert.HasCount(1, result["foo:bar"].Errors);
             Assert.Contains("Parameter name 'foo:bar' contains colon, which is forbidden.", result["foo:bar"].Errors);
         }
 
-        [Fact(DisplayName = nameof(ShortNameGetPrependedPColonIfNeeded))]
+        [TestMethod]
         public void ShortNameGetPrependedPColonIfNeeded()
         {
             IReadOnlyList<CliTemplateParameter> paramList = new List<CliTemplateParameter>()
@@ -129,10 +130,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("-f", result["bar"].Aliases);
             Assert.Contains("--f", result["f"].Aliases);
             Assert.Contains("-p:f", result["f"].Aliases);
-            Assert.DoesNotContain(result, r => r.Value.Errors.Any());
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShortNameGenerationShouldNotProduceDuplicates()
         {
             List<CliTemplateParameter> paramList = new();
@@ -147,7 +148,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 .BeFalse("Duplicate option aliases should not be generated.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShortNameSkippedAfter4Reps()
         {
             List<CliTemplateParameter> paramList = new();
@@ -169,7 +170,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         }
 
         // This reflects the MVC 2.0 tempalte as of May 24, 2017
-        [Fact(DisplayName = nameof(CheckAliasAssignmentsMvc20))]
+        [TestMethod]
         public void CheckAliasAssignmentsMvc20()
         {
             IReadOnlyList<CliTemplateParameter> paramList = new List<CliTemplateParameter>()
@@ -201,7 +202,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             Assert.Contains("-au", result["auth"].Aliases);
             Assert.Contains("--auth", result["auth"].Aliases);
-            Assert.Single(result["AAdB2CInstance"].Aliases);
+            Assert.HasCount(1, result["AAdB2CInstance"].Aliases);
             Assert.Contains("--aad-b2c-instance", result["AAdB2CInstance"].Aliases);
             Assert.Contains("-ssp", result["SignUpSignInPolicyId"].Aliases);
             Assert.Contains("--susi-policy-id", result["SignUpSignInPolicyId"].Aliases);
@@ -209,15 +210,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("--reset-password-policy-id", result["ResetPasswordPolicyId"].Aliases);
             Assert.Contains("-ep", result["EditProfilePolicyId"].Aliases);
             Assert.Contains("--edit-profile-policy-id", result["EditProfilePolicyId"].Aliases);
-            Assert.Single(result["AADInstance"].Aliases);
+            Assert.HasCount(1, result["AADInstance"].Aliases);
             Assert.Contains("--aad-instance", result["AADInstance"].Aliases);
-            Assert.Single(result["ClientId"].Aliases);
+            Assert.HasCount(1, result["ClientId"].Aliases);
             Assert.Contains("--client-id", result["ClientId"].Aliases);
-            Assert.Single(result["Domain"].Aliases);
+            Assert.HasCount(1, result["Domain"].Aliases);
             Assert.Contains("--domain", result["Domain"].Aliases);
-            Assert.Single(result["TenantId"].Aliases);
+            Assert.HasCount(1, result["TenantId"].Aliases);
             Assert.Contains("--tenant-id", result["TenantId"].Aliases);
-            Assert.Single(result["CallbackPath"].Aliases);
+            Assert.HasCount(1, result["CallbackPath"].Aliases);
             Assert.Contains("--callback-path", result["CallbackPath"].Aliases);
             Assert.Contains("-r", result["OrgReadAccess"].Aliases);
             Assert.Contains("--org-read-access", result["OrgReadAccess"].Aliases);
@@ -233,21 +234,21 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("--IISExpressPort", result["IISExpressPort"].Aliases);
             Assert.Contains("-uld", result["UseLocalDB"].Aliases);
             Assert.Contains("--use-local-db", result["UseLocalDB"].Aliases);
-            Assert.Single(result["TargetFrameworkOverride"].Aliases);
+            Assert.HasCount(1, result["TargetFrameworkOverride"].Aliases);
             Assert.Contains("--target-framework-override", result["TargetFrameworkOverride"].Aliases);
             Assert.Contains("-f", result["Framework"].Aliases);
             Assert.Contains("--framework", result["Framework"].Aliases);
             Assert.Contains("-nt", result["NoTools"].Aliases);
             Assert.Contains("--no-tools", result["NoTools"].Aliases);
-            Assert.Single(result["skipRestore"].Aliases);
+            Assert.HasCount(1, result["skipRestore"].Aliases);
             Assert.Contains("--no-restore", result["skipRestore"].Aliases);
-            Assert.DoesNotContain(result, r => r.Value.Errors.Any());
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
-        [Theory]
-        [InlineData("package", "--param:package")]
-        [InlineData("u", "-p:u")]
-        [InlineData("notreserved", "--notreserved")]
+        [TestMethod]
+        [DataRow("package", "--param:package")]
+        [DataRow("u", "-p:u")]
+        [DataRow("notreserved", "--notreserved")]
         public void CanAssignAliasForParameterWithReservedAlias(string parameterName, string expectedContainedAlias)
         {
             string command = "foo";
@@ -266,13 +267,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 .FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, A.Fake<IHostSpecificDataLoader>()))
                 .Single();
             var templateCommands = InstantiateCommand.GetTemplateCommand(args, settings, A.Fake<TemplatePackageManager>(), templateGroup);
-            Assert.Single(templateCommands);
+            Assert.HasCount(1, templateCommands);
             var templateOption = templateCommands.Single().TemplateOptions[parameterName];
             Assert.Contains(expectedContainedAlias, templateOption.Aliases);
         }
 
-        [Theory]
-        [MemberData(nameof(GetTemplateData))]
+        [TestMethod]
+        [DynamicData(nameof(GetTemplateData))]
         public void CanOverrideAliasesForParameterWithHostData(string hostJsonData, string expectedJsonResult)
         {
             var hostData = new HostSpecificTemplateData(string.IsNullOrEmpty(hostJsonData) ? null : JsonNode.Parse(hostJsonData)?.AsObject());
@@ -294,7 +295,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse(" new foo");
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             var templateCommands = InstantiateCommand.GetTemplateCommand(args, settings, templatePackageManager, templateGroup);
-            Assert.Single(templateCommands);
+            Assert.HasCount(1, templateCommands);
             foreach (var expectedResult in expectedResults)
             {
                 var expectedArr = expectedResult.Value!.AsArray();
@@ -302,17 +303,17 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 var expectedShortAlias = expectedArr[1]?.GetValue<string>();
                 var expectedIsHidden = expectedArr[2]?.GetValue<bool>() ?? false;
                 var templateOptions = templateCommands.Single().TemplateOptions;
-                Assert.NotNull(templateOptions);
+                Assert.IsNotNull(templateOptions);
                 Assert.Contains(expectedResult.Key, templateOptions.Keys);
                 var templateOption = templateOptions[expectedResult.Key];
-                Assert.NotNull(templateOption);
-                Assert.True(templateOption.Aliases.Count > 0);
+                Assert.IsNotNull(templateOption);
+                Assert.IsNotEmpty(templateOption.Aliases);
                 var longAlias = templateOption.Aliases.ElementAt(0);
                 var shortAlias = templateOption.Aliases.Count > 1 ? templateOption.Aliases.ElementAt(1) : null;
                 var isHidden = templateOption.Option.Hidden;
-                Assert.Equal(expectedLongAlias, longAlias);
-                Assert.Equal(expectedShortAlias, shortAlias);
-                Assert.Equal(expectedIsHidden, isHidden);
+                Assert.AreEqual(expectedLongAlias, longAlias);
+                Assert.AreEqual(expectedShortAlias, shortAlias);
+                Assert.AreEqual(expectedIsHidden, isHidden);
             }
         }
 

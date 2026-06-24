@@ -3,13 +3,11 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAUnitTestProject : SdkTest
     {
-        public GivenThatWeWantToBuildAUnitTestProject(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_generates_runtime_config()
         {
             var testAsset = TestAssetsManager
@@ -26,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().HaveFile(@"XUnitTestProject.runtimeconfig.json");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_when_has_runtime_output_is_true()
         {
             const string targetFramework = "netcoreapp2.1";

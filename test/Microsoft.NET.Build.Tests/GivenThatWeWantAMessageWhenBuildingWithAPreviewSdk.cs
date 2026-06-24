@@ -5,13 +5,11 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantAMessageWhenBuildingWithAPreviewSdk : SdkTest
     {
-        public GivenThatWeWantAMessageWhenBuildingWithAPreviewSdk(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_displays_a_preview_message_when_using_a_preview_Sdk()
         {
             TestAsset testAsset = TestAssetsManager
@@ -27,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining(Strings.UsingPreviewSdk);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_display_preview_message_with_explicit_opt_out()
         {
             TestAsset testAsset = TestAssetsManager
@@ -43,7 +41,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdOutContaining(Strings.UsingPreviewSdk);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_display_preview_message_with_nowarn_opt_out()
         {
             TestAsset testAsset = TestAssetsManager
@@ -59,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdOutContaining(Strings.UsingPreviewSdk);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_display_a_preview_message_when_using_a_release_Sdk()
         {
             TestAsset testAsset = TestAssetsManager
