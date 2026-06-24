@@ -44,7 +44,24 @@ internal static class LocalSdkHostValidator
         }
         finally
         {
-            Directory.Delete(workingDirectory);
+            DeleteWorkingDirectory(workingDirectory);
+        }
+    }
+
+    private static void DeleteWorkingDirectory(string workingDirectory)
+    {
+        try
+        {
+            Directory.Delete(workingDirectory, recursive: true);
+        }
+        catch (DirectoryNotFoundException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
         }
     }
 

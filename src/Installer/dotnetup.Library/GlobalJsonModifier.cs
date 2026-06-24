@@ -124,7 +124,12 @@ public static class GlobalJsonModifier
         sdkObject["paths"] = new JsonArray(".dotnet", "$host$");
 
         string updatedJson = root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine;
-        Directory.CreateDirectory(Path.GetDirectoryName(globalJsonPath)!);
+        string? directory = Path.GetDirectoryName(globalJsonPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
         File.WriteAllText(globalJsonPath, updatedJson, encoding);
     }
 

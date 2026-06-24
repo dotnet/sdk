@@ -309,11 +309,11 @@ internal static class DotnetupTestUtilities
                     return Path.GetFullPath(managedPath);
                 }
 
-                string[] ridManagedPaths = Directory.GetFiles(tfmDir, executableName, SearchOption.AllDirectories);
-                if (ridManagedPaths.Length > 0)
+                string? ridManagedPath = FindRidSpecificOutput(tfmDir, rid, executableName);
+                if (ridManagedPath is not null)
                 {
-                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to RID-specific managed build output at '{ridManagedPaths[0]}'.");
-                    return Path.GetFullPath(ridManagedPaths[0]);
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to RID-specific managed build output at '{ridManagedPath}'.");
+                    return Path.GetFullPath(ridManagedPath);
                 }
 
                 string managedDllPath = Path.Combine(tfmDir, "dotnetup.dll");
@@ -323,11 +323,11 @@ internal static class DotnetupTestUtilities
                     return Path.GetFullPath(managedDllPath);
                 }
 
-                string[] ridManagedDllPaths = Directory.GetFiles(tfmDir, "dotnetup.dll", SearchOption.AllDirectories);
-                if (ridManagedDllPaths.Length > 0)
+                string? ridManagedDllPath = FindRidSpecificOutput(tfmDir, rid, "dotnetup.dll");
+                if (ridManagedDllPath is not null)
                 {
-                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to RID-specific managed DLL output at '{ridManagedDllPaths[0]}'.");
-                    return Path.GetFullPath(ridManagedDllPaths[0]);
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to RID-specific managed DLL output at '{ridManagedDllPath}'.");
+                    return Path.GetFullPath(ridManagedDllPath);
                 }
             }
         }
@@ -475,7 +475,27 @@ internal static class DotnetupTestUtilities
     private static string GetRepoDotnetPath()
     {
         string repoDotnet = Path.Combine(GetRepositoryRoot(), ".dotnet", OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
-        return File.Exists(repoDotnet) ? repoDotnet : "dotnet";
+        if (!File.Exists(repoDotnet))
+        {
+            throw new FileNotFoundException(
+                $"The repo-local dotnet executable was not found at '{repoDotnet}'. Run build.cmd or build.cmd -restore from the repository root before running dotnetup process tests.",
+                repoDotnet);
+        }
+
+        return repoDotnet;
+    }
+
+    private static string? FindRidSpecificOutput(string tfmDir, string rid, string fileName)
+    {
+        string currentRidPath = Path.Combine(tfmDir, rid, fileName);
+        if (File.Exists(currentRidPath))
+        {
+            return currentRidPath;
+        }
+
+        return Directory.GetFiles(tfmDir, fileName, SearchOption.AllDirectories)
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
     }
 
     private static string EscapeSingleQuotedShellArgument(string value)
