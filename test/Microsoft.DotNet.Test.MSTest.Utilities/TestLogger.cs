@@ -52,8 +52,21 @@ public class TestLogger(TestContext? testContext = null) : ILogger
     }
 
     public IDisposable? BeginScope<TState>(TState state)
-        where TState : notnull => throw new NotImplementedException();
+        where TState : notnull => NullScope.Instance;
 
     public bool IsEnabled(LogLevel logLevel)
         => IsEnabledImpl(logLevel);
+
+    private sealed class NullScope : IDisposable
+    {
+        public static readonly NullScope Instance = new();
+
+        private NullScope()
+        {
+        }
+
+        public void Dispose()
+        {
+        }
+    }
 }

@@ -9,13 +9,13 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation this test performs.
+// This test mutates the process-wide current directory, so it must not run
+// concurrently with other tests under MSTest's method-level parallelization.
+[DoNotParallelize]
+[TestClass]
 public class GenerateStaticWebAssetsManifestMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void WritesManifestAndCacheRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         // Layout: place project and decoy in disjoint subtrees so that the same

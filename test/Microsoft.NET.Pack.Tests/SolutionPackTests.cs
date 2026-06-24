@@ -1,15 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Pack.Tests
 {
+    [TestClass]
     public class SolutionPackTests : SdkTest
     {
-        public SolutionPackTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void ItCanPackASolutionWithOutputPath()
         {
             var testProject1 = new TestProject()

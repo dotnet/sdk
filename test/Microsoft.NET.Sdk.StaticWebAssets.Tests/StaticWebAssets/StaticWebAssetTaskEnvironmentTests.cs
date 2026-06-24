@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -13,9 +19,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 // [assembly:CollectionBehavior(DisableTestParallelization = true)] in
 // LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
 // process-CWD mutation these tests perform.
+[DoNotParallelize]
+[TestClass]
 public class StaticWebAssetTaskEnvironmentTests
 {
-    [Fact]
+    [TestMethod]
     public void NormalizeContentRootPath_WithTaskEnvironment_AbsolutizesAgainstProjectDirectory_NotProcessCurrentDirectory()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, _) =>
@@ -29,7 +37,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void NormalizeContentRootPath_WithoutEnvOverload_StillUsesProcessCurrentDirectory_ForBackCompat()
     {
         WithDecoyCwdAndProjectDirectory((_, spawnDir) =>
@@ -43,7 +51,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void Normalize_WithTaskEnvironment_AbsolutizesContentRootAndRelatedAssetAgainstProjectDirectory()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, _) =>
@@ -67,7 +75,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void FromTaskItem_WithTaskEnvironment_HydratesAssetWithProjectDirectoryAbsolutizedPaths()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, _) =>
@@ -89,7 +97,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void FromV1TaskItem_WithTaskEnvironment_HydratesAssetWithProjectDirectoryAbsolutizedPaths()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, _) =>
@@ -118,7 +126,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void FromTaskItemGroup_WithTaskEnvironment_AbsolutizesAllAssets()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, _) =>
@@ -137,7 +145,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveFile_WithTaskEnvironment_ResolvesIdentityRelativeToProjectDirectory()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, _) =>
@@ -155,7 +163,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void HasContentRoot_WithTaskEnvironment_ComparesAgainstProjectDirectoryNormalizedForm()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, _) =>
@@ -176,7 +184,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void NormalizeContentRootPath_WithTaskEnvironment_PreservesCanonicalization_DotDot()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, _) =>
@@ -192,7 +200,7 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void Normalize_WithTaskEnvironment_AbsolutePathInputs_ArePreservedAndCanonicalized()
     {
         // The single most common production case: upstream targets pre-absolutize. The new
