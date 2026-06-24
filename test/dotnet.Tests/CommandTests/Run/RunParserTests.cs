@@ -2,31 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
+    [TestClass]
     public class RunParserTests : IDisposable
     {
-        private readonly ITestOutputHelper output;
         private readonly string _previousWorkingDirectory;
 
-        public RunParserTests(ITestOutputHelper output)
+        public RunParserTests()
         {
-            this.output = output;
-
             // Reset current working directory after tests run to avoid breaking other tests
             _previousWorkingDirectory = Directory.GetCurrentDirectory();
         }
+
+        public TestContext TestContext { get; set; } = null!;
 
         public void Dispose()
         {
             Directory.SetCurrentDirectory(_previousWorkingDirectory);
         }
 
-        [Fact]
+        [TestMethod]
         public void RunParserCanGetArgumentFromDoubleDash()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -36,10 +37,11 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void RunParserAcceptsWindowsPathSeparatorsOnWindows()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -50,10 +52,11 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.ProjectFileFullPath.Should().NotBeNull();
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void RunParserAcceptsWindowsPathSeparatorsOnLinux()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 

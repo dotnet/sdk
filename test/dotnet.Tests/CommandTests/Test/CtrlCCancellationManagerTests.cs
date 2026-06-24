@@ -10,9 +10,10 @@ using ExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class CtrlCCancellationManagerTests
 {
-    [Fact]
+    [TestMethod]
     public void FirstCtrlC_CancelsTokenAndInvokesUiCallbackExactlyOnce()
     {
         int callbackCount = 0;
@@ -31,7 +32,7 @@ public class CtrlCCancellationManagerTests
         exitCount.Should().Be(0, "the first Ctrl+C must not force-exit");
     }
 
-    [Fact]
+    [TestMethod]
     public void SecondCtrlC_InvokesExitActionWithTestSessionAborted()
     {
         int callbackCount = 0;
@@ -50,7 +51,7 @@ public class CtrlCCancellationManagerTests
         receivedExitCode.Should().Be(ExitCode.TestSessionAborted);
     }
 
-    [Fact]
+    [TestMethod]
     public void ThirdAndSubsequentCtrlC_AreNoOps()
     {
         int callbackCount = 0;
@@ -69,7 +70,7 @@ public class CtrlCCancellationManagerTests
         exitCount.Should().Be(1, "presses after force-exit must not re-trigger the exit action");
     }
 
-    [Fact]
+    [TestMethod]
     public void Register_AfterForcing_KillsTheProcessImmediately()
     {
         int exitCount = 0;
@@ -100,7 +101,7 @@ public class CtrlCCancellationManagerTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Register_BeforeForcing_KillsTheProcessOnSecondCtrlC()
     {
         int exitCount = 0;
@@ -130,7 +131,7 @@ public class CtrlCCancellationManagerTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Unregister_RemovesProcessFromForceKillSet()
     {
         int exitCount = 0;
@@ -163,7 +164,7 @@ public class CtrlCCancellationManagerTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Dispose_IsIdempotent()
     {
         var manager = new CtrlCCancellationManager(
@@ -175,7 +176,7 @@ public class CtrlCCancellationManagerTests
         act.Should().NotThrow();
     }
 
-    [Fact]
+    [TestMethod]
     public void Token_DoesNotCancel_WithoutAnyPress()
     {
         using var manager = new CtrlCCancellationManager(
@@ -186,7 +187,7 @@ public class CtrlCCancellationManagerTests
         manager.Token.IsCancellationRequested.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void FirstCtrlC_CallbackThrowing_DoesNotAffectStateTransition()
     {
         int exitCount = 0;
@@ -204,7 +205,7 @@ public class CtrlCCancellationManagerTests
         exitCount.Should().Be(1, "the state machine must still advance to Forcing on the second press even if the first-press callback threw");
     }
 
-    [Fact]
+    [TestMethod]
     public void FirstCtrlC_AfterDispose_DoesNotThrowFromDisposedTokenSource()
     {
         // Race window: the user presses Ctrl+C between the manager being disposed (which unsubscribes

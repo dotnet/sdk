@@ -8,17 +8,18 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 namespace Microsoft.DotNet.Tests
 {
 
+    [TestClass]
     public class GivenADotnetToolsCommandResolver : SdkTest
     {
         private readonly DotnetToolsCommandResolver _dotnetToolsCommandResolver;
 
-        public GivenADotnetToolsCommandResolver(ITestOutputHelper log) : base(log)
+        public GivenADotnetToolsCommandResolver()
         {
             var dotnetToolPath = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "DotnetTools");
             _dotnetToolsCommandResolver = new DotnetToolsCommandResolver(dotnetToolPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenCommandNameIsNull()
         {
             var commandResolverArguments = new CommandResolverArguments()
@@ -31,7 +32,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenCommandNameDoesNotExistInProjectTools()
         {
             var commandResolverArguments = new CommandResolverArguments()
@@ -44,7 +45,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsACommandSpec()
         {
             var commandResolverArguments = new CommandResolverArguments()
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Tests
             commandPath.Should().Contain("dotnet-watch.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsAnExecutableCommandSpecWhenExecutableExists()
         {
             var dotnetToolPath = TestAssetsManager.CreateTestDirectory().Path;

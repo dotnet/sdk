@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -10,9 +16,10 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
+    [TestClass]
     public class ValidateStaticWebAssetsUniquePathsTest
     {
-        [Fact]
+        [TestMethod]
         public void ReturnsError_WhenStaticWebAssetsWebRootPathMatchesExistingContentItemPath()
         {
             // Arrange
@@ -59,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             errorMessages.Should().Contain(expectedMessage);
         }
 
-        [Fact]
+        [TestMethod]
         public void AllowsAssetsHavingTheSameBasePathAcrossDifferentSources_WhenTheirFinalDestinationPathIsDifferent()
         {
             // Arrange
@@ -92,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             result.Should().Be(true);
         }
 
-        [Fact]
+        [TestMethod]
         public void AllowsAssetsHavingTheSameContentRootAndDifferentBasePathsAcrossDifferentSources_WhenTheirFinalDestinationPathIsDifferent()
         {
             // Arrange
@@ -125,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             result.Should().Be(true);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsError_WhenMultipleStaticWebAssetsHaveTheSameWebRootPath()
         {
             // Arrange
@@ -161,7 +168,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             errorMessages.Should().Contain($"Conflicting assets with the same path '/wwwroot/sample.js' for content root paths '{Path.Combine(".", "Library", "bin", "dist", "sample.js")}' and '{Path.Combine(".", "Library", "wwwroot", "sample.js")}'.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsSuccess_WhenStaticWebAssetsDontConflictWithApplicationContentItems()
         {
             // Arrange
