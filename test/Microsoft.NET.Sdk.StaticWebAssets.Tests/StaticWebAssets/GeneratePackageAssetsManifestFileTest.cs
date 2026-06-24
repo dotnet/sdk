@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Text.Json;
 using Microsoft.Build.Framework;
@@ -9,6 +15,8 @@ using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+[TestClass]
 
 public class GeneratePackageAssetsManifestFileTest : IDisposable
 {
@@ -36,7 +44,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void EmptyAssets_DoesNotGenerateManifestFile()
     {
         var manifestPath = Path.Combine(_tempDir, "empty.json");
@@ -55,7 +63,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         File.Exists(manifestPath).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Assets_SerializedWithCorrectPackagePaths()
     {
         var file = CreateTempFile("wwwroot", "css", "site.css", "body{}");
@@ -77,7 +85,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         manifestAsset.AssetRole.Should().Be("Primary");
     }
 
-    [Fact]
+    [TestMethod]
     public void RelatedAsset_RemappedToPackageRelativePath()
     {
         var primaryFile = CreateTempFile("wwwroot", "css", "site.css", "body{}");
@@ -108,7 +116,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         relatedAsset.RelatedAsset.Should().Be(primaryAssetPath);
     }
 
-    [Fact]
+    [TestMethod]
     public void Endpoints_AssetFileRemappedToPackageRelativePath()
     {
         var file = CreateTempFile("wwwroot", "js", "app.js", "var x;");
@@ -138,7 +146,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         ep.AssetFile.Should().Be(manifest.Assets.Keys.Single());
     }
 
-    [Fact]
+    [TestMethod]
     public void FrameworkPattern_TagsMatchingAssetsAsFramework()
     {
         var fwFile = CreateTempFile("wwwroot", "js", "framework.js", "fw");
@@ -163,7 +171,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         nonFwManifestAsset.SourceType.Should().Be("Package");
     }
 
-    [Fact]
+    [TestMethod]
     public void AssetGroups_PreservedInManifest()
     {
         var file = CreateTempFile("wwwroot", "css", "site.css", "body{}");
@@ -180,7 +188,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
         manifest.Assets.Values.Single().AssetGroups.Should().Be("BootstrapVersion=V5");
     }
 
-    [Fact]
+    [TestMethod]
     public void RelatedAsset_Unmapped_ProducesError()
     {
         // Symmetric to Endpoints_UnmappedAssetFile_ProducesError: exercises the
@@ -214,7 +222,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
             "the manifest must not be written when a referential integrity error is detected");
     }
 
-    [Fact]
+    [TestMethod]
     public void RoundTrip_GenerateThenRead_RelatedAssetResolvesToConsumerAbsolutePath()
     {
         // End-to-end cross-boundary test. Proves the contract between
@@ -290,7 +298,7 @@ public class GeneratePackageAssetsManifestFileTest : IDisposable
             "no producer-side build-time path may leak through the manifest to the consumer");
     }
 
-    [Fact]
+    [TestMethod]
     public void Endpoints_UnmappedAssetFile_ProducesError()
     {
         var file = CreateTempFile("wwwroot", "js", "app.js", "var x;");

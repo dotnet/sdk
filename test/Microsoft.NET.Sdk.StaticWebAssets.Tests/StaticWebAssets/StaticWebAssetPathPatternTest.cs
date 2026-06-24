@@ -1,16 +1,24 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Globalization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
+[TestClass]
+
 public class StaticWebAssetPathPatternTest
 {
-    [Fact]
+    [TestMethod]
     public void CanParse_PathWithNoExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site.css", "MyApp");
@@ -21,10 +29,10 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = "css/site.css".AsMemory(), IsLiteral = true }] }
             ]
         };
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexFingerprintExpression_Middle()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}].css", "MyApp");
@@ -38,10 +46,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexFingerprintExpression_Start()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}].css", "MyApp");
@@ -54,10 +62,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexFingerprintExpression_End()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]", "MyApp");
@@ -70,10 +78,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexFingerprintExpression_Only()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]", "MyApp");
@@ -85,10 +93,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexFingerprintExpression_Multiple()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}]-#[.{version}].css", "MyApp");
@@ -104,10 +112,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexFingerprintExpression_ConsecutiveExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}]#[.{version}].css", "MyApp");
@@ -122,10 +130,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_SimpleFingerprintExpression_Start()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}].css", "MyApp");
@@ -138,10 +146,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_SimpleFingerprintExpression_Middle()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[{fingerprint}].css", "MyApp");
@@ -155,10 +163,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_SimpleFingerprintExpression_End()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[{fingerprint}]", "MyApp");
@@ -171,10 +179,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_SimpleFingerprintExpression_Only()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}]", "MyApp");
@@ -186,10 +194,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_SimpleFingerprintExpression_WithEmbeddedValues()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint=value}]", "MyApp");
@@ -201,10 +209,10 @@ public class StaticWebAssetPathPatternTest
                 ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexExpression_MultipleVariables()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}-{version}].css", "MyApp");
@@ -223,10 +231,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexExpression_MultipleConsecutiveVariables()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}{version}].css", "MyApp");
@@ -244,10 +252,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ComplexExpression_StartsWithVariable()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}.]css", "MyApp");
@@ -260,10 +268,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_OptionalExpressions_End()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?", "MyApp");
@@ -276,10 +284,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_OptionalPreferredExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]!", "MyApp");
@@ -292,10 +300,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_OptionalExpressions_Start()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]?site", "MyApp");
@@ -308,10 +316,10 @@ public class StaticWebAssetPathPatternTest
             }]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_OptionalExpressions_Middle()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?site", "MyApp");
@@ -325,10 +333,10 @@ public class StaticWebAssetPathPatternTest
                            }]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_OptionalExpressions_Only()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]?", "MyApp");
@@ -340,10 +348,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_MultipleOptionalExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]?site#[.{version}]?", "MyApp");
@@ -357,10 +365,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParse_ConsecutiveOptionalExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]?#[.{version}]?", "MyApp");
@@ -373,10 +381,10 @@ public class StaticWebAssetPathPatternTest
             ]
         };
 
-        Assert.Equal(expected, pattern);
+        Assert.AreEqual(expected, pattern);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_PathWithNoExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site.css", "MyApp");
@@ -386,10 +394,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("css/site.css", path);
+        Assert.AreEqual("css/site.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexFingerprintExpression_Middle()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}].css", "MyApp");
@@ -399,10 +407,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("css/site.asdf1234.css", path);
+        Assert.AreEqual("css/site.asdf1234.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexFingerprintExpression_Start()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}].css", "MyApp");
@@ -412,10 +420,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal(".asdf1234.css", path);
+        Assert.AreEqual(".asdf1234.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexFingerprintExpression_End()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]", "MyApp");
@@ -425,10 +433,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("site.asdf1234", path);
+        Assert.AreEqual("site.asdf1234", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexFingerprintExpression_Only()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[.{fingerprint}]", "MyApp");
@@ -438,10 +446,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal(".asdf1234", path);
+        Assert.AreEqual(".asdf1234", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexFingerprintExpression_Multiple()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}]-#[.{version}].css", "MyApp");
@@ -453,10 +461,10 @@ public class StaticWebAssetPathPatternTest
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
 
-        Assert.Equal("css/site.asdf1234-.v1.css", path);
+        Assert.AreEqual("css/site.asdf1234-.v1.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexFingerprintExpression_ConsecutiveExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}]#[.{version}].css", "MyApp");
@@ -468,10 +476,10 @@ public class StaticWebAssetPathPatternTest
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
 
-        Assert.Equal("css/site.asdf1234.v1.css", path);
+        Assert.AreEqual("css/site.asdf1234.v1.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_SimpleFingerprintExpression_Start()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}].css", "MyApp");
@@ -481,10 +489,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("asdf1234.css", path);
+        Assert.AreEqual("asdf1234.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_SimpleFingerprintExpression_Middle()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[{fingerprint}].css", "MyApp");
@@ -494,10 +502,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("css/siteasdf1234.css", path);
+        Assert.AreEqual("css/siteasdf1234.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_SimpleFingerprintExpression_End()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[{fingerprint}]", "MyApp");
@@ -507,10 +515,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("siteasdf1234", path);
+        Assert.AreEqual("siteasdf1234", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_SimpleFingerprintExpression_Only()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}]", "MyApp");
@@ -520,10 +528,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("asdf1234", path);
+        Assert.AreEqual("asdf1234", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_SimpleFingerprintExpression_WithEmbeddedValues()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint=embedded}]", "MyApp");
@@ -533,10 +541,10 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("embedded", path);
+        Assert.AreEqual("embedded", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexExpression_MultipleVariables()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}-{version}].css", "MyApp");
@@ -548,10 +556,10 @@ public class StaticWebAssetPathPatternTest
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
 
-        Assert.Equal("css/site.asdf1234-v1.css", path);
+        Assert.AreEqual("css/site.asdf1234-v1.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexExpression_MultipleConsecutiveVariables()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}{version}].css", "MyApp");
@@ -563,10 +571,10 @@ public class StaticWebAssetPathPatternTest
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
 
-        Assert.Equal("css/site.asdf1234v1.css", path);
+        Assert.AreEqual("css/site.asdf1234v1.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ComplexExpression_StartsWithVariable()
     {
         var pattern = StaticWebAssetPathPattern.Parse("#[{fingerprint}.]css", "MyApp");
@@ -576,19 +584,19 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("asdf1234.css", path);
+        Assert.AreEqual("asdf1234.css", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ThrowsException_IfRequiredExpressionIsValue()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}].css", "MyApp");
         var tokens = new StaticWebAsset();
-        var exception = Assert.Throws<InvalidOperationException>(() => pattern.ReplaceTokens(tokens, CreateTestResolver()));
-        Assert.Equal("Token 'fingerprint' not provided for 'css/site#[.{fingerprint}].css'.", exception.Message);
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() => pattern.ReplaceTokens(tokens, CreateTestResolver()));
+        Assert.AreEqual("Token 'fingerprint' not provided for 'css/site#[.{fingerprint}].css'.", exception.Message);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_ThrowsException_MultipleTokenComplexExpression_MissingAtLeastOneValue()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}-{version}].css", "MyApp");
@@ -596,21 +604,21 @@ public class StaticWebAssetPathPatternTest
         {
             Fingerprint = "asdf1234"
         };
-        var exception = Assert.Throws<InvalidOperationException>(() => pattern.ReplaceTokens(tokens, CreateTestResolver()));
-        Assert.Equal("Token 'version' not provided for 'css/site#[.{fingerprint}-{version}].css'.", exception.Message);
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() => pattern.ReplaceTokens(tokens, CreateTestResolver()));
+        Assert.AreEqual("Token 'version' not provided for 'css/site#[.{fingerprint}-{version}].css'.", exception.Message);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_OptionalExpression_OmittedWhenValueNotProvided()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?", "MyApp");
         var tokens = new StaticWebAsset();
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("site", path);
+        Assert.AreEqual("site", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanReplaceTokens_OptionalMultipleTokenComplexExpression_OmittedWhenMissingAtLeastOneValue()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}.{version}]?", "MyApp");
@@ -620,28 +628,28 @@ public class StaticWebAssetPathPatternTest
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
 
-        Assert.Equal("site", path);
+        Assert.AreEqual("site", path);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanExpandRoutes_LiteralPatterns()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site.css", "MyApp");
         var routePatterns = pattern.ExpandPatternExpression();
 
-        Assert.Equal([pattern], routePatterns);
+        Assert.AreSequenceEqual([pattern], routePatterns);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanExpandRoutes_SingleRequiredExpression()
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}].css", "MyApp");
         var routePatterns = pattern.ExpandPatternExpression();
 
-        Assert.Equal([pattern], routePatterns);
+        Assert.AreSequenceEqual([pattern], routePatterns);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanExpandRoutes_SingleOptionalExpression()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?.css", "MyApp");
@@ -668,10 +676,10 @@ public class StaticWebAssetPathPatternTest
             }
         };
 
-        Assert.Equal(expected, routePatterns);
+        Assert.AreSequenceEqual(expected, routePatterns);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanExpandRoutes_MultipleOptionalExpressions()
     {
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?#[.{version}]?.css", "MyApp");
@@ -717,7 +725,7 @@ public class StaticWebAssetPathPatternTest
             }
         };
 
-        Assert.Equal(expected, routePatterns);
+        Assert.AreSequenceEqual(expected, routePatterns);
     }
 
     private static StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);

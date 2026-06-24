@@ -1,13 +1,21 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Moq;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+[TestClass]
 
 public class GeneratePackageAssetsTargetsFileTest : IDisposable
 {
@@ -35,7 +43,7 @@ public class GeneratePackageAssetsTargetsFileTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void GeneratesValidXml_WithStaticWebAssetPackageManifestItem()
     {
         var task = CreateTask();
@@ -70,7 +78,7 @@ public class GeneratePackageAssetsTargetsFileTest : IDisposable
         packageRootElement.Should().NotBeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void Incremental_FileNotRewritten_WhenContentUnchanged()
     {
         var task = CreateTask();
@@ -96,7 +104,7 @@ public class GeneratePackageAssetsTargetsFileTest : IDisposable
         secondWriteTime.Should().Be(firstWriteTime);
     }
 
-    [Fact]
+    [TestMethod]
     public void CustomPackagePathPrefix_ReflectedInContentRoot()
     {
         var task = CreateTask(packagePathPrefix: "custom/assets");

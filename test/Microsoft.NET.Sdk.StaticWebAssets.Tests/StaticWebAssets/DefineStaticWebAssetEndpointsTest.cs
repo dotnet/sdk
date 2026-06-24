@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Diagnostics.Metrics;
 using System.Diagnostics;
@@ -15,11 +21,13 @@ using System.Globalization;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
+
 public class DefineStaticWebAssetEndpointsTest
 {
-    [Theory]
-    [InlineData(StaticWebAsset.SourceTypes.Discovered)]
-    [InlineData(StaticWebAsset.SourceTypes.Computed)]
+    [TestMethod]
+    [DataRow(StaticWebAsset.SourceTypes.Discovered)]
+    [DataRow(StaticWebAsset.SourceTypes.Computed)]
     public void DefinesEndpointsForAssets(string sourceType)
     {
         var errorMessages = new List<string>();
@@ -86,7 +94,7 @@ public class DefineStaticWebAssetEndpointsTest
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanDefineFingerprintedEndpoints()
     {
         var errorMessages = new List<string>();
@@ -203,7 +211,7 @@ public class DefineStaticWebAssetEndpointsTest
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanDefineFingerprintedEndpoints_WithEmbeddedFingerprint()
     {
         var errorMessages = new List<string>();
@@ -320,7 +328,7 @@ public class DefineStaticWebAssetEndpointsTest
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void DoesNotDefineNewEndpointsWhenAnExistingEndpointAlreadyExists()
     {
         var errorMessages = new List<string>();
@@ -377,7 +385,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesContentType_ForCompressedAssets()
     {
         var errorMessages = new List<string>();
@@ -430,7 +438,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoint.ResponseHeaders.Should().ContainSingle(h => h.Name == "Content-Type" && h.Value == "application/x-gzip");
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesContentType_ForFingerprintedAssets()
     {
         var errorMessages = new List<string>();
@@ -481,7 +489,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoint.ResponseHeaders.Should().ContainSingle(h => h.Name == "Content-Type" && h.Value == "text/css");
     }
 
-    [Fact]
+    [TestMethod]
     public void Produces_TheExpectedEndpoint_ForExternalAssets()
     {
         var errorMessages = new List<string>();
@@ -661,9 +669,9 @@ public class DefineStaticWebAssetEndpointsTest
         });
     }
 
-    [Theory]
-    [InlineData("index.html", "index.html", "/")]
-    [InlineData("admin/index.html", "admin/index.html", "admin")]
+    [TestMethod]
+    [DataRow("index.html", "index.html", "/")]
+    [DataRow("admin/index.html", "admin/index.html", "admin")]
     public void AdditionalEndpointDefinitions_DefaultDocument_CreatesEndpointWithCapturedStem(
         string relativeSubPath, string expectedOriginalRoute, string expectedAdditionalRoute)
     {
@@ -711,7 +719,7 @@ public class DefineStaticWebAssetEndpointsTest
         additional.ResponseHeaders.Should().BeEquivalentTo(original.ResponseHeaders);
     }
 
-    [Fact]
+    [TestMethod]
     public void AdditionalEndpointDefinitions_SpaFallback_CreatesEndpointWithFallbackRoute()
     {
         var errorMessages = new List<string>();
@@ -757,7 +765,7 @@ public class DefineStaticWebAssetEndpointsTest
         fallback.ResponseHeaders.Should().BeEquivalentTo(original.ResponseHeaders);
     }
 
-    [Fact]
+    [TestMethod]
     public void AdditionalEndpointDefinitions_DoesNotMatchNonMatchingRoutes()
     {
         var errorMessages = new List<string>();
@@ -796,7 +804,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints[0].Route.Should().Be("app.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void AdditionalEndpointDefinitions_BothRules_CreateMultipleAdditionalEndpoints()
     {
         var errorMessages = new List<string>();
@@ -838,7 +846,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints.Should().Contain(e => e.Route == "{**fallback:nonfile}" && e.Order == "2147483647");
     }
 
-    [Fact]
+    [TestMethod]
     public void AdditionalEndpointDefinitions_EmptyArray_NoAdditionalEndpoints()
     {
         var errorMessages = new List<string>();
@@ -873,7 +881,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints[0].Route.Should().Be("index.html");
     }
 
-    [Fact]
+    [TestMethod]
     public void ExistingEndpointsMatchingWorksWithNonFallbackTaskEnvironment()
     {
         // Verifies that the ExistingEndpoints deduplication logic works correctly
@@ -907,7 +915,7 @@ public class DefineStaticWebAssetEndpointsTest
             "the existing endpoint must be matched and deduplicated even with a non-Fallback TaskEnvironment");
     }
 
-    [Fact]
+    [TestMethod]
     public void ProducesEndpointsCorrectlyWithNonFallbackTaskEnvironmentForPackageAsset()
     {
         // Verifies that Package-sourced assets get their BasePath prepended to the route

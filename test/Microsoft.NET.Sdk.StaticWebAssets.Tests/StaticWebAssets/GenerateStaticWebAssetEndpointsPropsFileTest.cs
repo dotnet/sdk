@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Net;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -12,9 +18,11 @@ using NuGet.ContentModel;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
+[TestClass]
+
 public class GenerateStaticWebAssetEndpointsPropsFileTest
 {
-    [Fact]
+    [TestMethod]
     public void Generates_ValidEndpointsDefinitions()
     {
         // Arrange
@@ -107,7 +115,7 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Fails_WhenEndpointWithoutAssetExists()
     {
         // Arrange
@@ -160,7 +168,8 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
         errorMessages[0].Should().Be($"""The asset file '{Path.GetFullPath(Path.Combine("wwwroot", "js", "sample.js"))}' specified in the endpoint '{Path.Combine("js","sample.js").Replace('\\', '/')}' does not exist.""");
     }
 
-    [Fact]
+    [TestMethod]
+    [DoNotParallelize]
     public void Execute_RelativeTargetPropsFilePath_ResolvesAgainstProjectDirectory_NotProcessCurrentDirectory()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, spawnDir) =>
