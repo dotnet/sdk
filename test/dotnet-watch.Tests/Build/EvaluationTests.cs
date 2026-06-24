@@ -126,13 +126,8 @@ public class EvaluationTests
     }
 
     [TestMethod]
-    [DataRow(true, true)]
-    [DataRow(true, false)]
-    [DataRow(true, null)]
-    [DataRow(false, true)]
-    [DataRow(false, false)]
-    [DataRow(false, null)]
-    public async Task StaticAssets(bool isWeb, bool? enableStaticWebAssets)
+    [CombinatorialData]
+    public async Task StaticAssets(bool isWeb, [CombinatorialValues(true, false, null)] bool? enableStaticWebAssets)
     {
         var project = new TestProject("Project1")
         {
@@ -316,8 +311,7 @@ public class EvaluationTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task SingleTargetRoot_MultiTargetedDependency(bool specifyTargetFramework)
     {
         var project2 = new TestProject("Project2")
