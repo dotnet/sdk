@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffClassTests : DiffBaseTests
 {
     #region Classes
 
-    [Fact]
+    [TestMethod]
     public Task ClassAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -38,7 +39,7 @@ public class DiffClassTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task ClassAddWithDefaultConstructor() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -70,7 +71,7 @@ public class DiffClassTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task ClassChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -108,7 +109,7 @@ public class DiffClassTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task ClassDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace

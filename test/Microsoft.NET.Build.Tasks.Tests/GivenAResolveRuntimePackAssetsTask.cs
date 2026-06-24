@@ -7,13 +7,12 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [DoNotParallelize]
+    [TestClass]
     public class GivenAResolveRuntimePackAssetsTask : SdkTest
     {
-        public GivenAResolveRuntimePackAssetsTask(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void ItFiltersSatelliteResources()
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
@@ -51,7 +50,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePackAssets.FirstOrDefault().ItemSpec.Should().Contain(expectedResource);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItResolvesRelativePackageDirectoryAgainstProjectDirectory()
         {
             //  TaskTestEnvironment points the injected TaskEnvironment at ProjectDirectory while
@@ -95,7 +94,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "the resolved asset path must not leak the process working directory");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItResolvesAbsolutePackageDirectoryIndependentlyOfCwd()
         {
             using var testEnv = new TaskTestEnvironment();
@@ -132,7 +131,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePackAssets[0].ItemSpec.Should().Be(testEnv.GetProjectPath("runtimepack/runtimes/a.dll"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItResolvesAnEmptyFilePathToTheRuntimePackRoot()
         {
             //  Pre-migration the asset path was built with Path.Combine(runtimePackRoot, Path), and

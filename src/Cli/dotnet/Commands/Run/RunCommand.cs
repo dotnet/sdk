@@ -23,6 +23,7 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class RunCommand
 {
     public bool NoBuild { get; }
@@ -149,7 +150,7 @@ public class RunCommand
 
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
-        FacadeLogger? logger = ProjectFileFullPath is not null 
+        FacadeLogger? logger = ProjectFileFullPath is not null
             ? LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run")
             : null;
         try
@@ -190,7 +191,7 @@ public class RunCommand
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
             {
-                // The entry-point is not used to run the application if the launch profile specifies Executable command. 
+                // The entry-point is not used to run the application if the launch profile specifies Executable command.
 
                 Debug.Assert(!ReadCodeFromStdin);
                 projectBuilder = CreateProjectBuilder();
@@ -253,7 +254,7 @@ public class RunCommand
     private bool TrySelectTargetFrameworkAndDeviceIfNeeded(RunCommandSelector selector)
     {
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
+
         // If user specified --device on command line, add it to global properties and MSBuildArgs
         if (!string.IsNullOrWhiteSpace(Device))
         {
@@ -264,11 +265,11 @@ public class RunCommand
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
         }
 
-        // Optimization: If BOTH framework AND device are already specified (and we're not listing devices), 
+        // Optimization: If BOTH framework AND device are already specified (and we're not listing devices),
         // we can skip both framework selection and device selection entirely
         bool hasFramework = globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework);
         bool hasDevice = globalProperties.TryGetValue("Device", out var preSpecifiedDevice) && !string.IsNullOrWhiteSpace(preSpecifiedDevice);
-        
+
         if (!ListDevices && hasFramework && hasDevice)
         {
             // Both framework and device are pre-specified
@@ -284,7 +285,7 @@ public class RunCommand
         if (selectedFramework is not null)
         {
             ApplySelectedFramework(selectedFramework);
-            
+
             // Re-evaluate project with the selected framework so device selection sees the right devices
             var properties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
             selector.InvalidateGlobalProperties(properties);
@@ -343,7 +344,7 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath is not null);
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
+
         // If a framework is already specified via --framework, no need to check
         if (globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
         {
@@ -582,7 +583,7 @@ public class RunCommand
         else
         {
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
-    
+
             ProjectInstance project;
             try
             {

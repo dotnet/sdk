@@ -330,7 +330,7 @@ setx PATH "%PATH%;{0}"
     <value>Entry point file '{0}' for command '{1}' was not found in the package.</value>
   </data>
   <data name="MissingToolSettingsFile" xml:space="preserve">
-    <value>Settings file 'DotnetToolSettings.xml' was not found in the package.</value>
+    <value>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</value>
   </data>
   <data name="ToolRequiresHigherDotNetVersion" xml:space="preserve">
     <value>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</value>

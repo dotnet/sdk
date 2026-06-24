@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.TestFramework.Utilities;
 using static Microsoft.DotNet.Cli.Utils.ExponentialRetry;
 
 namespace Microsoft.NET.TestFramework.Commands
@@ -173,7 +174,8 @@ namespace Microsoft.NET.TestFramework.Commands
                 return false;
             }
 
-            return !NuGetTransientErrorDetector.IsTransientError(result.StdOut);
+            return !NuGetTransientErrorDetector.IsTransientError(result.StdOut)
+                && !TransientSdkResolutionErrorDetector.IsTransientError(result.StdOut);
         }
 
         public virtual CommandResult Execute(IEnumerable<string> args)
@@ -279,7 +281,9 @@ namespace Microsoft.NET.TestFramework.Commands
                     var destName = string.IsNullOrEmpty(prefix)
                         ? Path.GetFileName(binlogFile)
                         : $"{prefix}-{Path.GetFileName(binlogFile)}";
-                    File.Copy(binlogFile, Path.Combine(uploadRoot, destName), true);
+                    var destPath = Path.Combine(uploadRoot, destName);
+                    // Binlog upload is diagnostic-only; copy failures will not fail the test.
+                    FileUtility.TryCopyFile(binlogFile, destPath, Log);
                 }
             }
 

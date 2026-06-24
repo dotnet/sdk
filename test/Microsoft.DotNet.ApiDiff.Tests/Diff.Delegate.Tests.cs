@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffDelegateTests : DiffBaseTests
 {
     #region Delegates
 
-    [Fact]
+    [TestMethod]
     public Task DelegateAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -33,7 +34,7 @@ public class DiffDelegateTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task DelegateChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -55,7 +56,7 @@ public class DiffDelegateTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task DelegateDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
