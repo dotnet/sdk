@@ -1,15 +1,23 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
+[TestClass]
+
 public class StaticWebAssetTest
 {
-    [Fact]
+    [TestMethod]
     public void ValidateAssetGroup_SingleAsset_ReturnsTrue()
     {
         var asset = CreateAsset("wwwroot/app.js", "app.js", "All", "All");
@@ -18,11 +26,11 @@ public class StaticWebAssetTest
         var groupSet = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet);
 
-        Assert.True(result);
-        Assert.Null(reason);
+        Assert.IsTrue(result);
+        Assert.IsNull(reason);
     }
 
-    [Fact]
+    [TestMethod]
     public void ValidateAssetGroup_TwoAssetsFromDifferentProjects_ReturnsFalse()
     {
         var asset1 = CreateAsset("wwwroot/app.js", "app.js", "All", "All", sourceId: "Project1");
@@ -32,11 +40,11 @@ public class StaticWebAssetTest
         var groupSet2 = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet2);
 
-        Assert.False(result);
+        Assert.IsFalse(result);
         Assert.Contains("different projects", reason);
     }
 
-    [Fact]
+    [TestMethod]
     public void ValidateAssetGroup_TwoAllAssetsFromSameProject_ReturnsFalse()
     {
         var asset1 = CreateAsset("wwwroot/app.js", "app.js", "All", "All");
@@ -46,11 +54,11 @@ public class StaticWebAssetTest
         var groupSet3 = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet3);
 
-        Assert.False(result);
+        Assert.IsFalse(result);
         Assert.Contains("'All' assets", reason);
     }
 
-    [Fact]
+    [TestMethod]
     public void ValidateAssetGroup_BuildAndPublishAssetsFromSameProject_ReturnsTrue()
     {
         var buildAsset = CreateAsset("wwwroot/app.js", "app.js", "Build", "All");
@@ -60,11 +68,11 @@ public class StaticWebAssetTest
         var groupSet4 = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet4);
 
-        Assert.True(result);
-        Assert.Null(reason);
+        Assert.IsTrue(result);
+        Assert.IsNull(reason);
     }
 
-    [Fact]
+    [TestMethod]
     public void ComputeTargetPath_WithoutTokenResolver_KeepsTokensInPath()
     {
         var asset = CreateAsset(
@@ -76,10 +84,10 @@ public class StaticWebAssetTest
 
         var targetPath = asset.ComputeTargetPath("", '/');
 
-        Assert.Equal("MyApp.styles#[.{fingerprint}]?.css", targetPath);
+        Assert.AreEqual("MyApp.styles#[.{fingerprint}]?.css", targetPath);
     }
 
-    [Fact]
+    [TestMethod]
     public void ComputeTargetPath_WithTokenResolver_ReplacesOptionalTokens()
     {
         var asset = CreateAsset(
@@ -91,10 +99,10 @@ public class StaticWebAssetTest
 
         var targetPath = asset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
 
-        Assert.Equal("MyApp.styles.css", targetPath);
+        Assert.AreEqual("MyApp.styles.css", targetPath);
     }
 
-    [Fact]
+    [TestMethod]
     public void TwoAssetsWithDifferentPatternsResolveToSameTargetPath_AfterTokenReplacement()
     {
         var discoveredAsset = CreateAsset(
@@ -114,19 +122,19 @@ public class StaticWebAssetTest
         var path1WithTokens = discoveredAsset.ComputeTargetPath("", '/');
         var path2WithTokens = computedAsset.ComputeTargetPath("", '/');
 
-        Assert.NotEqual(path1WithTokens, path2WithTokens);
-        Assert.Equal("MyApp.styles#[.{fingerprint}]?.css", path1WithTokens);
-        Assert.Equal("MyApp#[.{fingerprint}]?.styles.css", path2WithTokens);
+        Assert.AreNotEqual(path1WithTokens, path2WithTokens);
+        Assert.AreEqual("MyApp.styles#[.{fingerprint}]?.css", path1WithTokens);
+        Assert.AreEqual("MyApp#[.{fingerprint}]?.styles.css", path2WithTokens);
 
         var path1Resolved = discoveredAsset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
         var path2Resolved = computedAsset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
 
-        Assert.Equal("MyApp.styles.css", path1Resolved);
-        Assert.Equal("MyApp.styles.css", path2Resolved);
-        Assert.Equal(path1Resolved, path2Resolved);
+        Assert.AreEqual("MyApp.styles.css", path1Resolved);
+        Assert.AreEqual("MyApp.styles.css", path2Resolved);
+        Assert.AreEqual(path1Resolved, path2Resolved);
     }
 
-    [Fact]
+    [TestMethod]
     public void ValidateAssetGroup_DetectsConflict_WhenAssetsHaveDifferentPatterns_ButSameResolvedPath()
     {
         var discoveredAsset = CreateAsset(
@@ -147,23 +155,23 @@ public class StaticWebAssetTest
         var groupSet = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("MyApp.styles.css", group, out var reason, groupSet);
 
-        Assert.False(result);
+        Assert.IsFalse(result);
         Assert.Contains("'All' assets", reason);
     }
 
     // SortByRelatedAssetInPlace tests
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_EmptyArray_DoesNothing()
     {
         var assets = Array.Empty<StaticWebAsset>();
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
 
-        Assert.Empty(assets);
+        Assert.IsEmpty(assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_SingleElement_DoesNothing()
     {
         var a = CreateChainAsset("A");
@@ -171,10 +179,10 @@ public class StaticWebAssetTest
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
 
-        Assert.Same(a, assets[0]);
+        Assert.AreSame(a, assets[0]);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_AllRoots_PreservesOrder()
     {
         var a = CreateChainAsset("A");
@@ -184,12 +192,12 @@ public class StaticWebAssetTest
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
 
-        Assert.Same(a, assets[0]);
-        Assert.Same(b, assets[1]);
-        Assert.Same(c, assets[2]);
+        Assert.AreSame(a, assets[0]);
+        Assert.AreSame(b, assets[1]);
+        Assert.AreSame(c, assets[2]);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_AlreadySorted_Chain()
     {
         // D (root) → C → B → A  (parents before children)
@@ -203,7 +211,7 @@ public class StaticWebAssetTest
         AssertParentsBeforeChildren(assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_ReversedChain_WorstCase()
     {
         // Chain: A→B→C→D (D is root). Array in child-first order.
@@ -217,7 +225,7 @@ public class StaticWebAssetTest
         AssertParentsBeforeChildren(assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_LongReversedChain()
     {
         // A→B→C→D→E (E is root), worst order [A, B, C, D, E]
@@ -232,7 +240,7 @@ public class StaticWebAssetTest
         AssertParentsBeforeChildren(assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_ShuffledChain()
     {
         // A→B→C→D→E (E is root), shuffled order [C, A, D, B, E]
@@ -247,7 +255,7 @@ public class StaticWebAssetTest
         AssertParentsBeforeChildren(assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_MultipleIndependentChains()
     {
         // Chain 1: X→Y (Y root). Chain 2: P→Q→R (R root).
@@ -263,7 +271,7 @@ public class StaticWebAssetTest
         AssertParentsBeforeChildren(assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_Diamond_TwoChildrenOneParent()
     {
         // A→C, B→C, C is root. Order: [A, B, C]
@@ -276,7 +284,7 @@ public class StaticWebAssetTest
         AssertParentsBeforeChildren(assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_MixedRootsAndChain()
     {
         // Roots: R1, R2. Chain: A→B→C (C root). Order: [A, R1, B, R2, C]
@@ -291,7 +299,7 @@ public class StaticWebAssetTest
         AssertParentsBeforeChildren(assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_OrphanAsset_PlacedAnyway()
     {
         // A→B but B is not in the array. A should still be placed.
@@ -301,12 +309,12 @@ public class StaticWebAssetTest
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
 
-        Assert.Equal(2, assets.Length);
+        Assert.HasCount(2, assets);
         Assert.Contains(a, assets);
         Assert.Contains(r, assets);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_TwoElements_ChildBeforeParent()
     {
         var parent = CreateChainAsset("Parent");
@@ -315,11 +323,11 @@ public class StaticWebAssetTest
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
 
-        Assert.Same(parent, assets[0]);
-        Assert.Same(child, assets[1]);
+        Assert.AreSame(parent, assets[0]);
+        Assert.AreSame(child, assets[1]);
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_ProducesValidOrder_OnVariousInputs()
     {
         // Verify the in-place sort produces a valid topological ordering
@@ -346,7 +354,7 @@ public class StaticWebAssetTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void SortByRelatedAssetInPlace_PreservesAllElements()
     {
         var e = CreateChainAsset("E");
@@ -359,7 +367,7 @@ public class StaticWebAssetTest
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
 
-        Assert.Equal(original, new HashSet<StaticWebAsset>(assets));
+        new HashSet<StaticWebAsset>(assets).Should().BeEquivalentTo(original);
     }
 
     // Asserts that for every asset in the array, its RelatedAsset (parent)
@@ -371,8 +379,8 @@ public class StaticWebAssetTest
         {
             if (!string.IsNullOrEmpty(asset.RelatedAsset))
             {
-                Assert.True(
-                    seen.Contains(asset.RelatedAsset),
+                seen.Should().Contain(
+                    asset.RelatedAsset,
                     $"Asset '{Path.GetFileName(asset.Identity)}' appears before its parent '{Path.GetFileName(asset.RelatedAsset)}'");
             }
             seen.Add(asset.Identity);

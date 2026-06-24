@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Tests.TelemetryTests;
 /// <summary>
 /// Only adding the performance data tests for now as the TelemetryCommandTests cover most other scenarios already
 /// </summary>
+[TestClass]
 public class TelemetryFilterTests : SdkTest
 {
     private readonly FakeRecordEventNameTelemetry _fakeTelemetry;
@@ -21,14 +22,14 @@ public class TelemetryFilterTests : SdkTest
 
     public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
 
-    public TelemetryFilterTests(ITestOutputHelper log) : base(log)
+    public TelemetryFilterTests()
     {
         _fakeTelemetry = new FakeRecordEventNameTelemetry();
         TelemetryEventEntry.Subscribe(_fakeTelemetry.TrackEvent);
         TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
     }
 
-    [Fact]
+    [TestMethod]
     public void TopLevelCommandNameShouldBeSentToTelemetry()
     {
         var parseResult = Parser.Parse(["build"]);
@@ -38,7 +39,7 @@ public class TelemetryFilterTests : SdkTest
                 e.Properties["verb"] == Sha256Hasher.Hash("BUILD"));
     }
 
-    [Fact]
+    [TestMethod]
     public void TopLevelCommandNameShouldBeSentToTelemetryWithGlobalJsonState()
     {
         string globalJsonState = "invalid_data";
@@ -51,7 +52,7 @@ public class TelemetryFilterTests : SdkTest
                 e.Properties["globalJson"] == Sha256Hasher.HashWithNormalizedCasing(globalJsonState));
     }
 
-    [Fact]
+    [TestMethod]
     public void SubLevelCommandNameShouldBeSentToTelemetry()
     {
         // Use a fresh DotNetCommandDefinition to avoid test pollution from
@@ -79,7 +80,7 @@ public class TelemetryFilterTests : SdkTest
                 e.Properties["verb"] == Sha256Hasher.Hash("NEW"));
     }
 
-    [Fact]
+    [TestMethod]
     public void WorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
     {
         var parseResult =
@@ -94,7 +95,7 @@ public class TelemetryFilterTests : SdkTest
                                                         Sha256Hasher.Hash("MICROSOFT-IOS-SDK-FULL"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ToolsSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
     {
         var parseResult =
@@ -109,7 +110,7 @@ public class TelemetryFilterTests : SdkTest
                                                         Sha256Hasher.Hash("DOTNET-FORMAT"));
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenCalledWithDiagnosticWorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
     {
         var parseResult =
@@ -124,7 +125,7 @@ public class TelemetryFilterTests : SdkTest
                                                         Sha256Hasher.Hash("MICROSOFT-IOS-SDK-FULL"));
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenCalledWithMissingArgumentWorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
     {
         var parseResult =

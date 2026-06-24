@@ -6,6 +6,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [DoNotParallelize]
     [TestClass]
     public class GivenAResolvePackageAssetsMultiThreading
     {

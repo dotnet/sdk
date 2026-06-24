@@ -11,6 +11,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
+    [TestClass]
     public class GivenDotnetWorkloadList : SdkTest
     {
         private readonly ParseResult _machineReadableParseResult;
@@ -18,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
         private readonly BufferedReporter _reporter;
         private readonly string _manifestPath;
 
-        public GivenDotnetWorkloadList(ITestOutputHelper log) : base(log)
+        public GivenDotnetWorkloadList()
         {
             _reporter = new BufferedReporter();
             _machineReadableParseResult = Parser.Parse("dotnet workload list --machine-readable");
@@ -26,7 +27,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockListSample.json");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoWorkloadsAreInstalledListIsEmpty()
         {
             _reporter.Clear();
@@ -40,7 +41,8 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _reporter.Lines.Count.Should().Be(8);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void GivenAvailableWorkloadsItCanComputeVisualStudioIds()
         {
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(("SampleManifest", _manifestPath, "5.0.0", "6.0.100")), Directory.GetCurrentDirectory());
@@ -52,7 +54,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
 #pragma warning restore CA1416 // Validate platform compatibility
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoWorkloadsAreInstalledMachineReadableListIsEmpty()
         {
             _reporter.Clear();
@@ -64,7 +66,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _reporter.Lines.Should().Contain(l => l.Contains(@"""installed"":[]"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadsAreInstalledListIsNotEmpty()
         {
             _reporter.Clear();
@@ -80,7 +82,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadsAreInstalledMachineReadableListIsNotEmpty()
         {
             _reporter.Clear();
@@ -92,7 +94,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _reporter.Lines.Should().Contain(l => l.Contains("{\"installed\":[\"mock-workload-1\",\"mock-workload-2\",\"mock-workload-3\"]"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadsAreOutOfDateUpdatesAreAdvertised()
         {
             _reporter.Clear();
