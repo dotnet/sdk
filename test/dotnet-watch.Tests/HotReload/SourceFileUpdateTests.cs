@@ -1,13 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias MSTestFramework;
+
 #nullable disable
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class SourceFileUpdateTests : DotNetWatchTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task AddSourceFile()
     {
         Log("AddSourceFile started");
@@ -44,7 +47,7 @@ public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBa
         await App.WaitUntilOutputContains("Changed!");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFileInDependency()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -74,7 +77,7 @@ public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBa
     /// <summary>
     /// Unchanged project doesn't build. Wait for source change and rebuild.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task BaselineCompilationError()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -98,7 +101,8 @@ public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBa
     }
 
     // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-    [CoreMSBuildOnlyFact]
+    [TestMethod]
+    [MSTestFramework::Microsoft.NET.TestFramework.CoreMSBuildOnly]
     public async Task HandleTypeLoadFailure()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
@@ -129,7 +133,8 @@ public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBa
     }
 
     // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-    [CoreMSBuildOnlyFact]
+    [TestMethod]
+    [MSTestFramework::Microsoft.NET.TestFramework.CoreMSBuildOnly]
     public async Task HandleMissingAssemblyFailure()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMissingAssemblyFailure")
@@ -165,11 +170,16 @@ public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBa
         await App.WaitUntilOutputContains("Updated types: Printer");
     }
 
-    [Theory]
-    [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
-    [InlineData(false)]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task RenameSourceFile(bool useMove)
     {
+        if (useMove)
+        {
+            Assert.Inconclusive("https://github.com/dotnet/sdk/issues/43320");
+        }
+
         Log("RenameSourceFile started");
 
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -223,9 +233,9 @@ public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBa
         await App.AssertOutputLineStartsWith("> Renamed.cs");
     }
 
-    [Theory]
-    [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
-    [InlineData(false)]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task RenameDirectory(bool useMove)
     {
         Log("RenameSourceFile started");

@@ -13,36 +13,17 @@ namespace Microsoft.DotNet.Test.MSTest.Utilities;
 /// </summary>
 public sealed class TestLoggerFactory : ILoggerFactory
 {
-    private readonly List<ILoggerProvider> _loggerProviders = new();
-    private readonly List<ILoggerFactory> _factories = new();
+    private readonly ILoggerFactory _loggerFactory;
 
     public TestLoggerFactory(TestContext? testContext = null)
     {
-        if (testContext is not null)
-        {
-            _loggerProviders.Add(new TestContextLoggerProvider(testContext));
-        }
-    }
-
-    public void Dispose()
-    {
-        while (_factories.Count > 0)
-        {
-            ILoggerFactory factory = _factories[0];
-            _factories.RemoveAt(0);
-            factory.Dispose();
-        }
-    }
-
-    public ILogger CreateLogger(string categoryName)
-    {
-        ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+        _loggerFactory = LoggerFactory.Create(builder =>
         {
             builder.SetMinimumLevel(LogLevel.Trace);
 
-            foreach (ILoggerProvider loggerProvider in _loggerProviders)
+            if (testContext is not null)
             {
-                builder.AddProvider(loggerProvider);
+                builder.AddProvider(new TestContextLoggerProvider(testContext));
             }
 
             builder.AddSimpleConsole(options =>
@@ -52,14 +33,15 @@ public sealed class TestLoggerFactory : ILoggerFactory
                 options.IncludeScopes = true;
             });
         });
-
-        _factories.Add(loggerFactory);
-        return loggerFactory.CreateLogger(categoryName);
     }
+
+    public void Dispose() => _loggerFactory.Dispose();
+
+    public ILogger CreateLogger(string categoryName) => _loggerFactory.CreateLogger(categoryName);
 
     public ILogger CreateLogger() => CreateLogger("Test Host");
 
-    public void AddProvider(ILoggerProvider provider) => _loggerProviders.Add(provider);
+    public void AddProvider(ILoggerProvider provider) => _loggerFactory.AddProvider(provider);
 
     private sealed class TestContextLoggerProvider(TestContext testContext) : ILoggerProvider
     {

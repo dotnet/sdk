@@ -9,9 +9,10 @@ using static Microsoft.NET.Build.Tasks.ResolvePackageAssets;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAResolvePackageAssetsTask
     {
-        [Fact]
+        [TestMethod]
         public void ItHashesAllParameters()
         {
             IEnumerable<PropertyInfo> inputProperties;
@@ -23,11 +24,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 oldHash = task.HashSettings();
             }
-            catch (ArgumentNullException)
+            catch (ArgumentNullException ex)
             {
-                Assert.Fail("HashSettings is likely not correctly handling null value of one or more optional task parameters");
-
-                throw; // unreachable
+                throw new InvalidOperationException("HashSettings is likely not correctly handling null value of one or more optional task parameters", ex);
             }
 
             foreach (var property in inputProperties)
@@ -60,7 +59,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotHashDesignTimeBuild()
         {
             var task = InitializeTask(out _);
@@ -77,7 +76,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 because: $"{nameof(task.DesignTimeBuild)} should not be included in hash.");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_error_on_duplicate_package_names()
         {
             string projectAssetsJsonPath = Path.GetTempFileName();
@@ -155,9 +154,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
   }
 }".Replace("`", "\"").Replace("{tfm}", tfm).Replace("{locale}", locale);
 
-        [InlineData("net7.0", true)]
-        [InlineData("net6.0", false)]
-        [Theory]
+        [DataRow("net7.0", true)]
+        [DataRow("net6.0", false)]
+        [TestMethod]
         public void It_warns_on_invalid_culture_codes_of_resources(string tfm, bool shouldHaveWarnings)
         {
             string projectAssetsJsonPath = Path.GetTempFileName();
@@ -178,9 +177,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         }
 
-        [InlineData("net7.0", true)]
-        [InlineData("net6.0", false)]
-        [Theory]
+        [DataRow("net7.0", true)]
+        [DataRow("net6.0", false)]
+        [TestMethod]
         public void It_warns_on_incorrectly_cased_culture_codes_of_resources(string tfm, bool shouldHaveWarnings)
         {
             string projectAssetsJsonPath = Path.GetTempFileName();
@@ -231,4 +230,3 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
     }
 }
-

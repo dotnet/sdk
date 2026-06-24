@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -10,11 +16,13 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
+[TestClass]
+
 public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
 {
-    [Theory]
-    [InlineData("candidate#[.{fingerprint}]?.js", "candidate.js")]
-    [InlineData("candidate#[.{fingerprint}]!.js", "candidate.asdf1234.js")]
+    [TestMethod]
+    [DataRow("candidate#[.{fingerprint}]?.js", "candidate.js")]
+    [DataRow("candidate#[.{fingerprint}]!.js", "candidate.asdf1234.js")]
     public void Standalone_Selects_EndpointMatching_FilePath(string pattern, string expectedRoute)
     {
         var now = DateTime.Now;
@@ -57,7 +65,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         endpoint.Route.Should().Be(expectedRoute);
     }
 
-    [Fact]
+    [TestMethod]
     public void StandaloneFails_MatchingEndpointNotFound()
     {
         var now = DateTime.Now;
@@ -95,9 +103,9 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         result.Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData("candidate#[.{fingerprint}]?.js", "candidate.asdf1234.js")]
-    [InlineData("candidate#[.{fingerprint}]!.js", "candidate.asdf1234.js")]
+    [TestMethod]
+    [DataRow("candidate#[.{fingerprint}]?.js", "candidate.asdf1234.js")]
+    [DataRow("candidate#[.{fingerprint}]!.js", "candidate.asdf1234.js")]
     public void Hosted_AlwaysPrefers_FingerprintedEndpoint(string pattern, string expectedRoute)
     {
         var now = DateTime.Now;
@@ -140,7 +148,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         endpoint.Route.Should().Be(expectedRoute);
     }
 
-    [Fact]
+    [TestMethod]
     public void Hosted_FallsBackToNonFingerprintedEndpoint_WhenFingerprintedVersionNotAvailable()
     {
         var now = DateTime.Now;
@@ -183,7 +191,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         endpoint.Route.Should().Be("candidate.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void Hosted_FailsWhen_DoesnotFindMatchingEndpoint()
     {
         var now = DateTime.Now;

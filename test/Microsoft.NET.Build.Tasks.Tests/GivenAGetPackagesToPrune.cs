@@ -13,6 +13,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// the task reads the on-disk data from the right place even when the process
     /// current working directory differs from the project directory.
     /// </summary>
+    [DoNotParallelize]
+    [TestClass]
     public class GivenAGetPackagesToPrune
     {
         private const string NetCoreApp = "Microsoft.NETCore.App";
@@ -44,7 +46,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             };
         }
 
-        [Fact]
+        [TestMethod]
         public void ItResolvesPrunePackageDataRootRelativeToTaskEnvironmentProjectDirectory()
         {
             using var env = new TaskTestEnvironment();
@@ -64,7 +66,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Which.ItemSpec.Should().Be("Newtonsoft.Json");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItResolvesTargetingPackRootsRelativeToTaskEnvironmentProjectDirectory()
         {
             using var env = new TaskTestEnvironment();
@@ -95,7 +97,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Which.ItemSpec.Should().Be("Newtonsoft.Json");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIgnoresEmptyTargetingPackRootEntries()
         {
             using var env = new TaskTestEnvironment();
@@ -117,7 +119,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Which.ItemSpec.Should().Be("Newtonsoft.Json");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotReuseCachedDataForDifferentResolvedTargetingPackRoots()
         {
             using var env = new TaskTestEnvironment();
@@ -154,7 +156,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "different resolved targeting pack roots must not collide in the build-wide cache");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReusesCachedDataForIdenticalInputs()
         {
             using var env = new TaskTestEnvironment();

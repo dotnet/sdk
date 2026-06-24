@@ -4,4 +4,4 @@
 // Tests in this assembly modify process-global state (environment variables,
 // Reporter.Output, Console.Out/Error, AppContext data), so they must not
 // run in parallel.
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: DoNotParallelize]
