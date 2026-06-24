@@ -233,7 +233,7 @@ public class DotnetArchiveExtractorTests
             ("shared/readme.txt", readOnlyMode, isDirectory: false));
 
         // Act — ExtractToFile should apply Mode via UnixCreateMode
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null);
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null);
 
         // Assert
         var dotnetPath = Path.Combine(extractDir, "bin", "dotnet");
@@ -271,7 +271,7 @@ public class DotnetArchiveExtractorTests
             ("mydir/", dirMode, isDirectory: true));
 
         // Act
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null);
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null);
 
         // Assert
         var dirPath = Path.Combine(extractDir, "mydir");
@@ -304,7 +304,7 @@ public class DotnetArchiveExtractorTests
             ("sub/nested.txt", defaultMode, isDirectory: false));
 
         // Act
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null);
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null);
 
         // Assert
         var helloPath = Path.Combine(extractDir, "hello.txt");
@@ -355,7 +355,7 @@ public class DotnetArchiveExtractorTests
         };
 
         // Act
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null,
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null,
             muxerHandler: null, onEntryExtracted: entry => extractedEntries.Add(entry), shouldSkipEntry: shouldSkip);
 
         // Assert — existing subcomponent content should be preserved (not overwritten)
@@ -408,7 +408,7 @@ public class DotnetArchiveExtractorTests
         };
 
         // Act
-        DotnetArchiveExtractor.ExtractTarContents(tarPath, extractDir, installTask: null,
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, installTask: null,
             muxerHandler: null, onEntryExtracted: null, shouldSkipEntry: shouldSkip);
 
         // Assert — root-level file should be extracted even though skip predicate is active
@@ -458,6 +458,50 @@ public class DotnetArchiveExtractorTests
         // Assert
         var runtimeFile = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.0", "System.Runtime.dll");
         File.Exists(runtimeFile).Should().BeTrue("tar.gz extraction should create files in the install path");
+        File.ReadAllText(runtimeFile).Should().Be("runtime-content");
+    }
+
+    [Fact]
+    public void Commit_ExtractsTarGzArchive_WhenDecompressedTarPathAlreadyExists()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion(9, 0, 0);
+
+        var request = new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel("9.0"),
+            InstallComponent.Runtime,
+            new InstallRequestOptions());
+
+        byte[] tarGzContent = CreateTarGzWithFiles(
+            ("shared/Microsoft.NETCore.App/9.0.0/System.Runtime.dll", "runtime-content"));
+
+        var mockDownloader = new MockArchiveDownloader
+        {
+            CreateFakeArchive = true,
+            FakeArchiveContent = tarGzContent,
+            ArchiveFileExtension = ".tar.gz"
+        };
+
+        var releaseManifest = new ReleaseManifest();
+        var progressTarget = new NullProgressTarget();
+
+        using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
+
+        extractor.Prepare();
+        var downloadedPath = mockDownloader.DownloadCalls[0].DestinationPath;
+        var decompressedTarPath = Path.Combine(Path.GetDirectoryName(downloadedPath)!, Path.GetFileNameWithoutExtension(downloadedPath));
+
+        // Pre-create a directory at the path where the old implementation would have placed
+        // the decompressed .tar staging file. This verifies that the current streaming approach
+        // does not depend on that path being available as a regular file.
+        Directory.CreateDirectory(decompressedTarPath);
+        extractor.Commit();
+
+        var runtimeFile = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.0", "System.Runtime.dll");
+        File.Exists(runtimeFile).Should().BeTrue("tar.gz extraction should not depend on a sibling decompressed .tar staging file");
         File.ReadAllText(runtimeFile).Should().Be("runtime-content");
     }
 
