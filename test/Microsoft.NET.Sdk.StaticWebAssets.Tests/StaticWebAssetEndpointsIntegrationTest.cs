@@ -3,6 +3,12 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Text.Json;
@@ -11,8 +17,8 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
-    : AspNetSdkBaselineTest(log, GenerateBaselines)
+[TestClass]
+public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineTest
 {
     [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.bundle\.scp\.css(?'compress'\.(?:gz|br))?$""")]
     private static partial Regex ProjectBundleRegex();
@@ -20,7 +26,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.styles\.css(?'compress'\.(?:gz|br))?$""")]
     private static partial Regex AppBundleRegex();
 
-    [Fact]
+    [TestMethod]
     public void Build_CreatesEndpointsForAssets()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp");
@@ -170,7 +176,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     } && !string.IsNullOrWhiteSpace(fingerprint)
       && (compress == ".gz" || compress == ".br");
 
-    [Fact]
+    [TestMethod]
     public void Publish_CreatesEndpointsForAssets()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp");
@@ -287,7 +293,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         AssertManifest(manifest, LoadPublishManifest());
     }
 
-    [Fact]
+    [TestMethod]
     public void Publish_CreatesEndpointsForAssets_BuildAndPublish_Assets()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp")
@@ -399,7 +405,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         AssertManifest(publishManifest, LoadPublishManifest());
     }
 
-    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+    [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Build_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -427,7 +434,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(buildOutputDirectory, "blazorwasm", readFromDevManifest: true);
     }
 
-    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+    [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void BuildHosted_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -454,7 +462,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(buildOutputDirectory, "blazorhosted", readFromDevManifest: true);
     }
 
-    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+    [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Publish_EndpointManifestContainsEndpoints()
     {
         // Arrange
@@ -480,7 +489,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(publishOutputDirectory, "blazorwasm");
     }
 
-    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+    [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void PublishHosted_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -506,7 +516,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(publishOutputDirectory, "blazorhosted");
     }
 
-    [Fact]
+    [TestMethod]
     public void Build_DefaultDocumentAndSpaFallback_CreatesAdditionalEndpoints()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp")
