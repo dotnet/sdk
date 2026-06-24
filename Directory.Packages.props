@@ -83,6 +83,15 @@
     <PackageVersion Include="Microsoft.Signed.Wix" Version="$(MicrosoftSignedWixVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
+    <!--
+      DRAFT / PLACEHOLDER VERSION. Microsoft.Testing.Platform.Internal.DotnetTest is the internal, source-only
+      package from microsoft/testfx that ships the 'dotnet test' <-> Microsoft.Testing.Platform wire contract and
+      terminal reporter as compiled source (single source of truth, instead of the hand-copied files under
+      src/Cli/dotnet/Commands/Test/MTP/). It is currently IsShipping=false in testfx with no confirmed internal-feed
+      / Maestro dependency flow, so this version cannot yet be resolved. Once the package ships and flows, this entry
+      should be driven by a generated property in eng/Versions.props via eng/Version.Details.xml (darc), like the
+      other flowed dependencies - NOT a hardcoded literal. -->
+    <PackageVersion Include="Microsoft.Testing.Platform.Internal.DotnetTest" Version="0.0.0-PLACEHOLDER" />
     <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="$(MicrosoftVisualStudioSolutionPersistenceVersion)" />
