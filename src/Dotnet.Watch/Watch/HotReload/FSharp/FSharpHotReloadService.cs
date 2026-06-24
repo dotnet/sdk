@@ -2448,7 +2448,11 @@ internal sealed class FSharpHotReloadService
                 return null;
             }
 
-            var delimiters = new[] { ' ', '(', ':' };
+            // Include newline/tab: the F# DU ToString() can render a single-field case as
+            // "UnsupportedEdit\n  [ ... ]", so the case name is followed by a newline, not a space.
+            // Without these, ParseErrorCase returns "UnsupportedEdit\n" and the == comparison (and the
+            // rude-edit formatting it gates) is skipped.
+            var delimiters = new[] { ' ', '(', ':', '\n', '\r', '\t' };
             var index = text.IndexOfAny(delimiters);
             return index > 0 ? text[..index] : text;
         }
