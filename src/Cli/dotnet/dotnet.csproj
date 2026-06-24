@@ -94,8 +94,8 @@
       hand-copied under Commands/Test/MTP/. The package's source lives in the Microsoft.Testing.Platform.IPC and
       Microsoft.Testing.Platform.OutputDevice.Terminal namespaces, so consuming code under
       Microsoft.DotNet.Cli.Commands.Test.* must be re-pointed to those namespaces (see PR description for the full
-      reconciliation list). Version is a placeholder until the package ships and flows via darc (see
-      Directory.Packages.props). -->
+      reconciliation list). It ships on the Microsoft.Testing.Platform preview train and must flow via darc once
+      testfx publishes it (see Directory.Packages.props). -->
     <PackageReference Include="Microsoft.Testing.Platform.Internal.DotnetTest" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="NuGet.CommandLine.XPlat" />
