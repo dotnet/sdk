@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -9,9 +15,10 @@ using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
+[TestClass]
 public class FilterStaticWebAssetEndpointsTest
 {
-    [Fact]
+    [TestMethod]
     public void CanFilterEndpoints_ByAssetFile()
     {
         var assets = new[] {
@@ -55,7 +62,7 @@ public class FilterStaticWebAssetEndpointsTest
         filteredEndpoints.Should().BeEquivalentTo(expectedEndpoints);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanFilterEndpoints_ByProperty()
     {
         var assets = new[] {
@@ -91,7 +98,7 @@ public class FilterStaticWebAssetEndpointsTest
         filteredEndpoints.Should().AllSatisfy(e => e.EndpointProperties.Should().ContainSingle(p => p.Name == "fingerprint"));
     }
 
-    [Fact]
+    [TestMethod]
     public void CanFilterEndpoints_ByResponseHeader()
     {
         var assets = new[] {
@@ -128,7 +135,7 @@ public class FilterStaticWebAssetEndpointsTest
         filteredEndpoints.Should().AllSatisfy(e => e.ResponseHeaders.Should().ContainSingle(p => p.Name == "Content-Type" && p.Value == "text/html"));
     }
 
-    [Fact]
+    [TestMethod]
     public void CanFilterEndpoints_Standalone()
     {
         var assets = new[] {
@@ -160,7 +167,7 @@ public class FilterStaticWebAssetEndpointsTest
         filteredEndpoints.Where(e => e.Route == "other.fingerprint.js").Should().ContainSingle();
     }
 
-    [Fact]
+    [TestMethod]
     public void CanFilterEndpoints_BySelector()
     {
         var assets = new[] {
@@ -198,7 +205,7 @@ public class FilterStaticWebAssetEndpointsTest
         filteredEndpoints[0].Route.Should().Be(endpoints[0].Route);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanFilterEndpoints_ByMultipleCriteria()
     {
         var assets = new[] {
