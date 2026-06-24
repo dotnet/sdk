@@ -3,16 +3,17 @@
 
 namespace Microsoft.DotNet.Cli.Workload.Restore.Tests;
 
+[TestClass]
 public class GivenDotnetWorkloadRestore : SdkTest
 {
-    public GivenDotnetWorkloadRestore(ITestOutputHelper log) : base(log)
+    public GivenDotnetWorkloadRestore()
     {
     }
 
     public static string DcProjAssetName = "SolutionWithAppAndDcProj";
     public static string TransitiveReferenceNoWorkloadsAssetName = "ProjectWithEsProjReference";
 
-    [Fact]
+    [TestMethod]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
         if (IsRunningInContainer())
@@ -35,7 +36,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         .Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
         if (IsRunningInContainer())
@@ -58,7 +59,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         .Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void VersionOptionShouldNotConflictWithSkipManifestUpdate()
     {
         if (IsRunningInContainer())

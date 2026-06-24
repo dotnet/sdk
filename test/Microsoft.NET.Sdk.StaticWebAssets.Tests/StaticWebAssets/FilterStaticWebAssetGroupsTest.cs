@@ -1,13 +1,21 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+[TestClass]
 
 public class FilterStaticWebAssetGroupsTest : IDisposable
 {
@@ -38,7 +46,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ConcreteGroupSatisfied_AssetIncluded()
     {
         var asset1 = CreateAssetItem("app.js", "MyLib", "");
@@ -57,7 +65,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         task.SurvivingEndpoints.Should().HaveCount(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void ConcreteGroupUnsatisfied_AssetExcluded()
     {
         var asset = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
@@ -73,7 +81,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         task.SurvivingEndpoints.Should().HaveCount(0, "endpoint for excluded asset should be removed");
     }
 
-    [Fact]
+    [TestMethod]
     public void DeferredGroupInFinalPass_Errors()
     {
         var asset = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
@@ -90,7 +98,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             .Which.Should().Contain("Deferred");
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipDeferred_DeferredGroupsSkipped_AssetPassesThrough()
     {
         var asset = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
@@ -107,7 +115,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         task.SurvivingEndpoints.Should().HaveCount(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void CascadingExclusion_RelatedAssetsExcludedWithPrimary()
     {
         var primary = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
@@ -126,7 +134,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         task.SurvivingEndpoints.Should().HaveCount(0, "endpoints for both excluded assets should be removed");
     }
 
-    [Fact]
+    [TestMethod]
     public void CascadingExclusion_RelatedAssetPathResolvedAgainstTaskEnvironment()
     {
         var primary = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
@@ -146,7 +154,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         task.SurvivingEndpoints.Should().HaveCount(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void EndpointsFiltered_ForExcludedAssets()
     {
         var includedAsset = CreateAssetItem("app.js", "MyLib", "");
@@ -168,7 +176,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         task.SurvivingEndpoints[0].ItemSpec.Should().Be("app.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipDeferred_NonDeferredGroupsStillEvaluated()
     {
         // An asset has both a non-deferred group requirement and a deferred group requirement.
@@ -192,7 +200,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             "non-deferred BootstrapVersion is satisfied; deferred ServerRendering is skipped");
     }
 
-    [Fact]
+    [TestMethod]
     public void NullStaticWebAssetGroups_PassesThrough()
     {
         var asset = CreateAssetItem("app.js", "MyLib", "");

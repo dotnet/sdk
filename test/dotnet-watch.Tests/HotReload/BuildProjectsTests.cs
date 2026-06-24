@@ -1,14 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias MSTestFramework;
+
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class BuildProjects(ITestOutputHelper output)
+[TestClass]
+public class BuildProjects
 {
-    private class TestContext : IDisposable
+    public Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = null!;
+    private DualOutputHelper? _output;
+    private DualOutputHelper Output => _output ??= new(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
+    private class WatcherContext : IDisposable
     {
         public readonly HotReloadDotNetWatcher Watcher;
         public readonly FileWatcher FileWatcher;
@@ -18,7 +24,7 @@ public class BuildProjects(ITestOutputHelper output)
         public readonly List<string> BuildInvocations = [];
         public string? SolutionFile;
 
-        public TestContext(ITestOutputHelper output, ImmutableArray<ProjectRepresentation> rootProjects)
+        public WatcherContext(DualOutputHelper output, ImmutableArray<ProjectRepresentation> rootProjects)
         {
             var environmentOptions = TestOptions.GetEnvironmentOptions();
             var processOutputReporter = new TestProcessOutputReporter();
@@ -66,14 +72,14 @@ public class BuildProjects(ITestOutputHelper output)
 
         public void Dispose()
         {
-            Assert.False(File.Exists(SolutionFile));
+            Assert.IsFalse(File.Exists(SolutionFile));
         }
     }
 
-    private TestContext CreateContext(string[]? rootProjects = null)
-        => new(output, rootProjects?.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath).ToImmutableArray() ?? []);
+    private WatcherContext CreateContext(string[]? rootProjects = null)
+        => new(Output, rootProjects?.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath).ToImmutableArray() ?? []);
 
-    [Fact]
+    [TestMethod]
     public async Task SingleProject_NotMain()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -93,12 +99,12 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual([$"build {project1} -p A=1"], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SingleProject_Main()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -127,7 +133,7 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(
         [
@@ -136,7 +142,7 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultipleProjects()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -157,13 +163,14 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(["build <solution> -p A=1"], context.BuildInvocations);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task FileBasedApp_NoFrameworkProperties(bool isMain)
     {
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [isMain]);
@@ -186,13 +193,14 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual([$"build {file1} -p A=1"], context.BuildInvocations);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task FileBasedApp_TargetFrameworkProperty(bool nonInteractive)
     {
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);
@@ -216,13 +224,14 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
     public async Task FileBasedApp_TargetFrameworksProperty(bool nonInteractive)
     {
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);
@@ -252,17 +261,17 @@ public class BuildProjects(ITestOutputHelper output)
                 "[Error] " + MessageDescriptor.FileSpecifiesMultipleTargetFrameworks.GetMessage((file1, "net9.0', 'net10.0"))
             ], context.BuildLogger.GetAndClearMessages());
 
-            Assert.False(result.Success);
-            Assert.Empty(context.BuildInvocations);
+            Assert.IsFalse(result.Success);
+            Assert.IsEmpty(context.BuildInvocations);
         }
         else
         {
-            Assert.True(result.Success);
+            Assert.IsTrue(result.Success);
             AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task FileBasedApp_TargetFrameworkOption()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -286,12 +295,12 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net8.0"], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultipleFiles()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -312,7 +321,7 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(
         [
@@ -321,7 +330,7 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SingleProject_MultipleFiles()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -344,7 +353,7 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(
         [
@@ -354,7 +363,7 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultipleProjects_MultipleFiles()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -379,7 +388,7 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(
         [
@@ -389,9 +398,9 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Theory]
-    [InlineData(ToolsetInfo.CurrentTargetFramework)]
-    [InlineData("net9.0")]
+    [TestMethod]
+    [DataRow(ToolsetInfo.CurrentTargetFramework)]
+    [DataRow("net9.0")]
     public async Task MultiTfm_FrameworkSelection(string expectedTfm)
     {
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [expectedTfm]);
@@ -422,9 +431,9 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
         
-        Assert.True(result.Success);
-        Assert.NotNull(result.ProjectGraph);
-        Assert.Equal(expectedTfm, result.MainProjectTargetFramework);
+        Assert.IsTrue(result.Success);
+        Assert.IsNotNull(result.ProjectGraph);
+        Assert.AreEqual(expectedTfm, result.MainProjectTargetFramework);
 
         AssertEx.SequenceEqual(
         [
@@ -433,7 +442,7 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultiTfm_CommandLineOption()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -464,9 +473,9 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
-        Assert.Null(result.ProjectGraph);
-        Assert.Equal("net9.0", result.MainProjectTargetFramework);
+        Assert.IsTrue(result.Success);
+        Assert.IsNull(result.ProjectGraph);
+        Assert.AreEqual("net9.0", result.MainProjectTargetFramework);
 
         AssertEx.SequenceEqual(
         [
@@ -474,7 +483,7 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultiTfm_NoMainProject()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -505,9 +514,9 @@ public class BuildProjects(ITestOutputHelper output)
             deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
-        Assert.Null(result.ProjectGraph);
-        Assert.Null(result.MainProjectTargetFramework);
+        Assert.IsTrue(result.Success);
+        Assert.IsNull(result.ProjectGraph);
+        Assert.IsNull(result.MainProjectTargetFramework);
 
         AssertEx.SequenceEqual(
         [
