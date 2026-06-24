@@ -38,8 +38,7 @@ $BaseUrl = "https://aka.ms/dotnet/dotnetup/$Quality"
 
 # The SYNC section below is verified by a test to keep the dotnetup script + dotnet sdk engineering script logic in sync.
 # (the get-dotnetup script intentionally does not yet exist in `main` and that script must work standalone)
-# markers is verified by a test (ConvertToRidArchitectureSyncTests)
-# BEGIN-SYNC ConvertTo-RidArchitecture (keep identical with eng/sdk-tools.ps1)
+# BEGIN-SYNC ArchitectureDetection (keep identical with eng/sdk-tools.ps1)
 function ConvertTo-RidArchitecture([System.Runtime.InteropServices.Architecture]$Architecture) {
     switch ($Architecture) {
         ([System.Runtime.InteropServices.Architecture]::Arm64) { return "arm64" }
@@ -48,7 +47,35 @@ function ConvertTo-RidArchitecture([System.Runtime.InteropServices.Architecture]
         default { return "x64" }
     }
 }
-# END-SYNC ConvertTo-RidArchitecture
+
+# Maps a Windows PROCESSOR_ARCHITECTURE/PROCESSOR_ARCHITEW6432 env-var value to the
+# lowercase dotnet RID architecture token. Throws when the value is empty or unrecognized.
+function ConvertTo-RidFromProcessorArchitecture([string]$ProcessorArchitecture) {
+    switch ($ProcessorArchitecture) {
+        "ARM64" { return "arm64" }
+        "AMD64" { return "x64" }
+        "ARM" { return "arm" }
+        "x86" { return "x86" }
+        default { throw "Unable to determine the machine architecture from the processor architecture ('$ProcessorArchitecture'); it is empty or unrecognized." }
+    }
+}
+
+# Detect native OS architecture, which may differ from the process architecture
+# (e.g., x64 process running on ARM64 Windows via emulation).
+function Get-NativeMachineArchitecture {
+    try {
+        return ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)
+    }
+    catch {
+        # OSArchitecture can throw when a shadowing RuntimeInformation type lacks
+        # the property (PSReadLine's polyfill on Windows PowerShell 5.1 under strict mode).
+        # PROCESSOR_ARCHITEW6432 reports the native arch under emulation (e.g. an x64 process on ARM64 Windows).
+        if ([Environment]::OSVersion.Platform -ne 'Win32NT') { throw }
+        $procArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
+        return ConvertTo-RidFromProcessorArchitecture $procArch
+    }
+}
+# END-SYNC ArchitectureDetection
 
 function Get-RuntimeId {
     if ($RuntimeId) {
@@ -100,25 +127,8 @@ function Get-RuntimeId {
         throw "Unsupported operating system. Use -RuntimeId to specify a RID manually."
     }
 
-    # Detect architecture. Mirrors Get-NativeMachineArchitecture in
-    # eng/sdk-tools.ps1, inlined here to keep this script standalone.
-    try {
-        $archStr = ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)
-    }
-    catch {
-        # OSArchitecture can throw when a shadowing RuntimeInformation type lacks
-        # the property (PSReadLine's polyfill on Windows PowerShell 5.1 under strict mode).
-        # PROCESSOR_ARCHITEW6432 reports the native arch under emulation (e.g. an x64 process on ARM64 Windows).
-        if ([Environment]::OSVersion.Platform -ne 'Win32NT') { throw }
-        $procArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
-        $archStr = switch ($procArch) {
-            "ARM64" { "arm64" }
-            "AMD64" { "x64" }
-            "ARM" { "arm" }
-            "x86" { "x86" }
-            default { throw "Unable to determine the machine architecture: RuntimeInformation.OSArchitecture was unreadable and PROCESSOR_ARCHITEW6432/PROCESSOR_ARCHITECTURE ('$procArch') is empty or unrecognized. Use -RuntimeId to specify a RID manually." }
-        }
-    }
+    # Detect architecture using the shared helper (see the SYNC section above).
+    $archStr = Get-NativeMachineArchitecture
     switch ($archStr) {
         "x64" { }
         "arm64" { }

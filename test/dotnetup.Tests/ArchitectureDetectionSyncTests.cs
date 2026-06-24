@@ -9,19 +9,20 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 // scripts/get-dotnetup.ps1 is published and downloaded standalone (via aka.ms),
 // so it cannot dot-source eng/sdk-tools.ps1 at runtime and must carry its own copy
-// of ConvertTo-RidArchitecture. These tests guard against the two copies silently diverging.
-public class ConvertToRidArchitectureSyncTests
+// of the architecture-detection helpers (ConvertTo-RidArchitecture and
+// Get-NativeMachineArchitecture). These tests guard against the two copies silently diverging.
+public class ArchitectureDetectionSyncTests
 {
-    private const string BeginMarker = "# BEGIN-SYNC ConvertTo-RidArchitecture";
-    private const string EndMarker = "# END-SYNC ConvertTo-RidArchitecture";
+    private const string BeginMarker = "# BEGIN-SYNC ArchitectureDetection";
+    private const string EndMarker = "# END-SYNC ArchitectureDetection";
 
     private static string RepoRoot { get; } = Path.GetFullPath(
-        typeof(ConvertToRidArchitectureSyncTests).Assembly
+        typeof(ArchitectureDetectionSyncTests).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .First(a => a.Key == "RepoRoot").Value!);
 
     [Fact]
-    public void ConvertToRidArchitecture_IsIdentical_BetweenSdkToolsAndGetDotnetup()
+    public void ArchitectureDetection_IsIdentical_BetweenSdkToolsAndGetDotnetup()
     {
         var sdkToolsPath = Path.Combine(RepoRoot, "eng", "sdk-tools.ps1");
         var getDotnetupPath = Path.Combine(RepoRoot, "scripts", "get-dotnetup.ps1");
@@ -33,15 +34,18 @@ public class ConvertToRidArchitectureSyncTests
         var getDotnetupBlock = ExtractSyncBlock(getDotnetupPath);
 
         // Guard against a vacuous pass: if both blocks were empty (e.g. the
-        // function body was deleted but the markers left in place), they would
-        // still compare equal. Require the real function to be present first.
+        // function bodies were deleted but the markers left in place), they would
+        // still compare equal. Require the real functions to be present first.
         sdkToolsBlock.Should().Contain(
             "function ConvertTo-RidArchitecture",
-            $"the SYNC block in '{sdkToolsPath}' must contain the function definition");
+            $"the SYNC block in '{sdkToolsPath}' must contain ConvertTo-RidArchitecture");
+        sdkToolsBlock.Should().Contain(
+            "function Get-NativeMachineArchitecture",
+            $"the SYNC block in '{sdkToolsPath}' must contain Get-NativeMachineArchitecture");
 
         getDotnetupBlock.Should().Be(
             sdkToolsBlock,
-            "ConvertTo-RidArchitecture must stay identical in eng/sdk-tools.ps1 and " +
+            "the architecture-detection helpers must stay identical in eng/sdk-tools.ps1 and " +
             "scripts/get-dotnetup.ps1 (the latter is published standalone and cannot " +
             "dot-source the former). Update both copies together.");
     }
