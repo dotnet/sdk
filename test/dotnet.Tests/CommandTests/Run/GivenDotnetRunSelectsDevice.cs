@@ -525,7 +525,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         propsFile.Should().BeNull("dotnet-run-env.props should NOT be created when not opted in");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItHonorsRuntimeEnvironmentVariableChangesFromTargetsWhenRunningApp()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarRunHonored")

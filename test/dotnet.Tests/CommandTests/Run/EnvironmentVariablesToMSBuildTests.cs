@@ -10,9 +10,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
+[TestClass]
 public sealed class EnvironmentVariablesToMSBuildTests
 {
-    [Fact]
+    [TestMethod]
     public void HasRuntimeEnvironmentVariableSupport_ReturnsTrue_WhenCapabilityIsPresent()
     {
         var project = CreateProjectInstance($"""
@@ -26,7 +27,7 @@ public sealed class EnvironmentVariablesToMSBuildTests
         EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void HasRuntimeEnvironmentVariableSupport_ReturnsFalse_WhenNoCapabilities()
     {
         var project = CreateProjectInstance("<Project />");
@@ -34,7 +35,7 @@ public sealed class EnvironmentVariablesToMSBuildTests
         EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void HasRuntimeEnvironmentVariableSupport_ReturnsFalse_WhenOnlyOtherCapabilities()
     {
         var project = CreateProjectInstance($"""
@@ -48,7 +49,7 @@ public sealed class EnvironmentVariablesToMSBuildTests
         EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void HasRuntimeEnvironmentVariableSupport_IsCaseInsensitive()
     {
         var project = CreateProjectInstance($"""
@@ -62,7 +63,7 @@ public sealed class EnvironmentVariablesToMSBuildTests
         EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadFromItems_ReturnsEmpty_WhenNoItems()
     {
         var project = CreateProjectInstance("<Project />");
@@ -70,7 +71,7 @@ public sealed class EnvironmentVariablesToMSBuildTests
         EnvironmentVariablesToMSBuild.ReadFromItems(project).Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadFromItems_ReadsIncludeAsNameAndValueMetadataAsValue()
     {
         var project = CreateProjectInstance($"""
@@ -86,7 +87,7 @@ public sealed class EnvironmentVariablesToMSBuildTests
             .Which.Should().Be(new KeyValuePair<string, string>("FOO", "BAR"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadFromItems_ReadsMultipleItems()
     {
         var project = CreateProjectInstance($"""
@@ -105,7 +106,7 @@ public sealed class EnvironmentVariablesToMSBuildTests
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadFromItems_ReturnsEmptyStringValue_WhenValueMetadataIsMissing()
     {
         var project = CreateProjectInstance($"""
@@ -121,7 +122,7 @@ public sealed class EnvironmentVariablesToMSBuildTests
             .Which.Should().Be(new KeyValuePair<string, string>("FOO", string.Empty));
     }
 
-    [Fact]
+    [TestMethod]
     public void AddAsItems_ThenReadFromItems_RoundTripsNamesAndValues()
     {
         var project = CreateProjectInstance("<Project />");
