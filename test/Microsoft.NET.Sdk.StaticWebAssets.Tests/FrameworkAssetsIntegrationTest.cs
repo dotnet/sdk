@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.IO.Compression;
 using System.Text.Json;
@@ -9,10 +15,11 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class FrameworkAssetsIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(FrameworkAssetsIntegrationTest))
+    [TestClass]
+    public class FrameworkAssetsIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => nameof(FrameworkAssetsIntegrationTest);
+        [TestMethod]
         public void Pack_PropsFile_ContainsFrameworkSourceType_ForMatchedAssets()
         {
             var testAsset = "FrameworkAssetsSample";
@@ -53,7 +60,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "CSS assets not matching the FrameworkPattern should have SourceType=Package");
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_NupkgContains_ExpectedStaticWebAssets()
         {
             var testAsset = "FrameworkAssetsSample";
@@ -83,7 +90,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_Consumer_MaterializesFrameworkAssets()
         {
             var (intermediateOutputPath, _) = BuildFrameworkAssetsConsumer();
@@ -116,7 +123,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "CSS assets should remain as Package type since they don't match the FrameworkPattern");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_Consumer_MaterializedFrameworkAsset_FileExistsOnDisk()
         {
             var (intermediateOutputPath, _) = BuildFrameworkAssetsConsumer();
@@ -130,7 +137,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "materialized file should contain the original framework.js content");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_Consumer_EndpointsRemapped_ForFrameworkAssets()
         {
             var (intermediateOutputPath, _) = BuildFrameworkAssetsConsumer();
@@ -162,7 +169,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "at least one endpoint for framework.js should point to the materialized file path under staticwebassets/fx/");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_Consumer_IsIncremental()
         {
             var (intermediateOutputPath, _) = BuildFrameworkAssetsConsumer();

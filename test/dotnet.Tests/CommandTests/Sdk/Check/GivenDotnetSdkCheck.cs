@@ -11,6 +11,7 @@ using Microsoft.DotNet.Tools.Sdk.Check;
 
 namespace Microsoft.DotNet.Cli.SdkCheck.Tests
 {
+    [TestClass]
     public class GivenDotnetSdkCheck : SdkTest
     {
         private readonly BufferedReporter _reporter;
@@ -25,17 +26,17 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
     Options:
       -?, -h, --help    Show command line help.";
 
-        public GivenDotnetSdkCheck(ITestOutputHelper log) : base(log)
+        public GivenDotnetSdkCheck()
         {
             _reporter = new BufferedReporter();
             fakeReleasesPath = Path.Combine(TestAssetsManager.TestAssetsRoot, "TestReleases", "TestRelease");
         }
 
-        [Theory]
-        [InlineData("--help")]
-        [InlineData("-h")]
-        [InlineData("-?")]
-        [InlineData("/?")]
+        [TestMethod]
+        [DataRow("--help")]
+        [DataRow("-h")]
+        [DataRow("-?")]
+        [DataRow("/?")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
         {
             var cmd = new DotnetCommand(Log)
@@ -44,9 +45,9 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void WhenNewFeatureBandExistsItIsAdvertised(bool newerBandExists)
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
@@ -69,7 +70,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItContainsInfoForAllInstalledBundles()
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
@@ -95,14 +96,15 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             }
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/29382")]
-        [InlineData(new string[] { "3.1.301" }, new string[] { }, new string[] { "3.1.302" })]
-        [InlineData(new string[] { "5.0.100" }, new string[] { }, new string[] { })]
-        [InlineData(new string[] { }, new string[] { "3.1.3" }, new string[] { "3.1.10" })]
-        [InlineData(new string[] { }, new string[] { "5.0.0" }, new string[] { })]
-        [InlineData(new string[] { "1.1.10", "2.1.300", "2.1.810", "3.1.400" }, new string[] { }, new string[] { "3.1.404" })]
-        [InlineData(new string[] { }, new string[] { "1.1.10", "2.1.20", "3.1.0" }, new string[] { "3.1.10" })]
-        [InlineData(new string[] { "1.1.10", "2.1.300", "2.1.810", "3.1.400" }, new string[] { "1.1.10", "2.1.20", "3.1.0" }, new string[] { "3.1.404", "3.1.10" })]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/29382")]
+        [DataRow(new string[] { "3.1.301" }, new string[] { }, new string[] { "3.1.302" })]
+        [DataRow(new string[] { "5.0.100" }, new string[] { }, new string[] { })]
+        [DataRow(new string[] { }, new string[] { "3.1.3" }, new string[] { "3.1.10" })]
+        [DataRow(new string[] { }, new string[] { "5.0.0" }, new string[] { })]
+        [DataRow(new string[] { "1.1.10", "2.1.300", "2.1.810", "3.1.400" }, new string[] { }, new string[] { "3.1.404" })]
+        [DataRow(new string[] { }, new string[] { "1.1.10", "2.1.20", "3.1.0" }, new string[] { "3.1.10" })]
+        [DataRow(new string[] { "1.1.10", "2.1.300", "2.1.810", "3.1.400" }, new string[] { "1.1.10", "2.1.20", "3.1.0" }, new string[] { "3.1.404", "3.1.10" })]
         public void WhenANewPatchIsAvailableItIsAdvertised(string[] sdkVersions, string[] runtimeVersions, string[] latestPatchVersions)
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
@@ -120,14 +122,15 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             }
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/29382")]
-        [InlineData(new string[] { "1.0.10" }, new string[] { }, new string[] { "1.0.10" })]
-        [InlineData(new string[] { "5.0.100" }, new string[] { }, new string[] { })]
-        [InlineData(new string[] { }, new string[] { "1.0.1" }, new string[] { "1.0.1" })]
-        [InlineData(new string[] { }, new string[] { "5.0.0" }, new string[] { })]
-        [InlineData(new string[] { "1.0.10", "1.0.9", "2.0.308", "2.1.804", "3.0.309", "3.1.401" }, new string[] { }, new string[] { "1.0.10", "1.0.9", "2.0.308", "2.1.804" })]
-        [InlineData(new string[] { }, new string[] { "1.0.0", "1.0.1", "2.0.3", "2.1.8", "3.0.3", "3.1.4" }, new string[] { "1.0.0", "1.0.1", "2.0.3", "2.1.8" })]
-        [InlineData(new string[] { "1.0.10", "1.0.9", "2.0.308", "2.1.804", "3.0.309", "3.1.401" }, new string[] { "1.0.0", "1.0.1", "2.0.3", "2.1.8", "3.0.3", "3.1.4" },
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/29382")]
+        [DataRow(new string[] { "1.0.10" }, new string[] { }, new string[] { "1.0.10" })]
+        [DataRow(new string[] { "5.0.100" }, new string[] { }, new string[] { })]
+        [DataRow(new string[] { }, new string[] { "1.0.1" }, new string[] { "1.0.1" })]
+        [DataRow(new string[] { }, new string[] { "5.0.0" }, new string[] { })]
+        [DataRow(new string[] { "1.0.10", "1.0.9", "2.0.308", "2.1.804", "3.0.309", "3.1.401" }, new string[] { }, new string[] { "1.0.10", "1.0.9", "2.0.308", "2.1.804" })]
+        [DataRow(new string[] { }, new string[] { "1.0.0", "1.0.1", "2.0.3", "2.1.8", "3.0.3", "3.1.4" }, new string[] { "1.0.0", "1.0.1", "2.0.3", "2.1.8" })]
+        [DataRow(new string[] { "1.0.10", "1.0.9", "2.0.308", "2.1.804", "3.0.309", "3.1.401" }, new string[] { "1.0.0", "1.0.1", "2.0.3", "2.1.8", "3.0.3", "3.1.4" },
             new string[] { "1.0.10", "1.0.9", "2.0.308", "2.1.804", "1.0.0", "1.0.1", "2.0.3", "2.1.8" })]
         public void WhenABundleIsOutOfSupportItPrintsWarning(string[] sdkVersions, string[] runtimeVersions, string[] outOfSupportVersions)
         {
@@ -155,14 +158,14 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             }
         }
 
-        [Theory]
-        [InlineData(new string[] { "3.0.100" }, new string[] { }, new string[] { "3.0.100" })]
-        [InlineData(new string[] { "5.0.100" }, new string[] { }, new string[] { })]
-        [InlineData(new string[] { }, new string[] { "3.0.1" }, new string[] { "3.0.1" })]
-        [InlineData(new string[] { }, new string[] { "5.0.0" }, new string[] { })]
-        [InlineData(new string[] { "1.0.10", "2.0.308", "3.0.309", "3.0.100", "3.1.401" }, new string[] { }, new string[] { "3.0.309", "3.0.100" })]
-        [InlineData(new string[] { }, new string[] { "1.0.1", "2.0.3", "3.0.3", "3.0.1", "3.1.4" }, new string[] { "3.0.3", "3.0.1" })]
-        [InlineData(new string[] { "1.0.10", "2.0.308", "3.0.309", "3.0.100", "3.1.401" }, new string[] { "1.0.1", "2.0.3", "3.0.3", "3.0.1", "3.1.4" }, new string[] { "3.0.309", "3.0.100", "3.0.3", "3.0.1" })]
+        [TestMethod]
+        [DataRow(new string[] { "3.0.100" }, new string[] { }, new string[] { "3.0.100" })]
+        [DataRow(new string[] { "5.0.100" }, new string[] { }, new string[] { })]
+        [DataRow(new string[] { }, new string[] { "3.0.1" }, new string[] { "3.0.1" })]
+        [DataRow(new string[] { }, new string[] { "5.0.0" }, new string[] { })]
+        [DataRow(new string[] { "1.0.10", "2.0.308", "3.0.309", "3.0.100", "3.1.401" }, new string[] { }, new string[] { "3.0.309", "3.0.100" })]
+        [DataRow(new string[] { }, new string[] { "1.0.1", "2.0.3", "3.0.3", "3.0.1", "3.1.4" }, new string[] { "3.0.3", "3.0.1" })]
+        [DataRow(new string[] { "1.0.10", "2.0.308", "3.0.309", "3.0.100", "3.1.401" }, new string[] { "1.0.1", "2.0.3", "3.0.3", "3.0.1", "3.1.4" }, new string[] { "3.0.309", "3.0.100", "3.0.3", "3.0.1" })]
         public void WhenABundleIsInMaintenanceModeItPrintsWarning(string[] sdkVersions, string[] runtimeVersions, string[] maintenanceVersions)
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
@@ -189,7 +192,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItUsesConfigFile()
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
@@ -207,7 +210,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             _reporter.Lines.Should().Contain(replacementString);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenSdkHasNoReleasesJsonItShowsVersionCheckUnavailable()
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });

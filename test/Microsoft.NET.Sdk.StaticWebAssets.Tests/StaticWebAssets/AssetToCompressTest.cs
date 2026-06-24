@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
@@ -9,6 +15,8 @@ using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
+
+[TestClass]
 
 public class AssetToCompressTest : IDisposable
 {
@@ -47,7 +55,7 @@ public class AssetToCompressTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void TryFindInputFilePath_UsesRelatedAsset_WhenFileExists()
     {
         // Arrange
@@ -64,7 +72,7 @@ public class AssetToCompressTest : IDisposable
         _errorMessages.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void TryFindInputFilePath_FallsBackToRelatedAssetOriginalItemSpec_WhenRelatedAssetDoesNotExist()
     {
         // Arrange
@@ -81,7 +89,7 @@ public class AssetToCompressTest : IDisposable
         _errorMessages.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void TryFindInputFilePath_ReturnsError_WhenNeitherPathExists()
     {
         // Arrange
@@ -103,7 +111,7 @@ public class AssetToCompressTest : IDisposable
         _errorMessages[0].Should().Contain(nonExistentPath2);
     }
 
-    [Fact]
+    [TestMethod]
     public void TryFindInputFilePath_PrefersRelatedAsset_OverRelatedAssetOriginalItemSpec_WhenBothExist()
     {
         // Arrange - create two files to simulate the scenario where both metadata values point to existing files
@@ -126,7 +134,7 @@ public class AssetToCompressTest : IDisposable
         _errorMessages.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void TryFindInputFilePath_HandlesEmptyRelatedAsset_AndUsesRelatedAssetOriginalItemSpec()
     {
         // Arrange
@@ -143,7 +151,7 @@ public class AssetToCompressTest : IDisposable
         _errorMessages.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void TryFindInputFilePath_HandlesEsprojScenario_WhereOriginalItemSpecPointsToProjectFile()
     {
         // Arrange - simulate the esproj bug scenario where RelatedAssetOriginalItemSpec

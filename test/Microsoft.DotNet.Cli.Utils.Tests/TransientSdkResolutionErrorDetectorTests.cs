@@ -3,6 +3,7 @@
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class TransientSdkResolutionErrorDetectorTests
     {
         [TestMethod]

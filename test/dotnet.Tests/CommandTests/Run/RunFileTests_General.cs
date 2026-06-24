@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands;
@@ -6,16 +6,17 @@ using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBase(log)
+[TestClass]
+public sealed class RunFileTests_General : RunFileTestBase
 {
     /// <summary>
     /// <c>dotnet run file.cs</c> succeeds without a project file.
     /// </summary>
-    [Theory]
-    [InlineData(null, false)] // will be replaced with an absolute path
-    [InlineData("Program.cs", false)]
-    [InlineData("./Program.cs", false)]
-    [InlineData("Program.CS", true)]
+    [TestMethod]
+    [DataRow(null, false)] // will be replaced with an absolute path
+    [DataRow("Program.cs", false)]
+    [DataRow("./Program.cs", false)]
+    [DataRow("Program.CS", true)]
     public void FilePath(string? path, bool differentCasing)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -48,7 +49,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet file.cs</c> is equivalent to <c>dotnet run file.cs</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void FilePath_WithoutRun()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -149,7 +150,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// Casing of the argument is used for the output binary name.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void FilePath_DifferentCasing()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -177,7 +178,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet run folder/file.cs</c> succeeds without a project file.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void FilePath_OutsideWorkDir()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -195,7 +196,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet run --project file.cs</c> fails.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void FilePath_AsProjectArgument()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -211,11 +212,11 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// Even if there is a file-based app <c>./build</c>, <c>dotnet build</c> should not execute that.
     /// </summary>
-    [Theory]
+    [TestMethod]
     // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
-    [InlineData("build", "MSB1003", false)]
+    [DataRow("build", "MSB1003", false)]
     // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
-    [InlineData("watch", "--project", true)]
+    [DataRow("watch", "--project", true)]
     public void Precedence_BuiltInCommand(string cmd, string error, bool errorInStdErr)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -261,9 +262,9 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// Even if there is a file-based app <c>./test.dll</c>, <c>dotnet test.dll</c> should not execute that.
     /// </summary>
-    [Theory]
-    [InlineData("test.dll")]
-    [InlineData("./test.dll")]
+    [TestMethod]
+    [DataRow("test.dll")]
+    [DataRow("./test.dll")]
     public void Precedence_Dll(string arg)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -290,7 +291,9 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
 
     //  https://github.com/dotnet/sdk/issues/49665
     //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+    [TestMethod]
+
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
     public void Precedence_NuGetTool()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -334,7 +337,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet run -</c> reads the C# code from stdin.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReadFromStdin()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -357,7 +360,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>Directory.Build.props</c> doesn't have any effect on <c>dotnet run -</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReadFromStdin_BuildProps()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -394,7 +397,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>Directory.Build.props</c> doesn't have any effect on <c>dotnet run -</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReadFromStdin_ProjectReference()
     {
         // Ensure the runfile directory has a NuGet.config so the virtual project created by
@@ -458,7 +461,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// Relative paths don't work from stdin since the file is in an isolated temp directory.
     /// Analogous to <see cref="ReadFromStdin_ProjectReference"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReadFromStdin_RefDirective()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -508,7 +511,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .And.HaveStdErrContaining(errorParts[1]);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadFromStdin_NoBuild()
     {
         new DotnetCommand(Log, "run", "-", "--no-build")
@@ -517,7 +520,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, "--no-build"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadFromStdin_LaunchProfile()
     {
         new DotnetCommand(Log, "run", "-", "--launch-profile=test")
@@ -530,7 +533,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run -- -</c> should NOT read the C# file from stdin,
     /// the hyphen should be considred an app argument instead since it's after <c>--</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReadFromStdin_AfterDoubleDash()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -545,11 +548,11 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet run folder</c> without a project file is not supported.
     /// </summary>
-    [Theory]
-    [InlineData(null)] // will be replaced with an absolute path
-    [InlineData(".")]
-    [InlineData("../MSBuildTestApp")]
-    [InlineData("../MSBuildTestApp/")]
+    [TestMethod]
+    [DataRow(null)] // will be replaced with an absolute path
+    [DataRow(".")]
+    [DataRow("../MSBuildTestApp")]
+    [DataRow("../MSBuildTestApp/")]
     public void FolderPath(string? path)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -570,7 +573,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet run app.csproj</c> fails if app.csproj does not exist.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectPath_DoesNotExist()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -590,7 +593,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run app.csproj</c> where app.csproj exists
     /// runs the project and passes 'app.csproj' as an argument.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectPath_Exists()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -608,7 +611,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_NoRunVerb()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -625,7 +628,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .And.HaveStdOut("Hello from Program");
     }
 
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_FileOption()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -646,7 +649,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run --project App.csproj Program.cs</c> does not warn
     /// because <c>--project</c> was explicitly specified.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_ProjectOption_NoWarning()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -668,7 +671,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run file.cs</c> in a directory with a project file warns
     /// because <c>file.cs</c> is passed as an application argument to the project instead of running as a file-based program.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_Warns()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -693,7 +696,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run nonexistent.cs</c> in a directory with a project file warns
     /// even though the file does not exist, because the <c>.cs</c> extension suggests it was intended as a file-based program.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_NonExistentCsFile_Warns()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -718,7 +721,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run -- file.cs</c> in a directory with a project file does not warn
     /// because <c>--</c> signals that the arguments are intentional.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_DoubleDash_NoWarning()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -739,7 +742,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet run file.cs -- other</c> still warns because <c>file.cs</c> appears before <c>--</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_DoubleDashAfterFile_Warns()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -764,7 +767,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run someArg file.cs</c> in a directory with a project warns
     /// when an unrecognized argument prevents <c>file.cs</c> from being treated as a file-based program entry point.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_UnrecognizedArg_Warns()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -789,7 +792,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run -c Release Program.cs</c> in a directory with a project warns because
     /// known options like <c>-c</c> don't suppress the warning; only <c>--project</c>, <c>--file</c>, or <c>--</c> do.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_KnownOption_Warns()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -814,7 +817,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet run someArg -- file.cs</c> does not warn because the <c>.cs</c> file is after <c>--</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_UnrecognizedArg_DoubleDash_NoWarning()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -836,11 +839,11 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet build someArg Program.cs</c> warns because 'Program.cs' is a valid file-based entry point
     /// but additional positional arguments cause it to fall back to MSBuild.
     /// </summary>
-    [Theory]
-    [InlineData("build", "someArg", "Program.cs")]
-    [InlineData("clean", "someArg", "Program.cs")]
-    [InlineData("publish", "someArg", "Program.cs")]
-    [InlineData("build", "Program.cs", "-consoleLoggerParameters:NoSummary")]
+    [TestMethod]
+    [DataRow("build", "someArg", "Program.cs")]
+    [DataRow("clean", "someArg", "Program.cs")]
+    [DataRow("publish", "someArg", "Program.cs")]
+    [DataRow("build", "Program.cs", "-consoleLoggerParameters:NoSummary")]
     public void ExtraArgWithFileEntryPoint_Warns(string command, string arg1, string arg2)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -859,10 +862,10 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet build nonexistent.cs</c> warns because the <c>.cs</c> extension suggests it was intended as a file-based program.
     /// </summary>
-    [Theory]
-    [InlineData("build")]
-    [InlineData("clean")]
-    [InlineData("publish")]
+    [TestMethod]
+    [DataRow("build")]
+    [DataRow("clean")]
+    [DataRow("publish")]
     public void NonExistentCsFile_Warns(string command)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -880,9 +883,9 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet build --no-incremental Program.cs</c> is handled as file-based (known option + single positional arg) and does not warn.
     /// </summary>
-    [Theory]
-    [InlineData("Program.cs")]
-    [InlineData("--no-incremental", "Program.cs")]
+    [TestMethod]
+    [DataRow("Program.cs")]
+    [DataRow("--no-incremental", "Program.cs")]
     public void SingleFileEntryPoint_NoWarning(params string[] extraArgs)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -899,10 +902,10 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// When a file is not a .cs file, we probe the first characters of the file for <c>#!</c>, and
     /// execute as a single file program if we find them.
     /// </summary>
-    [Theory]
-    [InlineData("Program")]
-    [InlineData("Program.csx")]
-    [InlineData("Program.vb")]
+    [TestMethod]
+    [DataRow("Program")]
+    [DataRow("Program.csx")]
+    [DataRow("Program.vb")]
     public void NonCsFileExtensionWithShebang(string fileName)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -922,10 +925,10 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// When a file is not a .cs file, we probe the first characters of the file for <c>#!</c>, and
     /// fall back to normal <c>dotnet run</c> behavior if we don't find them.
     /// </summary>
-    [Theory]
-    [InlineData("Program")]
-    [InlineData("Program.csx")]
-    [InlineData("Program.vb")]
+    [TestMethod]
+    [DataRow("Program")]
+    [DataRow("Program.csx")]
+    [DataRow("Program.vb")]
     public void NonCsFileExtensionWithNoShebang(string fileName)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -941,7 +944,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
                 "--project"));
     }
 
-    [Fact]
+    [TestMethod]
     public void MultipleEntryPoints()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -964,7 +967,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// When the entry-point file does not exist, fallback to normal <c>dotnet run</c> behavior.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void NoCode()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -982,7 +985,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// Cannot run a non-entry-point file.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ClassLibrary_EntryPointFileExists()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -998,7 +1001,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// When the entry-point file does not exist, fallback to normal <c>dotnet run</c> behavior.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ClassLibrary_EntryPointFileDoesNotExist()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1018,7 +1021,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// Other files in the folder are not part of the compilation.
     /// See <see href="https://github.com/dotnet/sdk/issues/51785"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void MultipleFiles_RunEntryPoint()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1049,7 +1052,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// Setting EnableDefaultCompileItems=true via Directory.Build.props should not cause CS2002 warning.
     /// See <see href="https://github.com/dotnet/sdk/issues/51785"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void MultipleFiles_EnableDefaultCompileItemsViaDirectoryBuildProps()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1076,7 +1079,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// Directives in other files are considered even if those files are included via manual MSBuild rather than <c>#:include</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void MultipleFiles_DirectivesInOtherFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1115,7 +1118,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <summary>
     /// <c>dotnet run util.cs</c> fails if <c>util.cs</c> is not the entry-point.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void MultipleFiles_RunLibraryFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1141,7 +1144,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// However, the same problem exists for normal builds with explicit project files
     /// and usually the build fails because there are multiple entry points or other clashes.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void NestedProjectFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1160,7 +1163,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// <c>dotnet run folder/app.csproj</c> -> the argument is not recognized as an entry-point file
     /// (it does not have <c>.cs</c> file extension), so this fallbacks to normal <c>dotnet run</c> behavior.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RunNestedProjectFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

@@ -5,12 +5,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class PublishItemsOutputGroupOutputsTests : SdkTest
     {
-        public PublishItemsOutputGroupOutputsTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
         private static readonly List<string> FrameworkAssemblies = new()
         {
             "api-ms-win-core-console-l1-1-0.dll",
@@ -18,10 +15,10 @@ namespace Microsoft.NET.Publish.Tests
             "WindowsBase.dll",
         };
 
-        [Theory]
-        [InlineData(true, false)]
-        [InlineData(true, true, Skip = "https://github.com/dotnet/sdk/issues/49926")]
-        [InlineData(false, false)]
+        [TestMethod]
+        [DataRow(true, false)]
+        [DataRow(true, true, IgnoreMessage = "https://github.com/dotnet/sdk/issues/49926")]
+        [DataRow(false, false)]
         public void RunPublishItemsOutputGroupOutputsTest(bool specifyRid, bool singleFile)
         {
             var testProject = new TestProject()

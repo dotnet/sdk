@@ -4,17 +4,19 @@
 #nullable disable
 
 using System.Text.Json.Nodes;
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.ProjectConstruction;
+using Microsoft.NET.TestFramework.Utilities;
 
 namespace Microsoft.NET.Sdk.Web.Tests
 {
+    [TestClass]
     public class PublishTests : SdkTest
     {
-        public PublishTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Theory]
-        [MemberData(nameof(SupportedTfms))]
+        [TestMethod]
+        [DynamicData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Trimmed_Apps(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -50,7 +52,8 @@ namespace Microsoft.NET.Sdk.Web.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void TrimMode_Defaulted_Correctly_On_Trimmed_Apps_Pre_Net8()
         {
             var projectName = "HelloWorld";
@@ -72,8 +75,8 @@ namespace Microsoft.NET.Sdk.Web.Tests
             buildProperties["TrimMode"].Should().Be("partial");
         }
 
-        [Theory]
-        [MemberData(nameof(SupportedTfms))]
+        [TestMethod]
+        [DynamicData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Aot_Apps(string targetFramework)
         {
             var projectName = "HelloWorld";
