@@ -19,6 +19,8 @@
   <!-- Embed the test assets path so tests can locate assets regardless of output directory -->
   <ItemGroup>
     <AssemblyMetadata Include="TestAssetsDir" Value="$(MSBuildProjectDirectory)\TestAssets" />
+    <!-- Embed the repo root so tests can read repo scripts (e.g. ConvertToRidArchitectureSyncTests). -->
+    <AssemblyMetadata Include="RepoRoot" Value="$(MSBuildProjectDirectory)\..\.." />
   </ItemGroup>
 
   <ItemGroup>
