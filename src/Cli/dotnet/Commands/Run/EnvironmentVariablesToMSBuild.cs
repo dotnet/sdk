@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
 using System.Xml;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
@@ -57,10 +56,14 @@ internal static class EnvironmentVariablesToMSBuild
     /// <returns>A dictionary mapping environment variable names to their values.</returns>
     public static IReadOnlyDictionary<string, string> ReadFromItems(ProjectInstance projectInstance)
     {
-        // Match the comparer used when parsing -e/--environment so that casing is handled
-        // consistently (environment variables are case-insensitive on Windows).
-        var result = new Dictionary<string, string>(
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        // Always use an ordinal (case-sensitive) comparer. Although environment variable names
+        // are case-insensitive on Windows, the target (e.g. device/emulator) the app actually
+        // runs on may differ from the OS running 'dotnet run' - for example, building an Android
+        // project on Windows. Switching the comparer based on RuntimeInformation of the current
+        // process would therefore be incorrect, so we preserve every @(RuntimeEnvironmentVariable)
+        // item exactly as MSBuild produced it and leave any case handling to the OS that
+        // ultimately receives the variables.
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var item in projectInstance.GetItems(Constants.RuntimeEnvironmentVariable))
         {
             result[item.EvaluatedInclude] = item.GetMetadataValue(ValueMetadataName);
