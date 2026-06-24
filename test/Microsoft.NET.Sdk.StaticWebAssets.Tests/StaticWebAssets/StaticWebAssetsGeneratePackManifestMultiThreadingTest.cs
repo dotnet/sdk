@@ -10,13 +10,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation these tests perform.
+// This test mutates the process-wide current directory, so it must not run
+// concurrently with other tests under MSTest's method-level parallelization.
+[DoNotParallelize]
+[TestClass]
 public class StaticWebAssetsGeneratePackManifestMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void WritesManifestRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(StaticWebAssetsGeneratePackManifestMultiThreadingTest), Guid.NewGuid().ToString("N"));
@@ -58,7 +58,7 @@ public class StaticWebAssetsGeneratePackManifestMultiThreadingTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesExistingManifestCheckRelativeToProjectDirectory_NotProcessCurrentDirectory()
     {
         // Verifies that the File.Exists/File.ReadAllBytes change-detection probe in PersistManifest
@@ -109,7 +109,7 @@ public class StaticWebAssetsGeneratePackManifestMultiThreadingTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void WritesManifestToAbsoluteManifestPath_WhenProcessCurrentDirectoryDiffers()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(StaticWebAssetsGeneratePackManifestMultiThreadingTest), Guid.NewGuid().ToString("N"));
