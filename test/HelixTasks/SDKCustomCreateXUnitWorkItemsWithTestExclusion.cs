@@ -399,9 +399,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 // Preserve the test exit code before running post-test commands
                 script.AppendLine("set _commandExitCode=%ERRORLEVEL%");
                 // Copy hang dumps to Helix upload root for diagnostics
-                script.AppendLine("PowerShell -ExecutionPolicy ByPass \"Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT\"");
+                script.AppendLine("for /r %%f in (*hangdump.dmp) do copy \"%%f\" \"%HELIX_WORKITEM_UPLOAD_ROOT%\\\" >nul 2>&1");
                 // Copy TRX result files to Helix upload root for AzDO test result publishing
-                script.AppendLine("powershell -NoProfile -NonInteractive -Command \"Get-ChildItem -Path . -Recurse -File -Depth 5 -Include *.trx,testResults.xml,test-results.xml,test_results.xml,junit-results.xml,junitresults.xml -ErrorAction SilentlyContinue | ForEach-Object { $destDir = Join-Path $env:HELIX_WORKITEM_UPLOAD_ROOT (Split-Path $_.FullName -NoQualifier ^| Resolve-Path -Relative); New-Item -ItemType Directory -Path (Split-Path $destDir) -Force -ErrorAction SilentlyContinue ^| Out-Null; Copy-Item -Path $_.FullName -Destination $destDir -Force -ErrorAction SilentlyContinue }\"");
+                script.AppendLine("for /r %%f in (*.trx) do copy \"%%f\" \"%HELIX_WORKITEM_UPLOAD_ROOT%\\\" >nul 2>&1");
                 // Exit with the original test exit code
                 script.AppendLine("EXIT /b %_commandExitCode%");
 
