@@ -445,9 +445,12 @@ internal static class DotnetupTestUtilities
     {
         string dotnetupPath = GetDotnetupExecutablePath();
         return Path.GetExtension(dotnetupPath).Equals(".dll", StringComparison.OrdinalIgnoreCase)
-            ? Path.GetDirectoryName(GetRepoDotnetPath())
+            ? GetRepoDotnetDirectory()
             : null;
     }
+
+    public static string GetRepoDotnetDirectory()
+        => Path.GetDirectoryName(GetRepoDotnetPath())!;
 
     private static string CreateManagedDotnetupShim(string dotnetupPath)
     {

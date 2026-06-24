@@ -1014,6 +1014,12 @@ public class LifecycleEndToEndTests
         Directory.CreateDirectory(projectDir);
         string expectedInstallPath = Path.Combine(projectDir, ".dotnet");
         string globalJsonPath = Path.Combine(projectDir, "global.json");
+        Dictionary<string, string> localInstallEnvironment = new()
+        {
+            ["PATH"] = DotnetupTestUtilities.GetRepoDotnetDirectory()
+                + Path.PathSeparator
+                + (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+        };
 
         var sdkArgs = new List<string>(["sdk", "install", "9.0.103",
             "--local",
@@ -1025,7 +1031,10 @@ public class LifecycleEndToEndTests
         }
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
-            [.. sdkArgs], captureOutput: true, workingDirectory: projectDir);
+            [.. sdkArgs],
+            captureOutput: true,
+            workingDirectory: projectDir,
+            environmentVariables: localInstallEnvironment);
         exitCode.Should().Be(0, $"SDK local install failed. Output:\n{output}");
 
         Directory.Exists(Path.Combine(expectedInstallPath, "sdk", "9.0.103")).Should().BeTrue(
@@ -1057,7 +1066,10 @@ public class LifecycleEndToEndTests
             """);
 
         (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
-            [.. sdkArgs], captureOutput: true, workingDirectory: projectDir);
+            [.. sdkArgs],
+            captureOutput: true,
+            workingDirectory: projectDir,
+            environmentVariables: localInstallEnvironment);
         exitCode.Should().Be(0, $"SDK local install should repair an existing global.json without paths. Output:\n{output}");
 
         globalJson = File.ReadAllText(globalJsonPath);
