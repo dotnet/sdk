@@ -65,6 +65,44 @@ function ReadVersionDetailsProperty {
   sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Version.Details.props" | head -n 1
 }
 
+# Maps a dotnetup component (aspnetcore/windowsdesktop/dotnet) to the name of
+# its shared-framework folder under <dotnet root>/shared.
+function GetSharedFrameworkName {
+  local component=$1
+  case "$component" in
+    aspnetcore) echo "Microsoft.AspNetCore.App" ;;
+    windowsdesktop) echo "Microsoft.WindowsDesktop.App" ;;
+    *) echo "Microsoft.NETCore.App" ;;
+  esac
+}
+
+# Returns the shared-framework directory for a component
+# (e.g. <dotnet root>/shared/Microsoft.AspNetCore.App).
+function GetSharedFrameworkPath {
+  local dotnet_root=$1
+  local component=$2
+  echo "$dotnet_root/shared/$(GetSharedFrameworkName "$component")"
+}
+
+# Returns success (0) if a shared framework matching $version (a major.minor
+# channel such as 6.0 or an exact version) is already present for $component.
+function IsSharedFrameworkInstalled {
+  local dotnet_root=$1
+  local component=$2
+  local version=$3
+  local fx_root
+  fx_root="$(GetSharedFrameworkPath "$dotnet_root" "$component")"
+
+  # Only a major.minor channel (e.g. 6.0) should match any patch via a glob. An
+  # exact version must match an exact folder so that, for example, 8.0.1 does not
+  # spuriously match an installed 8.0.10.
+  if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    compgen -G "$fx_root/$version*" > /dev/null 2>&1
+  else
+    [[ -d "$fx_root/$version" ]]
+  fi
+}
+
 # Installs additional shared frameworks for testing purposes.
 function InstallDotNetSharedFrameworks {
   local arch=$1
@@ -83,14 +121,7 @@ function InstallDotNetSharedFrameworks {
       version="${spec#*@}"
     fi
 
-    local shared_framework_name="Microsoft.NETCore.App"
-    if [[ "$component" == "aspnetcore" ]]; then
-      shared_framework_name="Microsoft.AspNetCore.App"
-    elif [[ "$component" == "windowsdesktop" ]]; then
-      shared_framework_name="Microsoft.WindowsDesktop.App"
-    fi
-
-    if ! compgen -G "$dotnet_root/shared/$shared_framework_name/$version*" > /dev/null; then
+    if ! IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version"; then
       specs_to_install+=("$spec")
     fi
   done
@@ -151,13 +182,14 @@ function InstallDotNetSharedFrameworksWithInstallScript {
 
   for spec in "$@"; do
     local component="dotnet"
-    local install_version="$spec"
+    local version="$spec"
     if [[ "$spec" == *@* ]]; then
       component="${spec%@*}"
-      install_version="${spec#*@}"
+      version="${spec#*@}"
     fi
     # Map dotnetup channel (e.g. "9.0") to the specific version the install
     # script's --version parameter expects (e.g. "9.0.0").
+    local install_version="$version"
     if [[ "$install_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
       install_version="$install_version.0"
     fi
@@ -167,11 +199,35 @@ function InstallDotNetSharedFrameworksWithInstallScript {
       install_args+=(--architecture "$arch")
     fi
 
+    # Disable errexit around the install-script call so the exit-code and filesystem checks below always run.
+    local restore_errexit=false
+    if [[ $- == *e* ]]; then
+      restore_errexit=true
+      set +e
+    fi
     bash "$install_script" "${install_args[@]}"
     local lastexitcode=$?
+    if [[ "$restore_errexit" == true ]]; then
+      set -e
+    fi
+
+    # Ensure the download was actually successful to some degree.
+    local framework_installed=false
+    if IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version"; then
+      framework_installed=true
+    fi
+
+    # Promote a false success (exit 0 but nothing on disk) to a real failure.
+    if [[ $lastexitcode == 0 && "$framework_installed" != true ]]; then
+      lastexitcode=1
+    fi
 
     if [[ $lastexitcode != 0 ]]; then
-      echo "Failed to install shared framework spec '$spec' to '$dotnet_root' using dotnet install script for architecture '$arch' (exit code '$lastexitcode')."
+      local architecture_message=""
+      if [[ -n "$arch" ]]; then
+        architecture_message=" for architecture '$arch'"
+      fi
+      echo "Failed to install shared framework spec '$spec' to '$dotnet_root' using dotnet install script${architecture_message} (exit code '$lastexitcode', installed '$framework_installed')."
       ExitWithExitCode $lastexitcode
     fi
   done
@@ -216,10 +272,10 @@ function CleanOutStage0ToolsetsAndRuntimes {
   local dotnetSdkVersion=$_ReadGlobalVersion
   local dotnetRoot=$DOTNET_INSTALL_DIR
   local versionPath="$dotnetRoot/.version"
-  local majorVersion="${dotnetSdkVersion:0:1}"
-  local aspnetRuntimePath="$dotnetRoot/shared/Microsoft.AspNetCore.App/$majorVersion.*"
-  local coreRuntimePath="$dotnetRoot/shared/Microsoft.NETCore.App/$majorVersion.*"
-  local wdRuntimePath="$dotnetRoot/shared/Microsoft.WindowsDesktop.App/$majorVersion.*"
+  local majorVersion="${dotnetSdkVersion%%.*}"
+  local aspnetRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" aspnetcore)/$majorVersion.*"
+  local coreRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" dotnet)/$majorVersion.*"
+  local wdRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" windowsdesktop)/$majorVersion.*"
   local sdkPath="$dotnetRoot/sdk/*"
 
   if [ -f "$versionPath" ]; then

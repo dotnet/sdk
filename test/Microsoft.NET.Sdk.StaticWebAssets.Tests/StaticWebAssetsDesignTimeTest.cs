@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +25,7 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
 #else
     public const string Configuration = "Release";
 #endif
+
     [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_ReportsAddedFiles()
     {

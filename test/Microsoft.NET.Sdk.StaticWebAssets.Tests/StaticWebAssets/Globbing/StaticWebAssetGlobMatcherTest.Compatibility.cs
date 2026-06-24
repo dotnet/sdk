@@ -81,6 +81,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "alpha.txt", "beta.txt", "gamma.dat" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(expected, matches);
     }
 
@@ -100,6 +101,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "12345678" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(expected, matches);
     }
 
@@ -121,6 +123,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "alpha/hello.txt", "beta/hello.txt", "gamma/hello.txt" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(expected, matches);
     }
 
@@ -143,6 +146,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "alpha/hello.txt", "beta/hello.txt", "gamma/hello.txt" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(matchesExpected, matches);
     }
 
@@ -156,6 +160,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "alpha.txt", "alpha.", ".txt", ".", "alpha", "txt" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "alpha.txt", "alpha.", ".txt" }, matches);
     }
 
@@ -169,6 +174,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "one/x.txt", "two/x.txt", "x.txt" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "one/x.txt", "two/x.txt" }, matches);
     }
 
@@ -183,6 +189,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "one/x.txt", "two/x.txt" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "one/x.txt", "two/x.txt" }, matches);
     }
 
@@ -196,6 +203,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "one/x.txt", "two/x.txt", "one/x/y.txt" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "one/x.txt", "one/x/y.txt" }, matches);
     }
 
@@ -209,6 +217,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "one/x.cs", "two/x.cs", "one/two/x.cs", "x.cs", "one/x.txt", "two/x.txt", "one/two/x.txt", "x.txt" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "one/x.cs", "two/x.cs", "one/two/x.cs", "x.cs" }, matches);
     }
 
@@ -222,6 +231,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "one/x.cs", "two/x.cs", "one/two/x.cs", "x.cs", "one/x.txt", "two/x.txt", "one/two/x.txt", "x.txt" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "one/x.cs", "one/two/x.cs" }, matches);
     }
 
@@ -236,6 +246,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "one/x.cs", "two/x.cs", "one/two/x.cs", "x.cs", "bin/x.cs", "bin/two/x.cs" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "one/x.cs", "two/x.cs", "x.cs" }, matches);
     }
 
@@ -249,6 +260,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "x/1", "1/x/2", "1/x", "x", "1", "1/2" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "x/1", "1/x/2", "1/x", "x" }, matches);
     }
 
@@ -262,6 +274,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "1/2/2/3/x", "1/2/3/y", "a/1/2/4/2/3/b", "a/2/3/1/2/b", "a/b/1/2/2/3/x", "a/b/1/2/3/y", "a/b/a/1/2/4/2/3/b", "a/b/a/2/3/1/2/b" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "a/b/1/2/2/3/x", "a/b/a/1/2/4/2/3/b" }, matches);
     }
 
@@ -275,6 +288,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "1/2/2/3/x", "1/2/3/y" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "1/2/2/3/x", "1/2/3/y" }, matches);
     }
 
@@ -289,6 +303,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var matches = new List<string> { "x/1", "1/x/2", "1/x", "x", "1", "1/2" }
             .Where(file => globMatcher.Match(file).IsMatch)
             .ToArray();
+
         Assert.AreSequenceEqual(new[] { "1", "1/2" }, matches);
     }
 }

@@ -9,10 +9,13 @@ using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
 [TestClass]
+
 public class ContentTypeProviderTests
 {
     private readonly TaskLoggingHelper _log = new TestTaskLoggingHelper();
@@ -51,6 +54,7 @@ public class ContentTypeProviderTests
     }
 
     // wwwroot\exampleJsInterop.js.gz
+
     [TestMethod]
     public void GetContentType_ReturnsMappingForCompressedRelativePath()
     {

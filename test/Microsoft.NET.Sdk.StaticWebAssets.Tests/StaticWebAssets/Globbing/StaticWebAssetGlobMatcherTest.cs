@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Test;
 
 // Set of things to test:
@@ -55,7 +57,6 @@ public partial class StaticWebAssetGlobMatcherTest
             Assert.AreEqual(pattern, match.Pattern);
             Assert.AreEqual(expectedStem, match.Stem);
         }
-
     [TestMethod]
     public void CanMatchLiterals()
     {
@@ -299,6 +300,7 @@ public partial class StaticWebAssetGlobMatcherTest
     [DataRow("a*?????", "aaaaaa", true)]
     [DataRow("a*??????", "aaaaaa", false)]
     [DataRow("a*??????", "aaaaaaa", true)]
+
     public void SingleWildcardPrecededOrSucceededByQuestionMarkRequireMinimumNumberOfCharacters(string pattern, string input, bool expectedMatchResult)
     {
         var matcher = new StaticWebAssetGlobMatcherBuilder();

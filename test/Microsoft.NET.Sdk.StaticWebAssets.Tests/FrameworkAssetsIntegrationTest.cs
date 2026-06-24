@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -17,7 +19,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class FrameworkAssetsIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => nameof(FrameworkAssetsIntegrationTest);
-
         [TestMethod]
         public void Pack_PropsFile_ContainsFrameworkSourceType_ForMatchedAssets()
         {

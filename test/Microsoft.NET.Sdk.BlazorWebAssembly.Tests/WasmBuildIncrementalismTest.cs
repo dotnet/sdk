@@ -5,6 +5,7 @@
 
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
@@ -12,7 +13,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     public class WasmBuildIncrementalismTest : AspNetSdkTest
     {
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_IsIncremental()
         {
             // Arrange
@@ -57,7 +58,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_GzipCompression_IsIncremental()
         {
             // Arrange
@@ -94,7 +95,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     .Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(projectDirectory, gzipCompressionDirectory);
-                Assert.HasCount(thumbPrint.Count, newThumbPrint);
+                newThumbPrint.Should().HaveCount(thumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
                     thumbPrint[j].Equals(newThumbPrint[j]).Should().BeTrue($"because {thumbPrint[j].Hash} should be the same as {newThumbPrint[j].Hash} for file {thumbPrint[j].Path}");
@@ -103,7 +104,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_SatelliteAssembliesFileIsPreserved()
         {
             // Arrange
@@ -168,7 +169,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_SatelliteAssembliesFileIsCreated_IfNewFileIsAdded()
         {
             // Arrange
@@ -220,7 +221,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_SatelliteAssembliesFileIsDeleted_IfAllSatelliteFilesAreRemoved()
         {
             // Arrange

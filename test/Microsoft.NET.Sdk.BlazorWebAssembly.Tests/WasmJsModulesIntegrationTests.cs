@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -6,6 +6,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.WebAssembly;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
@@ -13,7 +14,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     public class WasmJsModulesIntegrationTests : BlazorWasmBaselineTests
     {
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
@@ -55,7 +56,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void JSModules_ManifestIncludesModuleTargetPaths()
         {
             // Arrange
@@ -104,7 +105,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
@@ -154,7 +155,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void JsModules_CanHaveDifferentBuildAndPublishModules()
         {
             // Arrange

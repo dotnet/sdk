@@ -9,7 +9,9 @@ using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
     [TestClass]

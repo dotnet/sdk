@@ -3,13 +3,16 @@
 
 #nullable disable
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     [TestClass]
     public class WasmCompressionTests : AspNetSdkTest
     {
+
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -63,7 +66,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_WithoutLinkerAndCompression_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -108,7 +111,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_WithLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -132,7 +135,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 ExecuteCommand(buildCommand).Should().Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
-                Assert.HasCount(thumbPrint.Count, newThumbPrint);
+                newThumbPrint.Should().HaveCount(thumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
                     Assert.AreEqual(thumbPrint[j], newThumbPrint[j]);
@@ -141,7 +144,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_WithoutLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -165,7 +168,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 ExecuteCommand(buildCommand, "/p:BlazorWebAssemblyEnableLinking=false").Should().Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
-                Assert.HasCount(thumbPrint.Count, newThumbPrint);
+                newThumbPrint.Should().HaveCount(thumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
                     Assert.AreEqual(thumbPrint[j], newThumbPrint[j]);
@@ -174,7 +177,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_CompressesAllFrameworkFiles()
         {
             // Arrange

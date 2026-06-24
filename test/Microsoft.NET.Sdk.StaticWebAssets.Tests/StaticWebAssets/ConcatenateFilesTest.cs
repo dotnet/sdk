@@ -8,14 +8,15 @@ using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.Razor.Test
 {
     [TestClass]
     public class ConcatenateCssFilesTest
     {
         public TestContext TestContext { get; set; } = null!;
-
         private static readonly string BundleContent =
     @"/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
 .counter {
@@ -344,6 +345,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
                     "_content/Test/",
                     "TestFiles/Generated/FetchData.razor.rz.scp.css"),
             };
+
             await System.Threading.Tasks.Task.Delay(1000, TestContext.CancellationToken);
             taskInstance.Execute();
 

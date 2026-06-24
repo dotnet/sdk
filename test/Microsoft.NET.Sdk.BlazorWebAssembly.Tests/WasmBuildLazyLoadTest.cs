@@ -5,14 +5,16 @@
 
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     [TestClass]
     public class WasmBuildLazyLoadTest : AspNetSdkTest
     {
+
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -70,7 +72,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_LazyLoadExplicitAssembly_Release_Works()
         {
             // Arrange
@@ -128,7 +130,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -181,7 +183,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_LazyLoadExplicitAssembly_Release_Works()
         {
             // Arrange
@@ -234,7 +236,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_LazyLoadExplicitAssembly_InvalidAssembly()
         {
             // Arrange
@@ -256,7 +258,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_LazyLoadExplicitAssembly_InvalidAssembly()
         {
             // Arrange

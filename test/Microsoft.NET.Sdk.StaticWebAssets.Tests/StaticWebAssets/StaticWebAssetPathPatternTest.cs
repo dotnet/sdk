@@ -2,17 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using System.Globalization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
 [TestClass]
+
 public class StaticWebAssetPathPatternTest
 {
     [TestMethod]
@@ -42,6 +45,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -57,6 +61,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -72,6 +77,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -86,6 +92,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -104,6 +111,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -121,6 +129,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -136,6 +145,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -152,6 +162,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -167,6 +178,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -181,6 +193,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -195,6 +208,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), Value = "value".AsMemory(), IsLiteral = false }] }
                 ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -216,6 +230,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -236,6 +251,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -251,6 +267,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = "css".AsMemory(), IsLiteral = true }] }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -266,6 +283,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -281,6 +299,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true, IsPreferred = true }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -296,6 +315,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }]
             }]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -312,6 +332,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }]
                            }]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -326,6 +347,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -342,6 +364,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "version".AsMemory(), IsLiteral = false }], IsOptional = true }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -357,6 +380,7 @@ public class StaticWebAssetPathPatternTest
                 new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "version".AsMemory(), IsLiteral = false }], IsOptional = true }
             ]
         };
+
         Assert.AreEqual(expected, pattern);
     }
 
@@ -369,6 +393,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("css/site.css", path);
     }
 
@@ -381,6 +406,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("css/site.asdf1234.css", path);
     }
 
@@ -393,6 +419,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual(".asdf1234.css", path);
     }
 
@@ -405,6 +432,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("site.asdf1234", path);
     }
 
@@ -417,6 +445,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual(".asdf1234", path);
     }
 
@@ -431,6 +460,7 @@ public class StaticWebAssetPathPatternTest
         var (path, _) = pattern.ReplaceTokens(
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
+
         Assert.AreEqual("css/site.asdf1234-.v1.css", path);
     }
 
@@ -445,6 +475,7 @@ public class StaticWebAssetPathPatternTest
         var (path, _) = pattern.ReplaceTokens(
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
+
         Assert.AreEqual("css/site.asdf1234.v1.css", path);
     }
 
@@ -457,6 +488,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("asdf1234.css", path);
     }
 
@@ -469,6 +501,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("css/siteasdf1234.css", path);
     }
 
@@ -481,6 +514,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("siteasdf1234", path);
     }
 
@@ -493,6 +527,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("asdf1234", path);
     }
 
@@ -505,6 +540,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("embedded", path);
     }
 
@@ -519,6 +555,7 @@ public class StaticWebAssetPathPatternTest
         var (path, _) = pattern.ReplaceTokens(
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
+
         Assert.AreEqual("css/site.asdf1234-v1.css", path);
     }
 
@@ -533,6 +570,7 @@ public class StaticWebAssetPathPatternTest
         var (path, _) = pattern.ReplaceTokens(
             tokens,
             CreateTestResolver(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["version"] = "v1" }));
+
         Assert.AreEqual("css/site.asdf1234v1.css", path);
     }
 
@@ -545,6 +583,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("asdf1234.css", path);
     }
 
@@ -575,6 +614,7 @@ public class StaticWebAssetPathPatternTest
         var pattern = StaticWebAssetPathPattern.Parse("site#[.{fingerprint}]?", "MyApp");
         var tokens = new StaticWebAsset();
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("site", path);
     }
 
@@ -587,6 +627,7 @@ public class StaticWebAssetPathPatternTest
             Fingerprint = "asdf1234"
         };
         var (path, _) = pattern.ReplaceTokens(tokens, CreateTestResolver());
+
         Assert.AreEqual("site", path);
     }
 
@@ -595,6 +636,7 @@ public class StaticWebAssetPathPatternTest
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site.css", "MyApp");
         var routePatterns = pattern.ExpandPatternExpression();
+
         Assert.AreSequenceEqual([pattern], routePatterns);
     }
 
@@ -603,6 +645,7 @@ public class StaticWebAssetPathPatternTest
     {
         var pattern = StaticWebAssetPathPattern.Parse("css/site#[.{fingerprint}].css", "MyApp");
         var routePatterns = pattern.ExpandPatternExpression();
+
         Assert.AreSequenceEqual([pattern], routePatterns);
     }
 
@@ -632,6 +675,7 @@ public class StaticWebAssetPathPatternTest
                 ]
             }
         };
+
         Assert.AreSequenceEqual(expected, routePatterns);
     }
 
@@ -680,6 +724,7 @@ public class StaticWebAssetPathPatternTest
                 ]
             }
         };
+
         Assert.AreSequenceEqual(expected, routePatterns);
     }
 

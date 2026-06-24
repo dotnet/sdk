@@ -2,16 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
 [TestClass]
+
 public class StaticWebAssetTest
 {
     [TestMethod]
@@ -22,6 +25,7 @@ public class StaticWebAssetTest
 
         var groupSet = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet);
+
         Assert.IsTrue(result);
         Assert.IsNull(reason);
     }
@@ -35,6 +39,7 @@ public class StaticWebAssetTest
 
         var groupSet2 = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet2);
+
         Assert.IsFalse(result);
         Assert.Contains("different projects", reason);
     }
@@ -48,6 +53,7 @@ public class StaticWebAssetTest
 
         var groupSet3 = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet3);
+
         Assert.IsFalse(result);
         Assert.Contains("'All' assets", reason);
     }
@@ -61,6 +67,7 @@ public class StaticWebAssetTest
 
         var groupSet4 = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("app.js", group, out var reason, groupSet4);
+
         Assert.IsTrue(result);
         Assert.IsNull(reason);
     }
@@ -76,6 +83,7 @@ public class StaticWebAssetTest
         asset.Fingerprint = "abc123";
 
         var targetPath = asset.ComputeTargetPath("", '/');
+
         Assert.AreEqual("MyApp.styles#[.{fingerprint}]?.css", targetPath);
     }
 
@@ -90,6 +98,7 @@ public class StaticWebAssetTest
         asset.Fingerprint = "abc123";
 
         var targetPath = asset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
+
         Assert.AreEqual("MyApp.styles.css", targetPath);
     }
 
@@ -112,11 +121,14 @@ public class StaticWebAssetTest
 
         var path1WithTokens = discoveredAsset.ComputeTargetPath("", '/');
         var path2WithTokens = computedAsset.ComputeTargetPath("", '/');
+
         Assert.AreNotEqual(path1WithTokens, path2WithTokens);
         Assert.AreEqual("MyApp.styles#[.{fingerprint}]?.css", path1WithTokens);
         Assert.AreEqual("MyApp#[.{fingerprint}]?.styles.css", path2WithTokens);
+
         var path1Resolved = discoveredAsset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
         var path2Resolved = computedAsset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
+
         Assert.AreEqual("MyApp.styles.css", path1Resolved);
         Assert.AreEqual("MyApp.styles.css", path2Resolved);
         Assert.AreEqual(path1Resolved, path2Resolved);
@@ -142,17 +154,20 @@ public class StaticWebAssetTest
         var group = (discoveredAsset, computedAsset, (IReadOnlyList<StaticWebAsset>)null);
         var groupSet = new HashSet<string>(StringComparer.Ordinal);
         var result = StaticWebAsset.ValidateAssetGroup("MyApp.styles.css", group, out var reason, groupSet);
+
         Assert.IsFalse(result);
         Assert.Contains("'All' assets", reason);
     }
 
     // SortByRelatedAssetInPlace tests
+
     [TestMethod]
     public void SortByRelatedAssetInPlace_EmptyArray_DoesNothing()
     {
         var assets = Array.Empty<StaticWebAsset>();
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
+
         Assert.IsEmpty(assets);
     }
 
@@ -163,6 +178,7 @@ public class StaticWebAssetTest
         var assets = new[] { a };
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
+
         Assert.AreSame(a, assets[0]);
     }
 
@@ -175,6 +191,7 @@ public class StaticWebAssetTest
         var assets = new[] { a, b, c };
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
+
         Assert.AreSame(a, assets[0]);
         Assert.AreSame(b, assets[1]);
         Assert.AreSame(c, assets[2]);
@@ -291,6 +308,7 @@ public class StaticWebAssetTest
         var assets = new[] { a, r };
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
+
         Assert.HasCount(2, assets);
         Assert.Contains(a, assets);
         Assert.Contains(r, assets);
@@ -304,6 +322,7 @@ public class StaticWebAssetTest
         var assets = new[] { child, parent };
 
         StaticWebAsset.SortByRelatedAssetInPlace(assets);
+
         Assert.AreSame(parent, assets[0]);
         Assert.AreSame(child, assets[1]);
     }

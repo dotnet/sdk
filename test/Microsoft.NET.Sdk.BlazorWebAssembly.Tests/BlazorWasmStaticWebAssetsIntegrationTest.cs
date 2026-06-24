@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
@@ -11,7 +12,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     public class BlazorWasmStaticWebAssetsIntegrationTest : BlazorWasmBaselineTests
     {
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void StaticWebAssets_BuildMinimal_Works()
         {
             // Arrange
@@ -54,7 +55,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void StaticWebAssets_PublishMinimal_Works()
         {
             // Arrange
@@ -92,7 +93,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void StaticWebAssets_Build_Hosted_Works()
         {
             // Arrange
@@ -133,7 +134,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void StaticWebAssets_Publish_Hosted_Works()
         {
             // Arrange
@@ -174,7 +175,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersion("17.12")]
         public void StaticWebAssets_Publish_DoesNotIncludeXmlDocumentationFiles_AsAssets()
         {
             // Arrange

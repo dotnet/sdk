@@ -2,17 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
 [TestClass]
+
 public class OverrideHtmlAssetPlaceholdersTest
 {
     [TestMethod]
@@ -121,6 +124,7 @@ public class OverrideHtmlAssetPlaceholdersTest
     {
         var match = OverrideHtmlAssetPlaceholders._assetsRegex.Match(input);
         Assert.AreEqual(shouldMatch, match.Success);
+
         if (fileName != null)
         {
             Assert.AreEqual(fileName, match.Groups["fileName"].Value + match.Groups["fileExtension"].Value);
@@ -285,6 +289,7 @@ public class OverrideHtmlAssetPlaceholdersTest
     {
         var match = OverrideHtmlAssetPlaceholders._preloadRegex.Match(input);
         Assert.AreEqual(shouldMatch, match.Success);
+
         if (group != null)
         {
             Assert.AreEqual(group, match.Groups["group"]?.Value);

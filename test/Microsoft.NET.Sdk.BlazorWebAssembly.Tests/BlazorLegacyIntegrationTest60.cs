@@ -1,14 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.StaticWebAssets.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     [TestClass]
-    public class BlazorLegacyIntegrationTest60
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
+    public class BlazorLegacyIntegrationTest60 : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => nameof(BlazorLegacyIntegrationTest60);
 
@@ -48,8 +48,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [RequiresMSBuildVersion("17.13", Reason = "Needs System.Text.Json 8.0.5")] // https://github.com/dotnet/sdk/issues/44886
-        [Ignore("https://github.com/dotnet/sdk/issues/49925")]
+        [RequiresMSBuildVersion("17.13")]
+        [Ignore("https://github.com/dotnet/sdk/issues/49925")] // https://github.com/dotnet/sdk/issues/44886
+        // https://github.com/dotnet/sdk/issues/42145
         public void Publish60Hosted_Works()
         {
             // Arrange

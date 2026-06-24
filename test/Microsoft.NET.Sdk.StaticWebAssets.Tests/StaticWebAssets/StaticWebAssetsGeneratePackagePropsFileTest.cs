@@ -8,7 +8,9 @@ using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.Build.Framework;
 using Moq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
     [TestClass]

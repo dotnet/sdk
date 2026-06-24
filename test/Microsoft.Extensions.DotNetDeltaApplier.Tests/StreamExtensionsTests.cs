@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Combinatorial.MSTest;
 using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -8,31 +9,6 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 [TestClass]
 public class StreamExtensionsTests
 {
-    private static readonly bool[] s_bools = [true, false];
-
-    // Expands a set of values into the cartesian product with useBinaryWriter/useBinaryReader,
-    // replacing the xUnit.Combinatorial [CombinatorialData]/[CombinatorialValues] behavior.
-    private static IEnumerable<object[]> Expand<T>(IEnumerable<T> values)
-        => from value in values
-           from useBinaryWriter in s_bools
-           from useBinaryReader in s_bools
-           select new object[] { value!, useBinaryWriter, useBinaryReader };
-
-    public static IEnumerable<object[]> StringData
-        => Expand(new[] { "", "\u1234", "hello" });
-
-    public static IEnumerable<object[]> SevenBitEncodedIntData
-        => Expand(new[] { -1, -127, -128, -255, -256, int.MinValue, 0, 1, 10, 127, 128, 255, 256, int.MaxValue });
-
-    public static IEnumerable<object[]> ByteData
-        => Expand(new byte[] { 0, 255 });
-
-    public static IEnumerable<object[]> Int32Data
-        => Expand(new[] { int.MinValue, 0, int.MaxValue });
-
-    public static IEnumerable<object[]> BoolData
-        => Expand(new[] { true, false });
-
     private static async Task TestAsync<T>(
         T expected,
         Action<BinaryWriter, T> syncWrite,
@@ -73,9 +49,9 @@ public class StreamExtensionsTests
     }
 
     [TestMethod]
-    [DynamicData(nameof(StringData))]
+    [CombinatorialData]
     public async Task ReadWrite_String(
-        string expected,
+        [CombinatorialValues("", "\u1234", "hello")] string expected,
         bool useBinaryWriter,
         bool useBinaryReader)
     {
@@ -90,9 +66,9 @@ public class StreamExtensionsTests
     }
 
     [TestMethod]
-    [DynamicData(nameof(SevenBitEncodedIntData))]
+    [CombinatorialData]
     public async Task ReadWrite_7BitEncodedInt(
-        int expected,
+        [CombinatorialValues(-1, -127, -128, -255, -256, int.MinValue, 0, 1, 10, 127, 128, 255, 256, int.MaxValue)] int expected,
         bool useBinaryWriter,
         bool useBinaryReader)
     {
@@ -107,9 +83,9 @@ public class StreamExtensionsTests
     }
 
     [TestMethod]
-    [DynamicData(nameof(ByteData))]
+    [CombinatorialData]
     public async Task ReadWrite_Byte(
-        byte expected,
+        [CombinatorialValues((byte)0, (byte)255)] byte expected,
         bool useBinaryWriter,
         bool useBinaryReader)
     {
@@ -124,9 +100,9 @@ public class StreamExtensionsTests
     }
 
     [TestMethod]
-    [DynamicData(nameof(Int32Data))]
+    [CombinatorialData]
     public async Task ReadWrite_Int32(
-        int expected,
+        [CombinatorialValues(int.MinValue, 0, int.MaxValue)] int expected,
         bool useBinaryWriter,
         bool useBinaryReader)
     {
@@ -141,7 +117,7 @@ public class StreamExtensionsTests
     }
 
     [TestMethod]
-    [DynamicData(nameof(BoolData))]
+    [CombinatorialData]
     public async Task ReadWrite_Bool(
         bool expected,
         bool useBinaryWriter,
@@ -158,10 +134,9 @@ public class StreamExtensionsTests
     }
 
     [TestMethod]
-    [DataRow(0)]
-    [DataRow(1)]
-    [DataRow(1234)]
-    public async Task ReadWrite_Int32Array(int length)
+    [CombinatorialData]
+    public async Task ReadWrite_Int32Array(
+        [CombinatorialValues(0, 1, 1234)] int length)
     {
         var expected = Enumerable.Range(0, length).ToArray();
 
@@ -175,10 +150,9 @@ public class StreamExtensionsTests
     }
 
     [TestMethod]
-    [DataRow(0)]
-    [DataRow(1)]
-    [DataRow(1234)]
-    public async Task ReadWrite_ByteArray(int length)
+    [CombinatorialData]
+    public async Task ReadWrite_ByteArray(
+        [CombinatorialValues(0, 1, 1234)] int length)
     {
         var expected = Enumerable.Range(0, length).Select(i => (byte)i).ToArray();
 

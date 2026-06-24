@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -17,7 +19,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class ScopedCssIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => nameof(ScopedCssIntegrationTest);
-
         [TestMethod]
         public void Build_NoOps_WhenScopedCssIsDisabled()
         {
@@ -166,6 +167,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var indexScopeMatch = Regex.Match(indexContent, ".*h1\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
             Assert.IsTrue(indexScopeMatch.Success, "Couldn't find a scope id in the generated Index scoped css file.");
             var indexScopeId = indexScopeMatch.Groups[1].Captures[0].Value;
+
             Assert.AreNotEqual(counterScopeId, indexScopeId);
         }
 
@@ -201,6 +203,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var contactScopeMatch = Regex.Match(contactContent, ".*a\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
             Assert.IsTrue(contactScopeMatch.Success, "Couldn't find a scope id in the generated Contact scoped css file.");
             var contactScopeId = contactScopeMatch.Groups[1].Captures[0].Value;
+
             Assert.AreNotEqual(indexScopeId, aboutScopeId);
             Assert.AreNotEqual(indexScopeId, contactScopeId);
             Assert.AreNotEqual(aboutScopeId, contactScopeId);
@@ -233,6 +236,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var counterScopeMatch = Regex.Match(counterContent, ".*div\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
             Assert.IsTrue(counterScopeMatch.Success, "Couldn't find a scope id in the generated Counter scoped css file.");
             var counterScopeId = counterScopeMatch.Groups[1].Captures[0].Value;
+
             Assert.AreNotEqual(indexScopeId, counterScopeId);
         }
 
@@ -339,6 +343,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var newComponentThumbprint = FileThumbPrint.Create(generatedCounter);
             var newBundleThumbprint = FileThumbPrint.Create(generatedBundle);
+
             Assert.AreNotEqual(componentThumbprint, newComponentThumbprint);
             Assert.AreNotEqual(bundleThumbprint, newBundleThumbprint);
         }
@@ -445,8 +450,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Assert: Files should be regenerated with the new scope
             var newScopedCssThumbprint = FileThumbPrint.Create(scopedCssFile);
             var newBundleThumbprint = FileThumbPrint.Create(bundleFile);
+
             Assert.AreNotEqual(initialScopedCssThumbprint, newScopedCssThumbprint);
             Assert.AreNotEqual(initialBundleThumbprint, newBundleThumbprint);
+
             // Verify the new content uses the custom scope
             var newContent = File.ReadAllText(scopedCssFile);
             newContent.Should().Contain("[my-custom-scope]");
@@ -471,8 +478,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Assert: Files should be regenerated again with the updated scope
             var updatedScopedCssThumbprint = FileThumbPrint.Create(scopedCssFile);
             var updatedBundleThumbprint = FileThumbPrint.Create(bundleFile);
+
             Assert.AreNotEqual(newScopedCssThumbprint, updatedScopedCssThumbprint);
             Assert.AreNotEqual(newBundleThumbprint, updatedBundleThumbprint);
+
             // Verify the content uses the updated scope
             var updatedContent = File.ReadAllText(scopedCssFile);
             updatedContent.Should().Contain("[my-updated-scope]");
@@ -484,6 +493,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             build = CreateBuildCommand(projectDirectory);
             ExecuteCommand(build).Should().Pass();
+
             Assert.AreEqual(finalScopedCssThumbprint, FileThumbPrint.Create(scopedCssFile));
             Assert.AreEqual(finalBundleThumbprint, FileThumbPrint.Create(bundleFile));
         }
@@ -539,7 +549,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class ScopedCssCompatibilityIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => Path.Combine(nameof(ScopedCssCompatibilityIntegrationTest), ".nuget");
-
         [TestMethod]
         public void ScopedCss_IsBackwardsCompatible_WithPreviousVersions()
         {
@@ -640,7 +649,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class ScopedCssPackageReferences : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => Path.Combine(nameof(ScopedCssPackageReferences), ".nuget");
-
         [TestMethod]
         public void BuildProjectWithReferences_CorrectlyBundlesScopedCssFiles()
         {

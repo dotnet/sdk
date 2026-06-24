@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
@@ -15,7 +17,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class JsModulesIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => nameof(JsModulesIntegrationTest);
-
         [TestMethod]
         public void Build_NoOps_WhenJsModulesIsDisabled()
         {
@@ -203,7 +204,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     public class JsModulesPackagesIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => nameof(JsModulesPackagesIntegrationTest);
-
         [TestMethod]
         public void BuildProjectWithReferences_IncorporatesInitializersFromClassLibraries()
         {

@@ -2,18 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
     [TestClass]
     public class StaticWebAssetsPackIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
         protected override string RestoreNugetPackagePath => nameof(StaticWebAssetsPackIntegrationTest);
-
         [TestMethod]
         public void Pack_FailsWhenStaticWebAssetsHaveConflictingPaths()
         {

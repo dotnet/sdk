@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -15,6 +17,7 @@ using Moq;
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [TestClass]
+
 public class GeneratePackageAssetsManifestFileTest : IDisposable
 {
     private readonly string _tempDir;

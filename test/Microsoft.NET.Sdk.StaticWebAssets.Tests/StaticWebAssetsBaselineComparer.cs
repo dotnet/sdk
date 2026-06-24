@@ -4,10 +4,12 @@
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
+
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 public class StaticWebAssetsBaselineComparer
