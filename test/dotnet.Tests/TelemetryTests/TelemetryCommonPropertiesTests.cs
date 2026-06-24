@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.NetworkInformation;
@@ -7,41 +7,42 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
+[TestClass]
 public class TelemetryCommonPropertiesTests : SdkTest
 {
-    public TelemetryCommonPropertiesTests(ITestOutputHelper log) : base(log)
+    public TelemetryCommonPropertiesTests()
     {
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldContainIfItIsInDockerOrNot()
     {
         var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId").Should().ContainKey("Docker Container");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnHashedPath()
     {
         var unitUnderTest = new TelemetryCommonProperties(() => "ADirectory", userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Current Path Hash"].Should().NotBe("ADirectory");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnHashedMachineId()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"].Should().NotBe("plaintext");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnDevDeviceId()
     {
         var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => "plaintext", userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"].Should().Be("plaintext");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddress()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
@@ -50,7 +51,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
         Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnNewGuidWhenGettingMacAddressThrowsNetworkInformationException()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => throw new NetworkInformationException(), userLevelCacheWriter: new NothingCache());
@@ -62,7 +63,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
         assignedMachineId.Should().NotBe(assignedMachineIdOld, "it should generate a new fallback guid each time");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
     {
         var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
@@ -75,14 +76,14 @@ public class TelemetryCommonPropertiesTests : SdkTest
         secondAssignedMachineId.Should().Be(assignedMachineId, "it should match the previously assigned guid");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnHashedMachineIdOld()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"].Should().NotBe("plaintext");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddressOld()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
@@ -91,63 +92,68 @@ public class TelemetryCommonPropertiesTests : SdkTest
         Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnIsOutputRedirected()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Output Redirected"].Should().BeOneOf("True", "False");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnIsCIDetection()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Continuous Integration"].Should().BeOneOf("True", "False");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldContainKernelVersion()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Kernel Version"].Should().Be(RuntimeInformation.OSDescription);
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldContainArchitectureInformation()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["OS Architecture"].Should().Be(RuntimeInformation.OSArchitecture.ToString());
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void TelemetryCommonPropertiesShouldContainWindowsInstallType()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().NotBeEmpty();
     }
 
-    [UnixOnlyFact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void TelemetryCommonPropertiesShouldContainEmptyWindowsInstallType()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().BeEmpty();
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void TelemetryCommonPropertiesShouldContainWindowsProductType()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().NotBeEmpty();
     }
 
-    [UnixOnlyFact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void TelemetryCommonPropertiesShouldContainEmptyWindowsProductType()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().BeEmpty();
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
@@ -155,7 +161,8 @@ public class TelemetryCommonPropertiesTests : SdkTest
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeEmpty();
     }
 
-    [MacOsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.OSX)]
     public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion2()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
@@ -163,7 +170,8 @@ public class TelemetryCommonPropertiesTests : SdkTest
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeEmpty();
     }
 
-    [LinuxOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux)]
     public void TelemetryCommonPropertiesShouldContainLibcReleaseAndVersion()
     {
         if (!RuntimeInformation.RuntimeIdentifier.Contains("alpine", StringComparison.OrdinalIgnoreCase))
@@ -174,15 +182,15 @@ public class TelemetryCommonPropertiesTests : SdkTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
     {
         var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
     }
 
-    [Theory]
-    [MemberData(nameof(CITelemetryTestCases))]
+    [TestMethod]
+    [DynamicData(nameof(CITelemetryTestCases))]
     public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
     {
         try
@@ -202,8 +210,8 @@ public class TelemetryCommonPropertiesTests : SdkTest
         }
     }
 
-    [Theory]
-    [MemberData(nameof(LLMTelemetryTestCases))]
+    [TestMethod]
+    [DynamicData(nameof(LLMTelemetryTestCases))]
     public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
     {
         try
@@ -229,9 +237,9 @@ public class TelemetryCommonPropertiesTests : SdkTest
         }
     }
 
-    [Theory]
-    [InlineData("dummySessionId")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("dummySessionId")]
+    [DataRow(null)]
     public void TelemetryCommonPropertiesShouldContainSessionId(string? sessionId)
     {
         var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
@@ -241,74 +249,94 @@ public class TelemetryCommonPropertiesTests : SdkTest
         commonProperties["SessionId"].Should().Be(sessionId);
     }
 
-    public static TheoryData<Dictionary<string, string>?, string?> LLMTelemetryTestCases => new()
+    public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>()
     {
-        { new Dictionary<string, string> { {"CLAUDECODE", "1" } }, "claude" },
-        { new Dictionary<string, string> { {"CLAUDE_CODE_ENTRYPOINT", "some_value" } }, "claude" },
-        { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
-        { new Dictionary<string, string> { { "CURSOR_AI", "1" } }, "cursor" },
-        { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
-        { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
-        { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot" },
-        { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot" },
-        { new Dictionary<string, string> { { "COPILOT_AGENT", "1" } }, "copilot" },
-        { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
-        { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
-        { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
-        { new Dictionary<string, string> { { "OR_APP_NAME", "aider" } }, "aider" },
-        { new Dictionary<string, string> { { "OR_APP_NAME", "plandex" } }, "plandex" },
-        { new Dictionary<string, string> { { "OR_APP_NAME", "Plandex" } }, "plandex" },
-        { new Dictionary<string, string> { { "AMP_HOME", "/path/to/amp" } }, "amp" },
-        { new Dictionary<string, string> { { "QWEN_CODE", "1" } }, "qwen" },
-        { new Dictionary<string, string> { { "DROID_CLI", "true" } }, "droid" },
-        { new Dictionary<string, string> { { "OPENCODE_AI", "1" } }, "opencode" },
-        { new Dictionary<string, string> { { "ZED_ENVIRONMENT", "1" } }, "zed" },
-        { new Dictionary<string, string> { { "ZED_TERM", "1" } }, "zed" },
-        { new Dictionary<string, string> { { "KIMI_CLI", "true" } }, "kimi" },
-        { new Dictionary<string, string> { { "OR_APP_NAME", "OpenHands" } }, "openhands" },
-        { new Dictionary<string, string> { { "OR_APP_NAME", "openhands" } }, "openhands" },
-        { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" } }, "goose" },
-        { new Dictionary<string, string> { { "CLINE_TASK_ID", "task123" } }, "cline" },
-        { new Dictionary<string, string> { { "ROO_CODE_TASK_ID", "task456" } }, "roo" },
-        { new Dictionary<string, string> { { "WINDSURF_SESSION", "session789" } }, "windsurf" },
-        { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
+        new object[] { new Dictionary<string, string> { {"CLAUDECODE", "1" } }, "claude" },
+        new object[] { new Dictionary<string, string> { {"CLAUDE_CODE", "1" } }, "claude" },
+        new object[] { new Dictionary<string, string> { {"CLAUDE_CODE_ENTRYPOINT", "some_value" } }, "claude" },
+        new object[] { new Dictionary<string, string> { {"CLAUDE_CODE_IS_COWORK", "1" } }, "cowork" },
+        new object[] { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
+        new object[] { new Dictionary<string, string> { { "CURSOR_AI", "1" } }, "cursor" },
+        new object[] { new Dictionary<string, string> { { "CURSOR_TRACE_ID", "abc" } }, "cursor" },
+        new object[] { new Dictionary<string, string> { { "CURSOR_AGENT", "1" } }, "cursor" },
+        new object[] { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
+        // Existence-based: any non-empty value now matches, even "0"
+        new object[] { new Dictionary<string, string> { { "GEMINI_CLI", "0" } }, "gemini" },
+        new object[] { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot-cli" },
+        new object[] { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot-cli" },
+        new object[] { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot-cli" },
+        new object[] { new Dictionary<string, string> { { "COPILOT_MODEL", "gpt" } }, "copilot-cli" },
+        new object[] { new Dictionary<string, string> { { "COPILOT_ALLOW_ALL", "1" } }, "copilot-cli" },
+        new object[] { new Dictionary<string, string> { { "COPILOT_GITHUB_TOKEN", "token" } }, "copilot-cli" },
+        // GitHub Copilot agent mode in VS Code
+        new object[] { new Dictionary<string, string> { { "COPILOT_AGENT", "1" } }, "copilot-vscode" },
+        new object[] { new Dictionary<string, string> { { "AI_AGENT", "github_copilot_vscode_agent" } }, "copilot-vscode" },
+        new object[] { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
+        new object[] { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
+        new object[] { new Dictionary<string, string> { { "CODEX_CI", "1" } }, "codex" },
+        new object[] { new Dictionary<string, string> { { "CODEX_THREAD_ID", "thread1" } }, "codex" },
+        new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
+        new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "aider" } }, "aider" },
+        new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "plandex" } }, "plandex" },
+        new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "Plandex" } }, "plandex" },
+        new object[] { new Dictionary<string, string> { { "AMP_HOME", "/path/to/amp" } }, "amp" },
+        new object[] { new Dictionary<string, string> { { "QWEN_CODE", "1" } }, "qwen" },
+        new object[] { new Dictionary<string, string> { { "DROID_CLI", "true" } }, "droid" },
+        new object[] { new Dictionary<string, string> { { "OPENCODE_AI", "1" } }, "opencode" },
+        new object[] { new Dictionary<string, string> { { "ZED_ENVIRONMENT", "1" } }, "zed" },
+        new object[] { new Dictionary<string, string> { { "ZED_TERM", "1" } }, "zed" },
+        new object[] { new Dictionary<string, string> { { "KIMI_CLI", "true" } }, "kimi" },
+        new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "OpenHands" } }, "openhands" },
+        new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "openhands" } }, "openhands" },
+        new object[] { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" } }, "goose" },
+        new object[] { new Dictionary<string, string> { { "GOOSE_PROVIDER", "openai" } }, "goose" },
+        new object[] { new Dictionary<string, string> { { "CLINE_TASK_ID", "task123" } }, "cline" },
+        new object[] { new Dictionary<string, string> { { "ROO_CODE_TASK_ID", "task456" } }, "roo" },
+        new object[] { new Dictionary<string, string> { { "WINDSURF_SESSION", "session789" } }, "windsurf" },
+        new object[] { new Dictionary<string, string> { { "REPL_ID", "repl1" } }, "replit" },
+        new object[] { new Dictionary<string, string> { { "AUGMENT_AGENT", "1" } }, "augment" },
+        new object[] { new Dictionary<string, string> { { "ANTIGRAVITY_AGENT", "1" } }, "antigravity" },
+        new object[] { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
         // Test combinations of older tools
-        { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
-        { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
-        { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
-        { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
+        new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
+        new object[] { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot-cli" },
+        new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
+        new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot-cli, generic_agent" },
         // Test combinations of newer tools
-        { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
-        { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
-        { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
-        { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
-        { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
-        { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
-        { new Dictionary<string, string> { { "DROID_CLI", "false" } }, null },
-        { new Dictionary<string, string> { { "KIMI_CLI", "false" } }, null },
-        { new Dictionary<string, string> { { "OR_APP_NAME", "SomeOtherApp" } }, null },
-        { new Dictionary<string, string>(), null },
+        new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
+        new object[] { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
+        new object[] { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
+        // Existence-based loosened vars now match regardless of value (e.g. "false" is still a non-empty value)
+        new object[] { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, "gemini" },
+        new object[] { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, "copilot-cli" },
+        new object[] { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, "generic_agent" },
+        new object[] { new Dictionary<string, string> { { "DROID_CLI", "false" } }, "droid" },
+        new object[] { new Dictionary<string, string> { { "KIMI_CLI", "false" } }, "kimi" },
+        // Cowork is distinct from claude and reported independently
+        new object[] { new Dictionary<string, string> { { "CLAUDE_CODE_IS_COWORK", "1" }, { "CLAUDE_CODE", "1" } }, "cowork, claude" },
+        new object[] { new Dictionary<string, string> { { "OR_APP_NAME", "SomeOtherApp" } }, null! },
+        new object[] { new Dictionary<string, string>(), null! },
     };
 
-    public static TheoryData<Dictionary<string, string>, bool> CITelemetryTestCases => new()
+    public static IEnumerable<object[]> CITelemetryTestCases => new List<object[]>()
     {
-        { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },
-        { new Dictionary<string, string> { { "GITHUB_ACTIONS", "true" } }, true },
-        { new Dictionary<string, string> { { "APPVEYOR", "true"} }, true },
-        { new Dictionary<string, string> { { "CI", "true"} }, true },
-        { new Dictionary<string, string> { { "TRAVIS", "true"} }, true },
-        { new Dictionary<string, string> { { "CIRCLECI", "true"} }, true },
-        { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
-        { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" } }, false },
-        { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "BUILD_URL", "hi" } }, true },
-        { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
-        { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "PROJECT_ID", "hi" } }, true },
-        { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
-        { new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
-        { new Dictionary<string, string> { { "TEAMCITY_VERSION", "" } }, false },
-        { new Dictionary<string, string> { { "JB_SPACE_API_URL", "hi" } }, true },
-        { new Dictionary<string, string> { { "JB_SPACE_API_URL", "" } }, false },
-        { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
+        new object[] { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },
+        new object[] { new Dictionary<string, string> { { "GITHUB_ACTIONS", "true" } }, true },
+        new object[] { new Dictionary<string, string> { { "APPVEYOR", "true"} }, true },
+        new object[] { new Dictionary<string, string> { { "CI", "true"} }, true },
+        new object[] { new Dictionary<string, string> { { "TRAVIS", "true"} }, true },
+        new object[] { new Dictionary<string, string> { { "CIRCLECI", "true"} }, true },
+        new object[] { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
+        new object[] { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" } }, false },
+        new object[] { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "BUILD_URL", "hi" } }, true },
+        new object[] { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
+        new object[] { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "PROJECT_ID", "hi" } }, true },
+        new object[] { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
+        new object[] { new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
+        new object[] { new Dictionary<string, string> { { "TEAMCITY_VERSION", "" } }, false },
+        new object[] { new Dictionary<string, string> { { "JB_SPACE_API_URL", "hi" } }, true },
+        new object[] { new Dictionary<string, string> { { "JB_SPACE_API_URL", "" } }, false },
+        new object[] { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
     };
 
     private class NothingCache : IUserLevelCacheWriter

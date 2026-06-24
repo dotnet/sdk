@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -11,9 +17,11 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
+[TestClass]
+
 public class GenerateStaticWebAssetEndpointsManifestTest
 {
-    [Fact]
+    [TestMethod]
     public void GeneratesManifest_ForEndpointsWithTokens()
     {
         StaticWebAssetEndpoint[] expectedEndpoints =
@@ -217,7 +225,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ExcludesEndpoints_BasedOnExclusionPatterns()
     {
         // Arrange
@@ -253,11 +261,11 @@ public class GenerateStaticWebAssetEndpointsManifestTest
             // Assert
             new FileInfo(path).Should().Exist();
             new FileInfo(exclusionCachePath).Should().Exist();
-            
+
             var manifest = File.ReadAllText(path);
             var json = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(manifest);
             json.Should().NotBeNull();
-            
+
             // Only styles.css endpoint should remain as others match _content/MyApp/**
             json.Endpoints.Should().HaveCount(1);
             json.Endpoints[0].Route.Should().Contain("styles.css");
@@ -276,7 +284,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsRegeneration_WhenExclusionPatternsUnchanged()
     {
         // Arrange
@@ -350,7 +358,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void RegeneratesManifest_WhenExclusionPatternsChange()
     {
         // Arrange
@@ -406,7 +414,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
             // Assert - File should be regenerated
             var secondWriteTime = File.GetLastWriteTimeUtc(endpointsManifestPath);
             secondWriteTime.Should().BeAfter(firstWriteTime);
-            
+
             // Verify cache file was updated
             var cacheContent = File.ReadAllText(exclusionCachePath);
             cacheContent.Should().Contain("different/**");

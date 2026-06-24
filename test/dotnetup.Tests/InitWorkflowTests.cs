@@ -38,7 +38,7 @@ public class InitWorkflowTests : IDisposable
     [Fact]
     public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForDotnetupDotnet()
     {
-        InitWorkflows.ShouldReplaceSystemConfiguration(PathPreference.DotnetupDotnet)
+        PathPreferencePolicy.ShouldReplaceSystemConfiguration(PathPreference.DotnetupDotnet)
             .Should().BeFalse();
     }
 
@@ -46,14 +46,14 @@ public class InitWorkflowTests : IDisposable
     [InlineData(PathPreference.FullPathReplacement)]
     internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(PathPreference preference)
     {
-        InitWorkflows.ShouldReplaceSystemConfiguration(preference)
+        PathPreferencePolicy.ShouldReplaceSystemConfiguration(preference)
             .Should().BeTrue();
     }
 
     [Fact]
     public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForDotnetupDotnet()
     {
-        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)
+        PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)
             .Should().BeFalse();
     }
 
@@ -62,7 +62,7 @@ public class InitWorkflowTests : IDisposable
     [InlineData(PathPreference.FullPathReplacement)]
     internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(PathPreference preference)
     {
-        InitWorkflows.ShouldPromptToConvertSystemInstalls(preference)
+        PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(preference)
             .Should().BeTrue();
     }
 
@@ -193,6 +193,60 @@ public class InitWorkflowTests : IDisposable
 
         items.Should().HaveCount(2);
         items.Should().OnlyContain(i => i.Contains("10.0.1xx") && i.Contains("["));
+    }
+
+    // ── GetDefaultPathPreference ──
+
+    [Fact]
+    public void GetDefaultPathPreference_ReturnsShellProfile_WhenShellProviderIsAvailable()
+    {
+        InitWorkflowDefaults.GetDefaultPathPreference(new BashEnvShellProvider())
+            .Should().Be(PathPreference.ShellProfile);
+    }
+
+    // The no-shell isolation fallback (which reads the SHELL environment variable) is covered
+    // deterministically by InitWorkflowShellFallbackTests, which mutates SHELL and therefore runs
+    // in a serialized collection.
+
+    // ── ResolveDefaultMigrations ──
+
+    [Fact]
+    public void ResolveDefaultMigrations_ReturnsEmpty_ForIsolationMode()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls:
+            [
+                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+            ]);
+
+        var result = InitWorkflowDefaults.ResolveDefaultMigrations(
+            mock, PathPreference.DotnetupDotnet, installRoot, manifestPath: null, existingRequests: null);
+
+        result.Should().BeEmpty();
+        mock.GetExistingSystemInstallsCallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void ResolveDefaultMigrations_ReturnsCandidates_ForShellProfile()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls:
+            [
+                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+                new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
+            ]);
+
+        var result = InitWorkflowDefaults.ResolveDefaultMigrations(
+            mock, PathPreference.ShellProfile, installRoot, manifestPath: null, existingRequests: null);
+
+        result.Should().NotBeEmpty();
+        mock.GetExistingSystemInstallsCallCount.Should().Be(1);
     }
 
 

@@ -6,9 +6,10 @@ using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests;
 
-public class GivenDotNetMacInstallers(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class GivenDotNetMacInstallers : SdkTest
 {
-    [Fact]
+    [TestMethod]
     public void PkgPackagePreservesSymbolicLinks() =>
         FileLinkHelpers.VerifyInstallerSymlinks(
             OSPlatform.OSX,

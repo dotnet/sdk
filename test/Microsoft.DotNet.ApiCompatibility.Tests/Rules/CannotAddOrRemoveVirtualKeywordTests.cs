@@ -7,6 +7,7 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class CannotAddOrRemoveVirtualKeywordTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotAddOrRemoveVirtualKeyword(settings, context));
@@ -180,11 +181,11 @@ namespace CompatTests {{
             };
         }
 
-        [Theory]
-        [MemberData(nameof(RemovedCases))]
-        [MemberData(nameof(AddedCases))]
-        [MemberData(nameof(AddedCasesStrictMode))]
-        public static void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, bool strictMode, CompatDifference[] expected)
+        [TestMethod]
+        [DynamicData(nameof(RemovedCases))]
+        [DynamicData(nameof(AddedCases))]
+        [DynamicData(nameof(AddedCasesStrictMode))]
+        public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, bool strictMode, CompatDifference[] expected)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
@@ -192,11 +193,11 @@ namespace CompatTests {{
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
 
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
-        public static void EnsureNoCrashWhenMembersDoNotExist()
+        [TestMethod]
+        public void EnsureNoCrashWhenMembersDoNotExist()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -225,13 +226,13 @@ namespace CompatTests
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.F"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
         // Don't run this test on .NET Framework, because default interface methods weren't introduced until C# 8.
 #if !NETFRAMEWORK
-        [Fact]
-        public static void EnsureDiagnosticWhenAddingSealedToInterfaceMember()
+        [TestMethod]
+        public void EnsureDiagnosticWhenAddingSealedToInterfaceMember()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -255,7 +256,7 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Equal(new CompatDifference[]
+            Assert.AreSequenceEqual(new CompatDifference[]
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddSealedToInterfaceMember, string.Empty, DifferenceType.Added, "M:CompatTests.First.F")
             }, differences);

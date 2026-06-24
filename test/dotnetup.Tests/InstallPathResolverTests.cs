@@ -3,8 +3,6 @@
 
 using System.IO;
 using FluentAssertions;
-using Microsoft.Dotnet.Installation;
-using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
@@ -36,8 +34,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         var result = _resolver.Resolve(
             explicitInstallPath: ExplicitPath,
-            globalJsonInfo: globalJsonInfo,
-            currentDotnetInstallRoot: null);
+            globalJsonInfo: globalJsonInfo);
 
         output.WriteLine($"Result: {result?.ResolvedInstallPath ?? "(null)"}");
 
@@ -53,8 +50,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         var result = _resolver.Resolve(
             explicitInstallPath: null,
-            globalJsonInfo: globalJsonInfo,
-            currentDotnetInstallRoot: null);
+            globalJsonInfo: globalJsonInfo);
 
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(GlobalJsonPath);
@@ -68,8 +64,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         var result = _resolver.Resolve(
             explicitInstallPath: SamePath,
-            globalJsonInfo: globalJsonInfo,
-            currentDotnetInstallRoot: null);
+            globalJsonInfo: globalJsonInfo);
 
         result!.ResolvedInstallPath.Should().Be(SamePath);
         result.PathSource.Should().Be(PathSource.Explicit);
@@ -80,8 +75,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     {
         var result = _resolver.Resolve(
             explicitInstallPath: ExplicitPath,
-            globalJsonInfo: null,
-            currentDotnetInstallRoot: null);
+            globalJsonInfo: null);
 
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(ExplicitPath);
@@ -94,27 +88,11 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var installManager = new DotnetEnvironmentManager();
         var result = _resolver.Resolve(
             explicitInstallPath: null,
-            globalJsonInfo: null,
-            currentDotnetInstallRoot: null);
+            globalJsonInfo: null);
 
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(installManager.GetDefaultDotnetInstallPath());
         result.PathSource.Should().Be(PathSource.Default);
-    }
-
-    [Fact]
-    public void Resolve_UsesCurrentUserInstall_WhenNoExplicitOrGlobalJson()
-    {
-        var installRoot = new DotnetInstallRoot("/user/dotnet", InstallerUtilities.GetDefaultInstallArchitecture());
-        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.User, IsFullyConfigured: true);
-
-        var result = _resolver.Resolve(
-            explicitInstallPath: null,
-            globalJsonInfo: null,
-            currentDotnetInstallRoot: currentInstall);
-
-        result!.ResolvedInstallPath.Should().Be("/user/dotnet");
-        result.PathSource.Should().Be(PathSource.ExistingUserInstall);
     }
 
     /// <summary>
@@ -126,8 +104,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     {
         var result = _resolver.Resolve(
             explicitInstallPath: ExplicitPath,
-            globalJsonInfo: null,
-            currentDotnetInstallRoot: null);
+            globalJsonInfo: null);
 
         result.Should().NotBeNull("explicit path must work even without global.json");
         result!.ResolvedInstallPath.Should().Be(ExplicitPath);
@@ -135,42 +112,9 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         result.InstallPathFromGlobalJson.Should().BeNull();
     }
 
-    /// <summary>
-    /// Explicit path should beat an existing user install.
-    /// </summary>
-    [Fact]
-    public void Resolve_ExplicitPath_TakesPrecedenceOverExistingUserInstall()
-    {
-        var installRoot = new DotnetInstallRoot("/user/dotnet", InstallerUtilities.GetDefaultInstallArchitecture());
-        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.User, IsFullyConfigured: true);
 
-        var result = _resolver.Resolve(
-            explicitInstallPath: ExplicitPath,
-            globalJsonInfo: null,
-            currentDotnetInstallRoot: currentInstall);
 
-        result!.ResolvedInstallPath.Should().Be(ExplicitPath, "explicit path should win over existing user install");
-        result.PathSource.Should().Be(PathSource.Explicit);
-    }
 
-    /// <summary>
-    /// global.json path should beat an existing user install when no explicit path is given.
-    /// </summary>
-    [Fact]
-    public void Resolve_GlobalJson_TakesPrecedenceOverExistingUserInstall()
-    {
-        var installRoot = new DotnetInstallRoot("/user/dotnet", InstallerUtilities.GetDefaultInstallArchitecture());
-        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.User, IsFullyConfigured: true);
-        var globalJsonInfo = CreateGlobalJsonInfo(GlobalJsonPath);
-
-        var result = _resolver.Resolve(
-            explicitInstallPath: null,
-            globalJsonInfo: globalJsonInfo,
-            currentDotnetInstallRoot: currentInstall);
-
-        result!.ResolvedInstallPath.Should().Be(GlobalJsonPath, "global.json should win over existing user install");
-        result.PathSource.Should().Be(PathSource.GlobalJson);
-    }
 
     /// <summary>
     /// Regression: without global.json, the default fallback must not return null.
@@ -180,29 +124,10 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     {
         var result = _resolver.Resolve(
             explicitInstallPath: null,
-            globalJsonInfo: null,
-            currentDotnetInstallRoot: null);
+            globalJsonInfo: null);
 
         result.Should().NotBeNull("default path fallback must always produce a result");
         result!.ResolvedInstallPath.Should().NotBeNullOrEmpty();
-        result.PathSource.Should().Be(PathSource.Default);
-    }
-
-    /// <summary>
-    /// Admin installs should not be picked up — only User installs.
-    /// </summary>
-    [Fact]
-    public void Resolve_AdminInstall_FallsToDefault_NotExistingInstall()
-    {
-        var installRoot = new DotnetInstallRoot("/admin/dotnet", InstallerUtilities.GetDefaultInstallArchitecture());
-        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.System, IsFullyConfigured: true);
-
-        var result = _resolver.Resolve(
-            explicitInstallPath: null,
-            globalJsonInfo: null,
-            currentDotnetInstallRoot: currentInstall);
-
-        result!.ResolvedInstallPath.Should().NotBe("/admin/dotnet", "admin installs should not be used as fallback");
         result.PathSource.Should().Be(PathSource.Default);
     }
 

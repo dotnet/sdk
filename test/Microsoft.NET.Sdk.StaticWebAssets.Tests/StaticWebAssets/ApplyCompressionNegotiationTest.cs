@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Globalization;
 using System.Text.Json;
@@ -12,9 +18,11 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
+[TestClass]
+
 public class ApplyCompressionNegotiationTest
 {
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_ForExistingAssets()
     {
         var errorMessages = new List<string>();
@@ -118,7 +126,7 @@ public class ApplyCompressionNegotiationTest
         ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_ForExistingAssets_WithFingerprints()
     {
         var now = DateTime.Now;
@@ -735,7 +743,7 @@ public class ApplyCompressionNegotiationTest
         endpoints.Should().BeEquivalentTo(expectedEndpoints);
     }
 
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_ToAllRelatedAssetEndpoints()
     {
         var errorMessages = new List<string>();
@@ -866,7 +874,7 @@ public class ApplyCompressionNegotiationTest
         ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_IgnoresAlreadyProcessedEndpoints()
     {
         var errorMessages = new List<string>();
@@ -1042,7 +1050,7 @@ public class ApplyCompressionNegotiationTest
         ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_ProcessesNewCompressedFormatsWhenAvailable()
     {
         var errorMessages = new List<string>();
@@ -1284,7 +1292,7 @@ public class ApplyCompressionNegotiationTest
         ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_AddsVaryHeaderToEndpointsWithSameRouteButDifferentAssets()
     {
         var errorMessages = new List<string>();
@@ -1495,7 +1503,7 @@ public class ApplyCompressionNegotiationTest
         }.ToTaskItem();
     }
 
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_AttachesWeakETagAsResponseHeader()
     {
         var errorMessages = new List<string>();
@@ -1562,7 +1570,7 @@ public class ApplyCompressionNegotiationTest
         compressedEndpoint.ResponseHeaders.Should().Contain(h => h.Name == "ETag" && h.Value == "W/\"original-etag\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_AttachesWeakETagAsEndpointProperty()
     {
         var errorMessages = new List<string>();
@@ -1629,7 +1637,7 @@ public class ApplyCompressionNegotiationTest
         compressedEndpoint.EndpointProperties.Should().Contain(p => p.Name == "original-resource" && p.Value == "\"original-etag\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void AppliesContentNegotiationRules_DoesNotAttachETagWhenModeIsEmpty()
     {
         var errorMessages = new List<string>();

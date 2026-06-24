@@ -6,9 +6,11 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [DoNotParallelize]
+    [TestClass]
     public class GivenAResolvePackageAssetsMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void ItResolvesCacheFilePathViaTaskEnvironment()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "rpa-test-" + Guid.NewGuid().ToString("N"));
@@ -54,7 +56,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void OutputMatchesBetweenSingleAndMultiProcessMode()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "rpa-parity-" + Guid.NewGuid().ToString("N"));
@@ -135,7 +137,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void OutputPaths_AreNotAbsolutized_ByTaskEnvironment()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "rpa-noabs-" + Guid.NewGuid().ToString("N"));

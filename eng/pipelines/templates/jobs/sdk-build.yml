@@ -15,7 +15,7 @@ parameters:
   testRunnerAdditionalArguments: ''
   enableSbom: true
   populateInternalRuntimeVariables: false
-  timeoutInMinutes: 150
+  timeoutInMinutes: ''
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
@@ -23,6 +23,9 @@ parameters:
   targetArchitecture: x64
   publishArgument: ''
   signArgument: ''
+  # MSBuild /p:Projects argument used to scope the build to specific projects (e.g. a .slnf).
+  # Defaults to empty, which builds the repo's default solution.
+  projectsArgument: ''
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -46,7 +49,12 @@ jobs:
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
     helixRepo: dotnet/sdk
-    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    ${{ if ne(parameters.timeoutInMinutes, '') }}:
+      timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    ${{ elseif eq(parameters.pool.os, 'macOS') }}:
+      timeoutInMinutes: 90
+    ${{ else }}:
+      timeoutInMinutes: 60
     enableMicrobuild: true
     enablePublishBuildAssets: true
     enableTelemetry: true
@@ -94,6 +102,7 @@ jobs:
           -configuration $(buildConfiguration)
           ${{ parameters.publishArgument }}
           ${{ parameters.signArgument }}
+          ${{ parameters.projectsArgument }}
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
@@ -117,6 +126,7 @@ jobs:
           -configuration $(buildConfiguration) \
           ${{ parameters.publishArgument }} \
           ${{ parameters.signArgument }} \
+          ${{ parameters.projectsArgument }} \
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
@@ -223,10 +233,52 @@ jobs:
       continueOnError: true
       condition: always()
 
+    # Publish the leg's Shipping packages as a <JobName>_Assets pipeline artifact, but only when
+    # there's something to publish. A scoped build (e.g. the dotnetup build, which builds only
+    # dotnetup via /p:Projects) produces no Shipping packages, and 1ES.PublishPipelineArtifact
+    # fails hard on a missing targetPath (it doesn't honor continueOnError there), so guard the
+    # step on the directory actually containing files.
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          $dir = "$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
+          $hasAssets = (Test-Path $dir) -and ((Get-ChildItem -Path $dir -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count -gt 0)
+          Write-Host "##vso[task.setvariable variable=HasBuiltAssets]$($hasAssets.ToString().ToLowerInvariant())"
+        displayName: 🟣 Check for built assets
+        condition: not(canceled())
+    - ${{ else }}:
+      - bash: |
+          dir="$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
+          if [ -d "$dir" ] && [ -n "$(find "$dir" -type f -print -quit)" ]; then
+            echo "##vso[task.setvariable variable=HasBuiltAssets]true"
+          else
+            echo "##vso[task.setvariable variable=HasBuiltAssets]false"
+          fi
+        displayName: 🟣 Check for built assets
+        condition: not(canceled())
+    - task: CopyFiles@2
+      displayName: 🟣 Copy NativeAOT Size Analysis Files
+      inputs:
+        SourceFolder: $(Build.SourcesDirectory)/artifacts/obj/dotnet-aot
+        Contents: |
+          $(buildConfiguration)/**/native/dotnet-aot.mstat
+          $(buildConfiguration)/**/native/dotnet-aot.scan.dgml
+        TargetFolder: $(Build.ArtifactStagingDirectory)/aot-size-analysis
+        flattenFolders: true
+      continueOnError: true
+      condition: not(canceled())
+
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+      displayName: 🟣 Publish NativeAOT Size Analysis
+      inputs:
+        targetPath: $(Build.ArtifactStagingDirectory)/aot-size-analysis
+        artifactName: $(System.PhaseName)_AotSizeAnalysis
+      continueOnError: true
+      condition: not(canceled())
+
     - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
       displayName: 🟣 Publish Built Assets
       inputs:
         targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
         artifactName: $(System.PhaseName)_Assets
       continueOnError: true
-      condition: not(canceled())
+      condition: and(not(canceled()), eq(variables['HasBuiltAssets'], 'true'))
