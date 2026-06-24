@@ -185,9 +185,10 @@ public class AspireLauncherIntegrationTests : MSTestFramework::Microsoft.NET.Tes
         // so there is no race between cancellation and status delivery.
         var statusEvents = await statusReaderTask;
 
-        // validate that we received the expected status events from the server, ignoring the order:
+        // validate that we received the expected status events from the server, ignoring the order
+        // (both sequences are sorted so the comparison does not depend on event arrival order):
         AssertEx.SequenceEqual(
-            expectedStatusEvents,
+            expectedStatusEvents.Order(),
             statusEvents.Select(e => $"type={e.Type}, projects=[{string.Join(";", e.Projects.Order())}]").Order());
     }
 }
