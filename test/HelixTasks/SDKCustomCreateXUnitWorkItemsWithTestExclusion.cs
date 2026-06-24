@@ -368,12 +368,22 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 command.Append("vstestConsolePath=$(find $HELIX_CORRELATION_PAYLOAD/d -name \"vstest.console.dll\") && ");
                 command.Append($"dotnet exec \"${{vstestConsolePath}}\" @{rspFileName}");
 
+                // Copy TRX/result files and hang dumps to Helix upload root for AzDO publishing.
+                // Use ; (not &&) so post-commands run even if the test command had failures.
+                command.Append("; _commandExitCode=$?");
+                command.Append("; find . -maxdepth 5 \\( -iname '*.trx' -o -iname 'testResults.xml' -o -iname 'test-results.xml' \\) -exec cp {} $HELIX_WORKITEM_UPLOAD_ROOT/ \\;");
+                command.Append("; find . -name '*hangdump.dmp' -exec cp {} $HELIX_WORKITEM_UPLOAD_ROOT/ \\;");
+                command.Append("; exit $_commandExitCode");
+
                 return command.ToString();
             }
             else
             {
                 // Windows: write a .cmd batch script because cmd.exe expands %var% at parse time.
                 // Each line in the batch file is parsed independently, so set/use works correctly.
+                // The script also copies TRX results and hang dumps to the Helix upload root so
+                // they are published to Azure DevOps (the Helix SDK post-commands don't run when
+                // the work item command is a .cmd script).
                 string scriptName = $"{workItem.DisplayName}.cmd";
                 var script = new StringBuilder();
                 script.AppendLine("@echo off");
@@ -386,6 +396,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 script.AppendLine("where /r %HELIX_CORRELATION_PAYLOAD%\\d vstest.console.dll > __vstest_path.txt");
                 script.AppendLine("set /p vstestConsolePath=<__vstest_path.txt");
                 script.AppendLine($"dotnet exec \"%vstestConsolePath%\" @{rspFileName}");
+                // Preserve the test exit code before running post-test commands
+                script.AppendLine("set _commandExitCode=%ERRORLEVEL%");
+                // Copy hang dumps to Helix upload root for diagnostics
+                script.AppendLine("PowerShell -ExecutionPolicy ByPass \"Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT\"");
+                // Copy TRX result files to Helix upload root for AzDO test result publishing
+                script.AppendLine("powershell -NoProfile -NonInteractive -Command \"Get-ChildItem -Path . -Recurse -File -Depth 5 -Include *.trx,testResults.xml,test-results.xml,test_results.xml,junit-results.xml,junitresults.xml -ErrorAction SilentlyContinue | ForEach-Object { $destDir = Join-Path $env:HELIX_WORKITEM_UPLOAD_ROOT (Split-Path $_.FullName -NoQualifier ^| Resolve-Path -Relative); New-Item -ItemType Directory -Path (Split-Path $destDir) -Force -ErrorAction SilentlyContinue ^| Out-Null; Copy-Item -Path $_.FullName -Destination $destDir -Force -ErrorAction SilentlyContinue }\"");
+                // Exit with the original test exit code
+                script.AppendLine("EXIT /b %_commandExitCode%");
 
                 var scriptPath = Path.Combine(publishDirectory, scriptName);
                 File.WriteAllText(scriptPath, script.ToString());
