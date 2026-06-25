@@ -169,7 +169,6 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
     }
 
     [TestMethod]
-    [DoNotParallelize]
     public void Execute_RelativeTargetPropsFilePath_ResolvesAgainstProjectDirectory_NotProcessCurrentDirectory()
     {
         WithDecoyCwdAndProjectDirectory((projectDir, spawnDir) =>
