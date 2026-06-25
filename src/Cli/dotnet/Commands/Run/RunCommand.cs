@@ -919,7 +919,6 @@ public class RunCommand
             }
 
             Debug.Assert(nonLoggerArgs[0] == "-");
-            nonLoggerArgs = nonLoggerArgs.SetItem(0, entryPointFilePath);
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
@@ -965,7 +964,7 @@ public class RunCommand
             if (!TryCountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash, out var countBeforeDoubleDash))
             {
                 // This hopefully should not happen, but if it does, we don't want to break users.
-                Reporter.Error.WriteLine("Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.".Yellow());
+                Reporter.Error.WriteLine(CliCommandStrings.RunCommandWarningUnableToDetermineLoggerArguments.Yellow());
                 loggerArgs = [];
                 nonLoggerArgs = [.. applicationArguments];
                 return;

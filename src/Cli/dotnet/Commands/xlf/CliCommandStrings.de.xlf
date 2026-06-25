@@ -1513,6 +1513,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">Warnung: Einstellungen von „{0}“ werden nicht verwendet, weil „{1}“ Vorrang hat.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
+      <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
+        <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
+        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <note>{Locked="--"}</note>
+      </trans-unit>
       <trans-unit id="RunDefinition">
         <source>Build and run a .NET project output.</source>
         <target state="translated">Hiermit wird eine .NET-Projektausgabe erstellt und ausgeführt.</target>

@@ -1513,6 +1513,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">警告: 不使用 ‘{0}’ 中的设置，因为 ‘{1}’ 具有优先级。</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
+      <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
+        <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
+        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <note>{Locked="--"}</note>
+      </trans-unit>
       <trans-unit id="RunDefinition">
         <source>Build and run a .NET project output.</source>
         <target state="translated">生成并运行 .NET 项目输出。</target>

@@ -1513,6 +1513,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Avviso: le impostazioni di "{0}" non vengono usate perché "{1}" ha la precedenza.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
+      <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
+        <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
+        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <note>{Locked="--"}</note>
+      </trans-unit>
       <trans-unit id="RunDefinition">
         <source>Build and run a .NET project output.</source>
         <target state="translated">Compila ed esegue l'output di un progetto .NET.</target>

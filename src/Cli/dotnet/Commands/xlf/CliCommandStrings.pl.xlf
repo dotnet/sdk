@@ -1513,6 +1513,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Ostrzeżenie: ustawienia z „{0}” nie są używane, ponieważ element „{1}” ma pierwszeństwo.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
+      <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
+        <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
+        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <note>{Locked="--"}</note>
+      </trans-unit>
       <trans-unit id="RunDefinition">
         <source>Build and run a .NET project output.</source>
         <target state="translated">Kompiluj i uruchom dane wyjściowe projektu platformy .NET.</target>
