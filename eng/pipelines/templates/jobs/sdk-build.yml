@@ -142,11 +142,6 @@ jobs:
 
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:
-        # Use Arcade's -binaryLogName so this test run produces only a uniquely-named
-        # binlog. Passing a raw /bl: here would leave Arcade's default Build.binlog
-        # logger active too, and that second run would overwrite the build step's
-        # Build.binlog (which is the one that captures the redist GenerateSdkLayout /
-        # dotnet-aot NativeAOT publish), leaving us unable to diagnose the build.
         - powershell: eng/common/build.ps1
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)

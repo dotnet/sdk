@@ -75,11 +75,6 @@ stages:
         os: macOS
       helixTargetQueue: osx.15.arm64.open
   ### AoT (native arm64) ###
-  # The AoT leg builds dotnet-aot via NativeAOT, which does not support cross-compilation,
-  # so it must run on native arm64 macOS hardware (HostRid == TargetRid == osx-arm64) to
-  # produce the dotnet-aot .dylib and its mstat/dgml size-analysis output. It is a separate
-  # invocation (rather than an entry in the default macOSJobParameterSets) so only this leg
-  # uses the arm64 hosted image; the TestBuild macOS leg above stays on the x64 hosted image.
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
