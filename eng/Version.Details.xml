@@ -545,6 +545,16 @@
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>17737eaaf5e821667db6e3b850b2f186647cf34b</Sha>
     </Dependency>
+    <!--
+      DRAFT: pinned to a published build that contains the package (2.3.0-preview.26321.1 predates it).
+      A real darc update will bump Microsoft.Testing.Platform, MSTest and this entry together to the same
+      coherent testfx build (same Sha). The Sha below is the merge commit of microsoft/testfx#9400 that
+      shipped the package and is a placeholder until darc sets the coherent value.
+    -->
+    <Dependency Name="Microsoft.Testing.Platform.Internal.DotnetTest" Version="2.3.0-preview.26325.4">
+      <Uri>https://github.com/microsoft/testfx</Uri>
+      <Sha>5a81c1e0fadb658283197dcb826774619436d108</Sha>
+    </Dependency>
     <Dependency Name="MSTest" Version="4.3.0-preview.26321.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>17737eaaf5e821667db6e3b850b2f186647cf34b</Sha>
