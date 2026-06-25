@@ -5,17 +5,19 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation these tests perform.
+// These tests mutate the process current directory, so they must run sequentially.
+// The project disables parallelization (MSTestParallelizeScope=None) and
+// [DoNotParallelize] enforces that for this class.
+[DoNotParallelize]
+[TestClass]
 public class GenerateStaticWebAssetsDevelopmentManifestMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void WritesManifestRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(GenerateStaticWebAssetsDevelopmentManifestMultiThreadingTest), Guid.NewGuid().ToString("N"));
@@ -60,7 +62,7 @@ public class GenerateStaticWebAssetsDevelopmentManifestMultiThreadingTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesExistingManifestProbeRelativeToProjectDirectory_NotProcessCurrentDirectory()
     {
         // Verifies that the File.Exists/File.ReadAllBytes change-detection probe in PersistManifest (and
