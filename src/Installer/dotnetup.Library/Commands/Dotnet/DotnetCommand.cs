@@ -23,8 +23,7 @@ internal class DotnetCommand : CommandBase
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
 
-        // Collect all unmatched/forwarded tokens after the "dotnet" or "do" subcommand.
-        _forwardedArgs = [.. parseResult.UnmatchedTokens];
+        _forwardedArgs = parseResult.GetValue(DotnetCommandParser.ForwardedArguments) ?? [];
     }
 
     protected override string GetCommandName() => "dotnet";
