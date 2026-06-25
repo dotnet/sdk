@@ -28,11 +28,14 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
                 .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
 
+            var manifestDirectory = Path.Combine(AppContext.BaseDirectory, nameof(SkipsManifestGenerationWhen_ThereAreNoAssetsNorDiscoveryPatterns), Guid.NewGuid().ToString("N"));
             var task = new GenerateStaticWebAssetsDevelopmentManifest()
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
-                DiscoveryPatterns = Array.Empty<ITaskItem>()
+                DiscoveryPatterns = Array.Empty<ITaskItem>(),
+                ManifestPath = Path.Combine(manifestDirectory, "staticwebassets.development.json"),
+                CacheFilePath = Path.Combine(manifestDirectory, "staticwebassets.build.cache.json")
             };
 
             // Act
