@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             reinitCommandResult.Should().ExitWith(0).And.NotHaveStdErr();
             Assert.AreEqual(commandResult.StdOut, reinitCommandResult.StdOut);
             Assert.IsTrue(File.Exists(cacheFilePath));
-            Assert.IsLessThan(lastUpdateDate, File.GetLastWriteTimeUtc(cacheFilePath));
+            Assert.IsGreaterThan(lastUpdateDate, File.GetLastWriteTimeUtc(cacheFilePath));
         }
 
         [TestMethod]
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             reinitCommandResult.Should().ExitWith(0).And.NotHaveStdErr();
             Assert.AreEqual(commandResult.StdOut, reinitCommandResult.StdOut);
             Assert.IsTrue(File.Exists(cacheFilePath));
-            Assert.IsLessThan(lastUpdateDate, File.GetLastWriteTimeUtc(cacheFilePath));
+            Assert.IsGreaterThan(lastUpdateDate, File.GetLastWriteTimeUtc(cacheFilePath));
         }
 
         [TestMethod]
