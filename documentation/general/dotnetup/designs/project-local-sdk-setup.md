@@ -509,7 +509,7 @@ Expected `global.json`:
 {
   "sdk": {
     "version": "10.0.100",
-    "rollForward": "latestFeature",
+    "rollForward": "latestPatch",
     "paths": [ ".dotnet", "$host$" ]
   }
 }
@@ -521,7 +521,8 @@ Behavior:
 - Write the resolved SDK version because `global.json` requires a concrete
   `sdk.version`.
 - Use a roll-forward policy that allows newer SDKs in the feature band while not
-  unexpectedly crossing to unrelated bands. `latestFeature` is a candidate.
+  crossing to other feature bands. `latestPatch` matches dotnetup's documented
+  mapping for `10.0.1xx` channels.
 - Track the install spec as `10.0.1xx` so `dotnetup sdk update` can re-resolve
   it later.
 
@@ -814,4 +815,3 @@ user-level install, PATH setup, or system replacement.
 
 10. How should the command find the repository/configuration root: nearest
     `global.json`, nearest `.git`, current directory, or an explicit `--root`?
-
