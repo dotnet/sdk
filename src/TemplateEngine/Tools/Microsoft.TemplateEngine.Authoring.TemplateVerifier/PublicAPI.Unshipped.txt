@@ -85,6 +85,10 @@ Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption.RuntimeAndVe
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption.TargetFramework = 16 -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption.TargetFrameworkAndVersion = 32 -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine
+Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.VerifyDirectoryDelegate
+static Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.DirectoryVerifier.get -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.VerifyDirectoryDelegate?
+static Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.DirectoryVerifier.set -> void
+virtual Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.VerifyDirectoryDelegate.Invoke(string! path, System.Func<string!, bool>? include, string? pattern, System.IO.EnumerationOptions? options, VerifyTests.VerifySettings? settings, object? info, VerifyTests.FileScrubber? fileScrubber, string! sourceFile) -> System.Threading.Tasks.Task!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.Execute(Microsoft.Extensions.Options.IOptions<Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions!>! optionsAccessor, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken), string! sourceFile = "", string! callerMethod = "") -> System.Threading.Tasks.Task!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.VerificationEngine(Microsoft.Extensions.Logging.ILogger! logger) -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.VerificationEngine(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
