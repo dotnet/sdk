@@ -33,7 +33,7 @@ internal static class WorkloadInstallDetector
     /// </param>
     public static bool HasInstalledWorkloadsForCurrentBand(string? dotnetDir = null)
     {
-        dotnetDir ??= Path.GetDirectoryName(Environment.ProcessPath);
+        dotnetDir = string.IsNullOrWhiteSpace(dotnetDir) ? Path.GetDirectoryName(Environment.ProcessPath) : dotnetDir;
         var sdkFeatureBand = new SdkFeatureBand(Product.Version);
 
         return WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetDir) switch
