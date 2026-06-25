@@ -139,7 +139,7 @@ internal sealed class LanguageService : ILanguageService
                 };
 
                 // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
-                if (value.Contains('"'))
+                if (value.Contains("\""))
                 {
                     context.ReportError(FileBasedProgramsResources.QuoteInDirective);
                 }

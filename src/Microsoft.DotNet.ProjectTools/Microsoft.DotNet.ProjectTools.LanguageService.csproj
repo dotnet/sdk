@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!--
+      Used in Roslyn
+    -->
+    <TargetFrameworks>$(VisualStudioServiceTargetFramework);netstandard2.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>disable</Nullable>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <DefineConstants>$(DefineConstants);FILE_BASED_PROGRAMS_SOURCE_PACKAGE_BUILD</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
+    <PackageReference Include="System.Text.Encoding.CodePages" VersionOverride="$(SystemTextEncodingCodePagesToolsetPackageVersion)" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="LanguageService.cs" />
+  </ItemGroup>
+
+  <Import Project="..\Cli\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
+</Project>
