@@ -6,9 +6,10 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class TestInProgressMessagesSerializerTests
 {
-    [Fact]
+    [TestMethod]
     public void RoundTrips_WithPopulatedMessages()
     {
         var serializer = new TestInProgressMessagesSerializer();
@@ -27,16 +28,16 @@ public class TestInProgressMessagesSerializerTests
 
         var deserialized = (TestInProgressMessages)serializer.Deserialize(stream);
 
-        Assert.Equal(original.ExecutionId, deserialized.ExecutionId);
-        Assert.Equal(original.InstanceId, deserialized.InstanceId);
-        Assert.Equal(2, deserialized.InProgressMessages.Length);
-        Assert.Equal("uid-1", deserialized.InProgressMessages[0].Uid);
-        Assert.Equal("DisplayName1", deserialized.InProgressMessages[0].DisplayName);
-        Assert.Equal("uid-2", deserialized.InProgressMessages[1].Uid);
-        Assert.Equal("DisplayName2", deserialized.InProgressMessages[1].DisplayName);
+        Assert.AreEqual(original.ExecutionId, deserialized.ExecutionId);
+        Assert.AreEqual(original.InstanceId, deserialized.InstanceId);
+        Assert.HasCount(2, deserialized.InProgressMessages);
+        Assert.AreEqual("uid-1", deserialized.InProgressMessages[0].Uid);
+        Assert.AreEqual("DisplayName1", deserialized.InProgressMessages[0].DisplayName);
+        Assert.AreEqual("uid-2", deserialized.InProgressMessages[1].Uid);
+        Assert.AreEqual("DisplayName2", deserialized.InProgressMessages[1].DisplayName);
     }
 
-    [Fact]
+    [TestMethod]
     public void RoundTrips_WithEmptyMessagesList()
     {
         var serializer = new TestInProgressMessagesSerializer();
@@ -51,16 +52,16 @@ public class TestInProgressMessagesSerializerTests
 
         var deserialized = (TestInProgressMessages)serializer.Deserialize(stream);
 
-        Assert.Equal(original.ExecutionId, deserialized.ExecutionId);
-        Assert.Equal(original.InstanceId, deserialized.InstanceId);
-        Assert.Empty(deserialized.InProgressMessages);
+        Assert.AreEqual(original.ExecutionId, deserialized.ExecutionId);
+        Assert.AreEqual(original.InstanceId, deserialized.InstanceId);
+        Assert.IsEmpty(deserialized.InProgressMessages);
     }
 
-    [Fact]
+    [TestMethod]
     public void SerializerId_IsTen()
     {
         // The IPC protocol reserves serializer IDs across SDK and MTP.
         // ID 10 is the contract — keep this assertion to prevent accidental changes.
-        Assert.Equal(10, new TestInProgressMessagesSerializer().Id);
+        Assert.AreEqual(10, new TestInProgressMessagesSerializer().Id);
     }
 }

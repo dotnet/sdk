@@ -10,9 +10,14 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
+    [TestClass]
+    // GetPidFilePath_UsesEnvironmentVariablePathIfSpecified mutates the process-wide
+    // DOTNET_BUILD_PIDFILE_DIRECTORY environment variable that GetPidFilePath_ReturnsCorrectDefaultPath
+    // reads, so the methods of this class must not run in parallel with each other.
+    [DoNotParallelize]
     public class ServerCommandTest
     {
-        [Fact]
+        [TestMethod]
         public void WritePidFile_WorksAsExpected()
         {
             // Arrange
@@ -30,19 +35,19 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             {
                 using (var _ = server.WritePidFile(directoryPath))
                 {
-                    Assert.True(File.Exists(path));
+                    Assert.IsTrue(File.Exists(path));
 
                     // Make sure another stream can be opened while the write stream is still open.
                     using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Write | FileShare.Delete))
                     using (var reader = new StreamReader(fileStream, Encoding.UTF8))
                     {
                         var lines = reader.ReadToEnd().Split(Environment.NewLine);
-                        Assert.Equal(new[] { expectedProcessId.ToString(CultureInfo.InvariantCulture), "rzc", expectedRzcPath, pipeName }, lines);
+                        Assert.AreSequenceEqual(new[] { expectedProcessId.ToString(CultureInfo.InvariantCulture), "rzc", expectedRzcPath, pipeName }, lines);
                     }
                 }
 
                 // Make sure the file is deleted on dispose.
-                Assert.False(File.Exists(path));
+                Assert.IsFalse(File.Exists(path));
             }
             finally
             {
@@ -54,7 +59,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GetPidFilePath_ReturnsCorrectDefaultPath()
         {
             // Arrange
@@ -67,7 +72,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             Assert.EndsWith(expectedPath, directoryPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetPidFilePath_UsesEnvironmentVariablePathIfSpecified()
         {
             // Arrange
@@ -79,7 +84,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 var directoryPath = ServerCommand.GetPidFilePath();
 
                 // Assert
-                Assert.Equal(expectedPath, directoryPath);
+                Assert.AreEqual(expectedPath, directoryPath);
             }
             finally
             {

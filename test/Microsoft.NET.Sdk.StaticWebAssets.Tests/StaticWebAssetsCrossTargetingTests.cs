@@ -6,15 +6,23 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class StaticWebAssetsCrossTargetingTests(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsCrossTargetingTests))
+    [TestClass]
+    public class StaticWebAssetsCrossTargetingTests : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
+        protected override string RestoreNugetPackagePath => nameof(StaticWebAssetsCrossTargetingTests);
         // Build Standalone project
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_CrosstargetingTests_CanIncludeBrowserAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -59,7 +67,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(finalPath).Should().Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_CrosstargetingTests_CanIncludeBrowserAssets()
         {
             var testAsset = "RazorComponentAppMultitarget";

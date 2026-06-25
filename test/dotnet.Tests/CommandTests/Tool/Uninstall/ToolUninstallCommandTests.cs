@@ -8,6 +8,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolUninstallCommandTests
     {
         private readonly BufferedReporter _reporter;
@@ -21,7 +22,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter = new BufferedReporter();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var result = Parser.Parse($"dotnet tool uninstall -g --tool-path /tmp/folder {PackageId}");
@@ -36,7 +37,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     "--global --tool-path"));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
             var result = Parser.Parse($"dotnet tool uninstall --local --tool-path /tmp/folder {PackageId}");
@@ -51,7 +52,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         "--local --tool-path"));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
         {
             var result = Parser.Parse($"dotnet tool uninstall -g --tool-manifest folder/my-manifest.format {PackageId}");
@@ -64,7 +65,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithToolPathAndToolManifestShowErrorMessage()
         {
             var result = Parser.Parse(
