@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("The template \"TestAssets.TemplateWithFileRenameDate\" was created successfully.");
 
             DirectoryInfo directoryInfo = new(workingDirectory);
-            Assert.MatchesRegex(directoryInfo.EnumerateFiles().Single().Name, "\\d{8}_mytestname.cs");
+            Assert.MatchesRegex("\\d{8}_mytestname.cs", directoryInfo.EnumerateFiles().Single().Name);
         }
     }
 }
