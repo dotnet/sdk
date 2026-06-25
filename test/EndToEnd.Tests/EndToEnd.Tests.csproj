@@ -5,8 +5,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <!-- These tests rely on global process state, so run serially ([assembly: DoNotParallelize]). -->
-    <MSTestParallelizeScope></MSTestParallelizeScope>
+    <!-- These tests rely on global process state, so run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
