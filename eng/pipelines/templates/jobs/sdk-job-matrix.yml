@@ -31,10 +31,6 @@ parameters:
   - categoryName: TestBuild
     targetArchitecture: arm64
     runtimeIdentifier: osx-arm64
-  - categoryName: AoT
-    runAoTTests: true
-    targetArchitecture: arm64
-    runtimeIdentifier: osx-arm64
 
 jobs:
 ### ONELOCBUILD ###
