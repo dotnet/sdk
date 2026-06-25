@@ -3,17 +3,18 @@
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class TestCommandValidationTests : SdkTest
     {
-        public TestCommandValidationTests(ITestOutputHelper log) : base(log)
+        public TestCommandValidationTests()
         {
         }
 
-        [Theory]
-        [InlineData("MySolution.sln", "Specifying a solution for 'dotnet test' should be via '--solution'.")]
-        [InlineData("MyProject.csproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
-        [InlineData("MyProject.vbproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
-        [InlineData("MyProject.fsproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
+        [TestMethod]
+        [DataRow("MySolution.sln", "Specifying a solution for 'dotnet test' should be via '--solution'.")]
+        [DataRow("MyProject.csproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
+        [DataRow("MyProject.vbproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
+        [DataRow("MyProject.fsproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
         public void TestCommandShouldValidateFileArgumentsAndProvideHelpfulMessages(string filename, string expectedErrorStart)
         {
             var testDir = TestAssetsManager.CreateTestDirectory();
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCommandShouldValidateDirectoryArgumentAndProvideHelpfulMessage()
         {
             var testDir = TestAssetsManager.CreateTestDirectory();
@@ -67,7 +68,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCommandShouldValidateDllArgumentAndProvideHelpfulMessage()
         {
             var testDir = TestAssetsManager.CreateTestDirectory();
@@ -95,9 +96,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [Theory]
-        [InlineData("--use-current-runtime")]
-        [InlineData("--ucr")]
+        [TestMethod]
+        [DataRow("--use-current-runtime")]
+        [DataRow("--ucr")]
         public void TestCommandShouldRejectUseCurrentRuntimeWhenCombinedWithTestModules(string useCurrentRuntimeAlias)
         {
             var testDir = TestAssetsManager.CreateTestDirectory();

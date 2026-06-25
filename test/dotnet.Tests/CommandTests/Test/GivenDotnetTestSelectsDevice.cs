@@ -8,13 +8,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests;
 /// <summary>
 /// Integration tests for device selection in dotnet test
 /// </summary>
+[TestClass]
 public class GivenDotnetTestSelectsDevice : SdkTest
 {
-    public GivenDotnetTestSelectsDevice(ITestOutputHelper log) : base(log)
+    public GivenDotnetTestSelectsDevice()
     {
     }
 
-    [Fact]
+    [TestMethod]
     public void ItFailsInNonInteractiveMode_WhenMultipleDevicesAvailableAndNoneSpecified()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
@@ -29,9 +30,9 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
     }
 
-    [Theory]
-    [InlineData("test-device-1")]
-    [InlineData("test-device-2")]
+    [TestMethod]
+    [DataRow("test-device-1")]
+    [DataRow("test-device-2")]
     public void ItRunsTestsWithSpecifiedDevice(string deviceId)
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: deviceId)
@@ -44,7 +45,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         result.Should().Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItAutoSelectsSingleDevice()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
@@ -59,7 +60,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         result.Should().Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItPromptsForTargetFrameworkWhenDeviceIsSpecifiedWithoutFramework_InNonInteractiveMode()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
@@ -75,7 +76,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ItRunsWithDeviceAndFramework()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
@@ -88,7 +89,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         result.Should().Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItDoesNotPromptForDeviceWhenComputeAvailableDevicesTargetDoesNotExist()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests")
@@ -102,7 +103,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         result.Should().Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItAutoSelectsSingleDevicePerTfm()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
@@ -118,7 +119,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         result.Should().Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItRunsDeviceProjectsInSolution()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "SolutionDeviceTest")
@@ -156,7 +157,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         result.Should().Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItAcceptsDeviceViaMSBuildProperty()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
@@ -170,7 +171,7 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         result.Should().Pass();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItShowsBuildErrorWhenBuildFailsAfterDeviceSelection()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")

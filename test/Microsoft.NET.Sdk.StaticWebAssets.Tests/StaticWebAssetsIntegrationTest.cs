@@ -1,19 +1,25 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Reflection;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
+    [TestClass]
     public class StaticWebAssetsIntegrationTest : AspNetSdkBaselineTest
     {
-        public StaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
         // Build Standalone project
-        [Fact]
+        [TestMethod]
         public void Build_GeneratesJsonManifestAndCopiesItToOutputFolder()
         {
             var expectedManifest = LoadBuildManifest();
@@ -41,7 +47,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_Can_DisableAssetCaching()
         {
             var expectedManifest = LoadBuildManifest();
@@ -80,7 +86,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_DoesNotUpdateManifest_WhenHasNotChanged()
         {
             var testAsset = "RazorComponentApp";
@@ -126,7 +132,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             secondFinalFile.LastWriteTimeUtc.Should().Be(originalFile.LastWriteTimeUtc);
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_UpdatesManifest_WhenFilesChange()
         {
             var testAsset = "RazorComponentApp";
@@ -194,7 +200,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         // Rebuild
-        [Fact]
+        [TestMethod]
         public void Rebuild_RegeneratesJsonManifestAndCopiesItToOutputFolder()
         {
             var testAsset = "RazorComponentApp";
@@ -255,7 +261,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         // Publish
-        [Fact]
+        [TestMethod]
         public void Publish_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorComponentApp";
@@ -289,7 +295,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_PublishSingleFile_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -327,7 +333,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_NoBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -394,7 +400,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_DeployOnBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -430,7 +436,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         // Clean
-        [Fact]
+        [TestMethod]
         public void Clean_RemovesManifestFrom_BuildAndIntermediateOutput()
         {
             var expectedManifest = LoadBuildManifest();
@@ -465,7 +471,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(finalPath).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_WithExternalProjectReference_UpdatesAssets()
         {
             var testAsset = "RazorAppWithP2PReference";
@@ -520,7 +526,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_WithExternalProjectReference_UpdatesAssets()
         {
             var testAsset = "RazorAppWithP2PReference";
@@ -574,7 +580,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_DoesNotFailToCompress_TwoAssetsWith_TheSameContent()
         {
             var expectedManifest = LoadBuildManifest();
@@ -619,10 +625,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
     }
 
-    public class StaticWebAssetsAppWithPackagesIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsAppWithPackagesIntegrationTest))
+    [TestClass]
+    public class StaticWebAssetsAppWithPackagesIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => nameof(StaticWebAssetsAppWithPackagesIntegrationTest);
+        [TestMethod]
         public void Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -640,7 +647,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             ExecuteCommand(build).Should().Fail();
         }
 
-        [Fact]
+        [TestMethod]
         public void BuildProjectWithReferences_DeployOnBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -681,7 +688,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void BuildProjectWithReferences_GeneratesJsonManifestAndCopiesItToOutputFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -716,7 +723,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void BuildProjectWithReferences_NoDependencies_GeneratesJsonManifestAndCopiesItToOutputFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -779,7 +786,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             manifestContents.Should().Be(File.ReadAllText(finalPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishProjectWithReferences_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -821,7 +828,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishProjectWithReferences_PublishSingleFile_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -862,7 +869,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishProjectWithReferences_NoBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -930,7 +937,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishProjectWithReferences_AppendTargetFrameworkToOutputPathFalse_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";

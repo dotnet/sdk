@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands;
@@ -8,12 +8,13 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTestBase(log)
+[TestClass]
+public sealed class RunFileTests_BuildOptions : RunFileTestBase
 {
     /// <summary>
     /// Main method is supported just like top-level statements.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void MainMethod()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
@@ -29,7 +30,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// Empty file does not contain entry point, so that's an error.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void EmptyFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -45,7 +46,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// See <see href="https://github.com/dotnet/sdk/issues/51778"/>.
     /// </summary>
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void WorkingDirectory(bool cscOnly)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
@@ -96,7 +97,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// Combination of <see cref="WorkingDirectory"/> and <see cref="CscOnly_AfterMSBuild"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void WorkingDirectory_CscOnly_AfterMSBuild()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -169,7 +170,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// Implicit build files have an effect.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DirectoryBuildProps()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -194,7 +195,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// This is equivalent to the behavior of symlinked project files.
     /// See <see href="https://github.com/dotnet/sdk/pull/52064#issuecomment-3628958688"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DirectoryBuildProps_SymbolicLink()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -248,7 +249,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// Overriding default (implicit) properties of file-based apps via implicit build files.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DefaultProps_DirectoryBuildProps()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -288,7 +289,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// Overriding default (implicit) properties of file-based apps from custom SDKs.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DefaultProps_CustomSdk()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -367,7 +368,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .And.HaveStdOutContaining("error CS0103");
     }
 
-    [Fact]
+    [TestMethod]
     public void ComputeRunArguments_Success()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -392,7 +393,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void ComputeRunArguments_Failure()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -418,11 +419,11 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// Command-line arguments should be passed through.
     /// </summary>
-    [Theory]
-    [InlineData("other;args", "other;args")]
-    [InlineData("--;other;args", "other;args")]
-    [InlineData("--appArg", "--appArg")]
-    [InlineData("-c;Debug;--xyz", "--xyz")]
+    [TestMethod]
+    [DataRow("other;args", "other;args")]
+    [DataRow("--;other;args", "other;args")]
+    [DataRow("--appArg", "--appArg")]
+    [DataRow("-c;Debug;--xyz", "--xyz")]
     public void Arguments_PassThrough(string input, string output)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -441,7 +442,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// <c>dotnet run --unknown-arg file.cs</c> fallbacks to normal <c>dotnet run</c> behavior.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Arguments_Unrecognized()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -460,7 +461,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// <c>dotnet run --some-known-arg file.cs</c> is supported.
     /// </summary>
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void Arguments_Recognized(bool beforeFile)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -484,7 +485,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// <c>dotnet run -bl file.cs</c> produces a binary log.
     /// </summary>
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void BinaryLog_Run(bool beforeFile)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -506,7 +507,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .Should().BeEquivalentTo(["msbuild.binlog"]);
     }
 
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void BinaryLog_Build([CombinatorialValues("restore", "build")] string command, bool beforeFile)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -527,15 +528,15 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .Should().BeEquivalentTo(["msbuild.binlog"]);
     }
 
-    [Theory]
-    [InlineData("-bl")]
-    [InlineData("-BL")]
-    [InlineData("-bl:msbuild.binlog")]
-    [InlineData("/bl")]
-    [InlineData("/bl:msbuild.binlog")]
-    [InlineData("--binaryLogger")]
-    [InlineData("--binaryLogger:msbuild.binlog")]
-    [InlineData("-bl:another.binlog")]
+    [TestMethod]
+    [DataRow("-bl")]
+    [DataRow("-BL")]
+    [DataRow("-bl:msbuild.binlog")]
+    [DataRow("/bl")]
+    [DataRow("/bl:msbuild.binlog")]
+    [DataRow("--binaryLogger")]
+    [DataRow("--binaryLogger:msbuild.binlog")]
+    [DataRow("-bl:another.binlog")]
     public void BinaryLog_ArgumentForms(string arg)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -555,7 +556,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .Should().BeEquivalentTo([$"{fileName}.binlog"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void BinaryLog_Multiple()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -576,7 +577,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .Should().BeEquivalentTo(["three.binlog"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void BinaryLog_WrongExtension()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -597,7 +598,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// <c>dotnet run file.cs</c> should not produce a binary log.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void BinaryLog_NotSpecified()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -618,7 +619,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// Binary logs from our in-memory projects should have evaluation data.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void BinaryLog_EvaluationData()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -640,7 +641,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// Binary logs from our in-memory projects should have evaluation data.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void BinaryLog_EvaluationData_MultiFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -686,7 +687,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// If we skip build due to up-to-date check, no binlog should be created.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void BinaryLog_EvaluationData_UpToDate()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -717,7 +718,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
         new FileInfo(binaryLogPath).Should().NotExist();
     }
 
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void TerminalLogger(bool on)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -742,7 +743,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Verbosity_Run()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -759,7 +760,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .And.NotHaveStdErr();
     }
 
-    [Fact] // https://github.com/dotnet/sdk/issues/50227
+    [TestMethod] // https://github.com/dotnet/sdk/issues/50227
     public void Verbosity_Build()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -774,7 +775,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .And.HaveStdOutContaining("Program.dll");
     }
 
-    [Fact]
+    [TestMethod]
     public void Verbosity_CompilationDiagnostics()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -805,7 +806,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
     }
 
-    [Fact]
+    [TestMethod]
     public void MissingShebangWarning()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -867,7 +868,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .And.HaveStdOut("hello");
     }
 
-    [Fact]
+    [TestMethod]
     public void MissingShebangWarning_CompileItemFromDirectoryBuildProps()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -928,7 +929,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .And.HaveStdOutContaining("hello included");
     }
 
-    [Fact]
+    [TestMethod]
     public void MissingShebangWarning_NonCsFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -998,7 +999,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// <summary>
     /// File-based projects using the default SDK do not include embedded resources by default.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void EmbeddedResource()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1061,7 +1062,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     /// Scripts in repo root should not include <c>.resx</c> files.
     /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
     /// </summary>
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void EmbeddedResource_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
     {
         bool considered = ext is "sln" or "slnx" or "csproj";

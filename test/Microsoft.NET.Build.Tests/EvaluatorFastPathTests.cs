@@ -3,14 +3,11 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class EvaluatorFastPathTests : SdkTest
     {
-        public EvaluatorFastPathTests(ITestOutputHelper log) : base(log)
-        {
 
-        }
-
-        [Fact]
+        [TestMethod]
         public void FastPathDoesNotNeedReflection()
         {
             var testAsset = TestAssetsManager
@@ -29,9 +26,9 @@ namespace Microsoft.NET.Build.Tests
             File.Exists(logPath).Should().BeFalse();
         }
 
-        [Theory]
-        [InlineData("console")]
-        [InlineData("webapp")]
+        [TestMethod]
+        [DataRow("console")]
+        [DataRow("webapp")]
         public void EnsureDotnetCommonProjectPropertyFunctionsOnFastPath(string alias)
         {
             var testDir = TestAssetsManager.CreateTestDirectory().Path;

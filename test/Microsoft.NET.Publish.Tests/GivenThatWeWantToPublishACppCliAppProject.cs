@@ -5,13 +5,11 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishACppCliAppProject : SdkTest
     {
-        public GivenThatWeWantToPublishACppCliAppProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [FullMSBuildOnlyFact]
+        [TestMethod]
+        [FullMSBuildOnly]
         public void It_should_fail_with_error_message()
         {
             var testAsset = TestAssetsManager
