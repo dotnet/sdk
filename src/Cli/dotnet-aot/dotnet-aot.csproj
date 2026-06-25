@@ -50,7 +50,7 @@
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
     <Compile Include="ManagedHost.cs" />
-    <Compile Include="..\dotnet\Program.cs" Link="Program.cs" />
+    <Compile Include="Program.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,6 +61,9 @@
     <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" GlobalPropertiesToRemove="PublishDir">
       <Aliases>global,NativeWrapper</Aliases>
     </ProjectReference>
+    <!-- Lean (Releases + System.Text.Json) reader providing SdkFeatureBand / WorkloadInstallType for
+         the in-process, read-only workload install detection (WorkloadInstallDetector). -->
+    <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" GlobalPropertiesToRemove="PublishDir" />
   </ItemGroup>
 
   <ItemGroup>
@@ -82,7 +85,11 @@
     (from the shared framework's copy of the same library), macOS emits duplicate class warnings to stderr,
     which breaks tests that assert stderr is empty.
 
-    Since the AOT CLI does not use any cryptographic APIs, we can safely remove this native library from linking.
+    The AOT CLI DOES use cryptography during first-run (ASP.NET Core developer-certificate generation), but it
+    does not need this archive statically linked: because the CLI is loaded as a shared library (NativeLib=Shared)
+    by a full .NET host, its crypto P/Invokes resolve dynamically against the host's already-loaded copy of
+    libSystem.Security.Cryptography.Native.Apple.dylib. Removing the static archive (and its DirectPInvoke) therefore
+    keeps cert generation working while avoiding the duplicate ObjC class registration and its stderr warnings.
 
     This is a workaround for a NativeAOT issue tracked at https://github.com/dotnet/runtime/issues/128867
     ("Two CLR-based apps cannot coexist on Apple platforms"). Once that is fixed (e.g. by guarding the
