@@ -27,7 +27,7 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
             throw new ArgumentException($"'{entryPointFilePath}' is not a fully qualified path.", paramName: nameof(entryPointFilePath));
         }
 
-        var builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFilePath, VirtualProjectBuildingCommand.TargetFramework);
+        var builder = new VirtualProjectBuilder(BuildService.Instance, LanguageService.Instance, entryPointFilePath, VirtualProjectBuildingCommand.TargetFramework);
 
         builder.CreateProjectInstance(
             projectCollection.Wrap(),

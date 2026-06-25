@@ -373,7 +373,7 @@ public class RunCommand
     /// <returns>Array of frameworks if TargetFrameworks is specified, empty array otherwise</returns>
     private static string[] GetTargetFrameworksFromSourceFile(string sourceFilePath)
     {
-        var value = VirtualProjectBuilder.GetPropertyFromSourceFile(sourceFilePath, "TargetFrameworks");
+        var value = VirtualProjectBuilder.GetPropertyFromSourceFile(LanguageService.Instance, sourceFilePath, "TargetFrameworks");
         return value?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
     }
 

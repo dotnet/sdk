@@ -127,7 +127,7 @@ internal sealed class ProjectGraphFactory(
 
             var anyError = false;
 
-            var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
+            var projectInstance = FileBasedProgramAccessor.CreateProjectInstance(
                 BuildService.Instance,
                 entryPointFilePath,
                 virtualProjectTargetFramework,
