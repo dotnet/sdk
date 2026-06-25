@@ -316,8 +316,8 @@ Past endif
             IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
             RunAndVerify(test, expectedValue, processor, 28);
 
-            //comment is unused - Asserting to bypass the warning.
-            Assert.AreEqual(comment, comment);
+            // comment is the scenario description from the DataRow; assert it is present.
+            Assert.IsFalse(string.IsNullOrWhiteSpace(comment));
         }
 
         /// <summary>
