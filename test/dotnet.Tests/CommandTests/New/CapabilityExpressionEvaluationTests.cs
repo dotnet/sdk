@@ -5,42 +5,43 @@ using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
 namespace Microsoft.DotNet.Cli.New.Tests
 {
+    [TestClass]
     public class CapabilityExpressionEvaluationTests
     {
-        [Theory]
-        [InlineData("Capability", "", false)]
-        [InlineData("Cap1", "cap1", true)]
-        [InlineData("Cap1 | Cap2", "Cap3", false)]
-        [InlineData("Cap1 | Cap2", "Cap1", true)]
-        [InlineData("Cap1 & Cap2", "Cap3", false)]
-        [InlineData("Cap1 & Cap2", "Cap1", false)]
-        [InlineData("Cap1 & Cap2", "Cap1|Cap2", true)]
-        [InlineData("Cap1 + Cap2", "Cap3", false)]
-        [InlineData("Cap1 + Cap2", "Cap1", false)]
-        [InlineData("Cap1 + Cap2", "Cap1|Cap2", true)]
-        [InlineData("!Cap3", "Cap3", false)]
-        [InlineData("!Cap3", "Cap1", true)]
-        [InlineData("(Cap1 | Cap2) + (Cap3 | Cap4)", "Cap3", false)]
-        [InlineData("(Cap1 | Cap2) + (Cap3 | Cap4)", "Cap3|Cap1", true)]
-        [InlineData("(Cap1 | Cap2) | (Cap3 | Cap4)", "Cap3", true)]
-        [InlineData("Cap1 | Cap2 + Cap3 | Cap4", "Cap3", false)]
-        [InlineData("Cap1 | Cap2 + Cap3 | Cap4", "Cap3|Cap1", true)]
-        [InlineData("Cap1 | Cap2 & Cap3 | Cap4", "Cap3", false)]
-        [InlineData("Cap1 | Cap2 & Cap3 | Cap4", "Cap3|Cap1", true)]
+        [TestMethod]
+        [DataRow("Capability", "", false)]
+        [DataRow("Cap1", "cap1", true)]
+        [DataRow("Cap1 | Cap2", "Cap3", false)]
+        [DataRow("Cap1 | Cap2", "Cap1", true)]
+        [DataRow("Cap1 & Cap2", "Cap3", false)]
+        [DataRow("Cap1 & Cap2", "Cap1", false)]
+        [DataRow("Cap1 & Cap2", "Cap1|Cap2", true)]
+        [DataRow("Cap1 + Cap2", "Cap3", false)]
+        [DataRow("Cap1 + Cap2", "Cap1", false)]
+        [DataRow("Cap1 + Cap2", "Cap1|Cap2", true)]
+        [DataRow("!Cap3", "Cap3", false)]
+        [DataRow("!Cap3", "Cap1", true)]
+        [DataRow("(Cap1 | Cap2) + (Cap3 | Cap4)", "Cap3", false)]
+        [DataRow("(Cap1 | Cap2) + (Cap3 | Cap4)", "Cap3|Cap1", true)]
+        [DataRow("(Cap1 | Cap2) | (Cap3 | Cap4)", "Cap3", true)]
+        [DataRow("Cap1 | Cap2 + Cap3 | Cap4", "Cap3", false)]
+        [DataRow("Cap1 | Cap2 + Cap3 | Cap4", "Cap3|Cap1", true)]
+        [DataRow("Cap1 | Cap2 & Cap3 | Cap4", "Cap3", false)]
+        [DataRow("Cap1 | Cap2 & Cap3 | Cap4", "Cap3|Cap1", true)]
         public void EvaluateCapabilityExpression(string expression, string availableCapabilities, bool expectedResult)
         {
             IReadOnlyList<string> projectCapabilites = availableCapabilities.Split("|");
-            Assert.Equal(expectedResult, CapabilityExpressionEvaluator.Evaluate(expression, projectCapabilites));
+            Assert.AreEqual(expectedResult, CapabilityExpressionEvaluator.Evaluate(expression, projectCapabilites));
         }
 
-        [Theory]
-        [InlineData("Cap1 |", "Cap3")]
-        [InlineData("(Cap1 | Cap2", "Cap1")]
-        [InlineData("(Cap1 | Cap2) + ((Cap3 | Cap4)", "Cap3")]
+        [TestMethod]
+        [DataRow("Cap1 |", "Cap3")]
+        [DataRow("(Cap1 | Cap2", "Cap1")]
+        [DataRow("(Cap1 | Cap2) + ((Cap3 | Cap4)", "Cap3")]
         public void EvaluateCapabilityExpression_ThrowsOnInvalidExpression(string expression, string availableCapabilities)
         {
             IReadOnlyList<string> projectCapabilites = availableCapabilities.Split("|");
-            Assert.Throws<ArgumentException>(() => CapabilityExpressionEvaluator.Evaluate(expression, projectCapabilites));
+            Assert.ThrowsExactly<ArgumentException>(() => CapabilityExpressionEvaluator.Evaluate(expression, projectCapabilites));
         }
     }
 }

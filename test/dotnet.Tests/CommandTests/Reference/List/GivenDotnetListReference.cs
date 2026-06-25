@@ -7,6 +7,7 @@ using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.List.Reference.Tests
 {
+    [TestClass]
     public class GivenDotnetListReference : SdkTest
     {
         private Func<string, string> ListProjectReferenceCommandHelpText = (defaultVal) => $@"Description:
@@ -40,13 +41,13 @@ Commands:
         const string FrameworkNet451Arg = "-f net451";
         const string ConditionFrameworkNet451 = "== 'net451'";
 
-        public GivenDotnetListReference(ITestOutputHelper log) : base(log)
+        public GivenDotnetListReference()
         {
         }
 
-        [Theory]
-        [InlineData("--help")]
-        [InlineData("-h")]
+        [TestMethod]
+        [DataRow("--help")]
+        [DataRow("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
         {
             var cmd = new ListReferenceCommand(Log).Execute(helpArg);
@@ -54,9 +55,9 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(ListProjectReferenceCommandHelpText(Directory.GetCurrentDirectory()));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("unknownCommandName")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
         {
             var cmd = new DotnetCommand(Log)
@@ -65,7 +66,7 @@ Commands:
             cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
             var cmd = new DotnetCommand(Log, "list one two three reference".Split())
@@ -75,9 +76,9 @@ Commands:
 {string.Format(CliStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
-        [Theory]
-        [InlineData("idontexist.csproj")]
-        [InlineData("ihave?inv@lid/char\\acters")]
+        [TestMethod]
+        [DataRow("idontexist.csproj")]
+        [DataRow("ihave?inv@lid/char\\acters")]
         public void WhenNonExistingProjectIsPassedItPrintsError(string projName)
         {
             var setup = Setup(identifier: projName);
@@ -91,7 +92,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenBrokenProjectIsPassedItPrintsError()
         {
             string projName = "Broken/Broken.csproj";
@@ -120,7 +121,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenMoreThanOneProjectExistsInTheDirectoryItPrintsError()
         {
             var setup = Setup();
@@ -134,7 +135,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNoProjectsExistsInTheDirectoryItPrintsError()
         {
             var setup = Setup();
@@ -147,7 +148,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNoProjectReferencesArePresentInTheProjectItPrintsError()
         {
             var lib = NewLib(TestAssetsManager.CreateTestDirectory().Path);
@@ -159,7 +160,7 @@ Commands:
             cmd.StdOut.Should().Be(string.Format(CliStrings.NoReferencesFound, CliStrings.P2P, lib.CsProjPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsSingleReference()
         {
             string OutputText = CliStrings.ProjectReferenceOneOrMore;
@@ -180,7 +181,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsMultipleReferences()
         {
             string OutputText = CliStrings.ProjectReferenceOneOrMore;
@@ -208,7 +209,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsReferenceWithMSBuildPropertyInPath()
         {
             var testDir = TestAssetsManager.CreateTestDirectory().Path;

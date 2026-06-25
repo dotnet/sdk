@@ -260,6 +260,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     // Note: --logger "console;verbosity=detailed" and --blame-hang* have no direct MTP
                     // equivalent in the MSTest.Sdk default extension set; the Helix work-item timeout
                     // (XUnitWorkItemTimeout / HELIX_WORK_ITEM_TIMEOUT) still terminates runaway runs.
+                    // Carry over the same execution-directory / MSBuild SDK resolver environment
+                    // variables that the 'dotnet test' path sets via '-e'. They are required for
+                    // macOS workitem-directory execution (DOTNET_SDK_TEST_EXECUTION_DIRECTORY) and
+                    // Windows MSBuild resolver behavior (DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER).
+                    // MTP runs the host directly (no 'dotnet test -e'), so they have to be supplied
+                    // as shell environment-variable prefixes, honoring ExcludeAdditionalParameters
+                    // (testExecutionDirectory / msbuildAdditionalSdkResolverFolder are emptied above
+                    // when ExcludeAdditionalParameters is true).
                     string envPrefix;
                     if (IsPosixShell)
                     {
@@ -279,6 +287,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                     string trxArg = enableTrxReport ? "--report-trx " : "";
 
+                    // Sharding by class filter can produce work items whose tests are all skipped
+                    // (or a project may legitimately run zero tests on a given platform, e.g.
+                    // Windows-only Msi tests on Linux/macOS). MTP returns exit code 8 ("zero tests
+                    // ran") in that case, which fails the Helix work item even though nothing is
+                    // actually broken. Treat exit code 8 as success so these runs report green.
+                    // See https://github.com/dotnet/sdk/issues/54963.
+                    string ignoreZeroTestsArg = "--ignore-exit-code 8";
+
                     // .NET Framework apphosts (TargetPath is the '.exe') run directly; .NET (Core)
                     // assemblies (TargetPath is the '.dll') run via 'dotnet exec'.
                     string mtpLauncher = runtimeTargetFrameworkParsed.Framework == ".NETFramework"
@@ -286,7 +302,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                         : $"{driver} exec {assemblyName}";
 
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{envPrefix}{mtpLauncher} " +
-                              $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg}";
+                              $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg} {ignoreZeroTestsArg}";
                 }
                 else
                 {
