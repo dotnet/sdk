@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 public class TargetsTests
 {
     [TestMethod]
-    [DynamicData(nameof(ContainerAppCommands), DynamicDataSourceType.Method)]
+    [DynamicData(nameof(ContainerAppCommands))]
     public void CanDeferContainerAppCommand(
         string os,
         string prop,

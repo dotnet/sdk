@@ -292,7 +292,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
         Assert.AreEqual(1, manifestJsonCount);
         Assert.AreEqual(1, configJson);
-        Assert.IsTrue(layersCount > 0);
+        Assert.IsGreaterThan(0, layersCount);
     }
 
     private void CheckOciTarballStructure(string tarball)
@@ -331,7 +331,7 @@ public class EndToEndTests : SdkTest, IDisposable
 
         Assert.AreEqual(1, ociLayoutCount);
         Assert.AreEqual(1, indexJsonCount);
-        Assert.IsTrue(blobsCount > 0);
+        Assert.IsGreaterThan(0, blobsCount);
     }
 
     private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
@@ -652,7 +652,7 @@ public class EndToEndTests : SdkTest, IDisposable
             {
                 try
                 {
-                    var response = await client.GetAsync($"weatherforecast").ConfigureAwait(false);
+                    var response = await client.GetAsync($"weatherforecast", TestContext.CancellationToken).ConfigureAwait(false);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -662,7 +662,7 @@ public class EndToEndTests : SdkTest, IDisposable
                 }
                 catch { }
 
-                await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken).ConfigureAwait(false);
             }
             ContainerCli.LogsCommand(Log, appContainerId)
             .Execute()
@@ -676,7 +676,7 @@ public class EndToEndTests : SdkTest, IDisposable
         else if (projectType == "worker")
         {
             // the worker template needs a second to start up and emit the logs we are looking for
-            await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken).ConfigureAwait(false);
             ContainerCli.LogsCommand(Log, appContainerId)
                 .Execute()
                 .Should().Pass()
@@ -1494,7 +1494,7 @@ public class EndToEndTests : SdkTest, IDisposable
         Assert.IsTrue(taskLog.HasLoggedErrors);
         Assert.IsNotNull(errors);
         Assert.ContainsSingle(errors);
-        Assert.Contains("Unable to download image from the repository", errors[0]);
+        Assert.Contains("Unable to download image from the repository", errors[0]!);
 
         static string[] DecideEntrypoint(string rid, string appName, string workingDir)
         {

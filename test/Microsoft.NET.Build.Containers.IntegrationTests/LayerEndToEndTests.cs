@@ -114,7 +114,7 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
         Assert.IsTrue(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
         foreach (var entry in allEntries.Values)
         {
-            Assert.IsTrue(entry.Uid == userId, $"Expected UID {userId} for entry {entry.Name}, but got {entry.Uid}");
+            Assert.AreEqual(userId, entry.Uid, $"Expected UID {userId} for entry {entry.Name}, but got {entry.Uid}");
         }
     }
 
