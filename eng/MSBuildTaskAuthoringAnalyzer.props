@@ -1,0 +1,29 @@
+<!--
+  Applies the Microsoft.Build.TaskAuthoring.Analyzer (MSBuild thread-safe task analyzer) to projects
+  that contain MSBuild task implementations. A project opts in by setting:
+
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
+
+  This file is imported from the repo-root Directory.Build.targets so the opt-in property set in the
+  project body is visible.
+
+  Report-only onboarding: the analyzer emits MSBuildTask0001 at Error severity and MSBuildTask0002-0005 at
+  Warning severity by default. All five are downgraded to 'suggestion' in the root .editorconfig, which
+  keeps the build green (info-level diagnostics are never promoted by warn-as-error) without any
+  WarningsNotAsErrors exemptions here. Severity is re-raised incrementally per rule or per task directory
+  via .editorconfig as the multithreaded-task migration (IMultiThreadableTask / TaskEnvironment) proceeds.
+
+  The analyzer package comes from the dotnet-eng feed and is not available in source-only builds, so it
+  is excluded when DotNetBuildSourceOnly is set.
+-->
+<Project>
+
+  <PropertyGroup>
+    <_UseMSBuildTaskAuthoringAnalyzer Condition="'$(IsMSBuildTaskProject)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">true</_UseMSBuildTaskAuthoringAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_UseMSBuildTaskAuthoringAnalyzer)' == 'true'">
+    <PackageReference Include="Microsoft.Build.TaskAuthoring.Analyzer" PrivateAssets="all" IncludeAssets="analyzers" />
+  </ItemGroup>
+
+</Project>
