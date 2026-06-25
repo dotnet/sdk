@@ -13,6 +13,7 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Testing.Platform.Helpers;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
