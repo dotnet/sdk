@@ -7,7 +7,6 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenAGenerateRuntimeConfigMultiThreading
     {

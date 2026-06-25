@@ -5,7 +5,6 @@ using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenDotnetPackInvocation : SdkTest
     {
