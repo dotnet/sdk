@@ -9,6 +9,7 @@ using Microsoft.NET.TestFramework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[TestClass]
 public class StaticWebAssetEndpointToAssetFileDictionaryTest
 {
     // ToAssetFileDictionary keys are absolute filesystem paths (endpoint.AssetFile, typically
@@ -22,7 +23,8 @@ public class StaticWebAssetEndpointToAssetFileDictionaryTest
     // This test is Windows-only because OSPath.PathComparer is OrdinalIgnoreCase only on
     // Windows; on Linux/macOS it is StringComparer.Ordinal (matching the case-sensitive
     // filesystem), which is observationally identical to the default Dictionary comparer.
-    [PlatformSpecificFact(TestPlatforms.Windows)]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GroupsEndpoints_ByPath_CaseInsensitively_OnWindows()
     {
         var upperCased = MakeEndpointItem("C:\\Repo\\WWWRoot\\site.css", "/_content/lib/site.css");

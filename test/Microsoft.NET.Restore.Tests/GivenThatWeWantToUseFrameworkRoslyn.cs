@@ -146,11 +146,7 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "net6.0",
             };
 
-            // simulate mismatched MSBuild versions
-            project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
-
-            // avoid opt in to RoslynCompilerType=Core
-            string[] args = ["-p:DOTNET_HOST_PATH=", "-p:DOTNET_EXPERIMENTAL_HOST_PATH="];
+            project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "true");
 
             var testAsset = TestAssetsManager
                 .CreateTestProject(project);
@@ -161,7 +157,7 @@ namespace Microsoft.NET.Restore.Tests
 
             var command = (MSBuildCommand)new MSBuildCommand(testAsset, "Restore;Build")
                 .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir);
-            command.ExecuteWithoutRestore(args)
+            command.ExecuteWithoutRestore()
                 .Should().Pass().And.HaveStdOutContaining("NETSDK1221");
 
             // The package is downloaded, but the targets cannot find the path to it
@@ -186,9 +182,7 @@ namespace Microsoft.NET.Restore.Tests
                 WorkingDirectory = Path.Combine(testAsset.Path, "FxWpf")
             };
 
-            // simulate mismatched MSBuild versions via _IsDisjointMSBuildVersion
-            // avoid opt in to RoslynCompilerType=Core by unsetting DOTNET_HOST_PATH and DOTNET_EXPERIMENTAL_HOST_PATH
-            buildCommand.Execute("-p:_IsDisjointMSBuildVersion=true", "-p:DOTNET_HOST_PATH=", "-p:DOTNET_EXPERIMENTAL_HOST_PATH=")
+            buildCommand.Execute("-p:BuildWithNetFrameworkHostedCompiler=true")
                 .Should().Pass().And.NotHaveStdOutContaining("NETSDK1221");
 
             Assert.IsTrue(File.Exists(Path.Combine(testAsset.Path, "obj", "net472", "MainWindow.g.cs")));
