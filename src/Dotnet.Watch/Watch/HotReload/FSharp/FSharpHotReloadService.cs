@@ -2543,6 +2543,26 @@ internal sealed class FSharpHotReloadService
                         continue;
                     }
                 }
+
+                // Use the TransparentCompiler: it caches per-file typecheck results keyed by content
+                // hash and a parse-time dependency graph, so a per-edit re-check only re-typechecks the
+                // changed file's dependency cone instead of the whole project. For hot reload this
+                // roughly halves the per-edit FCS check and, crucially, bounds the cache growth that
+                // otherwise makes the check degrade steadily over an editing session.
+                if (string.Equals(parameter.Name, "useTransparentCompiler", StringComparison.Ordinal))
+                {
+                    if (parameter.ParameterType == typeof(bool) || parameter.ParameterType == typeof(bool?))
+                    {
+                        arguments[i] = true;
+                        continue;
+                    }
+
+                    if (IsFSharpOptionOfBoolean(parameter.ParameterType))
+                    {
+                        arguments[i] = CreateFSharpOptionSomeBoolean(parameter.ParameterType, value: true);
+                        continue;
+                    }
+                }
             }
 
             return arguments;
