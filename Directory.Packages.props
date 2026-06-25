@@ -23,8 +23,10 @@
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
     <!-- Roslyn analyzer that checks MSBuild task implementations for thread-unsafe API usage.
+         Produced by the msbuild repo and flowed in via eng/Version.Details.xml (dotnet/dotnet), so the
+         version stays coherent with the other Microsoft.Build packages and lifts correctly in source build.
          Applied to task-bearing projects via eng/MSBuildTaskAuthoringAnalyzer.props. -->
-    <PackageVersion Include="Microsoft.Build.TaskAuthoring.Analyzer" Version="18.9.0-preview-26310-106" />
+    <PackageVersion Include="Microsoft.Build.TaskAuthoring.Analyzer" Version="$(MicrosoftBuildTaskAuthoringAnalyzerPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryDotnetContribPackageVersion)" />

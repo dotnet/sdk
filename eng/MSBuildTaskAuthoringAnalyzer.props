@@ -13,13 +13,13 @@
   WarningsNotAsErrors exemptions here. Severity is re-raised incrementally per rule or per task directory
   via .editorconfig as the multithreaded-task migration (IMultiThreadableTask / TaskEnvironment) proceeds.
 
-  The analyzer package comes from the dotnet-eng feed and is not available in source-only builds, so it
-  is excluded when DotNetBuildSourceOnly is set.
+  The analyzer package is produced by the msbuild repo and flows to this repo via eng/Version.Details.xml
+  (dotnet/dotnet), so it is available in source build as well and does not need to be excluded there.
 -->
 <Project>
 
   <PropertyGroup>
-    <_UseMSBuildTaskAuthoringAnalyzer Condition="'$(IsMSBuildTaskProject)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">true</_UseMSBuildTaskAuthoringAnalyzer>
+    <_UseMSBuildTaskAuthoringAnalyzer Condition="'$(IsMSBuildTaskProject)' == 'true'">true</_UseMSBuildTaskAuthoringAnalyzer>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(_UseMSBuildTaskAuthoringAnalyzer)' == 'true'">
