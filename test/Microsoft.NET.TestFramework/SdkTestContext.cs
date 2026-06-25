@@ -203,7 +203,7 @@ namespace Microsoft.NET.TestFramework
         public void AddTestEnvironmentVariables(IDictionary<string, string?> environment)
         {
             //  Set NUGET_PACKAGES environment variable to match value from build.ps1
-            if(NuGetCachePath is not null)
+            if (NuGetCachePath is not null)
             {
                 environment["NUGET_PACKAGES"] = NuGetCachePath;
             }
