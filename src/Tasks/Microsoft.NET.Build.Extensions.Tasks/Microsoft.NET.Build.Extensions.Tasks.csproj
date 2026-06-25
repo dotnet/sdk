@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <PackageId>Microsoft.NET.Build.Extensions</PackageId>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools</OutDirName>
   </PropertyGroup>
 
