@@ -50,7 +50,6 @@
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
     <Compile Include="ManagedHost.cs" />
-    <Compile Include="Program.cs" />
   </ItemGroup>
 
   <ItemGroup>
