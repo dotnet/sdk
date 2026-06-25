@@ -3,7 +3,7 @@
 
   <Target Name="RunTests"
           Outputs="%(TestToRun.ResultsStdOutPath)"
-          Condition="'@(TestToRun)' != ''">
+          Condition="'@(TestToRun)' != '' and '$(CustomHelixTargetQueue)' == ''">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
 
     <PropertyGroup Condition="'$(UseMicrosoftTestingPlatformRunner)' == 'true'">
