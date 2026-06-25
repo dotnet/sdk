@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -288,7 +288,7 @@ internal sealed class TestApplicationHandler
                 testResult.Reason,
                 ToOutcome(testResult.State),
                 testResult.Duration.HasValue ? TimeSpan.FromTicks(testResult.Duration.Value) : null,
-                exceptions: [.. (testResult.Exceptions ?? []).Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
+                exceptions: [.. (testResult.Exceptions ?? []).Select(fe => new FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
                 expected: null,
                 actual: null,
                 standardOutput: testResult.StandardOutput,
