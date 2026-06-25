@@ -8,7 +8,6 @@ using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class EndToEndToolTests : SdkTest
     {
