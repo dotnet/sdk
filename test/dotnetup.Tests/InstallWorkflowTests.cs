@@ -143,4 +143,41 @@ public class InstallWorkflowTests : IDisposable
     }
 
     #endregion
+
+    #region global.json lookup
+
+    [Fact]
+    public void GetGlobalJsonInfoForInstall_IgnoresMalformedGlobalJson_WhenExplicitPathAndChannelAreProvided()
+    {
+        using var testEnv = new TestEnvironment(configureEnvironment: false);
+        File.WriteAllText(Path.Combine(testEnv.TempRoot, "global.json"), "{ malformed");
+
+        var result = InstallWorkflow.GetGlobalJsonInfoForInstall(
+            [new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")],
+            installPath: testEnv.InstallPath,
+            updateGlobalJson: false,
+            initialDirectory: testEnv.TempRoot);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetGlobalJsonInfoForInstall_ReturnsPathOnly_WhenMalformedGlobalJsonMayProvideChannel()
+    {
+        using var testEnv = new TestEnvironment(configureEnvironment: false);
+        string globalJsonPath = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJsonPath, "{ malformed");
+
+        var result = InstallWorkflow.GetGlobalJsonInfoForInstall(
+            [new MinimalInstallSpec(InstallComponent.SDK, null)],
+            installPath: testEnv.InstallPath,
+            updateGlobalJson: false,
+            initialDirectory: testEnv.TempRoot);
+
+        result.Should().NotBeNull();
+        result!.GlobalJsonPath.Should().Be(globalJsonPath);
+        result.GlobalJsonContents.Should().BeNull();
+    }
+
+    #endregion
 }

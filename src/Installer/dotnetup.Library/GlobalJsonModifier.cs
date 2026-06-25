@@ -15,9 +15,12 @@ public static class GlobalJsonModifier
 {
     /// <summary>
     /// Searches for a global.json file starting from <paramref name="initialDirectory"/>
-    /// and walking up the directory tree. Returns the parsed contents and path if found.
+    /// and walking up the directory tree. Returns the path and, when requested,
+    /// the parsed contents.
     /// </summary>
-    public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
+    public static GlobalJsonInfo GetGlobalJsonInfo(
+        string initialDirectory,
+        bool parseContents = true)
     {
         string? directory = initialDirectory;
         while (!string.IsNullOrEmpty(directory))
@@ -25,10 +28,15 @@ public static class GlobalJsonModifier
             string globalJsonPath = Path.Combine(directory, "global.json");
             if (File.Exists(globalJsonPath))
             {
-                using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
-                var contents = JsonSerializer.Deserialize(
-                    stream,
-                    GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                GlobalJsonContents? contents = null;
+                if (parseContents)
+                {
+                    using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
+                    contents = JsonSerializer.Deserialize(
+                        stream,
+                        GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                }
+
                 return new GlobalJsonInfo
                 {
                     GlobalJsonPath = globalJsonPath,
