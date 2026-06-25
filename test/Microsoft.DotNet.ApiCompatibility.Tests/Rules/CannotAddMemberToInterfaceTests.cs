@@ -7,11 +7,12 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class CannotAddMemberToInterfaceTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotAddMemberToInterface(settings, context));
 
-        [Fact]
+        [TestMethod]
         public void AddedMembersAreReported()
         {
             string leftSyntax = @"
@@ -52,11 +53,11 @@ namespace CompatTests
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddMemberToInterface, string.Empty, DifferenceType.Added, "P:CompatTests.IFoo.MyPropertyWithoutDefaultImplementation"),
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddMemberToInterface, string.Empty, DifferenceType.Added, "E:CompatTests.IFoo.MyEventWithoutImplementation"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Theory]
-        [MemberData(nameof(NoDifferencesShouldBeReportedData))]
+        [TestMethod]
+        [DynamicData(nameof(NoDifferencesShouldBeReportedData))]
         public void NoDifferencesShouldBeReported(string leftSyntax, string rightSyntax)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -65,10 +66,10 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void StrictModeRuleShouldNotRun()
         {
             string leftSyntax = @"
@@ -106,11 +107,11 @@ namespace CompatTests
 
             foreach (CompatDifference difference in differences)
             {
-                Assert.NotEqual(DiagnosticIds.CannotAddMemberToInterface, difference.DiagnosticId);
+                Assert.AreNotEqual(DiagnosticIds.CannotAddMemberToInterface, difference.DiagnosticId);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleRightsAreReported()
         {
             string leftSyntax = @"
@@ -192,7 +193,7 @@ namespace CompatTests
                 new CompatDifference(left.MetadataInformation, right[2].MetadataInformation, DiagnosticIds.CannotAddMemberToInterface, string.Empty, DifferenceType.Added, "M:CompatTests.IFoo.MyOtherMethod"),
             };
 
-            Assert.Equal(expectedDiffs, differences);
+            Assert.AreSequenceEqual(expectedDiffs, differences);
         }
 
         public static IEnumerable<object[]> NoDifferencesShouldBeReportedData()

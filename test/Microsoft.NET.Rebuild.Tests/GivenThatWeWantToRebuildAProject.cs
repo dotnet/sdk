@@ -6,13 +6,10 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Rebuild.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToRebuildAHelloWorldProject : SdkTest
     {
-        public GivenThatWeWantToRebuildAHelloWorldProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_rebuilds_with_logging_assets_message()
         {
             var testAsset = TestAssetsManager

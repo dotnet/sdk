@@ -1,13 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class VanillaWasmTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
+    [TestClass]
+    public class VanillaWasmTests : BlazorWasmBaselineTests
     {
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";

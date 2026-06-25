@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.TestFramework.Utilities;
 using static Microsoft.DotNet.Cli.Utils.ExponentialRetry;
 
 namespace Microsoft.NET.TestFramework.Commands
@@ -10,6 +11,7 @@ namespace Microsoft.NET.TestFramework.Commands
     public abstract class TestCommand
     {
         private readonly Dictionary<string, string> _environment = [];
+        private readonly HashSet<int> _retryOnExitCodes = [];
         private bool _doNotEscapeArguments;
         public ITestOutputHelper Log { get; }
         public string? WorkingDirectory { get; set; }
@@ -17,6 +19,14 @@ namespace Microsoft.NET.TestFramework.Commands
         public List<string> EnvironmentToRemove { get; } = [];
         public bool RedirectStandardInput { get; set; }
         public bool DisableOutputAndErrorRedirection { get; set; }
+
+        /// <summary>
+        /// When true, streams all stdout/stderr lines to test output in real-time,
+        /// regardless of exit code. Useful for tests that need to diagnose output
+        /// from commands that succeed but produce unexpected results.
+        /// Can also be enabled globally via the DOTNET_SDK_TEST_VERBOSE=1 environment variable.
+        /// </summary>
+        public bool VerboseOutput { get; set; }
 
         /// <summary>
         /// When true, the child process is launched in a new process group so that
@@ -85,6 +95,16 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public TestCommand WithCulture(string locale) => WithEnvironmentVariable(UILanguageOverride.DOTNET_CLI_UI_LANGUAGE, locale);
 
+        /// <summary>
+        /// Configures the command to retry when the specified exit code is returned (only when executing via Execute()/Execute(params string[])).
+        /// Useful for transient errors like file locks from background processes.
+        /// </summary>
+        public TestCommand WithRetryOnExitCode(int exitCode)
+        {
+            _retryOnExitCodes.Add(exitCode);
+            return this;
+        }
+
         public TestCommand WithTraceOutput()
         {
             WithEnvironmentVariable("DOTNET_CLI_VSTEST_TRACE", "1");
@@ -135,21 +155,27 @@ namespace Microsoft.NET.TestFramework.Commands
             IEnumerable<string> enumerableArgs = args;
             return ExecuteWithRetry(
                     action: () => Execute(enumerableArgs),
-                    shouldStopRetry: SuccessOrNotTransientRestoreError,
+                    shouldStopRetry: ShouldStopRetry,
                     maxRetryCount: 3,
                     timer: () => Timer(Intervals),
-                    taskDescription: "Run command while retry transient restore error")
+                    taskDescription: "Run command while retrying transient errors")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        private static bool SuccessOrNotTransientRestoreError(CommandResult result)
+        private bool ShouldStopRetry(CommandResult result)
         {
             if (result.ExitCode == 0)
             {
                 return true;
             }
 
-            return !NuGetTransientErrorDetector.IsTransientError(result.StdOut);
+            if (_retryOnExitCodes.Contains(result.ExitCode))
+            {
+                return false;
+            }
+
+            return !NuGetTransientErrorDetector.IsTransientError(result.StdOut)
+                && !TransientSdkResolutionErrorDetector.IsTransientError(result.StdOut);
         }
 
         public virtual CommandResult Execute(IEnumerable<string> args)
@@ -159,20 +185,37 @@ namespace Microsoft.NET.TestFramework.Commands
             var command = spec
                 .ToCommand(_doNotEscapeArguments);
 
+            bool verboseTestOutput = VerboseOutput || string.Equals(
+                Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_VERBOSE"),
+                "1",
+                StringComparison.Ordinal);
+
             if (!spec.DisableOutputAndErrorRedirection)
             {
                 command
                     .CaptureStdOut()
-                    .CaptureStdErr()
-                    .OnOutputLine(line =>
-                     {
-                         Log.WriteLine($"》{line}");
-                         CommandOutputHandler?.Invoke(line);
-                     })
-                    .OnErrorLine(line =>
-                    {
-                        Log.WriteLine($"❌{line}");
-                    });
+                    .CaptureStdErr();
+
+                if (verboseTestOutput)
+                {
+                    // Stream output in real-time for verbose mode.
+                    command
+                        .OnOutputLine(line =>
+                        {
+                            Log.WriteLine($"》{line}");
+                            CommandOutputHandler?.Invoke(line);
+                        })
+                        .OnErrorLine(line =>
+                        {
+                            Log.WriteLine($"❌{line}");
+                        });
+                }
+                else if (CommandOutputHandler is not null)
+                {
+                    // Still invoke the handler for tests that process output,
+                    // but don't log to test output.
+                    command.OnOutputLine(line => CommandOutputHandler.Invoke(line));
+                }
 
                 if (StandardOutputEncoding is not null)
                 {
@@ -188,6 +231,36 @@ namespace Microsoft.NET.TestFramework.Commands
             Log.WriteLine($"Executing '{display}':");
             var result = command.Execute(ProcessStartedHandler);
             Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+
+            // On failure, dump the already-captured output so the cause is visible in test logs.
+            // Uses result.StdOut/StdErr (captured by CaptureStdOut/CaptureStdErr) to avoid
+            // buffering output a second time in memory.
+            if (!verboseTestOutput && result.ExitCode != 0)
+            {
+                if (!string.IsNullOrEmpty(result.StdOut))
+                {
+                    foreach (var line in result.StdOut.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+                    {
+                        Log.WriteLine($"》{line}");
+                    }
+                }
+                if (!string.IsNullOrEmpty(result.StdErr))
+                {
+                    foreach (var line in result.StdErr.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+                    {
+                        Log.WriteLine($"❌{line}");
+                    }
+                }
+            }
+            else if (!verboseTestOutput)
+            {
+                int stdOutLines = string.IsNullOrEmpty(result.StdOut) ? 0 : result.StdOut.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Length;
+                int stdErrLines = string.IsNullOrEmpty(result.StdErr) ? 0 : result.StdErr.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Length;
+                if (stdOutLines + stdErrLines > 0)
+                {
+                    Log.WriteLine($"  ({stdOutLines} stdout + {stdErrLines} stderr lines suppressed — set DOTNET_SDK_TEST_VERBOSE=1 or command.VerboseOutput=true for full output)");
+                }
+            }
 
             if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {
@@ -208,7 +281,9 @@ namespace Microsoft.NET.TestFramework.Commands
                     var destName = string.IsNullOrEmpty(prefix)
                         ? Path.GetFileName(binlogFile)
                         : $"{prefix}-{Path.GetFileName(binlogFile)}";
-                    File.Copy(binlogFile, Path.Combine(uploadRoot, destName), true);
+                    var destPath = Path.Combine(uploadRoot, destName);
+                    // Binlog upload is diagnostic-only; copy failures will not fail the test.
+                    FileUtility.TryCopyFile(binlogFile, destPath, Log);
                 }
             }
 

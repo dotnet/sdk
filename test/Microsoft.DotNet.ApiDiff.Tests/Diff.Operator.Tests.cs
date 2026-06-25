@@ -4,9 +4,10 @@
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
 // Since operators are also methods, this class tests more basic things than the methods class.
+[TestClass]
 public class DiffOperatorTests : DiffBaseTests
 {
-    [Fact]
+    [TestMethod]
     public Task EqualityOperators() =>
         // The equality and inequality operators require also adding Equals and GetHashCode overrides
         RunTestAsync(
@@ -44,7 +45,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task AdditionOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -73,7 +74,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task SubtractionOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -102,7 +103,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task MultiplicationOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -131,7 +132,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task DivisionOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -161,7 +162,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task ModulusOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -190,7 +191,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task LessAndGreaterThanOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -223,7 +224,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task LessAndGreaterThanOrEqualOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -256,7 +257,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task IncrementOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -285,7 +286,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task DecrementOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -314,7 +315,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task LogicalNotOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -343,7 +344,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task BitwiseNotOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -372,7 +373,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task BitwiseAndOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -401,7 +402,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task BitwiseOrOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -431,7 +432,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task BitwiseXorOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -460,7 +461,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task LeftShiftOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -489,7 +490,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task RightShiftOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -518,7 +519,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task ImplicitOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -547,7 +548,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task ExplicitOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -576,7 +577,7 @@ public class DiffOperatorTests : DiffBaseTests
                   }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task ExplicitCheckedOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -609,7 +610,7 @@ public class DiffOperatorTests : DiffBaseTests
 
     #region Exclusions
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeAddedOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -631,7 +632,7 @@ public class DiffOperatorTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeModifiedOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -654,7 +655,7 @@ public class DiffOperatorTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32", "M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Byte"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeRemovedOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -676,7 +677,7 @@ public class DiffOperatorTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeUnmodifiedOperator() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace

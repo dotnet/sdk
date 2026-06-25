@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -9,8 +9,16 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
   </PropertyGroup>
 
+  <!-- These integration tests share on-disk test asset directories and NuGet caches across
+       test methods (for example via the BuildFrameworkAssetsConsumer helper), so they must run
+       sequentially. Under xUnit this was enforced by
+       [assembly: CollectionBehavior(DisableTestParallelization = true)]. Override the repo-wide
+       MethodLevel default (test/Directory.Build.props) so MSTest.Sdk emits [assembly: DoNotParallelize]. -->
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <PackageId>testSdkStaticWebAssets</PackageId>
   </PropertyGroup>
 
@@ -34,6 +42,10 @@
       <_Parameter1>DefaultTestBaselinePackageVersion</_Parameter1>
       <_Parameter2>5.0</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MicrosoftTypeScriptMSBuildPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftTypeScriptMSBuildPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +56,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\StaticWebAssetsSdk\Tasks\Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

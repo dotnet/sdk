@@ -170,6 +170,19 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             string driver = $"{PathToDotnet}";
 
+            // True when the test project is a Microsoft.Testing.Platform (MTP) project that
+            // must be invoked via 'dotnet exec <dll>' with MTP-native CLI rather than the
+            // VSTest-style 'dotnet test <dll>' command.
+            xunitProject.TryGetMetadata("IsMTPProject", out string isMTPProjectMetadata);
+            bool isMTPProject = string.Equals(isMTPProjectMetadata, "true", StringComparison.OrdinalIgnoreCase);
+
+            // True when the Microsoft.Testing.Extensions.TrxReport extension is loaded on the
+            // project. MSTest.Sdk enables it by default; xUnit v3 MTP projects do not bundle
+            // it unless added explicitly. Passing '--report-trx' to an MTP host without the
+            // extension fails with an 'unknown argument' error, so only emit it when known safe.
+            xunitProject.TryGetMetadata("EnableTrxReport", out string enableTrxReportMetadata);
+            bool enableTrxReport = string.Equals(enableTrxReportMetadata, "true", StringComparison.OrdinalIgnoreCase);
+
             // netfx tests should only run on Windows full framework for testing VS scenarios
             // These tests have to be executed slightly differently and we give them a different Identity so ADO can tell them apart
             var runtimeTargetFrameworkParsed = NuGetFramework.Parse(runtimeTargetFramework);
@@ -227,8 +240,70 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 // On macOS, ad-hoc sign the test exe with get-task-allow entitlement so createdump can attach via task_for_pid for crash dumps.
                 string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && " : "";
 
-                string command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";
+                string command;
+                if (isMTPProject)
+                {
+                    // Microsoft.Testing.Platform (MTP) projects (MSTest.Sdk-based) ship as a
+                    // self-contained executable with no testhost.dll, so 'dotnet test <dll>' fails.
+                    // .NET (Core) targets are invoked via 'dotnet exec <dll>'; .NET Framework targets
+                    // are native Windows executables with no runtimeconfig.json, so 'dotnet exec' fails
+                    // (the host treats them as self-contained .NET Core apps and cannot find
+                    // hostpolicy.dll) -- those must be launched as the '.exe' directly.
+                    // Either way we use the MTP-native CLI:
+                    //   --filter                replaces VSTest --filter (same MSTest filter syntax)
+                    //   --results-directory     same as VSTest
+                    //   --report-trx            replaces '--logger trx' -- only emitted when the
+                    //                           Microsoft.Testing.Extensions.TrxReport extension is
+                    //                           loaded (always true for MSTest.Sdk default profile;
+                    //                           not bundled with xUnit v3 MTP)
+                    //   --diagnostic            replaces VSTest '-d <log>'
+                    // Note: --logger "console;verbosity=detailed" and --blame-hang* have no direct MTP
+                    // equivalent in the MSTest.Sdk default extension set; the Helix work-item timeout
+                    // (XUnitWorkItemTimeout / HELIX_WORK_ITEM_TIMEOUT) still terminates runaway runs.
+                    // Carry over the same execution-directory / MSBuild SDK resolver environment
+                    // variables that the 'dotnet test' path sets via '-e'. They are required for
+                    // macOS workitem-directory execution (DOTNET_SDK_TEST_EXECUTION_DIRECTORY) and
+                    // Windows MSBuild resolver behavior (DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER).
+                    // MTP runs the host directly (no 'dotnet test -e'), so they have to be supplied
+                    // as shell environment-variable prefixes, honoring ExcludeAdditionalParameters
+                    // (testExecutionDirectory / msbuildAdditionalSdkResolverFolder are emptied above
+                    // when ExcludeAdditionalParameters is true).
+                    string envPrefix;
+                    if (IsPosixShell)
+                    {
+                        string testExecutionDirectoryEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory ";
+                        envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectoryEnv}";
+                    }
+                    else
+                    {
+                        string testExecutionDirectoryEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ";
+                        string msbuildAdditionalSdkResolverFolderEnv = string.IsNullOrEmpty(msbuildAdditionalSdkResolverFolder) ? "" : "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ";
+                        envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& {testExecutionDirectoryEnv}{msbuildAdditionalSdkResolverFolderEnv}";
+                    }
+
+                    string diagArg = IsPosixShell
+                        ? "--diagnostic --diagnostic-output-directory $HELIX_WORKITEM_UPLOAD_ROOT"
+                        : "--diagnostic --diagnostic-output-directory %HELIX_WORKITEM_UPLOAD_ROOT%";
+
+                    string trxArg = enableTrxReport ? "--report-trx " : "";
+
+                    // .NET Framework apphosts (TargetPath is the '.exe') run directly; .NET (Core)
+                    // assemblies (TargetPath is the '.dll') run via 'dotnet exec'.
+                    string mtpLauncher = runtimeTargetFrameworkParsed.Framework == ".NETFramework"
+                        ? assemblyName
+                        : $"{driver} exec {assemblyName}";
+
+                    command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{envPrefix}{mtpLauncher} " +
+                              $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg}";
+                }
+                else
+                {
+                    // blame-hang-timeout is set to a % of the Helix work item timeout so that blame can
+                    // collect hang dumps and write the TRX file before Helix hard-kills the process.
+                    var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
+                    command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {arguments}";
+                }
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
