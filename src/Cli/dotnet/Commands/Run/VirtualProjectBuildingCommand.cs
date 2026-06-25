@@ -153,7 +153,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         .AsReadOnly());
 
-        Builder = new VirtualProjectBuilder(BuildHost.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
+        Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
     public override int Execute()

@@ -42,7 +42,7 @@ sealed class VirtualProjectBuilder
     /// </summary>
     private static readonly ConditionalWeakTable<IProjectCollection, Dictionary<string, IProjectRootElement>> s_projectRootsByProjectCollection = new();
 
-    private readonly IBuildHost _buildHost;
+    private readonly IBuildService _buildService;
 
     private readonly string _targetFramework;
 
@@ -71,7 +71,7 @@ sealed class VirtualProjectBuilder
     internal string[]? RequestedTargets { get; }
 
     internal VirtualProjectBuilder(
-        IBuildHost buildHost,
+        IBuildService buildService,
         string entryPointFileFullPath,
         string targetFramework,
         string[]? requestedTargets = null,
@@ -80,7 +80,7 @@ sealed class VirtualProjectBuilder
     {
         Debug.Assert(ExternalHelpers.IsPathFullyQualified(entryPointFileFullPath));
 
-        _buildHost = buildHost;
+        _buildService = buildService;
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
@@ -280,13 +280,13 @@ sealed class VirtualProjectBuilder
     }
 
     public static IProjectInstance CreateProjectInstance(
-        IBuildHost buildHost,
+        IBuildService buildService,
         string entryPointFilePath,
         string targetFramework,
         IProjectCollection projectCollection,
         Action<string, int, string> errorReporter)
     {
-        var builder = new VirtualProjectBuilder(buildHost, entryPointFilePath, targetFramework);
+        var builder = new VirtualProjectBuilder(buildService, entryPointFilePath, targetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,
@@ -495,7 +495,7 @@ sealed class VirtualProjectBuilder
                 addGlobalProperties(globalProperties);
             }
 
-            var project = _buildHost.CreateProjectInstanceFromProjectRootElement(projectRoot, projectCollection, globalProperties);
+            var project = _buildService.CreateProjectInstanceFromProjectRootElement(projectRoot, projectCollection, globalProperties);
 
             lastProject = (projectFileText, project, projectRoot);
 
@@ -505,7 +505,7 @@ sealed class VirtualProjectBuilder
             {
                 using var reader = new StringReader(projectFileText);
                 using var xmlReader = XmlReader.Create(reader);
-                var projectRoot = _buildHost.CreateProjectRootElement(xmlReader, projectCollection);
+                var projectRoot = _buildService.CreateProjectRootElement(xmlReader, projectCollection);
                 projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
                 return projectRoot;
             }
@@ -560,7 +560,7 @@ sealed class VirtualProjectBuilder
                 continue;
             }
 
-            var refBuilder = new VirtualProjectBuilder(_buildHost, resolvedPath, _targetFramework);
+            var refBuilder = new VirtualProjectBuilder(_buildService, resolvedPath, _targetFramework);
             refBuilder.CreateProjectInstance(
                 projectCollection,
                 reportError,

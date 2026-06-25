@@ -65,7 +65,7 @@ internal abstract class RunApiInput
         public override RunApiOutput Execute()
         {
             var builder = new VirtualProjectBuilder(
-                BuildHost.Instance,
+                BuildService.Instance,
                 entryPointFileFullPath: EntryPointFileFullPath,
                 targetFramework: VirtualProjectBuildingCommand.TargetFramework,
                 artifactsPath: ArtifactsPath);

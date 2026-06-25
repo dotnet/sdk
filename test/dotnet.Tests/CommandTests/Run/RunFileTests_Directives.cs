@@ -1559,7 +1559,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """;
 
         var builder = new VirtualProjectBuilder(
-            BuildHost.Instance,
+            BuildService.Instance,
             entryPointFileFullPath: programPath,
             targetFramework: VirtualProjectBuildingCommand.TargetFramework,
             sourceText: SourceText.From(code, Encoding.UTF8));

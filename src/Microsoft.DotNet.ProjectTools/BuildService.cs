@@ -6,11 +6,11 @@ using System.Xml;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
-public sealed class BuildHost : IBuildHost
+public sealed class BuildService : IBuildService
 {
-    public static BuildHost Instance { get; } = new();
+    public static BuildService Instance { get; } = new();
 
-    private BuildHost() { }
+    private BuildService() { }
 
     public IProjectInstance CreateProjectInstanceFromProjectRootElement(
         IProjectRootElement projectRoot,
@@ -26,7 +26,7 @@ public sealed class BuildHost : IBuildHost
     }
 }
 
-public static class BuildHostExtensions
+public static class BuildServiceExtensions
 {
     private static readonly ConditionalWeakTable<Microsoft.Build.Evaluation.ProjectCollection, IProjectCollection> s_projectCollections = new();
 

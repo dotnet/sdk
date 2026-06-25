@@ -48,7 +48,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection().Wrap();
 
-        var builder = new VirtualProjectBuilder(BuildHost.Instance, file, VirtualProjectBuildingCommand.TargetFramework);
+        var builder = new VirtualProjectBuilder(BuildService.Instance, file, VirtualProjectBuildingCommand.TargetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,
@@ -121,7 +121,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
             else
             {
-                fileBuilder = new VirtualProjectBuilder(BuildHost.Instance, sourceFile, VirtualProjectBuildingCommand.TargetFramework);
+                fileBuilder = new VirtualProjectBuilder(BuildService.Instance, sourceFile, VirtualProjectBuildingCommand.TargetFramework);
 
                 fileBuilder.CreateProjectInstance(
                     projectCollection,
@@ -327,7 +327,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 }
 
                 // Recursively validate transitive refs.
-                var refBuilder = new VirtualProjectBuilder(BuildHost.Instance, refPath, VirtualProjectBuildingCommand.TargetFramework);
+                var refBuilder = new VirtualProjectBuilder(BuildService.Instance, refPath, VirtualProjectBuildingCommand.TargetFramework);
                 refBuilder.CreateProjectInstance(
                     projectCollection,
                     VirtualProjectBuildingCommand.ThrowingReporter,

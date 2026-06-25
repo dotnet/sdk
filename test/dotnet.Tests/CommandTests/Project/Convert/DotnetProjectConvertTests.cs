@@ -3033,7 +3033,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         out ImmutableArray<SimpleDiagnostic>.Builder? actualDiagnostics)
     {
         var builder = new VirtualProjectBuilder(
-            BuildHost.Instance,
+            BuildService.Instance,
             entryPointFileFullPath: filePath,
             targetFramework: VirtualProjectBuildingCommand.TargetFramework,
             sourceText: SourceText.From(inputCSharp, Encoding.UTF8));

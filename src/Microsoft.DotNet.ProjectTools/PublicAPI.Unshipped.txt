@@ -1,19 +1,19 @@
 #nullable enable
-Microsoft.DotNet.FileBasedPrograms.BuildHost
-Microsoft.DotNet.FileBasedPrograms.BuildHost.CreateProjectInstanceFromProjectRootElement(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>! globalProperties) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
-Microsoft.DotNet.FileBasedPrograms.BuildHost.CreateProjectRootElement(System.Xml.XmlReader! xmlReader, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection) -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.extension(Microsoft.Build.Evaluation.ProjectCollection!)
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.extension(Microsoft.Build.Evaluation.ProjectCollection!).Wrap() -> Microsoft.DotNet.FileBasedPrograms.IProjectCollection!
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.extension(Microsoft.Build.Execution.ProjectInstance!)
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.extension(Microsoft.Build.Execution.ProjectInstance!).Wrap() -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectInstance!)
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectInstance!).Unwrap() -> Microsoft.Build.Execution.ProjectInstance!
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!)
-Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!).Unwrap() -> Microsoft.Build.Construction.ProjectRootElement!
-Microsoft.DotNet.FileBasedPrograms.IBuildHost
-Microsoft.DotNet.FileBasedPrograms.IBuildHost.CreateProjectInstanceFromProjectRootElement(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>! globalProperties) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
-Microsoft.DotNet.FileBasedPrograms.IBuildHost.CreateProjectRootElement(System.Xml.XmlReader! xmlReader, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection) -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
+Microsoft.DotNet.FileBasedPrograms.BuildService
+Microsoft.DotNet.FileBasedPrograms.BuildService.CreateProjectInstanceFromProjectRootElement(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>! globalProperties) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+Microsoft.DotNet.FileBasedPrograms.BuildService.CreateProjectRootElement(System.Xml.XmlReader! xmlReader, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection) -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.Build.Evaluation.ProjectCollection!)
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.Build.Evaluation.ProjectCollection!).Wrap() -> Microsoft.DotNet.FileBasedPrograms.IProjectCollection!
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.Build.Execution.ProjectInstance!)
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.Build.Execution.ProjectInstance!).Wrap() -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectInstance!)
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectInstance!).Unwrap() -> Microsoft.Build.Execution.ProjectInstance!
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!)
+Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!).Unwrap() -> Microsoft.Build.Construction.ProjectRootElement!
+Microsoft.DotNet.FileBasedPrograms.IBuildService
+Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectInstanceFromProjectRootElement(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>! globalProperties) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectRootElement(System.Xml.XmlReader! xmlReader, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection) -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
 Microsoft.DotNet.FileBasedPrograms.IProjectCollection
 Microsoft.DotNet.FileBasedPrograms.IProjectCollection.GlobalProperties.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.DotNet.FileBasedPrograms.IProjectInstance
@@ -29,12 +29,12 @@ Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.set -> void
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.GetRawXml() -> string!
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder
 Microsoft.DotNet.ProjectTools.LaunchSettings
-static Microsoft.DotNet.FileBasedPrograms.BuildHost.Instance.get -> Microsoft.DotNet.FileBasedPrograms.BuildHost!
-static Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.Unwrap(this Microsoft.DotNet.FileBasedPrograms.IProjectInstance! projectInstance) -> Microsoft.Build.Execution.ProjectInstance!
-static Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.Unwrap(this Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRootElement) -> Microsoft.Build.Construction.ProjectRootElement!
-static Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.Wrap(this Microsoft.Build.Evaluation.ProjectCollection! projectCollection) -> Microsoft.DotNet.FileBasedPrograms.IProjectCollection!
-static Microsoft.DotNet.FileBasedPrograms.BuildHostExtensions.Wrap(this Microsoft.Build.Execution.ProjectInstance! projectInstance) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
-static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstance(Microsoft.DotNet.FileBasedPrograms.IBuildHost! buildHost, string! entryPointFilePath, string! targetFramework, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Action<string!, int, string!>! errorReporter) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+static Microsoft.DotNet.FileBasedPrograms.BuildService.Instance.get -> Microsoft.DotNet.FileBasedPrograms.BuildService!
+static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Unwrap(this Microsoft.DotNet.FileBasedPrograms.IProjectInstance! projectInstance) -> Microsoft.Build.Execution.ProjectInstance!
+static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Unwrap(this Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRootElement) -> Microsoft.Build.Construction.ProjectRootElement!
+static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Wrap(this Microsoft.Build.Evaluation.ProjectCollection! projectCollection) -> Microsoft.DotNet.FileBasedPrograms.IProjectCollection!
+static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Wrap(this Microsoft.Build.Execution.ProjectInstance! projectInstance) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstance(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFilePath, string! targetFramework, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Action<string!, int, string!>! errorReporter) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetPropertyFromSourceFile(string! sourceFilePath, string! propertyName) -> string?
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetVirtualProjectPath(string! entryPointFilePath) -> string!
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.IsValidEntryPointPath(string! entryPointFilePath) -> bool
