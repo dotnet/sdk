@@ -7,9 +7,9 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <!-- This project's tests rely on global process state, so disable parallelization
-         (the repo default is MethodLevel). [assembly: DoNotParallelize] enforces serial execution. -->
-    <MSTestParallelizeScope></MSTestParallelizeScope>
+    <!-- This project's tests rely on global process state, so disable parallelization.
+         None makes MSTest.Sdk emit [assembly: DoNotParallelize], enforcing serial execution. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <!-- For product build, the .NET Framework TFM only builds in the second build pass as it depends on assets from other
          verticals that are built in the first build pass.
          Disabling this project as references are not building in this case. -->
