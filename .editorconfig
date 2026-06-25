@@ -298,11 +298,11 @@ dotnet_diagnostic.IDE0240.severity = warning
 #
 # NOTE: src/StaticWebAssetsSdk/.editorconfig sets `root = true`, so it does not inherit these lines and
 # carries its own copy of this block. Keep the two in sync.
-dotnet_diagnostic.MSBuildTask0001.severity = silent
-dotnet_diagnostic.MSBuildTask0002.severity = silent
-dotnet_diagnostic.MSBuildTask0003.severity = silent
-dotnet_diagnostic.MSBuildTask0004.severity = silent
-dotnet_diagnostic.MSBuildTask0005.severity = silent
+dotnet_diagnostic.MSBuildTask0001.severity = suggestion
+dotnet_diagnostic.MSBuildTask0002.severity = suggestion
+dotnet_diagnostic.MSBuildTask0003.severity = suggestion
+dotnet_diagnostic.MSBuildTask0004.severity = suggestion
+dotnet_diagnostic.MSBuildTask0005.severity = suggestion
 
 # Additional rules for template engine source code
 
