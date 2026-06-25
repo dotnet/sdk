@@ -6,7 +6,6 @@ using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenDotnetTestInvocation : SdkTest
     {

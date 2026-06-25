@@ -6,8 +6,8 @@
     <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
     <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <!-- Tests modify process-global state; run serially ([assembly: DoNotParallelize]). -->
-    <MSTestParallelizeScope></MSTestParallelizeScope>
+    <!-- Tests modify process-global state; run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
 
     <!-- Strong naming deprecated on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>

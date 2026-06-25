@@ -7,20 +7,28 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class ReplacementTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class ReplacementTests : TestBase
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public ReplacementTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        public ReplacementTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        [Fact(DisplayName = nameof(VerifyReplacement))]
+        [TestMethod]
         public void VerifyReplacement()
         {
             string value = @"test value test";
@@ -39,7 +47,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(VerifyNoReplacement))]
+        [TestMethod]
         public void VerifyNoReplacement()
         {
             string value = @"test value test";
@@ -58,7 +66,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(VerifyTornReplacement))]
+        [TestMethod]
         public void VerifyTornReplacement()
         {
             string value = @"test value test";
@@ -77,7 +85,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(VerifyTinyPageReplacement))]
+        [TestMethod]
         public void VerifyTinyPageReplacement()
         {
             string value = @"test value test";

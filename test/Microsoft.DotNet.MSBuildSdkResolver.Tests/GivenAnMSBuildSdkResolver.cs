@@ -7,8 +7,6 @@ using Microsoft.Build.Framework;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.MSBuildSdkResolver;
 
-[assembly: DoNotParallelize]
-
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     [TestClass]
