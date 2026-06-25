@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FakeItEasy;
@@ -14,33 +14,37 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
-    public class MacroProcessorTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class MacroProcessorTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        public MacroProcessorTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
         public void CanThrow_WhenCannotProcessMacro()
         {
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)new FailMacro()) });
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)new FailMacro()) });
 
             var macros = new[] { new FailMacroConfig("test") };
 
-            MacroProcessingException e = Assert.Throws<MacroProcessingException>(() => MacroProcessor.ProcessMacros(engineEnvironmentSettings, macros, new VariableCollection()));
-            Assert.Equal("Failed to evaluate", e.InnerException?.Message);
+            MacroProcessingException e = Assert.ThrowsExactly<MacroProcessingException>(() => MacroProcessor.ProcessMacros(engineEnvironmentSettings, macros, new VariableCollection()));
+            Assert.AreEqual("Failed to evaluate", e.InnerException?.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanPrintWarningOnUnknownMacroConfig()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(
                 virtualize: true, environment: A.Fake<IEnvironment>(), addLoggerProviders: new[] { loggerProvider });
             var fakeMacroConfig = new FakeMacroConfig(new FakeMacro(), "testVariable", "dummy");
             fakeMacroConfig.ResolveSymbolDependencies(new List<string>());
@@ -49,11 +53,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             MacroProcessor.ProcessMacros(engineEnvironmentSettings, macroConfigs, new VariableCollection());
 
-            Assert.True(loggedMessages.Count == 1);
-            Assert.Equal("Generated symbol 'testVariable': type 'fake' is unknown, processing is skipped.", loggedMessages.First().Message);
+            Assert.HasCount(1, loggedMessages);
+            Assert.AreEqual("Generated symbol 'testVariable': type 'fake' is unknown, processing is skipped.", loggedMessages.First().Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessMacroWithCustomMacroAsDependency()
         {
             var fakeMacroVariableName = "testVariable";
@@ -71,7 +75,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             var coalesceMacroConfig = new CoalesceMacroConfig(new CoalesceMacro(), generatedConfig);
             coalesceMacroConfig.ResolveSymbolDependencies(new List<string>() { fakeMacroVariableName });
 
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, environment: A.Fake<IEnvironment>(), additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)new FakeMacro()) }, addLoggerProviders: new[] { loggerProvider });
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, environment: A.Fake<IEnvironment>(), additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)new FakeMacro()) }, addLoggerProviders: new[] { loggerProvider });
 
             var fakeMacro = new FakeMacro();
             var customGeneratedConfig = A.Fake<IGeneratedSymbolConfig>();
@@ -87,14 +91,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             MacroProcessor.ProcessMacros(engineEnvironmentSettings, new[] { (IMacroConfig)coalesceMacroConfig, fakeMacroConfig }, new VariableCollection(default, variableCollection));
 
-            Assert.True(variableCollection.Count == 2);
-            Assert.True(variableCollection.Values.Select(v => v.GetHashCode() == fakeMacro.GetHashCode()).Count() == 2);
+            Assert.HasCount(2, variableCollection);
+            Assert.HasCount(2, variableCollection.Values.Select(v => v.GetHashCode() == fakeMacro.GetHashCode()));
             variableCollection.Select(v => v.Key).Should().Equal(new[] { fakeMacroVariableName, coalesceVariableName });
-            Assert.True(coalesceMacroConfig.Dependencies.Count == 1);
-            Assert.Equal(fakeMacroVariableName, coalesceMacroConfig.Dependencies.First());
+            Assert.HasCount(1, coalesceMacroConfig.Dependencies);
+            Assert.AreEqual(fakeMacroVariableName, coalesceMacroConfig.Dependencies.First());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessCustomMacroWithDeps()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
@@ -134,7 +138,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             FakeMacroConfig customMacroConfig = new(new FakeMacro(), customGeneratedConfig);
             customMacroConfig.ResolveSymbolDependencies(new List<string>());
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(
                 virtualize: true,
                 environment: A.Fake<IEnvironment>(),
                 addLoggerProviders: new[] { loggerProvider },
@@ -152,13 +156,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             MacroProcessor.ProcessMacros(engineEnvironmentSettings, sortedMacroConfigs, variableCollection);
 
             // Custom macro was processed without errors
-            Assert.True(!loggedMessages.Any(lm => lm.Level == LogLevel.Error));
-            Assert.Equal("A", variableCollection["coalesceMacro"]);
-            Assert.Equal("val1", variableCollection["switchMacro"]);
-            Assert.Equal("Hello dummy!", variableCollection["customMacro"]);
+            Assert.IsEmpty(loggedMessages.Where(lm => lm.Level == LogLevel.Error));
+            Assert.AreEqual("A", variableCollection["coalesceMacro"]);
+            Assert.AreEqual("val1", variableCollection["switchMacro"]);
+            Assert.AreEqual("Hello dummy!", variableCollection["customMacro"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanSortCollectionWithCustomMacroWithDeps()
         {
             var coalesceMacroName = "coalesceMacro";
@@ -185,7 +189,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             A.CallTo(() => customGeneratedConfig.VariableName).Returns(customMacroName);
 
             var customMacroConfig = new FakeMacroConfig(new FakeMacro(), customGeneratedConfig);
-            _environmentSettingsHelper.CreateEnvironment(
+            s_environmentSettingsHelper.CreateEnvironment(
                 virtualize: true,
                 environment: A.Fake<IEnvironment>(),
                 additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)new FakeMacro()) });
@@ -195,7 +199,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             sortedItems.Select(si => si.VariableName).Should().Equal(new[] { switchMacroName, coalesceMacroName, customMacroName });
         }
 
-        [Fact]
+        [TestMethod]
         public void CanSortMacrosWithDependencies()
         {
             var switchMacroName = "switchMacro";
@@ -237,7 +241,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             sortedItems.Select(si => si.VariableName).Should().Equal(new[] { evaluateMacroName, coalesceMacroName, switchMacroName, joinMacroName });
         }
 
-        [Fact]
+        [TestMethod]
         public void CanThrowErrorOnSortWhenMacrosHaveDepsCircle()
         {
             var switchMacroName = "switchMacro";
@@ -265,7 +269,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .Which.Message.Should().Contain("Parameter conditions contain cyclic dependency: [switchMacro, coalesceMacro, switchMacro] that is preventing deterministic evaluation.");
         }
 
-        [Fact]
+        [TestMethod]
         public void CanRunDeterministically_ComputedMacros()
         {
             UndeterministicMacro macro = new UndeterministicMacro();
@@ -273,25 +277,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IEnvironment environment = A.Fake<IEnvironment>();
             A.CallTo(() => environment.GetEnvironmentVariable("TEMPLATE_ENGINE_ENABLE_DETERMINISTIC_MODE")).Returns("true");
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, environment: environment, additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)macro) });
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, environment: environment, additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)macro) });
 
             IReadOnlyList<IMacroConfig> macros = new[] { (IMacroConfig)new UndeterministicMacroConfig("test"), new GuidMacroConfig("test-guid", "string", "Nn", "n") };
 
             IVariableCollection collection = new VariableCollection();
 
             MacroProcessor.ProcessMacros(engineEnvironmentSettings, macros, collection);
-            Assert.Equal("deterministic", collection["test"]);
-            Assert.Equal(new Guid("12345678-1234-1234-1234-1234567890AB").ToString("n"), collection["test-guid"]);
+            Assert.AreEqual("deterministic", collection["test"]);
+            Assert.AreEqual(new Guid("12345678-1234-1234-1234-1234567890AB").ToString("n"), collection["test-guid"]);
 
             A.CallTo(() => environment.GetEnvironmentVariable("TEMPLATE_ENGINE_ENABLE_DETERMINISTIC_MODE")).Returns("false");
             collection = new VariableCollection();
 
             MacroProcessor.ProcessMacros(engineEnvironmentSettings, macros, collection);
-            Assert.Equal("undeterministic", collection["test"]);
-            Assert.NotEqual(new Guid("12345678-1234-1234-1234-1234567890AB").ToString("n"), collection["test-guid"]);
+            Assert.AreEqual("undeterministic", collection["test"]);
+            Assert.AreNotEqual(new Guid("12345678-1234-1234-1234-1234567890AB").ToString("n"), collection["test-guid"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanProcessMacroWithCustomMacroAsDependency_IndependentImplementation()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
@@ -328,7 +332,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             A.CallTo(() => customGeneratedConfig.VariableName).Returns(customMacroName);
             DependencyMacroConfig customMacroConfig = new(customMacroName, switchMacroName);
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(
                 virtualize: true,
                 environment: A.Fake<IEnvironment>(),
                 addLoggerProviders: new[] { loggerProvider },
@@ -344,10 +348,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             MacroProcessor.ProcessMacros(engineEnvironmentSettings, sortedMacroConfigs, variableCollection);
 
             // Custom macro was processed without errors
-            Assert.True(!loggedMessages.Any(lm => lm.Level == LogLevel.Error));
-            Assert.Equal("B", variableCollection[coalesceMacroName]);
-            Assert.Equal("defVal", variableCollection[switchMacroName]);
-            Assert.Equal("defVal", variableCollection[customMacroName]);
+            Assert.IsEmpty(loggedMessages.Where(lm => lm.Level == LogLevel.Error));
+            Assert.AreEqual("B", variableCollection[coalesceMacroName]);
+            Assert.AreEqual("defVal", variableCollection[switchMacroName]);
+            Assert.AreEqual("defVal", variableCollection[customMacroName]);
         }
 
         private class FailMacro : IMacro<FailMacroConfig>, IGeneratedSymbolMacro

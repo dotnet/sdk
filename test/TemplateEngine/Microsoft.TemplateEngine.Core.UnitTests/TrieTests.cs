@@ -6,20 +6,28 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class TrieTests : TestBase, IClassFixture<TestLoggerFactory>
+    [TestClass]
+    public class TrieTests : TestBase
     {
+        private static TestLoggerFactory s_loggerFactory = null!;
         private readonly ILogger _logger;
 
-        public TrieTests(TestLoggerFactory testLoggerFactory)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_loggerFactory = new TestLoggerFactory();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_loggerFactory?.Dispose();
+
+        public TrieTests()
         {
-            _logger = testLoggerFactory.CreateLogger();
+            _logger = s_loggerFactory.CreateLogger();
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyThatTrieMatchesAtTheBeginning()
         {
             bool testActivated = false;
@@ -45,10 +53,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 Position = 0
             };
             p.Run(source, new MemoryStream());
-            Assert.True(testActivated);
+            Assert.IsTrue(testActivated);
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyThatTrieMatchesAtTheEnd()
         {
             bool testActivated = false;
@@ -70,10 +78,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             byte[] data = new byte[] { 4, 5, 1, 2, 3 };
             p.Run(new MemoryStream(data), new MemoryStream());
-            Assert.True(testActivated);
+            Assert.IsTrue(testActivated);
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyThatTrieMatchesInTheInterior()
         {
             bool testActivated = false;
@@ -95,10 +103,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             byte[] data = new byte[] { 4, 5, 1, 2, 3, 6, 7 };
             p.Run(new MemoryStream(data), new MemoryStream());
-            Assert.True(testActivated);
+            Assert.IsTrue(testActivated);
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyThatTrieMatchesAsTheWholeContents()
         {
             bool testActivated = false;
@@ -120,7 +128,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             byte[] data = new byte[] { 1, 2, 3 };
             p.Run(new MemoryStream(data), new MemoryStream());
-            Assert.True(testActivated);
+            Assert.IsTrue(testActivated);
         }
 
         private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
