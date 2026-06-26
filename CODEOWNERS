@@ -118,3 +118,10 @@
 .vsts-ci.yml @MiYanni
 .vsts-pr.yml @MiYanni
 /eng/pipelines @MiYanni
+
+# AI
+.github/ @mthalman @lbussell
+.claude/ @mthalman @lbussell
+.agents/ @mthalman @lbussell
+AGENTS.md @mthalman @lbussell
+SKILL.md @mthalman @lbussell
