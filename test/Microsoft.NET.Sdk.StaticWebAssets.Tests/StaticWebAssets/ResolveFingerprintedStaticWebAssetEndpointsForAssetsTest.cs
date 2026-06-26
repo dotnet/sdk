@@ -230,7 +230,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         result.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesEndpoints_WhenTaskEnvironmentProjectDirectoryDiffersFromProcessCurrentDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest), Guid.NewGuid().ToString("N"));
