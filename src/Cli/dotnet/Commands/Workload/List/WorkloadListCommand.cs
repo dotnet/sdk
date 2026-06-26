@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Extensions;
@@ -16,7 +17,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
-internal class WorkloadListCommand : WorkloadCommandBase
+internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListCommandDefinition>
 {
     private readonly bool _includePreviews;
     private readonly bool _machineReadableOption;
@@ -34,15 +35,15 @@ internal class WorkloadListCommand : WorkloadCommandBase
         INuGetPackageDownloader nugetPackageDownloader = null,
         IWorkloadManifestUpdater workloadManifestUpdater = null,
         IWorkloadResolver workloadResolver = null
-    ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
+    ) : base(parseResult, reporter, tempDirPath, nugetPackageDownloader)
     {
-        _machineReadableOption = parseResult.GetValue(WorkloadListCommandParser.MachineReadableOption);
+        _machineReadableOption = parseResult.GetValue(Definition.MachineReadableOption);
 
         var resolvedReporter = _machineReadableOption ? NullReporter.Instance : Reporter;
         _workloadListHelper = new WorkloadInfoHelper(
-            parseResult.HasOption(SharedOptions.InteractiveOption),
+            parseResult.HasOption(Definition.RestoreOptions.InteractiveOption),
             Verbosity,
-            parseResult?.GetValue(WorkloadListCommandParser.VersionOption) ?? null,
+            parseResult.GetValue(Definition.VersionOption) ?? null,
             VerifySignatures,
             resolvedReporter,
             workloadRecordRepo,
@@ -52,7 +53,7 @@ internal class WorkloadListCommand : WorkloadCommandBase
             workloadResolver
         );
 
-        _includePreviews = parseResult.GetValue(WorkloadListCommandParser.IncludePreviewsOption);
+        _includePreviews = parseResult.GetValue(Definition.IncludePreviewsOption);
         string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
         _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(resolvedReporter,

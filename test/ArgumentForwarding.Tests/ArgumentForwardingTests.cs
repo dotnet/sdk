@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {
@@ -150,7 +150,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         [Fact]
         public void ForwardAsWorks()
         {
-            var cmd = Microsoft.DotNet.Cli.Commands.Package.Add.PackageAddCommandParser.GetCommand();
+            var cmd = new Microsoft.DotNet.Cli.Commands.Package.Add.PackageAddCommandDefinition();
             var parseResult = cmd.Parse(["package", "add", "thing", "--prerelease"]);
             var forwardedValues = parseResult.OptionValuesToBeForwarded();
             forwardedValues.Should().Contain("--prerelease");
@@ -250,7 +250,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                    FileName = SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath,
                     Arguments = $"{ReflectorPath} {testUserArgument}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,

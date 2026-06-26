@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void ItShouldSetDotnetRootToDirectoryOfMuxer(string targetFramework)
         {
-            string expectDotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string expectDotnetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
             string expectOutput = GetExpectOutput(expectDotnetRoot, targetFramework);
 
             var projectRoot = SetupDotnetRootEchoProject(null, targetFramework);

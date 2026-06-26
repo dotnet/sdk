@@ -122,6 +122,38 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
+
+  <!-- Various properties imply that a RuntimeIdentifier will be needed for publish.  If any of these are set,
+       then set a default value for PublishRuntimeIdentifier if RuntimeIdentifier isn't set.
+       However, don't do this if we are packing a PackAsTool project, as the "outer" build should still be
+       without a RuntimeIdentifier -->
+  <PropertyGroup Condition="'$(UseDefaultPublishRuntimeIdentifier)' == '' And
+                            '$(PublishRuntimeIdentifier)' == '' And
+                            '$(RuntimeIdentifier)' == '' And
+                            '$(_IsExecutable)' == 'true' And
+                            (
+                              '$(PublishSelfContained)' == 'true' or
+                              '$(PublishReadyToRun)' == 'true' or
+                              '$(PublishTrimmed)' == 'true' or
+                              '$(PublishSingleFile)' == 'true' or
+                              '$(PublishAot)' == 'true'
+                            ) And
+                            !('$(PackAsTool)' == 'true' And '$(_IsPacking)' == 'true')">
+    <UseDefaultPublishRuntimeIdentifier>true</UseDefaultPublishRuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseDefaultPublishRuntimeIdentifier)' == 'true'">
+    <PublishRuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</PublishRuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- Add PublishRuntimeIdentifier to RuntimeIdentifiers list (if it isn't already in the list) so that assets needed to publish will be restored -->
+  <PropertyGroup Condition="'$(PublishRuntimeIdentifier)' != '' And
+                '$(RuntimeIdentifiers)' != '$(PublishRuntimeIdentifier)' And
+                !$(RuntimeIdentifiers.StartsWith('$(PublishRuntimeIdentifier);')) And
+                !$(RuntimeIdentifiers.EndsWith(';$(PublishRuntimeIdentifier)')) And
+                !$(RuntimeIdentifiers.Contains(';$(PublishRuntimeIdentifier);'))">
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PublishRuntimeIdentifier)</RuntimeIdentifiers>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(_IsPublishing)' == 'true' and '$(PublishRuntimeIdentifier)' != ''">
     <RuntimeIdentifier>$(PublishRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>

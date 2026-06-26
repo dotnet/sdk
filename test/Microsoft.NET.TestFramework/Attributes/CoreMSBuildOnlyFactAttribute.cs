@@ -7,7 +7,7 @@ namespace Microsoft.NET.TestFramework
     {
         public CoreMSBuildOnlyFactAttribute()
         {
-            if (TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
+            if (SdkTestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
             {
                 Skip = "This test requires Core MSBuild to run";
             }

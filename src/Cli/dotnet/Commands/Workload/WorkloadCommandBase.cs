@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 
@@ -14,7 +14,8 @@ namespace Microsoft.DotNet.Cli.Commands.Workload;
 /// <summary>
 /// Base class for workload related commands.
 /// </summary>
-internal abstract class WorkloadCommandBase : CommandBase
+internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefinition>
+    where TDefinition : WorkloadCommandDefinitionBase
 {
     /// <summary>
     /// The package downloader to use for acquiring NuGet packages.
@@ -85,18 +86,17 @@ internal abstract class WorkloadCommandBase : CommandBase
     /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
     public WorkloadCommandBase(
         ParseResult parseResult,
-        Option<VerbosityOptions>? verbosityOptions = null,
         IReporter? reporter = null,
         string? tempDirPath = null,
         INuGetPackageDownloader? nugetPackageDownloader = null) : base(parseResult)
     {
-        VerifySignatures = ShouldVerifySignatures(parseResult);
+        var skipSignCheck = Definition.SkipSignCheckOption != null && parseResult.GetValue(Definition.SkipSignCheckOption);
 
-        RestoreActionConfiguration = _parseResult.ToRestoreActionConfig();
+        VerifySignatures = WorkloadUtilities.ShouldVerifySignatures(skipSignCheck);
 
-        Verbosity = verbosityOptions == null
-            ? parseResult.GetValue(CommonOptions.VerbosityOption(VerbosityOptions.normal))
-            : parseResult.GetValue(verbosityOptions) ;
+        RestoreActionConfiguration = Definition.RestoreOptions?.ToRestoreActionConfig(_parseResult) ?? new RestoreActionConfig();
+
+        Verbosity = Definition.VerbosityOption != null ? parseResult.GetValue(Definition.VerbosityOption) : VerbosityOptions.normal;
 
         ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 
@@ -104,9 +104,9 @@ internal abstract class WorkloadCommandBase : CommandBase
 
         TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
             ? tempDirPath
-            : !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
-                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)!
-                : PathUtilities.CreateTempSubdirectory();
+            : Definition.TempDirOption != null && !string.IsNullOrWhiteSpace(parseResult.GetValue(Definition.TempDirOption))
+                ? parseResult.GetValue(Definition.TempDirOption)!
+                : TemporaryDirectory.CreateSubdirectory();
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
@@ -128,34 +128,5 @@ internal abstract class WorkloadCommandBase : CommandBase
                 verifySignatures: VerifySignatures,
                 shouldUsePackageSourceMapping: true);
         }
-    }
-
-    /// <summary>
-    /// Determines whether workload packs and installer signatures should be verified based on whether
-    /// dotnet is signed, the skip option was specified, and whether a global policy enforcing verification
-    /// was set.
-    /// </summary>
-    /// <param name="parseResult">The results of parsing the command line.</param>
-    /// <returns><see langword="true"/> if signatures of packages and installers should be verified.</returns>
-    /// <exception cref="GracefulException" />
-    private static bool ShouldVerifySignatures(ParseResult parseResult) =>
-        ShouldVerifySignatures(parseResult.GetValue(WorkloadInstallCommandParser.SkipSignCheckOption));
-
-    public static bool ShouldVerifySignatures(bool skipSignCheck = false)
-    {
-        if (!SignCheck.IsDotNetSigned())
-        {
-            // Can't enforce anything if we already allowed an unsigned dotnet to be installed.
-            return false;
-        }
-
-        bool policyEnabled = SignCheck.IsWorkloadSignVerificationPolicySet();
-        if (skipSignCheck && policyEnabled)
-        {
-            // Can't override the global policy by using the skip option.
-            throw new GracefulException(CliCommandStrings.SkipSignCheckInvalidOption);
-        }
-
-        return !skipSignCheck;
     }
 }

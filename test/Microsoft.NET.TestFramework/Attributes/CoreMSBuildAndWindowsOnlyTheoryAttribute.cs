@@ -7,7 +7,7 @@ namespace Microsoft.NET.TestFramework
     {
         public CoreMSBuildAndWindowsOnlyTheoryAttribute()
         {
-            if (TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (SdkTestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Skip = "This test requires Core MSBuild and Windows to run";
             }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
+using Microsoft.NET.Sdk.Common;
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 using Collections = System.Collections;
 using Diagnostics = System.Diagnostics;
@@ -165,7 +166,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             if (_option == null)
             {
                 object? option = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentSyncOptions");
-#if NET472
+#if NETFRAMEWORK
                 Type? deploymentCancelCallbackType = MSWebDeploymentAssembly.DynamicAssembly?.GetType("Microsoft.Web.Deployment.DeploymentCancelCallback");
                 object cancelCallbackDelegate = Delegate.CreateDelegate(deploymentCancelCallbackType, this, "CancelCallback");
 
@@ -179,7 +180,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return _option;
         }
 
-#if NET472
+#if NETFRAMEWORK
         private Dictionary<string, MessageImportance>? _highImportanceEventTypes = null;
         private Dictionary<string, MessageImportance> GetHighImportanceEventTypes()
         {
@@ -203,7 +204,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             // throw new System.NotImplementedException();
             string msg = e.Message;
             Diagnostics.Trace.WriteLine("MSDeploy TraceEvent Handler is called with " + msg);
-#if NET472
+#if NETFRAMEWORK
             LogTrace(e, GetHighImportanceEventTypes());
 #endif
             //try
@@ -328,7 +329,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     /// We create CustomBuildWithPropertiesEventArgs is for the purpose of logging verious information
     /// in a IDictionary such that the MBuild handler can handle generically.
     /// </summary>
-#if NET472
+#if NETFRAMEWORK
     [Serializable]
 #endif
     public class CustomBuildWithPropertiesEventArgs : CustomBuildEventArgs, Collections.IDictionary
@@ -446,7 +447,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         // Utility function to log all public instance property to CustomerBuildEventArgs 
         private static void AddAllPropertiesToCustomBuildWithPropertyEventArgs(ExtendedCustomBuildEventArgs cbpEventArg, object obj)
         {
-#if NET472
+#if NETFRAMEWORK
             if (obj != null)
             {
                 Type thisType = obj.GetType();
@@ -775,7 +776,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         }
         private void SetupPublishRelatedProperties(ref VSMSDeployObject dest)
         {
-#if NET472
+#if NETFRAMEWORK
             if (AllowUntrustedCertificate) 
             {
                 System.Net.ServicePointManager.ServerCertificateValidationCallback
@@ -823,9 +824,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             else
             {
                 dest = VSMSDeployObjectFactory.CreateVSMSDeployObject(Destination[0]);
-                VSHostObject hostObj = new(HostObject as IEnumerable<ITaskItem>);
-                string username, password;
-                if (hostObj.ExtractCredentials(out username, out password))
+                VSHostObject hostObj = new(HostObject, Log);
+                if (hostObj.TryGetCredentials() is (string username, string password))
                 {
                     dest.UserName = username;
                     dest.Password = password;
@@ -885,7 +885,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
             finally
             {
-#if NET472
+#if NETFRAMEWORK
 
                 if (AllowUntrustedCertificate)
                     System.Net.ServicePointManager.ServerCertificateValidationCallback
@@ -937,11 +937,24 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             List<string> enableSkipDirectiveList = MSDeployUtility.ConvertStringIntoList(EnableSkipDirective);
             List<string> disableSkipDirectiveList = MSDeployUtility.ConvertStringIntoList(DisableSkipDirective);
 
-            VSHostObject hostObject = new(HostObject as IEnumerable<ITaskItem>);
-            ITaskItem[]? srcSkipItems, destSkipsItems;
+            VSHostObject hostObject = new(HostObject, Log);
+            IEnumerable<ITaskItem>? allItems = hostObject.GetTaskItems();
+            ITaskItem[]? srcSkipItems = null;
+            ITaskItem[]? destSkipsItems = null;
 
             // Add FileSkip rules from Host Object
-            hostObject.GetFileSkips(out srcSkipItems, out destSkipsItems);
+            if (allItems is not null)
+            {
+                srcSkipItems = allItems.Where(item =>
+                    item.ItemSpec == VSMsDeployTaskHostObject.SkipFileItemSpecName
+                    && (item.GetMetadata(VSMsDeployTaskHostObject.SkipApplyMetadataName) == VSMsDeployTaskHostObject.SourceDeployObject
+                        || string.IsNullOrEmpty(item.GetMetadata(VSMsDeployTaskHostObject.SkipApplyMetadataName)))).ToArray();
+
+                destSkipsItems = allItems.Where(item =>
+                    item.ItemSpec == VSMsDeployTaskHostObject.SkipFileItemSpecName
+                    && (item.GetMetadata(VSMsDeployTaskHostObject.SkipApplyMetadataName) == VSMsDeployTaskHostObject.DestinationDeployObject
+                        || string.IsNullOrEmpty(item.GetMetadata(VSMsDeployTaskHostObject.SkipApplyMetadataName)))).ToArray();
+            }
             Utility.AddSkipDirectiveToBaseOptions(srcVsMsDeployobject.BaseOptions, srcSkipItems, enableSkipDirectiveList, disableSkipDirectiveList, Log);
             Utility.AddSkipDirectiveToBaseOptions(destVsMsDeployobject.BaseOptions, destSkipsItems, enableSkipDirectiveList, disableSkipDirectiveList, Log);
 
@@ -1076,7 +1089,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public object? GetProperty(string propertyName)
         {
-#if NET472
+#if NETFRAMEWORK
             string lowerName = propertyName.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 #else
             string lowerName = propertyName.ToLower();

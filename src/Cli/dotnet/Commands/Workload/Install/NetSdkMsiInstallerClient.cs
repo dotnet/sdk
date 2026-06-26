@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32.Msi;
@@ -347,8 +348,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
     (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(string workloadSetVersion, DirectoryPath? offlineCache)
     {
-        SdkFeatureBand workloadSetFeatureBand;
-        string msiPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
+        var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion, out var msiPackageVersion);
         string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand).ToString();
 
         Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");
@@ -747,7 +747,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
     {
         Log?.LogMessage($"ExtractManifestAsync: Extracting '{nupkgPath}' to '{targetPath}'");
-        string extractionPath = PathUtilities.CreateTempSubdirectory();
+        string extractionPath = TemporaryDirectory.CreateSubdirectory();
 
         try
         {
@@ -1125,7 +1125,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
         if (nugetPackageDownloader == null)
         {
-            DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? PathUtilities.CreateTempSubdirectory() : tempDirPath);
+            DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? TemporaryDirectory.CreateSubdirectory() : tempDirPath);
 
             nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
                 filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(),
@@ -1174,7 +1174,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
     {
         UpdateInstallMode(sdkFeatureBand, newMode);
-        string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
+        string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet : WorkloadConfigCommandDefinition.UpdateMode_Manifests;
         Reporter.WriteLine(string.Format(CliCommandStrings.UpdatedWorkloadMode, newModeString));
     }
 

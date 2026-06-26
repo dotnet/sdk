@@ -22,7 +22,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse("dotnet tool restore --tool-manifest folder/my-manifest.format");
 
-            result.GetRequiredValue(ToolRestoreCommandParser.ToolManifestOption).Should().Be("folder/my-manifest.format");
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.ToolManifestOption).Should().Be("folder/my-manifest.format");
         }
 
         [Fact]
@@ -32,7 +33,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 Parser.Parse(
                     @"dotnet tool restore --configfile C:\TestAssetLocalNugetFeed");
 
-            result.GetRequiredValue(ToolRestoreCommandParser.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
         }
 
         [Fact]
@@ -43,7 +45,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse($"dotnet tool restore --add-source {expectedSourceValue}");
 
-            result.GetRequiredValue(ToolRestoreCommandParser.AddSourceOption).First().Should().Be(expectedSourceValue);
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.AddSourceOption).First().Should().Be(expectedSourceValue);
         }
 
         [Fact]
@@ -58,8 +61,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
                     $"--add-source {expectedSourceValue1} " +
                     $"--add-source {expectedSourceValue2}");
 
-            result.GetRequiredValue(ToolRestoreCommandParser.AddSourceOption)[0].Should().Be(expectedSourceValue1);
-            result.GetRequiredValue(ToolRestoreCommandParser.AddSourceOption)[1].Should().Be(expectedSourceValue2);
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.AddSourceOption)[0].Should().Be(expectedSourceValue1);
+            result.GetRequiredValue(definition.AddSourceOption)[1].Should().Be(expectedSourceValue2);
         }
 
         [Fact]
@@ -69,7 +73,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var result = Parser.Parse($"dotnet tool restore --verbosity {expectedVerbosityLevel}");
 
-            Enum.GetName(result.GetRequiredValue(ToolRestoreCommandParser.VerbosityOption)).Should().Be(expectedVerbosityLevel);
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            Enum.GetName(result.GetRequiredValue(definition.VerbosityOption)).Should().Be(expectedVerbosityLevel);
         }
 
         [Fact]
@@ -78,7 +83,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --no-cache");
 
-            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.NoCacheOption).Should().BeTrue();
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.RestoreOptions.NoCacheOption).Should().BeTrue();
         }
 
         [Fact]
@@ -87,7 +93,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --no-http-cache");
 
-            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption).Should().BeTrue();
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.RestoreOptions.NoHttpCacheOption).Should().BeTrue();
         }
 
         [Fact]
@@ -96,7 +103,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --ignore-failed-sources");
 
-            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption).Should().BeTrue();
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.RestoreOptions.IgnoreFailedSourcesOption).Should().BeTrue();
         }
 
         [Fact]
@@ -105,7 +113,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --disable-parallel");
 
-            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.DisableParallelOption).Should().BeTrue();
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.RestoreOptions.DisableParallelOption).Should().BeTrue();
         }
 
         [Fact]
@@ -114,7 +123,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --interactive");
 
-            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption).Should().BeTrue();
+            var definition = Assert.IsType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.RestoreOptions.InteractiveOption).Should().BeTrue();
         }
     }
 }

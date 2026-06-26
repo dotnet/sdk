@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Call vstest
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .Execute(outputDll, "--logger:console;verbosity=normal");
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 2")
@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Call vstest
             var result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .Execute(outputDll, "--arch", "wrongArchitecture");
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().StartWith("Invalid platform type: wrongArchitecture. Valid platform types are ");
             }
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .Execute(arg);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("MSBUILD : error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.");
             }

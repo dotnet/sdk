@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Utils;
@@ -190,6 +191,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
             {
                 return path?.Replace("%USERPROFILE%", @"C:\Users\username");
             }
+
+            public bool TryGetEnvironmentVariable(string name, [NotNullWhen(true)] out string value) => throw new NotImplementedException();
+            public bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value) => throw new NotImplementedException();
+        public bool TryGetEnvironmentVariableAsInt(string name, [NotNullWhen(true)] out int value) => throw new NotImplementedException();
         }
 
         private class MockEnvironmentPathEditor : IWindowsRegistryEnvironmentPathEditor

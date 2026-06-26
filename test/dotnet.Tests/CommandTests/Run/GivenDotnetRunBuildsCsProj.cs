@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--no-build", "-v:m");
 
             result.Should().Fail();
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().NotHaveStdOutContaining("Restore");
             }
@@ -580,6 +580,27 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
+        public void ItGivesAnErrorWhenTheLaunchProfileFileIsNotReadable()
+        {
+            var testAppName = "AppWithLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+            // open the file to prevent reading:
+            using var _ = File.Open(launchSettingsPath, FileMode.Open, FileAccess.Read, FileShare.None);
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--launch-profile", "Third")
+                .Should().Pass()
+                         .And.HaveStdOutContaining("(NO MESSAGE)")
+                         .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
+        }
+
+        [Fact]
         public void ItGivesAnErrorWhenTheLaunchProfileCanNotBeHandled()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -649,7 +670,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("(NO MESSAGE)")
-                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, CliCommandStrings.DefaultLaunchProfileDisplayName, "").Trim());
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, ProjectTools.Resources.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
         [Fact]
@@ -667,7 +688,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("(NO MESSAGE)")
-                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, CliCommandStrings.DefaultLaunchProfileDisplayName, "").Trim());
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, ProjectTools.Resources.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
         [Fact]
@@ -684,7 +705,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             result.Should().Pass()
                 .And.HaveStdOutContaining("Hello World!");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().HaveStdOutContaining("Restore")
                     .And.HaveStdOutContaining("CoreCompile");
@@ -1014,7 +1035,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--project", nonExistentProject, "--no-build");
 
             result.Should().Fail();
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // After the fix, we should get a clear error message about the file not existing
                 var stderr = result.StdErr;
@@ -1027,6 +1048,76 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                                               
                 hasExpectedErrorMessage.Should().BeTrue($"Expected error message to clearly indicate file doesn't exist, but got: {stderr}");
             }
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibrary()
+        {
+            // Reproduces https://github.com/dotnet/sdk/issues/53488 with explicit --framework:
+            // dotnet run -f <platform-specific-TFM> fails with NETSDK1005 when
+            // the project references a library that targets only the base TFM.
+            var testInstance = _testAssetsManager.CopyTestAsset("RunWindowsAppWithLibRef")
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(Path.Combine(testInstance.Path, "App"))
+                .Execute("--framework", $"{ToolsetInfo.CurrentTargetFramework}-windows")
+                .Should().Pass()
+                .And.HaveStdOutContaining("This string came from the test library!");
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibraryWithoutExplicitFramework()
+        {
+            // Same scenario as above but without --framework: exercises the
+            // auto-selected TFM path (saved pre-TF project reuse).
+            var testInstance = _testAssetsManager.CopyTestAsset("RunWindowsAppWithLibRef")
+                .WithSource();
+
+            // Reduce to a single-entry TargetFrameworks so the framework is auto-selected.
+            var appCsproj = Path.Combine(testInstance.Path, "App", "App.csproj");
+            File.WriteAllText(appCsproj, File.ReadAllText(appCsproj)
+                .Replace(
+                    $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}-windows;{ToolsetInfo.CurrentTargetFramework}</TargetFrameworks>",
+                    $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}-windows</TargetFrameworks>"));
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(Path.Combine(testInstance.Path, "App"))
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("This string came from the test library!");
+        }
+
+        [Fact]
+        public void ItCanRunWithExecutableLaunchProfile()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            var launchSettingsPath = Path.Combine(testInstance.Path, "Properties", "launchSettings.json");
+
+            File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "ExecutableProfile": {
+                  "commandName": "Executable",
+                  "executablePath": "dotnet",
+                  "commandLineArgs": "--version"
+                }
+              }
+            }
+            """);
+
+            new BuildCommand(testInstance)
+                .Execute()
+                .Should().Pass();
+
+            // The ExecutableProfile runs "dotnet --version"
+            new DotnetCommand(Log, "run", "--launch-profile", "ExecutableProfile")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
         }
     }
 }

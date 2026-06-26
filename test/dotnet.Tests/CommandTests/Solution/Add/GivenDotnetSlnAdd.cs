@@ -31,7 +31,7 @@ Usage:
   dotnet solution [<SLN_FILE>] add [<PROJECT_PATH>...] [options]
 
 Arguments:
-  <SLN_FILE>      The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <SLN_FILE>      The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
   <PROJECT_PATH>  The paths to the projects to add to the solution.
 
 Options:
@@ -407,6 +407,46 @@ Options:
 
             File.ReadAllText(slnFullPath)
                 .Should().BeVisuallyEquivalentTo(contentBefore);
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenMultipleProjectsFromSameDirectoryAreAddedSolutionFolderIsNotDuplicated(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+
+            var firstProject = Path.Combine("Multiple", "First.csproj");
+            var secondProject = Path.Combine("Multiple", "Second.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", firstProject, secondProject);
+            cmd.Should().Pass();
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Combine(projectDirectory, $"App{solutionExtension}"));
+            SolutionModel solution = await serializer.OpenAsync(Path.Combine(projectDirectory, $"App{solutionExtension}"), CancellationToken.None);
+
+            // The solution already has App project, plus we added First and Second = 3 total
+            var projectsInSolution = solution.SolutionProjects.ToList();
+            projectsInSolution.Count.Should().Be(3);
+            projectsInSolution.Should().Contain(p => p.FilePath.Contains("First.csproj"));
+            projectsInSolution.Should().Contain(p => p.FilePath.Contains("Second.csproj"));
+            
+            // Should only have one solution folder for "Multiple", not two
+            var solutionFolders = solution.SolutionFolders.ToList();
+            solutionFolders.Count.Should().Be(1);
+            solutionFolders.Single().Path.Should().Contain("Multiple");
+            
+            // Both new projects should be in the same solution folder
+            var solutionFolder = solutionFolders.Single();
+            var multipleProjects = projectsInSolution.Where(p => p.FilePath.Contains("Multiple")).ToList();
+            multipleProjects.Count.Should().Be(2);
+            multipleProjects.All(p => p.Parent?.Id == solutionFolder.Id).Should().BeTrue();
         }
 
         [Theory]
@@ -1312,6 +1352,72 @@ Options:
                 .WithSource()
                 .Path;
             return File.ReadAllText(Path.Join(templateContentDirectory, templateFileName));
+        }
+
+        // SLNF TESTS
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenAddingProjectToSlnfItAddsOnlyIfInParentSolution(string solutionCommand)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-Slnf-{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var slnfFullPath = Path.Combine(projectDirectory, "App.slnf");
+            
+            // Try to add Lib project which is in parent solution
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "add", Path.Combine("src", "Lib", "Lib.csproj"));
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Contain(string.Format(CliStrings.ProjectAddedToTheSolution, Path.Combine("src", "Lib", "Lib.csproj")));
+
+            // Verify the project was added to the slnf file
+            var slnfContent = File.ReadAllText(slnfFullPath);
+            slnfContent.Should().Contain("src\\\\Lib\\\\Lib.csproj");
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenRemovingProjectFromSlnfItRemovesSuccessfully(string solutionCommand)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfRemove-{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var slnfFullPath = Path.Combine(projectDirectory, "App.slnf");
+
+            // Remove the App project from the filter
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "remove", Path.Combine("src", "App", "App.csproj"));
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Contain(string.Format(CliStrings.ProjectRemovedFromTheSolution, Path.Combine("src", "App", "App.csproj")));
+
+            // Verify the project was removed from the slnf file
+            var slnfContent = File.ReadAllText(slnfFullPath);
+            slnfContent.Should().NotContain("src\\\\App\\\\App.csproj");
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenAddingProjectToSlnfWithInRootOptionItErrors(string solutionCommand)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfInRoot-{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "add", "--in-root", Path.Combine("src", "Lib", "Lib.csproj"));
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Contain(CliCommandStrings.SolutionFilterDoesNotSupportFolderOptions);
         }
     }
 }

@@ -13,11 +13,11 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
-internal class WorkloadRepairCommand : WorkloadCommandBase
+internal sealed class WorkloadRepairCommand : WorkloadCommandBase<WorkloadRepairCommandDefinition>
 {
     private readonly PackageSourceLocation _packageSourceLocation;
     private readonly IInstaller _workloadInstaller;
-    protected readonly IWorkloadResolverFactory _workloadResolverFactory;
+    private readonly IWorkloadResolverFactory _workloadResolverFactory;
     private readonly IWorkloadResolver _workloadResolver;
     private readonly ReleaseVersion _sdkVersion;
     private readonly string _dotnetPath;
@@ -30,16 +30,16 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
         IWorkloadResolverFactory workloadResolverFactory = null,
         IInstaller workloadInstaller = null,
         INuGetPackageDownloader nugetPackageDownloader = null)
-        : base(parseResult, verbosityOptions: WorkloadRepairCommandParser.VerbosityOption, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
+        : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
-        var configOption = parseResult.GetValue(WorkloadRepairCommandParser.ConfigOption);
-        var sourceOption = parseResult.GetValue(WorkloadRepairCommandParser.SourceOption);
+        var configOption = parseResult.GetValue(Definition.ConfigOption);
+        var sourceOption = parseResult.GetValue(Definition.SourceOption);
         _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
             new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
-        if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption)))
+        if (!string.IsNullOrEmpty(parseResult.GetValue(Definition.SdkVersionOption)))
         {
             throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
@@ -52,10 +52,11 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
         var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
         _workloadResolver = creationResult.WorkloadResolver;
 
-        _workloadInstaller = workloadInstaller ??
-                             WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand,
-                                 _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
-                                 _packageSourceLocation, _parseResult.ToRestoreActionConfig());
+        _workloadInstaller = workloadInstaller ?? WorkloadInstallerFactory.GetWorkloadInstaller(
+            Reporter, sdkFeatureBand,
+            _workloadResolver, Verbosity, creationResult.UserProfileDir,
+            VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
+            _packageSourceLocation);
 
         _recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
         _recorder.HistoryRecord.CommandName = "repair";

@@ -5,6 +5,9 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
 using System.Reflection;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -17,18 +20,33 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseCommand : Command
+    internal abstract class BaseCommand<TDefinition>(Func<ParseResult, ITemplateEngineHost> hostBuilder, TDefinition definition)
+        : Command(definition.Name, definition.Description)
+        where TDefinition : Command
     {
-        private readonly Func<ParseResult, ITemplateEngineHost> _hostBuilder;
+        public readonly TDefinition Definition = definition;
 
-        protected BaseCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string name,
-            string description)
-            : base(name, description)
+        protected static readonly Dictionary<string, Func<Func<ParseResult, ITemplateEngineHost>, Command, Command>> SubcommandFactories = new()
         {
-            _hostBuilder = hostBuilder;
-        }
+            { NewAliasCommandDefinition.Name, (hostBuilder, definition) => new AliasCommand(hostBuilder, (NewAliasCommandDefinition)definition) },
+            { NewAliasAddCommandDefinition.Name, (hostBuilder, definition) => new AliasAddCommand(hostBuilder, (NewAliasAddCommandDefinition)definition) },
+            { NewAliasAddCommandDefinition.LegacyName, (hostBuilder, definition) => new AliasAddCommand(hostBuilder, (NewAliasAddCommandDefinition)definition) },
+            { NewAliasShowCommandDefinition.Name, (hostBuilder, definition) => new AliasShowCommand(hostBuilder, (NewAliasShowCommandDefinition)definition) },
+            { NewAliasShowCommandDefinition.LegacyName, (hostBuilder, definition) => new AliasShowCommand(hostBuilder, (NewAliasShowCommandDefinition)definition) },
+            { NewCreateCommandDefinition.Name, (hostBuilder, definition) => new InstantiateCommand(hostBuilder, (NewCreateCommandDefinition)definition) },
+            { NewDetailsCommandDefinition.Name, (hostBuilder, definition) => new DetailsCommand(hostBuilder, (NewDetailsCommandDefinition)definition) },
+            { NewInstallCommandDefinition.Name, (hostBuilder, definition) => new InstallCommand(hostBuilder, (NewInstallCommandDefinition)definition) },
+            { NewInstallCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyInstallCommand(hostBuilder, (NewInstallCommandDefinition)definition) },
+            { NewUninstallCommandDefinition.Name, (hostBuilder, definition) => new UninstallCommand(hostBuilder, (NewUninstallCommandDefinition)definition) },
+            { NewUninstallCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyUninstallCommand(hostBuilder, (NewUninstallCommandDefinition)definition) },
+            { NewListCommandDefinition.Name, (hostBuilder, definition) => new ListCommand(hostBuilder, (NewListCommandDefinition)definition) },
+            { NewListCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyListCommand(hostBuilder, (NewListCommandDefinition)definition) },
+            { NewSearchCommandDefinition.Name, (hostBuilder, definition) => new SearchCommand(hostBuilder, (NewSearchCommandDefinition)definition) },
+            { NewSearchCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacySearchCommand(hostBuilder, (NewSearchCommandDefinition)definition) },
+            { NewUpdateCommandDefinition.Name, (hostBuilder, definition) => new UpdateCommand(hostBuilder, (NewUpdateCommandDefinition)definition) },
+            { NewUpdateApplyLegacyCommandDefinition.Name, (hostBuilder, definition) => new LegacyUpdateApplyCommand(hostBuilder, (NewUpdateApplyLegacyCommandDefinition)definition) },
+            { NewUpdateCheckLegacyCommandDefinition.Name, (hostBuilder, definition) => new LegacyUpdateCheckCommand(hostBuilder, (NewUpdateCheckLegacyCommandDefinition)definition) },
+        };
 
         protected internal virtual IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager)
         {
@@ -39,7 +57,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         protected IEngineEnvironmentSettings CreateEnvironmentSettings(GlobalArgs args, ParseResult parseResult)
         {
-            ITemplateEngineHost host = _hostBuilder(parseResult);
+            ITemplateEngineHost host = hostBuilder(parseResult);
             IEnvironment environment = new CliEnvironment();
 
             return new EngineEnvironmentSettings(
@@ -50,14 +68,27 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         }
     }
 
-    internal abstract class BaseCommand<TArgs> : BaseCommand where TArgs : GlobalArgs
+    internal abstract class BaseCommand<TArgs, TDefinition> : BaseCommand<TDefinition>
+        where TDefinition : Command
+        where TArgs : GlobalArgs
     {
-        internal BaseCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string name,
-            string description)
-            : base(hostBuilder, name, description)
+        internal BaseCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, TDefinition definition)
+            : base(hostBuilder, definition)
         {
+            this.DocsLink = definition.DocsLink;
+            Hidden = definition.Hidden;
+            TreatUnmatchedTokensAsErrors = definition.TreatUnmatchedTokensAsErrors;
+
+            Aliases.AddRange(definition.Aliases);
+            Options.AddRange(definition.Options);
+            Arguments.AddRange(definition.Arguments);
+            Validators.AddRange(definition.Validators);
+
+            foreach (var subcommandDef in definition.Subcommands)
+            {
+                Add(SubcommandFactories[subcommandDef.Name](hostBuilder, subcommandDef));
+            }
+
             Action = new CommandAction(this);
         }
 
@@ -67,7 +98,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 return base.GetCompletions(context);
             }
-            GlobalArgs args = new(this, context.ParseResult);
+            var args = new GlobalArgs(context.ParseResult);
             using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(args, context.ParseResult);
             using TemplatePackageManager templatePackageManager = new(environmentSettings);
             return GetCompletions(context, environmentSettings, templatePackageManager).ToList();
@@ -94,59 +125,36 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             Reporter.Output.WriteLine(LocalizableStrings.Commands_TemplateShortNameCommandConflict_Info, usedCommandAlias);
-            Reporter.Output.WriteCommand(Example.For<InstantiateCommand>(args.ParseResult).WithArgument(InstantiateCommand.ShortNameArgument, usedCommandAlias));
+
+            var example = Example.For<InstantiateCommand>(args.ParseResult).WithArguments(usedCommandAlias);
+
+            Reporter.Output.WriteCommand(example);
             Reporter.Output.WriteLine();
         }
 
-        protected static void PrintDeprecationMessage<TDepr, TNew>(ParseResult parseResult, Option? additionalOption = null)
-            where TDepr : Command
-            where TNew : Command
+        protected static void PrintDeprecationMessage<TDeprecatedCommand, TNewCommand>(ParseResult parseResult, Func<TNewCommand, Option>? additionalNewOptionSelector = null)
+            where TDeprecatedCommand : Command
+            where TNewCommand : Command
         {
-            var newCommandExample = Example.For<TNew>(parseResult);
-            if (additionalOption != null)
+            var newCommandExample = Example.For<TNewCommand>(parseResult);
+            if (additionalNewOptionSelector != null)
             {
-                newCommandExample.WithOption(additionalOption);
+                newCommandExample = newCommandExample.WithOption(additionalNewOptionSelector);
             }
 
             Reporter.Output.WriteLine(string.Format(
              LocalizableStrings.Commands_Warning_DeprecatedCommand,
-             Example.For<TDepr>(parseResult),
+             Example.For<TDeprecatedCommand>(parseResult),
              newCommandExample).Yellow());
 
             Reporter.Output.WriteLine(LocalizableStrings.Commands_Warning_DeprecatedCommand_Info.Yellow());
-            Reporter.Output.WriteCommand(Example.For<TNew>(parseResult).WithHelpOption().ToString().Yellow());
+            Reporter.Output.WriteCommand(Example.For<TNewCommand>(parseResult).WithHelpOption().ToString().Yellow());
             Reporter.Output.WriteLine();
         }
 
         protected abstract Task<NewCommandStatus> ExecuteAsync(TArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken);
 
         protected abstract TArgs ParseContext(ParseResult parseResult);
-
-        protected virtual Option GetFilterOption(FilterOptionDefinition def)
-        {
-            return def.OptionFactory();
-        }
-
-        protected IReadOnlyDictionary<FilterOptionDefinition, Option> SetupFilterOptions(IReadOnlyList<FilterOptionDefinition> filtersToSetup)
-        {
-            Dictionary<FilterOptionDefinition, Option> options = new();
-            foreach (FilterOptionDefinition filterDef in filtersToSetup)
-            {
-                Option newOption = GetFilterOption(filterDef);
-                Options.Add(newOption);
-                options[filterDef] = newOption;
-            }
-            return options;
-        }
-
-        /// <summary>
-        /// Adds the tabular output settings options for the command from <paramref name="command"/>.
-        /// </summary>
-        protected void SetupTabularOutputOptions(ITabularOutputCommand command)
-        {
-            Options.Add(command.ColumnsAllOption);
-            Options.Add(command.ColumnsOption);
-        }
 
         private static async Task HandleGlobalOptionsAsync(
             TArgs args,
@@ -224,9 +232,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private sealed class CommandAction : AsynchronousCommandLineAction
         {
-            private readonly BaseCommand<TArgs> _command;
+            private readonly BaseCommand<TArgs, TDefinition> _command;
 
-            public CommandAction(BaseCommand<TArgs> command) => _command = command;
+            public CommandAction(BaseCommand<TArgs, TDefinition> command) => _command = command;
 
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {

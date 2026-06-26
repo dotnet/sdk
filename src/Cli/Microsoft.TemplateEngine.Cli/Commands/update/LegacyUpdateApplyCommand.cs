@@ -2,26 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class LegacyUpdateApplyCommand : BaseUpdateCommand
+    internal sealed class LegacyUpdateApplyCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewUpdateApplyLegacyCommandDefinition definition)
+        : BaseUpdateCommand<NewUpdateApplyLegacyCommandDefinition>(hostBuilder, definition)
     {
-        public LegacyUpdateApplyCommand(
-            NewCommand parentCommand,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(parentCommand, hostBuilder, "--update-apply", SymbolStrings.Command_Legacy_Update_Check_Description)
-        {
-            Hidden = true;
-            parentCommand.AddNoLegacyUsageValidators(this, except: new Option[] { InteractiveOption, AddSourceOption });
-        }
-
-        internal override Option<bool> InteractiveOption => ParentCommand.InteractiveOption;
-
-        internal override Option<string[]> AddSourceOption => ParentCommand.AddSourceOption;
-
         protected override Task<NewCommandStatus> ExecuteAsync(UpdateCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {
             PrintDeprecationMessage<LegacyUpdateApplyCommand, UpdateCommand>(args.ParseResult);

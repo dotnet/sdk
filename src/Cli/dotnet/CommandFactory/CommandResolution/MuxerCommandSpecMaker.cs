@@ -38,7 +38,7 @@ internal static class MuxerCommandSpecMaker
         {
             if (rollForwardArgument.Any())
             {
-                arguments.AddRange(commandArguments.Except(rollForwardArgument));
+                arguments.AddRange(commandArguments.Where(arg => !arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase)));
             }
             else
             {
