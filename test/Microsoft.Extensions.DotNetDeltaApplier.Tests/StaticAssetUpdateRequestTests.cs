@@ -5,9 +5,10 @@ using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class StaticAssetUpdateRequestTests
 {
-    [Fact]
+    [TestMethod]
     public async Task Roundtrip()
     {
         var initial = new StaticAssetUpdateRequest(
@@ -29,9 +30,9 @@ public class StaticAssetUpdateRequestTests
 
     private static void AssertEqual(StaticAssetUpdateRequest initial, StaticAssetUpdateRequest read)
     {
-        Assert.Equal(initial.Update.AssemblyName, read.Update.AssemblyName);
-        Assert.Equal(initial.Update.RelativePath, read.Update.RelativePath);
-        Assert.Equal(initial.Update.IsApplicationProject, read.Update.IsApplicationProject);
-        AssertEx.SequenceEqual(initial.Update.Contents, read.Update.Contents);
+        Assert.AreEqual(initial.Update.AssemblyName, read.Update.AssemblyName);
+        Assert.AreEqual(initial.Update.RelativePath, read.Update.RelativePath);
+        Assert.AreEqual(initial.Update.IsApplicationProject, read.Update.IsApplicationProject);
+        Assert.AreSequenceEqual(initial.Update.Contents, read.Update.Contents);
     }
 }

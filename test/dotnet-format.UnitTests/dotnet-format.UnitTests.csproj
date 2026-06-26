@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -8,7 +8,8 @@
     <RollForward>LatestMajor</RollForward>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);binaries\**;projects\**</DefaultExcludesInProjectFolder>
-    <OutputType>Exe</OutputType>
+    <!-- Tests rely on global process state, so run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +18,15 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Dotnet.Format\dotnet-format\dotnet-format.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
   </ItemGroup>
 
   <!-- Tests depend on the SdkTargetFramework reference assemblies -->

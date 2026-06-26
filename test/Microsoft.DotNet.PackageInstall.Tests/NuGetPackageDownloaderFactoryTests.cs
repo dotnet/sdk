@@ -9,16 +9,15 @@ using NuGet.Common;
 
 namespace Microsoft.DotNet.PackageInstall.Tests;
 
+[TestClass]
 public class NuGetPackageDownloaderFactoryTests : SdkTest
 {
-    public NuGetPackageDownloaderFactoryTests(ITestOutputHelper log) : base(log)
-    {
-    }
+    public NuGetPackageDownloaderFactoryTests() { }
 
     private static DirectoryPath GetTempDir() =>
         new(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
 
-    [Fact]
+    [TestMethod]
     public void CreateForWorkloads_ReturnsNonNullDownloader()
     {
         var tempDir = GetTempDir();
@@ -31,7 +30,7 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
         downloader.Should().BeOfType<NuGetPackageDownloader>();
     }
 
-    [Fact]
+    [TestMethod]
     public void CreateForWorkloads_WithAllParameters_ReturnsConfiguredDownloader()
     {
         var tempDir = GetTempDir();
@@ -50,7 +49,7 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
         downloader.Should().NotBeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void CreateForWorkloads_DefaultsSourceMappingToTrue()
     {
         // The factory method defaults shouldUsePackageSourceMapping to true,
@@ -65,7 +64,7 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
         downloader.Should().NotBeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void Constructor_WhenVerifyRequestedButPlatformUnsupported_LogsMessage()
     {
         // On non-Windows, requesting verification without the env var should log a message.

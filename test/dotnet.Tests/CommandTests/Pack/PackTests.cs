@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
@@ -7,13 +7,14 @@ using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Pack.Tests
 {
+    [TestClass]
     public class PackTests : SdkTest
     {
-        public PackTests(ITestOutputHelper log) : base(log)
+        public PackTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void OutputsPackagesToConfigurationSubdirWhenOutputParameterIsNotPassed()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
@@ -35,7 +36,7 @@ namespace Microsoft.DotNet.Pack.Tests
                                             });
         }
 
-        [Fact]
+        [TestMethod]
         public void OutputsPackagesFlatIntoOutputDirWhenOutputParameterIsPassed()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
@@ -55,7 +56,7 @@ namespace Microsoft.DotNet.Pack.Tests
                                             });
         }
 
-        [Fact]
+        [TestMethod]
         public void SettingVersionSuffixFlag_ShouldStampAssemblyInfoInOutputAssemblyAndPackage()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
@@ -82,7 +83,7 @@ namespace Microsoft.DotNet.Pack.Tests
             outputPackage.Should().Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void HasIncludedFiles()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("EndToEndTestApp")
@@ -105,7 +106,7 @@ namespace Microsoft.DotNet.Pack.Tests
                      .And.Contain(e => e.FullName == "anotherpath/pack2.txt");
         }
 
-        [Fact]
+        [TestMethod]
         public void PackAddsCorrectFilesForProjectsWithOutputNameSpecified()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")
@@ -139,9 +140,9 @@ namespace Microsoft.DotNet.Pack.Tests
                      .And.Contain(e => e.FullName == "lib/netstandard1.5/MyLibrary.pdb");
         }
 
-        [Theory]
-        [InlineData("TestAppSimple")]
-        [InlineData("FSharpTestAppSimple")]
+        [TestMethod]
+        [DataRow("TestAppSimple")]
+        [DataRow("FSharpTestAppSimple")]
         public void PackWorksWithLocalProject(string projectName)
         {
             var testInstance = TestAssetsManager.CopyTestAsset(projectName)
@@ -153,7 +154,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItImplicitlyRestoresAProjectWhenPackaging()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
@@ -165,7 +166,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotImplicitlyBuildAProjectWhenPackagingWithTheNoBuildOption()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
@@ -183,7 +184,7 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotImplicitlyRestoreAProjectWhenPackagingWithTheNoRestoreOption()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
@@ -196,7 +197,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .And.HaveStdOutContaining("project.assets.json");
         }
 
-        [Fact]
+        [TestMethod]
         public void HasServiceableFlagWhenArgumentPassed()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
@@ -226,10 +227,10 @@ namespace Microsoft.DotNet.Pack.Tests
 
             var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "serviceable");
 
-            Assert.Equal("true", node.Value);
+            Assert.AreEqual("true", node.Value);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPacksAppWhenRestoringToSpecificPackageDirectory()
         {
             var rootPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "TestProject");
@@ -260,7 +261,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Should().HaveFilesMatching("*.nupkg", SearchOption.AllDirectories);
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPackDoesNotPrintCopyrightInfo()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
@@ -278,7 +279,7 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPackAcceptsRuntimeOption()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
@@ -292,7 +293,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .And.HaveStdOutContaining("NETSDK1083");
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPack_AcceptsVersionOption()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
@@ -321,7 +322,7 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPack_FailsWhenVersionOptionHasNoValue()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
@@ -335,7 +336,7 @@ namespace Microsoft.DotNet.Pack.Tests
             result.StdErr.Should().Contain("Required argument missing for option: '--version'.");
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPack_AcceptsCustomProperties()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
@@ -365,9 +366,9 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [Theory]
-        [InlineData("Debug")]
-        [InlineData("Release")]
+        [TestMethod]
+        [DataRow("Debug")]
+        [DataRow("Release")]
         public void DotnetPack_AcceptsConfigurationOption(string configuration)
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecWithConfigFiles")
@@ -394,7 +395,7 @@ namespace Microsoft.DotNet.Pack.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPack_AcceptsOutputOption()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
@@ -418,7 +419,7 @@ namespace Microsoft.DotNet.Pack.Tests
             nuspecEntry.Should().NotBeNull("The .nuspec file should exist in the package.");
         }
 
-        [Fact]
+        [TestMethod]
         public void DotnetPack_FailsForNonExistentNuspec()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
