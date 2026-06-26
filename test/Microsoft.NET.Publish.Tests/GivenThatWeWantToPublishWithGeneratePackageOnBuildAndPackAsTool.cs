@@ -11,10 +11,7 @@ namespace Microsoft.NET.ToolPack.Tests
     public class GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool : SdkTest
     {
         [TestMethod]
-        [DataRow(false, false)]
-        [DataRow(false, true)]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
+        [CombinatorialData]
         public void It_publishes_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             Console.WriteLine(generatePackageOnBuild.ToString() + packAsTool.ToString());
@@ -39,10 +36,7 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [TestMethod]
-        [DataRow(false, false)]
-        [DataRow(false, true)]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
+        [CombinatorialData]
         public void It_builds_with_GeneratePackageOnBuild_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             TestAsset testAsset = TestAssetsManager

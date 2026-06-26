@@ -265,8 +265,7 @@ namespace Microsoft.NET.Publish.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_stores_when_targeting_netcoreapp3(bool isExe)
         {
             const string TFM = "netcoreapp3.0";

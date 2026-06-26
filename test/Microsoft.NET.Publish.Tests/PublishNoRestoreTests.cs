@@ -11,24 +11,21 @@ namespace Microsoft.NET.Publish.Tests;
 public class PublishNoRestoreTests : SdkTest
 {
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void PublishTrimmed(bool specifyRuntimeIdentifier)
     {
         TestNoRestore("PublishTrimmed", specifyRuntimeIdentifier);
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void PublishSingleFile(bool specifyRuntimeIdentifier)
     {
         TestNoRestore("PublishSingleFile", specifyRuntimeIdentifier);
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void PublishAot(bool specifyRuntimeIdentifier)
     {
         TestNoRestore("PublishAot", specifyRuntimeIdentifier);

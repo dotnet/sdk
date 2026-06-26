@@ -44,4 +44,8 @@
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Combinatorial.MSTest" />
+    <Using Include="Combinatorial.MSTest" />
+  </ItemGroup>
 </Project>

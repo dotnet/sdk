@@ -295,8 +295,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_supports_composite_r2r(bool extractAll)
         {
             var projName = "SingleFileTest";
@@ -890,8 +889,7 @@ class C
 
         [TestMethod]
         [RequiresMSBuildVersion("16.8.0")]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void It_errors_when_including_symbols_targeting_net5(bool selfContained)
         {
             var testProject = new TestProject()
