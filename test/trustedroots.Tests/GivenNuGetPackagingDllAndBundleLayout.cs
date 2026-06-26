@@ -9,6 +9,7 @@ namespace Microsoft.DotNet.Tests
     /// NuGet.Packaging.dll and the trustedroots bundle directory remain co-located in the SDK layout.
     /// Do not move either without coordinating with the NuGet team (https://github.com/NuGet/Home).
     /// </summary>
+    [TestClass]
     public class GivenNuGetPackagingDllAndBundleLayout : SdkTest
     {
         private const string ContractViolationMessage =
@@ -18,13 +19,12 @@ namespace Microsoft.DotNet.Tests
 
         private readonly string _sdkFolder;
 
-        public GivenNuGetPackagingDllAndBundleLayout(ITestOutputHelper log)
-            : base(log)
+        public GivenNuGetPackagingDllAndBundleLayout()
         {
             _sdkFolder = SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest;
         }
 
-        [Fact]
+        [TestMethod]
         public void NuGetPackagingDllIsCoLocatedWithTrustedRootsBundles()
         {
             string nugetPackagingDll = Path.Combine(_sdkFolder, "NuGet.Packaging.dll");

@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -10,9 +16,10 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
+    [TestClass]
     public class MergeConfigurationPropertiesTest
     {
-        [Fact]
+        [TestMethod]
         public void MergesProjectConfigurationWithProjectReferenceWhenMatchingReferenceFound()
         {
             var errorMessages = new List<string>();
@@ -51,7 +58,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             config.GetMetadata("AdditionalPublishPropertiesToRemove").Should().Be("TargetFramework;RuntimeIdentifier");
         }
 
-        [Fact]
+        [TestMethod]
         public void MergesProjectConfigurationWithProjectReference_UsesOSCasingForMatching()
         {
             var errorMessages = new List<string>();
@@ -80,7 +87,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             result.Should().Be(OperatingSystem.IsWindows());
         }
 
-        [Fact]
+        [TestMethod]
         public void FailswhenProjectReferenceNotFound()
         {
             var errorMessages = new List<string>();
@@ -103,7 +110,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             result.Should().Be(false);
         }
 
-        [Fact]
+        [TestMethod]
         public void MergesProjectConfigurationRespectsSetTargetFramework()
         {
             var errorMessages = new List<string>();
@@ -142,7 +149,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             config.GetMetadata("AdditionalPublishPropertiesToRemove").Should().Be("");
         }
 
-        [Fact]
+        [TestMethod]
         public void MergesProjectConfigurationRespectsSetPlatform()
         {
             var errorMessages = new List<string>();
@@ -181,7 +188,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             config.GetMetadata("AdditionalPublishPropertiesToRemove").Should().Be("");
         }
 
-        [Fact]
+        [TestMethod]
         public void MergesProjectConfigurationRespectsSetConfiguration()
         {
             var errorMessages = new List<string>();
@@ -220,7 +227,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             config.GetMetadata("AdditionalPublishPropertiesToRemove").Should().Be("");
         }
 
-        [Fact]
+        [TestMethod]
         public void MergesProjectConfigurationRespectsGlobalPropertiesToRemove()
         {
             var errorMessages = new List<string>();
