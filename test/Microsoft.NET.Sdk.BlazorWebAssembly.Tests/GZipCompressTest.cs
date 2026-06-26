@@ -17,9 +17,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     // while TaskEnvironment.ProjectDirectory points at a temp directory that does. If the task
     // resolved relative paths against the process CWD instead of the project directory, it would
     // fail to find the inputs and Execute() would return false.
+    [TestClass]
     public class GZipCompressTest
     {
-        [Fact]
+        [TestMethod]
         public void Compresses_ResolvingRelativePathsAgainstProjectDirectory_NotProcessCurrentDirectory()
         {
             var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(GZipCompressTest), Guid.NewGuid().ToString("N"));
@@ -66,7 +67,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Compresses_TwoInstancesWithDifferentProjectDirectories_AreIndependent()
         {
             var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(GZipCompressTest), Guid.NewGuid().ToString("N"));
