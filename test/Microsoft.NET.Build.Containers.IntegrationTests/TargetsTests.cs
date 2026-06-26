@@ -17,7 +17,7 @@ public class TargetsTests
         string os,
         string prop,
         bool value,
-        params string[] expectedAppCommandArgs)
+        string[] expectedAppCommandArgs)
     {
         var (project, _, d) = ProjectInitializer.InitProject(new()
         {
