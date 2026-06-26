@@ -123,7 +123,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (field.IsDefault)
             {
-                field = LanguageService.Instance.FindDirectives(Builder.EntryPointSourceFile, reportAllErrors: false, ThrowingReporter);
+                field = FileLevelDirectiveHelpers.FindDirectives(Builder.EntryPointSourceFile, reportAllErrors: false, ThrowingReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -153,7 +153,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         .AsReadOnly());
 
-        Builder = new VirtualProjectBuilder(BuildService.Instance, LanguageService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
+        Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
     public override int Execute()

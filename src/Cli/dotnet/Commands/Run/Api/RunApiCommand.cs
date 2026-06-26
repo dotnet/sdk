@@ -66,7 +66,6 @@ internal abstract class RunApiInput
         {
             var builder = new VirtualProjectBuilder(
                 BuildService.Instance,
-                LanguageService.Instance,
                 entryPointFileFullPath: EntryPointFileFullPath,
                 targetFramework: VirtualProjectBuildingCommand.TargetFramework,
                 artifactsPath: ArtifactsPath);

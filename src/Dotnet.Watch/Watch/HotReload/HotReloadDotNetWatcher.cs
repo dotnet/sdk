@@ -1007,11 +1007,11 @@ internal sealed class HotReloadDotNetWatcher
             {
                 if (targetFramework == null)
                 {
-                    if (FileBasedProgramAccessor.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFramework) is { } framework and not "")
+                    if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFramework) is { } framework and not "")
                     {
                         targetFramework = framework;
                     }
-                    else if (FileBasedProgramAccessor.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFrameworks) is { } frameworks and not "")
+                    else if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFrameworks) is { } frameworks and not "")
                     {
                         var frameworkList = frameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
