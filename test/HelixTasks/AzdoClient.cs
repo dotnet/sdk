@@ -19,10 +19,7 @@ internal sealed class AzdoClient : IDisposable
     public AzdoClient(string projectUri, string accessToken)
     {
         _projectUri = projectUri.TrimEnd('/');
-        _httpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(30)
-        };
+        _httpClient = new HttpClient();
 
         if (!string.IsNullOrEmpty(accessToken))
         {
