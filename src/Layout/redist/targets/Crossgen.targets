@@ -186,40 +186,36 @@
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
         DestinationPath="%(RoslynTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
         TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(FSharpTargets.FullPath)"
         DestinationPath="%(FSharpTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
         TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(FSharpFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(RemainingTargets.FullPath)"
         DestinationPath="%(RemainingTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
         TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(RazorToolTargets.FullPath)"
         DestinationPath="%(RazorToolTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
         TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RazorToolFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
