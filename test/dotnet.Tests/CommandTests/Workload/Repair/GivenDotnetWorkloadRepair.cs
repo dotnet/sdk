@@ -31,8 +31,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenNoWorkloadsAreInstalledRepairIsNoOp(bool userLocal)
         {
             _reporter.Clear();
@@ -58,8 +57,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenExtraPacksInstalledRepairGarbageCollects(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -108,8 +106,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenMissingPacksRepairFixesInstall(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -155,8 +152,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenMissingManifestsInWorkloadSetModeRepairReinstallsManifests(bool userLocal)
         {
             var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider) =

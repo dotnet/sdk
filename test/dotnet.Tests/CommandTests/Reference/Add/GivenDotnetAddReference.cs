@@ -674,8 +674,7 @@ Commands:
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void WhenIncompatibleFrameworkDetectedItPrintsError(bool useFrameworkArg)
         {
             var setup = Setup(useFrameworkArg.ToString());
