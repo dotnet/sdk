@@ -14,4 +14,8 @@
     <ProjectReference Include="$(RepoRoot)src\Compatibility\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Combinatorial.MSTest" />
+    <Using Include="Combinatorial.MSTest" />
+  </ItemGroup>
 </Project>

@@ -3137,8 +3137,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void TestAttributeWithInternalTypeArgumentOmitted(bool includeInternalSymbols)
         {
             string expected = includeInternalSymbols ? """
