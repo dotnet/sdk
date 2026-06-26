@@ -38,4 +38,8 @@
     <EmbeddedResource Include="..\..\src\Cli\dotnet\CliStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Combinatorial.MSTest" />
+    <Using Include="Combinatorial.MSTest" />
+  </ItemGroup>
 </Project>
