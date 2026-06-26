@@ -113,7 +113,7 @@ Group files by area to guide how deeply to review each. The first five areas are
 | Localization | `**/*.resx`, `**/*.xlf` | `.resx` is the source of truth; `.xlf` must be regenerated via the `/t:UpdateXlf` target, never hand-edited (see conventions) |
 | Generated docs | `documentation/manpages/sdk/**` | Should never be manually edited — flag if hand-modified |
 | Build/Infra | `eng/**`, `Directory.Build.props`, `Directory.Build.targets`, `*.slnx` | Unintended side effects, breaking conditional logic |
-| Tests | `test/**` | Scenario-accurate regression coverage, target/platform gating, would-fail-without-the-fix |
+| Tests | `test/**` | Scenario-accurate regression coverage, target/platform gating, tests that would fail without the fix |
 
 ## Step 4: Review the Code
 
