@@ -33,9 +33,6 @@
 
     <!-- Promote info-severity MSTest analyzer rules to warnings and critical rules to errors. -->
     <MSTestAnalysisMode>Recommended</MSTestAnalysisMode>
-
-    <!-- MSTest.Sdk projects must use MTP runner; VSTest is no longer supported on .NET 10+ SDK. -->
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
 </Project>
