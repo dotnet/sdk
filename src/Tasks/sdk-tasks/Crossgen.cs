@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public string TargetArchitecture { get; set; }
 
+        [Required]
         public string TargetOS { get; set; }
 
         public string CrossgenPath { get; set; }
@@ -108,10 +109,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         private string GetArchitecture() => $"--targetarch {TargetArchitecture}";
 
-        // Explicitly specify the target OS. When omitted, crossgen2 defaults to the OS it is
-        // running on, which produces images for the wrong OS when cross-compiling (e.g. building
-        // an OpenBSD SDK on a Linux host). An empty value preserves the host-default behavior.
-        private string GetTargetOS() => string.IsNullOrEmpty(TargetOS) ? string.Empty : $"--targetos {TargetOS}";
+        private string GetTargetOS() => $"--targetos {TargetOS}";
 
         private string GetCreateSymbols() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
 
