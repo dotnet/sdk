@@ -124,8 +124,8 @@ namespace Microsoft.NET.Build.Tasks
                     item.ItemSpec,
                     path,
                     item.GetMetadata("TargetingPackFormat"),
-                    item.GetMetadata("TargetFramework"),
-                    item.GetMetadata("Profile"),
+                    item.GetMetadata(MetadataKeys.TargetFramework),
+                    item.GetMetadata(MetadataKeys.Profile),
                     item.GetMetadata(MetadataKeys.NuGetPackageId),
                     item.GetMetadata(MetadataKeys.NuGetPackageVersion),
                     item.GetMetadata(MetadataKeys.PackageConflictPreferredPackages));
