@@ -14,6 +14,9 @@
   "features": {
     "ghcr.io/devcontainers/features/sshd:1": {
         "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+        "version": "latest"
     }
   },
   // Use 'postCreateCommand' to run commands after the container is created.
