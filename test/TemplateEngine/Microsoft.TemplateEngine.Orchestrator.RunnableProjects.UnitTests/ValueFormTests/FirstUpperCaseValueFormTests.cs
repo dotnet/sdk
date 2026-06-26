@@ -6,15 +6,17 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
+    [TestClass]
+    [DoNotParallelize]
     public class FirstUpperCaseValueFormTests
     {
-        [Theory]
-        [InlineData("a", "A", null)]
-        [InlineData("no", "No", null)]
-        [InlineData("new", "New", null)]
-        [InlineData("", "", null)]
-        [InlineData("indigo", "İndigo", "tr-TR")]
-        [InlineData("ındigo", "Indigo", "tr-TR")]
+        [TestMethod]
+        [DataRow("a", "A", null)]
+        [DataRow("no", "No", null)]
+        [DataRow("new", "New", null)]
+        [DataRow("", "", null)]
+        [DataRow("indigo", "İndigo", "tr-TR")]
+        [DataRow("ındigo", "Indigo", "tr-TR")]
         public void FirstUpperCaseWorksAsExpected(string input, string expected, string? culture)
         {
             if (!string.IsNullOrEmpty(culture))
@@ -24,14 +26,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 
             IValueForm model = new FirstUpperCaseValueFormFactory().Create("test");
             string actual = model.Process(input, new Dictionary<string, IValueForm>());
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleNullValue()
         {
             IValueForm model = new FirstUpperCaseValueFormFactory().Create("test");
-            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
+            Assert.ThrowsExactly<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }

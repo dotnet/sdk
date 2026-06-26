@@ -10,7 +10,6 @@ using static Microsoft.DotNet.Configurer.UnitTests.GivenADotnetFirstTimeUseConfi
 
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenADotnetFirstTimeUseConfigurerWithStateSetup
     {
