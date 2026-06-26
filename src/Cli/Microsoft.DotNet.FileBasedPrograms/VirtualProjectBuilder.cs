@@ -109,8 +109,8 @@ sealed class VirtualProjectBuilder
     internal static IEnumerable<KeyValuePair<string, string>> GetGlobalBuildProperties() =>
     [
         // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
-        KeyValuePair.Create("_BuildNonexistentProjectsByDefault", bool.TrueString),
-        KeyValuePair.Create("RestoreUseSkipNonexistentTargets", bool.FalseString),
+        new KeyValuePair<string, string>("_BuildNonexistentProjectsByDefault", bool.TrueString),
+        new KeyValuePair<string, string>("RestoreUseSkipNonexistentTargets", bool.FalseString),
     ];
 
     internal static string GetArtifactsPath(string entryPointFileFullPath)
