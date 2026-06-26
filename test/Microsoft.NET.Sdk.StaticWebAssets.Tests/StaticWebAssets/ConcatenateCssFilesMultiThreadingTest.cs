@@ -10,13 +10,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation these tests perform.
+// Test parallelization is disabled assembly-wide: the MSTest.Sdk project sets
+// MSTestParallelizeScope=None, which emits [assembly: DoNotParallelize] and runs
+// tests sequentially, isolating the process-CWD mutation this test performs.
+[TestClass]
 public class ConcatenateCssFilesMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void ReadsInputsAndWritesBundleRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ConcatenateCssFilesMultiThreadingTest), Guid.NewGuid().ToString("N"));
