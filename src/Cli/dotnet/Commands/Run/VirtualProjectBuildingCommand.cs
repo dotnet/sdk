@@ -147,7 +147,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(VirtualProjectBuilder.GetGlobalBuildProperties(), StringComparer.OrdinalIgnoreCase)
         {
             { "ProvideCommandLineArgs", bool.TrueString },
-        }.AsReadOnly());
+        }
+        .AsReadOnly());
+
+        NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
 
         Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
@@ -300,7 +303,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
-                    BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
+                    // We don't include ClearCachesAfterBuild flag unlike MSBuild's implicit restore
+                    // to avoid evicting the virtual project asynchronously (https://github.com/dotnet/msbuild/issues/14148).
+                    // It shouldn't make a difference for us because the restore has distinct global properties, so all projects will be re-evaluated anyway.
+                    BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
 
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
