@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return;
             }
 
-            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            var compilation = await project.GetCompilationAsync(cancellationToken);
             if (compilation is null)
             {
                 return;
@@ -74,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     reportSuppressedDiagnostics: false);
                 var analyzerCompilation = compilation.WithAnalyzers(analyzers, analyzerOptions);
 
-                diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
+                diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken);
                 diagnostics = diagnostics.AddRange(compilerDiagnostics);
             }
 
