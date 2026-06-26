@@ -39,6 +39,8 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
     [Required]
     public ITaskItem[] Endpoints { get; set; }
 
+    public ITaskItem[] StaticWebAssetGroups { get; set; }
+
     [Required]
     public string ManifestPath { get; set; }
 
@@ -80,6 +82,8 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
                 .Select(StaticWebAssetsManifest.ReferencedProjectConfiguration.FromTaskItem)
                 .ToArray();
 
+            var groups = StaticWebAssetGroup.FromItemGroupToArray(StaticWebAssetGroups);
+
             PersistManifest(
                 StaticWebAssetsManifest.Create(
                     Source,
@@ -89,7 +93,8 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
                     referencedProjectsConfiguration,
                     discoveryPatterns,
                     [.. assets],
-                    endpoints));
+                    endpoints,
+                    groups));
         }
         catch (Exception ex)
         {

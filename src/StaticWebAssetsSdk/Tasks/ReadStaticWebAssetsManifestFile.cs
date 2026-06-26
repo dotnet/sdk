@@ -25,6 +25,9 @@ public class ReadStaticWebAssetsManifestFile : Task, IMultiThreadableTask
     [Output]
     public ITaskItem[] ReferencedProjectsConfiguration { get; set; }
 
+    [Output]
+    public ITaskItem[] StaticWebAssetGroups { get; set; }
+
     public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     public override bool Execute()
@@ -48,6 +51,8 @@ public class ReadStaticWebAssetsManifestFile : Task, IMultiThreadableTask
             DiscoveryPatterns = manifest.DiscoveryPatterns?.Select(dp => dp.ToTaskItem()).ToArray() ?? [];
 
             ReferencedProjectsConfiguration = manifest.ReferencedProjectsConfiguration?.Select(m => m.ToTaskItem()).ToArray() ?? [];
+
+            StaticWebAssetGroups = manifest.Groups?.Select(g => g.ToTaskItem()).ToArray() ?? [];
         }
         catch (Exception ex)
         {
