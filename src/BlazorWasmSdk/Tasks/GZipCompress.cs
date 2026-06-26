@@ -31,16 +31,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         {
             CompressedFiles = new ITaskItem[FilesToCompress.Length];
 
-            AbsolutePath outputDirectory = TaskEnvironment.GetAbsolutePath(OutputDirectory);
+            var outputDirectory = TaskEnvironment.GetAbsolutePath(OutputDirectory);
             Directory.CreateDirectory(outputDirectory);
 
-            // TaskEnvironment is not thread-safe, so resolve every absolute input path up front on
-            // the calling thread before fanning work out to the parallel loop below. Canonicalizing
-            // the project-relative absolute path matches the previous "FullPath" metadata semantics.
             var inputFullPaths = new string[FilesToCompress.Length];
             for (var i = 0; i < FilesToCompress.Length; i++)
             {
-                inputFullPaths[i] = Path.GetFullPath((string)TaskEnvironment.GetAbsolutePath(FilesToCompress[i].ItemSpec));
+                inputFullPaths[i] = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(FilesToCompress[i].ItemSpec));
             }
 
             Parallel.For(0, FilesToCompress.Length, i =>
