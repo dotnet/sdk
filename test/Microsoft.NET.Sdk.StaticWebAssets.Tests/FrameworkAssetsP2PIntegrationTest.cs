@@ -1,16 +1,23 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Xml.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class FrameworkAssetsP2PIntegrationTest(ITestOutputHelper log) : AspNetSdkTest(log)
+    [TestClass]
+    public class FrameworkAssetsP2PIntegrationTest : AspNetSdkTest
     {
-        [Fact]
+        [TestMethod]
         public void Build_Consumer_MaterializesFrameworkAssetsFromProjectReference()
         {
             var intermediateOutputPath = BuildConsumerWithFrameworkPattern();
@@ -45,7 +52,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_Consumer_NonMatchingAssetsRemainUnchanged()
         {
             var intermediateOutputPath = BuildConsumerWithFrameworkPattern();
@@ -61,7 +68,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "CSS assets not matching FrameworkPattern should remain as Project type");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_Consumer_MaterializedFrameworkAssetFilesExistOnDisk()
         {
             var intermediateOutputPath = BuildConsumerWithFrameworkPattern();
@@ -73,7 +80,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             materializedFiles.Should().NotBeEmpty("JS framework assets should be copied to the fx/ directory");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_Consumer_EndpointsExistForMaterializedFrameworkAssets()
         {
             var intermediateOutputPath = BuildConsumerWithFrameworkPattern();

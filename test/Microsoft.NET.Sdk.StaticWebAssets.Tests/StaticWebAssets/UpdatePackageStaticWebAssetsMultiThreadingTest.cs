@@ -10,14 +10,11 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation this test performs.
+[TestClass]
 public class UpdatePackageStaticWebAssetsMultiThreadingTest
 {
     // Relative ContentRoot should resolve against TaskEnvironment.ProjectDirectory, not process CWD.
-    [Fact]
+    [TestMethod]
     public void NormalizesContentRootRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(UpdatePackageStaticWebAssetsMultiThreadingTest), Guid.NewGuid().ToString("N"));

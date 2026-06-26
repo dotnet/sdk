@@ -84,6 +84,9 @@ namespace Microsoft.NET.Publish.Tests
                 .WithProjectChanges(project => SetGlobalTrimMode(project, trimMode));
 
             var publishCommand = new PublishCommand(testAsset);
+            // Run from the (per-DataRow unique) project directory so the "-bl" binary log is written there
+            // instead of the shared current directory, where parallel DataRows would collide on msbuild.binlog.
+            publishCommand.WorkingDirectory = Path.Combine(testAsset.TestRoot, projectName);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "-bl").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;

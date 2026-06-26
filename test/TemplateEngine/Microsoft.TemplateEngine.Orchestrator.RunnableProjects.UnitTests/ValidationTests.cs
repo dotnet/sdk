@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
@@ -8,51 +8,57 @@ using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
-    public class ValidationTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class ValidationTests : TestBase
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        public TestContext TestContext { get; set; } = null!;
 
-        public ValidationTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        [Fact]
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
         public async Task ValidateAllTestTemplates()
         {
             string[] exceptions = new[] { "MissingConfigTest" };
 
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             using IMountPoint sourceMountPoint = environmentSettings.MountPath(TestTemplatesLocation);
             RunnableProjectGenerator generator = new();
-            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, TestContext.Current.CancellationToken);
+            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, TestContext.CancellationToken);
 
             IEnumerable<ScannedTemplateInfo> filteredTemplates = loadedTemplates.Where(t => !exceptions.Contains(t.ConfigurationModel.Identity));
 
-            Assert.True(filteredTemplates.All(t => t.IsValid));
+            Assert.IsTrue(filteredTemplates.All(t => t.IsValid));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ValidateAllSampleTemplates()
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             using IMountPoint sourceMountPoint = environmentSettings.MountPath(SampleTemplatesLocation);
             RunnableProjectGenerator generator = new();
-            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, TestContext.Current.CancellationToken);
-            Assert.True(loadedTemplates.All(t => t.IsValid));
+            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, TestContext.CancellationToken);
+            Assert.IsTrue(loadedTemplates.All(t => t.IsValid));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ValidateInvalidTemplate()
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             using IMountPoint sourceMountPoint = environmentSettings.MountPath(GetTestTemplateLocation("Invalid/MissingMandatoryConfig"));
             RunnableProjectGenerator generator = new();
-            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, TestContext.Current.CancellationToken);
+            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, TestContext.CancellationToken);
 
-            ScannedTemplateInfo loadedTemplate = Assert.Single(loadedTemplates);
-            Assert.False(loadedTemplate.IsValid);
-            Assert.Equal(2, loadedTemplate.ValidationErrors.Count(ve => ve.Severity == IValidationEntry.SeverityLevel.Error));
+            ScannedTemplateInfo loadedTemplate = Assert.ContainsSingle(loadedTemplates);
+            Assert.IsFalse(loadedTemplate.IsValid);
+            Assert.HasCount(2, loadedTemplate.ValidationErrors.Where(ve => ve.Severity == IValidationEntry.SeverityLevel.Error));
         }
     }
 }
