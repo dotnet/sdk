@@ -88,8 +88,7 @@ namespace CompatTests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void RemovedInternalInterfaceIsReportedWhenIncludeInternals(bool includeInternals)
         {
             string leftSyntax = @"
@@ -171,8 +170,7 @@ namespace CompatTests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void SameOnBothSidesDoesNotFail(bool strictMode)
         {
             string leftSyntax = @"

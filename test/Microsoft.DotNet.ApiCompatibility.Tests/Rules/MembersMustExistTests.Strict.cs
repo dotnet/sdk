@@ -145,8 +145,7 @@ namespace CompatTests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void IncludeInternalsIsRespectedForMembers_IndividualAssemblies(bool includeInternals)
         {
             string rightSyntax = @"

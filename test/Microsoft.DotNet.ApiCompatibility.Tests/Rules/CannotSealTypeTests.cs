@@ -43,8 +43,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void SealInheritableTypeInternalsVisibleReported(bool includeInternals)
         {
             string leftSyntax = @"

@@ -114,8 +114,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void AssemblyKeyTokenMustBeCompatible(bool strictMode)
         {
             string syntax = "namespace EmptyNs { }";
@@ -134,8 +133,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void LeftAssemblyKeyTokenNull(bool strictMode)
         {
             string syntax = "namespace EmptyNs { }";
@@ -162,8 +160,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void RightAssemblyKeyTokenNull(bool strictMode)
         {
             string syntax = "namespace EmptyNs { }";
@@ -183,8 +180,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void RetargetableFlagSet(bool strictMode)
         {
             string syntax = @"

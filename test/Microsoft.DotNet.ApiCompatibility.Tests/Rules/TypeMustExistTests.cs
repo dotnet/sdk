@@ -211,8 +211,7 @@ namespace CompatTests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void InternalTypesAreIgnoredWhenSpecified(bool includeInternalSymbols)
         {
             string leftSyntax = @"
@@ -249,8 +248,7 @@ namespace CompatTests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void MissingNestedTypeIsReported(bool includeInternalSymbols)
         {
             string leftSyntax = @"
