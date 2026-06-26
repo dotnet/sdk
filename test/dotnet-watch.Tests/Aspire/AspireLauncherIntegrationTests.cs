@@ -111,8 +111,21 @@ public class AspireLauncherIntegrationTests : MSTestFramework::Microsoft.NET.Tes
         serviceA.Start(testAsset, ["--entrypoint", serviceProjectA]);
         serviceB.Start(testAsset, ["--entrypoint", serviceProjectB]);
 
-        using var statusCancellationSource = new CancellationTokenSource();
-        var statusReaderTask = PipeUtilities.ReadStatusEventsAsync(statusPipeName, statusCancellationSource.Token);
+        // The expected status events delivered by the server over the status pipe (listed in causal order;
+        // the assertion below compares them order-independently). The reader stops once it has received this
+        // many events, so we don't need to cancel based on the server's output, which races with delivery.
+        string[] expectedStatusEvents =
+        [
+            $"type=build_complete, projects=[{serviceProjectA};{serviceProjectB}]",
+            $"type=building, projects=[{serviceProjectA};{serviceProjectB}]",
+            $"type=hot_reload_applied, projects=[{serviceProjectA};{serviceProjectB}]",
+            $"type=process_started, projects=[{serviceProjectA}]",
+            $"type=process_started, projects=[{serviceProjectA}]",
+            $"type=process_started, projects=[{serviceProjectB}]",
+            $"type=restarting, projects=[{serviceProjectA}]",
+        ];
+
+        var statusReaderTask = PipeUtilities.ReadStatusEventsAsync(statusPipeName, expectedStatusEvents.Length, TestContext.CancellationToken);
 
         server.Start(testAsset,
         [
@@ -168,19 +181,14 @@ public class AspireLauncherIntegrationTests : MSTestFramework::Microsoft.NET.Tes
         // initial updates are applied when the process restarts:
         await server.WaitUntilOutputContains(MessageDescriptor.SendingUpdateBatch.GetMessage(0), $"A ({tfm})");
 
-        statusCancellationSource.Cancel();
+        // The reader completes once all expected status events have been received (or the test times out),
+        // so there is no race between cancellation and status delivery.
         var statusEvents = await statusReaderTask;
 
-        // validate that we received the expected status events from the server, ignoring the order:
+        // validate that we received the expected status events from the server, ignoring the order
+        // (both sequences are sorted so the comparison does not depend on event arrival order):
         AssertEx.SequenceEqual(
-        [
-            $"type=build_complete, projects=[{serviceProjectA};{serviceProjectB}]",
-            $"type=building, projects=[{serviceProjectA};{serviceProjectB}]",
-            $"type=hot_reload_applied, projects=[{serviceProjectA};{serviceProjectB}]",
-            $"type=process_started, projects=[{serviceProjectA}]",
-            $"type=process_started, projects=[{serviceProjectA}]",
-            $"type=process_started, projects=[{serviceProjectB}]",
-            $"type=restarting, projects=[{serviceProjectA}]",
-        ], statusEvents.Select(e => $"type={e.Type}, projects=[{string.Join(";", e.Projects.Order())}]").Order());
+            expectedStatusEvents.Order(),
+            statusEvents.Select(e => $"type={e.Type}, projects=[{string.Join(";", e.Projects.Order())}]").Order());
     }
 }
