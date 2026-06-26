@@ -8,16 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
+    <BundledDotnetTool Include="aspnetcoretools"
+                       Condition="'$(DotNetBuildSourceOnly)' != 'true'"
+                       Version="$(MicrosoftAspNetCoreAppRefPackageVersion)"
+                       ObsoletesCliTool="Microsoft.Extensions.SecretManager.Tools"
+                       RidSpecificPackageRids="$(AspNetCoreRidSpecificToolPackageRids)"
+                       RidSpecificPackageVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)" />
+    <!-- Source-only builds do not publish the Native AOT aggregate executable. -->
     <!-- RID-specific tool packages are produced by aspnetcore and use the current aspnetcore package version. -->
     <BundledDotnetTool Include="dotnet-dev-certs"
+                       Condition="'$(DotNetBuildSourceOnly)' == 'true'"
                        Version="$(DotnetDevCertsPackageVersion)"
                        RidSpecificPackageRids="$(AspNetCoreRidSpecificToolPackageRids)"
                        RidSpecificPackageVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)" />
     <BundledDotnetTool Include="dotnet-user-jwts"
+                       Condition="'$(DotNetBuildSourceOnly)' == 'true'"
                        Version="$(DotnetUserJwtsPackageVersion)"
                        RidSpecificPackageRids="$(AspNetCoreRidSpecificToolPackageRids)"
                        RidSpecificPackageVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)" />
     <BundledDotnetTool Include="dotnet-user-secrets"
+                       Condition="'$(DotNetBuildSourceOnly)' == 'true'"
                        Version="$(DotnetUserSecretsPackageVersion)"
                        ObsoletesCliTool="Microsoft.Extensions.SecretManager.Tools"
                        RidSpecificPackageRids="$(AspNetCoreRidSpecificToolPackageRids)"
