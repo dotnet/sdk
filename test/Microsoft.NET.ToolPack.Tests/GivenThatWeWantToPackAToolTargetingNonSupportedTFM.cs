@@ -8,26 +8,21 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackAToolTargetingNonSupportedTFM : SdkTest
     {
-
-        public GivenThatWeWantToPackAToolTargetingNonSupportedTFM(ITestOutputHelper log) : base(log)
-        {
-
-        }
-
-        [Theory]
+        [TestMethod]
         // lower than netcoreapp2.0
-        [InlineData("TargetFramework", "netcoreapp2.0", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
-        [InlineData("TargetFramework", "netcoreapp1.1", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
-        [InlineData("TargetFrameworks", "netcoreapp2.0;netcoreapp2.1", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
+        [DataRow("TargetFramework", "netcoreapp2.0", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
+        [DataRow("TargetFramework", "netcoreapp1.1", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
+        [DataRow("TargetFrameworks", "netcoreapp2.0;netcoreapp2.1", "DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21")]
         // non netcoreapp
-        [InlineData("TargetFramework", "netstandard2.0", "DotnetToolOnlySupportNetcoreapp")]
+        [DataRow("TargetFramework", "netstandard2.0", "DotnetToolOnlySupportNetcoreapp")]
         public void It_should_fail_with_error_message(string targetFrameworkProperty,
             string targetFramework,
             string expectedErrorResourceName)
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                                         .CopyTestAsset("PortableTool", "PackNonSupportedTFM", identifier: targetFrameworkProperty + targetFramework)
                                         .WithSource()
                                         .WithProjectChanges(project =>
@@ -50,7 +45,8 @@ namespace Microsoft.NET.ToolPack.Tests
             result.StdOut.Should().Contain(expectedErrorMessage);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_should_fail_with_error_message_on_fullframework()
         {
             It_should_fail_with_error_message("TargetFramework", "net46", "DotnetToolOnlySupportNetcoreapp");

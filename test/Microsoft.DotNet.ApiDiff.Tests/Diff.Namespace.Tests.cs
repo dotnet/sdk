@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffNamespaceTests : DiffBaseTests
 {
     #region Block-scoped namespaces
 
-    [Fact]
+    [TestMethod]
     public Task BlockScopedNamespaceAdd() => RunTestAsync(
                 beforeCode: "",
                 afterCode: """
@@ -27,7 +28,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 + }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task BlockScopedNamespaceChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyBeforeNamespace
@@ -60,7 +61,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 + }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task BlockScopedNamespaceDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyDeletedNamespace
@@ -80,7 +81,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 - }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task BlockScopedNamespaceSortAlphabetically() =>
         // The output is block scoped
         RunTestAsync(
@@ -138,7 +139,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 + }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task BlockScopedNamespaceUnchanged() => RunTestAsync(
                 beforeCode: """
                 namespace MyAddedNamespace
@@ -162,7 +163,7 @@ public class DiffNamespaceTests : DiffBaseTests
 
     #region File-scoped namespaces
 
-    [Fact]
+    [TestMethod]
     public Task FileScopedNamespaceAdd() =>
         // The output is block scoped
         RunTestAsync(
@@ -182,7 +183,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 + }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task FileScopedNamespaceChange() =>
         // The output is block scoped
         RunTestAsync(
@@ -213,7 +214,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 + }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task FileScopedNamespaceDelete() =>
         // The output is block scoped
         RunTestAsync(
@@ -233,7 +234,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 - }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task FileScopedNamespaceUnchanged() =>
         RunTestAsync(
                 beforeCode: """
@@ -254,7 +255,7 @@ public class DiffNamespaceTests : DiffBaseTests
 
     #region Exclusions
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeAddedNamespace() => RunTestAsync(
                 beforeCode: "",
                 afterCode: """
@@ -265,7 +266,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["N:MyNamespace.MyNamespace"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeModifiedNamespace() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace1
@@ -280,7 +281,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["N:MyNamespace.MyNamespace1", "N:MyNamespace.MyNamespace2"]);
 
-    [Fact]
+    [TestMethod]
     public Task ExcludeRemovedNamespace() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -295,7 +296,7 @@ public class DiffNamespaceTests : DiffBaseTests
 
     #region Full names
 
-    [Fact]
+    [TestMethod]
     public Task NamespaceUsingDependencyKeepFullName() =>
         // If the same assembly contains two APIs in two different namespaces, but the two namespaces
         // share a prefix of their name, and a reference to the API from the other namespace is
@@ -323,7 +324,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 + }
                 """);
 
-    [Fact]
+    [TestMethod]
     public Task NamespacesSameAssemblyDependencyKeepFullName() =>
         // If the same assembly contains two APIs in two different namespaces, but the two namespaces
         // share a prefix of their name, and a reference to the API from the other namespace is

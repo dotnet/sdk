@@ -8,8 +8,11 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class ResolveRuntimePackAssets : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveRuntimePackAssets : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         public ITaskItem[] ResolvedRuntimePacks { get; set; }
 
         public ITaskItem[] FrameworkReferences { get; set; } = Array.Empty<ITaskItem>();
@@ -113,7 +116,11 @@ namespace Microsoft.NET.Build.Tasks
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);
 
-                if (string.IsNullOrEmpty(runtimePackRoot) || !Directory.Exists(runtimePackRoot))
+                AbsolutePath absoluteRuntimePackRoot = string.IsNullOrEmpty(runtimePackRoot)
+                    ? default
+                    : TaskEnvironment.GetAbsolutePath(runtimePackRoot);
+
+                if (absoluteRuntimePackRoot == default || !Directory.Exists(absoluteRuntimePackRoot))
                 {
                     if (!DesignTimeBuild)
                     {
@@ -141,13 +148,14 @@ namespace Microsoft.NET.Build.Tasks
                     continue;
                 }
 
-                var runtimeListPath = Path.Combine(runtimePackRoot, "data", "RuntimeList.xml");
+                string runtimeListPath = Path.Combine(runtimePackRoot, "data", "RuntimeList.xml");
+                AbsolutePath absoluteRuntimeListPath = new(Path.Combine("data", "RuntimeList.xml"), absoluteRuntimePackRoot);
 
-                if (File.Exists(runtimeListPath))
+                if (File.Exists(absoluteRuntimeListPath))
                 {
                     var runtimePackAlwaysCopyLocal = runtimePack.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
-                    AddRuntimePackAssetsFromManifest(runtimePackAssets, runtimePackRoot, runtimeListPath, runtimePack, runtimePackAlwaysCopyLocal, profiles);
+                    AddRuntimePackAssetsFromManifest(runtimePackAssets, absoluteRuntimePackRoot, absoluteRuntimeListPath, runtimePack, runtimePackAlwaysCopyLocal, profiles);
                 }
                 else
                 {
@@ -158,12 +166,12 @@ namespace Microsoft.NET.Build.Tasks
             RuntimePackAssets = runtimePackAssets.ToArray();
         }
 
-        private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, string runtimePackRoot,
-            string runtimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal, HashSet<string> profiles)
+        private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, AbsolutePath absoluteRuntimePackRoot,
+            AbsolutePath absoluteRuntimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal, HashSet<string> profiles)
         {
             var assetSubPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            XDocument frameworkListDoc = XDocument.Load(runtimeListPath);
+            XDocument frameworkListDoc = XDocument.Load(absoluteRuntimeListPath);
             // profile feature is only supported in net9.0 and later. We would ignore it for previous versions.
             bool profileSupported = false;
             string targetFrameworkVersion = frameworkListDoc.Root.Attribute("TargetFrameworkVersion")?.Value;
@@ -196,7 +204,10 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 //  Call GetFullPath to normalize slashes
-                string assetPath = Path.GetFullPath(Path.Combine(runtimePackRoot, fileElement.Attribute("Path").Value));
+                string pathAttributeValue = fileElement.Attribute("Path").Value;
+                string assetPath = string.IsNullOrEmpty(pathAttributeValue)
+                    ? Path.GetFullPath(absoluteRuntimePackRoot)
+                    : Path.GetFullPath(new AbsolutePath(pathAttributeValue, absoluteRuntimePackRoot));
 
                 string typeAttributeValue = fileElement.Attribute("Type").Value;
                 string assetType;
@@ -219,7 +230,7 @@ namespace Microsoft.NET.Build.Tasks
                     culture = fileElement.Attribute("Culture")?.Value;
                     if (culture == null)
                     {
-                        throw new BuildErrorException($"Culture not set in runtime manifest for {assetPath}");
+                        throw new BuildErrorException($"Culture not set in runtime manifest for {Path.GetFullPath(Path.Combine(runtimePack.GetMetadata(MetadataKeys.PackageDirectory), fileElement.Attribute("Path").Value))}");
                     }
                     if (SatelliteResourceLanguages.Length >= 1 &&
                         !SatelliteResourceLanguages.Any(lang => string.Equals(lang.ItemSpec, culture, StringComparison.OrdinalIgnoreCase)))
@@ -229,7 +240,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else
                 {
-                    throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {runtimeListPath}");
+                    throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {Path.Combine(absoluteRuntimePackRoot.OriginalValue, absoluteRuntimeListPath.OriginalValue)}");
                 }
 
                 var assetItem = CreateAssetItem(assetPath, assetType, runtimePack, culture);

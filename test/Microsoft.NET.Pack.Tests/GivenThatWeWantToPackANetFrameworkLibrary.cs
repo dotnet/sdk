@@ -1,17 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Pack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackANetFrameworkLibrary : SdkTest
     {
-        public GivenThatWeWantToPackANetFrameworkLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ImplicitReferencesAreNotIncludedAsFrameworkReferences()
         {
             TestProject testProject = new()
@@ -33,7 +32,8 @@ namespace Microsoft.NET.Pack.Tests
             frameworkAssemblies.Should().BeNull();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ExplicitReferencesAreIncludedAsFrameworkReferences()
         {
             TestProject testProject = new()
@@ -69,7 +69,7 @@ namespace Microsoft.NET.Pack.Tests
 
         private string PackAndGetNuspecPath(TestProject testProject, string identifier = null, Action<XDocument> xmlAction = null)
         {
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
 
             if (xmlAction != null)
             {

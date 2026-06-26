@@ -1,18 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Sln.Migrate.Tests
 {
+    [TestClass]
     public class GivenDotnetSlnMigrate : SdkTest
     {
-        public GivenDotnetSlnMigrate(ITestOutputHelper log) : base(log) { }
+        public GivenDotnetSlnMigrate() { }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenSlnFileIsValidShouldGenerateValidSlnxFile(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithEmptySln")
                 .WithSource()
                 .Path;

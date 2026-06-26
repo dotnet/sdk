@@ -89,7 +89,7 @@ internal sealed class ToolListLocalCommand : CommandBase<ToolListCommandDefiniti
                 Manifest = p.SourceManifest.Value
             })]
         };
-        var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+        var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.JsonContext.VersionedDataContractLocalToolListJsonContractArray);
         _reporter.WriteLine(jsonText);
     }
 }

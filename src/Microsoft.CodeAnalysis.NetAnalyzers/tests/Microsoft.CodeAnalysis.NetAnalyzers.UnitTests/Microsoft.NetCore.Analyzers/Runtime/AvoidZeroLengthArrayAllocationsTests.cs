@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Reflection;
@@ -782,7 +783,7 @@ class C
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
                 TestCode = source,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -800,7 +801,7 @@ class C
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
                 TestCode = source,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -836,7 +837,7 @@ class C
                     VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(7, 23).WithArguments("Array.Empty<int>()"),
 #pragma warning restore RS0030 // Do not use banned APIs
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

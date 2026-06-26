@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -10,9 +16,11 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
+[TestClass]
+
 public class UpdateStaticWebAssetEndpointsTest
 {
-    [Fact]
+    [TestMethod]
     public void CanUpdateEndpoint_AppendResponseHeaders()
     {
         // Arrrange
@@ -57,7 +65,7 @@ public class UpdateStaticWebAssetEndpointsTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void CanUpdateEndpoint_RemoveResponseHeaders()
     {
         // Arrrange
@@ -98,7 +106,7 @@ public class UpdateStaticWebAssetEndpointsTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void CanUpdateEndpoint_RemoveAllResponseHeaders()
     {
         // Arrrange
@@ -143,7 +151,7 @@ public class UpdateStaticWebAssetEndpointsTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void CanUpdateEndpoint_RemoveAllResponseHeadersWithValue()
     {
         // Arrrange
@@ -189,7 +197,7 @@ public class UpdateStaticWebAssetEndpointsTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void CanUpdateEndpoint_ReplaceResponseHeaders()
     {
         // Arrrange
@@ -230,7 +238,7 @@ public class UpdateStaticWebAssetEndpointsTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void CanUpdateEndpoint_RetainsNonModifiedEndpointsWithSameRoute()
     {
         // Arrrange

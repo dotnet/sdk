@@ -3,15 +3,22 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using System.Text.Json;
 using System.IO.Compression;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelper log) : AspNetSdkBaselineTest(log)
+[TestClass]
+public class StaticWebAssetsContentFingerprintingIntegrationTest : AspNetSdkBaselineTest
 {
-    [Fact]
+    [TestMethod]
     public void Build_FingerprintsContent_WhenEnabled()
     {
         var expectedManifest = LoadBuildManifest();
@@ -54,8 +61,8 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         { "BlazorWasmMinimal", "_framework/blazor.webassembly.js", "_framework/blazor.webassembly#[.{fingerprint}].js", false, true }
     };
 
-    [Theory]
-    [MemberData(nameof(OverrideHtmlAssetPlaceholdersData))]
+    [TestMethod]
+    [DynamicData(nameof(OverrideHtmlAssetPlaceholdersData))]
     public void Build_OverrideHtmlAssetPlaceholders(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
@@ -72,8 +79,24 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript, expectPreloadElement: testAsset == "VanillaWasm");
     }
 
-    [Theory]
-    [MemberData(nameof(OverrideHtmlAssetPlaceholdersData))]
+    [TestMethod]
+    public void Build_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions()
+    {
+        ProjectDirectory = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(Build_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions));
+        EnableDefaultDocumentAndSpaFallback();
+        ReplaceStringInIndexHtml(ProjectDirectory, "main.js", "main#[.{fingerprint}].js");
+        FingerprintUserJavascriptAssets(true);
+
+        var build = CreateBuildCommand(ProjectDirectory);
+        ExecuteCommand(build, "-p:OverrideHtmlAssetPlaceholders=true", "-p:FingerprintUserJavascriptAssets=true").Should().Pass();
+
+        var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+        var endpointsManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.endpoints.json");
+        AssertAdditionalEndpointDefinitionsExist(endpointsManifestPath);
+    }
+
+    [TestMethod]
+    [DynamicData(nameof(OverrideHtmlAssetPlaceholdersData))]
     public void Publish_OverrideHtmlAssetPlaceholders(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
@@ -90,6 +113,51 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         var endpointsManifestPath = Path.Combine(outputPath, $"{projectName}.staticwebassets.endpoints.json");
 
         AssertImportMapInHtml(indexHtmlOutputPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript, expectPreloadElement: testAsset == "VanillaWasm", assertHtmlCompressed: true);
+    }
+
+    [TestMethod]
+    public void Publish_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions()
+    {
+        ProjectDirectory = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(Publish_OverrideHtmlAssetPlaceholders_PreservesAdditionalEndpointDefinitions));
+        EnableDefaultDocumentAndSpaFallback();
+        ReplaceStringInIndexHtml(ProjectDirectory, "main.js", "main#[.{fingerprint}].js");
+        FingerprintUserJavascriptAssets(true);
+
+        var projectName = Path.GetFileNameWithoutExtension(Directory.EnumerateFiles(ProjectDirectory.TestRoot, "*.csproj").Single());
+        var publish = CreatePublishCommand(ProjectDirectory);
+        ExecuteCommand(publish, "-p:OverrideHtmlAssetPlaceholders=true", "-p:FingerprintUserJavascriptAssets=true").Should().Pass();
+
+        var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+        var endpointsManifestPath = Path.Combine(outputPath, $"{projectName}.staticwebassets.endpoints.json");
+        AssertAdditionalEndpointDefinitionsExist(endpointsManifestPath);
+    }
+
+    private void EnableDefaultDocumentAndSpaFallback()
+    {
+        ProjectDirectory.WithProjectChanges(p =>
+        {
+            if (p.Root != null)
+            {
+                p.Root.AddFirst(
+                    new XElement("PropertyGroup",
+                        new XElement("StaticWebAssetDefaultDocumentEnabled", "true"),
+                        new XElement("StaticWebAssetSpaFallbackEnabled", "true")));
+            }
+        });
+    }
+
+    private static void AssertAdditionalEndpointDefinitionsExist(string endpointsManifestPath)
+    {
+        var endpoints = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(File.ReadAllText(endpointsManifestPath));
+        endpoints.Should().NotBeNull();
+
+        var indexEndpoint = endpoints.Endpoints.Single(e => e.Route == "index.html" && e.Selectors.Length == 0);
+        var defaultDocumentEndpoint = endpoints.Endpoints.Single(e => e.Route == "/" && e.Selectors.Length == 0);
+        var spaFallbackEndpoint = endpoints.Endpoints.Single(e => e.Route == "{**fallback:nonfile}" && e.Selectors.Length == 0);
+
+        defaultDocumentEndpoint.AssetFile.Should().Be(indexEndpoint.AssetFile);
+        spaFallbackEndpoint.AssetFile.Should().Be(indexEndpoint.AssetFile);
+        spaFallbackEndpoint.Order.Should().Be("2147483647");
     }
 
     private void FingerprintUserJavascriptAssets(bool fingerprintUserJavascriptAssets)

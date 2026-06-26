@@ -15,7 +15,7 @@ parameters:
   testRunnerAdditionalArguments: ''
   enableSbom: true
   populateInternalRuntimeVariables: false
-  timeoutInMinutes: 150
+  timeoutInMinutes: ''
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
@@ -23,7 +23,6 @@ parameters:
   targetArchitecture: x64
   publishArgument: ''
   signArgument: ''
-  runTestsAsTool: false
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -47,7 +46,12 @@ jobs:
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
     helixRepo: dotnet/sdk
-    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    ${{ if ne(parameters.timeoutInMinutes, '') }}:
+      timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    ${{ elseif eq(parameters.pool.os, 'macOS') }}:
+      timeoutInMinutes: 90
+    ${{ else }}:
+      timeoutInMinutes: 60
     enableMicrobuild: true
     enablePublishBuildAssets: true
     enableTelemetry: true
@@ -97,7 +101,6 @@ jobs:
           ${{ parameters.signArgument }}
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
@@ -106,6 +109,7 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+          MSBUILDALWAYSRETRY: true
 
     - ${{ else }}:
       - script: |
@@ -120,7 +124,6 @@ jobs:
           ${{ parameters.signArgument }} \
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
-          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
           /p:TargetRid=${{ parameters.runtimeIdentifier }} \
           ${{ parameters.osProperties }} \
@@ -131,28 +134,25 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+          MSBUILDALWAYSRETRY: true
+          TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
-      - ${{ if eq(parameters.runAoTTests, true) }}:
-        # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
-        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
-          workingDirectory: $(Build.SourcesDirectory)/artifacts/bin
-          displayName: 🟣 Install wasm-tools Workload
 
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: eng/common/build.ps1
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
+            -binaryLogName ${{ parameters.categoryName }}Tests.binlog
             /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
             /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Run ${{ parameters.categoryName }} Tests
-          condition: succeeded()
+            /p:EnableHelixJobMonitor=true
+          displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -167,6 +167,7 @@ jobs:
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
+            --binaryLogName ${{ parameters.categoryName }}Tests.binlog
             '/p:Projects="${{ parameters.testProjects }}"'
             /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
@@ -174,14 +175,14 @@ jobs:
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
-            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Run ${{ parameters.categoryName }} Tests
-          condition: succeeded()
+            /p:EnableHelixJobMonitor=true
+          displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
+            TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:
@@ -222,7 +223,45 @@ jobs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
         # This is the job name, but because of "legacy reasons", both Agent.JobName and System.JobName are not the actual job name.
         # See: https://developercommunity.visualstudio.com/t/systemjobname-seems-to-be-incorrectly-assigned-and/1209736#TPIN-N1211828
-        ArtifactName: $(System.PhaseName)
+        ArtifactName: $(System.PhaseName)_Logs
         publishLocation: Container
       continueOnError: true
       condition: always()
+
+    # Only the AoT legs publish the dotnet-aot NativeAOT library, so only they produce
+    # the size-analysis files. Gate these steps so they don't run (and upload empty
+    # artifacts) on non-AoT legs like the TestBuild/FullFramework jobs.
+    - ${{ if eq(parameters.runAoTTests, true) }}:
+      - task: CopyFiles@2
+        displayName: 🟣 Copy NativeAOT Size Analysis Files
+        inputs:
+          SourceFolder: $(Build.SourcesDirectory)/artifacts/obj/dotnet-aot
+          # the three relevant files for size analysis are
+          # 1. dotnet-aot.mstat - the main size analysis file
+          # 2. dotnet-aot.codegen.dgml.xml - the code generation dependency graph
+          # 3. dotnet-aot.scan.dgml.xml - the scan dependency graph
+          # and each is going to be in the <config>/<tfm>/<rid>/native directory
+          Contents: |
+            $(buildConfiguration)/*/*/native/dotnet-aot.mstat
+            $(buildConfiguration)/*/*/native/dotnet-aot.codegen.dgml.xml
+            $(buildConfiguration)/*/*/native/dotnet-aot.scan.dgml.xml
+          TargetFolder: $(Build.ArtifactStagingDirectory)/aot-size-analysis
+          flattenFolders: true
+        continueOnError: true
+        condition: not(canceled())
+
+      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+        displayName: 🟣 Publish NativeAOT Size Analysis
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)/aot-size-analysis
+          artifactName: $(System.PhaseName)_AotSizeAnalysis
+        continueOnError: true
+        condition: not(canceled())
+
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+      displayName: 🟣 Publish Built Assets
+      inputs:
+        targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
+        artifactName: $(System.PhaseName)_Assets
+      continueOnError: true
+      condition: not(canceled())

@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli.Sln.Remove.Tests
 {
+    [TestClass]
     public class GivenDotnetSlnRemove : SdkTest
     {
         private Func<string, string> HelpText = (defaultVal) => $@"Description:
@@ -23,15 +24,15 @@ Arguments:
 Options:
   -?, -h, --help    Show command line help.";
 
-        public GivenDotnetSlnRemove(ITestOutputHelper log) : base(log)
+        public GivenDotnetSlnRemove()
         {
         }
 
-        [Theory]
-        [InlineData("sln", "--help")]
-        [InlineData("sln", "-h")]
-        [InlineData("solution", "--help")]
-        [InlineData("solution", "-h")]
+        [TestMethod]
+        [DataRow("sln", "--help")]
+        [DataRow("sln", "-h")]
+        [DataRow("solution", "--help")]
+        [DataRow("solution", "-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string solutionCommand, string helpArg)
         {
             var cmd = new DotnetCommand(Log)
@@ -40,9 +41,9 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenTooManyArgumentsArePassedItPrintsError(string solutionCommand)
         {
             var cmd = new DotnetCommand(Log)
@@ -52,11 +53,11 @@ Options:
 {string.Format(CliStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
         }
 
-        [Theory]
-        [InlineData("sln", "")]
-        [InlineData("sln", "unknownCommandName")]
-        [InlineData("solution", "")]
-        [InlineData("solution", "unknownCommandName")]
+        [TestMethod]
+        [DataRow("sln", "")]
+        [DataRow("sln", "unknownCommandName")]
+        [DataRow("solution", "")]
+        [DataRow("solution", "unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string solutionCommand, string commandName)
         {
             var cmd = new DotnetCommand(Log)
@@ -65,19 +66,19 @@ Options:
             cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
-        [Theory]
-        [InlineData("sln", "idontexist.sln")]
-        [InlineData("sln", "idontexist.slnx")]
-        [InlineData("sln", "ihave?invalidcharacters")]
-        [InlineData("sln", "ihaveinv@lidcharacters")]
-        [InlineData("sln", "ihaveinvalid/characters")]
-        [InlineData("sln", "ihaveinvalidchar\\acters")]
-        [InlineData("solution", "idontexist.sln")]
-        [InlineData("solution", "idontexist.slnx")]
-        [InlineData("solution", "ihave?invalidcharacters")]
-        [InlineData("solution", "ihaveinv@lidcharacters")]
-        [InlineData("solution", "ihaveinvalid/characters")]
-        [InlineData("solution", "ihaveinvalidchar\\acters")]
+        [TestMethod]
+        [DataRow("sln", "idontexist.sln")]
+        [DataRow("sln", "idontexist.slnx")]
+        [DataRow("sln", "ihave?invalidcharacters")]
+        [DataRow("sln", "ihaveinv@lidcharacters")]
+        [DataRow("sln", "ihaveinvalid/characters")]
+        [DataRow("sln", "ihaveinvalidchar\\acters")]
+        [DataRow("solution", "idontexist.sln")]
+        [DataRow("solution", "idontexist.slnx")]
+        [DataRow("solution", "ihave?invalidcharacters")]
+        [DataRow("solution", "ihaveinv@lidcharacters")]
+        [DataRow("solution", "ihaveinvalid/characters")]
+        [DataRow("solution", "ihaveinvalidchar\\acters")]
         public void WhenNonExistingSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionName)
         {
             var cmd = new DotnetCommand(Log)
@@ -87,14 +88,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
@@ -108,14 +109,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectoryRoot = _testAssetsManager
+            var projectDirectoryRoot = TestAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -134,14 +135,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
@@ -154,12 +155,12 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenNoSolutionExistsInTheDirectoryRemovePrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -173,12 +174,12 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
@@ -192,14 +193,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenPassedAReferenceNotInSlnItPrintsStatus(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -215,14 +216,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public async Task WhenPassedAReferenceItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -246,14 +247,14 @@ Options:
             solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public async Task WhenPassedAReferenceWithoutExtensionItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -277,14 +278,14 @@ Options:
             solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenSolutionItemsExistInFolderParentFoldersAreNotRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -304,12 +305,13 @@ Options:
                 .BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/47860")]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/47860")]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public async Task WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndDuplicateProjectReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -334,14 +336,14 @@ Options:
             solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public async Task WhenPassedMultipleReferencesAndOneOfThemDoesNotExistItRemovesTheOneThatExists(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -370,14 +372,14 @@ Options:
             solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public async Task WhenReferenceIsRemovedBuildConfigsAreAlsoRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -400,14 +402,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public async Task WhenDirectoryContainingProjectIsGivenProjectIsRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -429,14 +431,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -453,14 +455,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -477,14 +479,14 @@ Options:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public async Task WhenReferenceIsRemovedSlnBuilds(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -523,12 +525,12 @@ Options:
             outputDirectory.Should().HaveFile("App.dll");
         }
 
-        [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
+        [TestMethod]
+        [DataRow("sln")]
+        [DataRow("solution")]
         public void WhenProjectIsRemovedSolutionHasUTF8BOM(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -564,14 +566,14 @@ Options:
             }
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public async Task WhenFinalReferenceIsRemovedEmptySectionsAreRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -594,14 +596,14 @@ Options:
             solutionContents.Should().BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenNestedProjectIsRemovedItsSolutionFoldersAreRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -619,14 +621,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenFinalNestedProjectIsRemovedSolutionFoldersAreRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndLastCsprojInSubDirToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -644,14 +646,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenProjectIsRemovedThenDependenciesOnProjectAreAlsoRemoved(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnProjectDependencyToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
@@ -669,14 +671,14 @@ Options:
                 .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
@@ -696,7 +698,7 @@ Options:
 
         private string GetSolutionFileTemplateContents(string templateFileName)
         {
-            var templateContentDirectory = _testAssetsManager
+            var templateContentDirectory = TestAssetsManager
                 .CopyTestAsset("SolutionFilesTemplates", identifier: "SolutionFilesTemplates")
                 .WithSource()
                 .Path;

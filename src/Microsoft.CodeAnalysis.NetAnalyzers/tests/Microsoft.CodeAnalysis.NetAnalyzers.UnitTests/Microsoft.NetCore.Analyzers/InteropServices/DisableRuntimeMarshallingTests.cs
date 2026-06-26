@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -1618,7 +1619,7 @@ End Structure
 
             test.TestState.Sources.Add(additionalSourceFile);
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyCSAnalyzerWithAdditionalAssemblyAsync(string source, string additionalReferencedAssemblySource)
@@ -1640,7 +1641,7 @@ End Structure
             test.TestState.AdditionalProjects.Add(AdditionalAssemblyName, additionalProject);
             test.TestState.AdditionalProjectReferences.Add(AdditionalAssemblyName);
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static Task VerifyCSAnalyzerAsync(string source, bool allowUnsafeBlocks = false)
@@ -1673,7 +1674,7 @@ End Structure
             test.FixedState.MarkupHandling = MarkupMode.Allow;
             test.MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyVBAnalyzerAsync(string source)
@@ -1686,7 +1687,7 @@ End Structure
             };
             test.MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

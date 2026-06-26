@@ -1,0 +1,103 @@
+﻿Microsoft.TemplateEngine.TestHelper.AssemblyComponentCatalog
+Microsoft.TemplateEngine.TestHelper.AssemblyComponentCatalog.AssemblyComponentCatalog(System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly!>! assemblies) -> void
+Microsoft.TemplateEngine.TestHelper.AssemblyComponentCatalog.Count.get -> int
+Microsoft.TemplateEngine.TestHelper.AssemblyComponentCatalog.GetEnumerator() -> System.Collections.Generic.IEnumerator<(System.Type!, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent!)>!
+Microsoft.TemplateEngine.TestHelper.AssemblyComponentCatalog.this[int index].get -> (System.Type!, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent!)
+Microsoft.TemplateEngine.TestHelper.BuiltInTemplatePackagesProviderFactory
+Microsoft.TemplateEngine.TestHelper.BuiltInTemplatePackagesProviderFactory.BuiltInTemplatePackagesProviderFactory(params string![]! pathsToProbe) -> void
+Microsoft.TemplateEngine.TestHelper.BuiltInTemplatePackagesProviderFactory.CreateProvider(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! settings) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider!
+Microsoft.TemplateEngine.TestHelper.BuiltInTemplatePackagesProviderFactory.DisplayName.get -> string!
+Microsoft.TemplateEngine.TestHelper.BuiltInTemplatePackagesProviderFactory.Id.get -> System.Guid
+Microsoft.TemplateEngine.TestHelper.EnvironmentSettingsHelper
+Microsoft.TemplateEngine.TestHelper.EnvironmentSettingsHelper.CreateEnvironment(string? locale = null, bool virtualize = false, string! hostIdentifier = "", bool loadDefaultGenerator = true, Microsoft.TemplateEngine.Abstractions.IEnvironment? environment = null, System.Collections.Generic.IReadOnlyList<(System.Type!, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent!)>? additionalComponents = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.Logging.ILoggerProvider!>? addLoggerProviders = null) -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings!
+Microsoft.TemplateEngine.TestHelper.EnvironmentSettingsHelper.CreateTemporaryFolder(string! name = "") -> string!
+Microsoft.TemplateEngine.TestHelper.EnvironmentSettingsHelper.Dispose() -> void
+Microsoft.TemplateEngine.TestHelper.EnvironmentSettingsHelper.EnvironmentSettingsHelper(Xunit.Abstractions.IMessageSink! messageSink) -> void
+Microsoft.TemplateEngine.TestHelper.InMemoryLoggerProvider
+Microsoft.TemplateEngine.TestHelper.InMemoryLoggerProvider.CreateLogger(string! categoryName) -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.TestHelper.InMemoryLoggerProvider.Dispose() -> void
+Microsoft.TemplateEngine.TestHelper.InMemoryLoggerProvider.InMemoryLoggerProvider(System.Collections.Generic.List<(Microsoft.Extensions.Logging.LogLevel, string!)>! messagesCollection) -> void
+Microsoft.TemplateEngine.TestHelper.LongRunningConstraintFactory
+Microsoft.TemplateEngine.TestHelper.LongRunningConstraintFactory.CreateTemplateConstraintAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.Constraints.ITemplateConstraint!>!
+Microsoft.TemplateEngine.TestHelper.LongRunningConstraintFactory.Id.get -> System.Guid
+Microsoft.TemplateEngine.TestHelper.LongRunningConstraintFactory.LongRunningConstraintFactory(string! type, int msDelay) -> void
+Microsoft.TemplateEngine.TestHelper.LongRunningConstraintFactory.Type.get -> string!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.CreateDirectory(string! path) -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.CreateFile(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoriesScanned.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoryScanParameters!>!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoryDelete(string! path, bool recursive) -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoryExists(string! directory) -> bool
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoryScanParameters
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoryScanParameters.DirectoryName.get -> string!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoryScanParameters.DirectoryScanParameters(string! directoryName, string! pattern, System.IO.SearchOption searchOption) -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoryScanParameters.Pattern.get -> string!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.DirectoryScanParameters.SearchOption.get -> System.IO.SearchOption
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.EnumerateDirectories(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.EnumerateFiles(string! path, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.EnumerateFileSystemEntries(string! directoryName, string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.FileCopy(string! sourcePath, string! targetPath, bool overwrite) -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.FileDelete(string! path) -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.FileExists(string! file) -> bool
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.FilesOpened.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.FilesWatched.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.GetCurrentDirectory() -> string!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.GetFileAttributes(string! file) -> System.IO.FileAttributes
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.GetLastWriteTimeUtc(string! file) -> System.DateTime
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.MonitoredFileSystem(Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem! baseFileSystem) -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.OpenRead(string! path) -> System.IO.Stream!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.PathRelativeTo(string! target, string! relativeTo) -> string!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.ReadAllBytes(string! path) -> byte[]!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.ReadAllText(string! path) -> string!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.Reset() -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.WriteAllText(string! path, string! value) -> void
+Microsoft.TemplateEngine.TestHelper.PackageManager
+Microsoft.TemplateEngine.TestHelper.PackageManager.Dispose() -> void
+Microsoft.TemplateEngine.TestHelper.PackageManager.GetNuGetPackage(string! templatePackName, string? version = null, NuGet.Versioning.NuGetVersion? minimumVersion = null, NuGet.Common.ILogger? logger = null, string? downloadDirectory = null) -> System.Threading.Tasks.Task<string!>!
+Microsoft.TemplateEngine.TestHelper.PackageManager.PackageManager() -> void
+Microsoft.TemplateEngine.TestHelper.PackageManager.PackNuGetPackage(string! projectPath, NuGet.Common.ILogger? logger = null) -> string!
+Microsoft.TemplateEngine.TestHelper.SharedTestOutputHelper
+Microsoft.TemplateEngine.TestHelper.SharedTestOutputHelper.SharedTestOutputHelper(Xunit.Abstractions.IMessageSink! sink) -> void
+Microsoft.TemplateEngine.TestHelper.SharedTestOutputHelper.WriteLine(string! format, params object![]! args) -> void
+Microsoft.TemplateEngine.TestHelper.SharedTestOutputHelper.WriteLine(string! message) -> void
+Microsoft.TemplateEngine.TestHelper.StringExtensions
+Microsoft.TemplateEngine.TestHelper.TestConstraintFactory
+Microsoft.TemplateEngine.TestHelper.TestConstraintFactory.CreateTemplateConstraintAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.Constraints.ITemplateConstraint!>!
+Microsoft.TemplateEngine.TestHelper.TestConstraintFactory.Id.get -> System.Guid
+Microsoft.TemplateEngine.TestHelper.TestConstraintFactory.TestConstraintFactory(string! type) -> void
+Microsoft.TemplateEngine.TestHelper.TestConstraintFactory.Type.get -> string!
+Microsoft.TemplateEngine.TestHelper.TestFileSystemUtils
+Microsoft.TemplateEngine.TestHelper.TestHost
+Microsoft.TemplateEngine.TestHelper.TestHost.Dispose() -> void
+Microsoft.TemplateEngine.TestHelper.TestHost.HostParamDefaults.get -> System.Collections.Generic.Dictionary<string!, string!>!
+Microsoft.TemplateEngine.TestHelper.TestHost.HostParamDefaults.set -> void
+Microsoft.TemplateEngine.TestHelper.TestLoggerFactory
+Microsoft.TemplateEngine.TestHelper.TestLoggerFactory.AddProvider(Microsoft.Extensions.Logging.ILoggerProvider! provider) -> void
+Microsoft.TemplateEngine.TestHelper.TestLoggerFactory.CreateLogger() -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.TestHelper.TestLoggerFactory.CreateLogger(string! categoryName) -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.TestHelper.TestLoggerFactory.Dispose() -> void
+Microsoft.TemplateEngine.TestHelper.TestLoggerFactory.TestLoggerFactory(Xunit.Abstractions.IMessageSink? messageSink = null) -> void
+Microsoft.TemplateEngine.TestHelper.TestUtils
+Microsoft.TemplateEngine.TestHelper.XunitLoggerProvider
+Microsoft.TemplateEngine.TestHelper.XunitLoggerProvider.CreateLogger(string! categoryName) -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.TestHelper.XunitLoggerProvider.Dispose() -> void
+Microsoft.TemplateEngine.TestHelper.XunitLoggerProvider.XunitLoggerProvider(Xunit.Abstractions.ITestOutputHelper! output) -> void
+Microsoft.TemplateEngine.TestHelper.XunitLoggerProvider.XunitLoggerProvider(Xunit.Abstractions.ITestOutputHelper! output, Microsoft.Extensions.Logging.LogLevel minLevel) -> void
+Microsoft.TemplateEngine.TestHelper.XunitLoggerProvider.XunitLoggerProvider(Xunit.Abstractions.ITestOutputHelper! output, Microsoft.Extensions.Logging.LogLevel minLevel, System.DateTimeOffset? logStart) -> void
+static Microsoft.TemplateEngine.TestHelper.BuiltInTemplatePackagesProviderFactory.GetComponents(params string![]! pathsToProbe) -> System.Collections.Generic.List<(System.Type!, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent!)>!
+static Microsoft.TemplateEngine.TestHelper.StringExtensions.UnixifyLineBreaks(this string! input) -> string!
+static Microsoft.TemplateEngine.TestHelper.TestFileSystemUtils.GetTempVirtualizedPath(this Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> string!
+static Microsoft.TemplateEngine.TestHelper.TestFileSystemUtils.MountPath(this Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, string! sourceBasePath) -> Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint!
+static Microsoft.TemplateEngine.TestHelper.TestFileSystemUtils.WriteFile(this Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, string! filePath, string? fileContent) -> void
+static Microsoft.TemplateEngine.TestHelper.TestFileSystemUtils.WriteTemplateSource(this Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, string! sourceBasePath, System.Collections.Generic.IDictionary<string!, string?>! templateSourceFileNamesWithContent) -> void
+static Microsoft.TemplateEngine.TestHelper.TestHost.GetVirtualHost(string! hostIdentifier = "", Microsoft.TemplateEngine.Abstractions.IEnvironment? environment = null, System.Collections.Generic.IReadOnlyList<(System.Type!, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent!)>? additionalComponents = null, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? defaultParameters = null) -> Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost!
+static Microsoft.TemplateEngine.TestHelper.TestUtils.AttemptSearch<T, TEx>(int count, System.TimeSpan interval, System.Func<System.Threading.Tasks.Task<T>!>! execute) -> System.Threading.Tasks.Task<T>!
+static Microsoft.TemplateEngine.TestHelper.TestUtils.CompareFiles(string! file1, string! file2) -> bool
+static Microsoft.TemplateEngine.TestHelper.TestUtils.CreateTemporaryFolder(string! name = "") -> string!
+static Microsoft.TemplateEngine.TestHelper.TestUtils.DirectoryCopy(string! sourceDirName, string! destDirName, bool copySubDirs) -> void
+static Microsoft.TemplateEngine.TestHelper.TestUtils.SetupNuGetConfigForPackagesLocation(string! projectDirectory, string! packagesLocation) -> void
+static readonly Microsoft.TemplateEngine.TestHelper.BuiltInTemplatePackagesProviderFactory.FactoryId -> System.Guid
+static readonly Microsoft.TemplateEngine.TestHelper.TestFileSystemUtils.DefaultConfigRelativePath -> string!
