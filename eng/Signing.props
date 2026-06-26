@@ -26,6 +26,9 @@
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
     <FileSignInfo Include="Moq.dll" CertificateName="None" />
 
+    <!-- Third party DLLs used by product -->
+    <FileSignInfo Include="Humanizer.dll" CertificateName="3PartySHA2" />
+
     <!-- Binary test asset -->
     <FileSignInfo Include="testwpf.dll" CertificateName="None" />
 
