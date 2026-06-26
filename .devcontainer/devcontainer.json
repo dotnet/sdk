@@ -15,9 +15,8 @@
     "ghcr.io/devcontainers/features/sshd:1": {
         "version": "latest"
     },
-    "ghcr.io/devcontainers/features/github-cli:1": {
-        "version": "latest"
-    }
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/copilot-cli:1": {}
   },
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/post-creation.sh",

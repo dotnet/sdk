@@ -10,5 +10,3 @@
 # this script is run from repo root so shellcheck warning about relative-path lookups can be ignored
 # shellcheck disable=SC1091
 . ./artifacts/sdk-build-env.sh
-# install GitHub Copilot CLI extension
-gh extension install github/gh-copilot
