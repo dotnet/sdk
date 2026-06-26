@@ -154,15 +154,22 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             Dictionary<string, TestExecutionInfo>? history = null;
             if (!string.IsNullOrEmpty(AzdoProjectUri) && !string.IsNullOrEmpty(AzdoAccessToken) && AzdoDefinitionId > 0)
             {
-                var historyManager = new TestHistoryManager(
-                    AzdoProjectUri!,
-                    AzdoAccessToken!,
-                    AzdoDefinitionId,
-                    AzdoTargetBranch,
-                    AzdoPhaseName,
-                    Log);
+                try
+                {
+                    var historyManager = new TestHistoryManager(
+                        AzdoProjectUri!,
+                        AzdoAccessToken!,
+                        AzdoDefinitionId,
+                        AzdoTargetBranch,
+                        AzdoPhaseName,
+                        Log);
 
-                history = await historyManager.GetTestHistoryAsync();
+                    history = await historyManager.GetTestHistoryAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log.LogWarning("Failed to retrieve test history (will fall back to count-based scheduling): {0}", ex.Message);
+                }
             }
             else
             {

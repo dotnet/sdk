@@ -117,9 +117,9 @@ internal sealed class TestHistoryManager
             _log?.LogMessage("TestHistoryManager: Retrieved duration data for {0} test methods.", history.Count);
             return history.Count > 0 ? history : null;
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        catch (Exception ex)
         {
-            _log?.LogWarning("TestHistoryManager: Failed to retrieve test history: {0}", ex.Message);
+            _log?.LogWarning("TestHistoryManager: Failed to retrieve test history (will fall back to count-based scheduling): {0}", ex.Message);
             return null;
         }
     }
