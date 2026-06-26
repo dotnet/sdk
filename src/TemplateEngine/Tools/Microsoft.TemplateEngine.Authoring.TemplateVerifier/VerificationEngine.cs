@@ -34,9 +34,10 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         /// <summary>
         /// Signature of a Verify directory-verification entry point. This intentionally mirrors the
         /// shape of <c>VerifyXunit.Verifier.VerifyDirectory</c> and <c>VerifyMSTest.Verifier.VerifyDirectory</c>
-        /// so that either can be assigned directly as a method group.
+        /// (including their <see cref="SettingsTask"/> return type) so that either can be assigned directly
+        /// as a method group.
         /// </summary>
-        public delegate Task VerifyDirectoryDelegate(
+        public delegate SettingsTask VerifyDirectoryDelegate(
             string path,
             Func<string, bool>? include,
             string? pattern,
@@ -285,7 +286,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         // the load of Verify.XunitV3) only happens when no framework-specific override has been supplied.
         // When DirectoryVerifier is set (for example to the MSTest verifier) this method is never invoked.
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Task DefaultVerifyDirectory(
+        private static SettingsTask DefaultVerifyDirectory(
             string path,
             Func<string, bool>? include,
             string? pattern,
