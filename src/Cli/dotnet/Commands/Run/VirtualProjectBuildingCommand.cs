@@ -144,14 +144,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         MSBuildArgs msbuildArgs,
         string? artifactsPath = null)
     {
-        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(VirtualProjectBuilder.GetGlobalBuildProperties(), StringComparer.OrdinalIgnoreCase)
         {
-            // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
-            { "_BuildNonexistentProjectsByDefault", bool.TrueString },
-            { "RestoreUseSkipNonexistentTargets", bool.FalseString },
             { "ProvideCommandLineArgs", bool.TrueString },
-        }
-        .AsReadOnly());
+        }.AsReadOnly());
 
         Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }

@@ -61,6 +61,7 @@ static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectI
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.operator ==(Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem left, Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem right) -> bool
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetArtifactsPath(string! entryPointFileFullPath) -> string!
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetDefaultProperties(string! targetFramework) -> System.Collections.Generic.IEnumerable<(string! name, string! value)>!
+static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetGlobalBuildProperties() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string!>>!
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetPropertyFromSourceFile(string! sourceFilePath, string! propertyName) -> string?
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetTempSubdirectory() -> string!
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetTempSubpath(string! name) -> string!
