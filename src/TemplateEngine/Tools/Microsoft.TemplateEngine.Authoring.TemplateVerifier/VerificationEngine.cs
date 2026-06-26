@@ -31,6 +31,14 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         private readonly ICommandRunner _commandRunner = new CommandRunner();
         private readonly IPhysicalFileSystemEx _fileSystem = new PhysicalFileSystemEx();
 
+        // Pluggable directory verifier used to run the snapshot verification. Defaults to the xUnit (v3) Verify
+        // adapter this tool is compiled against. Consumers running under a different test framework (e.g. MSTest)
+        // override this so verification is dispatched to that framework's Verify adapter; this is required for the
+        // ambient test context (used by Verify to resolve the running test) to be discovered under that framework.
+        // Signature mirrors Verifier.VerifyDirectory(path, include, pattern, options, settings, info, fileScrubber, sourceFile).
+        internal static Func<string, Func<string, bool>?, string?, EnumerationOptions?, VerifySettings?, object?, FileScrubber?, string, SettingsTask> DirectoryVerifier { get; set; }
+            = Verifier.VerifyDirectory;
+
         public VerificationEngine(ILogger logger)
         {
             _logger = logger;
@@ -233,20 +241,25 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 verifySettings.DisableDiff();
             }
 
-            return Verifier.VerifyDirectory(
+            Func<string, bool> include = (filePath) =>
+            {
+                string relativePath = fileSystem.PathRelativeTo(filePath, callerInfo.ContentDirectory);
+                return includeGlobs.Any(g => g.IsMatch(relativePath)) && !excludeGlobs.Any(g => g.IsMatch(relativePath));
+            };
+
+            return DirectoryVerifier(
                 callerInfo.ContentDirectory,
-                include: (filePath) =>
-                {
-                    string relativePath = fileSystem.PathRelativeTo(filePath, callerInfo.ContentDirectory);
-                    return includeGlobs.Any(g => g.IsMatch(relativePath)) && !excludeGlobs.Any(g => g.IsMatch(relativePath));
-                },
-                fileScrubber: ExtractFileScrubber(options, callerInfo.ContentDirectory, fileSystem),
-                settings: verifySettings,
+                include,
+                null,
+                null,
+                verifySettings,
+                null,
+                ExtractFileScrubber(options, callerInfo.ContentDirectory, fileSystem),
                 // Need to overwrite arg with CallerFileAttribute as this assembly is compiled on possibly different OS, than
                 //  the actual caller of the API.
                 //  The info is not used in any output paths of Verify (as we inject custom naming), but it is transformed via
                 //  Path utilities and checked for non-null - which can break in case of usage on different OS than was the built time one
-                sourceFile: callerInfo.CallerSourceFile);
+                callerInfo.CallerSourceFile);
         }
 
         private static FileScrubber? ExtractFileScrubber(TemplateVerifierOptions options, string contentDir, IPhysicalFileSystemEx fileSystem)

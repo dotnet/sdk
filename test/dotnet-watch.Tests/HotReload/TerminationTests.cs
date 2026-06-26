@@ -5,9 +5,11 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class TerminationTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class TerminationTests : DotNetWatchTestBase
 {
-    [PlatformSpecificFact(TestPlatforms.Windows)]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public async Task GracefulTermination_Windows()
     {
         var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -40,7 +42,8 @@ public class TerminationTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
         await App.WaitUntilOutputContains("exited with exit code 0.");
     }
 
-    [PlatformSpecificFact(TestPlatforms.AnyUnix)]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public async Task GracefulTermination_Unix()
     {
         var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -71,7 +74,8 @@ public class TerminationTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
         await App.WaitUntilOutputContains("exited with exit code 0.");
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public async Task GracefulTermination_WinExe()
     {
         // Test that WinExe apps (WinForms, WPF, MAUI) are terminated gracefully when dotnet-watch

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis;
@@ -7,11 +7,12 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class TypeMustExistTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new MembersMustExist(settings, context));
 
-        [Fact]
+        [TestMethod]
         public void MissingPublicTypesInRightAreReported()
         {
             string leftSyntax = @"
@@ -50,10 +51,10 @@ namespace CompatTests
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.MyRecord"),
 #endif
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypeInDifferentNamespaces()
         {
             string leftSyntax = @"
@@ -79,10 +80,10 @@ namespace B.B
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:A.B.C"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void NestedTypeVsNamespaces()
         {
             string leftSyntax = @"
@@ -108,10 +109,10 @@ public class A
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:A.B"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void MissingTypeFromTypeForwardIsReported()
         {
             string forwardedTypeSyntax = @"
@@ -143,10 +144,10 @@ namespace CompatTests
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.ForwardedTestType")
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypeForwardExistsOnBoth()
         {
             string forwardedTypeSyntax = @"
@@ -167,10 +168,10 @@ namespace CompatTests
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntaxWithReferences(syntax, references);
             ApiComparer differ = new(s_ruleFactory);
 
-            Assert.Empty(differ.GetDifferences(left, right));
+            Assert.IsEmpty(differ.GetDifferences(left, right));
         }
 
-        [Fact]
+        [TestMethod]
         public void RecordsAreMappedCorrectly()
         {
             string leftSyntax = @"
@@ -206,12 +207,12 @@ namespace CompatTests
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.Fourth"),
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.MyEnum")
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void InternalTypesAreIgnoredWhenSpecified(bool includeInternalSymbols)
         {
             string leftSyntax = @"
@@ -235,7 +236,7 @@ namespace CompatTests
 
             if (!includeInternalSymbols)
             {
-                Assert.Empty(differences);
+                Assert.IsEmpty(differences);
             }
             else
             {
@@ -243,14 +244,14 @@ namespace CompatTests
                 {
                     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.InternalType")
                 };
-                Assert.Equal(expected, differences);
+                Assert.AreSequenceEqual(expected, differences);
             }
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public static void MissingNestedTypeIsReported(bool includeInternalSymbols)
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void MissingNestedTypeIsReported(bool includeInternalSymbols)
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -295,11 +296,11 @@ namespace CompatTests
                 );
             }
 
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
-        public static void MultipleRightsMissingTypesReported()
+        [TestMethod]
+        public void MultipleRightsMissingTypesReported()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -340,11 +341,11 @@ namespace CompatTests
                     new CompatDifference(left.MetadataInformation, right[1].MetadataInformation, DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.First"),
                     new CompatDifference(left.MetadataInformation, right[2].MetadataInformation, DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.Second"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
-        public static void MultipleRightsMissingNestedTypesAreReported()
+        [TestMethod]
+        public void MultipleRightsMissingNestedTypesAreReported()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -417,11 +418,11 @@ namespace CompatTests
                 new CompatDifference(left.MetadataInformation, right[2].MetadataInformation, DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.First.FirstNested.SecondNested"),
                 new CompatDifference(left.MetadataInformation, right[3].MetadataInformation, DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.First"),
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
-        public static void MultipleRightsNoDifferences()
+        [TestMethod]
+        public void MultipleRightsNoDifferences()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -449,10 +450,10 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleRightsTypeForwardExistsOnAll()
         {
             string forwardedTypeSyntax = @"
@@ -473,10 +474,10 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleRightsMissingTypeForwardIsReported()
         {
             string forwardedTypeSyntax = @"
@@ -502,7 +503,7 @@ namespace CompatTests
                 new CompatDifference(left.MetadataInformation, right[1].MetadataInformation, DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:CompatTests.ForwardedTestType"),
             };
 
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
     }
 }
