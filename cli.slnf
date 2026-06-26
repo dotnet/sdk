@@ -7,6 +7,7 @@
       "src\\Cli\\dn\\dn-native-debug.vcxproj",
       "src\\Cli\\dotnet\\dotnet.csproj",
       "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
+      "src\\Microsoft.DotNet.ProjectTools\\Microsoft.DotNet.ProjectTools.csproj",
       "test\\dotnet-new.IntegrationTests\\dotnet-new.IntegrationTests.csproj",
       "test\\dotnet-watch.Tests\\dotnet-watch.Tests.csproj",
       "test\\dotnet-aot.Tests\\dotnet-aot.Tests.csproj",

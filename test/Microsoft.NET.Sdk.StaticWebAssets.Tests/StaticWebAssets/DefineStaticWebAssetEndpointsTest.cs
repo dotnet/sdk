@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Diagnostics.Metrics;
 using System.Diagnostics;
@@ -15,11 +21,13 @@ using System.Globalization;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
+
 public class DefineStaticWebAssetEndpointsTest
 {
-    [Theory]
-    [InlineData(StaticWebAsset.SourceTypes.Discovered)]
-    [InlineData(StaticWebAsset.SourceTypes.Computed)]
+    [TestMethod]
+    [DataRow(StaticWebAsset.SourceTypes.Discovered)]
+    [DataRow(StaticWebAsset.SourceTypes.Computed)]
     public void DefinesEndpointsForAssets(string sourceType)
     {
         var errorMessages = new List<string>();
@@ -86,7 +94,7 @@ public class DefineStaticWebAssetEndpointsTest
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanDefineFingerprintedEndpoints()
     {
         var errorMessages = new List<string>();
@@ -203,7 +211,7 @@ public class DefineStaticWebAssetEndpointsTest
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanDefineFingerprintedEndpoints_WithEmbeddedFingerprint()
     {
         var errorMessages = new List<string>();
@@ -320,7 +328,7 @@ public class DefineStaticWebAssetEndpointsTest
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void DoesNotDefineNewEndpointsWhenAnExistingEndpointAlreadyExists()
     {
         var errorMessages = new List<string>();
@@ -377,7 +385,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesContentType_ForCompressedAssets()
     {
         var errorMessages = new List<string>();
@@ -430,7 +438,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoint.ResponseHeaders.Should().ContainSingle(h => h.Name == "Content-Type" && h.Value == "application/x-gzip");
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesContentType_ForFingerprintedAssets()
     {
         var errorMessages = new List<string>();
@@ -481,7 +489,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoint.ResponseHeaders.Should().ContainSingle(h => h.Name == "Content-Type" && h.Value == "text/css");
     }
 
-    [Fact]
+    [TestMethod]
     public void Produces_TheExpectedEndpoint_ForExternalAssets()
     {
         var errorMessages = new List<string>();
@@ -661,9 +669,9 @@ public class DefineStaticWebAssetEndpointsTest
         });
     }
 
-    [Theory]
-    [InlineData("index.html", "index.html", "/")]
-    [InlineData("admin/index.html", "admin/index.html", "admin")]
+    [TestMethod]
+    [DataRow("index.html", "index.html", "/")]
+    [DataRow("admin/index.html", "admin/index.html", "admin")]
     public void AdditionalEndpointDefinitions_DefaultDocument_CreatesEndpointWithCapturedStem(
         string relativeSubPath, string expectedOriginalRoute, string expectedAdditionalRoute)
     {
@@ -711,7 +719,7 @@ public class DefineStaticWebAssetEndpointsTest
         additional.ResponseHeaders.Should().BeEquivalentTo(original.ResponseHeaders);
     }
 
-    [Fact]
+    [TestMethod]
     public void AdditionalEndpointDefinitions_SpaFallback_CreatesEndpointWithFallbackRoute()
     {
         var errorMessages = new List<string>();
@@ -757,7 +765,7 @@ public class DefineStaticWebAssetEndpointsTest
         fallback.ResponseHeaders.Should().BeEquivalentTo(original.ResponseHeaders);
     }
 
-    [Fact]
+    [TestMethod]
     public void AdditionalEndpointDefinitions_DoesNotMatchNonMatchingRoutes()
     {
         var errorMessages = new List<string>();
@@ -796,7 +804,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints[0].Route.Should().Be("app.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void AdditionalEndpointDefinitions_BothRules_CreateMultipleAdditionalEndpoints()
     {
         var errorMessages = new List<string>();
@@ -838,7 +846,7 @@ public class DefineStaticWebAssetEndpointsTest
         endpoints.Should().Contain(e => e.Route == "{**fallback:nonfile}" && e.Order == "2147483647");
     }
 
-    [Fact]
+    [TestMethod]
     public void AdditionalEndpointDefinitions_EmptyArray_NoAdditionalEndpoints()
     {
         var errorMessages = new List<string>();
@@ -871,5 +879,119 @@ public class DefineStaticWebAssetEndpointsTest
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
         endpoints.Should().ContainSingle();
         endpoints[0].Route.Should().Be("index.html");
+    }
+
+    [TestMethod]
+    public void ExistingEndpointsMatchingWorksWithNonFallbackTaskEnvironment()
+    {
+        // Verifies that the ExistingEndpoints deduplication logic works correctly
+        // when a non-Fallback TaskEnvironment is injected (as MSBuild does in MT mode).
+        // This guards against regressions in the IMultiThreadableTask contract — the
+        // task must function identically regardless of which TaskEnvironment is set.
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot") + Path.DirectorySeparatorChar;
+        var assetIdentity = Path.Combine(contentRoot, "app.js");
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(AppContext.BaseDirectory),
+            CandidateAssets = [CreateCandidate(assetIdentity, contentRoot, "app.js", lastWrite)],
+            ExistingEndpoints = [CreateExistingEndpoint("app.js", assetIdentity)],
+            ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        errorMessages.Should().BeEmpty();
+        // The endpoint for "app.js" already exists, so no new endpoints should be produced.
+        task.Endpoints.Should().BeEmpty(
+            "the existing endpoint must be matched and deduplicated even with a non-Fallback TaskEnvironment");
+    }
+
+    [TestMethod]
+    public void ProducesEndpointsCorrectlyWithNonFallbackTaskEnvironmentForPackageAsset()
+    {
+        // Verifies that Package-sourced assets get their BasePath prepended to the route
+        // when running with a non-Fallback TaskEnvironment (as MSBuild does in MT mode).
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot") + Path.DirectorySeparatorChar;
+        var assetIdentity = Path.Combine(contentRoot, "lib.js");
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(AppContext.BaseDirectory),
+            CandidateAssets = [CreateCandidate(assetIdentity, contentRoot, "lib.js", lastWrite, sourceType: StaticWebAsset.SourceTypes.Package, basePath: "_content/MyPkg")],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        errorMessages.Should().BeEmpty();
+        task.Endpoints.Should().ContainSingle();
+
+        var endpoint = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints)[0];
+        endpoint.Route.Should().Be("_content/MyPkg/lib.js",
+            "Package assets must have BasePath prepended to route under MT scheduling");
+        endpoint.AssetFile.Should().Be(assetIdentity);
+    }
+
+    private static ITaskItem CreateCandidate(
+        string identity,
+        string contentRoot,
+        string relativePath,
+        DateTimeOffset lastWriteTime,
+        string sourceType = null,
+        string basePath = "/")
+    {
+        var asset = new StaticWebAsset()
+        {
+            Identity = identity,
+            SourceId = "MyPackage",
+            SourceType = sourceType ?? StaticWebAsset.SourceTypes.Discovered,
+            ContentRoot = contentRoot,
+            BasePath = basePath,
+            RelativePath = relativePath,
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "",
+            CopyToPublishDirectory = "",
+            OriginalItemSpec = identity,
+            Integrity = "integrity",
+            Fingerprint = "fingerprint",
+            FileLength = 10,
+            LastWriteTime = lastWriteTime,
+        };
+
+        return asset.ToTaskItem();
+    }
+
+    private static ITaskItem CreateExistingEndpoint(string route, string assetFile)
+    {
+        return new StaticWebAssetEndpoint
+        {
+            Route = route,
+            AssetFile = assetFile,
+            EndpointProperties = [],
+            ResponseHeaders = [],
+        }.ToTaskItem();
     }
 }

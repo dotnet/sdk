@@ -2,18 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Core.Util;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
+    [TestClass]
     public class CombinedStreamTests
     {
-        [Theory]
-        [InlineData(2 * 1024 * 1024)]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(10000)]
-        [InlineData((1024 * 1024) + 10000)]
+        [TestMethod]
+        [DataRow(2 * 1024 * 1024)]
+        [DataRow(0)]
+        [DataRow(1)]
+        [DataRow(10000)]
+        [DataRow((1024 * 1024) + 10000)]
         public void CanReadStream(int requestedCount)
         {
             Random rnd = new Random();
@@ -29,23 +29,23 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] read = new byte[2 * 1024 * 1024];
             int nRead = stream.Read(read, 0, requestedCount);
 
-            Assert.Equal(requestedCount, nRead);
+            Assert.AreEqual(requestedCount, nRead);
 
             var upperBound = requestedCount > 1024 * 1024 ? 1024 * 1024 : requestedCount;
             for (int i = 0; i < upperBound; i++)
             {
-                Assert.Equal(valueBytes1[i], read[i]);
+                Assert.AreEqual(valueBytes1[i], read[i]);
             }
             if (requestedCount > 1024 * 1024)
             {
                 for (int i = 0; i < requestedCount - (1024 * 1024); i++)
                 {
-                    Assert.Equal(valueBytes2[i], read[i + (1024 * 1024)]);
+                    Assert.AreEqual(valueBytes2[i], read[i + (1024 * 1024)]);
                 }
             }
             for (int i = requestedCount; i < 2 * 1024 * 1024; i++)
             {
-                Assert.Equal(0, read[i]);
+                Assert.AreEqual(0, read[i]);
             }
         }
     }

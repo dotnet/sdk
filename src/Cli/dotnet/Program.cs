@@ -47,7 +47,7 @@ public class Program
 
     static Program()
     {
-        var mainTimeStamp = DateTime.Now;
+        var preTelemetry = DateTime.UtcNow;
         s_sigIntRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, Shutdown);
         s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
         s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
@@ -57,29 +57,30 @@ public class Program
         TelemetryInstance = new TelemetryClient();
         TelemetryEventEntry.Subscribe(TelemetryInstance.TrackEvent);
         TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+        var postTelemetry = DateTime.UtcNow;
 
         s_mainActivity = Activities.Source.CreateActivity("main", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext)
             ?.Start()
             ?.SetStartTime(Process.GetCurrentProcess().StartTime)
             ?.AddTag("process.pid", Process.GetCurrentProcess().Id)
-            ?.AddTag("process.executable.name", "dotnet");
+            ?.AddTag("process.executable.name", "dotnet")
+            ?.AddTag("cli.runtime", "managed");
+
+        using (var telemetrySetupActivity = Activities.Source.StartActivity("telemetry-setup"))
+        {
+            telemetrySetupActivity?.SetStartTime(preTelemetry);
+            telemetrySetupActivity?.SetEndTime(postTelemetry);
+        }
 
         if (CommandLoggingContext.IsVerbose)
         {
             Reporter.Verbose.WriteLine($"Telemetry is: {(TelemetryInstance.Enabled ? "Enabled" : "Disabled")}");
         }
 
-        // Creates a host-startup activity which includes the global.json state.
-        using (var hostStartupActivity = Activities.Source.StartActivity("host-startup"))
+        if (TelemetryInstance.Enabled && s_mainActivity is not null)
         {
-            hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
-            if (TelemetryInstance.Enabled && hostStartupActivity is not null)
-            {
-                // Get the global.json state to report in telemetry along with this command invocation.
-                s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
-                hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
-            }
-            hostStartupActivity?.SetEndTime(mainTimeStamp)?.SetStatus(ActivityStatusCode.Ok);
+            s_globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
+            s_mainActivity.AddTag("dotnet.globalJson", s_globalJsonState);
         }
 
         // We have some behaviors in MSBuild that we want to enforce (either when using MSBuild API or by shelling out to it),
@@ -310,8 +311,9 @@ public class Program
     {
         string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
         CommandSpec? resolvedCommandSpec = null;
-        using (var _ = Activities.Source.StartActivity("lookup-external-command"))
+        using (var lookupActivity = Activities.Source.StartActivity("lookup-external-command"))
         {
+            lookupActivity?.AddTag("command.name", commandName);
             resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
                 new DefaultCommandResolverPolicy(),
                 commandName,
@@ -333,8 +335,7 @@ public class Program
     {
         // If we didn't match any built-in commands, and a C# file path is the first argument,
         // parse as `dotnet run file.cs ..rest_of_args` instead.
-        if (parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
-            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
+        if (parseResult.GetFileBasedAppEntryPointToken() is { } unmatchedCommandOrFile)
         {
             List<string> otherTokens = new(parseResult.Tokens.Count - 1);
             foreach (var token in parseResult.Tokens)

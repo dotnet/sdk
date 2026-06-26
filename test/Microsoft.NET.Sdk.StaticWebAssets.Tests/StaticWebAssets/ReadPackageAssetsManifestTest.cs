@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Text.Json;
 using Microsoft.Build.Framework;
@@ -9,6 +15,8 @@ using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+[TestClass]
 
 public class ReadPackageAssetsManifestTest : IDisposable
 {
@@ -41,7 +49,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadsValidManifest_EmitsAssetsAsTaskItems()
     {
         var packageRoot = SetupPackageRoot("MyLib",
@@ -62,7 +70,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         emitted.GetMetadata("Fingerprint").Should().Be("test");
     }
 
-    [Fact]
+    [TestMethod]
     public void UngroupedAssets_AlwaysIncluded()
     {
         var packageRoot = SetupPackageRoot("MyLib",
@@ -78,7 +86,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         task.Assets.Should().HaveCount(1, "ungrouped assets should always be included");
     }
 
-    [Fact]
+    [TestMethod]
     public void GroupedAsset_MatchingDeclaration_IsIncluded()
     {
         var packageRoot = SetupPackageRoot("IdentityUI",
@@ -94,7 +102,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         task.Assets.Should().HaveCount(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void GroupedAsset_NoDeclarations_IsExcluded()
     {
         var packageRoot = SetupPackageRoot("IdentityUI",
@@ -109,7 +117,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         task.Assets.Should().HaveCount(0, "grouped assets should be excluded with no declarations");
     }
 
-    [Fact]
+    [TestMethod]
     public void MultiGroup_PartialMatch_IsExcluded()
     {
         var packageRoot = SetupPackageRoot("IdentityUI",
@@ -127,7 +135,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         task.Assets.Should().HaveCount(0, "AND-matching: all group entries must be satisfied");
     }
 
-    [Fact]
+    [TestMethod]
     public void CascadingExclusion_RelatedAssetExcludedWithPrimary()
     {
         var primaryAsset = CreateManifestAsset(
@@ -149,7 +157,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         task.Assets.Should().HaveCount(0, "both primary and related should be excluded via cascading");
     }
 
-    [Fact]
+    [TestMethod]
     public void Endpoints_ForExcludedAssets_AreFilteredOut()
     {
         var includedAsset = CreateManifestAsset(
@@ -190,7 +198,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         task.Endpoints[0].ItemSpec.Should().Be("_content/id/app.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void DeferredGroups_SkippedDuringEagerFiltering()
     {
         var packageRoot = SetupPackageRoot("IdentityUI",
@@ -208,7 +216,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
             "deferred group requirements should be skipped during eager filtering");
     }
 
-    [Fact]
+    [TestMethod]
     public void FrameworkAssets_MaterializedToIntermediateDirectory()
     {
         var packageRoot = SetupPackageRoot("MyLib",
@@ -232,7 +240,32 @@ public class ReadPackageAssetsManifestTest : IDisposable
         emitted.GetMetadata("SourceId").Should().Be("ConsumerApp");
     }
 
-    [Fact]
+    [TestMethod]
+    public void GroupedFrameworkAsset_HasAssetGroupsClearedAfterMaterialization()
+    {
+        // A framework asset that belongs to a group (e.g. blazor.webassembly.js in the
+        // BlazorWebAssembly group) passes group filtering when the group is declared, but
+        // must have its AssetGroups cleared once it is materialized as a current-project
+        // asset. Otherwise downstream endpoint generation treats it as a still-grouped
+        // asset, skips it, and the fingerprinted asset 404s at runtime.
+        var packageRoot = SetupPackageRoot("Microsoft.AspNetCore.Components.WebAssembly",
+            CreateManifestAsset("staticwebassets/_framework/blazor.webassembly.js", "_framework/blazor.webassembly.js", "/", "BlazorWebAssembly=enabled", "Framework"));
+
+        var manifestItem = CreateManifestItem(packageRoot, "Microsoft.AspNetCore.Components.WebAssembly");
+
+        var task = CreateReadManifestTask(
+            new[] { manifestItem },
+            new[] { CreateGroup("BlazorWebAssembly", "enabled", "Microsoft.AspNetCore.Components.WebAssembly") });
+        task.Execute().Should().BeTrue();
+
+        task.Assets.Should().HaveCount(1);
+
+        var emitted = task.Assets[0];
+        emitted.GetMetadata("SourceType").Should().Be("Discovered");
+        emitted.GetMetadata("AssetGroups").Should().BeEmpty("materialized framework assets must not retain group membership or endpoint generation will skip them");
+    }
+
+    [TestMethod]
     public void InvalidManifestVersion_LogsError()
     {
         var packageDir = Path.Combine(_tempDir, "packages", "BadLib");
@@ -261,7 +294,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
         _errorMessages.Should().ContainSingle(m => m.Contains("Unsupported package manifest version"));
     }
 
-    [Fact]
+    [TestMethod]
     public void MissingIntermediateOutputPath_ProducesError()
     {
         var packageRoot = SetupPackageRoot("MyLib",
@@ -396,7 +429,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
     // A package author disables the auto-generated .targets and manually provides
     // their own .targets that still registers a StaticWebAssetPackageManifest item.
     // The consumer's ReadPackageAssetsManifest should still work correctly.
-    [Fact]
+    [TestMethod]
     public void CustomTargetsOverride_ManualManifestItem_WorksCorrectly()
     {
         // Setup: simulate a package that has its manifest at a custom location
@@ -424,7 +457,7 @@ public class ReadPackageAssetsManifestTest : IDisposable
     // Scenario 7: Multiple packages contributing manifests to the same consumer
     // Two packages each provide a StaticWebAssetPackageManifest item.
     // Group filtering should be applied independently per SourceId.
-    [Fact]
+    [TestMethod]
     public void MultiplePackages_IndependentGroupFilteringPerSourceId()
     {
         // Package A: has grouped assets (BootstrapVersion=V5)

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -9,9 +9,10 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
+    [TestClass]
     public class ConstraintsTest
     {
-        [Fact]
+        [TestMethod]
         public void CanReadConstraintDefinition()
         {
             var json = new
@@ -50,19 +51,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             var model = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(json))!.AsObject());
 
-            Assert.Equal(4, model.Constraints.Count);
-            Assert.Equal("con1", model.Constraints[0].Type);
-            Assert.Equal("con2", model.Constraints[1].Type);
-            Assert.Equal("con3", model.Constraints[2].Type);
-            Assert.Equal("con4", model.Constraints[3].Type);
+            Assert.HasCount(4, model.Constraints);
+            Assert.AreEqual("con1", model.Constraints[0].Type);
+            Assert.AreEqual("con2", model.Constraints[1].Type);
+            Assert.AreEqual("con3", model.Constraints[2].Type);
+            Assert.AreEqual("con4", model.Constraints[3].Type);
 
-            Assert.Equal("\"arg\"", model.Constraints[0].Args);
-            Assert.Equal("""["one","two","three"]""", model.Constraints[1].Args);
-            Assert.Equal(/*lang=json,strict*/ """{"one":"one","two":"two"}""", model.Constraints[2].Args);
-            Assert.Null(model.Constraints[3].Args);
+            Assert.AreEqual("\"arg\"", model.Constraints[0].Args);
+            Assert.AreEqual("""["one","two","three"]""", model.Constraints[1].Args);
+            Assert.AreEqual(/*lang=json,strict*/ """{"one":"one","two":"two"}""", model.Constraints[2].Args);
+            Assert.IsNull(model.Constraints[3].Args);
         }
 
-        [Fact]
+        [TestMethod]
         public void CannotReadConstraint_WhenTypeIsNotSet()
         {
             var json = new
@@ -80,12 +81,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
             var model = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(json))!.AsObject(), loggerProvider.CreateLogger("test"));
-            Assert.Empty(model.Constraints);
-            Assert.Single(loggedMessages);
-            Assert.Equal($"Constraint definition '{JsonNode.Parse(JsonSerializer.Serialize(new { args = "arg" }))!.ToJsonString()}' does not contain mandatory property 'type'.", loggedMessages.Single().Item2);
+            Assert.IsEmpty(model.Constraints);
+            Assert.ContainsSingle(loggedMessages);
+            Assert.AreEqual($"Constraint definition '{JsonNode.Parse(JsonSerializer.Serialize(new { args = "arg" }))!.ToJsonString()}' does not contain mandatory property 'type'.", loggedMessages.Single().Item2);
         }
 
-        [Fact]
+        [TestMethod]
         public void CannotReadConstraint_WhenArrayIsDenfined()
         {
             var json = new
@@ -100,9 +101,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
             var model = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(json))!.AsObject(), loggerProvider.CreateLogger("test"));
-            Assert.Empty(model.Constraints);
-            Assert.Single(loggedMessages);
-            Assert.Equal("'constraints' should contain objects.", loggedMessages.Single().Item2);
+            Assert.IsEmpty(model.Constraints);
+            Assert.ContainsSingle(loggedMessages);
+            Assert.AreEqual("'constraints' should contain objects.", loggedMessages.Single().Item2);
         }
     }
 }

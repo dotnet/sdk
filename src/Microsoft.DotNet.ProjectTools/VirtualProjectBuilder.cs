@@ -6,10 +6,12 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Security;
 using System.Xml;
+#if !CLI_AOT
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+#endif
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.Utilities;
@@ -18,6 +20,7 @@ namespace Microsoft.DotNet.ProjectTools;
 
 public sealed class VirtualProjectBuilder
 {
+
     internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
 
     internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
@@ -128,7 +131,7 @@ public sealed class VirtualProjectBuilder
         var sourceFile = SourceFile.Load(sourceFilePath);
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
 
-        // Return the first value. Duplicate directives are not supported.
+        // Return the first value. Conflicting duplicate directives are not supported.
         return directives.OfType<CSharpDirective.Property>()
             .FirstOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase))?.Value;
     }
@@ -158,6 +161,7 @@ public sealed class VirtualProjectBuilder
     {
         return Path.Join(GetTempSubdirectory(), name);
     }
+
 
     public static bool IsValidEntryPointPath(string entryPointFilePath)
     {
@@ -198,6 +202,7 @@ public sealed class VirtualProjectBuilder
     /// <c>#:include</c>/<c>#:exclude</c> have their <see cref="CSharpDirective.IncludeOrExclude.ItemType"/> determined
     /// and relative paths resolved relative to their containing file.
     /// </remarks>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private ImmutableArray<CSharpDirective> EvaluateDirectives(
         ProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
@@ -254,6 +259,7 @@ public sealed class VirtualProjectBuilder
         return builder.DrainToImmutable();
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
     {
         return CSharpDirective.IncludeOrExclude.ParseMapping(
@@ -262,6 +268,7 @@ public sealed class VirtualProjectBuilder
             reportError);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static ProjectInstance CreateProjectInstance(
         string entryPointFilePath,
         string targetFramework,
@@ -280,6 +287,7 @@ public sealed class VirtualProjectBuilder
         return projectInstance;
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     internal void CreateProjectInstance(
         ProjectCollection projectCollection,
         ErrorReporter reportError,
@@ -324,23 +332,41 @@ public sealed class VirtualProjectBuilder
 
         do
         {
+            var directivesForEvaluation = DeduplicateSdkDirectives(directives);
+
             // Create a project with properties from #:property directives so they can be expanded inside EvaluateDirectives.
             (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
                 projectCollection,
-                [.. evaluatedDirectiveBuilder, .. directives],
+                [.. evaluatedDirectiveBuilder, .. directivesForEvaluation],
                 addGlobalProperties);
 
             // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
-            var fileEvaluatedDirectives = EvaluateDirectives(project, directives, reportError);
+            var fileEvaluatedDirectives = EvaluateDirectives(project, directivesForEvaluation, reportError);
 
-            // Detect duplicate directives across all files on evaluated directives.
+            // Detect duplicate directives across all files on evaluated directives. EvaluateDirectives only expands
+            // #:project, #:ref, #:include, and #:exclude; #:property and #:package values are still unevaluated here.
+            var deduplicatedFileEvaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>(fileEvaluatedDirectives.Length);
             foreach (var directive in fileEvaluatedDirectives)
             {
+                if (directive is CSharpDirective.Sdk)
+                {
+                    deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
+                    continue;
+                }
+
                 if (directive is CSharpDirective.Named named)
                 {
-                    deduplicator.CheckDirective(named, reportError);
+                    deduplicator.CheckDirective(named, reportError, out bool shouldKeep);
+                    if (!shouldKeep)
+                    {
+                        continue;
+                    }
                 }
+
+                deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
             }
+
+            fileEvaluatedDirectives = deduplicatedFileEvaluatedDirectiveBuilder.DrainToImmutable();
 
             evaluatedDirectiveBuilder.AddRange(fileEvaluatedDirectives);
 
@@ -388,6 +414,36 @@ public sealed class VirtualProjectBuilder
             }
 
             return false;
+        }
+
+        // #:sdk directives become Sdk.props/Sdk.targets imports when creating the temporary project used for
+        // directive evaluation, so identical duplicates must be removed before that project is created.
+        ImmutableArray<CSharpDirective> DeduplicateSdkDirectives(ImmutableArray<CSharpDirective> directives)
+        {
+            if (!directives.Any(static directive => directive is CSharpDirective.Sdk))
+            {
+                return directives;
+            }
+
+            var builder = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
+            var changed = false;
+
+            foreach (var directive in directives)
+            {
+                if (directive is CSharpDirective.Sdk sdk)
+                {
+                    deduplicator.CheckDirective(sdk, reportError, out bool shouldKeep);
+                    if (!shouldKeep)
+                    {
+                        changed = true;
+                        continue;
+                    }
+                }
+
+                builder.Add(directive);
+            }
+
+            return changed ? builder.DrainToImmutable() : directives;
         }
 
         (ProjectInstance, ProjectRootElement) CreateProjectInstanceNoEvaluation(
@@ -445,6 +501,7 @@ public sealed class VirtualProjectBuilder
         }
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private void CheckDirectives(
         ProjectInstance project,
         ImmutableArray<CSharpDirective> directives,

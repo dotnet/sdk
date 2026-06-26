@@ -227,9 +227,20 @@ public sealed class CSharpAssemblyDocumentGenerator
                 }
             }
 
-            // If the property is derived from an interface that was filtered out, we must not filter it out either.
+            // If the property is derived from an interface that was filtered out, we must filter it out as well.
             if (member is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty &&
-                property.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol)))
+                property.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol) ||
+                // if explicit interface implementation property has inaccessible type argument
+                m.ContainingType.HasInaccessibleTypeArgument(_options.SymbolFilter)))
+            {
+                continue;
+            }
+
+            // If the event is derived from an interface that was filtered out, we must filter it out as well.
+            if (member is IEventSymbol @event && !@event.ExplicitInterfaceImplementations.IsEmpty &&
+                @event.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol) ||
+                // if explicit interface implementation event has inaccessible type argument
+                m.ContainingType.HasInaccessibleTypeArgument(_options.SymbolFilter)))
             {
                 continue;
             }

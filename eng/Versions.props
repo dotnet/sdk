@@ -10,7 +10,7 @@
     <VersionFeature>$([System.String]::Copy('$(VersionSDKMinorPatch)').PadLeft(2, '0'))</VersionFeature>
     <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)$(VersionFeature)</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>5</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>6</PreReleaseVersionIteration>
     <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
     <DotNetFinalVersionKind></DotNetFinalVersionKind>
 
@@ -34,9 +34,9 @@
     <VersionFeature60>36</VersionFeature60>
     <VersionFeature70>20</VersionFeature70>
     <!-- This version should be N-1 (ie the currently released version) in the preview branch but N-2 in main so that workloads stay behind the unreleased version -->
-    <VersionFeature80>27</VersionFeature80>
-    <VersionFeature90>16</VersionFeature90>
-    <VersionFeature100>8</VersionFeature100>
+    <VersionFeature80>28</VersionFeature80>
+    <VersionFeature90>17</VersionFeature90>
+    <VersionFeature100>9</VersionFeature100>
     <!-- Should be kept in sync with VersionFeature70. It should match the version of Microsoft.NET.ILLink.Tasks
          referenced by the same 7.0 SDK that references the 7.0.VersionFeature70 runtime pack. -->
     <_NET70ILLinkPackVersion>7.0.100-1.23211.1</_NET70ILLinkPackVersion>
@@ -60,7 +60,7 @@
     <!-- When updating MicrosoftVisualStudioSolutionPersistenceVersion make sure to sync with dotnet/msbuild, dotnet/source-build-externals and NuGet/NuGet.Client -->
     <MicrosoftVisualStudioSolutionPersistenceVersion>1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
     <AzureMonitorOpenTelemetryExporterPackageVersion>1.4.0</AzureMonitorOpenTelemetryExporterPackageVersion>
-    <OpenTelemetryDotnetPackageVersion>1.15.1</OpenTelemetryDotnetPackageVersion>
+    <OpenTelemetryDotnetPackageVersion>1.15.3</OpenTelemetryDotnetPackageVersion>
     <OpenTelemetryDotnetContribPackageVersion>1.15.1</OpenTelemetryDotnetContribPackageVersion>
   </PropertyGroup>
 
@@ -137,6 +137,7 @@
   <PropertyGroup>
     <AwesomeAssertionsVersion>8.0.2</AwesomeAssertionsVersion>
     <AwesomeAssertionsJsonVersion>8.0.0</AwesomeAssertionsJsonVersion>
+    <MicrosoftTypeScriptMSBuildPackageVersion>5.9.3</MicrosoftTypeScriptMSBuildPackageVersion>
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
     <XunitCombinatorialVersion>2.0.24</XunitCombinatorialVersion>
     <XUnitRunnerVisualStudioPackageVersion>3.1.4</XUnitRunnerVisualStudioPackageVersion>

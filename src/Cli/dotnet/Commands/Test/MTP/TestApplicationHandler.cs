@@ -90,16 +90,55 @@ internal sealed class TestApplicationHandler
             _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
         }
 
+        // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
+        // diagnostic about a mismatched run/help/discover mode is associated with this assembly
+        // in the terminal output.
+        //
+        // Older Microsoft.Testing.Platform versions don't send the ExecutionMode property at all
+        // (see https://github.com/microsoft/testfx/pull/8794). In that case we keep today's
+        // behavior and don't perform any validation here. If the property is present, validate it
+        // even when it is empty/whitespace so protocol bugs are surfaced instead of silently accepted.
+        if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionMode, out string? executionMode) &&
+            !IsExpectedExecutionMode(executionMode, out string expectedExecutionMode))
+        {
+            ReportHandshakeFailure(string.Format(CliCommandStrings.MismatchingHandshakeExecutionMode, executionMode, expectedExecutionMode));
+            return false;
+        }
+
         return true;
     }
 
+    private bool IsExpectedExecutionMode(string reportedMode, out string expectedMode)
+    {
+        expectedMode = _options.IsHelp
+            ? HandshakeMessageExecutionModes.Help
+            : _options.IsDiscovery
+                ? HandshakeMessageExecutionModes.Discover
+                : HandshakeMessageExecutionModes.Run;
+
+        // If the reported mode is one of the known values, it must equal the SDK's expected mode.
+        // An unknown value (e.g. a future mode added by a newer testing platform without bumping
+        // the protocol version) is also rejected so we don't silently accept a message stream we
+        // can't interpret.
+        return reportedMode == expectedMode;
+    }
+
+    // Every caller of this helper has just decided to reject the handshake at the protocol level
+    // (the caller immediately returns false from OnHandshakeReceived). We always opt out of the
+    // legacy "swallow handshake failures when SDK is in help mode" workaround in
+    // TerminalTestReporter.HandshakeFailure — that workaround is meant for older Microsoft.Testing.Platform
+    // versions that don't handshake at all on --help and so OnTestProcessExited ends up calling
+    // HandshakeFailure with no actionable context. Explicit programmatic rejections here (unsupported
+    // protocol version, missing required property, mismatching handshake info, mismatching execution
+    // mode) are real protocol failures and must still be surfaced even when the SDK is in help mode.
     private void ReportHandshakeFailure(string failureMessage) =>
         _output.HandshakeFailure(
             _module.TargetPath,
             string.Empty,
             ExitCode.GenericFailure,
             failureMessage,
-            string.Empty);
+            string.Empty,
+            reportEvenWhenHelp: true);
 
     private static bool TryGetRequiredHandshakeProperty(HandshakeMessage handshakeMessage, byte propertyId, out string? value, out string? failureMessage)
     {
@@ -141,6 +180,8 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.ModulePath => nameof(HandshakeMessagePropertyNames.ModulePath),
             HandshakeMessagePropertyNames.ExecutionId => nameof(HandshakeMessagePropertyNames.ExecutionId),
             HandshakeMessagePropertyNames.InstanceId => nameof(HandshakeMessagePropertyNames.InstanceId),
+            HandshakeMessagePropertyNames.IsIDE => nameof(HandshakeMessagePropertyNames.IsIDE),
+            HandshakeMessagePropertyNames.ExecutionMode => nameof(HandshakeMessagePropertyNames.ExecutionMode),
             _ => string.Empty,
         };
 
@@ -180,7 +221,9 @@ internal sealed class TestApplicationHandler
         {
             _output.TestDiscovered(_handshakeInfo.Value.ExecutionId,
                 ValidateRequiredMessageProperty(test.DisplayName, nameof(DiscoveredTestMessage.DisplayName), nameof(DiscoveredTestMessage)),
-                ValidateRequiredMessageProperty(test.Uid, nameof(DiscoveredTestMessage.Uid), nameof(DiscoveredTestMessage)));
+                ValidateRequiredMessageProperty(test.Uid, nameof(DiscoveredTestMessage.Uid), nameof(DiscoveredTestMessage)),
+                test.FilePath,
+                test.LineNumber);
         }
     }
 
@@ -250,6 +293,40 @@ internal sealed class TestApplicationHandler
                 actual: null,
                 standardOutput: testResult.StandardOutput,
                 errorOutput: testResult.ErrorOutput);
+        }
+    }
+
+    internal void OnTestInProgressReceived(TestInProgressMessages testInProgressMessages)
+    {
+        LogTestInProgress(testInProgressMessages);
+
+        if (_options.IsHelp)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(TestInProgressMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(TestInProgressMessages)));
+        }
+
+        if (testInProgressMessages.ExecutionId != _handshakeInfo.Value.ExecutionId)
+        {
+            // Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.
+            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, testInProgressMessages.ExecutionId, nameof(TestInProgressMessages), _handshakeInfo.Value.ExecutionId));
+        }
+
+        var handshakeInfo = _handshakeInfo.Value;
+        foreach (TestInProgressMessage inProgressMessage in testInProgressMessages.InProgressMessages)
+        {
+            _output.TestInProgress(
+                _module.TargetPath,
+                handshakeInfo.TargetFramework,
+                handshakeInfo.Architecture,
+                handshakeInfo.ExecutionId,
+                testInProgressMessages.InstanceId!,
+                inProgressMessage.Uid!,
+                inProgressMessage.DisplayName!);
         }
     }
 
@@ -386,6 +463,14 @@ internal sealed class TestApplicationHandler
         return false;
     }
 
+    internal void WriteMessage(string? text)
+    {
+        if (!string.IsNullOrEmpty(text))
+        {
+            _output.WriteMessage(text);
+        }
+    }
+
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
@@ -444,7 +529,12 @@ internal sealed class TestApplicationHandler
 
         foreach (var discoveredTestMessage in discoveredTestMessages.DiscoveredMessages)
         {
-            logMessageBuilder.AppendLine($"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
+            logMessageBuilder.AppendLine($"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}, " +
+                $"FilePath={discoveredTestMessage.FilePath}, LineNumber={discoveredTestMessage.LineNumber}, " +
+                $"Namespace={discoveredTestMessage.Namespace}, TypeName={discoveredTestMessage.TypeName}, " +
+                $"MethodName={discoveredTestMessage.MethodName}, " +
+                $"ParameterTypeFullNames=[{string.Join(", ", discoveredTestMessage.ParameterTypeFullNames)}], " +
+                $"Traits=[{string.Join(", ", discoveredTestMessage.Traits.Select(t => $"{t.Key}={t.Value}"))}]");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
@@ -474,6 +564,26 @@ internal sealed class TestApplicationHandler
             logMessageBuilder.AppendLine($"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
                 $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", (failedTestResult.Exceptions ?? Array.Empty<ExceptionMessage>()).Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
                 $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
+        }
+
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogTestInProgress(TestInProgressMessages testInProgressMessages)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"TestInProgress Execution Id: {testInProgressMessages.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestInProgress Instance Id: {testInProgressMessages.InstanceId}");
+
+        foreach (TestInProgressMessage inProgressMessage in testInProgressMessages.InProgressMessages)
+        {
+            logMessageBuilder.AppendLine($"TestInProgress: {inProgressMessage.Uid}, {inProgressMessage.DisplayName}");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
