@@ -5,23 +5,24 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
+    [TestClass]
     public class JsonEncodeValueFormTests
     {
-        [Theory]
-        [InlineData("asdf\"asdf", "\"asdf\\\"asdf\"")]
-        [InlineData("asdfasdf", "\"asdfasdf\"")]
+        [TestMethod]
+        [DataRow("asdf\"asdf", "\"asdf\\\"asdf\"")]
+        [DataRow("asdfasdf", "\"asdfasdf\"")]
         public void JsonEncodingWorksAsExpected(string input, string expected)
         {
             IValueForm form = new JsonEncodeValueFormFactory().Create("test");
             string actual = form.Process(input, new Dictionary<string, IValueForm>());
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleNullValue()
         {
             IValueForm model = new JsonEncodeValueFormFactory().Create("test");
-            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
+            Assert.ThrowsExactly<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }

@@ -13,7 +13,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// the task reads the on-disk data from the right place even when the process
     /// current working directory differs from the project directory.
     /// </summary>
-    [DoNotParallelize]
     [TestClass]
     public class GivenAGetPackagesToPrune
     {

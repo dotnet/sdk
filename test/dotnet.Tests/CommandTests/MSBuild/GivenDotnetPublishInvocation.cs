@@ -5,7 +5,6 @@ using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenDotnetPublishInvocation : SdkTest
     {

@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenDotnetRunInvocation : SdkTest
     {

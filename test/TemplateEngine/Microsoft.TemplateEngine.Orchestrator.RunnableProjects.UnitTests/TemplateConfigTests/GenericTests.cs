@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
@@ -6,6 +6,7 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
+    [TestClass]
     public class GenericTests
     {
         private static readonly string TestTemplate = /*lang=json*/ """
@@ -30,32 +31,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
             """;
 
-        [Fact]
+        [TestMethod]
         public void CanReadTemplateFromString()
         {
             TemplateConfigModel templateConfigModel = TemplateConfigModel.FromString(TestTemplate);
 
-            Assert.Equal("Test Asset", templateConfigModel.Author);
-            Assert.Equal("TemplateWithSourceName", templateConfigModel.Name);
-            Assert.Equal("bar", templateConfigModel.SourceName);
-            Assert.Equal(2, templateConfigModel.PrimaryOutputs.Count);
-            Assert.Equal(new[] { "bar.cs", "bar/bar.cs" }, templateConfigModel.PrimaryOutputs.Select(po => po.Path).OrderBy(po => po));
+            Assert.AreEqual("Test Asset", templateConfigModel.Author);
+            Assert.AreEqual("TemplateWithSourceName", templateConfigModel.Name);
+            Assert.AreEqual("bar", templateConfigModel.SourceName);
+            Assert.HasCount(2, templateConfigModel.PrimaryOutputs);
+            Assert.AreSequenceEqual(new[] { "bar.cs", "bar/bar.cs" }, templateConfigModel.PrimaryOutputs.Select(po => po.Path).OrderBy(po => po));
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadTemplateFromStream()
         {
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(TestTemplate ?? string.Empty));
             TemplateConfigModel templateConfigModel = TemplateConfigModel.FromStream(stream);
 
-            Assert.Equal("Test Asset", templateConfigModel.Author);
-            Assert.Equal("TemplateWithSourceName", templateConfigModel.Name);
-            Assert.Equal("bar", templateConfigModel.SourceName);
-            Assert.Equal(2, templateConfigModel.PrimaryOutputs.Count);
-            Assert.Equal(new[] { "bar.cs", "bar/bar.cs" }, templateConfigModel.PrimaryOutputs.Select(po => po.Path).OrderBy(po => po));
+            Assert.AreEqual("Test Asset", templateConfigModel.Author);
+            Assert.AreEqual("TemplateWithSourceName", templateConfigModel.Name);
+            Assert.AreEqual("bar", templateConfigModel.SourceName);
+            Assert.HasCount(2, templateConfigModel.PrimaryOutputs);
+            Assert.AreSequenceEqual(new[] { "bar.cs", "bar/bar.cs" }, templateConfigModel.PrimaryOutputs.Select(po => po.Path).OrderBy(po => po));
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadTemplateWithDuplicateCaseInsensitiveSymbolKeys()
         {
             // Regression test: template.json with symbols that differ only by case
@@ -85,16 +86,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
                 """;
 
-            var exception = Record.Exception(() => TemplateConfigModel.FromString(templateWithDuplicateKeys));
-            Assert.Null(exception);
+            Exception? exception = null;
+            try
+            {
+                TemplateConfigModel.FromString(templateWithDuplicateKeys);
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+            Assert.IsNull(exception);
 
             TemplateConfigModel configModel = TemplateConfigModel.FromString(templateWithDuplicateKeys);
-            Assert.Equal("TemplateWithDuplicateKeys", configModel.Name);
+            Assert.AreEqual("TemplateWithDuplicateKeys", configModel.Name);
             // Both symbols should be accessible (last-in-wins for case-sensitive dict, both kept)
-            Assert.NotEmpty(configModel.Symbols);
+            Assert.IsNotEmpty(configModel.Symbols);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadTemplateWithExactDuplicateKeys()
         {
             // Regression test: template.json with exact duplicate property keys
@@ -123,13 +132,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
                 """;
 
-            var exception = Record.Exception(() => TemplateConfigModel.FromString(templateWithExactDuplicates));
-            Assert.Null(exception);
+            Exception? exception = null;
+            try
+            {
+                TemplateConfigModel.FromString(templateWithExactDuplicates);
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+            Assert.IsNull(exception);
 
             TemplateConfigModel configModel = TemplateConfigModel.FromString(templateWithExactDuplicates);
-            Assert.Equal("TemplateWithExactDuplicates", configModel.Name);
+            Assert.AreEqual("TemplateWithExactDuplicates", configModel.Name);
             // Last-wins semantics: "SecondValue" should be the final defaultName
-            Assert.Equal("SecondValue", configModel.DefaultName);
+            Assert.AreEqual("SecondValue", configModel.DefaultName);
         }
     }
 }

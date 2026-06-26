@@ -15,7 +15,6 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class ToolPackageUninstallerTests : SdkTest
     {

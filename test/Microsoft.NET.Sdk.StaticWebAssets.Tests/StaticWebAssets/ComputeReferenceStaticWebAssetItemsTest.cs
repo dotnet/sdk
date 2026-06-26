@@ -437,7 +437,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
-        [DoNotParallelize]
         public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectoryNotProcessCurrentDirectory()
         {
             var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ComputeReferenceStaticWebAssetItemsTest), Guid.NewGuid().ToString("N"));

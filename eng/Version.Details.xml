@@ -44,6 +44,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>50e862b8da0c82ddbf3952cfe61a8681ab93f5bc</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Build.TaskAuthoring.Analyzer" Version="18.9.0-preview-26311-113">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>50e862b8da0c82ddbf3952cfe61a8681ab93f5bc</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="15.2.101-preview6.26311.113">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>50e862b8da0c82ddbf3952cfe61a8681ab93f5bc</Sha>
