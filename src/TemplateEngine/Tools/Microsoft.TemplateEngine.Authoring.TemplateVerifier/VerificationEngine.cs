@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.Utils;
+using VerifyTests;
 using VerifyTests.DiffPlex;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
@@ -36,7 +37,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         /// shape of <c>VerifyXunit.Verifier.VerifyDirectory</c> and <c>VerifyMSTest.Verifier.VerifyDirectory</c>
         /// so that either can be assigned directly as a method group.
         /// </summary>
-        public delegate Task VerifyDirectoryDelegate(
+        public delegate SettingsTask VerifyDirectoryDelegate(
             string path,
             Func<string, bool>? include,
             string? pattern,
@@ -285,7 +286,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         // the load of Verify.XunitV3) only happens when no framework-specific override has been supplied.
         // When DirectoryVerifier is set (for example to the MSTest verifier) this method is never invoked.
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Task DefaultVerifyDirectory(
+        private static SettingsTask DefaultVerifyDirectory(
             string path,
             Func<string, bool>? include,
             string? pattern,
