@@ -20,7 +20,7 @@ Start by ensuring you're dogfooding the SDK from the current branch (dotnet --ve
     If you're not on the dogfood sdk, from the root of the repository run:
         1. dotnet clean
         2. .\restore.cmd or ./restore.sh
-        3. .\build.cmd ./build.sh
+        3. .\build.cmd -c Release or ./build.sh -c Release
         4. .\eng\dogfood.cmd or . ./eng/dogfood.sh
 
 Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 script.";
