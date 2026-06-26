@@ -1110,7 +1110,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.h2tgqmaf5j.map.gz",
+      "Route": "_framework/blazor.server.js.8064m7w2as.map.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1210,7 +1210,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.h2tgqmaf5j.map",
+      "Route": "_framework/blazor.server.js.8064m7w2as.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [
         {
@@ -1710,7 +1710,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.gon0ccxxql.map.gz",
+      "Route": "_framework/blazor.web.js.qf31mbpzsr.map.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1810,7 +1810,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.gon0ccxxql.map",
+      "Route": "_framework/blazor.web.js.qf31mbpzsr.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [
         {
@@ -2234,7 +2234,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.h2tgqmaf5j.map",
+      "Route": "_framework/blazor.server.js.8064m7w2as.map",
       "AssetFile": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\staticwebassets\\_framework\\blazor.server.js.map",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2316,7 +2316,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.gon0ccxxql.map",
+      "Route": "_framework/blazor.web.js.qf31mbpzsr.map",
       "AssetFile": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\staticwebassets\\_framework\\blazor.web.js.map",
       "Selectors": [],
       "ResponseHeaders": [
