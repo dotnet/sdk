@@ -34,7 +34,7 @@ done
 RepoRoot="$(dirname "$(dirname "$(dirname "$(realpath "$0")")")")"
 echo "RepoRoot is: $RepoRoot"
 
-TestProjects=("Microsoft.NET.Sdk.Razor.Tests" "Microsoft.NET.Sdk.BlazorWebAssembly.Tests")
+TestProjects=("Microsoft.NET.Sdk.StaticWebAssets.Tests" "Microsoft.NET.Sdk.BlazorWebAssembly.Tests")
 
 # Add the test path to the TestProjects
 for i in "${!TestProjects[@]}"; do
