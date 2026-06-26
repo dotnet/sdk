@@ -7,6 +7,7 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class ParameterNamesCannotChangeTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotChangeParameterName(settings, context));
@@ -81,8 +82,8 @@ namespace CompatTests
             }
         };
 
-        [Theory]
-        [MemberData(nameof(TestCases))]
+        [TestMethod]
+        [DynamicData(nameof(TestCases))]
         public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -91,7 +92,7 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Equal(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
     }
 }

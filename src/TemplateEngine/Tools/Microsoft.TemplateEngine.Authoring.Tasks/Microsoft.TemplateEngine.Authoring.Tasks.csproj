@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(BundledNETCoreAppTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <Description>MSBuild tasks for template authoring.</Description>
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
 

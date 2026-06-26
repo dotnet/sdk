@@ -35,6 +35,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftBclAsyncInterfacesPackageVersion>11.0.0-preview.6.26311.113</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftBuildPackageVersion>18.9.0-preview-26311-113</MicrosoftBuildPackageVersion>
     <MicrosoftBuildLocalizationPackageVersion>18.9.0-preview-26311-113</MicrosoftBuildLocalizationPackageVersion>
+    <MicrosoftBuildTaskAuthoringAnalyzerPackageVersion>18.9.0-preview-26311-113</MicrosoftBuildTaskAuthoringAnalyzerPackageVersion>
     <MicrosoftBuildNuGetSdkResolverPackageVersion>7.9.0-rc.31213</MicrosoftBuildNuGetSdkResolverPackageVersion>
     <MicrosoftBuildTasksGitPackageVersion>11.0.100-preview.6.26311.113</MicrosoftBuildTasksGitPackageVersion>
     <MicrosoftCodeAnalysisPackageVersion>5.9.0-1.26311.113</MicrosoftCodeAnalysisPackageVersion>
@@ -137,8 +138,8 @@ This file should be imported by eng/Versions.props
     <SystemTextJsonPackageVersion>11.0.0-preview.6.26311.113</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>11.0.0-preview.6.26311.113</SystemWindowsExtensionsPackageVersion>
     <!-- microsoft-testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>2.3.0-preview.26307.5</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>4.3.0-preview.26307.5</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>2.3.0-preview.26321.1</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>4.3.0-preview.26321.1</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>

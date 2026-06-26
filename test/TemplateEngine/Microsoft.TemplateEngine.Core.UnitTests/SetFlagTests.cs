@@ -6,21 +6,29 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class SetFlagTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class SetFlagTests : TestBase
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
-        public SetFlagTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        public SetFlagTests()
         {
-            _environmentSettingsHelper = environmentSettingsHelper;
+            _environmentSettingsHelper = s_environmentSettingsHelper;
         }
 
         // Demonstrate that conditional operations processing is correctly enabled & disabled with Emit flags.
-        [Fact(DisplayName = nameof(TurnOffConditionalTest))]
+        [TestMethod]
         public void TurnOffConditionalTest()
         {
             string originalValue = @"lead stuff
@@ -78,7 +86,7 @@ Final stuff";
         }
 
         // Demonstrate that conditional operations processing is correctly enabled & disabled with the noEmit flags.
-        [Fact(DisplayName = nameof(TurnOffConditionalAndFlagsDontEmitTest))]
+        [TestMethod]
         public void TurnOffConditionalAndFlagsDontEmitTest()
         {
             string originalValue = @"lead stuff
@@ -136,7 +144,7 @@ Final stuff";
         }
 
         // Demonstrate that the newlines for the noEmit flags do not get emitted.
-        [Fact(DisplayName = nameof(ValidateDontEmitFlagDoesntAddNewline))]
+        [TestMethod]
         public void ValidateDontEmitFlagDoesntAddNewline()
         {
             string originalValue = @"Start
@@ -165,7 +173,7 @@ End";
 
         // Using //-:cnd:noEmit on the first line of *.cs file corrupts file content when templating new project
         // https://github.com/dotnet/templating/issues/2913
-        [Fact]
+        [TestMethod]
         public void ValidateConditionOnStartOfFileWithBOM()
         {
             string originalValue = @"//-:cnd:noEmit

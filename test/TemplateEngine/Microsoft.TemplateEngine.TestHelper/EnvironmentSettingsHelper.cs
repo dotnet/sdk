@@ -14,11 +14,11 @@ namespace Microsoft.TemplateEngine.TestHelper
     public class EnvironmentSettingsHelper : IDisposable
     {
         private readonly List<string> _foldersToCleanup = new List<string>();
-        private readonly SharedTestOutputHelper _testOutputHelper;
+        private readonly SharedTestOutputHelper? _testOutputHelper;
 
-        public EnvironmentSettingsHelper(IMessageSink messageSink)
+        public EnvironmentSettingsHelper(IMessageSink? messageSink = null)
         {
-            _testOutputHelper = new SharedTestOutputHelper(messageSink);
+            _testOutputHelper = messageSink is not null ? new SharedTestOutputHelper(messageSink) : null;
         }
 
         public IEngineEnvironmentSettings CreateEnvironment(
@@ -35,7 +35,9 @@ namespace Microsoft.TemplateEngine.TestHelper
                 locale = "en-US";
             }
 
-            IEnumerable<ILoggerProvider> loggerProviders = new[] { new XunitLoggerProvider(_testOutputHelper) };
+            IEnumerable<ILoggerProvider> loggerProviders = _testOutputHelper is not null
+                ? new[] { new XunitLoggerProvider(_testOutputHelper) }
+                : [];
             if (addLoggerProviders != null)
             {
                 loggerProviders = loggerProviders.Concat(addLoggerProviders);

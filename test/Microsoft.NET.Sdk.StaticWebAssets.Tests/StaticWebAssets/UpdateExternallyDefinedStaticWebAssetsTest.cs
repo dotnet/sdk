@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -9,9 +15,11 @@ using Moq;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[TestClass]
+
 public class UpdateExternallyDefinedStaticWebAssetsTest
 {
-    [Fact]
+    [TestMethod]
     public void Execute_UpdatesAssetsWithoutFingerprint()
     {
         // Arrange
@@ -85,7 +93,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         task.UpdatedAssets[1].GetMetadata("Integrity").Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_DoesNotAddAssets_WithEndpointsTo_AssetsWithoutEndpoints()
     {
         // Arrange
@@ -171,7 +179,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         task.UpdatedAssets[1].GetMetadata("Integrity").Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_InfersFingerprint_ForMatchingAssets()
     {
         // Arrange
@@ -255,7 +263,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         task.UpdatedAssets[1].GetMetadata("Integrity").Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_MaterializesFrameworkAssetsFromP2PReferences()
     {
         // Arrange
@@ -318,7 +326,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         task.OriginalFrameworkAssets[0].GetMetadata("SourceType").Should().Be("Framework");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_RemapsEndpointRoutesForMaterializedFrameworkAssets()
     {
         // Arrange
@@ -397,7 +405,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         endpointProperties.Should().NotContain("_content/SourceLib");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_RemapsEndpointRoutesToConsumerBasePath()
     {
         // Arrange
@@ -471,7 +479,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         endpointProperties.Should().NotContain("_content/SourceLib");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_PassesThroughNonFrameworkAssetsUnchanged()
     {
         // Arrange
