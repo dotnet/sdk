@@ -9,9 +9,10 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
 public class ResolveCompressedAssetsMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void ResolvesOutputPathRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ResolveCompressedAssetsMultiThreadingTest), Guid.NewGuid().ToString("N"));
