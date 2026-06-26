@@ -23,6 +23,8 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public string Architecture { get; set; }
 
+        public string TargetOS { get; set; }
+
         public string CrossgenPath { get; set; }
 
         public bool CreateSymbols { get; set; }
@@ -111,9 +113,14 @@ namespace Microsoft.DotNet.Build.Tasks
 
         protected override string GenerateFullPathToTool() => CrossgenPath ?? "crossgen2";
 
-        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
+        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetTargetOS()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
 
         private string GetArchitecture() => $"--targetarch {Architecture}";
+
+        // Explicitly specify the target OS. When omitted, crossgen2 defaults to the OS it is
+        // running on, which produces images for the wrong OS when cross-compiling (e.g. building
+        // an OpenBSD SDK on a Linux host). An empty value preserves the host-default behavior.
+        private string GetTargetOS() => string.IsNullOrEmpty(TargetOS) ? string.Empty : $"--targetos {TargetOS}";
 
         private string GetCreateSymbols() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
 
