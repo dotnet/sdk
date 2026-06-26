@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
-using Microsoft.CodeAnalysis.CSharp;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
@@ -820,6 +818,88 @@ public class C
 		}
 	}
 }",
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpNoDiagnosticForPatternBasedAwaitUsing_UsingStatement()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+                    using System.Threading.Tasks;
+
+                    public struct CustomAsyncDisposable
+                    {
+                        public ConfiguredValueTaskAwaitable DisposeAsync() => default;
+                    }
+
+                    public static class Class
+                    {
+                        public static async Task Test()
+                        {
+                            await using (var cad = new CustomAsyncDisposable())
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpNoDiagnosticForPatternBasedAwaitUsing_UsingDeclaration()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+                    using System.Threading.Tasks;
+
+                    public struct CustomAsyncDisposable
+                    {
+                        public ConfiguredValueTaskAwaitable DisposeAsync() => default;
+                    }
+
+                    public static class Class
+                    {
+                        public static async Task Test()
+                        {
+                            await using var cad = new CustomAsyncDisposable();
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpNoDiagnosticForPatternBasedAwaitForEach()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+                    using System.Threading.Tasks;
+
+                    public struct CustomAsyncEnumerable<T>
+                    {
+                        public ConfiguredCancelableAsyncEnumerable<T>.Enumerator GetAsyncEnumerator() => default;
+                    }
+
+                    public static class Class
+                    {
+                        public static async Task Test()
+                        {
+                            await foreach (var i in new CustomAsyncEnumerable<int>())
+                            {
+                            }
+                        }
+                    }
+                    """,
                 LanguageVersion = LanguageVersion.CSharp8
             }.RunAsync(TestContext.Current.CancellationToken);
         }
