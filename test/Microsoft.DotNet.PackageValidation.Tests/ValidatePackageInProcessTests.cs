@@ -74,10 +74,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         }
 
         [TestMethod]
-        [DataRow(false, true)]
-        [DataRow(false, false)]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
+        [CombinatorialData]
         public void ValidateOnlyErrorWhenAReferenceIsRequired(bool createDependencyToDummy, bool useReferences)
         {
             string testDependencyCode = createDependencyToDummy ?
@@ -156,8 +153,7 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ValidateMissingReferencesIsOnlyLoggedWhenRunningWithReferences(bool useReferences)
         {
             TestProject testProject = CreateTestProject("public class MyType { }", $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}");
