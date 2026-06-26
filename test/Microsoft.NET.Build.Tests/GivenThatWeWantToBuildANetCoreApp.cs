@@ -180,8 +180,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void It_handles_mismatched_implicit_package_versions(bool allowMismatch)
         {
             var testProject = new TestProject()
@@ -497,8 +496,7 @@ public static class Program
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_generates_rid_fallback_graph(bool isSelfContained)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -563,8 +561,7 @@ public static class Program
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_publishes_package_satellites_correctly(bool crossTarget)
         {
             var testProject = new TestProject()
@@ -608,8 +605,7 @@ public static class Program
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_uses_lowercase_form_of_the_target_framework_for_the_output_path(bool useStandardOutputPaths)
         {
             var testProject = new TestProject()
@@ -906,8 +902,7 @@ class Program
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_builds_the_project_successfully_with_only_reference_assembly_set(bool produceOnlyReferenceAssembly)
         {
             var testProject = new TestProject()
@@ -1137,8 +1132,7 @@ class Program
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_includes_local_path_for_package_dependencies(bool useCustomSubdirectory)
         {
             string targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -1308,8 +1302,7 @@ class Program
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_includes_local_path_for_project_references(bool useCustomSubdirectory)
         {
             string targetFramework = ToolsetInfo.CurrentTargetFramework;

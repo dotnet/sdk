@@ -58,8 +58,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void RuntimeIdentifiersInferredCorrectly(bool useRidGraph)
         {
             Func<string, string, string> findAssembly = (a, b) => default;
@@ -906,8 +905,7 @@ class Program
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_places_package_satellites_correctly(bool crossTarget)
         {
             var testProject = new TestProject()

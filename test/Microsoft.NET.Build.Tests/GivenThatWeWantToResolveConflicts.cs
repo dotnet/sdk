@@ -272,8 +272,7 @@ namespace Microsoft.NET.Build.Tests
         //  Should also run on full framework, but needs the right version of NuGet, which isn't on CI yet
         [TestMethod]
         [CoreMSBuildOnly]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void PlatformPackagesCanBePruned(bool prunePackages)
         {
             var referencedProject = new TestProject("ReferencedProject")

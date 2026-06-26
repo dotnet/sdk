@@ -591,8 +591,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void TargetLatestPatchCanBeSpecifiedOnFrameworkReference(bool attributeValue)
         {
             var testProject = new TestProject();
@@ -628,8 +627,7 @@ namespace FrameworkReferenceTest
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void TargetLatestPatchCanBeSpecifiedViaProperty(bool propertyValue)
         {
             var testProject = new TestProject();
@@ -897,8 +895,7 @@ namespace FrameworkReferenceTest
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void WindowsFormsFrameworkReference(bool selfContained)
         {
             TestFrameworkReferenceProfiles(
@@ -910,8 +907,7 @@ namespace FrameworkReferenceTest
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void WPFFrameworkReference(bool selfContained)
         {
             TestFrameworkReferenceProfiles(
@@ -923,8 +919,7 @@ namespace FrameworkReferenceTest
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void WindowsFormAndWPFFrameworkReference(bool selfContained)
         {
             TestFrameworkReferenceProfiles(
@@ -936,8 +931,7 @@ namespace FrameworkReferenceTest
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void WindowsDesktopFrameworkReference(bool selfContained)
         {
             TestFrameworkReferenceProfiles(
