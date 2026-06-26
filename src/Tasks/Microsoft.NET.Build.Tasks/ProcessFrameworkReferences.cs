@@ -427,6 +427,8 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     TaskItem runtimeFramework = new(knownFrameworkReference.RuntimeFrameworkName);
 
+                    // NOTE: Any metadata added here must be part of the cache key in
+                    // ResolveTargetingPackAssets.
                     runtimeFramework.SetMetadata(MetadataKeys.Version, runtimeFrameworkVersion);
                     runtimeFramework.SetMetadata(MetadataKeys.FrameworkName, knownFrameworkReference.Name);
                     runtimeFramework.SetMetadata("Profile", knownFrameworkReference.Profile);

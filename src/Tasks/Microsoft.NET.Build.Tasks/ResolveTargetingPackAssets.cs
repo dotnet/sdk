@@ -655,24 +655,9 @@ namespace Microsoft.NET.Build.Tasks
 
             public string CacheKey()
             {
-                StringBuilder builder = new();
-                builder.AppendLine(nameof(RuntimeFramework));
-                builder.AppendLine(Name);
-                builder.AppendLine(FrameworkName);
-
-                if (Item is not null)
-                {
-                    builder.AppendLine(Item.ItemSpec);
-
-                    foreach (string metadataName in Item.MetadataNames.Cast<string>().OrderBy(name => name, StringComparer.OrdinalIgnoreCase))
-                    {
-                        builder.Append(metadataName);
-                        builder.Append('=');
-                        builder.AppendLine(Item.GetMetadata(metadataName));
-                    }
-                }
-
-                return builder.ToString();
+                // NOTE: The cache key should include any metadata added to runtimeFramework items
+                // in ProcessFrameworkReferences.
+                return $"{nameof(RuntimeFramework)}: {Name} ({FrameworkName} {Item?.GetMetadata(MetadataKeys.Version)} {Item?.GetMetadata(MetadataKeys.Profile)})";
             }
         }
 
