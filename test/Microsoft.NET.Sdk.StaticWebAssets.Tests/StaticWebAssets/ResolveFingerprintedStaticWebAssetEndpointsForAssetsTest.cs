@@ -222,6 +222,76 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         result.Should().BeFalse();
     }
 
+    [Fact]
+    public void ResolvesEndpoints_WhenTaskEnvironmentProjectDirectoryDiffersFromProcessCurrentDirectory()
+    {
+        var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest), Guid.NewGuid().ToString("N"));
+        var projectDir = Path.Combine(testRoot, "project");
+        var spawnDir = Path.Combine(testRoot, "decoy", "spawn");
+        Directory.CreateDirectory(projectDir);
+        Directory.CreateDirectory(spawnDir);
+
+        const string relativeContentRoot = "wwwroot";
+        var projectAbsoluteContentRoot = Path.GetFullPath(Path.Combine(projectDir, relativeContentRoot));
+        var spawnAbsoluteContentRoot = Path.GetFullPath(Path.Combine(spawnDir, relativeContentRoot));
+        projectAbsoluteContentRoot.Should().NotBe(spawnAbsoluteContentRoot,
+            "the test setup must place project and decoy in different parents so a relative ContentRoot resolves differently against each");
+
+        var assetIdentity = Path.Combine(projectAbsoluteContentRoot, "candidate.js");
+
+        var originalCurrentDirectory = Directory.GetCurrentDirectory();
+        try
+        {
+            Directory.SetCurrentDirectory(spawnDir);
+
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var projectEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir);
+
+            // The candidate carries a *relative* ContentRoot. When the task forwards its
+            // TaskEnvironment into StaticWebAsset.FromTaskItemGroup, the asset is rooted against
+            // the project directory rather than the process current directory (the decoy).
+            var candidateAsset = CreateCandidateWithRelativeContentRoot(
+                assetIdentity,
+                relativeContentRoot,
+                relativePath: "candidate#[.{fingerprint}]!.js",
+                fingerprint: "asdf1234");
+
+            var endpoints = CreateEndpoints([StaticWebAsset.FromTaskItem(candidateAsset, projectEnvironment)]);
+
+            var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
+            {
+                CandidateAssets = [candidateAsset],
+                CandidateEndpoints = [.. endpoints.Select(e => e.ToTaskItem())],
+                IsStandalone = false,
+                BuildEngine = buildEngine.Object,
+                TaskEnvironment = projectEnvironment,
+            };
+
+            // Act
+            var result = resolvedEndpoints.Execute();
+
+            // Assert
+            result.Should().BeTrue("the task must run to completion when TaskEnvironment.ProjectDirectory differs from the process CWD");
+            errorMessages.Should().BeEmpty();
+            resolvedEndpoints.ResolvedEndpoints.Should().ContainSingle();
+
+            var endpoint = StaticWebAssetEndpoint.FromTaskItem(resolvedEndpoints.ResolvedEndpoints[0]);
+            endpoint.Route.Should().Be("candidate.asdf1234.js");
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalCurrentDirectory);
+            if (Directory.Exists(testRoot))
+            {
+                Directory.Delete(testRoot, recursive: true);
+            }
+        }
+    }
+
     private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
@@ -263,6 +333,42 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         result.Normalize();
 
         return result.ToTaskItem();
+    }
+
+    // Builds a candidate with a relative ContentRoot that is intentionally left un-normalized so
+    // that the relative path reaches the task under test and is rooted against its
+    // TaskEnvironment.ProjectDirectory rather than the process current directory.
+    private static ITaskItem CreateCandidateWithRelativeContentRoot(
+        string identity,
+        string relativeContentRoot,
+        string relativePath,
+        string fingerprint)
+    {
+        var asset = new StaticWebAsset()
+        {
+            Identity = identity,
+            SourceId = "MyPackage",
+            SourceType = "Discovered",
+            ContentRoot = relativeContentRoot,
+            BasePath = "base",
+            RelativePath = relativePath,
+            AssetKind = "All",
+            AssetMode = "All",
+            AssetRole = "Primary",
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "",
+            CopyToPublishDirectory = "",
+            OriginalItemSpec = identity,
+            // Preset to avoid accessing the disk to compute them.
+            Integrity = "integrity",
+            Fingerprint = fingerprint,
+            FileLength = 10,
+            LastWriteTime = DateTime.UtcNow,
+        };
+
+        return asset.ToTaskItem();
     }
 
     private StaticWebAssetEndpoint[] CreateEndpoints(StaticWebAsset[] assets)
