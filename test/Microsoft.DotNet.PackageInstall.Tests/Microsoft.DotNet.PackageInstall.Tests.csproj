@@ -197,5 +197,8 @@
     <Copy SourceFiles="@(TestAssetLocalNugetFeed)" DestinationFiles="@(TestAssetLocalNugetFeed->'$(PublishDir)\TestAssetLocalNugetFeed\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-
+  <ItemGroup>
+    <PackageReference Include="Combinatorial.MSTest" />
+    <Using Include="Combinatorial.MSTest" />
+  </ItemGroup>
 </Project>
