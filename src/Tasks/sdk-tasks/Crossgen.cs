@@ -7,13 +7,6 @@ namespace Microsoft.DotNet.Build.Tasks
 {
     public sealed class Crossgen : ToolTask
     {
-        public Crossgen()
-        {
-            // Disable partial NGEN to avoid excess JIT-compilation.
-            // The intention is to pre-compile as much as possible.
-            EnvironmentVariables = new string[] { "COMPlus_PartialNGen=0" };
-        }
-
         [Required]
         public string SourceAssembly { get;set; }
 
@@ -21,15 +14,13 @@ namespace Microsoft.DotNet.Build.Tasks
         public string DestinationPath { get; set; }
 
         [Required]
-        public string Architecture { get; set; }
+        public string TargetArchitecture { get; set; }
 
         public string TargetOS { get; set; }
 
         public string CrossgenPath { get; set; }
 
         public bool CreateSymbols { get; set; }
-
-        public bool ReadyToRun { get; set; }
 
         public ITaskItem[] PlatformAssemblyPaths { get; set; }
 
@@ -115,7 +106,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetTargetOS()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
 
-        private string GetArchitecture() => $"--targetarch {Architecture}";
+        private string GetArchitecture() => $"--targetarch {TargetArchitecture}";
 
         // Explicitly specify the target OS. When omitted, crossgen2 defaults to the OS it is
         // running on, which produces images for the wrong OS when cross-compiling (e.g. building
