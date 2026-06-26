@@ -26,8 +26,7 @@
       <!-- The target OS to pass to crossgen2. Without it, crossgen2 defaults to the OS it is running
            on, which produces images for the wrong OS when cross-compiling the SDK toolset (e.g.
            building an OpenBSD SDK on a Linux host). crossgen2 only recognizes the base OS name, so
-           Linux flavors ('linux-musl', 'linux-bionic') must be normalized to 'linux' to match the
-           same convention used by the runtime repo (see runtime's eng/RuntimeIdentifier.props). -->
+           Linux flavors ('linux-musl', 'linux-bionic') must be normalized to 'linux'. -->
       <_CrossgenTargetOS>$(TargetOS)</_CrossgenTargetOS>
       <_CrossgenTargetOS Condition="$(TargetOS.StartsWith('linux'))">linux</_CrossgenTargetOS>
     </PropertyGroup>
