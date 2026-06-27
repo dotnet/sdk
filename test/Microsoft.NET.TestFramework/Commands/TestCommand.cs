@@ -174,8 +174,14 @@ namespace Microsoft.NET.TestFramework.Commands
                 return false;
             }
 
-            return !NuGetTransientErrorDetector.IsTransientError(result.StdOut)
-                && !TransientSdkResolutionErrorDetector.IsTransientError(result.StdOut);
+            // Check both stdout and stderr – MSBuild may emit error diagnostics to either stream
+            // depending on the logger configuration and hosting context.
+            string? combinedOutput = result.StdOut is not null || result.StdErr is not null
+                ? (result.StdOut ?? string.Empty) + (result.StdErr ?? string.Empty)
+                : null;
+
+            return !NuGetTransientErrorDetector.IsTransientError(combinedOutput)
+                && !TransientSdkResolutionErrorDetector.IsTransientError(combinedOutput);
         }
 
         public virtual CommandResult Execute(IEnumerable<string> args)

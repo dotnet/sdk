@@ -24,6 +24,16 @@ namespace Microsoft.NET.TestFramework
                 return false;
             }
 
+            return IsWorkloadResolverDeferralFlake(errorMessage)
+                || IsDefaultResolverDirectoryFlake(errorMessage);
+        }
+
+        /// <summary>
+        /// Pattern 1: The workload resolver defers (returns null) under parallel I/O and then the
+        /// default resolver also fails to find the SDK directory, producing MSB4236.
+        /// </summary>
+        private static bool IsWorkloadResolverDeferralFlake(string errorMessage)
+        {
             // The combination below is specific to the transient in-box SDK resolution flake:
             //   - MSB4236 is raised for an SDK that "could not be found",
             //   - for an in-box SDK in the Microsoft.NET.Sdk family, and
@@ -36,6 +46,18 @@ namespace Microsoft.NET.TestFramework
                 && errorMessage.Contains("Microsoft.NET.Sdk")
                 && errorMessage.Contains("Microsoft.DotNet.MSBuildWorkloadSdkResolver")
                 && errorMessage.Contains("returned null");
+        }
+
+        /// <summary>
+        /// Pattern 2: The default SDK resolver fails to probe the Sdks directory under heavy parallel
+        /// I/O, reporting MSB4276 with "did not exist" even though the directory is present on disk.
+        /// This is a race condition in filesystem enumeration under load.
+        /// </summary>
+        private static bool IsDefaultResolverDirectoryFlake(string errorMessage)
+        {
+            return errorMessage.Contains("MSB4276")
+                && errorMessage.Contains("Microsoft.NET.Sdk")
+                && errorMessage.Contains("did not exist");
         }
     }
 }
