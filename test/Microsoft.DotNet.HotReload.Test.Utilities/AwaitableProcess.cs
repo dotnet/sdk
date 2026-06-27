@@ -10,9 +10,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal sealed class AwaitableProcess : IAsyncDisposable
     {
-        // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
+        // Per-operation timeout for waiting on individual output lines.
+        // Capped at 10 minutes to prevent a single hanging wait from consuming the entire
+        // Helix work item timeout (typically 1 hour). This ensures other tests in the shard
+        // still run even if one test's process never produces expected output.
+        // The 90-second buffer before the work item timeout allows test cleanup (process kill,
+        // tree teardown) to complete before Helix hard-kills the work item.
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
-            ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(10);
+            ? Min(TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(90)), TimeSpan.FromMinutes(10))
+            : TimeSpan.FromMinutes(10);
+
+        private static TimeSpan Min(TimeSpan a, TimeSpan b) => a < b ? a : b;
 
         private readonly List<string> _lines = [];
 
@@ -156,7 +164,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 if (timeoutCancellation.Token.IsCancellationRequested)
                 {
-                    Assert.Fail($"Output not found within {s_timeout}");
+                    Assert.Fail($"Output not found within {s_timeout}. Process {Id} output so far ({_lines.Count} lines):{Environment.NewLine}{string.Join(Environment.NewLine, _lines.TakeLast(20))}");
                 }
 
                 if (disposalCompletionSource.Token.IsCancellationRequested)
@@ -240,8 +248,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
             }
 
-            // ensure process has exited
-            await _processExitAwaiter;
+            // ensure process has exited (with a timeout to prevent cleanup hangs)
+            var exitTask = _processExitAwaiter;
+            if (await Task.WhenAny(exitTask, Task.Delay(TimeSpan.FromSeconds(30))) != exitTask)
+            {
+                Logger.Log($"Process {Id} did not exit within 30s after kill");
+            }
 
             Process.Dispose();
 
