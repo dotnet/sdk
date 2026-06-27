@@ -22,6 +22,9 @@ namespace Microsoft.NET.Build.Tasks
     {
         private static readonly ConcurrentDictionary<string, (DateTime LastKnownWriteTimeUtc, Version? Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
 
+        // Retry delays for sharing violation IOExceptions (100ms, 500ms, 1000ms).
+        private static readonly int[] s_retryDelaysMs = [100, 500, 1000];
+
         private static Version? GetAssemblyVersion(string sourcePath)
         {
             DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
@@ -46,6 +49,21 @@ namespace Microsoft.NET.Build.Tasks
             return version;
 
             static Version? GetAssemblyVersionFromFile(string sourcePath)
+            {
+                for (int attempt = 0; ; attempt++)
+                {
+                    try
+                    {
+                        return ReadVersionFromFile(sourcePath);
+                    }
+                    catch (IOException ex) when (attempt < s_retryDelaysMs.Length && IsSharingViolation(ex))
+                    {
+                        Thread.Sleep(s_retryDelaysMs[attempt]);
+                    }
+                }
+            }
+
+            static Version? ReadVersionFromFile(string sourcePath)
             {
                 using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
                 {
@@ -72,6 +90,15 @@ namespace Microsoft.NET.Build.Tasks
                     return result;
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns true if the IOException represents a sharing violation (ERROR_SHARING_VIOLATION / HRESULT 0x80070020).
+        /// </summary>
+        internal static bool IsSharingViolation(IOException ex)
+        {
+            const int ERROR_SHARING_VIOLATION = unchecked((int)0x80070020);
+            return ex.HResult == ERROR_SHARING_VIOLATION;
         }
     }
 }
