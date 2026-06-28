@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <PackageId>testSdkBlazorWasmAoT</PackageId>
     <BuildHelixPayload Condition="'$(RunAoTTests)' != 'true'">false</BuildHelixPayload>
   </PropertyGroup>
 
