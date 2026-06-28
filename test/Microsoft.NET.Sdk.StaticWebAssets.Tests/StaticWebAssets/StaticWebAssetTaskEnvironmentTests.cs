@@ -15,11 +15,6 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation these tests perform.
-[DoNotParallelize]
 [TestClass]
 public class StaticWebAssetTaskEnvironmentTests
 {

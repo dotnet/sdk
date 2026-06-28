@@ -10,7 +10,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Microsoft.NET.Sdk.Razor.Test
 {
     [TestClass]

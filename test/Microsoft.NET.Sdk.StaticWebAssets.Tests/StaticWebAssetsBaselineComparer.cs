@@ -9,7 +9,6 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
-
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 public class StaticWebAssetsBaselineComparer

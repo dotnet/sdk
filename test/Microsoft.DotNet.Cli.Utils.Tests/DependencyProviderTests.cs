@@ -8,11 +8,6 @@ using Microsoft.Win32;
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
 #pragma warning disable CA1416
-    // These tests share a single hardcoded registry key (.NET_SDK_TEST_PROVIDER_KEY) and mutate it
-    // (create/add/remove/delete), so they must not run concurrently. xUnit ran methods within a class
-    // serially; under MSTest MethodLevel parallelism (see https://github.com/dotnet/sdk/pull/54766)
-    // they race, producing intermittent "expected 1, actual 2 dependents" and missing-subkey failures.
-    [DoNotParallelize]
     [TestClass]
     public class DependencyProviderTests
     {
