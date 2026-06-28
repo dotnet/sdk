@@ -75,7 +75,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <see cref="Path.GetTempPath"/> (e.g., over-the-shoulder UAC, custom TEMP env vars).
     /// <see langword="null"/> if not supplied.
     /// </summary>
-    public static string TrustedClientTempDirectory { get; set; }
+    public static string? TrustedClientTempDirectory { get; set; }
 
     /// <summary>
     /// Gets the processor architecture.

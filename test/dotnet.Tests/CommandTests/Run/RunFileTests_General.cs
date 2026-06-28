@@ -46,10 +46,10 @@ public sealed class RunFileTests_General : RunFileTestBase
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void FilePath_DuplicateFilePathArgument()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "Program.cs", "Program.cs")
@@ -662,10 +662,10 @@ public sealed class RunFileTests_General : RunFileTestBase
             .And.HaveStdOut("Hello from Program");
     }
 
-    [Fact]
+    [TestMethod]
     public void ProjectInCurrentDirectory_RunFromStdin()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
