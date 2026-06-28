@@ -1,23 +1,22 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToCollectExceptionTelemetry : SdkTest
     {
-        public GivenThatWeWantToCollectExceptionTelemetry(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [CoreMSBuildAndWindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows), CoreMSBuildOnly]
         public void It_collects_Exception()
         {
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             string telemetryTestLogger = $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}";
 
-            var testAsset = _testAssetsManager.CopyTestAsset("HelloWorld").WithSource()
+            var testAsset = TestAssetsManager.CopyTestAsset("HelloWorld").WithSource()
             .WithProjectChanges(projectFile =>
                 projectFile.Root!.Descendants()
                             .First(e => e.Name.LocalName == "PropertyGroup")

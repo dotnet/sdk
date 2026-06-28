@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,16 +7,16 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildACppCliProject : SdkTest
     {
-        public GivenThatWeWantToBuildACppCliProject(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void It_builds_and_runs()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) => AddBuildProperty(projectPath, project, "EnableManagedpackageReferenceSupport", "true"));
@@ -49,11 +49,13 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello, World!");
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void It_builds_and_runs_with_package_reference()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework + "-windows";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -74,8 +76,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var cppnProjProperties = GetPropertyValues(testAsset.TestRoot, "NETCoreCppCliTest", targetFramework: targetFramework);
-            Assert.True(cppnProjProperties["_EnablePackageReferencesInVCProjects"] == "true");
-            Assert.True(cppnProjProperties["IncludeWindowsSDKRefFrameworkReferences"] == "");
+            Assert.AreEqual("true", cppnProjProperties["_EnablePackageReferencesInVCProjects"]);
+            Assert.AreEqual("", cppnProjProperties["IncludeWindowsSDKRefFrameworkReferences"]);
 
             var packagesFolder = Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest", "packages");
             if (Directory.Exists(packagesFolder))
@@ -84,10 +86,12 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void Given_no_restore_It_builds_cpp_project()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) => AddBuildProperty(projectPath, project, "EnableManagedpackageReferenceSupport", "True")); ;
@@ -98,10 +102,12 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void Given_Wpf_framework_reference_It_builds_cpp_project()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("CppCliLibWithWpfFrameworkReference")
                 .WithSource();
 
@@ -111,10 +117,12 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void It_fails_with_error_message_on_EnableComHosting()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -139,10 +147,12 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.NoSupportCppEnableComHosting);
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void It_fails_with_error_message_on_fullframework()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -156,10 +166,12 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.NETFrameworkWithoutUsingNETSdkDefaults);
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void It_fails_with_error_message_on_tfm_lower_than_3_1()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -173,10 +185,12 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.CppRequiresTFMVersion31);
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void When_run_with_selfcontained_It_fails_with_error_message()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource();
 

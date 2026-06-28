@@ -65,7 +65,7 @@
                    AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
                    IntermediateAssembly="%(_RoslynAppHost.FullPath)"
                    EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
-    
+
     <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
@@ -86,7 +86,7 @@
     <Copy SourceFiles="$(_FrameworkTlbPath)"
           DestinationFolder="%(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)"
           SkipUnchangedFiles="true"
-          Condition="$(SharedFrameworkRid.StartsWith('win'))" />
+          Condition="$(SharedFrameworkRid.StartsWith('win')) AND Exists('$(_FrameworkTlbPath)')" />
 
     <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/msbuild-entitlements.plist' %(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
@@ -241,9 +241,8 @@
 
   <Target Name="PublishTestCli">
     <PropertyGroup>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' != 'true'" >net10.0</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'" >$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' != 'true'" >net10.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework>net10.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
       <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
     </PropertyGroup>
 
@@ -515,14 +514,75 @@
     <Copy SourceFiles="@(NativeRestoredAppHostNETCore)" DestinationFolder="$(AppHostTemplatePath)" SkipUnchangedFiles="true" />
   </Target>
 
+  <!--
+    Publish the dotnet-aot NativeAOT shared library.
+    This provides fast CLI startup for simple commands (e.g. version, info) by handling
+    them entirely in native code, falling back to the managed dotnet.dll for other commands.
+    The output is placed next to dotnet.dll so it's packaged with the SDK.
+
+    Only runs for native builds (TargetRid == HostRid) on supported platforms.
+    Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
+  -->
+  <Target Name="PublishDotnetAot"
+          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))">
+    <PropertyGroup>
+      <!-- Define platform-specific native library naming -->
+      <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
+      <_DotnetAotNativeLibExtension Condition="'$(OSName)' == 'win'">.dll</_DotnetAotNativeLibExtension>
+      <_DotnetAotNativeLibExtension Condition="'$(OSName)' == 'osx'">.dylib</_DotnetAotNativeLibExtension>
+      <_DotnetAotNativeLibExtension Condition="'$(_DotnetAotNativeLibExtension)' == ''">.so</_DotnetAotNativeLibExtension>
+      <_DotnetAotNativeLibName>$(_DotnetAotNativeLibPrefix)dotnet-aot$(_DotnetAotNativeLibExtension)</_DotnetAotNativeLibName>
+    </PropertyGroup>
+
+    <!--
+      Publish the dotnet-aot project.  The project is configured with a RuntimeIdentifier
+      and with PublishAot=true, so this creates the NativeAOT library.  We pass
+      _IsPublishing=true as a global property because that's the property the SDK uses
+      to gate Publish-time behaviors (for example, suppressing apphost generation when
+      PublishAot is true); without it, running the Publish target directly is known to
+      produce subtly wrong behaviors.
+
+      Also call PublishItemsOutputGroup to retrieve the published file list, so we
+      don't have to hard-code or predict the publish output directory.
+    -->
+    <MSBuild
+      Targets="Publish;PublishItemsOutputGroup"
+      Projects="$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj"
+      Properties="_IsPublishing=true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DotnetAotPublishedItems" />
+    </MSBuild>
+
+    <!-- Match on %(TargetPath) so the macOS dSYM bundle's inner Mach-O
+         (libdotnet-aot.dylib.dSYM/Contents/Resources/DWARF/libdotnet-aot.dylib)
+         is not picked alongside the real dylib. -->
+    <ItemGroup>
+      <_DotnetAotNativeLib Include="@(_DotnetAotPublishedItems)"
+                           Condition="'%(TargetPath)' == '$(_DotnetAotNativeLibName)'" />
+    </ItemGroup>
+
+    <Error Condition="'@(_DotnetAotNativeLib)' == ''"
+           Text="dotnet-aot native library '$(_DotnetAotNativeLibName)' was not produced by Publish for RID '$(TargetRid)'." />
+
+    <!-- Copy the native library to the SDK output directory.  Use the OutputPath
+         metadata, which is the absolute path of the published file (the item's
+         Identity is the source path, before Publish processed it). -->
+    <Copy
+      SourceFiles="@(_DotnetAotNativeLib->'%(OutputPath)')"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true" />
+  </Target>
+
   <Target Name="ChmodPublishDir"
-          DependsOnTargets="GenerateCliRuntimeConfigurationFiles;CreateMSBuildAppHost"
+          DependsOnTargets="GenerateCliRuntimeConfigurationFiles;CreateMSBuildAppHost;PublishDotnetAot"
           Condition="'$(OSName)' != 'win'">
 
     <Exec Command="find $(OutputPath) -type d -exec chmod 755 {} \;" />
     <Exec Command="find $(OutputPath) -type f -exec chmod 644 {} \;" />
     <Exec Command="chmod 755 %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)" />
     <Exec Command="chmod 755 %(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)" />
+    <!-- Make dotnet-aot native shared library executable (only if it exists for this RID) -->
+    <Exec Command="chmod 755 $(OutputPath)$(_DotnetAotNativeLibName)"
+          Condition="Exists('$(OutputPath)$(_DotnetAotNativeLibName)')" />
   </Target>
 
   <Target Name="DeleteSymbolsFromPublishDir" DependsOnTargets="GenerateCliRuntimeConfigurationFiles">
@@ -570,6 +630,7 @@
                             GeneratePackagePruneData;
                             PublishContainersSdk;
                             GenerateCliRuntimeConfigurationFiles;
+                            PublishDotnetAot;
                             CreateMSBuildAppHost;
                             MakeFscRunnableAndMoveToPublishDir;
                             RemoveFscFilesAfterPublish;

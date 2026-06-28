@@ -3,17 +3,18 @@
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
+    [TestClass]
     public class GivenDotnetBuildBuildsDcproj : SdkTest
     {
-        public GivenDotnetBuildBuildsDcproj(ITestOutputHelper log) : base(log)
+        public GivenDotnetBuildBuildsDcproj()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsBuildSummary()
         {
             var testAppName = "docker-compose";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .Restore(Log);
 

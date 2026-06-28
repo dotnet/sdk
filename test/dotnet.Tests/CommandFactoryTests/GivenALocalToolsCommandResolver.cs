@@ -13,6 +13,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class GivenALocalToolsCommandResolver : SdkTest
     {
         private const string ManifestFilename = "dotnet-tools.json";
@@ -21,7 +22,7 @@ namespace Microsoft.DotNet.Tests
         private readonly LocalToolsResolverCache _localToolsResolverCache;
         private readonly IFileSystem _fileSystem;
 
-        public GivenALocalToolsCommandResolver(ITestOutputHelper log) : base(log)
+        public GivenALocalToolsCommandResolver()
         {
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.Tests
                 new DirectoryPath(Path.Combine(temporaryDirectory, "cache")));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenResolveStrictItCanFindToolExecutable()
         {
             (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup(toolCommand: "a");
@@ -49,9 +50,9 @@ namespace Microsoft.DotNet.Tests
             commandPath.Should().Be(fakeExecutable.Value);
         }
 
-        [Theory]
-        [InlineData("a")]
-        [InlineData("dotnet-a")]
+        [TestMethod]
+        [DataRow("a")]
+        [DataRow("dotnet-a")]
         public void WhenResolveItCanFindToolExecutable(string toolCommand)
         {
             (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup(toolCommand);
@@ -68,7 +69,7 @@ namespace Microsoft.DotNet.Tests
             commandPath.Should().Be(fakeExecutable.Value);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenResolveWithNoArgumentsItReturnsNull()
         {
             (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("-d");
@@ -112,7 +113,7 @@ namespace Microsoft.DotNet.Tests
             return (fakeExecutable, localToolsCommandResolver);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNuGetGlobalPackageLocationIsCleanedAfterRestoreItShowError()
         {
             ToolCommandName toolCommandNameA = new("a");
@@ -153,7 +154,7 @@ namespace Microsoft.DotNet.Tests
                 toolCommandNameA.ToString()));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNuGetGlobalPackageLocationIsNotRestoredItThrowsGracefulException()
         {
             ToolCommandName toolCommandNameA = new("a");
@@ -177,7 +178,7 @@ namespace Microsoft.DotNet.Tests
                 toolCommandNameA.ToString()));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanResolveAmbiguityCausedByPrefixDotnetDash()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename),
@@ -214,15 +215,23 @@ namespace Microsoft.DotNet.Tests
                _localToolsResolverCache,
                _fileSystem);
 
-            localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            var commandSpecA = localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 CommandName = "dotnet-a",
-            }).Args!.Trim('"').Should().Be(fakeExecutableA.Value);
+            });
+            commandSpecA.Should().NotBeNull();
+            var argsA = commandSpecA.Args;
+            argsA.Should().NotBeNull();
+            argsA.Trim('"').Should().Be(fakeExecutableA.Value);
 
-            localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            var commandSpecDotnetA = localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 CommandName = "dotnet-dotnet-a",
-            }).Args!.Trim('"').Should().Be(fakeExecutableDotnetA.Value);
+            });
+            commandSpecDotnetA.Should().NotBeNull();
+            var argsDotnetA = commandSpecDotnetA.Args;
+            argsDotnetA.Should().NotBeNull();
+            argsDotnetA.Trim('"').Should().Be(fakeExecutableDotnetA.Value);
         }
 
         private string _jsonContent =

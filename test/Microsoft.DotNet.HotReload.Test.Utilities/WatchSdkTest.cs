@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.NET.TestFramework;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -11,7 +11,7 @@ public abstract class WatchSdkTest(ITestOutputHelper logger)
     : SdkTest(new DebugTestOutputLogger(logger))
 {
     public TestAssetsManager TestAssets
-        => _testAssetsManager;
+        => TestAssetsManager;
 
     public DebugTestOutputLogger Logger
         => (DebugTestOutputLogger)base.Log;

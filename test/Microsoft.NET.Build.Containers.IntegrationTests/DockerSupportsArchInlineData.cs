@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using System.Text.Json;
-using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -18,17 +18,19 @@ public class DockerSupportsArchInlineData : DataAttribute
         _data = data;
     }
 
-    public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+    public override bool SupportsDiscoveryEnumeration() => true;
+
+    public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, Xunit.Sdk.DisposalTracker disposalTracker)
     {
         if (DockerSupportsArchHelper.DaemonSupportsArch(_arch))
         {
-            return new object[][] { _data.Prepend(_arch).ToArray() };
+            return new([ConvertDataRow(_data.Prepend(_arch).ToArray())]);
         }
         else
         {
             base.Skip = $"Skipping test because Docker daemon does not support {_arch}.";
         }
-        return Array.Empty<object[]>();
+        return new(Array.Empty<ITheoryDataRow>());
     }
 }
 
@@ -103,6 +105,16 @@ internal static class DockerSupportsArchHelper
 
         public static NullLogger Instance { get; } = new NullLogger();
 
+        public string Output => string.Empty;
+
+        public void Write(string message)
+        {
+            //do nothing
+        }
+        public void Write(string format, params object[] args)
+        {
+            //do nothing
+        }
         public void WriteLine(string message)
         {
             //do nothing

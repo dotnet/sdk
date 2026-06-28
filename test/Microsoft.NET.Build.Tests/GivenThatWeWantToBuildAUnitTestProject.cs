@@ -3,16 +3,14 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAUnitTestProject : SdkTest
     {
-        public GivenThatWeWantToBuildAUnitTestProject(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_generates_runtime_config()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("XUnitTestProject")
                 .WithSource();
 
@@ -26,12 +24,12 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().HaveFile(@"XUnitTestProject.runtimeconfig.json");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_when_has_runtime_output_is_true()
         {
             const string targetFramework = "netcoreapp2.1";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("XUnitTestProject")
                 .WithSource();
 

@@ -166,6 +166,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
+#if !CLI_AOT
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
@@ -555,6 +557,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return true;
         }
 
+        [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         void CollectAdditionalSources(CacheInfo cache, ProjectInstance projectInstance)
         {
             Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
@@ -703,6 +706,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
     }
+
+#endif
 
     /// <summary>
     /// Common info needed by <see cref="ComputeCacheEntry"/> but also later stages.
@@ -1177,11 +1182,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
         Builder.CreateProjectInstance(
@@ -1207,6 +1214,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// The <see cref="ProjectRootElement"/>s are registered in the <paramref name="projectCollection"/>'s
     /// <c>ProjectRootElementCache</c> so MSBuild can resolve <c>&lt;ProjectReference&gt;</c> items to them.
     /// </summary>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private void CreateReferencedVirtualProjects(
         ProjectCollection projectCollection,
         ImmutableArray<CSharpDirective> directives)

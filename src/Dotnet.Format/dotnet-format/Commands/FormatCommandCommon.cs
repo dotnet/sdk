@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
@@ -32,6 +33,11 @@ namespace Microsoft.CodeAnalysis.Tools
         internal static readonly Option<bool> NoRestoreOption = new("--no-restore")
         {
             Description = Resources.Doesnt_execute_an_implicit_restore_before_formatting,
+        };
+        internal static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
+        {
+            HelpName = "framework",
+            Description = Resources.The_target_framework_to_use_when_loading_the_workspace,
         };
         internal static readonly Option<bool> VerifyNoChanges = new("--verify-no-changes")
         {
@@ -105,8 +111,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                 formatOptions,
                 logger,
-                cancellationToken,
-                binaryLogPath: formatOptions.BinaryLogPath).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
             return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
         }
 
@@ -114,6 +119,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             command.Arguments.Add(SlnOrProjectArgument);
             command.Options.Add(NoRestoreOption);
+            command.Options.Add(FrameworkOption);
             command.Options.Add(VerifyNoChanges);
             command.Options.Add(IncludeOption);
             command.Options.Add(ExcludeOption);
@@ -208,6 +214,12 @@ namespace Microsoft.CodeAnalysis.Tools
                         ? (formatOptions with { BinaryLogPath = Path.ChangeExtension(binaryLogPath, ".binlog") })
                         : (formatOptions with { BinaryLogPath = binaryLogPath });
                 }
+            }
+
+            if (parseResult.GetResult(FrameworkOption) is not null &&
+                parseResult.GetValue(FrameworkOption) is string { Length: > 0 } framework)
+            {
+                formatOptions = formatOptions with { TargetFramework = framework };
             }
 
             return formatOptions;

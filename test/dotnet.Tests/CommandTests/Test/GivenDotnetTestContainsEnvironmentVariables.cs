@@ -6,6 +6,7 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestContainsEnvironmentVariables : SdkTest
     {
         private const string TestAppName = "VSTestEnvironmentVariables";
@@ -14,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         private const string EnvironmentVariable2 = "__DOTNET_TEST_ENVIRONMENT_VARIABLE_1=VALUE1";
         private const string EnvironmentVariable3 = "__DOTNET_TEST_ENVIRONMENT_VARIABLE_2=VALUE WITH SPACE";
 
-        public GivenDotnetTestContainsEnvironmentVariables(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestContainsEnvironmentVariables()
         {
         }
 
@@ -26,10 +27,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             EnvironmentOption, EnvironmentVariable3,
         };
 
-        [Fact]
+        [TestMethod]
         public void ItPassesEnvironmentVariablesFromCommandLineParametersWhenRunningViaCsproj()
         {
-            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -55,10 +56,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPassesEnvironmentVariablesFromCommandLineParametersWhenRunningViaDll()
         {
-            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 

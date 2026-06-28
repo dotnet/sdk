@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -21,6 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             command.AddCommonOptions();
             command.Validators.Add(EnsureFolderNotSpecifiedWithNoRestore);
             command.Validators.Add(EnsureFolderNotSpecifiedWhenLoggingBinlog);
+            command.Validators.Add(EnsureFolderNotSpecifiedWithFramework);
             command.Action = s_formattingHandler;
             return command;
         }
@@ -42,6 +44,16 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             if (folder && binarylog is not null && !binarylog.Implicit)
             {
                 symbolResult.AddError(Resources.Cannot_specify_the_folder_option_when_writing_a_binary_log);
+            }
+        }
+
+        internal static void EnsureFolderNotSpecifiedWithFramework(CommandResult symbolResult)
+        {
+            var folder = symbolResult.GetValue(FolderOption);
+            var framework = symbolResult.GetResult(FrameworkOption);
+            if (folder && framework is not null && !framework.Implicit)
+            {
+                symbolResult.AddError(Resources.Cannot_specify_the_folder_option_with_framework);
             }
         }
 

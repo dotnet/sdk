@@ -7,9 +7,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class ProgramTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
+[TestClass]
+public class ProgramTests : DotNetWatchTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task ConsoleCancelKey()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchKitchenSink")
@@ -32,22 +33,22 @@ public class ProgramTests(ITestOutputHelper output) : DotNetWatchTestBase(output
             reporter,
             out var errorCode);
 
-        Assert.Equal(0, errorCode);
-        Assert.NotNull(program);
+        Assert.AreEqual(0, errorCode);
+        Assert.IsNotNull(program);
 
         var run = program.RunAsync();
 
-        await watching.WaitAsync();
+        await watching.WaitAsync(TestContext.CancellationToken);
 
         console.PressKey(new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true));
 
         var exitCode = await run;
-        Assert.Equal(0, exitCode);
+        Assert.AreEqual(0, exitCode);
 
-        await shutdownRequested.WaitAsync();
+        await shutdownRequested.WaitAsync(TestContext.CancellationToken);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProjectGraphLoadFailure()
     {
         var testAsset = TestAssets
@@ -72,7 +73,7 @@ public class ProgramTests(ITestOutputHelper output) : DotNetWatchTestBase(output
         await App.WaitUntilOutputContains("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ListsFiles()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")

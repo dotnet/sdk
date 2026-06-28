@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -143,7 +144,7 @@ public class Test
                 },
             };
             csTest.ExpectedDiagnostics.AddRange(expected);
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             expected = Array.Empty<DiagnosticResult>();
             if (reportDiagnostic)
@@ -174,7 +175,7 @@ End Class
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -192,7 +193,7 @@ public class Class1
 	internal static readonly IntPtr field1 = (nint)0;
 	internal static readonly UIntPtr field2 = (nuint)0;
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -220,7 +221,7 @@ public class Class1
 {
     internal const nint field = (nint)0;
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -248,7 +249,7 @@ public class Class1
 {
     internal const nuint field = (nuint)0;
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
@@ -263,7 +264,7 @@ public class Class
 {
     private static readonly BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 }"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
@@ -278,7 +279,7 @@ public class Class
 {
     private static readonly BindingFlags BindingFlags = (BindingFlags)(BindingFlags.Public | BindingFlags.NonPublic);
 }"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
@@ -301,7 +302,7 @@ public class Class
     private const BindingFlags B = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 }",
                 ExpectedDiagnostics = { new DiagnosticResult(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithLocation(0).WithArguments("B") }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
@@ -324,7 +325,7 @@ public class Class
     private const BindingFlags BindingFlags = (BindingFlags)5;
 }",
                 ExpectedDiagnostics = { new DiagnosticResult(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithLocation(0).WithArguments("BindingFlags") }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)

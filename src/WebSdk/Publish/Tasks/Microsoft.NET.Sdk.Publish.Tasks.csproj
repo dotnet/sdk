@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <PublishRoot Condition="'$(PublishRoot)' == ''">$(RepoRoot)\src\WebSdk\Publish\</PublishRoot>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <PackageId>Microsoft.NET.Sdk.Publish</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
 

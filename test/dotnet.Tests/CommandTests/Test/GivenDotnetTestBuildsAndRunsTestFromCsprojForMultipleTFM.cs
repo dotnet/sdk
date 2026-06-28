@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,18 +8,20 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestBuildsAndRunsTestFromCsprojForMultipleTFM : SdkTest
     {
-        public GivenDotnetTestBuildsAndRunsTestFromCsprojForMultipleTFM(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestBuildsAndRunsTestFromCsprojForMultipleTFM()
         {
         }
 
         private readonly string[] ConsoleLoggerOutputNormal = new[] { "--logger", "console;verbosity=normal" };
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void MStestMultiTFM()
         {
-            var testProjectDirectory = _testAssetsManager.CopyTestAsset("VSTestMulti", identifier: "1")
+            var testProjectDirectory = TestAssetsManager.CopyTestAsset("VSTestMulti", identifier: "1")
                 .WithSource()
                 .WithVersionVariables()
                 .Path;
@@ -52,12 +54,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void XunitMultiTFM()
         {
             // Copy XunitMulti project in output directory of project dotnet-test.Tests
             string testAppName = "XunitMulti";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: "2")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: "2")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -93,12 +96,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItCreatesMergedCoverageFileForMultiTargetedProject()
         {
             // Copy XunitMulti project in output directory of project dotnet-test.Tests
             string testAppName = "XunitMulti";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: "3")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: "3")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -120,13 +124,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Verify
             DirectoryInfo d = new(resultsDirectory);
             FileInfo[] coverageFileInfos = d.GetFiles("*.coverage", SearchOption.AllDirectories);
-            Assert.Single(coverageFileInfos);
+            Assert.ContainsSingle(coverageFileInfos);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanTestAMultiTFMProjectWithImplicitRestore()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(
+            var testInstance = TestAssetsManager.CopyTestAsset(
                     "MultiTFMXunitProject",
                     testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
@@ -139,7 +143,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                .Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSlnWithMultitargetedProject()
         {
             var libraryProject = new TestProject()
@@ -160,7 +164,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             testProject.ReferencedProjects.Add(libraryProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new DotnetNewCommand(Log, "sln")
                 .WithVirtualHive()

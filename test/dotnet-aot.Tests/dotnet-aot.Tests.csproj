@@ -1,0 +1,71 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
+    <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <!-- Tests modify process-global state; run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+
+    <!-- Strong naming deprecated on .NET Core -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
+
+    <!-- Ignore OS API compatibility checks (same as dotnet-aot) -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <!-- AOT publish support: dotnet publish -p:PublishAotTests=true. MSTest.Sdk runs on
+       Microsoft.Testing.Platform and uses the MSTest source generator for test discovery,
+       which is NativeAOT-compatible (no reflection-based discovery). -->
+  <PropertyGroup Condition="'$(PublishAotTests)' == 'true'">
+    <PublishAot>true</PublishAot>
+    <!-- Project references (TestFramework.MSTest, Cli.Utils, NativeWrapper) may produce
+         trim/AOT warnings since they are not annotated for AOT. -->
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
+    <EnableAotAnalyzer>false</EnableAotAnalyzer>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+  </PropertyGroup>
+
+  <!-- Shared AOT source files (Parser, option actions, EnvironmentVariableNames) -->
+  <Import Project="..\..\src\Cli\dotnet-aot\AotSourceFiles.props" />
+
+  <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Cli\dotnet-aot\NativeEntryPoint.cs" Link="NativeEntryPoint.cs" />
+  </ItemGroup>
+
+  <!-- DotnetRootResolver from the dn project -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Cli\dn\DotnetRootResolver.cs" Link="DotnetRootResolver.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+  </ItemGroup>
+
+  <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+  </ItemGroup>
+
+</Project>

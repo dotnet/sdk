@@ -25,7 +25,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Containers\Microsoft.NET.Build.Containers\Microsoft.NET.Build.Containers.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.Build.Containers.UnitTests\Microsoft.NET.Build.Containers.UnitTests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

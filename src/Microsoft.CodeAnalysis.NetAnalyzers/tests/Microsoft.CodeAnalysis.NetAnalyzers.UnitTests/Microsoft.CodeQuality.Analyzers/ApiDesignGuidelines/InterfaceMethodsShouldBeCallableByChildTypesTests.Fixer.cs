@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -269,7 +270,7 @@ public class ImplementsGeneralThree : IGeneral
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -365,7 +366,7 @@ public sealed class ImplementsGeneral  : IGeneral
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -515,7 +516,7 @@ public sealed class ImplementsGeneralThree : IGeneral
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -875,7 +876,7 @@ End Class
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -947,7 +948,7 @@ End Class
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1063,7 +1064,7 @@ End Class
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

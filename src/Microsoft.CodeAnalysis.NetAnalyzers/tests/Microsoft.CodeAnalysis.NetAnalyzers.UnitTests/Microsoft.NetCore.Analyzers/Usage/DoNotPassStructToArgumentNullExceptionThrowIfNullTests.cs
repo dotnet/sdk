@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -53,7 +54,7 @@ public class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -95,7 +96,7 @@ public class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -134,7 +135,7 @@ public class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -178,7 +179,7 @@ public class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -216,7 +217,7 @@ public struct MyStruct {}";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -259,7 +260,7 @@ public struct MyStruct {}";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -291,7 +292,7 @@ public class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -332,7 +333,7 @@ public class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -374,7 +375,7 @@ public record MyRecord({type} X);";
                 LanguageVersion = LanguageVersion.CSharp9,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -421,7 +422,7 @@ public record MyRecord({type}? X);";
                 LanguageVersion = LanguageVersion.CSharp9,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -460,7 +461,7 @@ class MyType {}";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -498,7 +499,7 @@ class MyType {}";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -540,7 +541,7 @@ class MyType
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -574,7 +575,7 @@ class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -614,7 +615,7 @@ class MyType {{}}";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -646,7 +647,7 @@ class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -681,7 +682,7 @@ class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -719,7 +720,7 @@ class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -753,7 +754,7 @@ class Test
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -793,7 +794,7 @@ public struct MyStruct {{}}";
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -825,7 +826,7 @@ public class Test
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -850,7 +851,7 @@ public record MyRecord;";
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp9,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -875,7 +876,7 @@ class Test
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -918,7 +919,7 @@ End Class
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -955,7 +956,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -990,7 +991,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1030,7 +1031,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1066,7 +1067,7 @@ End Structure";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1106,7 +1107,7 @@ End Structure";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1134,7 +1135,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1170,7 +1171,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1211,7 +1212,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1256,7 +1257,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1293,7 +1294,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1331,7 +1332,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1359,7 +1360,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1395,7 +1396,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1425,7 +1426,7 @@ End Class";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -1464,7 +1465,7 @@ End Structure";
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1488,7 +1489,7 @@ End Class";
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1509,7 +1510,7 @@ End Class";
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
