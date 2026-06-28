@@ -3,7 +3,9 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+#if TARGET_WINDOWS
 using Microsoft.DotNet.Cli.Installer.Windows;
+#endif
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
