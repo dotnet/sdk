@@ -57,15 +57,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         _currentWorkingDirectory = currentWorkingDirectory;
 
         _localToolAssetDir = new DirectoryPath(_fileSystem.Directory.CreateTemporarySubdirectory());
-
-        // Tools target modern (net8.0+) frameworks, for which the SDK resolves RIDs using the simplified
-        // "portable" RID graph by default (UseRidGraph=false). Prefer that graph here so tool RID-asset
-        // selection matches normal restore/build; fall back to the legacy graph if the portable one isn't
-        // present in the layout.
-        string portableRuntimeJsonPath = Path.Combine(AppContext.BaseDirectory!, "PortableRuntimeIdentifierGraph.json");
-        string legacyRuntimeJsonPath = Path.Combine(AppContext.BaseDirectory!, "RuntimeIdentifierGraph.json");
-        _runtimeJsonPath = runtimeJsonPathForTests
-            ?? (File.Exists(portableRuntimeJsonPath) ? portableRuntimeJsonPath : legacyRuntimeJsonPath);
+        _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(AppContext.BaseDirectory!, "PortableRuntimeIdentifierGraph.json");
     }
 
     protected abstract INuGetPackageDownloader CreateNuGetPackageDownloader(
