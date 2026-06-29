@@ -17,6 +17,12 @@ namespace Microsoft.DotNet.Cli;
 
 static unsafe partial class NativeEntryPoint
 {
+    /// <summary>
+    ///  When set by the native entry point, AOT-capable commands use this instead of
+    ///  discovering the dotnet root via PATH / environment probing.
+    /// </summary>
+    internal static string? DotnetRoot { get; set; }
+
     [UnmanagedCallersOnly(EntryPoint = "dotnet_execute")]
     static int Execute(
         nint hostPathPtr,      // const char_t* host_path
@@ -118,6 +124,10 @@ static unsafe partial class NativeEntryPoint
             {
                 AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
             }
+
+            // Surface the host-provided dotnet root so AOT-capable commands (e.g. `sdk check`)
+            // can use it instead of re-probing PATH / environment for the dotnet installation.
+            DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
 
             // Try the AOT-compiled path for supported commands (if enabled)
             if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))

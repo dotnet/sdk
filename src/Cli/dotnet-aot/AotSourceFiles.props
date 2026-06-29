@@ -99,6 +99,23 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
   </ItemGroup>
 
+  <!-- 'dotnet sdk check' command: command-specific sources and helpers. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\SdkCommandParser.cs" Link="Commands\Sdk\SdkCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\PrintableTable.cs" Link="PrintableTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\SdkCheckCommand.cs" Link="Commands\Sdk\Check\SdkCheckCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\IProductCollectionProvider.cs" Link="Commands\Sdk\Check\IProductCollectionProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\ProductCollectionProvider.cs" Link="Commands\Sdk\Check\ProductCollectionProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\BundleOutputWriter.cs" Link="Commands\Sdk\Check\BundleOutputWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\SdkOutputWriter.cs" Link="Commands\Sdk\Check\SdkOutputWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\RuntimeOutputWriter.cs" Link="Commands\Sdk\Check\RuntimeOutputWriter.cs" />
+  </ItemGroup>
+
+  <!-- 'dotnet sdk check' command: command-specific dependencies. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+  </ItemGroup>
+
   <!-- 'dotnet sln' command: command-specific sources and helpers. -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnFileFactory.cs" Link="SlnFileFactory.cs" />
@@ -198,7 +215,6 @@
     variants and install/update/restore/execute fall back to the managed CLI and are not linked.
   -->
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\PrintableTable.cs" Link="PrintableTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\ToolCommandParser.cs" Link="Commands\Tool\ToolCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Common\ToolManifestFinderExtensions.cs" Link="Commands\Tool\Common\ToolManifestFinderExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\List\ToolListLocalCommand.cs" Link="Commands\Tool\List\ToolListLocalCommand.cs" />

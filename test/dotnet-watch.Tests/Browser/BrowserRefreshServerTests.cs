@@ -17,20 +17,7 @@ public class BrowserRefreshServerTests
     }
 
     [TestMethod]
-    [DataRow(LogLevel.Trace, true)]
-    [DataRow(LogLevel.Trace, false)]
-    [DataRow(LogLevel.Debug, true)]
-    [DataRow(LogLevel.Debug, false)]
-    [DataRow(LogLevel.Information, true)]
-    [DataRow(LogLevel.Information, false)]
-    [DataRow(LogLevel.Warning, true)]
-    [DataRow(LogLevel.Warning, false)]
-    [DataRow(LogLevel.Error, true)]
-    [DataRow(LogLevel.Error, false)]
-    [DataRow(LogLevel.Critical, true)]
-    [DataRow(LogLevel.Critical, false)]
-    [DataRow(LogLevel.None, true)]
-    [DataRow(LogLevel.None, false)]
+    [CombinatorialData]
     public async Task ConfigureLaunchEnvironmentAsync(LogLevel logLevel, bool enableHotReload) 
     {
         var middlewarePath = Path.GetTempPath();

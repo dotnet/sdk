@@ -3,5 +3,7 @@
   "diagnosticMessages": false,
   "longRunningTestSeconds": 20,
   "showLiveOutput": false,
-  "shadowCopy": false
+  "shadowCopy": false,
+  "parallelizeAssembly": false,
+  "parallelizeTestCollections": false
 }
