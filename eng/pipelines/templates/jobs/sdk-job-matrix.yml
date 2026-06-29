@@ -34,10 +34,6 @@ parameters:
     targetArchitecture: arm64
     runtimeIdentifier: osx-arm64
     runNativeAotCliTests: true
-  - categoryName: AoT
-    runAoTTests: true
-    targetArchitecture: arm64
-    runtimeIdentifier: osx-arm64
 
 jobs:
 ### ONELOCBUILD ###
