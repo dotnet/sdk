@@ -10,7 +10,6 @@ using Microsoft.Build.Framework;
 using Moq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
     [TestClass]
