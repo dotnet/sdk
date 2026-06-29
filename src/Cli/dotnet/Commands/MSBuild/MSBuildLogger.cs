@@ -19,9 +19,10 @@ public sealed class MSBuildLogger : INodeLogger
     internal const string BuildcheckRunEventName = "buildcheck/run";
     internal const string BuildcheckRuleStatsEventName = "buildcheck/rule";
 
-    // These two events are aggregated and sent at the end of the build.
+    // These events are aggregated and sent at the end of the build.
     internal const string TaskFactoryTelemetryAggregatedEventName = "build/tasks/taskfactory";
     internal const string TasksTelemetryAggregatedEventName = "build/tasks";
+    internal const string MSBuildTaskSubclassedTelemetryAggregatedEventName = "build/tasks/msbuild-subclassed";
 
     internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "taskBaseCatchException";
     internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
@@ -123,20 +124,20 @@ public sealed class MSBuildLogger : INodeLogger
     internal void SendAggregatedEventsOnBuildFinished(ITelemetryClient? telemetry)
     {
         if (telemetry is null) return;
-        if (_aggregatedEvents.TryGetValue(TaskFactoryTelemetryAggregatedEventName, out var taskFactoryData))
+
+        SendAggregatedEvent(telemetry, TaskFactoryTelemetryAggregatedEventName);
+        SendAggregatedEvent(telemetry, TasksTelemetryAggregatedEventName);
+        SendAggregatedEvent(telemetry, MSBuildTaskSubclassedTelemetryAggregatedEventName);
+    }
+
+    private void SendAggregatedEvent(ITelemetryClient telemetry, string eventName)
+    {
+        if (_aggregatedEvents.TryGetValue(eventName, out var eventData))
         {
-            Dictionary<string, string?> taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
+            Dictionary<string, string?> properties = ConvertToStringDictionary(eventData);
 
-            TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: []);
-            _aggregatedEvents.Remove(TaskFactoryTelemetryAggregatedEventName);
-        }
-
-        if (_aggregatedEvents.TryGetValue(TasksTelemetryAggregatedEventName, out var tasksData))
-        {
-            Dictionary<string, string?> tasksProperties = ConvertToStringDictionary(tasksData);
-
-            TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: []);
-            _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
+            TrackEvent(telemetry, $"msbuild/{eventName}", properties, toBeHashed: []);
+            _aggregatedEvents.Remove(eventName);
         }
     }
 
@@ -249,7 +250,9 @@ public sealed class MSBuildLogger : INodeLogger
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
     {
-        if (args.EventName == TaskFactoryTelemetryAggregatedEventName || args.EventName == TasksTelemetryAggregatedEventName)
+        if (args.EventName == TaskFactoryTelemetryAggregatedEventName ||
+            args.EventName == TasksTelemetryAggregatedEventName ||
+            args.EventName == MSBuildTaskSubclassedTelemetryAggregatedEventName)
         {
             AggregateEvent(args);
         }
