@@ -10,6 +10,45 @@ namespace dotnet.Tests
     public class LoggerUtilityTests
     {
         [TestMethod]
+        [DataRow("-tl", "-tl:auto")]
+        [DataRow("/tl", "/tl:auto")]
+        [DataRow("--terminalLogger", "--terminalLogger:auto")]
+        [DataRow("-tl:off", "-tl:off")]
+        [DataRow("-TL:off", "-TL:off")]
+        [DataRow("/tl:off", "/tl:off")]
+        [DataRow("--terminalLogger:off", "--terminalLogger:off")]
+        [DataRow("-tlp:verbosity=quiet", "-tlp:verbosity=quiet")]
+        [DataRow("/tlp:DISABLENODEDISPLAY", "/tlp:DISABLENODEDISPLAY")]
+        [DataRow("--terminalLoggerParameters:verbosity=quiet", "--terminalLoggerParameters:verbosity=quiet")]
+        [DataRow("-clp:NoSummary", "-clp:NoSummary")]
+        [DataRow("--consoleLoggerParameters:NoSummary", "--consoleLoggerParameters:NoSummary")]
+        [DataRow("-noconsolelogger", "-noconsolelogger")]
+        [DataRow("-noConsoleLogger", "-noConsoleLogger")]
+        [DataRow("/noconsolelogger", "/noconsolelogger")]
+        public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
+        {
+            LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
+
+            loggerArgs.Should().Equal(expectedArg);
+            nonLoggerArgs.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("-tl:invalid")]
+        [DataRow("-tlp")]
+        [DataRow("-clp")]
+        [DataRow("-noconsolelogger:false")]
+        [DataRow("--noconsolelogger")]
+        [DataRow("--unknownLogger:off")]
+        public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
+        {
+            LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
+
+            loggerArgs.Should().BeEmpty();
+            nonLoggerArgs.Should().Equal(arg);
+        }
+
+        [TestMethod]
         [DataRow("-tl")]
         [DataRow("--tl")]
         [DataRow("/tl")]

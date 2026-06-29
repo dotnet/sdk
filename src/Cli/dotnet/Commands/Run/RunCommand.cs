@@ -690,11 +690,14 @@ public class RunCommand
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
 
-            List<ILogger> loggersForBuild = [
-                CommonRunHelpers.GetConsoleLogger(
+            List<ILogger> loggersForBuild = [];
+            if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
+            {
+                loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
                     buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
-                )
-            ];
+                ));
+            }
+
             if (binaryLogger is not null)
             {
                 loggersForBuild.Add(binaryLogger);
@@ -824,23 +827,22 @@ public class RunCommand
             parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
         }
 
-        // if the application arguments contain any binlog args then we need to remove them from the application arguments and apply
-        // them to the restore args.
-        // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
-        // bl information to synchronize the restore and build logger configurations
-        var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList();
+        // If the application arguments contain any logger args then we need to remove them from the application arguments and apply
+        // them to the restore args. This is because we can't model the logger command structure in MSBuild in the System.CommandLine
+        // parser, but we need logger information to synchronize the restore and build logger configurations.
+        var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList() ?? [];
 
-        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
+        SeparateApplicationLoggerArguments(parseResult, applicationArguments, out var loggerArgs, out var nonLoggerArgs);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
-        if (binLogArgs.Count > 0)
+        if (loggerArgs.Length > 0)
         {
-            msbuildProperties.AddRange(binLogArgs);
+            msbuildProperties.AddRange(loggerArgs);
         }
 
         // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
         // (otherwise it should be forwarded to the target application as its command-line argument).
-        bool readCodeFromStdin = nonBinLogArgs is ["-", ..] &&
+        bool readCodeFromStdin = nonLoggerArgs is ["-", ..] &&
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
@@ -852,7 +854,7 @@ public class RunCommand
             throw new GracefulException(CliCommandStrings.CannotCombineOptions, definition.ProjectOption.Name, definition.FileOption.Name);
         }
 
-        string[] args = [.. nonBinLogArgs];
+        string[] args = [.. nonLoggerArgs];
         string? projectFilePath = DiscoverProjectFilePath(
             filePath: fileOption,
             projectFileOrDirectoryPath: projectOption,
@@ -924,8 +926,7 @@ public class RunCommand
                 stdinStream.CopyTo(fileStream);
             }
 
-            Debug.Assert(nonBinLogArgs[0] == "-");
-            nonBinLogArgs[0] = entryPointFilePath;
+            Debug.Assert(nonLoggerArgs[0] == "-");
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
@@ -954,6 +955,61 @@ public class RunCommand
         );
 
         return command;
+
+        static void SeparateApplicationLoggerArguments(
+            ParseResult parseResult,
+            IReadOnlyList<string> applicationArguments,
+            out ImmutableArray<string> loggerArgs,
+            out ImmutableArray<string> nonLoggerArgs)
+        {
+            var applicationArgumentsAfterDoubleDash = GetApplicationArgumentsAfterDoubleDash(parseResult);
+            if (applicationArgumentsAfterDoubleDash is null)
+            {
+                LoggerUtility.SeparateLoggerArguments(applicationArguments, out loggerArgs, out nonLoggerArgs);
+                return;
+            }
+
+            if (!TryCountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash, out var countBeforeDoubleDash))
+            {
+                // This hopefully should not happen, but if it does, we don't want to break users.
+                Reporter.Error.WriteLine(CliCommandStrings.RunCommandWarningUnableToDetermineLoggerArguments.Yellow());
+                loggerArgs = [];
+                nonLoggerArgs = [.. applicationArguments];
+                return;
+            }
+
+            LoggerUtility.SeparateLoggerArguments(applicationArguments.Take(countBeforeDoubleDash), out loggerArgs, out var nonLoggerArgsBeforeDoubleDash);
+            nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
+        }
+
+        static List<string>? GetApplicationArgumentsAfterDoubleDash(ParseResult parseResult)
+        {
+            for (var i = 0; i < parseResult.Tokens.Count; i++)
+            {
+                if (parseResult.Tokens[i].Type == TokenType.DoubleDash)
+                {
+                    return parseResult.Tokens.Skip(i + 1).Select(static token => token.Value).ToList();
+                }
+            }
+
+            return null;
+        }
+
+        static bool TryCountApplicationArgumentsBeforeDoubleDash(
+            IReadOnlyList<string> applicationArguments,
+            IReadOnlyList<string> applicationArgumentsAfterDoubleDash,
+            out int countBeforeDoubleDash)
+        {
+            countBeforeDoubleDash = applicationArguments.Count - applicationArgumentsAfterDoubleDash.Count;
+
+            if (countBeforeDoubleDash < 0)
+            {
+                countBeforeDoubleDash = 0;
+                return false;
+            }
+
+            return applicationArguments.Skip(countBeforeDoubleDash).SequenceEqual(applicationArgumentsAfterDoubleDash, StringComparer.Ordinal);
+        }
 
         bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)
         {
