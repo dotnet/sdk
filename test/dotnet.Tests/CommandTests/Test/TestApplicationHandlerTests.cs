@@ -4,7 +4,8 @@
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.Testing.Platform.IPC;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -41,7 +42,7 @@ public class TestApplicationHandlerTests : IDisposable
         var options = new TerminalTestReporterOptions
         {
             AnsiMode = AnsiMode.SimpleAnsi,
-            ShowProgress = false,
+            ShowProgress = () => false,
         };
 
         using var reporter = new TerminalTestReporter(capturingConsole, options);
@@ -304,7 +305,7 @@ public class TestApplicationHandlerTests : IDisposable
         var reporterOptions = new TerminalTestReporterOptions
         {
             AnsiMode = AnsiMode.SimpleAnsi,
-            ShowProgress = false,
+            ShowProgress = () => false,
         };
 
         var reporter = new TerminalTestReporter(capturingConsole, reporterOptions);

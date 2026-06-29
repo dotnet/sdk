@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.Testing.Platform.IPC;
 
 namespace dotnet.Tests.CommandTests.Test;
 

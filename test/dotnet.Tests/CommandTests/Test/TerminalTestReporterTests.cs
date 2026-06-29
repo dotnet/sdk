@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.Testing.Platform.Helpers;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Moq;
 
 namespace dotnet.Tests.CommandTests.Test;
@@ -34,7 +35,7 @@ public class TerminalTestReporterTests
         var options = new TerminalTestReporterOptions
         {
             AnsiMode = AnsiMode.SimpleAnsi,
-            ShowProgress = false,
+            ShowProgress = () => false,
         };
 
         using var reporter = new TerminalTestReporter(console.Object, options);
@@ -66,7 +67,7 @@ public class TerminalTestReporterTests
         var options = new TerminalTestReporterOptions
         {
             AnsiMode = AnsiMode.SimpleAnsi,
-            ShowProgress = false,
+            ShowProgress = () => false,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
         };
@@ -106,7 +107,7 @@ public class TerminalTestReporterTests
         var options = new TerminalTestReporterOptions
         {
             AnsiMode = AnsiMode.SimpleAnsi,
-            ShowProgress = false,
+            ShowProgress = () => false,
             ShowAssembly = true,
             // Suppress mid-stream per-assembly lines so we can assert against the final summary only.
             ShowAssemblyStartAndComplete = false,
@@ -159,7 +160,7 @@ public class TerminalTestReporterTests
         var options = new TerminalTestReporterOptions
         {
             AnsiMode = AnsiMode.SimpleAnsi,
-            ShowProgress = false,
+            ShowProgress = () => false,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
         };
