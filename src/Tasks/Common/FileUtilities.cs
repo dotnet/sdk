@@ -9,11 +9,6 @@ namespace Microsoft.NET.Build.Tasks
 {
     static partial class FileUtilities
     {
-        // Cache file versions across the build keyed by path + last-write time. The same
-        // framework/package assemblies are referenced by many projects, so without this each
-        // project's GenerateDepsFile re-opens and re-parses the Win32 version resource of the
-        // same files. Mirrors the existing s_versionCache used for assembly versions and is
-        // safe under multithreaded (-mt) builds (ConcurrentDictionary, immutable cache entries).
         private static readonly ConcurrentDictionary<string, (DateTime LastKnownWriteTimeUtc, Version? Version)> s_fileVersionCache
             = new(StringComparer.OrdinalIgnoreCase);
 
