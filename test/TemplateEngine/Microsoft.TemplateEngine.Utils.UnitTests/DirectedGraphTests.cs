@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
+    [TestClass]
     public class DirectedGraphTests
     {
         public static IEnumerable<object?[]> DirectedGraphHasCycleData()
@@ -83,23 +83,20 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             };
         }
 
-        [Theory]
-        [MemberData(nameof(DirectedGraphHasCycleData))]
-#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
+        [TestMethod]
+        [DynamicData(nameof(DirectedGraphHasCycleData))]
         public void HasCycleTests(Dictionary<int, HashSet<int>> dependencies, bool shouldHaveCycle, IReadOnlyList<int> expectedCycle, IReadOnlyList<int> unused)
-#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
+            _ = unused;
             new DirectedGraph<int>(dependencies).HasCycle(out IReadOnlyList<int> cycle).Should().Be(shouldHaveCycle);
             cycle.Should().BeEquivalentTo(expectedCycle, options => options.WithStrictOrdering());
-            //cycle.SequenceEqual(expectedCycle).Should().BeTrue();
         }
 
-        [Theory]
-        [MemberData(nameof(DirectedGraphHasCycleData))]
-#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
+        [TestMethod]
+        [DynamicData(nameof(DirectedGraphHasCycleData))]
         public void EnumerateTopologicalSortTests(Dictionary<int, HashSet<int>> dependencies, bool shouldHaveCycle, IReadOnlyList<int> unused, IReadOnlyList<int> expectedOrder)
-#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
+            _ = unused;
             new DirectedGraph<int>(dependencies).TryGetTopologicalSort(out IReadOnlyList<int> order).Should().Be(!shouldHaveCycle);
             if (!shouldHaveCycle)
             {
@@ -211,8 +208,8 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             yield return new object?[] { graphB, new List<int>() { 20 }, false, new Dictionary<int, HashSet<int>>() { { 1, empty } } };
         }
 
-        [Theory]
-        [MemberData(nameof(DirectedGraphSubgraphData))]
+        [TestMethod]
+        [DynamicData(nameof(DirectedGraphSubgraphData))]
         public void GetSubGraphDependandOnVerticesTests(Dictionary<int, HashSet<int>> dependencies, IReadOnlyList<int> vertices, bool includeSeedVertices, Dictionary<int, HashSet<int>> expectedResult)
         {
             var result = new DirectedGraph<int>(dependencies).GetSubGraphDependentOnVertices(vertices, includeSeedVertices);

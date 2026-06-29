@@ -10,16 +10,29 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class SourceConfigTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class SourceConfigTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public SourceConfigTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public SourceConfigTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: false);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: false);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SourceConfigExcludesAreOverriddenByIncludes()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -59,17 +72,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            await (generator as IGenerator).CreateAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
-            Assert.True(_engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetDir, "core.config")));
-            Assert.False(_engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetDir, "full.config")));
+            await (generator as IGenerator).CreateAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.CancellationToken);
+            Assert.IsTrue(_engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetDir, "core.config")));
+            Assert.IsFalse(_engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetDir, "full.config")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CopyOnlyWithoutIncludeDoesntActuallyCopyFile()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -107,21 +120,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
-            Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.CancellationToken);
+            foreach (var c in result.FileChanges.Cast<IFileChange2>())
+            {
+                Assert.StartsWith("./", c.SourceRelativePath);
+            }
 
-            Assert.Single(result.FileChanges);
+            Assert.ContainsSingle(result.FileChanges);
 
-            Assert.Equal(ChangeKind.Create, result.FileChanges.Single().ChangeKind);
-            Assert.True(string.Equals(result.FileChanges.Single().TargetRelativePath, "./something.txt"), "didn't copy the correct file");
+            Assert.AreEqual(ChangeKind.Create, result.FileChanges.Single().ChangeKind);
+            Assert.IsTrue(string.Equals(result.FileChanges.Single().TargetRelativePath, "./something.txt"), "didn't copy the correct file");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CopyOnlyWithParentIncludeActuallyCopiesFile()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -157,20 +173,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
-            Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.CancellationToken);
+            foreach (var c in result.FileChanges.Cast<IFileChange2>())
+            {
+                Assert.StartsWith("./", c.SourceRelativePath);
+            }
 
-            Assert.Single(result.FileChanges);
-            Assert.Equal(ChangeKind.Create, result.FileChanges.Single().ChangeKind);
-            Assert.True(string.Equals(result.FileChanges.Single().TargetRelativePath, "./copy.me"), "didn't copy the correct file");
+            Assert.ContainsSingle(result.FileChanges);
+            Assert.AreEqual(ChangeKind.Create, result.FileChanges.Single().ChangeKind);
+            Assert.IsTrue(string.Equals(result.FileChanges.Single().TargetRelativePath, "./copy.me"), "didn't copy the correct file");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -206,20 +225,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
-            Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.CancellationToken);
+            foreach (var c in result.FileChanges.Cast<IFileChange2>())
+            {
+                Assert.StartsWith("./", c.SourceRelativePath);
+            }
 
-            Assert.Single(result.FileChanges);
-            Assert.Equal(ChangeKind.Create, result.FileChanges.Single().ChangeKind);
-            Assert.True(string.Equals(result.FileChanges.Single().TargetRelativePath, "./copy.me"), "didn't copy the correct file");
+            Assert.ContainsSingle(result.FileChanges);
+            Assert.AreEqual(ChangeKind.Create, result.FileChanges.Single().ChangeKind);
+            Assert.IsTrue(string.Equals(result.FileChanges.Single().TargetRelativePath, "./copy.me"), "didn't copy the correct file");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IncludeModifierOverridesPreviousExcludeModifierTemplateTest()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -260,20 +282,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
-            Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.CancellationToken);
+            foreach (var c in result.FileChanges.Cast<IFileChange2>())
+            {
+                Assert.StartsWith("./", c.SourceRelativePath);
+            }
 
-            Assert.Single(result.FileChanges);
-            Assert.Equal(ChangeKind.Create, result.FileChanges.Single().ChangeKind);
-            Assert.True(string.Equals(result.FileChanges.Single().TargetRelativePath, "./include.xyz"), "include modifier didn't properly override exclude modifier");
+            Assert.ContainsSingle(result.FileChanges);
+            Assert.AreEqual(ChangeKind.Create, result.FileChanges.Single().ChangeKind);
+            Assert.IsTrue(string.Equals(result.FileChanges.Single().TargetRelativePath, "./include.xyz"), "include modifier didn't properly override exclude modifier");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExcludeModifierOverridesPreviousIncludeModifierTemplateTest()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -315,21 +340,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.CancellationToken);
             IEnumerable<IFileChange2> changes = result.FileChanges.Cast<IFileChange2>();
-            Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
+            foreach (var c in result.FileChanges.Cast<IFileChange2>())
+            {
+                Assert.StartsWith("./", c.SourceRelativePath);
+            }
 
-            Assert.Equal(2, result.FileChanges.Count);
+            Assert.HasCount(2, result.FileChanges);
             IFileChange2 includeXyzChangeInfo = changes.Single(x => string.Equals(x.TargetRelativePath, "./include.xyz"));
-            Assert.Equal(ChangeKind.Create, includeXyzChangeInfo.ChangeKind);
+            Assert.AreEqual(ChangeKind.Create, includeXyzChangeInfo.ChangeKind);
 
             IFileChange2 otherXyzChangeInfo = changes.Single(x => string.Equals(x.TargetRelativePath, "./other.xyz"));
-            Assert.Equal(ChangeKind.Create, otherXyzChangeInfo.ChangeKind);
+            Assert.AreEqual(ChangeKind.Create, otherXyzChangeInfo.ChangeKind);
         }
     }
 }

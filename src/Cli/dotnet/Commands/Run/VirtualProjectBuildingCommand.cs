@@ -113,8 +113,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public bool NoWriteBuildMarkers { get; init; }
 
+    public bool NoConsoleLogger { get; init; }
+
     public VirtualProjectBuilder Builder { get; }
     public MSBuildArgs MSBuildArgs { get; }
+
+    /// <summary>
+    /// Keeps strong references to <see cref="VirtualProjectBuilder"/>s created for <c>#:ref</c> directives,
+    /// preventing their <see cref="ProjectRootElement"/>s from being garbage collected
+    /// (same reason as <c>VirtualProjectBuilder._projectRootElement</c>).
+    /// </summary>
+    private readonly List<VirtualProjectBuilder> _referencedBuilders = [];
 
     public ImmutableArray<CSharpDirective> Directives
     {
@@ -155,6 +164,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
+#if !CLI_AOT
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
@@ -162,7 +173,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
-        var consoleLogger = minimizeStdOut
+        var consoleLogger = NoConsoleLogger
+            ? null
+            : minimizeStdOut
             ? new SimpleErrorLogger()
             : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
@@ -274,7 +287,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
-            IEnumerable<ILogger> loggers = [.. binaryLoggers, consoleLogger];
+            ReadOnlySpan<ILogger> consoleLoggers = consoleLogger is null ? [] : [consoleLogger];
+            IEnumerable<ILogger> loggers = [.. binaryLoggers, .. consoleLoggers];
             var projectCollection = new ProjectCollection(
                 MSBuildArgs.GlobalProperties,
                 loggers,
@@ -300,7 +314,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
-                    BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
+                    // We don't include ClearCachesAfterBuild flag unlike MSBuild's implicit restore
+                    // to avoid evicting the virtual project asynchronously (https://github.com/dotnet/msbuild/issues/14148).
+                    // It shouldn't make a difference for us because the restore has distinct global properties, so all projects will be re-evaluated anyway.
+                    BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
 
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
@@ -521,6 +538,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 return false;
             }
 
+            if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Ref))
+            {
+                Reporter.Verbose.WriteLine("Not saving cache because there is a ref directive.");
+                return false;
+            }
+
             if (EvaluatedDirectives.Any(static d =>
                     d is CSharpDirective.IncludeOrExclude { Kind: CSharpDirective.IncludeOrExcludeKind.Include } includeDirective &&
                     includeDirective.Name.AsSpan().ContainsAny('*', '?')))
@@ -532,6 +555,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return true;
         }
 
+        [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         void CollectAdditionalSources(CacheInfo cache, ProjectInstance projectInstance)
         {
             Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
@@ -681,6 +705,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+#endif
+
     /// <summary>
     /// Common info needed by <see cref="ComputeCacheEntry"/> but also later stages.
     /// </summary>
@@ -751,9 +777,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private CacheInfo? ComputeCacheEntry()
     {
-        if (Directives.Any(static d => d is CSharpDirective.Project))
+        if (Directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.Ref))
         {
-            Reporter.Verbose.WriteLine("Skipping computing cache because there are project directives.");
+            Reporter.Verbose.WriteLine("Skipping computing cache because there are project or ref directives.");
             return null;
         }
 
@@ -1154,24 +1180,87 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
         Builder.CreateProjectInstance(
             projectCollection,
             ThrowingReporter,
             out var project,
+            projectRootElement: out _,
             out var evaluatedDirectives,
             Directives,
             addGlobalProperties);
 
         EvaluatedDirectives = evaluatedDirectives;
 
+        // Create virtual ProjectRootElements for all #:ref directives so MSBuild can resolve them.
+        CreateReferencedVirtualProjects(projectCollection, evaluatedDirectives);
+
         return project;
+    }
+
+    /// <summary>
+    /// Recursively creates virtual <see cref="ProjectRootElement"/>s for all <c>#:ref</c> directives
+    /// in the given <paramref name="directives"/> (and transitively in referenced files).
+    /// The <see cref="ProjectRootElement"/>s are registered in the <paramref name="projectCollection"/>'s
+    /// <c>ProjectRootElementCache</c> so MSBuild can resolve <c>&lt;ProjectReference&gt;</c> items to them.
+    /// </summary>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    private void CreateReferencedVirtualProjects(
+        ProjectCollection projectCollection,
+        ImmutableArray<CSharpDirective> directives)
+    {
+        var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Builder.EntryPointFileFullPath };
+        CreateReferencedVirtualProjectsCore(projectCollection, directives, processedFiles, _referencedBuilders);
+
+        static void CreateReferencedVirtualProjectsCore(
+            ProjectCollection projectCollection,
+            ImmutableArray<CSharpDirective> directives,
+            HashSet<string> processedFiles,
+            List<VirtualProjectBuilder> referencedBuilders)
+        {
+            foreach (var refDirective in directives.OfType<CSharpDirective.Ref>())
+            {
+                // ResolvedPath is always set when using ThrowingReporter (EnsureResolvedPath throws on error).
+                Debug.Assert(refDirective.ResolvedPath is not null);
+
+                if (refDirective.ResolvedPath is not { } resolvedPath)
+                {
+                    continue;
+                }
+
+                if (!processedFiles.Add(resolvedPath))
+                {
+                    // Already processed or cycle detected.
+                    continue;
+                }
+
+                var refBuilder = new VirtualProjectBuilder(
+                    resolvedPath,
+                    TargetFramework);
+
+                refBuilder.CreateProjectInstance(
+                    projectCollection,
+                    ThrowingReporter,
+                    project: out _,
+                    projectRootElement: out _,
+                    out var refEvaluatedDirectives);
+
+                // Keep a strong reference to prevent GC from collecting the ProjectRootElement
+                // after MSBuild's ProjectRootElementCache demotes it to a weak reference.
+                referencedBuilders.Add(refBuilder);
+
+                // Recursively create virtual projects for any #:ref in the referenced file.
+                CreateReferencedVirtualProjectsCore(projectCollection, refEvaluatedDirectives, processedFiles, referencedBuilders);
+            }
+        }
     }
 
     /// <summary>

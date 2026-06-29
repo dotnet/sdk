@@ -8,13 +8,26 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class SplitConfigurationTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class SplitConfigurationTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public SplitConfigurationTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public SplitConfigurationTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
         private static string TemplateJsonWithProperAdditionalConfigFilesString
@@ -129,7 +142,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [Fact(DisplayName = nameof(SplitConfigCantReferenceFileOutsideBasePath))]
+        [TestMethod]
         public void SplitConfigCantReferenceFileOutsideBasePath()
         {
             string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -145,13 +158,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
 
             IFile? templateConfigFileInfo = mountPoint.FileInfo(".template.config/template.json");
-            Assert.NotNull(templateConfigFileInfo);
+            Assert.IsNotNull(templateConfigFileInfo);
 
-            Exception e = Assert.Throws<TemplateAuthoringException>(() => new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFileInfo));
-            Assert.Equal("Failed to load additional configuration file ../../improper.template.json, the file does not exist.", e.Message);
+            Exception e = Assert.ThrowsExactly<TemplateAuthoringException>(() => new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFileInfo));
+            Assert.AreEqual("Failed to load additional configuration file ../../improper.template.json, the file does not exist.", e.Message);
         }
 
-        [Fact(DisplayName = nameof(SplitConfigReadFailsIfAReferencedFileIsMissing))]
+        [TestMethod]
         public void SplitConfigReadFailsIfAReferencedFileIsMissing()
         {
             string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -166,13 +179,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
 
             IFile? templateConfigFileInfo = mountPoint.FileInfo(".template.config/template.json");
-            Assert.NotNull(templateConfigFileInfo);
+            Assert.IsNotNull(templateConfigFileInfo);
 
-            Exception e = Assert.Throws<TemplateAuthoringException>(() => new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFileInfo));
-            Assert.Equal("Failed to load additional configuration file symbols.template.json, the file does not exist.", e.Message);
+            Exception e = Assert.ThrowsExactly<TemplateAuthoringException>(() => new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFileInfo));
+            Assert.AreEqual("Failed to load additional configuration file symbols.template.json, the file does not exist.", e.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SplitConfigTest()
         {
             string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -188,20 +201,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
 
             IFile? templateConfigFileInfo = mountPoint.FileInfo("templateSource/.template.config/template.json");
-            Assert.NotNull(templateConfigFileInfo);
+            Assert.IsNotNull(templateConfigFileInfo);
 
             ScannedTemplateInfo config = new ScannedTemplateInfo(_engineEnvironmentSettings, generator, templateConfigFileInfo);
-            ITemplate? template = await generator.LoadTemplateAsync(_engineEnvironmentSettings, config, baselineName: null, cancellationToken: default);
+            ITemplate? template = await generator.LoadTemplateAsync(_engineEnvironmentSettings, config, baselineName: null, cancellationToken: TestContext.CancellationToken);
 
-            Assert.NotNull(template);
+            Assert.IsNotNull(template);
 
             IDictionary<string, ITemplateParameter> parameters = template!.ParameterDefinitions.ToDictionary(p => p.Name, p => p);
-            Assert.Equal(6, parameters.Count);  // 5 in the configs + 1 for 'name' (implicit)
-            Assert.True(parameters.ContainsKey("type"));
-            Assert.True(parameters.ContainsKey("language"));
-            Assert.True(parameters.ContainsKey("RuntimeFrameworkVersion"));
-            Assert.True(parameters.ContainsKey("Framework"));
-            Assert.True(parameters.ContainsKey("MyThing"));
+            Assert.HasCount(6, parameters);  // 5 in the configs + 1 for 'name' (implicit)
+            Assert.IsTrue(parameters.ContainsKey("type"));
+            Assert.IsTrue(parameters.ContainsKey("language"));
+            Assert.IsTrue(parameters.ContainsKey("RuntimeFrameworkVersion"));
+            Assert.IsTrue(parameters.ContainsKey("Framework"));
+            Assert.IsTrue(parameters.ContainsKey("MyThing"));
         }
     }
 }

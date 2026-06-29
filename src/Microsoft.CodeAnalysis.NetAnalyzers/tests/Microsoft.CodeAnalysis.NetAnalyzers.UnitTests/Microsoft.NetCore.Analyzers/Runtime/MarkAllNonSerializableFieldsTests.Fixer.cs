@@ -89,7 +89,7 @@ public class CA2235WithNonPublicNonSerializableFields
     internal NonSerializableType s1;
 }",
                 CodeActionIndex = 1,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
@@ -114,7 +114,7 @@ Public Class CA2235WithNonPublicNonSerializableFields
     Friend s1 As NonSerializableType
 End Class",
                 CodeActionIndex = 1,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -191,7 +191,7 @@ public class CA2235WithNonPublicNonSerializableFields
     internal NonSerializableType s1;
 }",
                 CodeActionIndex = 1,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
@@ -226,7 +226,7 @@ Public Class CA2235WithNonPublicNonSerializableFields
     Friend s1 As NonSerializableType
 End Class",
                 CodeActionIndex = 1,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -10,14 +10,20 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class TemplateRootTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class TemplateRootTests
     {
-        private readonly EnvironmentSettingsHelper _engineEnvironmentSettingsHelper;
+        public TestContext TestContext { get; set; } = null!;
 
-        public TemplateRootTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _engineEnvironmentSettingsHelper = environmentSettingsHelper;
-        }
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
 
         private static string TemplateConfigWithSourcePlaceholder
         {
@@ -66,13 +72,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TemplateJsonCannotBeInMountPointRoot()
         {
             string pathToTemplateJson = "template.json";
             string expectedErrorMessage = "The template root is outside the specified install source location.";
 
-            IEngineEnvironmentSettings environmentSettings = _engineEnvironmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             RunnableProjectGenerator generator = new();
 
             string sourcePath = environmentSettings.GetTempVirtualizedPath();
@@ -84,19 +90,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = environmentSettings.MountPath(sourcePath);
             IFile? templateConfigFile = mountPoint.FileInfo(pathToTemplateJson);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
-            TemplateAuthoringException e = Assert.Throws<TemplateAuthoringException>(() => new RunnableProjectConfig(environmentSettings, generator, templateConfigFile));
-            Assert.Equal(expectedErrorMessage, e.Message);
+            TemplateAuthoringException e = Assert.ThrowsExactly<TemplateAuthoringException>(() => new RunnableProjectConfig(environmentSettings, generator, templateConfigFile));
+            Assert.AreEqual(expectedErrorMessage, e.Message);
         }
 
-        [Theory]
-        [InlineData(".template.config/template.json")]
-        [InlineData("content/.template.config/template.json")]
-        [InlineData("src/content/.template.config/template.json")]
+        [TestMethod]
+        [DataRow(".template.config/template.json")]
+        [DataRow("content/.template.config/template.json")]
+        [DataRow("src/content/.template.config/template.json")]
         public async Task CheckTemplateRootRelativeToInstallPath(string pathToTemplateJson)
         {
-            IEngineEnvironmentSettings environmentSettings = _engineEnvironmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             RunnableProjectGenerator generator = new();
 
             string sourcePath = environmentSettings.GetTempVirtualizedPath();
@@ -108,26 +114,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = environmentSettings.MountPath(sourcePath);
             IFile? templateConfigFile = mountPoint.FileInfo(pathToTemplateJson);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
             using RunnableProjectConfig templateModel = new(environmentSettings, generator, templateConfigFile);
-            await templateModel.ValidateAsync(ValidationScope.Instantiation, default);
+            await templateModel.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
-            Assert.True(templateModel.IsValid);
-            Assert.DoesNotContain(templateModel.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
+            Assert.IsTrue(templateModel.IsValid);
+            Assert.IsEmpty(templateModel.ValidationErrors.Where(e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning }));
         }
 
         // Tests source paths when the mount point root is the same as the template root.
-        [Theory(DisplayName = nameof(CheckTemplateSourcesRelativeToTemplateRoot))]
-        [InlineData(true, "things/")]
-        [InlineData(true, "things/stuff/")]
-        [InlineData(true, "./")]
-        [InlineData(false, "../", "Source location '../' is outside the specified install source location.")] // outside the mount point, combining throws and is caught.
-        [InlineData(false, "foo/", "Source 'foo/' in template does not exist.")] // not valid because the path doesn't exist under the root.
+        [TestMethod]
+        [DataRow(true, "things/")]
+        [DataRow(true, "things/stuff/")]
+        [DataRow(true, "./")]
+        [DataRow(false, "../", "Source location '../' is outside the specified install source location.")] // outside the mount point, combining throws and is caught.
+        [DataRow(false, "foo/", "Source 'foo/' in template does not exist.")] // not valid because the path doesn't exist under the root.
         public async Task CheckTemplateSourcesRelativeToTemplateRoot(bool shouldAllPathsBeValid, string source, string? expectedErrorMessage = null)
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _engineEnvironmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
             string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
             RunnableProjectGenerator generator = new();
 
@@ -144,46 +150,46 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = environmentSettings.MountPath(sourcePath);
             IFile? templateConfigFile = mountPoint.FileInfo(pathToTemplateConfig);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using RunnableProjectConfig templateModel = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile);
-            await templateModel.ValidateAsync(ValidationScope.Instantiation, default);
+            await templateModel.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
             if (shouldAllPathsBeValid)
             {
-                Assert.True(templateModel.IsValid);
-                Assert.DoesNotContain(templateModel.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
+                Assert.IsTrue(templateModel.IsValid);
+                Assert.IsEmpty(templateModel.ValidationErrors.Where(e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning }));
             }
             else
             {
-                Assert.NotNull(expectedErrorMessage);
-                Assert.False(templateModel.IsValid);
-                IValidationEntry validationError = Assert.Single(templateModel.ValidationErrors, e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning);
-                Assert.Equal("MV012", validationError.Code);
-                Assert.Equal(expectedErrorMessage, validationError.ErrorMessage);
+                Assert.IsNotNull(expectedErrorMessage);
+                Assert.IsFalse(templateModel.IsValid);
+                IValidationEntry validationError = Assert.ContainsSingle(templateModel.ValidationErrors.Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning));
+                Assert.AreEqual("MV012", validationError.Code);
+                Assert.AreEqual(expectedErrorMessage, validationError.ErrorMessage);
             }
         }
 
-        [Theory(DisplayName = nameof(CheckTemplateSourcesRelativeToTemplateRootMultipleDirsUnderMountPoint))]
-        [InlineData(true, "things/")]
-        [InlineData(true, "things/stuff/")]
-        [InlineData(true, "./")]
-        [InlineData(true, "../")] // outside the template root, but in the mount point
-        [InlineData(true, "../../")] // outside the template root, but in the mount point
-        [InlineData(true, "../../../")] // outside the template root, but at the mount point root
-        [InlineData(false, "../../../../", "Source location '../../../../' is outside the specified install source location.")]
-        [InlineData(false, "foo/", "Source 'foo/' in template does not exist.")]
-        [InlineData(false, "../../../Other/", "Source '../../../Other/' in template does not exist.")]
-        [InlineData(false, "../../../../Other/", "Source location '../../../../Other/' is outside the specified install source location.")]
-        [InlineData(true, "../../../MountRoot/")]
-        [InlineData(false, "../../../MountRoot/Other", "Source '../../../MountRoot/Other' in template does not exist.")]
-        [InlineData(true, "../../../ExistingDir/")]
-        [InlineData(true, "../../../MountRoot/Subdir")]
+        [TestMethod]
+        [DataRow(true, "things/")]
+        [DataRow(true, "things/stuff/")]
+        [DataRow(true, "./")]
+        [DataRow(true, "../")] // outside the template root, but in the mount point
+        [DataRow(true, "../../")] // outside the template root, but in the mount point
+        [DataRow(true, "../../../")] // outside the template root, but at the mount point root
+        [DataRow(false, "../../../../", "Source location '../../../../' is outside the specified install source location.")]
+        [DataRow(false, "foo/", "Source 'foo/' in template does not exist.")]
+        [DataRow(false, "../../../Other/", "Source '../../../Other/' in template does not exist.")]
+        [DataRow(false, "../../../../Other/", "Source location '../../../../Other/' is outside the specified install source location.")]
+        [DataRow(true, "../../../MountRoot/")]
+        [DataRow(false, "../../../MountRoot/Other", "Source '../../../MountRoot/Other' in template does not exist.")]
+        [DataRow(true, "../../../ExistingDir/")]
+        [DataRow(true, "../../../MountRoot/Subdir")]
         public async Task CheckTemplateSourcesRelativeToTemplateRootMultipleDirsUnderMountPoint(bool shouldAllPathsBeValid, string source, string? expectedErrorMessage = null)
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _engineEnvironmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
@@ -205,23 +211,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = environmentSettings.MountPath(sourcePath);
             IFile? templateConfigFile = mountPoint.FileInfo(pathToTemplateConfig);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using RunnableProjectConfig templateModel = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile);
-            await templateModel.ValidateAsync(ValidationScope.Instantiation, default);
+            await templateModel.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
             if (shouldAllPathsBeValid)
             {
-                Assert.True(templateModel.IsValid);
-                Assert.DoesNotContain(templateModel.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
+                Assert.IsTrue(templateModel.IsValid);
+                Assert.IsEmpty(templateModel.ValidationErrors.Where(e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning }));
             }
             else
             {
-                Assert.NotNull(expectedErrorMessage);
-                Assert.False(templateModel.IsValid);
-                IValidationEntry validationError = Assert.Single(templateModel.ValidationErrors, e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning);
-                Assert.Equal("MV012", validationError.Code);
-                Assert.Equal(expectedErrorMessage, validationError.ErrorMessage);
+                Assert.IsNotNull(expectedErrorMessage);
+                Assert.IsFalse(templateModel.IsValid);
+                IValidationEntry validationError = Assert.ContainsSingle(templateModel.ValidationErrors.Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning));
+                Assert.AreEqual("MV012", validationError.Code);
+                Assert.AreEqual(expectedErrorMessage, validationError.ErrorMessage);
             }
         }
     }

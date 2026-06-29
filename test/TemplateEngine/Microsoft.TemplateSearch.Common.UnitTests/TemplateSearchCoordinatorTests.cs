@@ -5,17 +5,31 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateSearch.Common.Abstractions;
-using Xunit;
 
 namespace Microsoft.TemplateSearch.Common.UnitTests
 {
-    public class TemplateSearchCoordinatorTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class TemplateSearchCoordinatorTests
     {
+        private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
+            new(() => new EnvironmentSettingsHelper(NullMessageSink.Instance));
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public TemplateSearchCoordinatorTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public TemplateSearchCoordinatorTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.Value.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+        }
+
+        public TestContext TestContext { get; set; } = null!;
+
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            if (s_environmentSettingsHelper.IsValueCreated)
+            {
+                s_environmentSettingsHelper.Value.Dispose();
+            }
         }
 
         private static readonly ITemplatePackageInfo FooPackInfo = new MockTemplatePackageInfo("fooPack", "1.0.0");
@@ -28,7 +42,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
         private static readonly ITemplatePackageInfo GreenPackInfo = new MockTemplatePackageInfo("greenPack", "3.0.0");
 
-        [Fact]
+        [TestMethod]
         public async Task TwoSourcesAreBothSearched()
         {
             var provider1 = new MockTemplateSearchProvider();
@@ -42,16 +56,16 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                  new MockTemplateSearchProviderFactory(Guid.NewGuid(), "provider2", provider2));
 
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, p => p.Templates.ToList(), default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, p => p.Templates.ToList(), TestContext.CancellationToken);
 
-            Assert.Equal(2, searchResult.Count);
-            Assert.Single(searchResult, r => r.Provider.Factory.DisplayName == "provider1");
-            Assert.Single(searchResult, r => r.Provider.Factory.DisplayName == "provider2");
+            Assert.HasCount(2, searchResult);
+            Assert.ContainsSingle(r => r.Provider.Factory.DisplayName == "provider1", searchResult);
+            Assert.ContainsSingle(r => r.Provider.Factory.DisplayName == "provider2", searchResult);
 
-            Assert.True(provider2.WasSearched);
+            Assert.IsTrue(provider2.WasSearched);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SourcesCorrectlyReturnResults()
         {
             List<MockTemplateSearchProvider> createdProviders = new List<MockTemplateSearchProvider>();
@@ -73,18 +87,18 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
-            Assert.Equal(2, searchResult.Count);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.CancellationToken);
+            Assert.HasCount(2, searchResult);
 
             var searchResultDictionary = searchResult.ToDictionary(r => r.Provider.Factory.DisplayName);
 
-            Assert.True(searchResultDictionary.ContainsKey("source one"));
-            Assert.True(searchResultDictionary.ContainsKey("source two"));
+            Assert.IsTrue(searchResultDictionary.ContainsKey("source one"));
+            Assert.IsTrue(searchResultDictionary.ContainsKey("source two"));
 
-            Assert.Equal(3, searchResultDictionary["source two"].SearchHits.Count);
-            Assert.Equal(2, searchResultDictionary["source one"].SearchHits.Count);
+            Assert.HasCount(3, searchResultDictionary["source two"].SearchHits);
+            Assert.HasCount(2, searchResultDictionary["source one"].SearchHits);
 
-            Assert.True(createdProviders.All(p => p.WasSearched));
+            Assert.IsTrue(createdProviders.All(p => p.WasSearched));
         }
 
         private static IReadOnlyDictionary<string, IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> GetMockNameSearchResults()

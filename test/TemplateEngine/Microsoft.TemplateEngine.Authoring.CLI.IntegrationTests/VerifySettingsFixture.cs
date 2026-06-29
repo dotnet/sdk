@@ -1,11 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateEngine.Tests;
 using VerifyTests.DiffPlex;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
-    public class VerifySettingsFixture : IDisposable
+    public class VerifySettingsFixture
     {
         private static bool s_called;
 
@@ -16,16 +17,14 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 return;
             }
             s_called = true;
-            DerivePathInfo(
+            Verifier.DerivePathInfo(
                 (_, _, type, method) => new(
-                    directory: "Snapshots",
+                    directory: TestBase.SnapshotsDirectory,
                     typeName: type.Name,
                     methodName: method.Name));
 
             // Customize diff output of verifier
             VerifyDiffPlex.Initialize(OutputType.Compact);
         }
-
-        public void Dispose() { }
     }
 }

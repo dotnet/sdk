@@ -13,16 +13,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    /// <summary>
-    /// Unused. For interface parity with the ToolTask implementation of the task.
-    /// </summary>
-    public string ToolExe { get; set; }
-
-    /// <summary>
-    /// Unused. For interface parity with the ToolTask implementation of the task.
-    /// </summary>
-    public string ToolPath { get; set; }
-
     private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
@@ -271,7 +261,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             var portType = port.GetMetadata("Type");
             if (ContainerHelpers.TryParsePort(portNo, portType, out Port? parsedPort, out ContainerHelpers.ParsePortError? errors))
             {
-                image.ExposePort(parsedPort.Value.Number, parsedPort.Value.Type);
+                image.ExposePort(parsedPort!.Value.Number, parsedPort.Value.Type);
             }
             else
             {

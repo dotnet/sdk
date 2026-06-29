@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,21 +7,19 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenTransitiveFrameworkReferencesAreDisabled : SdkTest
     {
-        public GivenTransitiveFrameworkReferencesAreDisabled(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void TargetingPacksAreNotDownloadedIfNotDirectlyReferenced(bool referenceAspNet)
         {
             TestPackagesNotDownloaded(referenceAspNet, selfContained: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void RuntimePacksAreNotDownloadedIfNotDirectlyReferenced()
         {
             TestPackagesNotDownloaded(referenceAspNet: false, selfContained: true);
@@ -104,7 +102,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should().BeEquivalentTo(expectedPackages);
         }
 
-        [Fact]
+        [TestMethod]
         public void TransitiveFrameworkReferenceGeneratesError()
         {
             string nugetPackagesFolder = TestAssetsManager.CreateTestDirectory(identifier: "packages").Path;
@@ -149,7 +147,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1184:");
         }
 
-        [Fact]
+        [TestMethod]
         public void TransitiveFrameworkReferenceGeneratesRuntimePackError()
         {
             string nugetPackagesFolder = TestAssetsManager.CreateTestDirectory(identifier: "packages").Path;

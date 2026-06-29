@@ -16,7 +16,7 @@ public static class Program
 {
     private static readonly string AttributesToExcludeDefaultFileName = "AttributesToExclude.txt";
 
-    public static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         RootCommand rootCommand = new("ApiDiff - Tool for generating a markdown diff of two different versions of the same assembly.");
 
@@ -147,7 +147,7 @@ public static class Program
             );
             await HandleCommandAsync(diffConfig, cancellationToken).ConfigureAwait(false);
         });
-        await rootCommand.Parse(args).InvokeAsync();
+        return await rootCommand.Parse(args).InvokeAsync();
     }
 
     private static Task HandleCommandAsync(DiffConfiguration diffConfig, CancellationToken cancellationToken = default)

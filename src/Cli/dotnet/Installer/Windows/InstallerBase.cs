@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload;
@@ -19,9 +17,9 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// </remarks>
 /// <param name="elevationContext"></param>
 /// <param name="logger"></param>
-/// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
+/// <param name="verifyMsiSignature">Determines whether MSI signatures should be verified.</param>
 [SupportedOSPlatform("windows")]
-internal abstract class InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
+internal abstract class InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifyMsiSignature)
 {
     /// <summary>
     /// The current process.
@@ -42,10 +40,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// The elevation context associated with the process.
     /// </summary>
-    protected InstallElevationContextBase ElevationContext
-    {
-        get;
-    } = elevationContext;
+    protected InstallElevationContextBase ElevationContext => elevationContext;
 
     /// <summary>
     /// Returns true if the current process is 64-bit.
@@ -71,12 +66,12 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// The parent process of this process.
     /// </summary>
-    public static readonly Process ParentProcess;
+    public static readonly Process? ParentProcess;
 
     /// <summary>
     /// Gets the processor architecture.
     /// </summary>
-    protected static readonly string ProcessorArchitecture;
+    protected static readonly string? ProcessorArchitecture;
 
     /// <summary>
     /// Queries WUA to determine if the system has a pending reboot.
@@ -98,12 +93,9 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     protected static string SdkDirectory => Path.GetFileName(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
 
     /// <summary>
-    /// Gets whether signatures for workload packages and installers should be verified.
+    /// Gets whether MSI signatures should be verified.
     /// </summary>
-    protected bool VerifySignatures
-    {
-        get;
-    } = verifySignatures;
+    protected bool VerifyMsiSignature => verifyMsiSignature;
 
     /// <summary>
     /// Starts an elevated process to perform privileged operations.
@@ -195,9 +187,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     static InstallerBase()
     {
         CurrentProcess = Process.GetCurrentProcess();
-#if TARGET_WINDOWS
         ParentProcess = CurrentProcess.GetParentProcess();
-#endif
-        ProcessorArchitecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLowerInvariant();
+        ProcessorArchitecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")?.ToLowerInvariant();
     }
 }

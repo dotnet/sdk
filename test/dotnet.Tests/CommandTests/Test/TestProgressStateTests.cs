@@ -11,9 +11,10 @@ using Moq;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class TestProgressStateTests
 {
-    [Fact]
+    [TestMethod]
     public void ReportSkippedTest_MultipleCalls_DifferentInstanceId()
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -43,7 +44,7 @@ public class TestProgressStateTests
     /// <summary>
     /// Tests that reporting a skipped test with a previously seen instance after retry throws.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReportSkippedTest_RepeatedInstanceAfterRetry_ThrowsInvalidOperationException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -67,10 +68,10 @@ public class TestProgressStateTests
     /// increment FailedTests and TotalTests without affecting RetriedFailedTests.
     /// </summary>
     /// <param name="callCount">The number of times ReportFailedTest is invoked.</param>
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(3)]
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(2)]
+    [DataRow(3)]
     public void ReportFailedTest_RepeatedCalls_IncrementsFailedTests(int callCount)
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -90,7 +91,7 @@ public class TestProgressStateTests
     /// Tests that ReportFailedTest with a new instance ID after failures
     /// resets the failure count, increments RetriedFailedTests, and reports one failure.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReportFailedTest_DifferentInstanceId_RetriesFailureAndResetsCount()
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -109,7 +110,7 @@ public class TestProgressStateTests
     /// <summary>
     /// Tests that reusing an old instance ID after a retry throws an InvalidOperationException.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReportFailedTest_ReusingOldInstanceId_ThrowsInvalidOperationException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -129,7 +130,7 @@ public class TestProgressStateTests
     /// <summary>
     /// Tests that reporting with a new instance id clears old reports.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReportTest_WithNewInstanceId_ClearsOldReports()
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -160,11 +161,11 @@ public class TestProgressStateTests
     /// <param name="displayName">The display name of the test, can be null, empty, or whitespace.</param>
     /// <param name="uid">The unique identifier of the test, can be null, empty, or whitespace.</param>
     /// <remarks>After invocation, PassedTests should be 1 and DiscoveredTests should contain a single entry matching the inputs.</remarks>
-    [Theory]
-    [InlineData("testName", "uid123")]
-    [InlineData("", "")]
-    [InlineData(" ", " ")]
-    [InlineData(null, null)]
+    [TestMethod]
+    [DataRow("testName", "uid123")]
+    [DataRow("", "")]
+    [DataRow(" ", " ")]
+    [DataRow(null, null)]
     public void DiscoverTest_DisplayNameAndUid_AddsEntryAndIncrementsPassedTests(string? displayName, string? uid)
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -176,15 +177,36 @@ public class TestProgressStateTests
             stopwatch: stopwatchMock.Object,
             isDiscovery: true);
 
-        state.DiscoverTest(displayName, uid);
+        state.DiscoverTest(displayName, uid, filePath: null, lineNumber: null);
 
         state.DiscoveredTests.Should().Be(1);
         state.DiscoveredTestNames.Count.Should().Be(1);
         state.DiscoveredTestNames[0].DisplayName.Should().Be(displayName);
         state.DiscoveredTestNames[0].UID.Should().Be(uid);
+        state.DiscoveredTestNames[0].FilePath.Should().BeNull();
+        state.DiscoveredTestNames[0].LineNumber.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
+    public void DiscoverTest_WithFilePathAndLineNumber_StoresLocation()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(
+            id: 1,
+            assembly: "assembly.dll",
+            targetFramework: null,
+            architecture: null,
+            stopwatch: stopwatchMock.Object,
+            isDiscovery: true);
+
+        state.DiscoverTest("MyTest", "uid-1", filePath: "C:/repo/MyTests.cs", lineNumber: 42);
+
+        state.DiscoveredTestNames.Count.Should().Be(1);
+        state.DiscoveredTestNames[0].FilePath.Should().Be("C:/repo/MyTests.cs");
+        state.DiscoveredTestNames[0].LineNumber.Should().Be(42);
+    }
+
+    [TestMethod]
     public void FailedTestRetryShouldShouldShowTheSameTotalCountsInEachRetry()
     {
         // Tests are retried, total test count stays 3 to give use comparable counts, no matter how many times we retry.
@@ -223,7 +245,7 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(3);
     }
 
-    [Fact]
+    [TestMethod]
     public void FailedTestRetryShouldNotFailTheRunWhenSecondRunProducesLessDynamicTests()
     {
         // This is special test for dynamic tests where we don't know how many tests will be produced in the second run.
@@ -255,7 +277,7 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(3);
     }
 
-    [Fact]
+    [TestMethod]
     public void FailedTestRetryShouldAccountPassedTestsInRetry()
     {
         // This is special test for dynamic tests where we cannot avoid re-running even non-failing tests from dynamic tests.

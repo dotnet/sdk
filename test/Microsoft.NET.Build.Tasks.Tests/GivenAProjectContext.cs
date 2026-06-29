@@ -8,9 +8,10 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAProjectContext
     {
-        [Fact]
+        [TestMethod]
         public void ItComputesExcludeFromPublishList()
         {
             LockFile lockFile = TestLockFiles.GetLockFile("dependencies.withgraphs");

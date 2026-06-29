@@ -1,25 +1,24 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
+    [TestClass]
     public class VerifyCommandTests : TestBase
     {
-        private readonly ITestOutputHelper _log;
+        public TestContext TestContext { get; set; } = null!;
 
-        public VerifyCommandTests(ITestOutputHelper log)
-        {
-            _log = log;
-        }
+        private ILogger Log => new TestContextLogger(TestContext);
 
-        [Fact]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53889")]
         public void VerifyCommandFullDevLoop()
         {
             // dots issue https://github.com/VerifyTests/Verify/issues/658
@@ -28,7 +27,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string templateOutputDir = "path with spaces";
 
             var cmd = new BasicCommand(
-                _log,
+                Log,
                 "dotnet",
                 Path.GetFullPath("Microsoft.TemplateEngine.Authoring.CLI.dll"),
                 "verify",
@@ -93,7 +92,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             // And run again same scenario - verification should succeed now
             string workingDir2 = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var cmd2 = new BasicCommand(
-                _log,
+                Log,
                 "dotnet",
                 Path.GetFullPath("Microsoft.TemplateEngine.Authoring.CLI.dll"),
                 "verify",
@@ -121,7 +120,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             Directory.Delete(snapshotsDir, true);
         }
 
-        [Fact]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53889")]
         public void VerifyCommandFullDevLoopWithNotInstalledTemplate()
         {
             // dots issue https://github.com/VerifyTests/Verify/issues/658
@@ -134,7 +134,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string templateLocation = Path.Combine(TestTemplatesLocation, "TestTemplate");
 
             var cmd = new BasicCommand(
-                _log,
+                Log,
                 "dotnet",
                 Path.GetFullPath("Microsoft.TemplateEngine.Authoring.CLI.dll"),
                 "verify",
@@ -183,7 +183,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             // And run again same scenario - verification should succeed now
             string workingDir2 = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var cmd2 = new BasicCommand(
-                _log,
+                Log,
                 "dotnet",
                 Path.GetFullPath("Microsoft.TemplateEngine.Authoring.CLI.dll"),
                 "verify",

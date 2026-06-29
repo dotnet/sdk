@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
@@ -11,8 +11,48 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
+public sealed class RunFileTestFixture
 {
+    private static bool s_initialized;
+    private static readonly object s_lock = new();
+
+    public static void EnsureInitialized(ITestOutputHelper log)
+    {
+        if (s_initialized)
+        {
+            return;
+        }
+
+        lock (s_lock)
+        {
+            if (s_initialized)
+            {
+                return;
+            }
+
+            RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
+
+            new DotnetCommand(log, "run", "-")
+                .WithStandardInput("""
+                    Console.WriteLine("Hello");
+                    """)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut("Hello");
+
+            s_initialized = true;
+        }
+    }
+}
+
+public abstract class RunFileTestBase : SdkTest
+{
+    [TestInitialize]
+    public void EnsureRunFileWarmup()
+    {
+        RunFileTestFixture.EnsureInitialized(Log);
+    }
+
     internal static string s_includeExcludeDefaultKnownExtensions
         => field ??= string.Join(", ", CSharpDirective.IncludeOrExclude.DefaultMapping.Select(static e => e.Extension));
 
@@ -134,9 +174,41 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
         return outOfTreeBaseDirectory;
     }
 
+    /// <summary>
+    /// Copies NuGet.config to the runfile base directory so virtual projects created by
+    /// <c>dotnet run -</c> (stdin) can resolve packages from test feeds. The virtual project
+    /// is created under this directory, and NuGet walks up from the project location to
+    /// find config files.
+    /// </summary>
+    internal static void CopyNuGetConfigToRunfileDirectory()
+    {
+        var sourceNuGetConfig = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
+        var runfileDir = VirtualProjectBuilder.GetTempSubdirectory();
+        Directory.CreateDirectory(runfileDir);
+        File.Copy(sourceNuGetConfig, Path.Join(runfileDir, "NuGet.config"), overwrite: true);
+    }
+
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)
     {
         return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
+    }
+
+    internal static void EnableRefDirective(TestDirectory testInstance)
+    {
+        var propsPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        var propsContent = File.Exists(propsPath) ? File.ReadAllText(propsPath) : null;
+        if (propsContent is not null && propsContent.Contains(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective))
+        {
+            return;
+        }
+
+        File.WriteAllText(propsPath, $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
     }
 
     internal static void VerifyBinLogEvaluationDataCount(string binaryLogPath, int expectedCount)
@@ -164,7 +236,9 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
         };
 
         var command = new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(workDir ?? testInstance.Path);
+            .WithWorkingDirectory(workDir ?? testInstance.Path)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.VerboseToStdErr, bool.TrueString);
 
         if (customizeCommand != null)
         {

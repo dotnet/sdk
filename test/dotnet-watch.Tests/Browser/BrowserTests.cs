@@ -5,9 +5,10 @@ using System.Text.Json;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class BrowserTests : DotNetWatchTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task LaunchesBrowserOnStart()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBrowserLaunchApp")
@@ -24,7 +25,8 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001"));
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/53061
     public async Task BrowserDiagnostics()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -37,7 +39,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
 
         App.Start(testAsset, ["--urls", url], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
@@ -79,7 +81,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
             """);
 
         // no other browser message sent:
-        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪")));
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
@@ -103,7 +105,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
             """);
 
         // no other browser message sent:
-        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪")));
 
         App.Process.ClearOutput();
 
@@ -121,6 +123,6 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
             """);
 
         // no other browser message sent:
-        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪")));
     }
 }

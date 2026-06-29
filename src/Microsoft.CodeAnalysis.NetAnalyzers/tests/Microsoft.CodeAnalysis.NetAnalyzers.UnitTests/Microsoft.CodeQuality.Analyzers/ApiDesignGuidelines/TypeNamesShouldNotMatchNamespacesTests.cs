@@ -108,7 +108,7 @@ public class Sdk
                 {
                     CSharpDefaultResultAt(2, 14, "Sdk", "Xunit.Sdk"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
@@ -305,7 +305,7 @@ End Class"
                 {
                     BasicDefaultResultAt(2, 14, "Sdk", "Xunit.Sdk"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

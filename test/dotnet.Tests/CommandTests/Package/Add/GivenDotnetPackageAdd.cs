@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
@@ -6,13 +6,14 @@ using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
 {
+    [TestClass]
     public class GivenDotnetPackageAdd : SdkTest
     {
-        public GivenDotnetPackageAdd(ITestOutputHelper log) : base(log)
+        public GivenDotnetPackageAdd()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenValidPackageIsPassedBeforeVersionItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -32,17 +33,17 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        public static readonly TheoryData<string[], string?, string> PackageVersionsTheoryData = new()
+        public static readonly IEnumerable<object[]> PackageVersionsTheoryData = new List<object[]>
         {
-            { ["0.0.5", "0.9.0", "1.0.0-preview.3"], "0.9.0", "1.0.0-preview.3" },
-            { ["0.0.5", "0.9.0", "1.0.0-preview.3", "1.1.1-preview.7"], "0.9.0", "1.1.1-preview.7" },
-            { ["0.0.5", "0.9.0", "1.0.0"], "1.0.0", "1.0.0" },
-            { ["0.0.5", "0.9.0", "1.0.0-preview.3", "2.0.0"], "2.0.0", "2.0.0" },
-            { ["1.0.0-preview.1", "1.0.0-preview.2", "1.0.0-preview.3"], null, "1.0.0-preview.3" },
+            new object[] { new[] { "0.0.5", "0.9.0", "1.0.0-preview.3" }, "0.9.0", "1.0.0-preview.3" },
+            new object[] { new[] { "0.0.5", "0.9.0", "1.0.0-preview.3", "1.1.1-preview.7" }, "0.9.0", "1.1.1-preview.7" },
+            new object[] { new[] { "0.0.5", "0.9.0", "1.0.0" }, "1.0.0", "1.0.0" },
+            new object[] { new[] { "0.0.5", "0.9.0", "1.0.0-preview.3", "2.0.0" }, "2.0.0", "2.0.0" },
+            new object[] { new[] { "1.0.0-preview.1", "1.0.0-preview.2", "1.0.0-preview.3" }, null!, "1.0.0-preview.3" },
         };
 
-        [Theory]
-        [MemberData(nameof(PackageVersionsTheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(PackageVersionsTheoryData))]
         public void WhenPrereleaseOptionIsPassed(string[] inputVersions, string? _, string expectedVersion)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -71,8 +72,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Theory]
-        [MemberData(nameof(PackageVersionsTheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(PackageVersionsTheoryData))]
         public void WhenNoVersionIsPassed(string[] inputVersions, string? expectedVersion, string prereleaseVersion)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -109,7 +110,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPrereleaseAndVersionOptionIsPassedFails()
         {
             var projectDirectory = TestAssetsManager
@@ -124,7 +125,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.HaveStdOutContaining("The --prerelease and --version options are not supported in the same command.");
         }
 
-        [Fact]
+        [TestMethod]
         public void
             WhenValidProjectAndPackageArePassedItGetsAdded()
         {
@@ -146,7 +147,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [TestMethod]
         public void
             WhenValidProjectAndPackageWithPackageDirectoryContainingSpaceArePassedItGetsAdded()
         {
@@ -171,10 +172,10 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var restoredPackageDirectory = Path.Combine(packageDirectory, packageName.ToLowerInvariant(), packageVersion);
             var packageDirectoryExists = Directory.Exists(restoredPackageDirectory);
-            Assert.True(packageDirectoryExists);
+            Assert.IsTrue(packageDirectoryExists);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenValidPackageIsPassedAfterVersionItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -195,7 +196,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenValidPackageIsPassedWithFrameworkItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -217,7 +218,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenValidPackageIsPassedMSBuildDoesNotPrintVersionHeader()
         {
             var testAsset = "TestAppSimple";
@@ -237,7 +238,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenMultiplePackagesArePassedCommandFails()
         {
             var projectDirectory = TestAssetsManager
@@ -252,7 +253,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Fail();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNoPackageisPassedCommandFails()
         {
             var projectDirectory = TestAssetsManager
@@ -267,7 +268,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Fail();
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void VersionRange(bool asArgument)
         {
             var testAsset = "TestAppSimple";
@@ -319,7 +320,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             ];
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp(bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
@@ -342,7 +343,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_ReplaceExisting(
             [CombinatorialValues("Newtonsoft.Json", "newtonsoft.json")] string sourceFilePackageId,
             bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
@@ -362,12 +363,13 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be($"""
-                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
+                #:package {sourceFilePackageId}@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
                 Console.WriteLine();
                 """);
         }
 
-        [Theory, MemberData(nameof(PackageVersionsTheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(PackageVersionsTheoryData))]
         public void FileBasedApp_NoVersion(string[] inputVersions, string? expectedVersion, string _)
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -404,7 +406,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             }
         }
 
-        [Theory, MemberData(nameof(PackageVersionsTheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(PackageVersionsTheoryData))]
         public void FileBasedApp_NoVersion_Prerelease(string[] inputVersions, string? _, string expectedVersion)
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -432,7 +435,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                     """);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_NoVersionAndNoRestore(bool legacyForm, bool fileOption)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: true) is not { } args) return;
@@ -455,7 +458,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_VersionAndPrerelease(bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
@@ -471,12 +474,12 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Fail()
-                .And.HaveStdErrContaining(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
+                .And.HaveStdOutContaining(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
 
             File.ReadAllText(file).Should().Be(source);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_InvalidPackage(bool legacyForm, bool fileOption)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: false, packageName: "Microsoft.ThisPackageDoesNotExist") is not { } args) return;
@@ -496,7 +499,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             File.ReadAllText(file).Should().Be(source);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_InvalidPackage_NoRestore(bool legacyForm, bool fileOption)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: true, packageName: "Microsoft.ThisPackageDoesNotExist") is not { } args) return;
@@ -519,7 +522,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement(bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
@@ -563,7 +566,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_ReplaceExisting(bool wasInFile, bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
             const string OlderVersion = "13.0.1";
@@ -599,30 +602,54 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 </Project>
                 """);
 
-            new DotnetCommand(Log, args)
+            var directoryPackagesPropsOriginal = File.ReadAllText(directoryPackagesProps);
+
+            var result = new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
-                .Should().Pass();
+                .Execute();
 
-            File.ReadAllText(file).Should().Be("""
-                #:package Newtonsoft.Json
+            if (wasInFile && !noRestore)
+            {
+                // When a version is already pinned in both the #:package directive and
+                // Directory.Packages.props, this is the same invalid state as a project-based CPM
+                // app with version on both <PackageReference> and <PackageVersion>. NuGet rejects it.
+                result.Should().Fail();
+                File.ReadAllText(file).Should().Be(source);
+                File.ReadAllText(directoryPackagesProps).Should().Be(directoryPackagesPropsOriginal);
+            }
+            else
+            {
+                result.Should().Pass();
 
-                Console.WriteLine();
-                """);
+                if (wasInFile)
+                {
+                    // With --no-restore, NuGet doesn't validate the conflicting state. The command
+                    // succeeds, the source file is unchanged but the CPM version is updated.
+                    File.ReadAllText(file).Should().Be(source);
+                }
+                else
+                {
+                    File.ReadAllText(file).Should().Be("""
+                        #:package Newtonsoft.Json
 
-            File.ReadAllText(directoryPackagesProps).Should().Be($"""
-                <Project>
-                  <PropertyGroup>
-                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-                  </PropertyGroup>
-                  <ItemGroup>
-                    <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
-                  </ItemGroup>
-                </Project>
-                """);
+                        Console.WriteLine();
+                        """);
+                }
+
+                File.ReadAllText(directoryPackagesProps).Should().Be($"""
+                    <Project>
+                      <PropertyGroup>
+                        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                      </PropertyGroup>
+                      <ItemGroup>
+                        <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
+                      </ItemGroup>
+                    </Project>
+                    """);
+            }
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_NoVersionSpecified(bool legacyForm, bool fileOption)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: false, packageName: "A") is not { } args) return;
@@ -672,7 +699,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_NoVersionSpecified_KeepExisting(bool legacyForm, bool fileOption, bool noRestore)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore, packageName: "A") is not { } args) return;

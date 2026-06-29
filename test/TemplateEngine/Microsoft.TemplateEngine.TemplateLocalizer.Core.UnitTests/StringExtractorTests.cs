@@ -3,80 +3,81 @@
 
 using System.Text.Json;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core.Exceptions;
-using Xunit;
+using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 {
+    [TestClass]
     public class StringExtractorTests
     {
-        [Fact]
+        [TestMethod]
         public void FirstLevelStringsAreExtracted()
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "//name" && s.LocalizationKey == "name" && s.Value == "name");
-            Assert.Contains(strings, s => s.Identifier == "//description" && s.LocalizationKey == "description" && s.Value == "desc");
+            Assert.Contains(s => s.Identifier == "//name" && s.LocalizationKey == "name" && s.Value == "name", strings);
+            Assert.Contains(s => s.Identifier == "//description" && s.LocalizationKey == "description" && s.Value == "desc", strings);
         }
 
-        [Fact]
+        [TestMethod]
         public void CertainStringsAreOmitted()
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.DoesNotContain(strings, s => s.Identifier == "//$schema" || s.LocalizationKey == "$schema");
-            Assert.DoesNotContain(strings, s => s.Identifier == "//classification" || s.LocalizationKey == "classification");
-            Assert.DoesNotContain(strings, s => s.Identifier == "//groupIdentity" || s.LocalizationKey == "groupIdentity");
+            Assert.DoesNotContain(s => s.Identifier == "//$schema" || s.LocalizationKey == "$schema", strings);
+            Assert.DoesNotContain(s => s.Identifier == "//classification" || s.LocalizationKey == "classification", strings);
+            Assert.DoesNotContain(s => s.Identifier == "//groupIdentity" || s.LocalizationKey == "groupIdentity", strings);
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultAuthoringLanguageIsEnglish()
         {
             _ = ExtractStrings(GetTestTemplateJsonContent(), out string language);
 
-            Assert.Equal("en", language);
+            Assert.AreEqual("en", language);
         }
 
-        [Fact]
+        [TestMethod]
         public void SymbolsAreExtracted()
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "//symbols/somesymbol/description" && s.LocalizationKey == "symbols/someSymbol/description" && s.Value == "sym0_desc");
-            Assert.Contains(strings, s => s.Identifier == "//symbols/somesymbol/displayname" && s.LocalizationKey == "symbols/someSymbol/displayName" && s.Value == "sym0_displayName");
-            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/description" && s.LocalizationKey == "symbols/someChoice/description" && s.Value == "sym1_desc");
-            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/displayname" && s.LocalizationKey == "symbols/someChoice/displayName" && s.Value == "sym1_displayName");
+            Assert.Contains(s => s.Identifier == "//symbols/somesymbol/description" && s.LocalizationKey == "symbols/someSymbol/description" && s.Value == "sym0_desc", strings);
+            Assert.Contains(s => s.Identifier == "//symbols/somesymbol/displayname" && s.LocalizationKey == "symbols/someSymbol/displayName" && s.Value == "sym0_displayName", strings);
+            Assert.Contains(s => s.Identifier == "//symbols/somechoice/description" && s.LocalizationKey == "symbols/someChoice/description" && s.Value == "sym1_desc", strings);
+            Assert.Contains(s => s.Identifier == "//symbols/somechoice/displayname" && s.LocalizationKey == "symbols/someChoice/displayName" && s.Value == "sym1_displayName", strings);
         }
 
-        [Fact]
+        [TestMethod]
         public void SymbolChoicesAreExtracted()
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/choices/0/description" && s.LocalizationKey == "symbols/someChoice/choices/choice0/description" && s.Value == "sym1_choice0");
-            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/choices/0/displayname" && s.LocalizationKey == "symbols/someChoice/choices/choice0/displayName" && s.Value == "sym1_choice0_displayName");
-            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/choices/2/description" && s.LocalizationKey == "symbols/someChoice/choices/choice2/description" && s.Value == "sym1_choice2");
-            Assert.Contains(strings, s => s.Identifier == "//symbols/somechoice/choices/2/displayname" && s.LocalizationKey == "symbols/someChoice/choices/choice2/displayName" && s.Value == "sym1_choice2_displayName");
+            Assert.Contains(s => s.Identifier == "//symbols/somechoice/choices/0/description" && s.LocalizationKey == "symbols/someChoice/choices/choice0/description" && s.Value == "sym1_choice0", strings);
+            Assert.Contains(s => s.Identifier == "//symbols/somechoice/choices/0/displayname" && s.LocalizationKey == "symbols/someChoice/choices/choice0/displayName" && s.Value == "sym1_choice0_displayName", strings);
+            Assert.Contains(s => s.Identifier == "//symbols/somechoice/choices/2/description" && s.LocalizationKey == "symbols/someChoice/choices/choice2/description" && s.Value == "sym1_choice2", strings);
+            Assert.Contains(s => s.Identifier == "//symbols/somechoice/choices/2/displayname" && s.LocalizationKey == "symbols/someChoice/choices/choice2/displayName" && s.Value == "sym1_choice2_displayName", strings);
         }
 
-        [Fact]
+        [TestMethod]
         public void PostActionsAreExtracted()
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "//postactions/0/description" && s.LocalizationKey == "postActions/pa0/description" && s.Value == "pa0_desc");
-            Assert.Contains(strings, s => s.Identifier == "//postactions/1/description" && s.LocalizationKey == "postActions/pa1/description" && s.Value == "pa1_desc");
+            Assert.Contains(s => s.Identifier == "//postactions/0/description" && s.LocalizationKey == "postActions/pa0/description" && s.Value == "pa0_desc", strings);
+            Assert.Contains(s => s.Identifier == "//postactions/1/description" && s.LocalizationKey == "postActions/pa1/description" && s.Value == "pa1_desc", strings);
         }
 
-        [Fact]
+        [TestMethod]
         public void ManualInstructionsAreExtracted()
         {
             var strings = ExtractStrings(GetTestTemplateJsonContent(), out _);
 
-            Assert.Contains(strings, s => s.Identifier == "//postactions/0/manualinstructions/0/text" && s.LocalizationKey == "postActions/pa0/manualInstructions/first_instruction/text" && s.Value == "pa0_manualInstructions");
-            Assert.Contains(strings, s => s.Identifier == "//postactions/2/manualinstructions/0/text" && s.LocalizationKey == "postActions/pa2/manualInstructions/default/text" && s.Value == "pa2_manualInstructions");
+            Assert.Contains(s => s.Identifier == "//postactions/0/manualinstructions/0/text" && s.LocalizationKey == "postActions/pa0/manualInstructions/first_instruction/text" && s.Value == "pa0_manualInstructions", strings);
+            Assert.Contains(s => s.Identifier == "//postactions/2/manualinstructions/0/text" && s.LocalizationKey == "postActions/pa2/manualInstructions/default/text" && s.Value == "pa2_manualInstructions", strings);
         }
 
-        [Fact]
+        [TestMethod]
         public void PostActionsShouldHaveIds()
         {
             string json = @"{
@@ -85,12 +86,12 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         },
     ]
 }";
-            var ex = Assert.Throws<JsonMemberMissingException>(() => ExtractStrings(json, out _));
+            var ex = Assert.ThrowsExactly<JsonMemberMissingException>(() => ExtractStrings(json, out _));
             Assert.Contains("postActions", ex.Message);
             Assert.Contains("id", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void PostActionIdsAreUnique()
         {
             string json = @"{
@@ -103,12 +104,12 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         }
     ]
 }";
-            var ex = Assert.Throws<LocalizationKeyIsNotUniqueException>(() => ExtractStrings(json, out _));
+            var ex = Assert.ThrowsExactly<LocalizationKeyIsNotUniqueException>(() => ExtractStrings(json, out _));
             Assert.Contains("postAction1", ex.Message);
             Assert.Contains("postActions", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void SingleManualInstructionDoesntNeedId()
         {
             string json = @"{
@@ -124,10 +125,10 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
     ]
 }";
             var results = ExtractStrings(json, out _);
-            Assert.Contains(results, r => r.LocalizationKey == "postActions/postActionId/manualInstructions/default/text");
+            Assert.Contains(r => r.LocalizationKey == "postActions/postActionId/manualInstructions/default/text", results);
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleManualInstructionShouldHaveIds()
         {
             string json = @"{
@@ -145,12 +146,12 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         }
     ]
 }";
-            var ex = Assert.Throws<JsonMemberMissingException>(() => ExtractStrings(json, out _));
+            var ex = Assert.ThrowsExactly<JsonMemberMissingException>(() => ExtractStrings(json, out _));
             Assert.Contains("id", ex.Message);
             Assert.Contains("manualInstructions", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void ManualInstructionIdsAreUnique()
         {
             string json = @"{
@@ -168,7 +169,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         }
     ]
 }";
-            var ex = Assert.Throws<LocalizationKeyIsNotUniqueException>(() => ExtractStrings(json, out _));
+            var ex = Assert.ThrowsExactly<LocalizationKeyIsNotUniqueException>(() => ExtractStrings(json, out _));
             Assert.Contains("mi", ex.Message);
             Assert.Contains("manualInstructions", ex.Message);
         }
@@ -187,21 +188,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
         private static string GetTestTemplateJsonContent()
         {
-            string thisDir = Path.GetDirectoryName(typeof(StringExtractorTests).Assembly.Location)
-                ?? throw new Exception("Failed to get assembly location, which is required to access test templates.");
-            string templateJsonPath = Path.GetFullPath(Path.Combine(
-                thisDir,
-                "..",
-                "..",
-                "..",
-                "..",
-                "..",
-                "test",
-                "Microsoft.TemplateEngine.TestTemplates",
-                "test_templates",
+            string templateJsonPath = Path.Combine(
+                TestBase.TestTemplatesLocation,
                 "TemplateWithLocalization",
                 ".template.config",
-                "template.json"));
+                "template.json");
 
             return File.ReadAllText(templateJsonPath);
         }

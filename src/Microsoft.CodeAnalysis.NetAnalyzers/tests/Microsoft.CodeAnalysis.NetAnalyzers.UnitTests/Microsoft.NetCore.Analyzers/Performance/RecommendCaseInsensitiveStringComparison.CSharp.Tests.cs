@@ -392,7 +392,7 @@ class C
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
@@ -429,7 +429,7 @@ class C
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private async Task VerifyNoDiagnosticCSharpAsync(string originalSource)
@@ -440,7 +440,7 @@ class C
                 FixedCode = originalSource
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private async Task VerifyFixCSharpAsync(string originalSource, string fixedSource)
@@ -452,7 +452,7 @@ class C
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

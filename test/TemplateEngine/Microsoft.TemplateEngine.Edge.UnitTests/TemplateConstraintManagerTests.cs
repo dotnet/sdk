@@ -5,69 +5,73 @@ using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class TemplateConstraintManagerTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class TemplateConstraintManagerTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        public TestContext TestContext { get; set; } = null!;
 
-        public TemplateConstraintManagerTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        [Fact]
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
         public async Task CanEvaluateConstraint()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-1"));
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var success1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", default);
-            var failure1 = await constraintManager.EvaluateConstraintAsync("test-1", "no", default);
-            var notEvaluated1 = await constraintManager.EvaluateConstraintAsync("test-1", "not-valid", default);
-            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", default);
+            var success1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", TestContext.CancellationToken);
+            var failure1 = await constraintManager.EvaluateConstraintAsync("test-1", "no", TestContext.CancellationToken);
+            var notEvaluated1 = await constraintManager.EvaluateConstraintAsync("test-1", "not-valid", TestContext.CancellationToken);
+            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", TestContext.CancellationToken);
 
-            Assert.Equal(TemplateConstraintResult.Status.Allowed, success1.EvaluationStatus);
-            Assert.Null(success1.LocalizedErrorMessage);
-            Assert.Null(success1.CallToAction);
+            Assert.AreEqual(TemplateConstraintResult.Status.Allowed, success1.EvaluationStatus);
+            Assert.IsNull(success1.LocalizedErrorMessage);
+            Assert.IsNull(success1.CallToAction);
 
-            Assert.Equal(TemplateConstraintResult.Status.Restricted, failure1.EvaluationStatus);
-            Assert.Equal("cannot run", failure1.LocalizedErrorMessage);
-            Assert.Equal("do smth", failure1.CallToAction);
+            Assert.AreEqual(TemplateConstraintResult.Status.Restricted, failure1.EvaluationStatus);
+            Assert.AreEqual("cannot run", failure1.LocalizedErrorMessage);
+            Assert.AreEqual("do smth", failure1.CallToAction);
 
-            Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, notEvaluated1.EvaluationStatus);
-            Assert.Equal("bad params", notEvaluated1.LocalizedErrorMessage);
-            Assert.Null(notEvaluated1.CallToAction);
+            Assert.AreEqual(TemplateConstraintResult.Status.NotEvaluated, notEvaluated1.EvaluationStatus);
+            Assert.AreEqual("bad params", notEvaluated1.LocalizedErrorMessage);
+            Assert.IsNull(notEvaluated1.CallToAction);
 
-            Assert.Equal(TemplateConstraintResult.Status.Allowed, success2.EvaluationStatus);
-            Assert.Null(success2.LocalizedErrorMessage);
-            Assert.Null(success2.CallToAction);
+            Assert.AreEqual(TemplateConstraintResult.Status.Allowed, success2.EvaluationStatus);
+            Assert.IsNull(success2.LocalizedErrorMessage);
+            Assert.IsNull(success2.CallToAction);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanGetConstraints()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-1"));
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var constraints = await constraintManager.GetConstraintsAsync();
+            var constraints = await constraintManager.GetConstraintsAsync(cancellationToken: TestContext.CancellationToken);
 
-            Assert.Equal(4, constraints.Count);
-            Assert.Equal(new[] { "host", "os", "test-1", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
+            Assert.HasCount(4, constraints);
+            Assert.AreSequenceEqual(new[] { "host", "os", "test-1", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanGetConstraints_Filter()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-1"));
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
@@ -79,81 +83,81 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 new TemplateConstraintInfo("test-1", "yes")
             });
 
-            var constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, default);
+            var constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, TestContext.CancellationToken);
 
-            Assert.Single(constraints);
-            Assert.Equal("test-1", constraints.Single().Type);
+            Assert.ContainsSingle(constraints);
+            Assert.AreEqual("test-1", constraints.Single().Type);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanGetConstraints_WhenCreationFailed()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new FailingTestConstraintFactory("test-1"));
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
-            var constraints = await constraintManager.GetConstraintsAsync();
+            var constraints = await constraintManager.GetConstraintsAsync(cancellationToken: TestContext.CancellationToken);
 
-            Assert.Equal(3, constraints.Count);
-            Assert.Equal(new[] { "host", "os", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
+            Assert.HasCount(3, constraints);
+            Assert.AreSequenceEqual(new[] { "host", "os", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CannotEvaluateConstraint_WhenCreationFailed()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new FailingTestConstraintFactory("test-1"));
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var result = await constraintManager.EvaluateConstraintAsync("test-1", "yes", default);
-            Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, result.EvaluationStatus);
-            Assert.Equal("The constraint 'test-1' failed to initialize: creation failed", result.LocalizedErrorMessage);
-            Assert.Null(result.CallToAction);
+            var result = await constraintManager.EvaluateConstraintAsync("test-1", "yes", TestContext.CancellationToken);
+            Assert.AreEqual(TemplateConstraintResult.Status.NotEvaluated, result.EvaluationStatus);
+            Assert.AreEqual("The constraint 'test-1' failed to initialize: creation failed", result.LocalizedErrorMessage);
+            Assert.IsNull(result.CallToAction);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanEvaluateConstraint_WhenOtherCreationFailed()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new FailingTestConstraintFactory("test-1"));
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var result1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", default);
-            Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, result1.EvaluationStatus);
-            Assert.Equal("The constraint 'test-1' failed to initialize: creation failed", result1.LocalizedErrorMessage);
-            Assert.Null(result1.CallToAction);
+            var result1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", TestContext.CancellationToken);
+            Assert.AreEqual(TemplateConstraintResult.Status.NotEvaluated, result1.EvaluationStatus);
+            Assert.AreEqual("The constraint 'test-1' failed to initialize: creation failed", result1.LocalizedErrorMessage);
+            Assert.IsNull(result1.CallToAction);
 
-            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", default);
+            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", TestContext.CancellationToken);
 
-            Assert.Equal(TemplateConstraintResult.Status.Allowed, success2.EvaluationStatus);
-            Assert.Null(success2.LocalizedErrorMessage);
-            Assert.Null(success2.CallToAction);
+            Assert.AreEqual(TemplateConstraintResult.Status.Allowed, success2.EvaluationStatus);
+            Assert.IsNull(success2.LocalizedErrorMessage);
+            Assert.IsNull(success2.CallToAction);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanEvaluateConstraint_WhenOtherCreationStillRuns()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new LongRunningTestConstraintFactory("test-1"));
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", default);
+            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", TestContext.CancellationToken);
 
-            Assert.Equal(TemplateConstraintResult.Status.Allowed, success2.EvaluationStatus);
-            Assert.Null(success2.LocalizedErrorMessage);
-            Assert.Null(success2.CallToAction);
+            Assert.AreEqual(TemplateConstraintResult.Status.Allowed, success2.EvaluationStatus);
+            Assert.IsNull(success2.LocalizedErrorMessage);
+            Assert.IsNull(success2.CallToAction);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanGetConstraints_DoesNotWaitForNotNeededConstraints()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new LongRunningTestConstraintFactory("test-1"));
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
@@ -167,19 +171,19 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var constraintsTask = Task.Run(async () =>
                 {
                     var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
-                    constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, default);
-                });
-            var completedTask = await Task.WhenAny(constraintsTask, Task.Delay(10000));
+                    constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, TestContext.CancellationToken);
+                }, TestContext.CancellationToken);
+            var completedTask = await Task.WhenAny(constraintsTask, Task.Delay(10000, TestContext.CancellationToken));
 
-            Assert.Equal(completedTask, constraintsTask);
-            Assert.Equal(1, constraints?.Count);
-            Assert.Equal("test-2", constraints?.Single().Type);
+            Assert.AreEqual(completedTask, constraintsTask);
+            Assert.AreEqual(1, constraints?.Count);
+            Assert.AreEqual("test-2", constraints?.Single().Type);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanEvaluateConstraints_Success()
         {
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            var engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-1"));
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
@@ -187,12 +191,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             ITemplateInfo template = A.Fake<ITemplateInfo>();
             A.CallTo(() => template.Constraints).Returns(new[] { new TemplateConstraintInfo("test-1", "yes"), new TemplateConstraintInfo("test-2", "no") });
 
-            var result = await constraintManager.EvaluateConstraintsAsync(new[] { template }, default);
+            var result = await constraintManager.EvaluateConstraintsAsync(new[] { template }, TestContext.CancellationToken);
 
-            Assert.Equal(2, result.Single().Result.Count);
-            Assert.Equal(template, result.Single().Template);
-            Assert.Equal(TemplateConstraintResult.Status.Allowed, result.Single().Result.Single(r => r.ConstraintType == "test-1").EvaluationStatus);
-            Assert.Equal(TemplateConstraintResult.Status.Restricted, result.Single().Result.Single(r => r.ConstraintType == "test-2").EvaluationStatus);
+            Assert.HasCount(2, result.Single().Result);
+            Assert.AreEqual(template, result.Single().Template);
+            Assert.AreEqual(TemplateConstraintResult.Status.Allowed, result.Single().Result.Single(r => r.ConstraintType == "test-1").EvaluationStatus);
+            Assert.AreEqual(TemplateConstraintResult.Status.Restricted, result.Single().Result.Single(r => r.ConstraintType == "test-2").EvaluationStatus);
         }
 
         private class FailingTestConstraintFactory : ITemplateConstraintFactory

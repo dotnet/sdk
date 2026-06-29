@@ -1,11 +1,12 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class MobileHotReloadTests : DotNetWatchTestBase
 {
     // Matches WebSocket URLs like ws://localhost:12345 where port is non-zero
     private static readonly Regex WebSocketServerStartedPattern = new(@"WebSocket server started at: ws://localhost:([1-9]\d*)");
@@ -14,7 +15,7 @@ public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
     /// Tests that hot reload works for projects with the HotReloadWebSockets capability.
     /// Mobile workloads (Android, iOS) add this capability to indicate WebSocket transport should be used.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public async Task HotReload_WithWebSocketCapability()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")
@@ -37,5 +38,56 @@ public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
             """Console.WriteLine("Changed!");"""));
 
         await App.AssertOutputLineStartsWith("Changed!");
+    }
+
+    [TestMethod]
+    public async Task CtrlC_ShutsDownCleanly()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")
+            .WithSource();
+
+        App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+        await App.WaitUntilOutputContains("Started");
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains(WebSocketServerStartedPattern);
+        await App.WaitUntilOutputContains("WebSocket client connected");
+
+        App.Process.ClearOutput();
+        App.SendControlC();
+
+        await App.WaitUntilOutputContains(MessageDescriptor.ShutdownRequested);
+        await App.WaitUntilOutputContains("exited with exit code");
+
+        App.AssertOutputDoesNotContain("ObjectDisposedException");
+        App.AssertOutputDoesNotContain("WebSocketException");
+        App.AssertOutputDoesNotContain("An unexpected error occurred");
+    }
+
+    [TestMethod]
+    public async Task CtrlR_RestartsCleanly()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")
+            .WithSource();
+
+        App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+        await App.WaitUntilOutputContains("Started");
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains(WebSocketServerStartedPattern);
+        await App.WaitUntilOutputContains("WebSocket client connected");
+
+        App.Process.ClearOutput();
+        App.SendControlR();
+
+        await App.WaitUntilOutputContains(MessageDescriptor.RestartRequested);
+
+        // App should restart and output "Started" again (iteration 2)
+        await App.WaitUntilOutputContains("DOTNET_WATCH_ITERATION = 2");
+        await App.WaitUntilOutputContains("Started");
+
+        App.AssertOutputDoesNotContain("ObjectDisposedException");
+        App.AssertOutputDoesNotContain("WebSocketException");
+        App.AssertOutputDoesNotContain("An unexpected error occurred");
     }
 }

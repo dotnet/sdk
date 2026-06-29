@@ -305,6 +305,8 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
         }
 
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, null);
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint, null);
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey, null);
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, null);
     }
 

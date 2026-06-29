@@ -12,9 +12,11 @@ using Microsoft.DotNet.Cli.Installer.Windows.Security;
 namespace Microsoft.DotNet.Tests
 {
     [SupportedOSPlatform("windows5.1.2600")]
+    [TestClass]
     public class WindowsInstallerTests
     {
         private static string s_testDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData");
+        public TestContext TestContext { get; set; } = null!;
 
         private void LogTask(string pipeName)
         {
@@ -29,7 +31,8 @@ namespace Microsoft.DotNet.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void MultipleProcessesCanWriteToTheLog()
         {
             var logFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -39,9 +42,9 @@ namespace Microsoft.DotNet.Tests
             logger.AddNamedPipe("np2");
             logger.AddNamedPipe("np3");
 
-            var t1 = Task.Run(() => { LogTask("np1"); });
-            var t2 = Task.Run(() => { LogTask("np2"); });
-            var t3 = Task.Run(() => { LogTask("np3"); });
+            var t1 = Task.Run(() => { LogTask("np1"); }, TestContext.CancellationToken);
+            var t2 = Task.Run(() => { LogTask("np2"); }, TestContext.CancellationToken);
+            var t3 = Task.Run(() => { LogTask("np3"); }, TestContext.CancellationToken);
 
             Task.WaitAll(t1, t2, t3);
             logger.Dispose();
@@ -54,7 +57,8 @@ namespace Microsoft.DotNet.Tests
             Assert.Contains("=== Logging ended ===", logContent);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void InstallMessageDispatcherProcessesMessages()
         {
             string pipeName = Guid.NewGuid().ToString();
@@ -68,21 +72,40 @@ namespace Microsoft.DotNet.Tests
             {
                 ServerDispatcher server = new(sd);
                 server.Run();
-            });
+            }, TestContext.CancellationToken);
 
             cd.Connect();
 
             InstallResponseMessage r1 = cd.SendMsiRequest(InstallRequestType.UninstallMsi, "");
             InstallResponseMessage r2 = cd.SendShutdownRequest();
 
-            Assert.Equal("Received request: UninstallMsi", r1.Message);
-            Assert.Equal("Shutting down!", r2.Message);
+            Assert.AreEqual("Received request: UninstallMsi", r1.Message);
+            Assert.AreEqual("Shutting down!", r2.Message);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("1033,1041,1049", UpgradeAttributes.MigrateFeatures, 1041, false)]
-        [InlineData(null, UpgradeAttributes.LanguagesExclusive, 3082, false)]
-        [InlineData("1033,1041,1049", UpgradeAttributes.LanguagesExclusive, 1033, true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        public void InstallRequestMessageCreateThrowsForNullPayload()
+        {
+            Action action = () => InstallRequestMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
+
+            action.Should().Throw<System.Text.Json.JsonException>();
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        public void InstallResponseMessageCreateThrowsForNullPayload()
+        {
+            Action action = () => InstallResponseMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
+
+            action.Should().Throw<System.Text.Json.JsonException>();
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("1033,1041,1049", UpgradeAttributes.MigrateFeatures, 1041, false)]
+        [DataRow(null, UpgradeAttributes.LanguagesExclusive, 3082, false)]
+        [DataRow("1033,1041,1049", UpgradeAttributes.LanguagesExclusive, 1033, true)]
         public void RelatedProductExcludesLanguages(string language, UpgradeAttributes attributes, int lcid,
             bool expectedResult)
         {
@@ -92,12 +115,13 @@ namespace Microsoft.DotNet.Tests
                 Language = language
             };
 
-            Assert.Equal(expectedResult, rp.ExcludesLanguage(lcid));
+            Assert.AreEqual(expectedResult, rp.ExcludesLanguage(lcid));
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("72.13.638", UpgradeAttributes.MigrateFeatures, "72.13.639", true)]
-        [InlineData("72.13.638", UpgradeAttributes.VersionMaxInclusive, "72.13.638", false)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("72.13.638", UpgradeAttributes.MigrateFeatures, "72.13.639", true)]
+        [DataRow("72.13.638", UpgradeAttributes.VersionMaxInclusive, "72.13.638", false)]
         public void RelatedProductExcludesMaxVersion(string maxVersion, UpgradeAttributes attributes, string installedVersionValue,
             bool expectedResult)
         {
@@ -110,12 +134,13 @@ namespace Microsoft.DotNet.Tests
                 VersionMin = null
             };
 
-            Assert.Equal(expectedResult, rp.ExcludesMaxVersion(installedVersion));
+            Assert.AreEqual(expectedResult, rp.ExcludesMaxVersion(installedVersion));
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("72.13.638", UpgradeAttributes.MigrateFeatures, "72.13.638", true)]
-        [InlineData("72.13.638", UpgradeAttributes.VersionMinInclusive, "72.13.638", false)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("72.13.638", UpgradeAttributes.MigrateFeatures, "72.13.638", true)]
+        [DataRow("72.13.638", UpgradeAttributes.VersionMinInclusive, "72.13.638", false)]
         public void RelatedProductExcludesMinVersion(string minVersion, UpgradeAttributes attributes, string installedVersionValue,
             bool expectedResult)
         {
@@ -128,42 +153,44 @@ namespace Microsoft.DotNet.Tests
                 VersionMax = null
             };
 
-            Assert.Equal(expectedResult, rp.ExcludesMinVersion(installedVersion));
+            Assert.AreEqual(expectedResult, rp.ExcludesMinVersion(installedVersion));
         }
 
-        [WindowsOnlyTheory]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         // This verifies E_TRUST_BAD_DIGEST (file was modified after being signed)
-        [InlineData(@"tampered.msi", -2146869232)]
-        [InlineData(@"dual_signed.dll", 0)]
-        [InlineData(@"dotnet_realsigned.exe", 0)]
+        [DataRow(@"tampered.msi", -2146869232)]
+        [DataRow(@"dual_signed.dll", 0)]
+        [DataRow(@"dotnet_realsigned.exe", 0)]
         // Signed by the .NET Foundation, terminates in a DigiCert root, so should be accepted by the Authenticode trust provider.
-        [InlineData(@"BootstrapperCore.dll", 0)]
+        [DataRow(@"BootstrapperCore.dll", 0)]
         // Old SHA1 certificate, but still a valid signature.
-        [InlineData(@"system.web.mvc.dll", 0)]
+        [DataRow(@"system.web.mvc.dll", 0)]
         public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus)
         {
             int status = Signature.IsAuthenticodeSigned(Path.Combine(s_testDataPath, file));
-            Assert.Equal(expectedStatus, status);
+            Assert.AreEqual(expectedStatus, status);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(@"dotnet_realsigned.exe", 0)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(@"dotnet_realsigned.exe", 0)]
         // Valid SHA1 signature, but no longer considered a trusted root certificate, should return CERT_E_UNTRUSTEDROOT.
-        [InlineData(@"system.web.mvc.dll", -2146762487)]
+        [DataRow(@"system.web.mvc.dll", -2146762487)]
         // The first certificate chain terminates in a non-Microsoft root so it fails the policy. Workloads do not currently support
         // 3rd party installers. If we change that policy and we sign installers with the Microsoft 3rd Party certificate we will need to extract the nested
         // signature and verify that at least one chain terminates in a Microsoft root. The WinTrust logic will also need to be updated to verify each
         // chain.
-        [InlineData(@"dual_signed.dll", -2146762487)]
+        [DataRow(@"dual_signed.dll", -2146762487)]
         // DigiCert root should fail the policy check because it's not a trusted Microsoft root certificate.
-        [InlineData(@"BootstrapperCore.dll", -2146762487)]
+        [DataRow(@"BootstrapperCore.dll", -2146762487)]
         // Digest will fail verification, BUT the root certificate in the chain is a trusted root.
-        [InlineData(@"tampered.msi", 0)]
+        [DataRow(@"tampered.msi", 0)]
         public void ItVerifiesTrustedMicrosoftRootCertificateChainPolicy(string file, int expectedResult)
         {
             int result = Signature.HasMicrosoftTrustedRoot(Path.Combine(s_testDataPath, file));
 
-            Assert.Equal(expectedResult, result);
+            Assert.AreEqual(expectedResult, result);
         }
 
         private NamedPipeServerStream CreateServerPipe(string name)

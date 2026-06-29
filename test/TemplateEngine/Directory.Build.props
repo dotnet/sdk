@@ -3,7 +3,29 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <!-- TemplateEngine assembly signing for InternalsVisibleTo -->
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+
+    <NoWarn>$(NoWarn);IDE0005;0649;CA2016;CA5394;CA1802</NoWarn>
   </PropertyGroup>
+
+  <!-- Verify (pulled in transitively by the Verify.MSTest snapshot tests) auto-discovers the solution by
+       searching the project directory and its two parent directories for a .sln/.slnx. Projects nested under
+       test/TemplateEngine are three levels below the repo-root sdk.slnx, so when they are built outside the
+       solution (e.g. the Helix test build) discovery fails and emits a warning that the repo's warnaserror
+       promotes to a build error. Provide the solution info explicitly so Verify skips discovery. -->
+  <PropertyGroup Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">
+    <SolutionDir>$(RepoRoot)</SolutionDir>
+    <SolutionName>sdk</SolutionName>
+  </PropertyGroup>
+
+  <!-- Add Microsoft.NET.TestFramework to test projects (not library projects like TestHelper/Mocks)
+       so that Shared/TestBase.cs can use SdkTestContext for Helix-compatible path resolution. -->
+  <ItemGroup Condition="'$(IsPackable)' != 'true' AND '$(UsingMSTestSdk)' != 'true'">
+    <ProjectReference Include="$(RepoRoot)test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(IsPackable)' != 'true' AND '$(UsingMSTestSdk)' == 'true'">
+    <ProjectReference Include="$(RepoRoot)test\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+  </ItemGroup>
 
 </Project>

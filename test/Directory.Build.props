@@ -14,9 +14,7 @@
     <!-- NU5125 The licenseUrl element is being replaced by the license element. -->
     <!-- NU5123 Don't warn about long filenames in packages, we bundle test assets that have long paths
          (ie HelloWorldWithSubDirs) -->
-    <!-- xUnit1051: Suppress CancellationToken suggestions - adopting Xunit.TestContext.Current.CancellationToken
-         throughout the codebase is a separate follow-up task (https://github.com/dotnet/sdk/issues/52914) -->
-    <NoWarn>$(NoWarn);NU5125;NU5123;xUnit1051</NoWarn>
+    <NoWarn>$(NoWarn);NU5125;NU5123</NoWarn>
 
     <!-- XUnit.V3 migration is incremental. Enabling MTP will come in a later phase (https://github.com/dotnet/sdk/issues/52914).  -->
     <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
@@ -25,6 +23,16 @@
 
     <!-- Don't generate separate symbol packages for the test packages -->
     <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <!-- MSTest.Sdk defaults. Applied to projects that opt in via <Project Sdk="MSTest.Sdk">,
+       which sets UsingMSTestSdk=true in its Sdk.props before this file is evaluated. -->
+  <PropertyGroup Condition="'$(UsingMSTestSdk)' == 'true'">
+    <!-- Parallelization disabled due to widespread concurrency-related intermittent test failures. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+
+    <!-- Promote info-severity MSTest analyzer rules to warnings and critical rules to errors. -->
+    <MSTestAnalysisMode>Recommended</MSTestAnalysisMode>
   </PropertyGroup>
 
 </Project>

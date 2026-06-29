@@ -11,15 +11,17 @@ using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
 using Microsoft.TemplateEngine.Utils;
-using Xunit;
 using ITemplateMatchInfo = Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo;
 using WellKnownSearchFilters = Microsoft.TemplateEngine.Utils.WellKnownSearchFilters;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
+    [TestClass]
     public class GeneratorTests : TestBase
     {
-        [Fact]
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestMethod]
         public async Task CanUseCustomGenerator()
         {
             var builtIns = new List<(Type, IIdentifiedComponent)>()
@@ -38,8 +40,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IReadOnlyList<ITemplateMatchInfo> foundTemplates = await templatePackagesManager.GetTemplatesAsync(
                 matchFilter: WellKnownSearchFilters.MatchesAllCriteria,
                 filters: new[] { WellKnownSearchFilters.NameFilter("test-template") },
-                cancellationToken: default);
-            ITemplateMatchInfo template = Assert.Single(foundTemplates);
+                cancellationToken: TestContext.CancellationToken);
+            ITemplateMatchInfo template = Assert.ContainsSingle(foundTemplates);
 
             string output = TestUtils.CreateTemporaryFolder();
             ITemplateCreationResult dryRunResult = await templateCreator.InstantiateAsync(
@@ -49,10 +51,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 outputPath: output,
                 inputParameters: new Dictionary<string, string?>(),
                 forceCreation: true,
-                dryRun: true);
+                dryRun: true, cancellationToken: TestContext.CancellationToken);
 
-            Assert.Equal(CreationResultStatus.Success, dryRunResult.Status);
-            Assert.Equal((ICreationEffects)CustomGenerator.CreationEffects.Instance, dryRunResult.CreationEffects);
+            Assert.AreEqual(CreationResultStatus.Success, dryRunResult.Status);
+            Assert.AreEqual((ICreationEffects)CustomGenerator.CreationEffects.Instance, dryRunResult.CreationEffects);
 
             ITemplateCreationResult runResult = await templateCreator.InstantiateAsync(
                 template.Info,
@@ -61,13 +63,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 outputPath: output,
                 inputParameters: new Dictionary<string, string?>(),
                 forceCreation: true,
-                dryRun: false);
+                dryRun: false, cancellationToken: TestContext.CancellationToken);
 
-            Assert.Equal(CreationResultStatus.Success, runResult.Status);
-            Assert.Equal(CustomGenerator.SimpleCreationResult.Instance, runResult.CreationResult);
+            Assert.AreEqual(CreationResultStatus.Success, runResult.Status);
+            Assert.AreEqual(CustomGenerator.SimpleCreationResult.Instance, runResult.CreationResult);
 
             string targetFile = Path.Combine(output, "success.txt");
-            Assert.True(File.Exists(targetFile));
+            Assert.IsTrue(File.Exists(targetFile));
         }
 
         private class CustomGenerator : IGenerator

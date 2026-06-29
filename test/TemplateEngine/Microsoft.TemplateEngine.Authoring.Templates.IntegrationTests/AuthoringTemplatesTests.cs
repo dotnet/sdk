@@ -6,20 +6,35 @@ using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
 {
+    [TestClass]
     public class AuthoringTemplatesTests : TestBase
     {
-        private readonly ILogger _log;
+        private TestContext _testContext = null!;
 
-        public AuthoringTemplatesTests(ITestOutputHelper log)
+        public TestContext TestContext
         {
-            _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
+            get => _testContext;
+            set
+            {
+                _testContext = value;
+                VerifyMSTest.Verifier.CurrentTestContext.Value = new VerifyMSTest.TestExecutionContext(value, GetType());
+            }
         }
 
-        [Fact]
+        private ILogger Log => new TestContextLogger(TestContext);
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+        {
+            // The shared TemplateVerifier engine is compiled against the xUnit Verify adapter; route its directory
+            // verification to the MSTest adapter so the ambient MSTest test context is used under MTP.
+            VerificationEngine.DirectoryVerifier = VerifyMSTest.Verifier.VerifyDirectory;
+        }
+
+        [TestMethod]
         public async Task TemplateJsonTest()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -31,17 +46,17 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "Basic",
             }
             .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplateJsonTest_WithParameters()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -60,18 +75,18 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "WithParams",
             }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplateJsonTest_NoConfigFolder()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -88,18 +103,18 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "NoConfigFolder",
             }
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplatePackageTest()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -111,17 +126,17 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "Basic",
             }
             .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplatePackageTest_WithName()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -138,18 +153,18 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "WithName",
             }
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplatePackageTest_NoMSBuildTasks()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -166,18 +181,18 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = "NoMSBuildTasks",
             }
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplateJsonTest_CLI()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -189,17 +204,17 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 VerifyCommandOutput = true,
                 ScenarioName = "CLI",
             };
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplatePackageTest_CLI()
         {
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -211,14 +226,14 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 VerifyCommandOutput = true,
                 ScenarioName = "CLI",
             };
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.Current!.CancellationToken);
         }
     }
 }

@@ -1,24 +1,22 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 {
+    [TestClass]
     public class TemplateDiscoveryTests : TestBase
     {
-        private readonly ITestOutputHelper _log;
+        public TestContext TestContext { get; set; } = null!;
 
-        public TemplateDiscoveryTests(ITestOutputHelper log)
-        {
-            _log = log;
-        }
+        private ILogger Log => new TestContextLogger(TestContext);
 
-        [Fact]
+        [TestMethod]
         public async Task CanRunDiscoveryTool()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -27,7 +25,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates");
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -47,8 +45,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 
             foreach (var cacheFilePath in cacheFilePaths)
             {
-                Assert.True(File.Exists(cacheFilePath));
-                new DotnetNewCommand(_log)
+                Assert.IsTrue(File.Exists(cacheFilePath));
+                new DotnetNewCommand(Log)
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -58,7 +56,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .ExitWith(0)
                     .And.NotHaveStdErr();
 
-                new DotnetNewCommand(_log, "func", "--search")
+                new DotnetNewCommand(Log, "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -70,7 +68,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .And.NotHaveStdOutContaining("Exception")
                     .And.HaveStdOutContaining("Microsoft.Azure.WebJobs.ProjectTemplates");
 
-                new DotnetNewCommand(_log)
+                new DotnetNewCommand(Log)
                       .WithCustomHive(settingsPath)
                       .WithoutTelemetry()
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -80,7 +78,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                       .ExitWith(0)
                       .And.NotHaveStdErr();
 
-                new DotnetNewCommand(_log, "func", "--search")
+                new DotnetNewCommand(Log, "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -94,7 +92,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadAuthor()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -102,7 +100,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -114,12 +112,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 .ExitWith(0);
 
             var jObjectV1 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json")))!.AsObject();
-            Assert.Equal("TestAuthor", jObjectV1!["PackToTemplateMap"]!.AsObject().Single(p => p.Key.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value!["Owners"]!.AsArray().Select(n => n!.GetValue<string>()).Single());
+            Assert.AreEqual("TestAuthor", jObjectV1!["PackToTemplateMap"]!.AsObject().Single(p => p.Key.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value!["Owners"]!.AsArray().Select(n => n!.GetValue<string>()).Single());
             var jObjectV2 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!.AsObject();
-            Assert.Equal("TestAuthor", jObjectV2!["TemplatePackages"]![0]!["Owners"]!.GetValue<string>());
+            Assert.AreEqual("TestAuthor", jObjectV2!["TemplatePackages"]![0]!["Owners"]!.GetValue<string>());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadDescription()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -127,7 +125,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -139,10 +137,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 .ExitWith(0);
 
             var jObjectV2 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!.AsObject();
-            Assert.Equal("description", jObjectV2!["TemplatePackages"]![0]!["Description"]!.GetValue<string>());
+            Assert.AreEqual("description", jObjectV2!["TemplatePackages"]![0]!["Description"]!.GetValue<string>());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadIconUrl()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -150,7 +148,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -162,10 +160,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 .ExitWith(0);
 
             var jObjectV2 = JsonNode.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!.AsObject();
-            Assert.Equal("https://icon", jObjectV2!["TemplatePackages"]![0]!["IconUrl"]!.GetValue<string>());
+            Assert.AreEqual("https://icon", jObjectV2!["TemplatePackages"]![0]!["IconUrl"]!.GetValue<string>());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanDetectNewPackagesInDiffMode()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -175,7 +173,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             File.Move(packageLocation, Path.Combine(Path.GetDirectoryName(packageLocation)!, "Test.Templates##1.0.0.nupkg"));
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -205,16 +203,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             string cacheV2Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json");
             string nonTemplatePackagesList = Path.Combine(testDir, "SearchCache", "nonTemplatePacks.json");
 
-            Assert.True(File.Exists(cacheV1Path));
-            Assert.True(File.Exists(cacheV2Path));
-            Assert.True(File.Exists(nonTemplatePackagesList));
+            Assert.IsTrue(File.Exists(cacheV1Path));
+            Assert.IsTrue(File.Exists(cacheV2Path));
+            Assert.IsTrue(File.Exists(nonTemplatePackagesList));
 
             packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates");
 
             File.Move(packageLocation, Path.Combine(Path.GetDirectoryName(packageLocation)!, "Microsoft.Azure.WebJobs.ProjectTemplates##1.0.0.nupkg"));
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -242,17 +240,17 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
    removed: 0
    not changed: 0");
 
-            Assert.True(File.Exists(cacheV1Path));
-            Assert.True(File.Exists(cacheV2Path));
-            Assert.True(File.Exists(nonTemplatePackagesList));
+            Assert.IsTrue(File.Exists(cacheV1Path));
+            Assert.IsTrue(File.Exists(cacheV2Path));
+            Assert.IsTrue(File.Exists(nonTemplatePackagesList));
 
             var jObjectV1 = JsonNode.Parse(File.ReadAllText(cacheV1Path))!.AsObject();
-            Assert.Equal(2, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
+            Assert.AreEqual(2, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
             var jObjectV2 = JsonNode.Parse(File.ReadAllText(cacheV2Path))!.AsObject();
-            Assert.Equal(2, jObjectV2["TemplatePackages"]?.AsArray().Count);
+            Assert.AreEqual(2, jObjectV2["TemplatePackages"]?.AsArray().Count);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanDetectUpdatedPackagesInDiffMode()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -263,7 +261,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             File.Move(packageLocation, testFileName);
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -293,14 +291,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             string cacheV2Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json");
             string nonTemplatePackagesList = Path.Combine(testDir, "SearchCache", "nonTemplatePacks.json");
 
-            Assert.True(File.Exists(cacheV1Path));
-            Assert.True(File.Exists(cacheV2Path));
-            Assert.True(File.Exists(nonTemplatePackagesList));
+            Assert.IsTrue(File.Exists(cacheV1Path));
+            Assert.IsTrue(File.Exists(cacheV2Path));
+            Assert.IsTrue(File.Exists(nonTemplatePackagesList));
 
             File.Move(testFileName, Path.Combine(Path.GetDirectoryName(testFileName)!, "Test.Templates##1.0.1.nupkg"));
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -328,18 +326,18 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
    removed: 0
    not changed: 0");
 
-            Assert.True(File.Exists(cacheV1Path));
-            Assert.True(File.Exists(cacheV2Path));
-            Assert.True(File.Exists(nonTemplatePackagesList));
+            Assert.IsTrue(File.Exists(cacheV1Path));
+            Assert.IsTrue(File.Exists(cacheV2Path));
+            Assert.IsTrue(File.Exists(nonTemplatePackagesList));
 
             var jObjectV1 = JsonNode.Parse(File.ReadAllText(cacheV1Path))!.AsObject();
-            Assert.Equal(1, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
+            Assert.AreEqual(1, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
             var jObjectV2 = JsonNode.Parse(File.ReadAllText(cacheV2Path))!.AsObject();
-            Assert.Equal(1, jObjectV2["TemplatePackages"]?.AsArray().Count);
-            Assert.Equal("1.0.1", jObjectV2["TemplatePackages"]?[0]?["Version"]?.GetValue<string>());
+            Assert.AreEqual(1, jObjectV2["TemplatePackages"]?.AsArray().Count);
+            Assert.AreEqual("1.0.1", jObjectV2["TemplatePackages"]?[0]?["Version"]?.GetValue<string>());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanDetectRemovedPackagesInDiffMode()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -350,7 +348,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             File.Move(packageLocation, testFileName);
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -380,14 +378,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             string cacheV2Path = Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json");
             string nonTemplatePackagesList = Path.Combine(testDir, "SearchCache", "nonTemplatePacks.json");
 
-            Assert.True(File.Exists(cacheV1Path));
-            Assert.True(File.Exists(cacheV2Path));
-            Assert.True(File.Exists(nonTemplatePackagesList));
+            Assert.IsTrue(File.Exists(cacheV1Path));
+            Assert.IsTrue(File.Exists(cacheV2Path));
+            Assert.IsTrue(File.Exists(nonTemplatePackagesList));
 
             File.Delete(testFileName);
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -420,19 +418,18 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 Checking template packages via API: 
 Package Test.Templates was unlisted.");
 
-            Assert.True(File.Exists(cacheV1Path));
-            Assert.True(File.Exists(cacheV2Path));
-            Assert.True(File.Exists(nonTemplatePackagesList));
+            Assert.IsTrue(File.Exists(cacheV1Path));
+            Assert.IsTrue(File.Exists(cacheV2Path));
+            Assert.IsTrue(File.Exists(nonTemplatePackagesList));
 
             var jObjectV1 = JsonNode.Parse(File.ReadAllText(cacheV1Path))!.AsObject();
-            Assert.Equal(0, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
+            Assert.AreEqual(0, jObjectV1["PackToTemplateMap"]?.AsObject().Count);
             var jObjectV2 = JsonNode.Parse(File.ReadAllText(cacheV2Path))!.AsObject();
-            Assert.Equal(0, jObjectV2["TemplatePackages"]?.AsArray().Count);
+            Assert.AreEqual(0, jObjectV2["TemplatePackages"]?.AsArray().Count);
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Template options filtering is not implemented.")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+[TestMethod]
+        [Ignore("Template options filtering is not implemented.")]
         public void CanReadCliData()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -440,7 +437,7 @@ Package Test.Templates was unlisted.");
             string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -460,9 +457,8 @@ Package Test.Templates was unlisted.");
             CheckTemplateOptionsSearch(cacheFilePaths, settingsPath);
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Template options filtering is not implemented.")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+[TestMethod]
+        [Ignore("Template options filtering is not implemented.")]
         public void CanReadCliDataFromDiff()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -470,7 +466,7 @@ Package Test.Templates was unlisted.");
             string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir,
@@ -493,7 +489,7 @@ Package Test.Templates was unlisted.");
 
             string testDir2 = TestUtils.CreateTemporaryFolder();
             new DotnetCommand(
-                _log,
+                Log,
                 "Microsoft.TemplateSearch.TemplateDiscovery.dll",
                 "--basePath",
                 testDir2,
@@ -521,8 +517,8 @@ Package Test.Templates was unlisted.");
         {
             foreach (var cacheFilePath in cacheFilePaths)
             {
-                Assert.True(File.Exists(cacheFilePath));
-                new DotnetNewCommand(_log)
+                Assert.IsTrue(File.Exists(cacheFilePath));
+                new DotnetNewCommand(Log)
                       .WithCustomHive(settingsPath)
                       .WithoutTelemetry()
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -532,7 +528,7 @@ Package Test.Templates was unlisted.");
                       .ExitWith(0)
                       .And.NotHaveStdErr();
 
-                new DotnetNewCommand(_log, "CliHostFile", "--search")
+                new DotnetNewCommand(Log, "CliHostFile", "--search")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -545,7 +541,7 @@ Package Test.Templates was unlisted.");
                     .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                     .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetNewCommand(_log, "--search", "--param")
+                new DotnetNewCommand(Log, "--search", "--param")
                      .WithCustomHive(settingsPath)
                      .WithoutTelemetry()
                      .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -558,7 +554,7 @@ Package Test.Templates was unlisted.");
                      .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                      .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetNewCommand(_log, "--search", "-p")
+                new DotnetNewCommand(Log, "--search", "-p")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -571,7 +567,7 @@ Package Test.Templates was unlisted.");
                     .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                     .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetNewCommand(_log, "--search", "--test-param")
+                new DotnetNewCommand(Log, "--search", "--test-param")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)

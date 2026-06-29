@@ -7,9 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
-#if !XUNIT_V3
-using Xunit.Abstractions;
-#endif
+using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
 {
@@ -20,6 +18,59 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public VerificationEngineTests(ITestOutputHelper log)
         {
             _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
+        }
+
+        [Fact]
+        public async Task DefaultExcludePatternsFilterNestedObjAndBinFiles()
+        {
+            string verifyLocation = "foo/bar/baz";
+
+            Dictionary<string, string> files = new Dictionary<string, string>()
+            {
+                { "Program.cs", "hello world" },
+                { "obj/Debug/net10.0/AssemblyInfo.cs", "generated assembly info" },
+                { "obj/project.assets.json", "assets" },
+                { "bin/Debug/net10.0/MyApp.dll", "binary" },
+                { "bin/Debug/net10.0/MyApp.pdb", "symbols" },
+                { "src/obj/nested/deep/file.txt", "deep nested obj" },
+            };
+
+            IPhysicalFileSystemEx fileSystem = A.Fake<IPhysicalFileSystemEx>();
+            A.CallTo(() => fileSystem.EnumerateFiles(verifyLocation, "*", SearchOption.AllDirectories)).Returns(files.Keys);
+            A.CallTo(() => fileSystem.ReadAllTextAsync(A<string>._, A<CancellationToken>._))
+                .ReturnsLazily((string fileName, CancellationToken _) => Task.FromResult(files[fileName]));
+            A.CallTo(() => fileSystem.PathRelativeTo(A<string>._, A<string>._))
+                .ReturnsLazily((string target, string relativeTo) => target);
+
+            Dictionary<string, string> resultContents = new Dictionary<string, string>();
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "console")
+            {
+                TemplateSpecificArgs = null,
+                OutputDirectory = verifyLocation,
+                UniqueFor = null,
+            }
+                .WithCustomDirectoryVerifier(
+                    async (content, contentFetcher) =>
+                    {
+                        await foreach (var (filePath, scrubbedContent) in contentFetcher.Value)
+                        {
+                            resultContents[filePath] = scrubbedContent;
+                        }
+                    });
+
+            await VerificationEngine.CreateVerificationTask(
+                new VerificationEngine.CallerInfo()
+                {
+                    ContentDirectory = verifyLocation,
+                    CallerSourceFile = "callerLocation",
+                    CallerMethod = null
+                },
+                options,
+                fileSystem);
+
+            // Only Program.cs should remain - all obj/bin files (including nested) should be excluded
+            resultContents.Keys.Should().BeEquivalentTo(new[] { "Program.cs" });
         }
 
         [Fact]
@@ -114,7 +165,6 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public async Task ExecuteSucceedsOnExpectedInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string snapshotsDir = "Snapshots";
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
@@ -124,21 +174,20 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             {
                 TemplateSpecificArgs = new string[] { "--a", "-b", "c", "--d" },
                 //DisableDiffTool = true,
-                SnapshotsDirectory = snapshotsDir,
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 IsCommandExpectedToFail = true,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
             };
 
             VerificationEngine engine = new VerificationEngine(commandRunner, _log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task ExecuteSucceedsOnExpectedInstantiationSuccess()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string snapshotsDir = "Snapshots";
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
@@ -148,14 +197,14 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             {
                 TemplateSpecificArgs = new string[] { "--x", "y", "-z" },
                 //DisableDiffTool = true,
-                SnapshotsDirectory = snapshotsDir,
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 IsCommandExpectedToFail = false,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
             };
 
             VerificationEngine engine = new VerificationEngine(commandRunner, _log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
     }
 }

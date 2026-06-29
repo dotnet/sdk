@@ -1,11 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
+#endif
+using Microsoft.TemplateEngine.Tests;
 using VerifyTests.DiffPlex;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
-    public class VerifySettingsFixture : IDisposable
+    public class VerifySettingsFixture
     {
         private static bool s_called;
 
@@ -17,16 +21,20 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             }
             s_called = true;
 
-            DerivePathInfo(
+            VerifyMSTest.Verifier.DerivePathInfo(
                 (_, _, type, method) => new(
-                    directory: "Approvals",
+                    directory: TestBase.ApprovalsDirectory,
                     typeName: type.Name,
                     methodName: method.Name));
 
             // Customize diff output of verifier
             VerifyDiffPlex.Initialize(OutputType.Compact);
-        }
 
-        public void Dispose() { }
+#if NET
+            // The shared TemplateVerifier engine is compiled against the xUnit Verify adapter; route its directory
+            // verification to the MSTest adapter so the ambient MSTest test context is used under MTP.
+            VerificationEngine.DirectoryVerifier = VerifyMSTest.Verifier.VerifyDirectory;
+#endif
+        }
     }
 }

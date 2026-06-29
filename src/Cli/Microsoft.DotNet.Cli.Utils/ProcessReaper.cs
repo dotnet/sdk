@@ -29,6 +29,7 @@ internal class ProcessReaper : IDisposable
 {
     private readonly Process _process;
 
+#if TARGET_WINDOWS
     private sealed class WindowsProcessReaper : ProcessReaper
     {
         public WindowsProcessReaper(Process process) : base(process)
@@ -44,15 +45,11 @@ internal class ProcessReaper : IDisposable
             EnableWindowsCtrlCHandling();
         }
 
-        private static void EnableWindowsCtrlCHandling()
+        private unsafe static void EnableWindowsCtrlCHandling()
         {
-            SetConsoleCtrlHandler(null, false);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            static extern bool SetConsoleCtrlHandler(Delegate? handler, bool add);
+            PInvoke.SetConsoleCtrlHandler(null, false);
         }
 
-#if TARGET_WINDOWS
         private SafeWaitHandle? _job;
 
         public override void NotifyProcessStarted()
@@ -124,9 +121,10 @@ internal class ProcessReaper : IDisposable
 
             base.Dispose();
         }
-#endif
     }
+#endif
 
+#if !TARGET_WINDOWS
     private sealed class UnixProcessReaper : ProcessReaper
     {
         private readonly Mutex _shutdownMutex;
@@ -170,31 +168,28 @@ internal class ProcessReaper : IDisposable
             _shutdownMutex?.WaitOne();
 
 #if NET
-            if (!_process.WaitForExit(0) && NativeMethods.Posix.kill(processId, NativeMethods.Posix.SIGTERM) != 0)
+            if (!_process.WaitForExit(0) && _process.SafeHandle.Signal(PosixSignal.SIGTERM))
             {
                 // Couldn't send the signal, don't wait
                 return;
             }
 #endif
-
             // If SIGTERM was ignored by the target, then we'll still wait
             _process.WaitForExit();
 
             Environment.ExitCode = _process.ExitCode;
         }
     }
+#endif
 
     /// <inheritdoc cref="ProcessReaper(Process)"/>
     public static ProcessReaper Create(Process process)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
+#if TARGET_WINDOWS
             return new WindowsProcessReaper(process);
-        }
-        else
-        {
+#else
             return new UnixProcessReaper(process);
-        }
+#endif
     }
 
     /// <summary>

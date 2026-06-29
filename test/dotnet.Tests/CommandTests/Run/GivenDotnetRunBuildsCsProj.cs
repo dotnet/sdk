@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,13 +9,14 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
+    [TestClass]
     public class GivenDotnetRunBuildsCsproj : SdkTest
     {
-        public GivenDotnetRunBuildsCsproj(ITestOutputHelper log) : base(log)
+        public GivenDotnetRunBuildsCsproj()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanRunAMSBuildProject()
         {
             var testAppName = "MSBuildTestApp";
@@ -35,7 +36,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItImplicitlyRestoresAProjectWhenRunning()
         {
             var testAppName = "MSBuildTestApp";
@@ -51,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanRunAMultiTFMProjectWithImplicitRestore()
         {
             var testInstance = TestAssetsManager.CopyTestAsset(
@@ -68,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdOutContaining("This string came from the test library!");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotImplicitlyBuildAProjectWhenRunningWithTheNoBuildOption()
         {
             var testAppName = "MSBuildTestApp";
@@ -86,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotImplicitlyRestoreAProjectWhenRunningWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
@@ -102,7 +103,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("project.assets.json");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItBuildsTheProjectBeforeRunning()
         {
             var testAppName = "MSBuildTestApp";
@@ -118,7 +119,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanRunAMSBuildProjectWhenSpecifyingAFramework()
         {
             var testAppName = "MSBuildTestApp";
@@ -134,7 +135,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsPortableAppsFromADifferentPathAfterBuilding()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
@@ -151,7 +152,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsPortableAppsFromADifferentPathWithoutBuilding()
         {
             var testAppName = "MSBuildTestApp";
@@ -168,7 +169,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.NotHaveStdOutContaining(CliCommandStrings.RunCommandProjectAbbreviationDeprecated);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsPortableAppsFromADifferentPathSpecifyingOnlyTheDirectoryWithoutBuilding()
         {
             var testAppName = "MSBuildTestApp";
@@ -185,7 +186,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.NotHaveStdOutContaining(CliCommandStrings.RunCommandProjectAbbreviationDeprecated);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItWarnsWhenShortFormOfProjectArgumentIsUsed()
         {
             var testAppName = "MSBuildTestApp";
@@ -202,9 +203,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdOutContaining(CliCommandStrings.RunCommandProjectAbbreviationDeprecated);
         }
 
-        [Theory]
-        [InlineData("-p project1 -p project2")]
-        [InlineData("--project project1 -p project2")]
+        [TestMethod]
+        [DataRow("-p project1 -p project2")]
+        [DataRow("--project project1 -p project2")]
         public void ItErrorsWhenMultipleProjectsAreSpecified(string args)
         {
             new DotnetCommand(Log, "run")
@@ -215,7 +216,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .HaveStdErrContaining(CliStrings.OnlyOneProjectAllowed);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsAppWhenRestoringToSpecificPackageDirectory()
         {
             var rootPath = TestAssetsManager.CreateTestDirectory().Path;
@@ -244,7 +245,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdOutContaining("Hello, World");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReportsAGoodErrorWhenProjectHasMultipleFrameworks()
         {
             var testAppName = "MSBuildAppWithMultipleFrameworks";
@@ -260,7 +261,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     .And.HaveStdErrContaining("--framework");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanPassArgumentsToSubjectAppByDoubleDash()
         {
             const string testAppName = "MSBuildTestApp";
@@ -277,7 +278,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("echo args:foo;bar;baz");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanPassOptionArgumentsToSubjectAppByDoubleDash()
         {
             const string testAppName = "MSBuildTestApp";
@@ -294,7 +295,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("echo args:-d;-a");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanPassOptionAndArgumentsToSubjectAppByDoubleDash()
         {
             const string testAppName = "MSBuildTestApp";
@@ -311,7 +312,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("echo args:foo;-d;-a");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanPassArgumentsToSubjectAppWithoutDoubleDash()
         {
             const string testAppName = "MSBuildTestApp";
@@ -328,7 +329,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("echo args:foo;bar;baz");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanPassUnrecognizedOptionArgumentsToSubjectAppWithoutDoubleDash()
         {
             const string testAppName = "MSBuildTestApp";
@@ -345,7 +346,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("echo args:-x;-y;-z");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanPassOptionArgumentsAndArgumentsToSubjectAppWithoutAndByDoubleDash()
         {
             const string testAppName = "MSBuildTestApp";
@@ -362,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("echo args:foo;-z");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItGivesAnErrorWhenAttemptingToUseALaunchProfileThatDoesNotExistWhenThereIsNoLaunchSettingsFile()
         {
             var testAppName = "MSBuildTestApp";
@@ -384,27 +385,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     """));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItUsesLaunchProfileOfTheSpecifiedName()
-        {
-            var testAppName = "AppWithLaunchSettings";
-            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
-                            .WithSource();
-
-            var testProjectDirectory = testInstance.Path;
-
-            var cmd = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(testProjectDirectory)
-                .Execute("--launch-profile", "Second");
-
-            cmd.Should().Pass()
-                .And.HaveStdOutContaining("Second");
-
-            cmd.StdErr.Should().BeEmpty();
-        }
-
-        [Fact]
-        public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "AppWithLaunchSettings";
             var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
@@ -413,18 +395,36 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testProjectDirectory = testInstance.Path;
             var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
+            var cmd = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--launch-profile", "Second");
+
+            cmd.Should().Pass()
+                .And.HaveStdOutContaining("Second");
+
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
+        }
+
+        [TestMethod]
+        public void ItDefaultsToTheFirstUsableLaunchProfile()
+        {
+            var testAppName = "AppWithLaunchSettings";
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+
             var cmd = new DotnetCommand(Log, "run", "--verbosity", "quiet")
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute();
 
             cmd.Should().Pass()
-                .And.NotHaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
 
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsTheDotnetLaunchProfileEnvironmentVariableToDefaultLaunchProfileName()
         {
             var testAppName = "AppThatOutputsDotnetLaunchProfile";
@@ -441,10 +441,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<First>>>");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsTheDotnetLaunchProfileEnvironmentVariableToSuppliedLaunchProfileName()
         {
             var testAppName = "AppThatOutputsDotnetLaunchProfile";
@@ -461,10 +461,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<Second>>>");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsTheDotnetLaunchProfileEnvironmentVariableToEmptyWhenInvalidProfileSpecified()
         {
             var testAppName = "AppThatOutputsDotnetLaunchProfile";
@@ -484,7 +484,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().Contain("DoesNotExist");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsTheDotnetLaunchProfileEnvironmentVariableToEmptyWhenNoLaunchProfileSwitchIsUsed()
         {
             var testAppName = "AppThatOutputsDotnetLaunchProfile";
@@ -504,7 +504,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsUsingLaunchSettingsMessageWhenNotQuiet()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithLaunchSettings")
@@ -518,13 +518,11 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("-v:m");
 
             cmd.Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
-
-            cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrefersTheValueOfAppUrlFromEnvVarOverTheProp()
         {
             var testAppName = "AppWithApplicationUrlInLaunchSettings";
@@ -532,6 +530,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -540,10 +539,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("http://localhost:12345/");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItUsesTheValueOfAppUrlIfTheEnvVarIsNotSet()
         {
             var testAppName = "AppWithApplicationUrlInLaunchSettings";
@@ -551,6 +550,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -559,10 +559,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("http://localhost:54321/");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItGivesAnErrorWhenTheLaunchProfileNotFound()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -579,7 +579,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
         }
 
-        [Fact]
+        [TestMethod]
         public void ItGivesAnErrorWhenTheLaunchProfileFileIsNotReadable()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -600,7 +600,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
         }
 
-        [Fact]
+        [TestMethod]
         public void ItGivesAnErrorWhenTheLaunchProfileCanNotBeHandled()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -617,7 +617,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "IIS Express", "").Trim());
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSkipsLaunchProfilesWhenTheSwitchIsSupplied()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -636,7 +636,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSkipsLaunchProfilesWhenTheSwitchIsSuppliedWithoutErrorWhenThereAreNoLaunchSettings()
         {
             var testAppName = "MSBuildTestApp";
@@ -655,7 +655,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSkipsLaunchProfilesWhenThereIsNoUsableDefault()
         {
             var testAppName = "AppWithLaunchSettingsNoDefault";
@@ -673,7 +673,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, ProjectTools.Resources.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsAnErrorWhenLaunchSettingsAreCorrupted()
         {
             var testAppName = "AppWithCorruptedLaunchSettings";
@@ -691,7 +691,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, ProjectTools.Resources.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsWithTheSpecifiedVerbosity()
         {
             var testAppName = "MSBuildTestApp";
@@ -712,7 +712,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotShowImportantLevelMessageByDefaultWhenInteractivityDisabled()
         {
             var testAppName = "MSBuildTestApp";
@@ -733,7 +733,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         /// default verbosity for `run` is as quiet as possible, so it does not show important messages.
         /// NuGet authentication messages _are_ shown, but all other non-warning/-error messages are not.
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void ItDoesNotShowImportantLevelMessageWhenPassInteractive()
         {
             var testAppName = "MSBuildTestApp";
@@ -749,7 +749,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.NotHaveStdOutContaining("Important text");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItShowsImportantLevelMessageWhenPassInteractiveAndVerbose()
         {
             var testAppName = "MSBuildTestApp";
@@ -766,7 +766,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsDuplicateArguments()
         {
             var testAppName = "MSBuildTestApp";
@@ -781,7 +781,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("echo args:a;b;c;a;c");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRunsWithDotnetWithoutApphost()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppOutputsExecutablePath").WithSource();
@@ -797,7 +797,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                    .HaveStdOutContaining($"dotnet{Constants.ExeSuffix}");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux | TestPlatforms.FreeBSD)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux | OperatingSystems.FreeBSD)]
         public void ItRunsWithApphost()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppOutputsExecutablePath").WithSource();
@@ -810,7 +811,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining($"AppOutputsExecutablePath{Constants.ExeSuffix}");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItForwardsEmptyArgumentsToTheApp()
         {
             var testAppName = "TestAppSimple";
@@ -826,7 +827,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .HaveStdOutContaining($"0 = a{Environment.NewLine}1 = {Environment.NewLine}2 = c");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotPrintBuildingMessageByDefault()
         {
             var expectedValue = "Building...";
@@ -843,7 +844,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .NotHaveStdOutContaining(expectedValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsBuildingMessageIfLaunchSettingHasDotnetRunMessagesSet()
         {
             var expectedValue = "Building...";
@@ -860,7 +861,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .HaveStdOutContaining(expectedValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIncludesEnvironmentVariablesSpecifiedInLaunchSettings()
         {
             var expectedValue = "MyCoolEnvironmentVariableKey=MyCoolEnvironmentVariableValue";
@@ -877,7 +878,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .HaveStdOutContaining(expectedValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void EnvVariablesSpecifiedInLaunchProfileOverrideImplicitlySetVariables()
         {
             var testAppName = "TestAppWithLaunchSettings";
@@ -897,7 +898,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .HaveStdOutContaining("env: ASPNETCORE_URLS=XYZ");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIncludesCommandArgumentsSpecifiedInLaunchSettings()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
@@ -916,7 +917,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .HaveStdOutContaining("SecondTestAppCommandLineArguments");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIgnoresCommandArgumentsSpecifiedInLaunchSettings()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
@@ -935,7 +936,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .NotHaveStdOutContaining("SecondTestAppCommandLineArguments");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCLIArgsOverrideCommandArgumentsSpecifiedInLaunchSettings()
         {
             var expectedValue = "TestAppCommandLineArguments";
@@ -955,7 +956,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .NotHaveStdOutContaining(secondExpectedValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIncludesApplicationUrlSpecifiedInLaunchSettings()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
@@ -970,9 +971,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .HaveStdOutContaining("env: ASPNETCORE_URLS=http://localhost:5000");
         }
 
-        [Theory]
-        [InlineData("-e")]
-        [InlineData("--environment")]
+        [TestMethod]
+        [DataRow("-e")]
+        [DataRow("--environment")]
         public void EnvOptionOverridesCommandArgumentsSpecifiedInLaunchSettings(string optionName)
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
@@ -987,7 +988,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .HaveStdOutContaining("env: MyCoolEnvironmentVariableKey=OverriddenEnvironmentVariableValue");
         }
 
-        [Fact]
+        [TestMethod]
         public void EnvOptionOverridesImplicitlySetVariables()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
@@ -1009,7 +1010,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .HaveStdOutContaining("env: ASPNETCORE_URLS=2");
         }
 
-        [Fact]
+        [TestMethod]
         public void EnvOptionNotAppliedToBuild()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
@@ -1024,7 +1025,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .HaveStdOutContaining("env: Configuration=XYZ");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItProvidesConsistentErrorMessageWhenProjectFileDoesNotExistWithNoBuild()
         {
             var tempDir = TestAssetsManager.CreateTestDirectory();
@@ -1050,7 +1051,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibrary()
         {
             // Reproduces https://github.com/dotnet/sdk/issues/53488 with explicit --framework:
@@ -1066,7 +1068,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("This string came from the test library!");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibraryWithoutExplicitFramework()
         {
             // Same scenario as above but without --framework: exercises the
@@ -1088,7 +1091,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("This string came from the test library!");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanRunWithExecutableLaunchProfile()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")

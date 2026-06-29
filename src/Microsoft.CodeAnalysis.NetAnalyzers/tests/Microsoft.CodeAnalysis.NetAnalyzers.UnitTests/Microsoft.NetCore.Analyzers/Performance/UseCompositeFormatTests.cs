@@ -209,7 +209,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         }
                     }
                     """,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private const string Preamble = """

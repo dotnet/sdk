@@ -13,19 +13,25 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class FileRenameTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class FileRenameTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        public TestContext TestContext { get; set; } = null!;
 
-        public FileRenameTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        [Fact]
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
         public async Task SourceRenameIsCaseSensitive()
         {
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = environment.GetTempVirtualizedPath();
 
             string sourceConfig = /*lang=json*/ """
@@ -59,26 +65,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = environment.MountPath(sourceBasePath);
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using ITemplate template = new RunnableProjectConfig(environment, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, TestContext.CancellationToken);
             IEnumerable<IFileChange2> changes = result.FileChanges.Cast<IFileChange2>();
 
-            Assert.Equal(2, result.FileChanges.Count);
-            Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
+            Assert.HasCount(2, result.FileChanges);
+            foreach (var c in result.FileChanges.Cast<IFileChange2>())
+            {
+                Assert.StartsWith("./", c.SourceRelativePath);
+            }
 
             Dictionary<string, string> dict = changes.ToDictionary(c => c.SourceRelativePath, c => c.TargetRelativePath);
-            Assert.Equal("./YesNewName.txt", dict["./RenameMe.txt"]);
-            Assert.Equal("./dontrenameme.txt", dict["./dontrenameme.txt"]);
+            Assert.AreEqual("./YesNewName.txt", dict["./RenameMe.txt"]);
+            Assert.AreEqual("./dontrenameme.txt", dict["./dontrenameme.txt"]);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SourceModifierRenameIsCaseSensitive()
         {
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = environment.GetTempVirtualizedPath();
 
             string sourceConfig = /*lang=json*/ """
@@ -116,23 +125,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             using IMountPoint mountPoint = environment.MountPath(sourceBasePath);
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
 
             using ITemplate template = new RunnableProjectConfig(environment, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, TestContext.CancellationToken);
             IEnumerable<IFileChange2> changes = result.FileChanges.Cast<IFileChange2>();
 
-            Assert.Equal(2, result.FileChanges.Count);
-            Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
+            Assert.HasCount(2, result.FileChanges);
+            foreach (var c in result.FileChanges.Cast<IFileChange2>())
+            {
+                Assert.StartsWith("./", c.SourceRelativePath);
+            }
 
             Dictionary<string, string> dict = changes.ToDictionary(c => c.SourceRelativePath, c => c.TargetRelativePath);
-            Assert.Equal("./YesNewName.txt", dict["./RenameMe.txt"]);
-            Assert.Equal("./dontrenameme.txt", dict["./dontrenameme.txt"]);
+            Assert.AreEqual("./YesNewName.txt", dict["./RenameMe.txt"]);
+            Assert.AreEqual("./dontrenameme.txt", dict["./dontrenameme.txt"]);
         }
 
-        [Fact(DisplayName = nameof(CanReadFilenameReplacementConfig))]
+        [TestMethod]
         public void CanReadFilenameReplacementConfig()
         {
             string configContent = /*lang=json*/ """
@@ -168,18 +180,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
             """;
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JExtensions.ParseJsonObject(configContent));
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment();
 
             string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
             using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             using RunnableProjectConfig runnableConfig = new(environmentSettings, A.Fake<IGenerator>(), configModel, mountPoint.Root);
 
-            Assert.Equal(2, runnableConfig.SymbolFilenameReplacements.Count);
-            Assert.Equal("testparamfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName.Contains("testparam")).OriginalValue.Value);
-            Assert.Equal("testgeneratedfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
+            Assert.HasCount(2, runnableConfig.SymbolFilenameReplacements);
+            Assert.AreEqual("testparamfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName.Contains("testparam")).OriginalValue.Value);
+            Assert.AreEqual("testgeneratedfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
         }
 
-        [Fact(DisplayName = nameof(CanReadFilenameReplacementConfigWithForms))]
+        [TestMethod]
         public void CanReadFilenameReplacementConfigWithForms()
         {
             string configContent = /*lang=json*/ """
@@ -226,26 +238,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
             """;
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JExtensions.ParseJsonObject(configContent));
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment();
 
             string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
             using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
 
             using RunnableProjectConfig runnableConfig = new(environmentSettings, A.Fake<IGenerator>(), configModel, mountPoint.Root);
 
-            Assert.Equal(4, runnableConfig.SymbolFilenameReplacements.Count);
-            Assert.Equal(3, runnableConfig.SymbolFilenameReplacements.Count(x => x.VariableName.Contains("testparam")));
-            Assert.Equal("TestParamFileReplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}identity").OriginalValue.Value);
-            Assert.Equal("TESTPARAMFILEREPLACEMENT", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}uc").OriginalValue.Value);
-            Assert.Equal("testparamfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}lc").OriginalValue.Value);
-            Assert.Equal("testgeneratedfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
+            Assert.HasCount(4, runnableConfig.SymbolFilenameReplacements);
+            Assert.AreEqual(3, runnableConfig.SymbolFilenameReplacements.Count(x => x.VariableName.Contains("testparam")));
+            Assert.AreEqual("TestParamFileReplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}identity").OriginalValue.Value);
+            Assert.AreEqual("TESTPARAMFILEREPLACEMENT", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}uc").OriginalValue.Value);
+            Assert.AreEqual("testparamfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}lc").OriginalValue.Value);
+            Assert.AreEqual("testgeneratedfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
         }
 
-        [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames()
         {
             //environment
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = environment.GetTempVirtualizedPath();
@@ -288,15 +300,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 fileRenames: new Dictionary<string, string>(),
                 symbolBasedFileRenames: symbolBasedRenames);
 
-            Assert.Single(allChanges);
-            Assert.Equal("Replace1Value_file.txt", allChanges["Replace1_file.txt"]);
+            Assert.ContainsSingle(allChanges);
+            Assert.AreEqual("Replace1Value_file.txt", allChanges["Replace1_file.txt"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_NonString()
         {
             //environment
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = environment.GetTempVirtualizedPath();
@@ -342,16 +354,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 fileRenames: new Dictionary<string, string>(),
                 symbolBasedFileRenames: symbolBasedRenames);
 
-            Assert.Equal(2, allChanges.Count);
-            Assert.Equal("20210429_testName.txt", allChanges["date_name.txt"]);
-            Assert.Equal("foo-bar_testName.txt", allChanges["other_name.txt"]);
+            Assert.HasCount(2, allChanges);
+            Assert.AreEqual("20210429_testName.txt", allChanges["date_name.txt"]);
+            Assert.AreEqual("foo-bar_testName.txt", allChanges["other_name.txt"]);
         }
 
-        [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_Forms))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_Forms()
         {
             //environment
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = environment.GetTempVirtualizedPath();
@@ -398,17 +410,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 fileRenames: new Dictionary<string, string>(),
                 symbolBasedFileRenames: symbolBasedRenames);
 
-            Assert.Equal(3, allChanges.Count);
-            Assert.Equal("TestProject1_file.txt", allChanges["Replace1_file.txt"]);
-            Assert.Equal("TESTPROJECT3_file.txt", allChanges["REPLACE3_file.txt"]);
-            Assert.Equal("testproject2_file.txt", allChanges["replace2_file.txt"]);
+            Assert.HasCount(3, allChanges);
+            Assert.AreEqual("TestProject1_file.txt", allChanges["Replace1_file.txt"]);
+            Assert.AreEqual("TESTPROJECT3_file.txt", allChanges["REPLACE3_file.txt"]);
+            Assert.AreEqual("testproject2_file.txt", allChanges["replace2_file.txt"]);
         }
 
-        [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_WhenFormsResultInSameValue))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_WhenFormsResultInSameValue()
         {
             //environment
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = environment.GetTempVirtualizedPath();
@@ -453,16 +465,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 fileRenames: new Dictionary<string, string>(),
                 symbolBasedFileRenames: symbolBasedRenames);
 
-            Assert.Equal(2, allChanges.Count);
-            Assert.Equal("testproject1_file.txt", allChanges["replace1_file.txt"]);
-            Assert.Equal("testproject2_file.txt", allChanges["replace2_file.txt"]);
+            Assert.HasCount(2, allChanges);
+            Assert.AreEqual("testproject1_file.txt", allChanges["replace1_file.txt"]);
+            Assert.AreEqual("testproject2_file.txt", allChanges["replace2_file.txt"]);
         }
 
-        [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_Multiple))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_Multiple()
         {
             //environment
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = environment.GetTempVirtualizedPath();
@@ -504,16 +516,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 fileRenames: new Dictionary<string, string>(),
                 symbolBasedFileRenames: symbolBasedRenames);
 
-            Assert.Equal(2, allChanges.Count);
-            Assert.Equal("ReplaceValue1_file.txt", allChanges["Replace1_file.txt"]);
-            Assert.Equal("ReplaceValue2_file.txt", allChanges["Replace2_file.txt"]);
+            Assert.HasCount(2, allChanges);
+            Assert.AreEqual("ReplaceValue1_file.txt", allChanges["Replace1_file.txt"]);
+            Assert.AreEqual("ReplaceValue2_file.txt", allChanges["Replace2_file.txt"]);
         }
 
-        [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_DirectoryRename))]
+        [TestMethod]
         public void CanGenerateFileRenamesForSymbolBasedRenames_DirectoryRename()
         {
             //environment
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
 
             //simulate template files
             string sourceBasePath = environment.GetTempVirtualizedPath();
@@ -554,9 +566,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 fileRenames: new Dictionary<string, string>(),
                 symbolBasedFileRenames: symbolBasedRenames);
 
-            Assert.Equal(2, allChanges.Count);
-            Assert.Equal(@"ReplaceValue_dir", allChanges[@"Replace_dir"]);
-            Assert.Equal(@"ReplaceValue_dir/ReplaceValue_file.txt", allChanges[@"Replace_dir/Replace_file.txt"]);
+            Assert.HasCount(2, allChanges);
+            Assert.AreEqual(@"ReplaceValue_dir", allChanges[@"Replace_dir"]);
+            Assert.AreEqual(@"ReplaceValue_dir/ReplaceValue_file.txt", allChanges[@"Replace_dir/Replace_file.txt"]);
         }
 
         private class TestParameterValueClass

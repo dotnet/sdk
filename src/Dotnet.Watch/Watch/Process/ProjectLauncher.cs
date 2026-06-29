@@ -111,6 +111,18 @@ internal sealed class ProjectLauncher(
             arguments.Add(projectOptions.TargetFramework);
         }
 
+        if (projectOptions.Device != null)
+        {
+            arguments.Add("--device");
+            arguments.Add(projectOptions.Device);
+
+            if (projectOptions.DeviceRuntimeIdentifier != null)
+            {
+                arguments.Add("--runtime");
+                arguments.Add(projectOptions.DeviceRuntimeIdentifier);
+            }
+        }
+
         foreach (var (name, value) in environmentBuilder)
         {
             arguments.Add("-e");

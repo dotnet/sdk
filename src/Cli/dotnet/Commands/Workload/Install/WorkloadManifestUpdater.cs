@@ -15,7 +15,6 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -67,14 +66,24 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
         var tempPackagesDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
-        var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
-                                      filePermissionSetter: null,
-                                      new FirstPartyNuGetPackageSigningVerifier(),
-                                      new NullLogger(),
-                                      reporter,
-                                      verifySignatures: SignCheck.IsDotNetSigned());
-        var installer = WorkloadInstallerFactory.GetWorkloadInstaller(reporter, new SdkFeatureBand(sdkVersion),
-            workloadResolver, VerbosityOptions.normal, userProfileDir, verifySignatures: false);
+        // NuGet verification uses ShouldVerifySignatures() (respects registry policy and host
+        // signing status, but not --skip-sign-check since this is a background operation).
+        // MSI verification is intentionally disabled — this updater only downloads advertising
+        // manifests, not installable MSIs.
+        var verifySignatures = WorkloadUtilities.ShouldVerifySignatures();
+        var nugetPackageDownloader = NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
+            tempPackagesDir,
+            verifySignatures,
+            reporter: reporter);
+
+        var installer = WorkloadInstallerFactory.GetWorkloadInstaller(
+            reporter,
+            new SdkFeatureBand(sdkVersion),
+            workloadResolver,
+            VerbosityOptions.normal,
+            userProfileDir,
+            verifyMsiSignature: false);
+
         var workloadRecordRepo = installer.GetWorkloadInstallationRecordRepository();
 
         return new WorkloadManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, installer);

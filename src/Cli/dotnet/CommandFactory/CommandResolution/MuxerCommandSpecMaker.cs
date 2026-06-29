@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
@@ -19,7 +19,7 @@ internal static class MuxerCommandSpecMaker
 
         arguments.Add(commandPath);
         var filteredCommandArgs = rollForwardArgument.Any()
-            ? commandArguments.Except(rollForwardArgument)
+            ? commandArguments.Where(arg => !arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase))
             : commandArguments;
         arguments.AddRange(filteredCommandArgs);
 
