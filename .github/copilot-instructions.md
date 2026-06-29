@@ -7,7 +7,8 @@ Instructions for GitHub Copilot and other AI coding agents working with the .NET
 This is `dotnet/sdk`, the repository for the core of the .NET SDK. It produces the
 `dotnet` CLI driver and the MSBuild tasks, targets, templates, and resolvers that are
 shared between the .NET CLI and Visual Studio. The build output is a complete, runnable
-`dotnet` installation laid down at `artifacts/bin/redist/Debug/dotnet`.
+`dotnet` installation laid down at `artifacts/bin/redist/<configuration>/dotnet`
+(`Debug` by default).
 
 For a high-level project description, build status, and contribution flow, see the
 [README](../README.md). For the canonical build/test/debug walkthrough, see the
@@ -60,7 +61,7 @@ Major source areas under `src/`:
   MSBuild settings and central package version management.
 - `eng/` — Arcade build infrastructure, versioning (`eng/Versions.props`), and the
   `dogfood` scripts.
-- `artifacts/bin/redist/Debug/dotnet` — the built SDK; `.dotnet/dotnet` is the bootstrap SDK.
+- `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default) — the built SDK; `.dotnet/dotnet` is the bootstrap SDK.
 - `documentation/` — project docs, including the developer guide and area-specific guides.
 - `template_feed/` — the in-box project/item templates.
 - `test/` — test projects and `test/TestAssets/TestProjects` test inputs.
@@ -83,7 +84,7 @@ Arguments not directly supported by the script are passed through to MSBuild (e.
 Canonical scenarios:
 
 - Build the full redist SDK: `build.cmd` (Windows) or `./build.sh` (Linux/macOS). Output is
-  `artifacts/bin/redist/Debug/dotnet`. First build is slow; subsequent builds are incremental.
+  `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default). First build is slow; subsequent builds are incremental.
 - Build + run all tests: `build.cmd -test` / `./build.sh --test`.
 - Release build: `build.cmd -c Release`.
 - Run a single test project after a full build (from the build env / dogfood shell, using the
@@ -92,7 +93,7 @@ Canonical scenarios:
 - Dogfood the SDK you built (run/try it end-to-end): start a dogfood shell with
   `eng\dogfood.cmd` (Windows) or `source ./eng/dogfood.sh` (Linux/macOS). It redirects SDK
   resolution to your build so `dotnet`, `msbuild`, and Visual Studio all use it. Verify with
-  `where dotnet` / `which dotnet` (should point into `artifacts/bin/redist/Debug/dotnet`).
+  `where dotnet` / `which dotnet` (should point into `artifacts/bin/redist/<configuration>/dotnet`).
 - For fast inner-loop runs of `dotnet.Tests` without a full rebuild, use the
   `incremental-test` skill.
 
