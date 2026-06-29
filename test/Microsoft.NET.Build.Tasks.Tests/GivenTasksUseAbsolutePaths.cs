@@ -17,7 +17,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 /// These tests create files in a "project" directory, then verify task behavior by
 /// passing RELATIVE paths and expecting tasks to resolve them via TaskEnvironment.
 /// </summary>
-[DoNotParallelize]
 [TestClass]
 public class GivenTasksUseAbsolutePaths : IDisposable
 {

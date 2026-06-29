@@ -8,20 +8,28 @@ using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class ChunkStreamReadTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class ChunkStreamReadTests : TestBase
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public ChunkStreamReadTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        public ChunkStreamReadTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyLongStreamNoReplacement()
         {
             Random rnd = new Random();
@@ -35,7 +43,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             IProcessor processor = Processor.Create(cfg, operations);
 
             processor.Run(input, output, 1024);
-            Assert.Equal(input.Length, output.Length);
+            Assert.AreEqual(input.Length, output.Length);
 
             input.Position = 0;
             output.Position = 0;
@@ -48,10 +56,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 file2byte = output.ReadByte();
             }
             while ((file1byte == file2byte) && (file1byte != -1));
-            Assert.Equal(0, file1byte - file2byte);
+            Assert.AreEqual(0, file1byte - file2byte);
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyLongStreamWithReplacement()
         {
             string value = @"test value test";
@@ -83,7 +91,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyLongStreamWithReplacementBeforeAfter()
         {
             string value = @"test valueA before valueA after valueB valueB";
@@ -119,7 +127,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyConsumeWholeLine()
         {
             MockOperation o = new MockOperation(

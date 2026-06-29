@@ -34,7 +34,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void Dispose() => Environment.SetEnvironmentVariable(_PATH_VAR_NAME, _originalPath);
     }
 
-    [DoNotParallelize]
     [TestClass]
     public class ToolPackageDownloaderTests : SdkTest
     {
