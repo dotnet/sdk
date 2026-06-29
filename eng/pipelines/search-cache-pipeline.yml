@@ -344,6 +344,14 @@ extends:
                 $rsa = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($cert)
                 if ($null -eq $rsa) { Write-Error 'The certificate does not contain an exportable RSA private key.'; exit 1 }
 
+                # On Windows the private key is backed by CNG (RSACng), whose ExportPkcs8PrivateKey()
+                # throws "The requested operation is not supported" even for keys loaded as Exportable.
+                # CNG does allow exporting the raw parameters, so round-trip them through a fresh
+                # managed RSA instance, which supports PKCS#8 export, and use that for the PEM.
+                $rsaParameters = $rsa.ExportParameters($true)
+                $exportableRsa = [System.Security.Cryptography.RSA]::Create()
+                $exportableRsa.ImportParameters($rsaParameters)
+
                 function Format-Pem([byte[]] $bytes, [string] $label) {
                   $text = [Convert]::ToBase64String($bytes)
                   $sb = [System.Text.StringBuilder]::new()
@@ -355,7 +363,7 @@ extends:
                   $sb.ToString()
                 }
                 $pemPath = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.pem'
-                (Format-Pem $rsa.ExportPkcs8PrivateKey() 'PRIVATE KEY') + (Format-Pem $cert.RawData 'CERTIFICATE') |
+                (Format-Pem $exportableRsa.ExportPkcs8PrivateKey() 'PRIVATE KEY') + (Format-Pem $cert.RawData 'CERTIFICATE') |
                   Set-Content -Path $pemPath -NoNewline
 
                 try {
