@@ -29,9 +29,9 @@ dependencies. The full product (`dotnet/dotnet` VMR) composes this repo with tho
 
 ### Architecture and major components
 
-The CLI is a generic driver. A `dotnet <command>` is resolved one of two ways: in-box
-commands implemented in `dotnet.dll` (e.g. `build`, `restore`, `test`), or `dotnet-`prefixed
-executables found on the `PATH`, including installed global tools (`dotnet foo` runs
+The CLI is a generic driver. A `dotnet <command>` is resolved in one of two ways: in-box
+commands implemented in `dotnet.dll` (e.g. `build`, `restore`, `test`), or executables named
+`dotnet-<command>` found on the `PATH`, including installed global tools (`dotnet foo` runs
 `dotnet-foo`). The "build" commands (`build`/`restore`/`publish`/`pack`) are thin CLI
 wrappers that invoke MSBuild against the SDK targets.
 
