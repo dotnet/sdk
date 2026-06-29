@@ -1,11 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class TransientSdkResolutionErrorDetectorTests
     {
-        [Fact]
+        [TestMethod]
         public void TransientInBoxSdkResolutionFailureIsDetected()
         {
             string input =
@@ -20,13 +21,13 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             TransientSdkResolutionErrorDetector.IsTransientError(input).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void NullInputIsNotTransient()
         {
             TransientSdkResolutionErrorDetector.IsTransientError(null).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void SuccessfulBuildIsNotTransient()
         {
             string input =
@@ -37,7 +38,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             TransientSdkResolutionErrorDetector.IsTransientError(input).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void MissingVersionedSdkWithoutResolverNullIsNotTransient()
         {
             // A genuinely missing, version-specified SDK is a deterministic failure (no workload resolver
@@ -47,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             TransientSdkResolutionErrorDetector.IsTransientError(input).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void OtherResolverReturningNullIsNotTransient()
         {
             // A "returned null" message from a different resolver must not trigger a retry: only the in-box

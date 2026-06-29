@@ -12,51 +12,57 @@ using TestLoggerFactory = Microsoft.NET.TestFramework.TestLoggerFactory;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public class CommonTemplatesTests : BaseIntegrationTest, IClassFixture<SharedHomeDirectory>
+    [TestClass]
+    public class CommonTemplatesTests : BaseIntegrationTest
     {
-        private readonly SharedHomeDirectory _fixture;
-        private readonly ITestOutputHelper _log;
-        private readonly ILogger _logger;
+        private ITestOutputHelper _log => Log;
+        private ILogger? _loggerInstance;
+        private ILogger _logger => _loggerInstance ??= new TestLoggerFactory(Log).CreateLogger(nameof(CommonTemplatesTests));
+        private static SharedHomeDirectory s_fixture = null!;
 
-        public CommonTemplatesTests(SharedHomeDirectory fixture, ITestOutputHelper log) : base(log)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext ctx)
         {
-            _fixture = fixture;
-            _log = log;
-            _logger = new TestLoggerFactory(log).CreateLogger(nameof(CommonTemplatesTests));
+            s_fixture = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
         }
 
-        [Theory]
-        [InlineData("global.json file", "globaljson", null)]
-        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
-        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
-        [InlineData("global.json file", "globaljson", new[] { "--test-runner", "VSTest" })]
-        [InlineData("global.json file", "globaljson", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
-        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--test-runner", "VSTest" })]
-        [InlineData("global.json file", "globaljson", new[] { "--roll-forward", "major", "--test-runner", "Microsoft.Testing.Platform" })]
-        [InlineData("global.json file", "global.json", null)]
-        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200" })]
-        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
-        [InlineData("global.json file", "global.json", new[] { "--test-runner", "VSTest" })]
-        [InlineData("global.json file", "global.json", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
-        [InlineData("NuGet Config", "nugetconfig", null)]
-        [InlineData("NuGet Config", "nuget.config", null)]
-        [InlineData("dotnet gitignore file", "gitignore", null)]
-        [InlineData("dotnet gitignore file", ".gitignore", null)]
-        [InlineData("Solution File", "sln", null)]
-        [InlineData("Solution File", "sln", new[] { "--format", "sln" })]
-        [InlineData("Solution File", "sln", new[] { "--format", "slnx" })]
-        [InlineData("Solution File", "solution", null)]
-        [InlineData("Solution Filter File", "slnf", new[] { "--parent-solution", "Parent.slnx" })]
-        [InlineData("Solution Filter File", "slnf", new[] { "-s", "Parent.slnx" })]
-        [InlineData("Solution Filter File", "solutionfilter", new[] { "--parent-solution", "Parent.slnx" })]
-        [InlineData("Dotnet local tool manifest file", "tool-manifest", null)]
-        [InlineData("Web Config", "webconfig", null)]
-        [InlineData("EditorConfig file", "editorconfig", null)]
-        [InlineData("EditorConfig file", "editorconfig", new[] { "--empty" })]
-        [InlineData("EditorConfig file", ".editorconfig", null)]
-        [InlineData("EditorConfig file", ".editorconfig", new[] { "--empty" })]
-        [InlineData("MSBuild Directory.Build.props file", "buildprops", new[] { "--inherit", "--use-artifacts" })]
-        [InlineData("MSBuild Directory.Build.targets file", "buildtargets", new[] { "--inherit" })]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_fixture?.Dispose();
+
+        private SharedHomeDirectory _fixture => s_fixture;
+
+        [TestMethod]
+        [DataRow("global.json file", "globaljson", null)]
+        [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
+        [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [DataRow("global.json file", "globaljson", new[] { "--test-runner", "VSTest" })]
+        [DataRow("global.json file", "globaljson", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
+        [DataRow("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--test-runner", "VSTest" })]
+        [DataRow("global.json file", "globaljson", new[] { "--roll-forward", "major", "--test-runner", "Microsoft.Testing.Platform" })]
+        [DataRow("global.json file", "global.json", null)]
+        [DataRow("global.json file", "global.json", new[] { "--sdk-version", "6.0.200" })]
+        [DataRow("global.json file", "global.json", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [DataRow("global.json file", "global.json", new[] { "--test-runner", "VSTest" })]
+        [DataRow("global.json file", "global.json", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
+        [DataRow("NuGet Config", "nugetconfig", null)]
+        [DataRow("NuGet Config", "nuget.config", null)]
+        [DataRow("dotnet gitignore file", "gitignore", null)]
+        [DataRow("dotnet gitignore file", ".gitignore", null)]
+        [DataRow("Solution File", "sln", null)]
+        [DataRow("Solution File", "sln", new[] { "--format", "sln" })]
+        [DataRow("Solution File", "sln", new[] { "--format", "slnx" })]
+        [DataRow("Solution File", "solution", null)]
+        [DataRow("Solution Filter File", "slnf", new[] { "--parent-solution", "Parent.slnx" })]
+        [DataRow("Solution Filter File", "slnf", new[] { "-s", "Parent.slnx" })]
+        [DataRow("Solution Filter File", "solutionfilter", new[] { "--parent-solution", "Parent.slnx" })]
+        [DataRow("Dotnet local tool manifest file", "tool-manifest", null)]
+        [DataRow("Web Config", "webconfig", null)]
+        [DataRow("EditorConfig file", "editorconfig", null)]
+        [DataRow("EditorConfig file", "editorconfig", new[] { "--empty" })]
+        [DataRow("EditorConfig file", ".editorconfig", null)]
+        [DataRow("EditorConfig file", ".editorconfig", new[] { "--empty" })]
+        [DataRow("MSBuild Directory.Build.props file", "buildprops", new[] { "--inherit", "--use-artifacts" })]
+        [DataRow("MSBuild Directory.Build.targets file", "buildtargets", new[] { "--inherit" })]
         public async Task AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
         {
             Dictionary<string, string?> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
@@ -95,12 +101,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             if (expectedTemplateName.Equals("global.json file") &&
                 (args == null || !args.Contains("--sdk-version")))
             {
-                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(TestContext.Current.CancellationToken);
+                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(TestContext.CancellationToken);
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
             }
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            await engine.Execute(options, TestContext.CancellationToken);
         }
 
         //
@@ -108,7 +114,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         // To be uncommented in case editorconfig template will start to genearate dynamic content
         //
 
-        //[Fact]
+        //[TestMethod]
         //public async Task EditorConfigTests_Default()
         //{
         //    TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
@@ -131,15 +137,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         //    await engine.Execute(options).ConfigureAwait(false);
         //}
 
-        [Fact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void NuGetConfigPermissions()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                //runs only on Unix
-                return;
-            }
-
             string templateShortName = "nugetconfig";
             string expectedTemplateName = "NuGet Config";
             string workingDir = TestUtils.CreateTemporaryFolder();
@@ -172,9 +173,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Directory.Delete(workingDir, true);
         }
 
-        [Theory]
-        [InlineData(new object[] { "console", "C#" })]
-        [InlineData(new object[] { "console", "VB" })]
+        [TestMethod]
+        [DataRow(new object[] { "console", "C#" })]
+        [DataRow(new object[] { "console", "VB" })]
         public async Task AotVariants(string name, string language)
         {
             // template framework needs to be hardcoded here during the major version transition.
@@ -229,7 +230,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             );
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            await engine.Execute(options, TestContext.CancellationToken);
 
             Directory.Delete(workingDir, true);
         }
@@ -333,9 +334,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
         }
 
-        [Theory]
+        [TestMethod]
         //creates all possible combinations for supported templates, language versions and frameworks
-        [MemberData(nameof(FeaturesSupport_Data))]
+        [DynamicData(nameof(FeaturesSupport_Data))]
         public async Task FeaturesSupport(
             string name,
             bool buildPass,
@@ -430,7 +431,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             );
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            await engine.Execute(options, TestContext.CancellationToken);
 
             if (buildPass)
             {

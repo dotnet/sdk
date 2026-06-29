@@ -10,16 +10,27 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class RegexMatchMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class RegexMatchMacroTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public RegexMatchMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public RegexMatchMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Fact(DisplayName = nameof(TestRegexMatchMacroTrue))]
+        [TestMethod]
         public void TestRegexMatchMacroTrue()
         {
             const string variableName = "isMatch";
@@ -36,10 +47,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             bool newValue = (bool)variables[variableName];
-            Assert.Equal(expectedValue, newValue);
+            Assert.AreEqual(expectedValue, newValue);
         }
 
-        [Fact(DisplayName = nameof(TestRegexMatchMacroFalse))]
+        [TestMethod]
         public void TestRegexMatchMacroFalse()
         {
             const string variableName = "isMatch";
@@ -57,10 +68,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             bool newValue = (bool)variables[variableName];
-            Assert.Equal(expectedValue, newValue);
+            Assert.AreEqual(expectedValue, newValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void GeneratedSymbolTest()
         {
             string variableName = "isMatch";
@@ -83,10 +94,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
 
             bool newValue = (bool)variables[variableName];
-            Assert.Equal(expectedValue, newValue);
+            Assert.AreEqual(expectedValue, newValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void MissingSourceVariableTest()
         {
             string variableName = "isMatch";
@@ -104,10 +115,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RegexMatchMacro macro = new();
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
 
-            Assert.False(variables.ContainsKey(variableName));
+            Assert.IsFalse(variables.ContainsKey(variableName));
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingSource()
         {
             RegexMatchMacro macro = new();
@@ -118,11 +129,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regexMatch", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'regexMatch' should have 'source' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regexMatch", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'regexMatch' should have 'source' property defined.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingPattern()
         {
             RegexMatchMacro macro = new();
@@ -133,11 +144,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regexMatch", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'regexMatch' should have 'pattern' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regexMatch", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'regexMatch' should have 'pattern' property defined.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_InvalidPattern()
         {
             RegexMatchMacro macro = new();
@@ -149,8 +160,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regexMatch", jsonParameters)));
-            Assert.Equal("Generated symbol 'test': the regex pattern '(()' is invalid.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regexMatch", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test': the regex pattern '(()' is invalid.", ex.Message);
         }
 
     }

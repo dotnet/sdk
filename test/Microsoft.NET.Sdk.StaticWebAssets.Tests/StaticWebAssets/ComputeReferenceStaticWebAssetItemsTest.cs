@@ -3,15 +3,22 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
+    [DoNotParallelize]
+    [TestClass]
     public class ComputeReferenceStaticWebAssetItemsTest
     {
-        [Fact]
+        [TestMethod]
         public void IncludesAssetsFromCurrentProjectAsReferencedAssets()
         {
             var errorMessages = new List<string>();
@@ -37,7 +44,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void IncludesPatternsFromCurrentProject()
         {
             var errorMessages = new List<string>();
@@ -63,7 +70,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.DiscoveryPatterns.Should().HaveCount(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void FiltersPatternsFromReferencedProjects()
         {
             var errorMessages = new List<string>();
@@ -89,7 +96,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.DiscoveryPatterns.Should().HaveCount(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void PrefersSpecificKindAssetsOverAllKindAssets()
         {
             var errorMessages = new List<string>();
@@ -120,7 +127,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[0].ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.other.js")));
         }
 
-        [Fact]
+        [TestMethod]
         public void AllAssetGetsIgnoredWhenBuildAndPublishAssetsAreDefined()
         {
             var errorMessages = new List<string>();
@@ -152,9 +159,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[0].ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.other.js")));
         }
 
-        [Theory]
-        [InlineData("Build", "Publish")]
-        [InlineData("Publish", "Build")]
+        [TestMethod]
+        [DataRow("Build", "Publish")]
+        [DataRow("Publish", "Build")]
         public void FiltersAssetsForOppositeKind(string assetKind, string manifestKind)
         {
             var errorMessages = new List<string>();
@@ -180,7 +187,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void FiltersCurrentProjectOnlyAssetsInDefaultMode()
         {
             var errorMessages = new List<string>();
@@ -206,7 +213,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void IncludesReferenceAssetsInDefaultMode()
         {
             var errorMessages = new List<string>();
@@ -232,7 +239,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void IncludesCurrentProjectAssetsInRootMode()
         {
             var errorMessages = new List<string>();
@@ -258,7 +265,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void FiltersReferenceOnlyAssetsInRootMode()
         {
             var errorMessages = new List<string>();
@@ -284,7 +291,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void FiltersAssetsFromOtherProjects()
         {
             var errorMessages = new List<string>();
@@ -310,7 +317,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void FiltersAssetsFromPackages()
         {
             var errorMessages = new List<string>();
@@ -336,7 +343,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void AppliesFrameworkPatternToDiscoveredAssets()
         {
             var errorMessages = new List<string>();
@@ -369,7 +376,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[1].GetMetadata("SourceType").Should().Be("Project");
         }
 
-        [Fact]
+        [TestMethod]
         public void FrameworkPatternDoesNotAffectNonDiscoveredAssets()
         {
             var errorMessages = new List<string>();
@@ -398,7 +405,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[0].GetMetadata("SourceType").Should().Be("Project");
         }
 
-        [Fact]
+        [TestMethod]
         public void PreservesAssetGroupsOnFrameworkAssets()
         {
             var errorMessages = new List<string>();
@@ -431,7 +438,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[0].GetMetadata("AssetGroups").Should().Be("MyGroup");
         }
 
-        [Fact]
+        [TestMethod]
         public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectoryNotProcessCurrentDirectory()
         {
             var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ComputeReferenceStaticWebAssetItemsTest), Guid.NewGuid().ToString("N"));

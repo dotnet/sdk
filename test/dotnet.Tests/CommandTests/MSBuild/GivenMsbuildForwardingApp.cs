@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,13 +7,15 @@ using Microsoft.DotNet.Cli.Commands.MSBuild;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
+    [TestClass]
     public class GivenMsbuildForwardingApp : SdkTest
     {
-        public GivenMsbuildForwardingApp(ITestOutputHelper log) : base(log)
+        public GivenMsbuildForwardingApp()
         {
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void DotnetExeIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
@@ -21,7 +23,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet.exe");
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void DotnetIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
@@ -29,10 +32,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet");
         }
 
-        [Theory]
-        [InlineData("MSBuildExtensionsPath")]
-        [InlineData("MSBuildSDKsPath")]
-        [InlineData("DOTNET_CLI_TELEMETRY_SESSIONID")]
+        [TestMethod]
+        [DataRow("MSBuildExtensionsPath")]
+        [DataRow("MSBuildSDKsPath")]
+        [DataRow("DOTNET_CLI_TELEMETRY_SESSIONID")]
         public void ItSetsEnvironmentalVariables(string envVarName)
         {
             var msbuildPath = "<msbuildpath>";
@@ -40,7 +43,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             startInfo.Environment.ContainsKey(envVarName).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsMSBuildExtensionPathToExistingPath()
         {
             var msbuildPath = "<msbuildpath>";
@@ -52,7 +55,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsMSBuildSDKsPathToExistingPath()
         {
             var msbuildPath = "<msbuildpath>";
@@ -64,7 +67,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsOrIgnoresTelemetrySessionId()
         {
             var msbuildPath = "<msbuildpath>";
@@ -85,7 +88,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotSetCurrentWorkingDirectory()
         {
             var msbuildPath = "<msbuildpath>";

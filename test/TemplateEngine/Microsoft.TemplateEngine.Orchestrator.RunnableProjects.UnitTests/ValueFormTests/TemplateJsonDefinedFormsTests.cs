@@ -11,21 +11,25 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
-    public class TemplateJsonDefinedFormsTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class TemplateJsonDefinedFormsTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        public TemplateJsonDefinedFormsTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
         public void UnknownFormNameOnParameterSymbolDoesNotThrow()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             TemplateConfigModel model = new("TestTemplate")
             {
@@ -42,35 +46,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
             using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             using RunnableProjectConfig runConfig = new RunnableProjectConfig(environmentSettings, new RunnableProjectGenerator(), model, mountPoint.Root);
+            GlobalRunConfig? globalRunConfig = runConfig.GlobalOperationConfig;
 
-            GlobalRunConfig? globalRunConfig = null;
-            try
-            {
-                globalRunConfig = runConfig.GlobalOperationConfig;
-            }
-            catch
-            {
-                Assert.Fail("Should not throw on unknown value form name");
-            }
-
-            Assert.NotNull(runConfig);
-            Assert.Equal(1, globalRunConfig.Macros.Count(m => m.VariableName.StartsWith("mySymbol")));
+            Assert.IsNotNull(runConfig);
+            Assert.ContainsSingle(globalRunConfig.Macros.Where(m => m.VariableName.StartsWith("mySymbol")));
             IMacroConfig mySymbolMacro = globalRunConfig.Macros.Single(m => m.VariableName.StartsWith("mySymbol"));
 
-            Assert.True(mySymbolMacro is ProcessValueFormMacroConfig);
+            Assert.IsTrue(mySymbolMacro is ProcessValueFormMacroConfig);
             ProcessValueFormMacroConfig? identityFormConfig = mySymbolMacro as ProcessValueFormMacroConfig;
-            Assert.NotNull(identityFormConfig);
-            Assert.Equal("identity", identityFormConfig.Form.Identifier);
+            Assert.IsNotNull(identityFormConfig);
+            Assert.AreEqual("identity", identityFormConfig.Form.Identifier);
 
-            Assert.Equal("The symbol 'mySymbol': unable to find a form 'fakeName', the further processing of the symbol will be skipped.", loggedMessages.Single(m => m.Level == LogLevel.Warning).Message);
+            Assert.AreEqual("The symbol 'mySymbol': unable to find a form 'fakeName', the further processing of the symbol will be skipped.", loggedMessages.Single(m => m.Level == LogLevel.Warning).Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void UnknownFormNameForDerivedSymbolValueDoesThrow()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             TemplateConfigModel model = new("TestTemplate")
             {
@@ -86,20 +81,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
             using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             using RunnableProjectConfig runConfig = new RunnableProjectConfig(environmentSettings, new RunnableProjectGenerator(), model, mountPoint.Root);
+            GlobalRunConfig? globalRunConfig = runConfig.GlobalOperationConfig;
 
-            GlobalRunConfig? globalRunConfig = null;
-            try
-            {
-                globalRunConfig = runConfig.GlobalOperationConfig;
-            }
-            catch
-            {
-                Assert.Fail("Should not throw on unknown value form name");
-            }
+            Assert.IsNotNull(runConfig);
 
-            Assert.NotNull(runConfig);
-
-            Assert.Equal("The symbol 'myDerivedSym': unable to find a form 'fakeForm', the further processing of the symbol will be skipped.", loggedMessages.Single(m => m.Level == LogLevel.Warning).Message);
+            Assert.AreEqual("The symbol 'myDerivedSym': unable to find a form 'fakeForm', the further processing of the symbol will be skipped.", loggedMessages.Single(m => m.Level == LogLevel.Warning).Message);
         }
     }
 }

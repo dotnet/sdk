@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <PackageId>Microsoft.NET.Sdk</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
   </PropertyGroup>

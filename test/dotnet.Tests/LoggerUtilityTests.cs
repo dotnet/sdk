@@ -6,59 +6,99 @@ using Microsoft.DotNet.Cli.Commands.Test;
 
 namespace dotnet.Tests
 {
+    [TestClass]
     public class LoggerUtilityTests
     {
-        [Theory]
-        [InlineData("-tl")]
-        [InlineData("--tl")]
-        [InlineData("/tl")]
-        [InlineData("-tl:off")]
-        [InlineData("--tl:off")]
-        [InlineData("/tl:on")]
-        [InlineData("-TL:Off")]
-        [InlineData("-terminallogger")]
-        [InlineData("--terminalLogger")]
-        [InlineData("/terminallogger")]
-        [InlineData("-terminallogger:auto")]
-        [InlineData("--TerminalLogger:on")]
-        [InlineData("-ll")]
-        [InlineData("--ll:off")]
-        [InlineData("/ll")]
-        [InlineData("-livelogger")]
-        [InlineData("--livelogger:off")]
-        [InlineData("-tlp:default=true")]
-        [InlineData("--tlp:default=auto")]
-        [InlineData("/tlp:DISABLENODEDISPLAY")]
-        [InlineData("-terminalloggerparameters:default=true")]
-        [InlineData("--terminalLoggerParameters:default=true")]
+        [TestMethod]
+        [DataRow("-tl", "-tl:auto")]
+        [DataRow("/tl", "/tl:auto")]
+        [DataRow("--terminalLogger", "--terminalLogger:auto")]
+        [DataRow("-tl:off", "-tl:off")]
+        [DataRow("-TL:off", "-TL:off")]
+        [DataRow("/tl:off", "/tl:off")]
+        [DataRow("--terminalLogger:off", "--terminalLogger:off")]
+        [DataRow("-tlp:verbosity=quiet", "-tlp:verbosity=quiet")]
+        [DataRow("/tlp:DISABLENODEDISPLAY", "/tlp:DISABLENODEDISPLAY")]
+        [DataRow("--terminalLoggerParameters:verbosity=quiet", "--terminalLoggerParameters:verbosity=quiet")]
+        [DataRow("-clp:NoSummary", "-clp:NoSummary")]
+        [DataRow("--consoleLoggerParameters:NoSummary", "--consoleLoggerParameters:NoSummary")]
+        [DataRow("-noconsolelogger", "-noconsolelogger")]
+        [DataRow("-noConsoleLogger", "-noConsoleLogger")]
+        [DataRow("/noconsolelogger", "/noconsolelogger")]
+        public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
+        {
+            LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
+
+            loggerArgs.Should().Equal(expectedArg);
+            nonLoggerArgs.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("-tl:invalid")]
+        [DataRow("-tlp")]
+        [DataRow("-clp")]
+        [DataRow("-noconsolelogger:false")]
+        [DataRow("--noconsolelogger")]
+        [DataRow("--unknownLogger:off")]
+        public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
+        {
+            LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
+
+            loggerArgs.Should().BeEmpty();
+            nonLoggerArgs.Should().Equal(arg);
+        }
+
+        [TestMethod]
+        [DataRow("-tl")]
+        [DataRow("--tl")]
+        [DataRow("/tl")]
+        [DataRow("-tl:off")]
+        [DataRow("--tl:off")]
+        [DataRow("/tl:on")]
+        [DataRow("-TL:Off")]
+        [DataRow("-terminallogger")]
+        [DataRow("--terminalLogger")]
+        [DataRow("/terminallogger")]
+        [DataRow("-terminallogger:auto")]
+        [DataRow("--TerminalLogger:on")]
+        [DataRow("-ll")]
+        [DataRow("--ll:off")]
+        [DataRow("/ll")]
+        [DataRow("-livelogger")]
+        [DataRow("--livelogger:off")]
+        [DataRow("-tlp:default=true")]
+        [DataRow("--tlp:default=auto")]
+        [DataRow("/tlp:DISABLENODEDISPLAY")]
+        [DataRow("-terminalloggerparameters:default=true")]
+        [DataRow("--terminalLoggerParameters:default=true")]
         public void IsTerminalLoggerArgument_RecognizesTerminalLoggerArguments(string arg)
         {
             LoggerUtility.IsTerminalLoggerArgument(arg).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData("--no-build")]
-        [InlineData("-bl")]
-        [InlineData("--binaryLogger")]
-        [InlineData("-bl:foo.binlog")]
-        [InlineData("-tlapropertythatstartslikethis")]
-        [InlineData("--tlpwithnocolon")]
-        [InlineData("--terminallogger-something")]
-        [InlineData("-llextra")]
-        [InlineData("foo.csproj")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("--no-build")]
+        [DataRow("-bl")]
+        [DataRow("--binaryLogger")]
+        [DataRow("-bl:foo.binlog")]
+        [DataRow("-tlapropertythatstartslikethis")]
+        [DataRow("--tlpwithnocolon")]
+        [DataRow("--terminallogger-something")]
+        [DataRow("-llextra")]
+        [DataRow("foo.csproj")]
+        [DataRow("")]
         public void IsTerminalLoggerArgument_RejectsNonTerminalLoggerArguments(string arg)
         {
             LoggerUtility.IsTerminalLoggerArgument(arg).Should().BeFalse();
         }
 
-        [Theory]
-        [InlineData("--tl:off")]
-        [InlineData("--terminalLogger:auto")]
-        [InlineData("--tlp:default=true")]
-        [InlineData("/tl:off")]
-        [InlineData("/terminalLogger:auto")]
-        [InlineData("/tlp:default=true")]
+        [TestMethod]
+        [DataRow("--tl:off")]
+        [DataRow("--terminalLogger:auto")]
+        [DataRow("--tlp:default=true")]
+        [DataRow("/tl:off")]
+        [DataRow("/terminalLogger:auto")]
+        [DataRow("/tlp:default=true")]
         public void GetBuildOptions_ForwardsTerminalLoggerArgsToMSBuild_NotToTestApplication(string terminalLoggerArg)
         {
             // Parse a `dotnet test` command line that includes a terminal logger argument
@@ -75,7 +115,7 @@ namespace dotnet.Tests
                 "terminal logger arguments must not be passed to the test application, which doesn't recognize them.");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetBuildOptions_LeavesUnknownArgumentsAsTestApplicationArguments()
         {
             var mtpCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
@@ -87,7 +127,7 @@ namespace dotnet.Tests
             buildOptions.MSBuildArgs.Should().NotContain("--my-test-arg");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetBuildOptions_ExtractsTerminalLoggerArgs_BeforePositionalArgumentDetection()
         {
             // Regression test: verify that interspersing terminal logger args with positional arguments

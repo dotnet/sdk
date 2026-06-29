@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -14,6 +14,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.OneDeploy.Tests;
 /// <summary>
 /// Unit Tests for <see cref="OneDeploy"/>
 /// </summary>
+[TestClass]
 public partial class OneDeployTests
 {
     private const string Username = "someUser";
@@ -48,19 +49,19 @@ public partial class OneDeployTests
         }
     }
 
-    [Theory]
-    [InlineData(DeploymentStatus.Success, HttpStatusCode.OK, true)]
-    [InlineData(DeploymentStatus.Success, HttpStatusCode.Accepted, true)]
-    [InlineData(DeploymentStatus.PartialSuccess, HttpStatusCode.OK, true)]
-    [InlineData(DeploymentStatus.PartialSuccess, HttpStatusCode.Accepted, true)]
-    [InlineData(DeploymentStatus.Failed, HttpStatusCode.OK, false)]
-    [InlineData(DeploymentStatus.Failed, HttpStatusCode.Accepted, false)]
-    [InlineData(DeploymentStatus.Conflict, HttpStatusCode.OK, false)]
-    [InlineData(DeploymentStatus.Conflict, HttpStatusCode.Accepted, false)]
-    [InlineData(DeploymentStatus.Cancelled, HttpStatusCode.OK, false)]
-    [InlineData(DeploymentStatus.Cancelled, HttpStatusCode.Accepted, false)]
-    [InlineData(DeploymentStatus.Unknown, HttpStatusCode.OK, false)]
-    [InlineData(DeploymentStatus.Unknown, HttpStatusCode.Accepted, false)]
+    [TestMethod]
+    [DataRow(DeploymentStatus.Success, HttpStatusCode.OK, true)]
+    [DataRow(DeploymentStatus.Success, HttpStatusCode.Accepted, true)]
+    [DataRow(DeploymentStatus.PartialSuccess, HttpStatusCode.OK, true)]
+    [DataRow(DeploymentStatus.PartialSuccess, HttpStatusCode.Accepted, true)]
+    [DataRow(DeploymentStatus.Failed, HttpStatusCode.OK, false)]
+    [DataRow(DeploymentStatus.Failed, HttpStatusCode.Accepted, false)]
+    [DataRow(DeploymentStatus.Conflict, HttpStatusCode.OK, false)]
+    [DataRow(DeploymentStatus.Conflict, HttpStatusCode.Accepted, false)]
+    [DataRow(DeploymentStatus.Cancelled, HttpStatusCode.OK, false)]
+    [DataRow(DeploymentStatus.Cancelled, HttpStatusCode.Accepted, false)]
+    [DataRow(DeploymentStatus.Unknown, HttpStatusCode.OK, false)]
+    [DataRow(DeploymentStatus.Unknown, HttpStatusCode.Accepted, false)]
 
     public async Task OneDeploy_Execute_Completes(DeploymentStatus deployStatus, HttpStatusCode statusCode, bool expectedResult)
     {
@@ -91,16 +92,16 @@ public partial class OneDeployTests
             FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation runs to completion with expected result
-        Assert.Equal(expectedResult, result);
+        Assert.AreEqual(expectedResult, result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
         taskLoggerMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData("not-a-location-url")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("not-a-location-url")]
+    [DataRow(null)]
     public async Task OneDeploy_Execute_Deploy_Location_Missing(string invalidLocationHeaderValue)
     {
         // Arrange
@@ -134,18 +135,18 @@ public partial class OneDeployTests
             FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation runs to completion, without polling the deployment because 'Location' header was not found in response
-        Assert.True(result);
+        Assert.IsTrue(result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
         taskLoggerMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData(HttpStatusCode.Forbidden)]
-    [InlineData(HttpStatusCode.NotFound)]
-    [InlineData(HttpStatusCode.RequestTimeout)]
-    [InlineData(HttpStatusCode.InternalServerError)]
+    [TestMethod]
+    [DataRow(HttpStatusCode.Forbidden)]
+    [DataRow(HttpStatusCode.NotFound)]
+    [DataRow(HttpStatusCode.RequestTimeout)]
+    [DataRow(HttpStatusCode.InternalServerError)]
     public async Task OneDeploy_Execute_HttpResponse_Fail(HttpStatusCode statusCode)
     {
         // Arrange
@@ -165,17 +166,17 @@ public partial class OneDeployTests
             FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because HTTP POST request to upload the package returns a failed HTTP Response
-        Assert.False(result);
+        Assert.IsFalse(result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
         taskLoggerMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData("not-valid-url")]
-    [InlineData("")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("not-valid-url")]
+    [DataRow("")]
+    [DataRow(null)]
     public async Task OneDeploy_Execute_PublishUrl_Invalid(string invalidUrl)
     {
         // Arrange
@@ -194,17 +195,17 @@ public partial class OneDeployTests
             FileToPublish, Username, NotShareableValue, invalidUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because 'PublishUrl' is not valid
-        Assert.False(result);
+        Assert.IsFalse(result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
         taskLoggerMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData("z:\\Missing\\Directory\\File")]
-    [InlineData("")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("z:\\Missing\\Directory\\File")]
+    [DataRow("")]
+    [DataRow(null)]
     public async Task OneDeploy_Execute_FileToPublish_Missing(string invalidFileToPublish)
     {
         // Arrange
@@ -223,18 +224,18 @@ public partial class OneDeployTests
             invalidFileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", webjobName: null, webjobType: null, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because 'FileToPublishPath' is not valid
-        Assert.False(result);
+        Assert.IsFalse(result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
         taskLoggerMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData(Username, "")]
-    [InlineData(Username, null)]
-    [InlineData("", "")]
-    [InlineData(null, null)]
+    [TestMethod]
+    [DataRow(Username, "")]
+    [DataRow(Username, null)]
+    [DataRow("", "")]
+    [DataRow(null, null)]
     public async Task OneDeploy_Execute_Credentials_Missing_Args(string invalidUsername, string invalidPassword)
     {
         // Arrange
@@ -254,14 +255,14 @@ public partial class OneDeployTests
 
         // Assert: deployment operation fails because 'Username' and/or 'Password' is
         // not valid nor the could be retrieved from Task HostObject
-        Assert.False(result);
+        Assert.IsFalse(result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
         taskLoggerMock.VerifyAll();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task OneDeploy_Execute_Credentials_From_TaskHostObject()
     {
         // Arrange
@@ -287,7 +288,7 @@ public partial class OneDeployTests
 
         // Assert: deployment operation runs to completion
         // obtaining the credentials from the Task HostObject
-        Assert.True(result);
+        Assert.IsTrue(result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
@@ -321,13 +322,13 @@ public partial class OneDeployTests
         return httpClientMock;
     }
 
-    [Fact]
+    [TestMethod]
     public void Constructor_OK()
     {
         var oneDeploy = new OneDeploy();
 
         // no-arg ctor (as invoked by MSBuild) instantiate instance
-        Assert.NotNull(oneDeploy);
+        Assert.IsNotNull(oneDeploy);
     }
 
     private Mock<IDeploymentStatusService<DeploymentResponse>> GetDeploymentStatusServiceMock(

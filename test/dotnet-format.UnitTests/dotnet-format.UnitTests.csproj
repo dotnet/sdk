@@ -8,7 +8,8 @@
     <RollForward>LatestMajor</RollForward>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);binaries\**;projects\**</DefaultExcludesInProjectFolder>
-    <MSTestParallelizeScope></MSTestParallelizeScope>
+    <!-- Tests rely on global process state, so run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
