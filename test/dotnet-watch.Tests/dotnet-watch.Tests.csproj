@@ -15,6 +15,7 @@
     <Using Include="Microsoft.NET.TestFramework.Commands" />
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
     <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Include="Combinatorial.MSTest" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
@@ -36,6 +37,7 @@
     <PackageReference Include="Microsoft.Build.Locator" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Spectre.Console.Testing" />
+    <PackageReference Include="Combinatorial.MSTest" />
     <!-- Microsoft.NET.TestFramework (xUnit v3 based, pulled in transitively for TestAsset/App helpers
          via Microsoft.DotNet.HotReload.Test.Utilities) needs the xUnit v3 runtime at execution time.
          The transitive reference is ExcludeAssets="Runtime", so reference the v3 runtime directly to

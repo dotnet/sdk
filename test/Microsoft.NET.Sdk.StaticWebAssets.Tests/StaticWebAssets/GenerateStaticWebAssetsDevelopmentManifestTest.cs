@@ -8,7 +8,6 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
@@ -28,11 +27,14 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
                 .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
 
+            var manifestDirectory = Path.Combine(AppContext.BaseDirectory, nameof(SkipsManifestGenerationWhen_ThereAreNoAssetsNorDiscoveryPatterns), Guid.NewGuid().ToString("N"));
             var task = new GenerateStaticWebAssetsDevelopmentManifest()
             {
                 BuildEngine = buildEngine.Object,
                 Assets = Array.Empty<ITaskItem>(),
-                DiscoveryPatterns = Array.Empty<ITaskItem>()
+                DiscoveryPatterns = Array.Empty<ITaskItem>(),
+                ManifestPath = Path.Combine(manifestDirectory, "staticwebassets.development.json"),
+                CacheFilePath = Path.Combine(manifestDirectory, "staticwebassets.build.cache.json")
             };
 
             // Act
