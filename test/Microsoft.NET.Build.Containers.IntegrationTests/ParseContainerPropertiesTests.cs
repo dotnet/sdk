@@ -7,10 +7,11 @@ using static Microsoft.NET.Build.Containers.KnownStrings.Properties;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
-[Collection(nameof(MSBuildCollection))]
+[TestClass]
+[DoNotParallelize]
 public class ParseContainerPropertiesTests
 {
-    [Fact]
+    [TestMethod]
     public void Baseline()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new()
@@ -22,18 +23,18 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.True(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.IsTrue(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
 
-        Assert.Equal("mcr.microsoft.com", instance.GetPropertyValue(ContainerBaseRegistry));
-        Assert.Equal("dotnet/runtime", instance.GetPropertyValue(ContainerBaseName));
-        Assert.Equal("7.0", instance.GetPropertyValue(ContainerBaseTag));
+        Assert.AreEqual("mcr.microsoft.com", instance.GetPropertyValue(ContainerBaseRegistry));
+        Assert.AreEqual("dotnet/runtime", instance.GetPropertyValue(ContainerBaseName));
+        Assert.AreEqual("7.0", instance.GetPropertyValue(ContainerBaseTag));
 
-        Assert.Equal("dotnet/testimage", instance.GetPropertyValue(ContainerRepository));
+        Assert.AreEqual("dotnet/testimage", instance.GetPropertyValue(ContainerRepository));
         instance.GetItems(ContainerImageTags).Select(i => i.EvaluatedInclude).ToArray().Should().BeEquivalentTo(new[] { "7.0", "latest" });
         instance.GetItems("ProjectCapability").Select(i => i.EvaluatedInclude).ToArray().Should().BeEquivalentTo(new[] { "NetSdkOCIImageBuild" });
     }
 
-    [Fact]
+    [TestMethod]
     public void SpacesGetReplacedWithDashes()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new()
@@ -43,14 +44,14 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.True(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.IsTrue(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
 
-        Assert.Equal("mcr.microsoft.com", instance.GetPropertyValue(ContainerBaseRegistry));
-        Assert.Equal("dotnet-runtime", instance.GetPropertyValue(ContainerBaseName));
-        Assert.Equal("7.0", instance.GetPropertyValue(ContainerBaseTag));
+        Assert.AreEqual("mcr.microsoft.com", instance.GetPropertyValue(ContainerBaseRegistry));
+        Assert.AreEqual("dotnet-runtime", instance.GetPropertyValue(ContainerBaseName));
+        Assert.AreEqual("7.0", instance.GetPropertyValue(ContainerBaseTag));
     }
 
-    [Fact]
+    [TestMethod]
     public void RegexCatchesInvalidContainerNames()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new()
@@ -62,11 +63,11 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.True(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
-        Assert.Contains(logs.Messages, m => m.Message?.Contains("'dotnet testimage' was not a valid container image name, it was normalized to 'dotnet-testimage'") == true);
+        Assert.IsTrue(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.Contains(m => m.Message?.Contains("'dotnet testimage' was not a valid container image name, it was normalized to 'dotnet-testimage'") == true, logs.Messages);
     }
 
-    [Fact]
+    [TestMethod]
     public void RegexCatchesInvalidContainerTags()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new()
@@ -78,13 +79,13 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.IsFalse(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
 
-        Assert.True(logs.Errors.Count > 0);
-        Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2007);
+        Assert.IsNotEmpty(logs.Errors);
+        Assert.AreEqual(logs.Errors[0].Code, ErrorCodes.CONTAINER2007);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanOnlySupplyOneOfTagAndTags()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new()
@@ -97,13 +98,13 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.IsFalse(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
 
-        Assert.True(logs.Errors.Count > 0);
-        Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2008);
+        Assert.IsNotEmpty(logs.Errors);
+        Assert.AreEqual(logs.Errors[0].Code, ErrorCodes.CONTAINER2008);
     }
 
-    [Fact]
+    [TestMethod]
     public void InvalidTagsThrowError()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new()
@@ -114,13 +115,13 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.IsFalse(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
 
-        Assert.True(logs.Errors.Count > 0);
-        Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2010);
+        Assert.IsNotEmpty(logs.Errors);
+        Assert.AreEqual(logs.Errors[0].Code, ErrorCodes.CONTAINER2010);
     }
 
-    [Fact]
+    [TestMethod]
     public void FailsOnCompletelyInvalidRepositoryNames()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new()
@@ -132,13 +133,13 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.IsFalse(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
 
-        Assert.True(logs.Errors.Count > 0);
-        Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2005);
+        Assert.IsNotEmpty(logs.Errors);
+        Assert.AreEqual(logs.Errors[0].Code, ErrorCodes.CONTAINER2005);
     }
 
-    [Fact]
+    [TestMethod]
     public void FailsWhenFirstCharIsAUnicodeLetterButNonLatin()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new()
@@ -150,9 +151,9 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.IsFalse(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
 
-        Assert.True(logs.Errors.Count > 0);
-        Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2005);
+        Assert.IsNotEmpty(logs.Errors);
+        Assert.AreEqual(logs.Errors[0].Code, ErrorCodes.CONTAINER2005);
     }
 }
