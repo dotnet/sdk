@@ -405,7 +405,10 @@ extends:
                       isAllowParam   = $true
                     }
                   }
-                  $body = ConvertTo-Json -Depth 5 -AsArray @(
+                  # The Redirection API /bulk endpoint expects a top-level JSON array of links. The
+                  # input is already a two-element array, so do NOT use -AsArray here (it would wrap
+                  # the collection again and produce a nested [[ ... ]], which the API rejects).
+                  $body = ConvertTo-Json -Depth 5 @(
                     (New-Link $shortUrl    $searchCacheUrl      'dotnet templating search cache (published via ESRP)'),
                     (New-Link $nonShortUrl $nonTemplatePacksUrl 'dotnet templating non-template packs (published via ESRP)')
                   )
