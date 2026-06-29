@@ -1340,7 +1340,7 @@
     {
       "id": "f4a5b6c7-d8e9-4f01-a234-56789abcdef0",
       "title": "Failures Outside Any Command",
-      "description": "Invocations where the root row carries an error but no child command rolled up to it. Captures parser-validation failures, FirstRunNotice throws, and anything else that escaped CommandBase entirely. Without this tile these rows are invisible because the per-command success tiles never see them.",
+      "description": "Root rows with an error but no command.name. Includes true outside-command failures, plus command failures whose error.* tags propagated to root without command.name.",
       "visualType": "table",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1428,7 +1428,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupRoot\n| where is_outside_command_failure\n| summarize Count = count() by error_type, error_category\n| order by Count desc",
+      "text": "_dotnetupRoot\n| where is_outside_command_failure\n| summarize Count = count(), LastSeen = max(TimeGenerated) by version, error_type, error_category\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, Count desc\n| project Version = iif(isempty(version), \"(unknown)\", version), ErrorType = error_type, ErrorCategory = error_category, Count, LastSeen",
       "usedVariables": [
         "_dotnetupRoot"
       ]
