@@ -103,7 +103,7 @@ internal static class ContainerBuilder
             logger.LogError(Resource.FormatString(nameof(Strings.BaseImageNotFound), sourceImageReference, containerRuntimeIdentifier));
             return 1;
         }
-        logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
+        logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageTags), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
 
         // forcibly change the media type if required
