@@ -5,6 +5,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests

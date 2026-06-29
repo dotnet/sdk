@@ -511,6 +511,10 @@ public class FileWatcherTests
             ],
             usePolling,
             watchSubdirectories: true,
-            () => Directory.Delete(subdir, recursive: true));
+            () => Directory.Delete(subdir, recursive: true),
+            // Restrict to the watched files so the macOS event replay (which intermittently includes a
+            // directory-level "subdir" Add event) doesn't displace one of the expected file events and
+            // make the test flaky.
+            watchedFileNames: ["foo1", "foo2", "foo3"]);
     }
 }

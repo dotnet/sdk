@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal static class PipeUtilities
 {
-    public static async Task<IReadOnlyList<WatchStatusEvent>> ReadStatusEventsAsync(string pipeName, CancellationToken cancellationToken)
+    public static async Task<IReadOnlyList<WatchStatusEvent>> ReadStatusEventsAsync(string pipeName, int expectedEventCount, CancellationToken cancellationToken)
     {
         var lines = new List<WatchStatusEvent>();
 
@@ -20,7 +20,10 @@ internal static class PipeUtilities
 
         try
         {
-            while (!cancellationToken.IsCancellationRequested)
+            // Read until we have observed the expected number of events. The status events are delivered
+            // over a separate pipe from the server's output, so stopping based on output (instead of the
+            // event count) races with delivery and can drop trailing events.
+            while (lines.Count < expectedEventCount && !cancellationToken.IsCancellationRequested)
             {
                 var line = await reader.ReadLineAsync(cancellationToken);
                 if (line == null)
