@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.Utils;
+using VerifyTests;
 using VerifyTests.DiffPlex;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
@@ -31,13 +32,30 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         private readonly ICommandRunner _commandRunner = new CommandRunner();
         private readonly IPhysicalFileSystemEx _fileSystem = new PhysicalFileSystemEx();
 
-        // Pluggable directory verifier used to run the snapshot verification. Defaults to the xUnit (v3) Verify
-        // adapter this tool is compiled against. Consumers running under a different test framework (e.g. MSTest)
-        // override this so verification is dispatched to that framework's Verify adapter; this is required for the
-        // ambient test context (used by Verify to resolve the running test) to be discovered under that framework.
-        // Signature mirrors Verifier.VerifyDirectory(path, include, pattern, options, settings, info, fileScrubber, sourceFile).
-        internal static Func<string, Func<string, bool>?, string?, EnumerationOptions?, VerifySettings?, object?, FileScrubber?, string, SettingsTask> DirectoryVerifier { get; set; }
-            = Verifier.VerifyDirectory;
+        /// <summary>
+        /// Signature of a Verify directory-verification entry point. This intentionally mirrors the
+        /// shape of <c>VerifyXunit.Verifier.VerifyDirectory</c> and <c>VerifyMSTest.Verifier.VerifyDirectory</c>
+        /// so that either can be assigned directly as a method group.
+        /// </summary>
+        public delegate SettingsTask VerifyDirectoryDelegate(
+            string path,
+            Func<string, bool>? include,
+            string? pattern,
+            EnumerationOptions? options,
+            VerifySettings? settings,
+            object? info,
+            FileScrubber? fileScrubber,
+            string sourceFile);
+
+        /// <summary>
+        /// Optional override for the test-framework-specific Verify directory verifier.
+        /// When unset, the built-in xUnit (v3) verifier is used. Consumers running under a different
+        /// test framework (for example MSTest) can set this to that framework's
+        /// <c>Verifier.VerifyDirectory</c> so snapshot verification resolves the ambient test context
+        /// of the active framework rather than xUnit's (which would otherwise be unavailable and fail
+        /// with <c>TestContext.TestMethod is null</c>).
+        /// </summary>
+        public static VerifyDirectoryDelegate? DirectoryVerifier { get; set; }
 
         public VerificationEngine(ILogger logger)
         {
@@ -247,20 +265,37 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 return includeGlobs.Any(g => g.IsMatch(relativePath)) && !excludeGlobs.Any(g => g.IsMatch(relativePath));
             };
 
-            return DirectoryVerifier(
+            VerifyDirectoryDelegate verifyDirectory = DirectoryVerifier ?? DefaultVerifyDirectory;
+
+            return verifyDirectory(
                 callerInfo.ContentDirectory,
                 include,
-                null,
-                null,
-                verifySettings,
-                null,
-                ExtractFileScrubber(options, callerInfo.ContentDirectory, fileSystem),
+                pattern: null,
+                options: null,
+                settings: verifySettings,
                 // Need to overwrite arg with CallerFileAttribute as this assembly is compiled on possibly different OS, than
                 //  the actual caller of the API.
                 //  The info is not used in any output paths of Verify (as we inject custom naming), but it is transformed via
                 //  Path utilities and checked for non-null - which can break in case of usage on different OS than was the built time one
-                callerInfo.CallerSourceFile);
+                info: null,
+                fileScrubber: ExtractFileScrubber(options, callerInfo.ContentDirectory, fileSystem),
+                sourceFile: callerInfo.CallerSourceFile);
         }
+
+        // Kept in a separate, non-inlined method so that the reference to VerifyXunit.Verifier (and therefore
+        // the load of Verify.XunitV3) only happens when no framework-specific override has been supplied.
+        // When DirectoryVerifier is set (for example to the MSTest verifier) this method is never invoked.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static SettingsTask DefaultVerifyDirectory(
+            string path,
+            Func<string, bool>? include,
+            string? pattern,
+            EnumerationOptions? options,
+            VerifySettings? settings,
+            object? info,
+            FileScrubber? fileScrubber,
+            string sourceFile)
+            => VerifyXunit.Verifier.VerifyDirectory(path, include, pattern, options, settings, info, fileScrubber, sourceFile);
 
         private static FileScrubber? ExtractFileScrubber(TemplateVerifierOptions options, string contentDir, IPhysicalFileSystemEx fileSystem)
         {
