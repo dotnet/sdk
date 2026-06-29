@@ -302,9 +302,11 @@ extends:
                 AKAMS_CERT_VAULT: $(AkaMsCertVaultName)
                 AKAMS_CERT_SECRET: $(AkaMsCertSecretName)
 
-            # Authenticate as the aka.ms client app with the certificate and PUT both links. Run as a
-            # plain pwsh step (not AzureCLI@2) so our 'az login --service-principal' owns the az context;
-            # it is reverted in the finally block.
+            # Authenticate as the aka.ms client app with the certificate and PUT both links. The agent's
+            # key-vault certificate has a non-exportable private key, so we cannot emit a PEM for
+            # 'az login --certificate'. Instead we sign a client-assertion JWT directly with the
+            # certificate (which works with non-exportable CNG keys) and exchange it for a token, the
+            # same way MSAL/ClientCertificateCredential authenticates.
             - pwsh: |
                 $ErrorActionPreference = 'Stop'
                 $searchCacheUrl      = $env:SEARCH_CACHE_URL
@@ -321,13 +323,13 @@ extends:
                   if ([string]::IsNullOrWhiteSpace($required.Value)) { Write-Error "Required value '$($required.Key)' is empty."; exit 1 }
                 }
 
-                # The key vault certificate secret is a base64-encoded PKCS#12 (PFX). Decode it, load
-                # it, and re-emit it as a PEM (private key + certificate) for 'az login --certificate'.
+                # The key vault certificate secret is a base64-encoded PKCS#12 (PFX). Decode it and load
+                # it so we can sign a client-assertion JWT with its private key. The key may be
+                # non-exportable, so we never try to export it - signing alone is sufficient.
                 $b64Path = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.b64'
                 if (-not (Test-Path $b64Path)) { Write-Error "Certificate material '$b64Path' is missing; the fetch step did not run."; exit 1 }
                 $raw = (Get-Content -Raw $b64Path) -replace '\s', ''
                 $storageFlags = `
-                  [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable -bor `
                   [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet
                 try {
                   if ($raw -match '-----BEGIN') {
@@ -342,43 +344,52 @@ extends:
                 }
                 if (-not $cert.HasPrivateKey) { Write-Error 'The certificate does not contain a private key.'; exit 1 }
                 $rsa = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($cert)
-                if ($null -eq $rsa) { Write-Error 'The certificate does not contain an exportable RSA private key.'; exit 1 }
+                if ($null -eq $rsa) { Write-Error 'The certificate does not have an RSA private key.'; exit 1 }
 
-                # On Windows the private key is backed by CNG (RSACng), whose ExportPkcs8PrivateKey()
-                # throws "The requested operation is not supported" even for keys loaded as Exportable.
-                # CNG does allow exporting the raw parameters, so round-trip them through a fresh
-                # managed RSA instance, which supports PKCS#8 export, and use that for the PEM.
-                $rsaParameters = $rsa.ExportParameters($true)
-                $exportableRsa = [System.Security.Cryptography.RSA]::Create()
-                $exportableRsa.ImportParameters($rsaParameters)
-
-                function Format-Pem([byte[]] $bytes, [string] $label) {
-                  $text = [Convert]::ToBase64String($bytes)
-                  $sb = [System.Text.StringBuilder]::new()
-                  [void]$sb.AppendLine("-----BEGIN $label-----")
-                  for ($i = 0; $i -lt $text.Length; $i += 64) {
-                    [void]$sb.AppendLine($text.Substring($i, [Math]::Min(64, $text.Length - $i)))
-                  }
-                  [void]$sb.AppendLine("-----END $label-----")
-                  $sb.ToString()
+                function ConvertTo-Base64Url([byte[]] $bytes) {
+                  [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
                 }
-                $pemPath = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.pem'
-                (Format-Pem $exportableRsa.ExportPkcs8PrivateKey() 'PRIVATE KEY') + (Format-Pem $cert.RawData 'CERTIFICATE') |
-                  Set-Content -Path $pemPath -NoNewline
 
                 try {
-                  $azConfigDir = Join-Path $env:AGENT_TEMPDIRECTORY 'az-akams'
-                  New-Item -ItemType Directory -Force -Path $azConfigDir | Out-Null
-                  $env:AZURE_CONFIG_DIR = $azConfigDir
+                  # Build and sign a client-assertion JWT (RS256) with the certificate's private key.
+                  # Subject Name + Issuer (SNI) auth: include x5t (sha1 thumbprint) and x5c (the cert)
+                  # in the header so AAD accepts the first-party app's certificate by subject/issuer.
+                  $scope         = 'https://msazurecloud.onmicrosoft.com/RedirectionMgmtApi-Prod/.default'
+                  $tokenEndpoint = "https://login.microsoftonline.com/$authorityTenant/oauth2/v2.0/token"
+                  $now = [DateTimeOffset]::UtcNow
+                  $thumbprint = [System.Security.Cryptography.SHA1]::HashData($cert.RawData)
+                  $header = [ordered]@{
+                    alg = 'RS256'
+                    typ = 'JWT'
+                    x5t = (ConvertTo-Base64Url $thumbprint)
+                    x5c = @([Convert]::ToBase64String($cert.RawData))
+                  } | ConvertTo-Json -Compress
+                  $payload = [ordered]@{
+                    aud = $tokenEndpoint
+                    iss = $appId
+                    sub = $appId
+                    jti = [Guid]::NewGuid().ToString()
+                    nbf = $now.ToUnixTimeSeconds()
+                    exp = $now.AddMinutes(10).ToUnixTimeSeconds()
+                  } | ConvertTo-Json -Compress
+                  $unsigned = (ConvertTo-Base64Url ([Text.Encoding]::UTF8.GetBytes($header))) + '.' +
+                              (ConvertTo-Base64Url ([Text.Encoding]::UTF8.GetBytes($payload)))
+                  $signature = $rsa.SignData(
+                    [Text.Encoding]::ASCII.GetBytes($unsigned),
+                    [System.Security.Cryptography.HashAlgorithmName]::SHA256,
+                    [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)
+                  $assertion = $unsigned + '.' + (ConvertTo-Base64Url $signature)
 
-                  az login --service-principal --username $appId --tenant $authorityTenant `
-                    --certificate $pemPath --use-cert-sn-issuer --allow-no-subscriptions 1>$null
-                  if ($LASTEXITCODE -ne 0) { Write-Error 'az login with the aka.ms client certificate failed.'; exit 1 }
-
-                  $token = az account get-access-token `
-                    --scope 'https://msazurecloud.onmicrosoft.com/RedirectionMgmtApi-Prod/.default' `
-                    --query accessToken -o tsv
-                  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($token)) { Write-Error 'Failed to acquire the redirection API token.'; exit 1 }
+                  $tokenResponse = Invoke-RestMethod -Method Post -Uri $tokenEndpoint `
+                    -ContentType 'application/x-www-form-urlencoded' -Body @{
+                      client_id             = $appId
+                      scope                 = $scope
+                      grant_type            = 'client_credentials'
+                      client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+                      client_assertion      = $assertion
+                    }
+                  $token = $tokenResponse.access_token
+                  if ([string]::IsNullOrWhiteSpace($token)) { Write-Error 'Failed to acquire the redirection API token.'; exit 1 }
                   Write-Host "##vso[task.setsecret]$token"
 
                   $lastModifiedBy = $owners.Split(';')[0].Trim()
@@ -409,9 +420,7 @@ extends:
                   Write-Host "Redirection API status: $($resp.StatusCode)"
                 }
                 finally {
-                  az logout 2>$null | Out-Null
-                  Remove-Item -Force -Recurse -ErrorAction SilentlyContinue `
-                    $pemPath, $b64Path, $azConfigDir
+                  Remove-Item -Force -ErrorAction SilentlyContinue $b64Path
                 }
               displayName: Update aka.ms search cache links
               condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
