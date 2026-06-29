@@ -9,21 +9,16 @@ using System.IO;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    [CollectionDefinition(GivenAResolveAppHostsMultiThreading.CollectionName, DisableParallelization = true)]
-    public sealed class ResolveAppHostsCurrentDirectoryCollection
-    {
-    }
 
     /// <summary>
     /// Tests for ResolveAppHosts multi-threading support.
     /// Verifies TaskEnvironment-based path resolution against ProjectDirectory (not process CWD)
     /// and that output metadata preserves the original path form.
     /// </summary>
-    [Collection(CollectionName)]
+    [TestClass]
     public class GivenAResolveAppHostsMultiThreading : IDisposable
     {
         internal const string CollectionName = "ResolveAppHosts current directory tests";
@@ -49,7 +44,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             DeleteDirectory(_decoyDir);
         }
 
-        [Fact]
+        [TestMethod]
         public void RelativeTargetingPackRoot_OutputMetadataRemainsRelative()
         {
             string relativePackRoot = "packs";
@@ -76,7 +71,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             AssertRelativePackMetadata(task.IjwHost, expectedPackDir, "ijwhost.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void Execute_DoesNotMutateProcessCurrentDirectory()
         {
             string relativePackRoot = "packs";
@@ -98,7 +93,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "ResolveAppHosts must not mutate process current directory");
         }
 
-        [Fact]
+        [TestMethod]
         public void RelativeTargetingPackRoot_ResolvedAgainstProjectDirectory_NotCwd()
         {
             string relativePackRoot = "packs";

@@ -11,9 +11,12 @@ using Moq;
 
 namespace Microsoft.DotNet.Cli.New.Tests
 {
+    [TestClass]
     public class WorkloadsInfoProviderTests
     {
-        [Fact]
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestMethod]
         public async Task InstalledWorkloads_ShouldReturnExpectedWorkloads()
         {
             // Setup
@@ -43,7 +46,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             IWorkloadsInfoProvider wp = new WorkloadsInfoProvider(new Lazy<IWorkloadsRepositoryEnumerator>(workloadsEnumerator));
 
             // Act
-            var workloads = await wp.GetInstalledWorkloadsAsync(TestContext.Current.CancellationToken);
+            var workloads = await wp.GetInstalledWorkloadsAsync(TestContext.CancellationToken);
 
             // Assert
             List<WorkloadInfo> expected = new()

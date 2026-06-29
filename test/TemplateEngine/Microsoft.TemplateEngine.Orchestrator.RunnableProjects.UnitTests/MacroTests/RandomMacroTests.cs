@@ -10,21 +10,32 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class RandomMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class RandomMacroTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public RandomMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public RandomMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Theory(DisplayName = nameof(TestRandomConfig))]
-        [InlineData(0, 100)]
-        [InlineData(-1000, -900)]
-        [InlineData(50, 50)]
-        [InlineData(1000, null)]
-        [InlineData(0, null)]
+        [TestMethod]
+        [DataRow(0, 100)]
+        [DataRow(-1000, -900)]
+        [DataRow(50, 50)]
+        [DataRow(1000, null)]
+        [DataRow(0, null)]
         public void TestRandomConfig(int low, int? high)
         {
             string variableName = "myRnd";
@@ -36,20 +47,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             long randomValue = (int)variables[variableName];
-            Assert.True(randomValue >= low);
+            Assert.IsGreaterThanOrEqualTo(low, randomValue);
 
             if (high.HasValue)
             {
-                Assert.True(randomValue <= high);
+                Assert.IsLessThanOrEqualTo((long)high.Value, randomValue);
             }
         }
 
-        [Theory]
-        [InlineData(1, 10)]
-        [InlineData(0, null)]
-        [InlineData(-1, 1)]
-        [InlineData(10000, null)]
-        [InlineData(123, 123)]
+        [TestMethod]
+        [DataRow(1, 10)]
+        [DataRow(0, null)]
+        [DataRow(-1, 1)]
+        [DataRow(10000, null)]
+        [DataRow(123, 123)]
         public void GeneratedSymbolTest(int low, int? high)
         {
             string variableName = "myRnd";
@@ -68,15 +79,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RandomMacro macro = new();
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
             long randomValue = (int)variables[variableName];
-            Assert.True(randomValue >= low);
+            Assert.IsGreaterThanOrEqualTo(low, randomValue);
 
             if (high.HasValue)
             {
-                Assert.True(randomValue <= high);
+                Assert.IsLessThanOrEqualTo((long)high.Value, randomValue);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDeterministicMode()
         {
             IVariableCollection variables = new VariableCollection();
@@ -84,11 +95,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RandomMacroConfig config = new(macro, "test", "integer", 10, 100);
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, config);
 
-            Assert.Single(variables);
-            Assert.Equal(10, variables["test"]);
+            Assert.ContainsSingle(variables);
+            Assert.AreEqual(10, variables["test"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDeterministicMode_GenSymbol()
         {
             string variableName = "test";
@@ -104,11 +115,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
 
-            Assert.Single(variables);
-            Assert.Equal(10, variables["test"]);
+            Assert.ContainsSingle(variables);
+            Assert.AreEqual(10, variables["test"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest()
         {
             RandomMacro macro = new();
@@ -116,11 +127,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "random", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'random' should have 'low' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "random", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'random' should have 'low' property defined.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultConfigurationTest()
         {
             RandomMacro macro = new();
@@ -130,7 +141,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 { "low", JExtensions.ToJsonString(0) }
             };
             RandomMacroConfig config = new(macro, new GeneratedSymbol("test", "random", jsonParameters));
-            Assert.Equal(int.MaxValue, config.High);
+            Assert.AreEqual(int.MaxValue, config.High);
         }
     }
 }
