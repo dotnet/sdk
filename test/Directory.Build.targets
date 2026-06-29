@@ -19,16 +19,18 @@
     <Using Include="FluentAssertions" />
   </ItemGroup>
 
-  <!-- TestFramework helper namespaces and the Xunit using are xUnit-only: MSTest.Sdk projects
-       in this repo do not reference Microsoft.NET.TestFramework, so a global using for those
-       namespaces would fail with CS0246. -->
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(UsingMSTestSdk)' != 'true'">
+  <!-- Microsoft.NET.TestFramework helper namespaces are shared by every test project that
+       references the SDK test framework (the legacy Microsoft.NET.TestFramework or its MSTest
+       counterpart Microsoft.NET.TestFramework.MSTest). Detecting that ProjectReference lets us
+       declare these global usings once here instead of repeating them in each test csproj.
+       The two framework projects themselves reference neither and keep their own local usings,
+       and projects without the reference are skipped so the usings can't fail with CS0246. -->
+  <ItemGroup Condition="'@(ProjectReference->WithMetadataValue('Filename', 'Microsoft.NET.TestFramework'))' != '' OR '@(ProjectReference->WithMetadataValue('Filename', 'Microsoft.NET.TestFramework.MSTest'))' != ''">
     <Using Include="Microsoft.NET.TestFramework" />
     <Using Include="Microsoft.NET.TestFramework.Assertions" />
     <Using Include="Microsoft.NET.TestFramework.Commands" />
     <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
-    <Using Include="Xunit" />
   </ItemGroup>
 
   <!-- AwesomeAssertions package reference for MSTest.Sdk projects. xUnit projects pick it up
