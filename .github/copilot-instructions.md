@@ -87,8 +87,8 @@ Canonical scenarios:
   `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default). First build is slow; subsequent builds are incremental.
 - Build + run all tests: `build.cmd -test` / `./build.sh --test`.
 - Release build: `build.cmd -c Release`.
-- Run a single test project after a full build (from the build env / dogfood shell, using the
-  repo-local `.dotnet`): `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
+- Run a single test project after a full build:
+  `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
   See the [Testing](#testing) section for assembly filtering and more examples.
 - Dogfood the SDK you built (run/try it end-to-end): start a dogfood shell with
   `eng\dogfood.cmd` (Windows) or `source ./eng/dogfood.sh` (Linux/macOS). It redirects SDK
