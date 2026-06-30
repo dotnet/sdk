@@ -90,7 +90,8 @@ Canonical scenarios:
   `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
   avoid running the full suite for routine local or agent work.
 - Release build: `build.cmd -c Release`.
-- Run a single test project after a full build:
+- Run a single test project after a full build (in a build-env shell — see the
+  [Testing](#testing) section):
   `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
   See the [Testing](#testing) section for assembly filtering and more examples.
 - Dogfood the SDK you built (run/try it end-to-end): start a dogfood shell with
@@ -116,7 +117,9 @@ Canonical scenarios:
 - When creating new test projects in test/TestAssets/TestProjects, always use `$(CurrentTargetFramework)` for the `<TargetFramework>` property instead of hard-coding a specific version like `net8.0`.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
 - To run tests in this repo:
-  - Use the repo-local dotnet instance: `./.dotnet/dotnet`
+  - First build (`build.cmd` / `./build.sh`), then load the build environment so a plain `dotnet`
+    resolves correctly: dot-source `artifacts\sdk-build-env.ps1` (PowerShell), run
+    `artifacts\sdk-build-env.bat` (cmd), or `source artifacts/sdk-build-env.sh` (bash).
   - For MSTest-style projects: `dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
   - For XUnit test assemblies: `dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"`
   - Examples:
