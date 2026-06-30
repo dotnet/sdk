@@ -336,8 +336,9 @@ public class DotnetupTelemetryTests : IDisposable
     [Fact]
     public void RecordException_WithNullActivity_DoesNotThrow()
     {
+        var operation = DotnetupTelemetry.Instance.StartTrackedCommand("test");
         var exception = Record.Exception(() =>
-            DotnetupTelemetry.Instance.RecordException(null, new Exception("test")));
+            DotnetupTelemetry.Instance.RecordException(operation, new Exception("test")));
 
         Assert.Null(exception);
     }
@@ -345,9 +346,10 @@ public class DotnetupTelemetryTests : IDisposable
     [Fact]
     public void ApplyLastErrorToActivity_WithNullActivity_DoesNotThrow()
     {
-        // RecordException with null activity should not throw
+        // RecordException with a disabled-telemetry operation should not throw
+        var operation = DotnetupTelemetry.Instance.StartTrackedCommand("test");
         var exception = Record.Exception(() =>
-            DotnetupTelemetry.Instance.RecordException(null, new Exception("test")));
+            DotnetupTelemetry.Instance.RecordException(operation, new Exception("test")));
 
         Assert.Null(exception);
     }

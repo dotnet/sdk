@@ -19,18 +19,17 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 public abstract class CommandBase
 {
     protected ParseResult ParseResult { get; }
-    private TrackedOperation? _operation;
+    private readonly TrackedOperation _operation;
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult)
     {
         ParseResult = parseResult;
+        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(GetCommandName());
     }
 
     public int Execute()
     {
-        var commandName = GetCommandName();
-        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(commandName);
         _exitCode = 1;
 
         RecordOptionUsage();
@@ -64,9 +63,9 @@ public abstract class CommandBase
         {
             // _exitCode = 0 on success (set in try), 1 on exception (reset
             // in catch), or whatever ExecuteCore passed to SetExitCode().
-            _operation?.Tag(TelemetryTagNames.ExitCode, _exitCode);
-            _operation?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-            _operation?.Dispose();
+            _operation.Tag(TelemetryTagNames.ExitCode, _exitCode);
+            _operation.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            _operation.Dispose();
         }
     }
 
@@ -111,7 +110,7 @@ public abstract class CommandBase
     /// </summary>
     internal void SetCommandTag(string key, object? value)
     {
-        _operation?.Tag(key, value);
+        _operation.Tag(key, value);
     }
 
     /// <summary>
@@ -123,7 +122,7 @@ public abstract class CommandBase
     protected void RecordRequestedVersion(string? versionOrChannel)
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
-        _operation?.Tag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
+        _operation.Tag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
     }
 
     /// <summary>
@@ -134,11 +133,11 @@ public abstract class CommandBase
     /// </summary>
     protected void RecordRequestSource(string source, string? requestedValue)
     {
-        _operation?.Tag(TelemetryTagNames.DotnetRequestSource, source);
+        _operation.Tag(TelemetryTagNames.DotnetRequestSource, source);
         if (requestedValue != null)
         {
             var sanitized = VersionSanitizer.Sanitize(requestedValue);
-            _operation?.Tag(TelemetryTagNames.DotnetRequested, sanitized);
+            _operation.Tag(TelemetryTagNames.DotnetRequested, sanitized);
         }
     }
 
@@ -154,11 +153,6 @@ public abstract class CommandBase
     /// </summary>
     private void RecordOptionUsage()
     {
-        if (_operation is null)
-        {
-            return;
-        }
-
         foreach (var option in ParseResult.CommandResult.Command.Options)
         {
             // Skip built-in options that don't carry useful signal
