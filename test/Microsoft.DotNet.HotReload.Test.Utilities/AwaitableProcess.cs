@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Threading.Channels;
 using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var line = await GetOutputLineAsync(selector);
 
             // process terminated without producing required output
-            Assert.NotNull(line);
+            Assert.IsNotNull(line);
 
             return line;
         }
@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Logger.WriteLine(line);
 
-            Assert.True(_outputChannel.Writer.TryWrite(line));
+            Assert.IsTrue(_outputChannel.Writer.TryWrite(line));
         }
 
         public async ValueTask DisposeAsync()
