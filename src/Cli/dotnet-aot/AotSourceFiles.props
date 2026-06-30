@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandInvocation.cs" Link="CommandInvocation.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
@@ -57,7 +58,39 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TopLevelCommandNameAndOptionToLog.cs" Link="Telemetry\TopLevelCommandNameAndOptionToLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ActivityExtensions.cs" Link="ActivityExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ParseResultExtensions.cs" Link="ParseResultExtensions.cs" />
+    <!-- Shared first-run experience. The AOT path runs the same DotnetFirstTimeUseConfigurer the managed
+         CLI runs (first-time-use notice, telemetry message, NuGet state migration, global-tools PATH, and
+         the ASP.NET Core developer certificate). It defers to the managed CLI only when workload repair
+         (the NuGet engine) is still pending. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\FirstRunExperience.cs" Link="FirstRunExperience.cs" />
+    <!-- ASP.NET Core HTTPS developer-certificate generator, run in-process by the AOT first-run path.
+         The certificate code (CertificateManager) is NativeAOT-safe: no reflection/dynamic code, only
+         BCL X509/RSA APIs that resolve against the host's already-loaded crypto PAL. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\AspNetCoreCertificateGenerator.cs" Link="AspNetCoreCertificateGenerator.cs" />
+    <!-- Global-tools PATH registration used in-process by the AOT first-run path. These are AOT-safe
+         (file/registry/environment edits only); the registry editor itself lives in Cli.Utils. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\EnvironmentPathFactory.cs" Link="ShellShim\EnvironmentPathFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\WindowsEnvironmentPath.cs" Link="ShellShim\WindowsEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\DoNothingEnvironmentPath.cs" Link="ShellShim\DoNothingEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\LinuxEnvironmentPath.cs" Link="ShellShim\LinuxEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\OsxBashEnvironmentPath.cs" Link="ShellShim\OsxBashEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\OsxZshEnvironmentPathInstruction.cs" Link="ShellShim\OsxZshEnvironmentPathInstruction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\ZshDetector.cs" Link="ShellShim\ZshDetector.cs" />
+    <!-- Read-only workload install detection (no NuGet/MSBuild/crypto) used by the AOT first-run path to
+         decide whether the workload integrity repair must be deferred to the managed CLI. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInstallDetector.cs" Link="WorkloadInstallDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\IWorkloadInstallationRecordRepository.cs" Link="IWorkloadInstallationRecordRepository.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\FileBasedInstallationRecordInstaller.cs" Link="FileBasedInstallationRecordInstaller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs" Link="RegistryWorkloadInstallationRecordRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
+  </ItemGroup>
+
+  <!-- ASP.NET Core HTTPS developer-certificate package, used by the AOT first-run path's in-process
+       dev-cert generation (AspNetCoreCertificateGenerator). Mirrors the condition in dotnet.csproj:
+       when IncludeAspNetCoreRuntime is false, EXCLUDE_ASPNETCORE is defined and the generator body
+       compiles away, so the package is not needed. -->
+  <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
+    <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
   </ItemGroup>
 
   <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
