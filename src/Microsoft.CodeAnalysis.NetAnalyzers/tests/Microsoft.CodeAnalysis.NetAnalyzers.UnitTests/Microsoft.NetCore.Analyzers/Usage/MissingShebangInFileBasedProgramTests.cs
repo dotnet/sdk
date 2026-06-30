@@ -151,7 +151,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
                 SolutionTransforms = { EnableFileBasedProgramFeature },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
