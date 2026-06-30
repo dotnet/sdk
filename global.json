@@ -29,6 +29,6 @@
     "Microsoft.Build.NoTargets": "3.7.134",
     "Microsoft.Build.Traversal": "4.1.82",
     "Microsoft.WixToolset.Sdk": "6.0.3-dotnet.4",
-    "MSTest.Sdk": "4.3.0-preview.26324.14"
+    "MSTest.Sdk": "4.3.0-preview.26325.12"
   }
 }

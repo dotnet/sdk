@@ -6,9 +6,5 @@
 global using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 global using TestContext = Microsoft.VisualStudio.TestTools.UnitTesting.TestContext;
 
-// The shared Microsoft.TemplateEngine.CommandUtils sources reference
-// ITestOutputHelper by its short name. Provide the alias so shared code compiles.
-global using ITestOutputHelper = Xunit.ITestOutputHelper;
-
 // Verify.XunitV3 is still available transitively; pin Verify to MSTest.
 global using Verifier = VerifyMSTest.Verifier;

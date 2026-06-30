@@ -63,6 +63,14 @@ public class AotParserTests
     }
 
     [TestMethod]
+    public void ParseSdkCheck_HasNoErrors()
+    {
+        // `sdk check` is AOT-capable, so it parses cleanly from the shared command tree.
+        var result = Parser.Parse(["sdk", "check"]);
+        Assert.IsEmpty(result.Errors);
+    }
+
+    [TestMethod]
     public void DetectFileBasedApp_WhenFirstArgIsCSharpFile()
     {
         // `dotnet app.cs` is an implicit file-based app invocation. The AOT parser only sees the
@@ -149,6 +157,41 @@ public class AotParserTests
         var result = Parser.Parse(["build"]);
         Assert.IsEmpty(result.Errors);
         Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokeBareSdk_RendersHelpFromAot()
+    {
+        // `dotnet sdk` with no subcommand renders its missing-command error and help entirely
+        // from AOT (no managed fallback), matching the managed CLI behavior.
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["sdk"]);
+
+        Assert.AreEqual(1, exitCode);
+        stdout.Should().Contain("check");
+        stderr.Should().NotBeNullOrWhiteSpace("Expected a missing-command error on stderr");
+    }
+
+    [TestMethod]
+    public void InvokeBareSln_RendersHelpFromAot()
+    {
+        // `dotnet sln` with no subcommand renders its missing-command error and help entirely
+        // from AOT (no managed fallback). Only `sln add` falls back to the managed CLI.
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["sln"]);
+
+        Assert.AreEqual(1, exitCode);
+        stdout.Should().Contain("list");
+        stderr.Should().NotBeNullOrWhiteSpace("Expected a missing-command error on stderr");
+    }
+
+    [TestMethod]
+    public void InvokeSdkCheckHelp_RendersFromAotWithoutFallback()
+    {
+        // `sdk check` is wired to its real AOT implementation (not the managed fallback), so its
+        // help renders entirely from AOT and must not request a managed fallback.
+        var result = Parser.Parse(["sdk", "check", "--help"]);
+        var exception = RecordException(() => Parser.Invoke(result));
+
+        Assert.IsNull(exception);
     }
 
     [TestMethod]
