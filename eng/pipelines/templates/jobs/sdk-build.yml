@@ -159,6 +159,8 @@ jobs:
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
             TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+            ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+              DOTNET_SDK_TEST_MAX_PRIORITY: 0
 
       - ${{ else }}:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
@@ -183,6 +185,8 @@ jobs:
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
             TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
+            ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+              DOTNET_SDK_TEST_MAX_PRIORITY: 0
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:
