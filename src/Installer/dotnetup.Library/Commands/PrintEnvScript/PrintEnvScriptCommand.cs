@@ -13,15 +13,13 @@ internal class PrintEnvScriptCommand : CommandBase
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly bool _dotnetupOnly;
 
-    public PrintEnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
+    public PrintEnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result, "print-env-script")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(PrintEnvScriptCommandParser.ShellOption);
         _dotnetInstallPath = result.GetValue(PrintEnvScriptCommandParser.DotnetInstallPathOption);
         _dotnetupOnly = result.GetValue(PrintEnvScriptCommandParser.DotnetupOnlyOption);
     }
-
-    protected override string GetCommandName() => "print-env-script";
 
     protected override void ExecuteCore()
     {

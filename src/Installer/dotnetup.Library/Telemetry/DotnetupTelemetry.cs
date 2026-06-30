@@ -411,7 +411,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Only non-interactive CI/one-and-done environments get the larger 2000ms budget. (2000 taken from high end of network queries to post to app insights on 6-12-2025, considering TCP is slower at the first request)
     /// There's no follow-up invocation to drain the AzMonitor offline store.
     /// </summary>
-    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? 2000  : 10;
+    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? 2000 : 10;
 
     /// <summary>
     /// Drains both the tracer and logger batch export processors out to

@@ -37,6 +37,22 @@ internal sealed class TrackedOperation : IDisposable
         Tag("command.status", code == ActivityStatusCode.Ok ? "ok" : "error");
     }
 
+    /// <summary>
+    /// Guarantees the completion row carries an explicit <c>error.type</c>.
+    /// On the failure path a real value was already stamped by the error
+    /// classifier, so this is a no-op; on the success path it stamps an empty
+    /// string so every emitted row has the property present rather than
+    /// missing — keeping the schema uniform with failure rows for downstream
+    /// queries. No-op when telemetry is disabled (null activity).
+    /// </summary>
+    public void EnsureErrorTypeTagged()
+    {
+        if (Activity?.GetTagItem("error.type") is null)
+        {
+            Tag("error.type", string.Empty);
+        }
+    }
+
     public void Dispose()
     {
         if (_disposed)

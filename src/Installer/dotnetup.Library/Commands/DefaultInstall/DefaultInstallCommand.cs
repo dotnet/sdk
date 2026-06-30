@@ -14,15 +14,13 @@ internal class DefaultInstallCommand : CommandBase
     private readonly InstallRootManager _installRootManager;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public DefaultInstallCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
+    public DefaultInstallCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result, "defaultinstall")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _installType = result.GetValue(DefaultInstallCommandParser.InstallTypeArgument)!;
         _installRootManager = new InstallRootManager(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
-
-    protected override string GetCommandName() => "defaultinstall";
 
     protected override void ExecuteCore()
     {

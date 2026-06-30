@@ -10,10 +10,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// Runs the interactive initialization flow that installs the .NET SDK with defaults
 /// and records the user's path replacement preference to <c>dotnetup.config.json</c>.
 /// </summary>
-internal class InitCommand(ParseResult result) : InstallCommand(result)
+internal class InitCommand(ParseResult result) : InstallCommand(result, "init")
 {
-    protected override string GetCommandName() => "init";
-
     protected override void ExecuteCore()
     {
         var workflows = new InitWorkflows(DotnetEnvironment, ChannelVersionResolver);

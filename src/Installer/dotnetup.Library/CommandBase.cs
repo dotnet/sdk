@@ -22,10 +22,14 @@ public abstract class CommandBase
     private readonly TrackedOperation _operation;
     private int _exitCode;
 
-    protected CommandBase(ParseResult parseResult)
+    protected CommandBase(ParseResult parseResult, string commandName)
     {
         ParseResult = parseResult;
-        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(GetCommandName());
+        // Start per-command telemetry up front. The command name is supplied by
+        // each derived class as a constructor argument (rather than a virtual
+        // method call here, which MA0056 forbids), letting _operation stay
+        // non-null for the life of the command.
+        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(commandName);
     }
 
     public int Execute()
@@ -64,6 +68,9 @@ public abstract class CommandBase
             // _exitCode = 0 on success (set in try), 1 on exception (reset
             // in catch), or whatever ExecuteCore passed to SetExitCode().
             _operation.Tag(TelemetryTagNames.ExitCode, _exitCode);
+            // Always stamp error.type so success rows carry it as an explicit
+            // empty string; the catch above already set a real value on failure.
+            _operation.EnsureErrorTypeTagged();
             _operation.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             _operation.Dispose();
         }
@@ -95,14 +102,6 @@ public abstract class CommandBase
     {
         _exitCode = exitCode;
     }
-
-    /// <summary>
-    /// Returns the stable command identifier used as the
-    /// <c>command.name</c> telemetry tag (e.g., <c>"sdk/install"</c>,
-    /// <c>"runtime/update"</c>). Used only for telemetry; not surfaced to
-    /// users.
-    /// </summary>
-    protected abstract string GetCommandName();
 
     /// <summary>
     /// Adds a tag to the per-command <see cref="TrackedOperation"/>. The

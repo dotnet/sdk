@@ -11,7 +11,7 @@ internal class ElevatedAdminPathCommand : CommandBase
     private readonly string _operation;
     private readonly string _outputFile;
 
-    public ElevatedAdminPathCommand(ParseResult result) : base(result)
+    public ElevatedAdminPathCommand(ParseResult result) : base(result, "elevatedadminpath")
     {
         _operation = result.GetValue(ElevatedAdminPathCommandParser.OperationArgument)!;
         _outputFile = result.GetValue(ElevatedAdminPathCommandParser.OutputFile)!;
@@ -22,8 +22,6 @@ internal class ElevatedAdminPathCommand : CommandBase
         Console.WriteLine(message);
         File.AppendAllText(_outputFile, message + Environment.NewLine);
     }
-
-    protected override string GetCommandName() => "elevatedadminpath";
 
     protected override void ExecuteCore()
     {
