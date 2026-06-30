@@ -85,7 +85,10 @@ Canonical scenarios:
 
 - Build the full redist SDK: `build.cmd` (Windows) or `./build.sh` (Linux/macOS). Output is
   `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default). First build is slow; subsequent builds are incremental.
-- Build + run all tests: `build.cmd -test` / `./build.sh --test`.
+- Run tests: prefer targeted runs — a single test project or test (see the
+  [Testing](#testing) section) and the `incremental-test` skill. `build.cmd -test` /
+  `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
+  avoid running the full suite for routine local or agent work.
 - Release build: `build.cmd -c Release`.
 - Run a single test project after a full build:
   `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
