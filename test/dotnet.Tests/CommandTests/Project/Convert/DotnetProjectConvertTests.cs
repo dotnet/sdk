@@ -226,6 +226,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet("World"));
             """);
@@ -288,6 +289,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #!/usr/bin/env dotnet
             #:property OutputType=Library
             #:ref lib2.cs
             namespace Lib1;
@@ -298,6 +300,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib1.cs
             Console.WriteLine(Lib1.Facade.Get());
             """);
@@ -1821,7 +1824,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var libDllProjectPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $$"""
-            #:property FileBasedProgramsItemMapping=.dll=Reference
+            #!/usr/bin/env dotnet
             #:include {{libDllDirectivePath}}
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
@@ -1851,7 +1854,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <PublishAot>true</PublishAot>
                     <PackAsTool>true</PackAsTool>
                     <UserSecretsId>Program-*</UserSecretsId>
-                    <FileBasedProgramsItemMapping>.dll=Reference</FileBasedProgramsItemMapping>
                   </PropertyGroup>
 
                   <ItemGroup>
@@ -1908,7 +1910,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             Path.Join(testInstance.Path, "Lib.dll"));
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:property FileBasedProgramsItemMapping=.dll=Reference
+            #!/usr/bin/env dotnet
             #:include *.dll
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
@@ -1976,6 +1978,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.WriteAllText(Path.Join(srcDir, "Directory.Build.props"), $"""
             <Project>
+              <PropertyGroup>
+                <{CSharpDirective.IncludeOrExclude.MappingPropertyName}></{CSharpDirective.IncludeOrExclude.MappingPropertyName}>
+              </PropertyGroup>
               <ItemGroup>
                 <Reference Include="$(MSBuildThisFileDirectory){libDllPropsPath}" />
               </ItemGroup>
@@ -2050,9 +2055,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.WriteAllText(Path.Join(srcDir, "Directory.Build.props"), $"""
             <Project>
-              <PropertyGroup>
-                <FileBasedProgramsItemMapping>.dll=Reference</FileBasedProgramsItemMapping>
-              </PropertyGroup>
               <ItemGroup>
                 <Reference Include="$(MSBuildThisFileDirectory){libDllPropsPath}" />
               </ItemGroup>
@@ -2121,7 +2123,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var libDllProjectPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
 
         File.WriteAllText(Path.Join(testInstance.Path, "extra.cs"), $$"""
-            #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include {{libDllDirectivePath}}
             """);
 
@@ -2200,8 +2201,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var dependencyDllProjectPath = Path.Join("Dependency", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Dependency.dll");
 
         File.WriteAllText(Path.Join(libDir, "lib.cs"), $$"""
+            #!/usr/bin/env dotnet
             #:property OutputType=Library
-            #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include {{dependencyDllDirectivePath}}
             namespace MyLib;
             public static class Wrapper
@@ -2211,6 +2212,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib/lib.cs
             Console.WriteLine(MyLib.Wrapper.GetMessage());
             """);

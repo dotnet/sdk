@@ -46,6 +46,23 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
         }
     }
 
+    [Fact]
+    public void FilePath_DuplicateFilePathArgument()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:Program.cs
+                Hello from Program
+                """)
+            .And.NotHaveStdErr();
+    }
+
     /// <summary>
     /// <c>dotnet file.cs</c> is equivalent to <c>dotnet run file.cs</c>.
     /// </summary>
@@ -479,6 +496,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(appDir)
             .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
+                #!/usr/bin/env dotnet
                 #:ref $(MSBuildStartupDirectory)/../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
                 """)
@@ -488,7 +506,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
 
         // Relative paths are resolved from the isolated temp directory, hence they don't work.
 
-        var errorParts = DirectiveError("app.cs", 1, FileBasedProgramsResources.InvalidRefDirective,
+        var errorParts = DirectiveError("app.cs", 2, FileBasedProgramsResources.InvalidRefDirective,
             string.Format(FileBasedProgramsResources.CouldNotFindRefFile, "{}")).Split("{}");
         errorParts.Should().HaveCount(2);
 
@@ -496,6 +514,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(appDir)
             .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
+                #!/usr/bin/env dotnet
                 #:ref ../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
                 """)
@@ -637,6 +656,26 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .Should().Pass()
             .And.NotHaveStdErr()
             .And.HaveStdOut("Hello from Program");
+    }
+
+    [Fact]
+    public void ProjectInCurrentDirectory_RunFromStdin()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""
+                Console.WriteLine("Hello from stdin");
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:-
+                Hello from App
+                """);
     }
 
     /// <summary>
@@ -834,11 +873,13 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     /// but additional positional arguments cause it to fall back to MSBuild.
     /// </summary>
     [Theory]
-    [InlineData("build", "someArg", "Program.cs")]
-    [InlineData("clean", "someArg", "Program.cs")]
-    [InlineData("publish", "someArg", "Program.cs")]
-    [InlineData("build", "Program.cs", "-consoleLoggerParameters:NoSummary")]
-    public void ExtraArgWithFileEntryPoint_Warns(string command, string arg1, string arg2)
+    [InlineData("build", "someArg", "Program.cs", "'someArg'")]
+    [InlineData("clean", "someArg", "Program.cs", "'someArg'")]
+    [InlineData("publish", "someArg", "Program.cs", "'someArg'")]
+    [InlineData("build", "Program.cs", "-fl", "'-fl'")]
+    [InlineData("build", "Program.cs", "-notALogger:NoSummary", "'-notALogger:NoSummary'")]
+    [InlineData("build", "Program.cs", "Program.cs", "'Program.cs'")]
+    public void ExtraArgWithFileEntryPoint_Warns(string command, string arg1, string arg2, string unsupportedArgs)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
@@ -850,7 +891,8 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.WarningFileArgumentPassedToMSBuild,
                 "Program.cs",
-                command));
+                command,
+                unsupportedArgs));
     }
 
     /// <summary>
@@ -871,7 +913,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.WarningCsFileArgumentPassedToMSBuild,
                 "nonexistent.cs",
-                command));
+                "'nonexistent.cs'"));
     }
 
     /// <summary>
