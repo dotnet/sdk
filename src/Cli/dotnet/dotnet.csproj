@@ -96,7 +96,7 @@
       Microsoft.DotNet.Cli.Commands.Test.* must be re-pointed to those namespaces (see PR description for the full
       reconciliation list). It ships on the Microsoft.Testing.Platform preview train and must flow via darc once
       testfx publishes it (see Directory.Packages.props). -->
-    <PackageReference Include="Microsoft.Testing.Platform.Internal.DotnetTest" />
+    <PackageReference Include="Microsoft.Testing.Platform.Internal.DotnetTest" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.Build" />

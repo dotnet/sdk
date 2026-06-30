@@ -50,7 +50,7 @@
     <!-- Internal, source-only package from microsoft/testfx. Darc keeps this in sync with the matching
          dependency in eng/Version.Details.xml and moves it together (same coherent testfx build) with the
          Microsoft.Testing.Platform / MSTest dependencies. -->
-    <MicrosoftTestingPlatformInternalDotnetTestVersion>2.3.0-preview.26325.4</MicrosoftTestingPlatformInternalDotnetTestVersion>
+    <MicrosoftTestingPlatformInternalDotnetTestVersion>2.3.0-preview.26330.8</MicrosoftTestingPlatformInternalDotnetTestVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
     <NewtonsoftJsonPackageVersion>13.0.4</NewtonsoftJsonPackageVersion>
