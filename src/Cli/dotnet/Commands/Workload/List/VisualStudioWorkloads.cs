@@ -4,7 +4,9 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+#endif
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.VisualStudio.Setup.Configuration;
@@ -325,6 +327,7 @@ internal static class VisualStudioWorkloads
     /// ...  but these workloads don't have their corresponding packs installed as VS doesn't update its workloads as the CLI does.
     /// </summary>
     /// <returns>Updated list of workloads including any that may have had new install records written</returns>
+#if !CLI_AOT
     internal static IEnumerable<WorkloadId> WriteSDKInstallRecordsForVSWorkloads(IInstaller workloadInstaller, IWorkloadResolver workloadResolver,
         IEnumerable<WorkloadId> workloadsWithExistingInstallRecords, IReporter reporter)
     {
@@ -353,4 +356,5 @@ internal static class VisualStudioWorkloads
 
         return workloadsWithExistingInstallRecords;
     }
+#endif
 }
