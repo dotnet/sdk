@@ -35,8 +35,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         /// <summary>
         /// Signature of a Verify directory-verification entry point. This intentionally mirrors the
         /// shape of <c>VerifyXunit.Verifier.VerifyDirectory</c> and <c>VerifyMSTest.Verifier.VerifyDirectory</c>
-        /// (including their <see cref="SettingsTask"/> return type) so that either can be assigned directly
-        /// as a method group.
+        /// so that either can be assigned directly as a method group.
         /// </summary>
         public delegate SettingsTask VerifyDirectoryDelegate(
             string path,
@@ -49,12 +48,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             string sourceFile);
 
         /// <summary>
-        /// Optional override for the test-framework-specific Verify directory verifier used by the
-        /// built-in (non-custom) verification path. When unset, the built-in xUnit (v3) verifier is used.
-        /// Consumers running under a different test framework (for example MSTest) can set this to that
-        /// framework's <c>Verifier.VerifyDirectory</c> so snapshot verification resolves the ambient test
-        /// context of the active framework rather than xUnit's (which would otherwise be unavailable and
-        /// fail with <c>TestContext.TestMethod is null</c>).
+        /// Optional override for the test-framework-specific Verify directory verifier.
+        /// When unset, the built-in xUnit (v3) verifier is used. Consumers running under a different
+        /// test framework (for example MSTest) can set this to that framework's
+        /// <c>Verifier.VerifyDirectory</c> so snapshot verification resolves the ambient test context
+        /// of the active framework rather than xUnit's (which would otherwise be unavailable and fail
+        /// with <c>TestContext.TestMethod is null</c>).
         /// </summary>
         public static VerifyDirectoryDelegate? DirectoryVerifier { get; set; }
 
