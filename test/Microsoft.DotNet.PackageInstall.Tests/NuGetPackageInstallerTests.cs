@@ -94,6 +94,21 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
+        public async Task GivenAFailedSourceItShouldIncludeSourceInError()
+        {
+            const string source = "https://nonexist.nuget.source/F/nonexist/api/v3/index.json";
+
+            Func<Task> downloadAction = () =>
+                _installer.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    new PackageSourceLocation(sourceFeedOverrides: [source]));
+
+            var exception = await Assert.ThrowsExactlyAsync<NuGetPackageInstallerException>(downloadAction);
+            exception.Message.Should().Contain(string.Format(CliStrings.FailedToLoadNuGetSource, source));
+        }
+
+        [TestMethod]
         public async Task GivenNugetConfigInstallSucceeds()
         {
             FilePath nugetConfigPath = GenerateRandomNugetConfigFilePath();
