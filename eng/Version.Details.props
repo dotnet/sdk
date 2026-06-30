@@ -81,8 +81,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.9.0-1.26325.102</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftNETHostModelPackageVersion>11.0.0-preview.7.26325.102</MicrosoftNETHostModelPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>11.0.0-preview.7.26325.102</MicrosoftNETILLinkTasksPackageVersion>
-    <MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion>11.0.0-preview.7.26325.102</MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion>
-    <MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion>10.0.0-preview.7.25377.103</MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion>
+    <MicrosoftNETRuntimeEmscripten506Cachewinx64PackageVersion>11.0.0-preview.7.26325.102</MicrosoftNETRuntimeEmscripten506Cachewinx64PackageVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>10.4.0-preview.26325.102</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
     <MicrosoftNETSdkWindowsDesktopPackageVersion>11.0.0-preview.7.26325.102</MicrosoftNETSdkWindowsDesktopPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>18.8.0-release-26311-113</MicrosoftNETTestSdkPackageVersion>
