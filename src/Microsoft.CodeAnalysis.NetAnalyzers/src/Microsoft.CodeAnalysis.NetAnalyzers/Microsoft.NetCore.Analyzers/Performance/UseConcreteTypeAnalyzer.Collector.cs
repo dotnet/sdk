@@ -122,7 +122,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             case OperationKind.PropertyReference:
                                 {
                                     var propertyRef = (IPropertyReferenceOperation)instance;
-                                    if (CanUpgrade(propertyRef.Property, false))
+                                    if (CanUpgrade(propertyRef.Property))
                                     {
                                         RecordVirtualDispatch(propertyRef.Property, targetMethod);
                                     }
@@ -183,7 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             case OperationKind.PropertyReference:
                                 {
                                     var propertyRef = (IPropertyReferenceOperation)instance;
-                                    if (CanUpgrade(propertyRef.Property, false))
+                                    if (CanUpgrade(propertyRef.Property))
                                     {
                                         RecordVirtualDispatch(propertyRef.Property, op.TargetMethod);
                                     }
@@ -344,7 +344,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         foreach (var property in op.InitializedProperties)
                         {
-                            if (CanUpgrade(property, false))
+                            if (CanUpgrade(property))
                             {
                                 RecordAssignment(property, valueType);
                             }
@@ -400,7 +400,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         if (methodSym.AssociatedSymbol is IPropertySymbol propertySym)
                         {
-                            if (CanUpgrade(propertySym, false))
+                            if (CanUpgrade(propertySym))
                             {
                                 var valueTypes = GetValueTypes(op.ReturnedValue);
                                 foreach (var valueType in valueTypes)
@@ -726,15 +726,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
             /// <summary>
             /// Trivial reject for properties that can't be upgraded in order to avoid wasted work.
             /// </summary>
-            private bool CanUpgrade(IPropertySymbol propSym, bool setter)
+            private bool CanUpgrade(IPropertySymbol propSym)
             {
-                var m = setter ? propSym.SetMethod! : propSym.GetMethod!;
+                var m = propSym.GetMethod!;
 
                 return _checkVisibility!(m)
                     && !m.IsImplementationOfAnyInterfaceMember()
                     && !m.IsOverride
                     && !m.IsVirtual
-                    && m.PartialDefinitionPart == null;
+                    && m.PartialDefinitionPart == null &&
+                    m.DeclaredAccessibility >= (propSym.SetMethod?.DeclaredAccessibility ?? default);
             }
 
             private void RecordVirtualDispatch(IFieldSymbol field, IMethodSymbol target) => VirtualDispatchFields.GetOrAdd(field, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);
