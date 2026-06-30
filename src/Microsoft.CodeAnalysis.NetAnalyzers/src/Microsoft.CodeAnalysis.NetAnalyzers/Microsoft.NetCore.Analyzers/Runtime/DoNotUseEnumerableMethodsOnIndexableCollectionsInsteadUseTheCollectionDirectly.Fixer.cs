@@ -85,7 +85,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             var generator = SyntaxGenerator.GetGenerator(document);
 
-            var elementAccessNode = GetReplacementNode(methodName, generator, collectionSyntax);
+            var elementAccessNode = GetReplacementNode(document, methodName, generator, collectionSyntax);
             if (elementAccessNode == null)
             {
                 return Task.FromResult(document);
@@ -95,7 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return Task.FromResult(document.WithSyntaxRoot(newRoot));
         }
 
-        private SyntaxNode? GetReplacementNode(string methodName, SyntaxGenerator generator, SyntaxNode collectionSyntax)
+        private SyntaxNode? GetReplacementNode(Document document,string methodName, SyntaxGenerator generator, SyntaxNode collectionSyntax)
         {
             var adjustedCollectionSyntax = AdjustSyntaxNode(collectionSyntax);
             var adjustedCollectionSyntaxNoTrailingTrivia = adjustedCollectionSyntax.WithoutTrailingTrivia();
@@ -108,15 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (methodName == LastPropertyName)
             {
-                // TODO: Handle C# 8 index expression (and vb.net equivalent if any)
-
-                // TODO: Handle cases were `collectionSyntax` is an invocation. We would need to create some intermediate variable.
-                var countMemberAccess = generator.MemberAccessExpression(collectionSyntax.WithoutTrailingTrivia(), CountPropertyName);
-                var oneLiteral = generator.LiteralExpression(1);
-
-                // The SubstractExpression method will wrap left and right in parenthesis but those will be automatically removed later on
-                var substraction = generator.SubtractExpression(countMemberAccess, oneLiteral);
-                return generator.ElementAccessExpression(adjustedCollectionSyntaxNoTrailingTrivia, substraction);
+                return CreateLastElementAccessExpression(document, generator, adjustedCollectionSyntaxNoTrailingTrivia, collectionSyntax);
             }
 
             if (methodName == CountPropertyName)
@@ -126,6 +118,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             Debug.Fail($"Unexpected method name '{methodName}' for {DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.RuleId} code fix.");
             return null;
+        }
+
+        private protected virtual SyntaxNode CreateLastElementAccessExpression(Document document,SyntaxGenerator generator,SyntaxNode adjustedCollectionSyntaxNoTrailingTrivia,SyntaxNode collectionSyntax)
+        {
+            // TODO: Handle cases where `collectionSyntax` is an invocation. We would need to create some intermediate variable.
+            var countMemberAccess = generator.MemberAccessExpression(collectionSyntax.WithoutTrailingTrivia(), CountPropertyName);
+            var oneLiteral = generator.LiteralExpression(1);
+
+            // The SubtractExpression method will wrap left and right in parenthesis but those will be automatically removed later on
+            var subtraction = generator.SubtractExpression(countMemberAccess, oneLiteral);
+            return generator.ElementAccessExpression(adjustedCollectionSyntaxNoTrailingTrivia, subtraction);
         }
 
         [return: NotNullIfNotNull(nameof(syntaxNode))]
