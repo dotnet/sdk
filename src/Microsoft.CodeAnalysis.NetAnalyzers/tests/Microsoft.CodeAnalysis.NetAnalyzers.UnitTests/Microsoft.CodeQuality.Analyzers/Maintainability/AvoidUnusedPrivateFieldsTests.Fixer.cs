@@ -1,8 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUnusedPrivateFieldsAnalyzer,
     Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUnusedPrivateFieldsFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
+    [TestClass]
     public class AvoidUnusedPrivateFieldsFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1823CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -53,7 +53,7 @@ class C
  ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1823VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(

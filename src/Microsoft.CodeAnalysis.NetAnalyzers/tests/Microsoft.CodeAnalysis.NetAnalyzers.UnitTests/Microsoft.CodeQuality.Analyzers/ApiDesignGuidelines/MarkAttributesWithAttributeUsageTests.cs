@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageFixer>;
@@ -15,25 +14,26 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public partial class MarkAttributesWithAttributeUsageTests
     {
-        [Theory]
-        [InlineData(AttributeTargets.All, 0)]
-        [InlineData(AttributeTargets.Assembly, 1)]
-        [InlineData(AttributeTargets.Class, 2)]
-        [InlineData(AttributeTargets.Constructor, 3)]
-        [InlineData(AttributeTargets.Delegate, 4)]
-        [InlineData(AttributeTargets.Enum, 5)]
-        [InlineData(AttributeTargets.Event, 6)]
-        [InlineData(AttributeTargets.Field, 7)]
-        [InlineData(AttributeTargets.GenericParameter, 8)]
-        [InlineData(AttributeTargets.Interface, 9)]
-        [InlineData(AttributeTargets.Method, 10)]
-        [InlineData(AttributeTargets.Module, 11)]
-        [InlineData(AttributeTargets.Parameter, 12)]
-        [InlineData(AttributeTargets.Property, 13)]
-        [InlineData(AttributeTargets.ReturnValue, 14)]
-        [InlineData(AttributeTargets.Struct, 15)]
+        [TestMethod]
+        [DataRow(AttributeTargets.All, 0)]
+        [DataRow(AttributeTargets.Assembly, 1)]
+        [DataRow(AttributeTargets.Class, 2)]
+        [DataRow(AttributeTargets.Constructor, 3)]
+        [DataRow(AttributeTargets.Delegate, 4)]
+        [DataRow(AttributeTargets.Enum, 5)]
+        [DataRow(AttributeTargets.Event, 6)]
+        [DataRow(AttributeTargets.Field, 7)]
+        [DataRow(AttributeTargets.GenericParameter, 8)]
+        [DataRow(AttributeTargets.Interface, 9)]
+        [DataRow(AttributeTargets.Method, 10)]
+        [DataRow(AttributeTargets.Module, 11)]
+        [DataRow(AttributeTargets.Parameter, 12)]
+        [DataRow(AttributeTargets.Property, 13)]
+        [DataRow(AttributeTargets.ReturnValue, 14)]
+        [DataRow(AttributeTargets.Struct, 15)]
         public async Task TestSimpleAttributeClassAsync(AttributeTargets attributeTarget, int codeActionIndex)
         {
             var attributeTargetsValue = "AttributeTargets." + attributeTarget.ToString();
@@ -58,7 +58,7 @@ class C : Attribute
 {
 }
 ",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -78,10 +78,10 @@ Class C
     Inherits Attribute
 End Class
 ",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
+        [TestMethod, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
         public async Task TestCSInheritedAttributeClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -97,7 +97,7 @@ class D : C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSAbstractAttributeClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -109,7 +109,7 @@ abstract class C : Attribute
 ");
         }
 
-        [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
+        [TestMethod, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
         public async Task TestVBInheritedAttributeClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -125,7 +125,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVBAbstractAttributeClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

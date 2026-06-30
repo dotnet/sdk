@@ -10,13 +10,6 @@
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
-  </ItemGroup>
-
   <!-- Windows-only test files that reference types excluded on non-Windows -->
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="DotDefaultPathCorrectorTests.cs" />
