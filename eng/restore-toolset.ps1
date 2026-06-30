@@ -259,6 +259,13 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$archite
 function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs, [string]$dotNetRoot, [string]$architecture = "") {
     $installScript = GetDotNetInstallScript $dotNetRoot
     foreach ($spec in $runtimeSpecs) {
+        $effectiveArchitecture = if ([string]::IsNullOrEmpty($architecture)) { Get-NativeMachineArchitecture } else { $architecture }
+        $isMacOS = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)
+        if ($isMacOS -and $effectiveArchitecture -eq 'arm64' -and $spec -eq '5.0') {
+            Write-Host "Skipping shared framework spec '$spec' on macOS arm64 because .NET 5 runtime is not supported for that architecture." -ForegroundColor DarkGray
+            continue
+        }
+
         $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
         $installVersion = ConvertTo-DotNetInstallScriptVersion $version
         $installArgs = @{
