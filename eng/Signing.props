@@ -60,6 +60,7 @@
     ReSign 3rd party files that we use in the product
   -->
   <ItemGroup>
+    <FileSignInfo Include="Humanizer.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
