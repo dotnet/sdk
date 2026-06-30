@@ -92,6 +92,7 @@ install mode.
 - Do not point committed `global.json` files at user-specific dotnetup hive paths.
 - Do not use symlinks or junctions for the v1 repository projection model.
 - Do not solve cross-repository SDK deduplication in v1.
+- Do not support cross-architecture repo-local installs in v1.
 - Do not make hermetic SDK resolution the default.
 
 ## Vocabulary
@@ -124,6 +125,23 @@ Before implementation starts, maintainers should confirm with the .NET host team
 that `sdk.paths` is intended to be a supported contract for committed
 repository-level `global.json` files, not only an experimental prerelease testing
 escape hatch.
+
+## Command surface
+
+| Command | Meaning |
+| --- | --- |
+| `dotnetup sdk install --install-path here` | Read the nearest `global.json` and set up `.dotnet/` for that SDK. |
+| `dotnetup sdk install <version> --install-path here` | Install an exact SDK version into `.dotnet/` and create/merge `global.json`. |
+| `dotnetup sdk install <channel> --install-path here` | Resolve a channel, install the resolved SDK into `.dotnet/`, write the concrete version to `global.json`, and track the original channel in the manifest. |
+| `dotnetup sdk install <version-or-channel> --install-path here --update-gitignore` | Also add `.dotnet/` to `.gitignore` if needed. |
+
+| Option | Description |
+| --- | --- |
+| `--install-path here` | Enables repository SDK setup mode. `here` is a sentinel, not a literal directory. |
+| `--update-gitignore` | Requests a `.gitignore` edit so `.dotnet/` is ignored. Without this option, dotnetup warns if `.dotnet/` is not ignored. |
+
+Root-level `dotnetup install --local` and `dotnetup sdk install --local` are not
+part of this proposal.
 
 ## User experience
 
@@ -309,6 +327,10 @@ job, or contributor can clone the repository and see the same path value. The
 path does not contain a user profile, machine-specific dotnetup location, or
 absolute drive root.
 
+v1 should install the SDK for the native architecture of the running dotnetup
+process. Architecture overrides for `--install-path here` are out of scope until
+dotnetup's broader cross-architecture story is designed.
+
 ### Rejected: dotnetup-managed hive in `global.json`
 
 The dotnetup-managed hive should not be the v1 install root for this scenario.
@@ -357,6 +379,7 @@ larger problem than simplicity and portability.
 ## Host prerequisites
 
 `global.json` `sdk.paths` requires a .NET 10 or later host.
+See [Host contract](#host-contract) for the underlying SDK-resolution contract.
 
 dotnetup must make this visible because older hosts ignore `sdk.paths`. If a user
 sets up a repository with `.dotnet/` but later runs `dotnet build` through a .NET
@@ -472,6 +495,8 @@ The `lts` and `preview` rows are approximations for host fallback behavior:
 `global.json` cannot directly express "LTS channel" or "preview channel".
 dotnetup preserves the exact requested channel in its manifest and uses that
 manifest entry during `dotnetup sdk update`.
+For example, `latestPatch` does not encode "LTS"; it only describes the host
+fallback policy for the concrete version written to `global.json`.
 
 For all channel rows, `rollForward` describes host fallback behavior. dotnetup
 uses the stored manifest channel, not the `global.json` roll-forward value, to
@@ -514,7 +539,7 @@ Example:
         {
           "component": "sdk",
           "versionOrChannel": "10.0.1xx",
-          "installSource": "global.json",
+          "installSource": "explicit",
           "globalJsonPath": "C:\\src\\my-repo\\global.json"
         }
       ],
@@ -534,6 +559,13 @@ Example:
   ]
 }
 ```
+
+`installSource` should use the existing manifest meanings:
+
+| Value | Meaning for repository setup |
+| --- | --- |
+| `explicit` | The version or channel came from the `dotnetup sdk install ... --install-path here` command line. |
+| `global.json` | The version or channel was derived from an existing `global.json` because the user did not pass one on the command line. |
 
 If the repository is moved, the old absolute paths may no longer exist. Commands
 that read the manifest should handle that gracefully:
@@ -606,6 +638,36 @@ Repository SDK roots:
       SDK 10.0.102                        (x64)
 ```
 
+If `dotnetup list --json` or `dotnetup --info --json` includes repository roots,
+the JSON shape should expose the same distinction as the human-readable output.
+At minimum, repository entries should include:
+
+```json
+{
+  "component": "sdk",
+  "version": "10.0.102",
+  "installRoot": "C:\\src\\my-repo\\.dotnet",
+  "architecture": "x64",
+  "rootKind": "repository",
+  "repositoryRoot": "C:\\src\\my-repo",
+  "globalJsonPath": "C:\\src\\my-repo\\global.json",
+  "versionOrChannel": "10.0.1xx"
+}
+```
+
+Normal dotnetup-managed roots should either omit these repository-only fields or
+set `rootKind` to `dotnetupManaged`. That compatibility decision should be made
+when the list/info JSON schema is updated.
+
+Phase 3 must update the `dotnetup list` and `dotnetup --info` specs before this
+feature is considered complete, because repository-root JSON fields are part of
+the management surface proposed here.
+
+For `dotnetup list --no-verify`, repository roots should behave like normal
+install roots: read manifest state without checking whether `.dotnet/` or the
+associated `global.json` still exists on disk. Verification-enabled list/info
+should detect missing repository roots and report them as stale.
+
 ## Uninstall and garbage collection
 
 Uninstall should remove dotnetup's install spec and dotnetup-owned SDK files when
@@ -674,6 +736,50 @@ tree is not a Git repository, dotnetup should fall back to checking `.gitignore`
 files in the configuration root. If no `.gitignore` is found, warn
 unconditionally.
 
+## Concurrency
+
+The full repository setup operation should run under the same process-wide
+installation-state lock used for normal install/update/uninstall operations
+(`ScopedMutex` over `MutexNames.ModifyInstallationStates`).
+
+The lock should cover:
+
+- resolving the requested version/channel;
+- downloading and extracting SDK payloads into `.dotnet/`;
+- editing `global.json`;
+- editing `.gitignore` when `--update-gitignore` is requested;
+- writing the dotnetup shared manifest.
+
+This prevents two dotnetup processes from racing on the same repository root or
+writing manifest state that does not match the final `global.json`. The
+implementation should still use atomic file replacement for individual file
+writes, but atomic writes alone are not enough because this feature updates
+multiple pieces of state.
+
+If a future implementation needs more concurrency, it can add a per-repository
+lock layered under the global installation-state lock. The v1 design should
+prefer correctness and predictable repository state over parallel install
+throughput.
+
+## Non-interactive behavior
+
+This command must not prompt in non-interactive or CI mode.
+
+| Situation | Interactive behavior | Non-interactive behavior |
+| --- | --- | --- |
+| No `global.json` and no version/channel | Fail with an actionable error | Same failure |
+| `global.json` found above the current directory with no `.git` boundary | Show the resolved root before writing | Fail unless the current directory contains the selected `global.json` or the user supplied an explicit version/channel |
+| Active host is older than .NET 10 | Warn after setup succeeds | Warn after setup succeeds; do not fail because the SDK was installed successfully |
+| `.dotnet/` is not ignored | Warn and suggest `--update-gitignore` | Warn and suggest `--update-gitignore`; do not auto-edit |
+| Valid `global.json` can be read but formatting/comments cannot be preserved | Warn before writing normalized JSON | Warn to the diagnostic stream and proceed, preserving JSON properties but not formatting |
+| `.dotnet` is a symlink, junction, mount point, or other reparse point | Fail | Same failure |
+| `global.json` is malformed | Fail without writing | Same failure |
+
+Warnings should be written to the standard diagnostic/error stream used by
+dotnetup so they are visible when command output is redirected. `--quiet`, if it
+exists or is added later, should not suppress warnings that indicate the setup may
+not be honored by later `dotnet` commands.
+
 ## CI usage
 
 The CI story is the same as the clean-checkout story: CI should run dotnetup
@@ -700,6 +806,88 @@ This feature does not make CI hermetic by default because `"$host$"` remains in
 `sdk.paths`. Teams that require hermetic SDK resolution should wait for an
 explicit hermetic option rather than relying on v1 defaults.
 
+## Exit codes
+
+Until dotnetup has a broader exit-code convention, this feature should use the
+same simple convention as other dotnetup commands: `0` for success and `1` for
+expected command failures or unexpected errors. The important contract is which
+situations are success, warnings, and failures:
+
+| Result | Exit code |
+| --- | --- |
+| SDK installed or setup already up to date | `0` |
+| SDK installed, but host is older than .NET 10 | `0` with warning |
+| SDK installed, but `.dotnet/` is not ignored | `0` with warning |
+| No `global.json` and no version/channel | `1` |
+| Non-interactive root discovery would mutate a parent `global.json` without a `.git` boundary | `1` |
+| Malformed `global.json` | `1` |
+| Existing `.dotnet` is a symlink/reparse point | `1` |
+| Conflicting unknown files in `.dotnet/` | `1` |
+| Download, extraction, or hash verification failure | `1` |
+
+## Testing
+
+Implementation should include tests for the behavior that makes this feature
+different from normal installs:
+
+- root discovery, including nearest `global.json`, `.git` ceiling, nested
+  `global.json`, no-`global.json`, and non-interactive parent-root failure;
+- `global.json` merging, including preserving unknown top-level sections,
+  preserving unrelated `sdk` properties, adding `paths`, avoiding duplicate
+  entries, preserving `$host$`, and handling malformed JSON without writing;
+- version/channel mapping to `sdk.version`, `rollForward`, `allowPrerelease`, and
+  manifest `versionOrChannel`;
+- repository-root manifest entries, including moved/deleted repositories and
+  stale-entry list/update/gc behavior;
+- existing `.dotnet/` content, including unknown non-conflicting files and
+  unknown files that conflict with target SDK subcomponent paths;
+- idempotency when setup is run multiple times;
+- `.gitignore` detection and `--update-gitignore`;
+- symlink, junction, mount point, and reparse-point rejection for `.dotnet`;
+- non-interactive/CI warning and failure behavior;
+- host-version warning behavior for .NET hosts older than 10;
+- list/info output for repository roots, including JSON output if list/info JSON
+  is extended to include root kind and `globalJsonPath`.
+
+## Implementation phases
+
+### Phase 1: Repository setup for exact SDK versions
+
+Goal: `dotnetup sdk install 10.0.100 --install-path here` installs an exact SDK
+into `.dotnet/` and creates or merges `global.json`.
+
+This phase should include root discovery, `.dotnet` safety checks,
+`global.json` merge/write behavior, manifest root-kind tracking, idempotency,
+`.gitignore` warning behavior, and host-version warnings.
+
+### Phase 2: Existing `global.json` and channel support
+
+Goal: `dotnetup sdk install --install-path here` and
+`dotnetup sdk install 10.0.1xx --install-path here` work with existing
+`global.json` files and channel inputs.
+
+This phase adds channel-to-roll-forward mapping, manifest preservation of the
+original channel, update behavior for channel specs, and prerelease
+`allowPrerelease` handling.
+
+### Phase 3: Repository-aware list, info, update, uninstall, and GC
+
+Goal: repository roots participate coherently in dotnetup management commands.
+
+This phase adds human-readable and JSON list/info output, current-directory
+scoped repository update behavior, stale repository detection, conservative
+uninstall/GC for dotnetup-owned files, and moved/deleted repository handling.
+If JSON output changes, this phase should also update the `dotnetup-list.md` and
+`dotnetup-info.md` schemas so the docs stay in sync.
+
+### Phase 4: Optional `.gitignore` editing
+
+Goal: `--update-gitignore` edits `.gitignore` safely.
+
+This can ship with Phase 1 if it is small, but it is separable. The core feature
+can warn about `.dotnet/` not being ignored before it supports editing
+`.gitignore` automatically.
+
 ## Security and portability requirements
 
 ### Symlinks and reparse points
@@ -725,6 +913,11 @@ If `.dotnet/` exists as a normal directory:
 - dotnetup must not delete unknown files;
 - if files conflict with the SDK being installed, dotnetup should fail with a
   clear diagnostic rather than overwrite unrelated content.
+
+A conflict means a file or directory already exists at a path dotnetup needs to
+write for the target SDK subcomponent, and that existing path is not recorded in
+the manifest as dotnetup-owned. Unknown files elsewhere under `.dotnet/` are not
+conflicts and should be left in place.
 
 ### Environment
 
@@ -820,3 +1013,13 @@ different repository bootstrap design.
 
 Maintainers should also confirm that the .NET 10 host `sdk.paths` contract is
 stable enough for committed repository files before approving implementation.
+
+Specific decisions to confirm before implementation:
+
+1. Is `--install-path here` the accepted API shape for v1?
+2. Is repo-owned `.dotnet/` the accepted install-root model for v1?
+3. Is the .NET 10 `sdk.paths` host contract stable enough for committed
+   repository `global.json` files?
+4. Are the `lts` and `preview` roll-forward values acceptable as host fallback
+   approximations, with dotnetup preserving the real channel in the manifest?
+5. Should `--update-gitignore` be included in v1, or should v1 warn only?
