@@ -429,40 +429,55 @@ public sealed class DotnetupTelemetry : IDisposable
     internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? DurableFlushTimeoutMs : DefaultFlushTimeoutMs;
 
     /// <summary>
-    /// Drains both the tracer and logger batch export processors out to
-    /// their network exporters within <paramref name="timeoutMilliseconds"/>.
+    /// Drains the logger and tracer batch export processors out to their
+    /// network exporters within <paramref name="timeoutMilliseconds"/>.
     /// Returns as soon as the queues are empty — the timeout is just a
-    /// ceiling — so passing a larger budget in CI never adds latency on
-    /// happy-path runs. Whatever doesn't drain in time falls back to the
-    /// AzMonitor exporter's <c>StorageDirectory</c> retry queue.
+    /// ceiling — so passing a larger budget never adds latency on happy-path
+    /// runs. Whatever doesn't drain in time falls back to the AzMonitor
+    /// exporter's <c>StorageDirectory</c> retry queue.
     /// </summary>
     /// <param name="timeoutMilliseconds">Maximum time to wait for flush. If not specified, uses <see cref="GetFlushTimeoutMs"/>.</param>
     public void Flush(int? timeoutMilliseconds = null)
     {
-        var timeout = timeoutMilliseconds ?? GetFlushTimeoutMs();
+        FlushCore(timeoutMilliseconds ?? GetFlushTimeoutMs());
+    }
+
+    /// <summary>
+    /// Flushes the providers against a single shared deadline. ForceFlush is
+    /// synchronous and blocking, so flushing the logger and tracer with the
+    /// full budget each would let a dead network cost up to 2× the budget.
+    /// Instead the logger goes first with the full budget — the completion
+    /// LogRecord is the data-x signal (AppInsights <c>traces</c>) — and the
+    /// tracer gets only the time left over (spans are secondary: in-process by
+    /// default, network-exported only under the perf-trace opt-in).
+    /// </summary>
+    private void FlushCore(int timeoutMilliseconds)
+    {
+        var budget = Math.Max(0, timeoutMilliseconds);
+        var deadline = Environment.TickCount64 + budget;
 
         try
         {
-            _tracerProvider?.ForceFlush(timeout);
+            // Logger first: the primary data-x signal. Each LogRecord is fully
+            // decorated by BuildCompletionState at _logger.Log(...) time, so
+            // ForceFlush only has to drain an already-self-described queue.
+            _loggerProvider?.ForceFlush(budget);
         }
         catch
         {
-            // Never let telemetry flush failures crash the app
+            // Never let telemetry flush failures crash the app.
         }
 
         try
         {
-            // Also drain the LogRecord batch processor — this is the
-            // primary data-x signal (AppInsights `traces` table) and was
-            // previously only flushed on Dispose with the OTel default
-            // budget. Each LogRecord is fully decorated by
-            // BuildCompletionState at _logger.Log(...) time, so ForceFlush
-            // only has to drain an already-self-described queue.
-            _loggerProvider?.ForceFlush(timeout);
+            // Tracer gets the leftover budget so the two flushes share one
+            // deadline rather than summing to 2× on a slow network.
+            var remaining = (int)Math.Clamp(deadline - Environment.TickCount64, 0, budget);
+            _tracerProvider?.ForceFlush(remaining);
         }
         catch
         {
-            // Never let telemetry flush failures crash the app
+            // Never let telemetry flush failures crash the app.
         }
     }
 
