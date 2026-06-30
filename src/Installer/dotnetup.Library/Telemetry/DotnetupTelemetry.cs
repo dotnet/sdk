@@ -78,7 +78,6 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <c>traces</c> table (the data-x signal).
     /// </summary>
     private readonly KeyValuePair<string, object?>[] _commonProperties = [];
-    private bool _disposed;
 
     /// <summary>
     /// Gets whether telemetry is enabled.
@@ -625,33 +624,37 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Disposes the telemetry provider.
+    /// Test-only teardown. Production never calls this — <c>Program.Main</c>
+    /// drains via <c>Flush</c> and lets process exit reclaim the
+    /// providers. It exists so unit tests that construct telemetry don't leak
+    /// background batch-export threads or the hosting <see cref="ServiceProvider"/>
+    /// between cases.
     /// </summary>
+    /// <remarks>
+    /// Mirrors Aspire's <c>TelemetryManager.Dispose</c>: shut the providers
+    /// down with a <c>0</c> (non-blocking) budget rather than relying on the
+    /// providers' own <see cref="IDisposable.Dispose"/>, whose OTel
+    /// <see cref="LoggerProvider"/> implementation calls
+    /// <c>Shutdown(Timeout.Infinite)</c> and can hang a test run on a slow or
+    /// sentinel network. <c>Shutdown(0)</c> tears down immediately without
+    /// waiting for a network drain.
+    /// </remarks>
     public void Dispose()
     {
-        if (_disposed)
-        {
-            return;
-        }
+        // Shut the providers down first with a zero (non-blocking) budget so
+        // the ServiceProvider.Dispose() cascade below — which would otherwise
+        // invoke the OTel LoggerProvider's unbounded Shutdown(Timeout.Infinite)
+        // — has nothing left to drain and returns immediately.
+        try { _loggerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
+        try { _tracerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
 
-        // Belt-and-braces drain on paths that reach Dispose without
-        // calling Flush first.
-        try { _loggerProvider?.ForceFlush(GetFlushTimeoutMs()); } catch { /* never crash on telemetry */ }
-
-        // Dispose the logging service provider before the tracer so its
-        // BatchLogRecordExportProcessor flushes queued LogRecords (the
-        // primary data-x signal) before shutdown begins. Disposing the
-        // ServiceProvider disposes both the ILoggerFactory and the OTel
-        // LoggerProvider it owns; the explicit field disposes below
-        // satisfy CA2213 (the analyzer can't see the transitive
-        // ownership) and are idempotent thanks to the standard
-        // double-dispose guard on both types.
+        // Release owned objects so tests don't leak. _services transitively
+        // owns the ILoggerFactory and the OTel LoggerProvider; the explicit
+        // field disposes satisfy CA2213 and are idempotent.
         try { _loggerFactory?.Dispose(); } catch { /* never crash on telemetry */ }
         try { _loggerProvider?.Dispose(); } catch { /* never crash on telemetry */ }
         try { _services?.Dispose(); } catch { /* never crash on telemetry */ }
-
         _tracerProvider?.Dispose();
-        _disposed = true;
     }
 
     private static string GetVersion()
