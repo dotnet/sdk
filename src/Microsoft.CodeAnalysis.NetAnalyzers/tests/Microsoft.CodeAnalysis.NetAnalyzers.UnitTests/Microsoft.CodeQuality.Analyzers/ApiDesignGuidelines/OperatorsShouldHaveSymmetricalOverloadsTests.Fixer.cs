@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorsShouldHaveSymmetricalOverloadsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorsShouldHaveSymmetricalOverloadsFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OperatorsShouldHaveSymmetricalOverloadsFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestEqualityAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -34,7 +34,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestOverloads1Async()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -62,7 +62,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestInequalityAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -82,7 +82,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestLessThanAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -102,7 +102,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestLessThanOrEqualAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -122,7 +122,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestGreaterThanAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -142,7 +142,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestGreaterThanOrEqualAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -162,7 +162,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasicTestEqualityAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -183,7 +183,7 @@ Public class A
 end class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasicTestInequalityAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -204,7 +204,7 @@ Public class A
 end class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasicTestLessThanAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(

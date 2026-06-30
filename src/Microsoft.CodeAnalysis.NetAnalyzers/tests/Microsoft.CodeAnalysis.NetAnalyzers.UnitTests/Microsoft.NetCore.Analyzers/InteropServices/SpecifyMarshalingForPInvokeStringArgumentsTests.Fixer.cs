@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.PInvokeDiagnosticAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.InteropServices.CSharpSpecifyMarshalingForPInvokeStringArgumentsFixer>;
@@ -12,11 +11,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
+    [TestClass]
     public class SpecifyMarshalingForPInvokeStringArgumentsFixerTests
     {
         #region CA2101 Fixer tests 
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101FixMarshalAsCSharpTestAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -46,7 +46,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101FixMarshalAsBasicTestAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -82,7 +82,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101FixCharSetCSharpTestAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -112,7 +112,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101FixCharSetBasicTestAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -152,7 +152,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101FixDeclareBasicTestAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

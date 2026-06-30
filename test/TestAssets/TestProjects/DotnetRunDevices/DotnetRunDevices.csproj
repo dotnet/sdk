@@ -77,6 +77,18 @@
     <Message Text="ComputeRunArguments: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
   </Target>
 
+  <!-- Simulate a workload target that adds/changes @(RuntimeEnvironmentVariable) items before the app runs.
+       Used to verify the CLI honors these changes when launching the app. -->
+  <Target Name="_ModifyRuntimeEnvironmentVariable"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(ModifyRuntimeEnvironmentVariable)' == 'true'">
+    <ItemGroup>
+      <RuntimeEnvironmentVariable Remove="RUNE_FOO" />
+      <RuntimeEnvironmentVariable Include="RUNE_FOO" Value="modified-by-target" />
+      <RuntimeEnvironmentVariable Include="RUNE_INJECTED" Value="injected-by-target" />
+    </ItemGroup>
+  </Target>
+
   <!-- DeployToDevice target for testing, ResolveFrameworkReferences mimics Android -->
   <Target Name="DeployToDevice" DependsOnTargets="ResolveFrameworkReferences">
     <Message Text="DeployToDevice: Deployed to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" />
