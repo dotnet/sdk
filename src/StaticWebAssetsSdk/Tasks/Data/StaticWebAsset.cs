@@ -1174,6 +1174,12 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         TaskLoggingHelper log)
         => MaterializeFrameworkAsset(asset, intermediateOutputPath, projectPackageId, projectBasePath, log, TaskEnvironment.Fallback);
 
+    /// <summary>
+    /// Materializes a framework asset by copying it to the consuming project's intermediate directory
+    /// and updating its metadata (Identity, ContentRoot, SourceId, BasePath, SourceType, AssetMode).
+    /// Used by both the P2P and NuGet package paths.
+    /// Returns the old identity and old base path so callers can remap endpoints and related assets.
+    /// </summary>
     public static (StaticWebAsset Asset, string OldIdentity, string OldBasePath) MaterializeFrameworkAsset(
         StaticWebAsset asset,
         string intermediateOutputPath,
