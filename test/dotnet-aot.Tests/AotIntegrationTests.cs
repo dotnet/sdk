@@ -129,6 +129,8 @@ public class AotIntegrationTests
         Assert.AreEqual(0, exitCode);
         stdout.Should().Contain(".NET SDK:");
         stdout.Should().Contain("Version:");
+        stdout.Should().Contain("Workload version:");
+        stdout.Should().Contain("MSBuild version:");
         stdout.Should().Contain("Runtime Environment:");
     }
 
