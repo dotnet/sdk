@@ -22,8 +22,6 @@ internal class InstallWorkflow
     private readonly InstallCommand _command;
     private readonly InstallPathResolver _installPathResolver;
 
-    // Resolved lazily and cached so the (potentially PATH-probing) lookup runs at most
-    // once per workflow, even when recording telemetry for multiple install specs.
     private readonly Lazy<DotnetInstallRootConfiguration?> _currentInstallRoot;
 
     public InstallWorkflow(InstallCommand command)
