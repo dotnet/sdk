@@ -352,9 +352,9 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <param name="operation">The tracked operation to tag.</param>
     /// <param name="ex">The exception to record.</param>
     /// <param name="errorCode">Optional error code override.</param>
-    internal void RecordException(TrackedOperation? operation, Exception ex, string? errorCode = null)
+    internal void RecordException(TrackedOperation operation, Exception ex, string? errorCode = null)
     {
-        if (operation == null || !Enabled)
+        if (!Enabled)
         {
             return;
         }
