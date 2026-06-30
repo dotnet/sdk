@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
-            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
         [ClassCleanup]
         public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();

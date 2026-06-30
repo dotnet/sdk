@@ -17,6 +17,12 @@ namespace Microsoft.DotNet.Cli;
 
 static unsafe partial class NativeEntryPoint
 {
+    /// <summary>
+    ///  When set by the native entry point, AOT-capable commands use this instead of
+    ///  discovering the dotnet root via PATH / environment probing.
+    /// </summary>
+    internal static string? DotnetRoot { get; set; }
+
     [UnmanagedCallersOnly(EntryPoint = "dotnet_execute")]
     static int Execute(
         nint hostPathPtr,      // const char_t* host_path
@@ -119,6 +125,10 @@ static unsafe partial class NativeEntryPoint
                 AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
             }
 
+            // Surface the host-provided dotnet root so AOT-capable commands (e.g. `sdk check`)
+            // can use it instead of re-probing PATH / environment for the dotnet installation.
+            DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
+
             // Try the AOT-compiled path for supported commands (if enabled)
             if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
             {
@@ -129,41 +139,54 @@ static unsafe partial class NativeEntryPoint
                     mainActivity?.SetDisplayName(parseResult);
                 }
 
-                if (parseResult.CanBeInvoked())
+                // Run the cross-cutting first-run experience (first-time-use notice, telemetry message,
+                // ASP.NET dev cert, global-tools PATH, workload integrity check) before invoking the command
+                // in-process, mirroring the managed CLI's Program.ProcessArgsAndExecute. On the AOT path this
+                // returns false when first-run is still pending (the crypto/NuGet/MSBuild-dependent parts are
+                // unavailable here), signalling that this invocation must be deferred to the managed CLI, which
+                // performs the complete first-run exactly once. A failure is treated the same way - defer to
+                // the managed CLI, which reproduces the exact behavior (and error reporting).
+                bool firstRunCompleted;
+                try
                 {
-                    using var invoke = Activities.Source.StartActivity("invocation");
-                    try
-                    {
-                        exitCode = Parser.Invoke(parseResult);
-                        success = true;
-                        // The built-in command ran in-process (no managed fallback), so emit the same
-                        // top-level parser telemetry the managed CLI sends from Program.ProcessArgsAndExecute.
-                        SendAotParserTelemetry(parseResult, globalJsonState);
-                        return exitCode;
-                    }
-                    catch (CommandNotAvailableInAotException)
-                    {
-                        // The parsed command requires the managed CLI — fall through to the managed fallback below.
-                    }
-                    catch (Exception ex)
-                    {
-                        invoke?.SetStatus(ActivityStatusCode.Error);
-                        invoke?.AddException(ex);
-                        exitCode = Parser.ExceptionHandler(ex, parseResult);
-                        success = false;
-                        // The command was handled in-process (terminal error, not a managed fallback),
-                        // so still emit the top-level parser telemetry, as the managed CLI does.
-                        SendAotParserTelemetry(parseResult, globalJsonState);
-                        return exitCode;
-                    }
+                    firstRunCompleted = FirstRunExperience.Setup(parseResult);
                 }
-                // An unrecognized top-level token is either an external command (`dotnet ef`, a global
-                // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
-                // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
-                // project tools, and anything that does not resolve to the managed CLI.
-                else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, globalJsonState, out exitCode, out success))
+                catch (Exception ex)
                 {
-                    return exitCode;
+                    Debug.WriteLine($"First-run setup failed in the AOT entry point; deferring to the managed CLI: {ex}");
+                    firstRunCompleted = false;
+                }
+
+                if (firstRunCompleted)
+                {
+                    if (parseResult.CanBeInvoked())
+                    {
+                        try
+                        {
+                            // Invoke the built-in command in-process using the shared CommandInvocation
+                            // helper, identical to the managed CLI: same exit-code handling, including the
+                            // "new" command's 127 adjustment and Parser.ExceptionHandler. This keeps the
+                            // two entry points in parity.
+                            exitCode = CommandInvocation.ExecuteInternalCommand(parseResult);
+                            success = true;
+                            // The built-in command ran in-process (no managed fallback), so emit the same
+                            // top-level parser telemetry the managed CLI sends from Program.ProcessArgsAndExecute.
+                            SendAotParserTelemetry(parseResult, globalJsonState);
+                            return exitCode;
+                        }
+                        catch (CommandNotAvailableInAotException)
+                        {
+                            // The parsed command requires the managed CLI — fall through to the managed fallback below.
+                        }
+                    }
+                    // An unrecognized top-level token is either an external command (`dotnet ef`, a global
+                    // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
+                    // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
+                    // project tools, and anything that does not resolve to the managed CLI.
+                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, globalJsonState, out exitCode, out success))
+                    {
+                        return exitCode;
+                    }
                 }
             }
 
