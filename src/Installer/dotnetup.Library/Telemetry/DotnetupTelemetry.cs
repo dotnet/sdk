@@ -79,7 +79,6 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </summary>
     private readonly KeyValuePair<string, object?>[] _commonProperties = [];
     private bool _disposed;
-    private bool _flushed;
 
     /// <summary>
     /// Gets whether telemetry is enabled.
@@ -449,8 +448,6 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             // Never let telemetry flush failures crash the app
         }
-
-        _flushed = true;
     }
 
     /// <summary>
@@ -638,13 +635,8 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         // Belt-and-braces drain on paths that reach Dispose without
-        // calling Flush first. Skipped when Flush() already ran so we don't
-        // pay another wait against an empty queue (or, worse, a slow
-        // network when the prior Flush's small budget already expired).
-        if (!_flushed)
-        {
-            try { _loggerProvider?.ForceFlush(GetFlushTimeoutMs()); } catch { /* never crash on telemetry */ }
-        }
+        // calling Flush first.
+        try { _loggerProvider?.ForceFlush(GetFlushTimeoutMs()); } catch { /* never crash on telemetry */ }
 
         // Dispose the logging service provider before the tracer so its
         // BatchLogRecordExportProcessor flushes queued LogRecords (the
