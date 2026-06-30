@@ -13,32 +13,28 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests;
 public class SymbolFilterFactoryTests
 {
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void Test_FilterFromFiles(bool includeCustomType)
     {
         Test_FilterFromFiles_Internal(includeCustomType, accessibilitySymbolFilter: null);
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void Test_FilterFromFiles_CustomAccessibilityFilter(bool includeCustomType)
     {
         Test_FilterFromFiles_Internal(includeCustomType, new AccessibilitySymbolFilter(includeInternalSymbols: true));
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void Test_FilterFromList(bool includeCustomType)
     {
         Test_FilterFromList_Internal(includeCustomType, accessibilitySymbolFilter: null);
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void Test_FilterFromList_WithCustomAccessibilityFilter(bool includeCustomType)
     {
         Test_FilterFromList_Internal(includeCustomType, new AccessibilitySymbolFilter(includeInternalSymbols: true));

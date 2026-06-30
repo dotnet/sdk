@@ -163,8 +163,7 @@ namespace MyNamespace
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void LoadMatchingAssemblies_DifferentIdentity(bool validateIdentities)
         {
             var assetInfo = GetSimpleTestAsset();
@@ -260,8 +259,7 @@ namespace MyNamespace
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void LoadAssemblyResolveReferences_WarnsWhenEnabled(bool resolveReferences)
         {
             var assetInfo = GetSimpleTestAsset();
