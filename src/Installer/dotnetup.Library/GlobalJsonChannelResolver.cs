@@ -26,7 +26,7 @@ internal static class GlobalJsonChannelResolver
     /// <item><c>latestMajor</c> — <c>latest</c></item>
     /// </list>
     /// </para>
-    /// Returns null if the file doesn't exist, can't be parsed, or doesn't specify an SDK version.
+    /// Returns null if the file doesn't exist or doesn't specify an SDK version.
     /// </summary>
     public static string? ResolveChannel(string globalJsonPath)
     {
@@ -48,9 +48,9 @@ internal static class GlobalJsonChannelResolver
             var rollForward = contents.Sdk.RollForward;
             return DeriveChannel(versionString, rollForward);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            return null;
+            throw GlobalJsonModifier.CreateMalformedGlobalJsonException(globalJsonPath, ex);
         }
     }
 

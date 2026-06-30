@@ -8,6 +8,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
 
@@ -177,6 +178,43 @@ public class InstallWorkflowTests : IDisposable
         result.Should().NotBeNull();
         result!.GlobalJsonPath.Should().Be(globalJsonPath);
         result.GlobalJsonContents.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetGlobalJsonInfoForInstall_ThrowsUserFailure_WhenMalformedGlobalJsonMustBeParsed()
+    {
+        using var testEnv = new TestEnvironment(configureEnvironment: false);
+        string globalJsonPath = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJsonPath, "{ malformed");
+
+        var act = () => InstallWorkflow.GetGlobalJsonInfoForInstall(
+            [new MinimalInstallSpec(InstallComponent.Runtime, "9.0")],
+            installPath: null,
+            updateGlobalJson: false,
+            initialDirectory: testEnv.TempRoot);
+
+        var exception = act.Should().Throw<DotnetInstallException>()
+            .Which;
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
+        exception.Message.Should().Contain(globalJsonPath);
+        exception.InnerException.Should().BeOfType<System.Text.Json.JsonException>();
+
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(exception);
+        errorInfo.ErrorType.Should().Be(nameof(DotnetInstallErrorCode.MalformedGlobalJson));
+        errorInfo.Category.Should().Be(ErrorCategory.User);
+    }
+
+    [Fact]
+    public void ResolveChannel_ThrowsUserFailure_WhenMalformedGlobalJsonMayProvideChannel()
+    {
+        using var testEnv = new TestEnvironment(configureEnvironment: false);
+        string globalJsonPath = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJsonPath, "{ malformed");
+
+        var act = () => GlobalJsonChannelResolver.ResolveChannel(globalJsonPath);
+
+        act.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.MalformedGlobalJson);
     }
 
     #endregion

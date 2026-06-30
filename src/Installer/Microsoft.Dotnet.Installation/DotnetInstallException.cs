@@ -117,6 +117,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>An IT-managed policy requires code-signed downloads, so the install was blocked before falling back to the blob feed where only SHA-512 verification is performed.</summary>
     UnsignedDownloadBlockedByPolicy,
+
+    /// <summary>A global.json file that affects the request is malformed.</summary>
+    MalformedGlobalJson,
 }
 
 /// <summary>

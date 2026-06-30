@@ -282,7 +282,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, json, encoding);
 
-        var info = GlobalJsonModifier.GetGlobalJsonInfo(_testDir);
+        var info = GlobalJsonModifier.GetGlobalJsonInfo(_testDir, parseContents: true);
 
         info.GlobalJsonContents.Should().NotBeNull();
         info.GlobalJsonContents!.Sdk.Should().NotBeNull();
