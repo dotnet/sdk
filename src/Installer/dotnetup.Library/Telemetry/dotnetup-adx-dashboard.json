@@ -235,7 +235,7 @@
             "visualType": "table",
             "column": "SuccessRate",
             "themeName": "traffic-lights",
-            "minValue": "85",
+            "minValue": "0",
             "maxValue": "100",
             "reverseTheme": false
           }
@@ -270,7 +270,7 @@
             "visualType": "table",
             "column": "SuccessRate",
             "themeName": "traffic-lights",
-            "minValue": "85",
+            "minValue": "0",
             "maxValue": "100",
             "reverseTheme": false
           }
@@ -591,7 +591,7 @@
             "visualType": "table",
             "column": "SuccessRate",
             "themeName": "traffic-lights",
-            "minValue": "85",
+            "minValue": "0",
             "maxValue": "100",
             "reverseTheme": false
           }
@@ -625,7 +625,7 @@
             "visualType": "table",
             "column": "SuccessRate",
             "themeName": "traffic-lights",
-            "minValue": "85",
+            "minValue": "0",
             "maxValue": "100",
             "reverseTheme": false
           }
