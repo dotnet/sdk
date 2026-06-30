@@ -487,17 +487,27 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Drains the logger and tracer batch export processors out to their
-    /// network exporters within <paramref name="timeoutMilliseconds"/>.
-    /// Returns as soon as the queues are empty — the timeout is just a
-    /// ceiling — so passing a larger budget never adds latency on happy-path
-    /// runs. Whatever doesn't drain in time falls back to the AzMonitor
-    /// exporter's <c>StorageDirectory</c> retry queue.
+    /// Production flush entrypoint. Computes the budget from the process exit
+    /// code and the current environment (see <see cref="GetFlushTimeoutMs(int)"/>),
+    /// then drains the providers. Returns as soon as the queues are empty — the
+    /// budget is just a ceiling — so a larger budget never adds latency on
+    /// happy-path runs. Whatever doesn't drain in time falls back to the
+    /// AzMonitor exporter's <c>StorageDirectory</c> retry queue. Call once, on
+    /// process exit.
     /// </summary>
-    /// <param name="timeoutMilliseconds">Maximum time to wait for flush. If not specified, uses <see cref="GetFlushTimeoutMs"/>.</param>
-    public void Flush(int? timeoutMilliseconds = null)
+    /// <param name="exitCode">The process exit code; a non-zero value selects the durable budget.</param>
+    public void Flush(int exitCode)
     {
-        FlushCore(timeoutMilliseconds ?? GetFlushTimeoutMs(0));
+        FlushCore(GetFlushTimeoutMs(exitCode));
+    }
+
+    /// <summary>
+    /// Flushes with an explicit budget, bypassing environment classification.
+    /// For tests and diagnostics only.
+    /// </summary>
+    internal void FlushWithTimeout(int timeoutMilliseconds)
+    {
+        FlushCore(timeoutMilliseconds);
     }
 
     /// <summary>

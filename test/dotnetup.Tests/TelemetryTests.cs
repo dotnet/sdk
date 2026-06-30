@@ -320,7 +320,7 @@ public class DotnetupTelemetryTests : IDisposable
     public void Flush_DoesNotThrow()
     {
         // Even if telemetry is disabled, Flush should not throw
-        var exception = Record.Exception(() => DotnetupTelemetry.Instance.Flush());
+        var exception = Record.Exception(() => DotnetupTelemetry.Instance.Flush(0));
 
         Assert.Null(exception);
     }
@@ -328,7 +328,7 @@ public class DotnetupTelemetryTests : IDisposable
     [Fact]
     public void Flush_WithTimeout_DoesNotThrow()
     {
-        var exception = Record.Exception(() => DotnetupTelemetry.Instance.Flush(1000));
+        var exception = Record.Exception(() => DotnetupTelemetry.Instance.FlushWithTimeout(1000));
 
         Assert.Null(exception);
     }

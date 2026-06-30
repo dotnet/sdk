@@ -75,7 +75,7 @@ public class DotnetupProgram
         {
             TagRootForExitCode(rootOp, processExitCode);
             rootOp.Dispose(); // emit root event before flush
-            DisposeTelemetry();
+            FlushTelemetry(processExitCode);
         }
     }
 
@@ -110,17 +110,16 @@ public class DotnetupProgram
         return Parser.Invoke(args);
     }
 
-    private static void DisposeTelemetry()
+    private static void FlushTelemetry(int exitCode)
     {
         try
         {
             DotnetupTelemetry.Instance.WriteLogIfNecessary();
-            DotnetupTelemetry.Instance.Flush();
-
-            if (DotnetupTelemetry.Instance.IsOneAndDoneEnvironment)
-            {
-                DotnetupTelemetry.Instance.Dispose();
-            }
+            // Always flush; never Shutdown/Dispose in production. The flush
+            // budget is chosen from the exit code + environment, and process
+            // exit reclaims the providers. Disposing here would invoke the OTel
+            // LoggerProvider's unbounded Shutdown(Timeout.Infinite) drain.
+            DotnetupTelemetry.Instance.Flush(exitCode);
         }
         catch
         {
