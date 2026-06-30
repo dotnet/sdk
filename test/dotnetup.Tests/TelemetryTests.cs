@@ -1042,6 +1042,33 @@ public class TrackedOperationTests : IDisposable
     }
 
     [Fact]
+    public void EnsureErrorTypeTagged_WhenNoError_StampsEmptyString()
+    {
+        using (var op = Metrics.Track("test/ensure-error-type", activityName: "test-ensure-empty"))
+        {
+            op.EnsureErrorTypeTagged();
+        }
+
+        Assert.Single(_capturedActivities);
+        var tag = _capturedActivities[0].GetTagItem("error.type");
+        Assert.NotNull(tag);
+        Assert.Equal(string.Empty, tag);
+    }
+
+    [Fact]
+    public void EnsureErrorTypeTagged_WhenErrorAlreadySet_DoesNotOverwrite()
+    {
+        using (var op = Metrics.Track("test/ensure-error-type-keep", activityName: "test-ensure-keep"))
+        {
+            op.Tag("error.type", "InstallFailed");
+            op.EnsureErrorTypeTagged();
+        }
+
+        Assert.Single(_capturedActivities);
+        Assert.Equal("InstallFailed", _capturedActivities[0].GetTagItem("error.type"));
+    }
+
+    [Fact]
     public void TrackedOperation_NoEventWhenCallbackNotRegistered()
     {
         Metrics.OnTrackEvent = null;

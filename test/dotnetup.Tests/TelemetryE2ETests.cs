@@ -142,7 +142,13 @@ public class TelemetryE2ETests
             var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
             if (rootRecord != null)
             {
-                rootRecord.Attributes.Should().NotContainKey("error.type", "--help should not produce error attributes");
+                // error.type is always stamped for schema uniformity, but on a
+                // successful run it must be the empty string (never a real error
+                // code); error.category is only set on actual errors.
+                if (rootRecord.Attributes.TryGetValue("error.type", out string? helpErrorType))
+                {
+                    helpErrorType.Should().BeEmpty("--help succeeds, so error.type must be present-but-empty");
+                }
                 rootRecord.Attributes.Should().NotContainKey("error.category", "--help should not produce error attributes");
             }
         }

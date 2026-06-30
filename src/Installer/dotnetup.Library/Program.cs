@@ -96,6 +96,11 @@ public class DotnetupProgram
             rootOp.Tag("error.category", "user");
         }
 
+        // Always stamp error.type so success rows (and any zero-exit path that
+        // set nothing above) carry it as an explicit empty string rather than
+        // omitting the property.
+        rootOp.EnsureErrorTypeTagged();
+
         rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
         rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
     }
