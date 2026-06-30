@@ -3,13 +3,17 @@
 
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-using Microsoft.Testing.Platform.IPC;
 
 namespace dotnet.Tests.CommandTests.Test;
 
 [TestClass]
 public class TestApplicationProtocolVersionTests
 {
+    // Mirrors Microsoft.Testing.Platform.IPC.HandshakeMessagePropertyNames.SupportedProtocolVersions from the
+    // Microsoft.Testing.Platform.Internal.DotnetTest package. That type is [Embedded] and therefore not referenceable
+    // from this (separate) test assembly, so the wire value is inlined here.
+    private const byte SupportedProtocolVersionsProperty = 4;
+
     [TestMethod]
     [DataRow("1.0.0;1.1.0", "1.1.0")]
     [DataRow("1.0.0", "1.0.0")]
@@ -23,7 +27,7 @@ public class TestApplicationProtocolVersionTests
         var properties = new Dictionary<byte, string>();
         if (advertisedVersions is not null)
         {
-            properties[HandshakeMessagePropertyNames.SupportedProtocolVersions] = advertisedVersions;
+            properties[SupportedProtocolVersionsProperty] = advertisedVersions;
         }
 
         var handshake = new HandshakeMessage(properties);
