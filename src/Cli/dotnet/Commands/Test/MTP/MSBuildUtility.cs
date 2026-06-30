@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using System.Diagnostics.CodeAnalysis;
+using System.Collections.Immutable;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -207,27 +208,12 @@ internal static class MSBuildUtility
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
-        LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
-
-        // Terminal logger arguments (e.g. --tl:off, -terminalLogger:auto, -tlp:default=true)
-        // should be forwarded to MSBuild during the build phase rather than being passed to
-        // the test application as it doesn't recognize them. See https://github.com/dotnet/sdk/issues/52229.
-        var terminalLoggerArgs = new List<string>();
-        for (int i = otherArgs.Count - 1; i >= 0; i--)
-        {
-            if (LoggerUtility.IsTerminalLoggerArgument(otherArgs[i]))
-            {
-                terminalLoggerArgs.Add(otherArgs[i]);
-                otherArgs.RemoveAt(i);
-            }
-        }
-        terminalLoggerArgs.Reverse();
+        LoggerUtility.SeparateLoggerArguments(parseResult.UnmatchedTokens, out var loggerArgs, out var otherArgs);
 
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
-            .Concat(binLogArgs)
-            .Concat(terminalLoggerArgs);
+            .Concat(loggerArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)
@@ -276,7 +262,7 @@ internal static class MSBuildUtility
             Device: parseResult.GetValue(definition.DeviceOption));
     }
 
-    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(List<string> otherArgs)
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(ImmutableArray<string> otherArgs)
     {
         string? positionalProjectOrSolution = null;
         string? positionalTestModules = null;
@@ -286,7 +272,7 @@ internal static class MSBuildUtility
         // So, disabling validation is okay if the user scenario is valid.
         bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument = Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
 
-        for (int i = 0; i < otherArgs.Count; i++)
+        for (int i = 0; i < otherArgs.Length; i++)
         {
             var token = otherArgs[i];
             if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
