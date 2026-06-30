@@ -7,4 +7,5 @@ internal static class Versions
 {
     public static readonly Version Version3_1 = new(3, 1);
     public static readonly Version Version6_0 = new(6, 0);
+    public static readonly Version Version11_0 = new(11, 0);
 }

@@ -1513,6 +1513,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Avviso: le impostazioni di "{0}" non vengono usate perché "{1}" ha la precedenza.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
+      <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
+        <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
+        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <note>{Locked="--"}</note>
+      </trans-unit>
       <trans-unit id="RunDefinition">
         <source>Build and run a .NET project output.</source>
         <target state="translated">Compila ed esegue l'output di un progetto .NET.</target>
@@ -1801,8 +1806,8 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">Lo strumento '{0}' è già installato.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="translated">Lo strumento '{0}' (versione '{1}') è già installato.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommonNoManifestGuide">
@@ -1984,16 +1989,6 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
         <target state="translated">Specificato per aggiornare i carichi di lavoro usando {0} dalla riga di comando, ma il file global.json in {1} specificato per usare {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">Lo strumento '{0}' è stato reinstallato con la versione preliminare (versione '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">Lo strumento '{0}' è stato reinstallato con la versione stabile (versione '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">La versione richiesta {0} è inferiore a quella esistente {1}.</target>
@@ -2080,14 +2075,14 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
         <note />
       </trans-unit>
       <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
-        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
-        <target state="translated">Avviso: '{0}' sembra un'app basata su file, ma il file non è stato trovato ed è stata considerata come argomento di MSBuild.</target>
-        <note>{0} is the .cs file path argument.</note>
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</target>
+        <note>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</note>
       </trans-unit>
       <trans-unit id="WarningFileArgumentPassedToMSBuild">
-        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
-        <target state="translated">Avviso: '{0}' sembra un'app basata su file, ma è stata considerata come argomento di MSBuild. Per considerarla come app basata su file, usare 'dotnet {1} {0}'.</target>
-        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
+        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</target>
+        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>

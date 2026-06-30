@@ -240,11 +240,12 @@
   </Target>
 
   <Target Name="PublishTestCli">
-   <PropertyGroup>
-     <TestCliNuGetDirectoryTargetFramework>net10.0</TestCliNuGetDirectoryTargetFramework>
-     <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
-     <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
-   </PropertyGroup>
+    <PropertyGroup>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' != 'true'" >net10.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'" >$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' != 'true'" >net10.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
+    </PropertyGroup>
 
     <ItemGroup>
       <!-- https://github.com/microsoft/vstest/issues/1886 -->
@@ -280,11 +281,6 @@
 
     <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(OutputPath)/Containers/build" />
 
-    <MSBuild
-      Targets="Publish"
-      Projects="$(RepoRoot)/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
-      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/net472;TargetFramework=net472"
-      Condition="'$(OSName)' == 'win'" />
     <MSBuild
       Targets="Publish"
       Projects="$(RepoRoot)/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
