@@ -210,7 +210,7 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateLoggerArguments(parseResult.UnmatchedTokens, out var loggerArgs, out var otherArgs);
 
-        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(ref otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
             .Concat(loggerArgs);
@@ -262,7 +262,7 @@ internal static class MSBuildUtility
             Device: parseResult.GetValue(definition.DeviceOption));
     }
 
-    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(ImmutableArray<string> otherArgs)
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(ref ImmutableArray<string> otherArgs)
     {
         string? positionalProjectOrSolution = null;
         string? positionalTestModules = null;
@@ -282,7 +282,7 @@ internal static class MSBuildUtility
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
-                    otherArgs.RemoveAt(0);
+                    otherArgs = otherArgs.RemoveAt(0);
                     break;
                 }
                 else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
@@ -297,7 +297,7 @@ internal static class MSBuildUtility
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
-                    otherArgs.RemoveAt(0);
+                    otherArgs = otherArgs.RemoveAt(0);
                     break;
                 }
                 else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
@@ -312,7 +312,7 @@ internal static class MSBuildUtility
                 if (i == 0)
                 {
                     positionalTestModules = token;
-                    otherArgs.RemoveAt(0);
+                    otherArgs = otherArgs.RemoveAt(0);
                     break;
                 }
                 else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
@@ -325,7 +325,7 @@ internal static class MSBuildUtility
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
-                    otherArgs.RemoveAt(0);
+                    otherArgs = otherArgs.RemoveAt(0);
                     break;
                 }
                 else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
