@@ -5,7 +5,6 @@ using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenDotnetCleanInvocation : SdkTest
     {

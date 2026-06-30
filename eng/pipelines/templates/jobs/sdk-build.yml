@@ -150,13 +150,13 @@ jobs:
         - powershell: eng/common/build.ps1
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
+            -binaryLogName ${{ parameters.categoryName }}Tests.binlog
             /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
             /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /p:EnableHelixJobMonitor=true
-            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
@@ -172,6 +172,7 @@ jobs:
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
+            --binaryLogName ${{ parameters.categoryName }}Tests.binlog
             '/p:Projects="${{ parameters.testProjects }}"'
             /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
@@ -180,7 +181,6 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             /p:EnableHelixJobMonitor=true
-            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
@@ -255,25 +255,36 @@ jobs:
           fi
         displayName: 🟣 Check for built assets
         condition: not(canceled())
-    - task: CopyFiles@2
-      displayName: 🟣 Copy NativeAOT Size Analysis Files
-      inputs:
-        SourceFolder: $(Build.SourcesDirectory)/artifacts/obj/dotnet-aot
-        Contents: |
-          $(buildConfiguration)/**/native/dotnet-aot.mstat
-          $(buildConfiguration)/**/native/dotnet-aot.scan.dgml
-        TargetFolder: $(Build.ArtifactStagingDirectory)/aot-size-analysis
-        flattenFolders: true
-      continueOnError: true
-      condition: not(canceled())
 
-    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
-      displayName: 🟣 Publish NativeAOT Size Analysis
-      inputs:
-        targetPath: $(Build.ArtifactStagingDirectory)/aot-size-analysis
-        artifactName: $(System.PhaseName)_AotSizeAnalysis
-      continueOnError: true
-      condition: not(canceled())
+    # Only the AoT legs publish the dotnet-aot NativeAOT library, so only they produce
+    # the size-analysis files. Gate these steps so they don't run (and upload empty
+    # artifacts) on non-AoT legs like the TestBuild/FullFramework jobs.
+    - ${{ if eq(parameters.runAoTTests, true) }}:
+      - task: CopyFiles@2
+        displayName: 🟣 Copy NativeAOT Size Analysis Files
+        inputs:
+          SourceFolder: $(Build.SourcesDirectory)/artifacts/obj/dotnet-aot
+          # the three relevant files for size analysis are
+          # 1. dotnet-aot.mstat - the main size analysis file
+          # 2. dotnet-aot.codegen.dgml.xml - the code generation dependency graph
+          # 3. dotnet-aot.scan.dgml.xml - the scan dependency graph
+          # and each is going to be in the <config>/<tfm>/<rid>/native directory
+          Contents: |
+            $(buildConfiguration)/*/*/native/dotnet-aot.mstat
+            $(buildConfiguration)/*/*/native/dotnet-aot.codegen.dgml.xml
+            $(buildConfiguration)/*/*/native/dotnet-aot.scan.dgml.xml
+          TargetFolder: $(Build.ArtifactStagingDirectory)/aot-size-analysis
+          flattenFolders: true
+        continueOnError: true
+        condition: not(canceled())
+
+      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+        displayName: 🟣 Publish NativeAOT Size Analysis
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)/aot-size-analysis
+          artifactName: $(System.PhaseName)_AotSizeAnalysis
+        continueOnError: true
+        condition: not(canceled())
 
     - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
       displayName: 🟣 Publish Built Assets
