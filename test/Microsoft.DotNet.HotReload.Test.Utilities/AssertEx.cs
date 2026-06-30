@@ -229,8 +229,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 Fail(
                     "File sets should be equal" + Environment.NewLine +
-                    "Expected:" + "\n" + string.Join("\n", expected.OrderBy(p => p)) + Environment.NewLine +
-                    "Actual:" + "\n" + string.Join("\n", actual.OrderBy(p => p)));
+                    "Expected:" + Environment.NewLine + string.Join(Environment.NewLine, expected.OrderBy(p => p)) + Environment.NewLine +
+                    "Actual:" + Environment.NewLine + string.Join(Environment.NewLine, actual.OrderBy(p => p)));
             }
         }
 
