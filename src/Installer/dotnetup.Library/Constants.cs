@@ -75,5 +75,16 @@ internal static class Constants
         /// 5000 ms to compare what reaches the dashboard); unset in normal use.
         /// </summary>
         public const string FlushTimeoutOverrideEnvVar = "DOTNETUP_TELEMETRY_FLUSH_TIMEOUT_MS";
+
+        /// <summary>
+        /// TEMPORARY telemetry-delivery validation knob (revert before merge).
+        /// When set to a recognized error code (e.g. <c>product</c>,
+        /// <c>manifest</c>, <c>signature</c>, <c>platform</c>, <c>permission</c>)
+        /// the next command throws a deterministic exception that maps to an
+        /// EXISTING, already-classified <c>error.type</c> value — so we can
+        /// verify which (flush budget × environment) combinations actually reach
+        /// the dashboard without creating new (unclassified) telemetry events.
+        /// </summary>
+        public const string SimulateErrorEnvVar = "DOTNETUP_TELEMETRY_SIMULATE_ERROR";
     }
 }
