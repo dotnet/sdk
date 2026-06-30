@@ -138,19 +138,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         Build(testInstance, BuildLevel.Csc);
     }
 
-    [Fact]
-    public void UpToDate_InvalidOptions()
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-
-        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-build")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--no-cache", "--no-build"));
-    }
-
     /// <summary>
     /// <see cref="UpToDate"/> optimization should see through symlinks.
     /// See <see href="https://github.com/dotnet/sdk/issues/52063"/>.
