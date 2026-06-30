@@ -1,9 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using Xunit;
+using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.ImmutableCollections.DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer,
     Microsoft.NetCore.Analyzers.ImmutableCollections.DoNotCallToImmutableCollectionOnAnImmutableCollectionValueFixer>;
@@ -13,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
 {
+    [TestClass]
     public class DoNotCallToImmutableCollectionOnAnImmutableCollectionValueFixerTests
     {
         public static readonly TheoryData<string> CollectionNames_Arity1 = new()
@@ -29,8 +30,8 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
             nameof(ImmutableSortedDictionary)
         };
 
-        [Theory]
-        [MemberData(nameof(CollectionNames_Arity1))]
+        [TestMethod]
+        [DynamicData(nameof(CollectionNames_Arity1))]
         public async Task CA2009_Arity1_CSharpAsync(string collectionName)
         {
             var initial = $@"
@@ -65,8 +66,8 @@ class C
             await VerifyCS.VerifyCodeFixAsync(initial, expected);
         }
 
-        [Theory]
-        [MemberData(nameof(CollectionNames_Arity1))]
+        [TestMethod]
+        [DynamicData(nameof(CollectionNames_Arity1))]
         public async Task CA2009_Arity1_BasicAsync(string collectionName)
         {
             var initial = $@"
@@ -97,8 +98,8 @@ End Class";
             await VerifyVB.VerifyCodeFixAsync(initial, expected);
         }
 
-        [Theory]
-        [MemberData(nameof(CollectionNames_Arity2))]
+        [TestMethod]
+        [DynamicData(nameof(CollectionNames_Arity2))]
         public async Task CA2009_Arity2_CSharpAsync(string collectionName)
         {
             var initial = $@"
@@ -119,6 +120,7 @@ class C
             var expected = $@"
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Test.Utilities;
 
 class C
 {{
@@ -133,8 +135,8 @@ class C
             await VerifyCS.VerifyCodeFixAsync(initial, expected);
         }
 
-        [Theory]
-        [MemberData(nameof(CollectionNames_Arity2))]
+        [TestMethod]
+        [DynamicData(nameof(CollectionNames_Arity2))]
         public async Task CA2009_Arity2_BasicAsync(string collectionName)
         {
             var initial = $@"
