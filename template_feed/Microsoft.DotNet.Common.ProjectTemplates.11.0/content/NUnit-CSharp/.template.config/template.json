@@ -135,6 +135,7 @@
   ],
   "postActions": [
     {
+      "condition": "(TestRunner != \"Microsoft.Testing.Platform\")",
       "description": "Add the coverlet.collector package reference.",
       "manualInstructions": [{ "text": "Run 'dotnet add package coverlet.collector --version 6.0.4 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
@@ -147,6 +148,7 @@
       }
     },
     {
+      "condition": "(TestRunner != \"Microsoft.Testing.Platform\")",
       "description": "Add the Microsoft.NET.Test.Sdk package reference.",
       "manualInstructions": [{ "text": "Run 'dotnet add package Microsoft.NET.Test.Sdk --version 17.14.0 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
@@ -160,38 +162,38 @@
     },
     {
       "description": "Add the NUnit package reference.",
-      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit --version 4.3.2 --no-restore'" }],
+      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit --version 4.6.1 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
       "continueOnError": true,
       "args": {
         "files": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "NUnit",
-        "version": "4.3.2"
+        "version": "4.6.1"
       }
     },
     {
       "description": "Add the NUnit.Analyzers package reference.",
-      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit.Analyzers --version 4.7.0 --no-restore'" }],
+      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit.Analyzers --version 4.14.0 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
       "continueOnError": true,
       "args": {
         "files": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "NUnit.Analyzers",
-        "version": "4.7.0"
+        "version": "4.14.0"
       }
     },
     {
       "description": "Add the NUnit3TestAdapter package reference.",
-      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit3TestAdapter --version 5.0.0 --no-restore'" }],
+      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit3TestAdapter --version 6.2.0 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
       "continueOnError": true,
       "args": {
         "files": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "NUnit3TestAdapter",
-        "version": "5.0.0"
+        "version": "6.2.0"
       }
     },
     {

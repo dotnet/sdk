@@ -166,6 +166,7 @@
   "defaultName": "TestProject1",
   "postActions": [
     {
+      "condition": "(XUnitVersion != \"v3\")",
       "description": "Add the coverlet.collector package reference.",
       "manualInstructions": [{ "text": "Run 'dotnet add package coverlet.collector --version 6.0.4 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
@@ -178,6 +179,7 @@
       }
     },
     {
+      "condition": "(XUnitVersion != \"v3\")",
       "description": "Add the Microsoft.NET.Test.Sdk package reference.",
       "manualInstructions": [{ "text": "Run 'dotnet add package Microsoft.NET.Test.Sdk --version 17.14.1 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
@@ -190,6 +192,7 @@
       }
     },
     {
+      "condition": "(XUnitVersion != \"v3\")",
       "description": "Add the xunit package reference.",
       "manualInstructions": [{ "text": "Run 'dotnet add package xunit --version 2.9.3 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
@@ -202,15 +205,16 @@
       }
     },
     {
+      "condition": "(XUnitVersion != \"v3\")",
       "description": "Add the xunit.runner.visualstudio package reference.",
-      "manualInstructions": [{ "text": "Run 'dotnet add package xunit.runner.visualstudio --version 3.1.4 --no-restore'" }],
+      "manualInstructions": [{ "text": "Run 'dotnet add package xunit.runner.visualstudio --version 3.1.5 --no-restore'" }],
       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
       "continueOnError": true,
       "args": {
         "files": [ "Company.TestProject1.csproj" ],
         "referenceType": "package",
         "reference": "xunit.runner.visualstudio",
-        "version": "3.1.4"
+        "version": "3.1.5"
       }
     },
     {
