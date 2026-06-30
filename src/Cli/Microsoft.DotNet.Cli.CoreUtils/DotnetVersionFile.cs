@@ -11,6 +11,8 @@ public class DotnetVersionFile
 
     public string? CommitSha { get; init; }
 
+    public string? VmrCommitSha { get; init; }
+
     public string? BuildNumber { get; init; }
 
     public string? FullNugetVersion { get; init; }
@@ -58,6 +60,10 @@ public class DotnetVersionFile
                 else if (index == 4)
                 {
                     SdkFeatureBand = line;
+                }
+                else if (index == 5)
+                {
+                    VmrCommitSha = line.Length >= 10 ? line.Substring(0, 10) : line;
                 }
                 else
                 {
