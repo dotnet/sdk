@@ -121,7 +121,7 @@
   </ItemGroup>
   <Target Name="StageGetDotnetupScripts"
           AfterTargets="Build"
-          Condition="'$(RuntimeIdentifier)' == 'win-x64'"
+          Condition="'$(TargetRid)' == 'win-x64'"
           Inputs="@(_GetDotnetupScript)"
           Outputs="@(_GetDotnetupScript->'$(ArtifactsBinDir)dotnetup-scripts\%(Filename)%(Extension)')">
     <Copy SourceFiles="@(_GetDotnetupScript)"
