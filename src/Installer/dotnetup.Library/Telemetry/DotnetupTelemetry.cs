@@ -403,13 +403,30 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Returns the flush timeout appropriate for the current environment.
-    /// Interactive shells get 10ms to match the .NET SDK CLI's 10ms flush.
-    ///
-    /// Only non-interactive CI/one-and-done environments get the larger 2000ms budget. (2000 taken from high end of network queries to post to app insights on 6-12-2025, considering TCP is slower at the first request)
-    /// There's no follow-up invocation to drain the AzMonitor offline store.
+    /// Default flush budget (ms) for interactive / shell-startup exits. Enough
+    /// to hand the (possibly cold) AppInsights POST to the batch processor so it
+    /// can spill to the offline store for a later run, without noticeably
+    /// delaying exit. Matches Aspire's CLI shutdown budget
+    /// (TelemetryManager.ShutDownTimeoutMilliseconds = 200).
     /// </summary>
-    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? 2000 : 10;
+    private const int DefaultFlushTimeoutMs = 200;
+
+    /// <summary>
+    /// Durable flush budget (ms) for one-and-done environments (CI / piped /
+    /// non-interactive) that have no guaranteed next run to drain the offline
+    /// store, and for the failure path. A ceiling, not a fixed wait: ForceFlush
+    /// returns as soon as the queue drains, so happy-path runs rarely pay it.
+    /// 5000 covers the high end of observed cold AppInsights POST latency.
+    /// </summary>
+    private const int DurableFlushTimeoutMs = 5000;
+
+    /// <summary>
+    /// Returns the flush timeout appropriate for the current environment.
+    /// Interactive / shell-startup exits get the default budget; one-and-done
+    /// (CI / piped) exits get the durable budget because there's no follow-up
+    /// invocation to drain the AzMonitor offline store.
+    /// </summary>
+    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? DurableFlushTimeoutMs : DefaultFlushTimeoutMs;
 
     /// <summary>
     /// Drains both the tracer and logger batch export processors out to
