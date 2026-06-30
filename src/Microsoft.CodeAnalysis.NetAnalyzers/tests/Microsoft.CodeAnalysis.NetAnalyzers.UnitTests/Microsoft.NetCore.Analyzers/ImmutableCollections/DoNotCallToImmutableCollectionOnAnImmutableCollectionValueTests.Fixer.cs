@@ -120,7 +120,6 @@ class C
             var expected = $@"
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Test.Utilities;
 
 class C
 {{
