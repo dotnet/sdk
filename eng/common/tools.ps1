@@ -154,6 +154,9 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
     return $global:_DotNetInstallDir
   }
 
+  # Don't resolve runtime, shared framework, or SDK from other locations to ensure build determinism
+  $env:DOTNET_MULTILEVEL_LOOKUP=0
+
   # Disable first run since we do not need all ASP.NET packages restored.
   $env:DOTNET_NOLOGO=1
 
@@ -161,6 +164,12 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   if ($ci) {
     $env:DOTNET_CLI_TELEMETRY_OPTOUT=1
   }
+
+  # Keep repo builds isolated from machine-installed SDK state and workload advertising.
+  # This avoids preview SDK builds picking up mismatched workloads on CI images.
+  $env:DOTNET_MULTILEVEL_LOOKUP = '0'
+  $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
+  $env:DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE = '1'
 
   # Find the first path on %PATH% that contains the dotnet.exe
   if ($useInstalledDotNetCli -and (-not $globalJsonHasRuntimes) -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
@@ -223,7 +232,11 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   # Make Sure that our bootstrapped dotnet cli is available in future steps of the Azure Pipelines build
   Write-PipelinePrependPath -Path $dotnetRoot
 
+  Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
   Write-PipelineSetVariable -Name 'DOTNET_NOLOGO' -Value '1'
+  Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
+  Write-PipelineSetVariable -Name 'DOTNET_SKIP_FIRST_TIME_EXPERIENCE' -Value '1'
+  Write-PipelineSetVariable -Name 'DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE' -Value '1'
 
   return $global:_DotNetInstallDir = $dotnetRoot
 }
@@ -255,7 +268,7 @@ function Retry($downloadBlock, $maxRetries = 5) {
 function GetDotNetInstallScript([string] $dotnetRoot) {
   $installScript = Join-Path $dotnetRoot 'dotnet-install.ps1'
   $shouldDownload = $false
-  
+
   if (!(Test-Path $installScript)) {
     $shouldDownload = $true
   } else {
@@ -266,7 +279,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
       $shouldDownload = $true
     }
   }
-  
+
   if ($shouldDownload) {
     Create-Directory $dotnetRoot
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
@@ -274,7 +287,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
 
     Retry({
       Write-Host "GET $uri"
-      Invoke-WebRequest $uri -UseBasicParsing -OutFile $installScript
+      Invoke-WebRequest $uri -OutFile $installScript
     })
   }
 
@@ -305,7 +318,7 @@ function InstallDotNet([string] $dotnetRoot,
     if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
     if ($runtime -eq "windowsdesktop") { $runtimePath = $runtimePath + "\Microsoft.WindowsDesktop.App" }
     $runtimePath = $runtimePath + "\" + $version
-  
+
     $dotnetVersionLabel = "runtime toolset '$runtime/$architecture v$version'"
 
     if (Test-Path $runtimePath) {
@@ -485,30 +498,23 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     Write-Host "Downloading vswhere $vswhereVersion"
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
     Retry({
-      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -UseBasicParsing -OutFile $vswhereExe
+      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
     })
   }
 
-  if (!$vsRequirements) {
-    if (Get-Member -InputObject $GlobalJson.tools -Name 'vs' -ErrorAction SilentlyContinue) {
-      $vsRequirements = $GlobalJson.tools.vs
-    } else {
-      $vsRequirements = $null
-    }
-  }
-
+  if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
   $args = @('-latest', '-format', 'json', '-requires', 'Microsoft.Component.MSBuild', '-products', '*')
 
   if (!$excludePrereleaseVS) {
     $args += '-prerelease'
   }
 
-  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'version' -ErrorAction SilentlyContinue)) {
+  if (Get-Member -InputObject $vsRequirements -Name 'version') {
     $args += '-version'
     $args += $vsRequirements.version
   }
 
-  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'components' -ErrorAction SilentlyContinue)) {
+  if (Get-Member -InputObject $vsRequirements -Name 'components') {
     foreach ($component in $vsRequirements.components) {
       $args += '-requires'
       $args += $component
@@ -518,11 +524,6 @@ function LocateVisualStudio([object]$vsRequirements = $null){
   $vsInfo =& $vsWhereExe $args | ConvertFrom-Json
 
   if ($lastExitCode -ne 0) {
-    return $null
-  }
-
-  if ($null -eq $vsInfo -or $vsInfo.Count -eq 0) {
-    throw "No instance of Visual Studio meeting the requirements specified was found. Requirements: $($args -join ' ')"
     return $null
   }
 
@@ -590,16 +591,16 @@ function GetDefaultMSBuildEngine() {
   ExitWithExitCode 1
 }
 
-function InitializeNuGetPackageCachePath() {
+function GetNuGetPackageCachePath() {
   if ($env:NUGET_PACKAGES -eq $null) {
     # Use local cache on CI to ensure deterministic build.
+    # Avoid using the http cache as workaround for https://github.com/NuGet/Home/issues/3116
     # use global cache in dev builds to avoid cost of downloading packages.
     # For directory normalization, see also: https://github.com/NuGet/Home/issues/7968
     if ($useGlobalNuGetCache) {
-      $userProfile = if (IsWindowsPlatform) { $env:UserProfile } else { $env:HOME }
-      $env:NUGET_PACKAGES = [IO.Path]::Combine($userProfile, '.nuget', 'packages') + [IO.Path]::DirectorySeparatorChar
+      $env:NUGET_PACKAGES = Join-Path $env:UserProfile '.nuget\packages\'
     } else {
-      $env:NUGET_PACKAGES = [IO.Path]::Combine($RepoRoot, '.packages') + [IO.Path]::DirectorySeparatorChar
+      $env:NUGET_PACKAGES = Join-Path $RepoRoot '.packages\'
     }
   }
 
@@ -648,6 +649,8 @@ function InitializeToolset() {
     return $global:_InitializeToolset
   }
 
+  $nugetCache = GetNuGetPackageCachePath
+
   $toolsetVersion = Read-ArcadeSdkVersion
   $toolsetToolsDir = Join-Path $ToolsetDir $toolsetVersion
 
@@ -668,7 +671,7 @@ function InitializeToolset() {
     ExitWithExitCode 1
   }
 
-  $downloadArgs = @("package", "download", "Microsoft.DotNet.Arcade.Sdk@$toolsetVersion", "--verbosity", "minimal", "--prerelease", "--output", "$nugetPackageCachePath")
+  $downloadArgs = @("package", "download", "Microsoft.DotNet.Arcade.Sdk@$toolsetVersion", "--verbosity", "minimal", "--prerelease", "--output", "$nugetCache")
   $nugetConfig = $env:NUGET_CONFIG
   if (-not $nugetConfig) {
     # Search for any variation of nuget.config in the RepoRoot
@@ -685,7 +688,7 @@ function InitializeToolset() {
   }
   DotNet @downloadArgs
 
-  $packageDir = Join-Path $nugetPackageCachePath (Join-Path 'microsoft.dotnet.arcade.sdk' $toolsetVersion)
+  $packageDir = Join-Path $nugetCache (Join-Path 'microsoft.dotnet.arcade.sdk' $toolsetVersion)
   $packageToolsetDir = Join-Path $packageDir 'toolset'
 
   if (!(Test-Path $packageToolsetDir)) {
@@ -737,6 +740,58 @@ function Stop-Processes() {
 #
 function MSBuild() {
   if ($ci) {
+    $env:NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS = 20
+    $env:NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS = 20
+    Write-PipelineSetVariable -Name 'NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS' -Value '20'
+    Write-PipelineSetVariable -Name 'NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS' -Value '20'
+
+    Enable-Nuget-EnhancedRetry
+  }
+
+  MSBuild-Core @args
+}
+
+#
+# Executes a dotnet command with arguments passed to the function.
+# Terminates the script if the command fails.
+#
+function DotNet() {
+  $dotnetRoot = InitializeDotNetCli -install:$restore
+  $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
+
+  $cmdArgs = ""
+  foreach ($arg in $args) {
+    if ($null -ne $arg -and $arg.Trim() -ne "") {
+      if ($arg.EndsWith('\')) {
+        $arg = $arg + "\"
+      }
+      $cmdArgs += " `"$arg`""
+    }
+  }
+
+  $env:ARCADE_BUILD_TOOL_COMMAND = "`"$dotnetPath`" $cmdArgs"
+
+  $exitCode = Exec-Process $dotnetPath $cmdArgs
+
+  if ($exitCode -ne 0) {
+    Write-Host "dotnet command failed with exit code $exitCode. Check errors above." -ForegroundColor Red
+
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR) {
+      Write-PipelineSetResult -Result "Failed" -Message "dotnet command execution failed."
+      ExitWithExitCode 0
+    } else {
+      ExitWithExitCode $exitCode
+    }
+  }
+}
+
+#
+# Executes msbuild (or 'dotnet msbuild') with arguments passed to the function.
+# The arguments are automatically quoted.
+# Terminates the script if the build fails.
+#
+function MSBuild-Core() {
+  if ($ci) {
     if (!$binaryLog -and !$excludeCIBinarylog) {
       Write-PipelineTelemetryError -Category 'Build' -Message 'Binary log must be enabled in CI build, or explicitly opted-out from with the -excludeCIBinarylog switch.'
       ExitWithExitCode 1
@@ -748,9 +803,15 @@ function MSBuild() {
     }
   }
 
+  Enable-Nuget-EnhancedRetry
+
   $buildTool = InitializeBuildTool
 
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
+
+  if ($ci -and $buildTool.Tool -eq 'dotnet') {
+    $cmdArgs += ' /p:MSBuildEnableWorkloadResolver=false'
+  }
 
   # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
   if ($env:MSBUILD_MT_ENABLED -eq "1") {
@@ -798,40 +859,6 @@ function MSBuild() {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
-      ExitWithExitCode 0
-    } else {
-      ExitWithExitCode $exitCode
-    }
-  }
-}
-
-#
-# Executes a dotnet command with arguments passed to the function.
-# Terminates the script if the command fails.
-#
-function DotNet() {
-  $dotnetRoot = InitializeDotNetCli -install:$restore
-  $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
-
-  $cmdArgs = ""
-  foreach ($arg in $args) {
-    if ($null -ne $arg -and $arg.Trim() -ne "") {
-      if ($arg.EndsWith('\')) {
-        $arg = $arg + "\"
-      }
-      $cmdArgs += " `"$arg`""
-    }
-  }
-
-  $env:ARCADE_BUILD_TOOL_COMMAND = "`"$dotnetPath`" $cmdArgs"
-
-  $exitCode = Exec-Process $dotnetPath $cmdArgs
-
-  if ($exitCode -ne 0) {
-    Write-Host "dotnet command failed with exit code $exitCode. Check errors above." -ForegroundColor Red
-
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR) {
-      Write-PipelineSetResult -Result "Failed" -Message "dotnet command execution failed."
       ExitWithExitCode 0
     } else {
       ExitWithExitCode $exitCode
@@ -923,5 +950,19 @@ if (!$disableConfigureToolsetImport) {
   }
 }
 
-# Initialize the nuget package cache vars
-$nugetPackageCachePath = InitializeNuGetPackageCachePath
+#
+# If $ci flag is set, turn on (and log that we did) special environment variables for improved Nuget client retry logic.
+#
+function Enable-Nuget-EnhancedRetry() {
+    if ($ci) {
+      Write-Host "Setting NUGET enhanced retry environment variables"
+      $env:NUGET_ENABLE_ENHANCED_HTTP_RETRY = 'true'
+      $env:NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT = 6
+      $env:NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS = 1000
+      $env:NUGET_RETRY_HTTP_429 = 'true'
+      Write-PipelineSetVariable -Name 'NUGET_ENABLE_ENHANCED_HTTP_RETRY' -Value 'true'
+      Write-PipelineSetVariable -Name 'NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT' -Value '6'
+      Write-PipelineSetVariable -Name 'NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS' -Value '1000'
+      Write-PipelineSetVariable -Name 'NUGET_RETRY_HTTP_429' -Value 'true'
+    }
+}
