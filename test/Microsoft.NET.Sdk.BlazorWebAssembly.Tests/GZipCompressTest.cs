@@ -34,16 +34,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             try
             {
-                var inputItem = new TaskItem(relativeInputPath);
-                inputItem.SetMetadata("RelativePath", relativeInputPath);
-
-                var task = new GZipCompress
-                {
-                    BuildEngine = new Mock<IBuildEngine>().Object,
-                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
-                    FilesToCompress = [inputItem],
-                    OutputDirectory = relativeOutputDirectory,
-                };
+                var task = CreateTask(projectDir, relativeInputPath, relativeOutputDirectory);
 
                 task.Execute().Should().BeTrue();
 
