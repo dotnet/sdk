@@ -141,7 +141,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// See <see href="https://github.com/dotnet/sdk/issues/55056"/>.
     /// </summary>
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
     public void UpToDate_ArtifactsRelocated()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -167,7 +167,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .WithEnvironmentVariable("TMP", tmpDir1)
             .WithEnvironmentVariable("TMPDIR", tmpDir1)
             .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir1)
-            .WithEnvironmentVariable("HOME", tmpDir1)
             .WithWorkingDirectory(srcDir)
             .Execute()
             .Should().Pass()
@@ -179,7 +178,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .WithEnvironmentVariable("TMP", tmpDir2)
             .WithEnvironmentVariable("TMPDIR", tmpDir2)
             .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir2)
-            .WithEnvironmentVariable("HOME", tmpDir2)
             .WithWorkingDirectory(srcDir)
             .Execute()
             .Should().Pass()
