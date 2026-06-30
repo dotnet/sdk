@@ -162,9 +162,11 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
         var expectedStdOut = "hello";
 
+        Directory.CreateDirectory(tmpDir1);
         new DotnetCommand(Log, "run", "Program.cs", "-bl")
             .WithEnvironmentVariable("TMP", tmpDir1)
             .WithEnvironmentVariable("TMPDIR", tmpDir1)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir1)
             .WithWorkingDirectory(srcDir)
             .Execute()
             .Should().Pass()
@@ -175,6 +177,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         new DotnetCommand(Log, "run", "Program.cs", "-bl")
             .WithEnvironmentVariable("TMP", tmpDir2)
             .WithEnvironmentVariable("TMPDIR", tmpDir2)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir2)
             .WithWorkingDirectory(srcDir)
             .Execute()
             .Should().Pass()
