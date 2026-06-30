@@ -33,6 +33,14 @@
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
+  <!-- xUnit-based test projects (non-MSTest, e.g. the vendored NetAnalyzers tests which import this
+       file) rely on a global Xunit using for [Fact]/[Theory]/Assert. MSTest.Sdk projects must not get
+       it (it would clash with MSTest's Assert), so it stays keyed off UsingMSTestSdk rather than the
+       framework ProjectReference above. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(UsingMSTestSdk)' != 'true'">
+    <Using Include="Xunit" />
+  </ItemGroup>
+
   <!-- AwesomeAssertions package reference for MSTest.Sdk projects. xUnit projects pick it up
        transitively from the Microsoft.NET.TestFramework project reference and so do not need
        it here. -->
