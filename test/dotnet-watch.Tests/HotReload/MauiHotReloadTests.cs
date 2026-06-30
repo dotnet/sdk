@@ -13,10 +13,9 @@ public class MauiHotReloadTests : DotNetWatchTestBase
     /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
     /// </summary>
     [TestMethod]
+    [CombinatorialData]
     [OSCondition(OperatingSystems.Windows)]
     [Ignore("https://github.com/dotnet/sdk/issues/54150")]
-    [DataRow(true)]
-    [DataRow(false)]
     public async Task MauiBlazor(bool selectTfm)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor", identifier: selectTfm.ToString())

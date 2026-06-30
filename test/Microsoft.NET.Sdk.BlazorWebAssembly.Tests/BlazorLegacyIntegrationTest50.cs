@@ -50,8 +50,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [TestMethod]
         [CoreMSBuildOnly]
-        // https://github.com/dotnet/sdk/issues/49665
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/49665
         public void Publish50Hosted_Works()
         {
             // Arrange

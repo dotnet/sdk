@@ -7,7 +7,6 @@ using RestoreCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoreCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenDotnetRestoreInvocation : SdkTest
     {

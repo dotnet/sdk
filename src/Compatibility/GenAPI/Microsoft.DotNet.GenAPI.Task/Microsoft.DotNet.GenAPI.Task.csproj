@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(NetMinimum)</TargetFramework>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
