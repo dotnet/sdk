@@ -38,7 +38,7 @@ function InitializeCustomSDKToolset {
       install_script_arch="$TARGET_ARCHITECTURE"
     fi
 
-    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
+    local runtime_specs=("5.0" "6.0" "7.0" "8.0" "9.0" "10.0")
     if [[ -z "$install_script_arch" ]]; then
       # Also install the exact runtime versions that arcade's toolset requires
       # (from Version.Details.props) so tests can target those specific versions.

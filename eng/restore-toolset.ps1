@@ -38,7 +38,7 @@ function InitializeCustomSDKToolset {
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
         $fallbackArchitecture = Get-DotNetInstallFallbackArchitecture
-        $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
+        $runtimeSpecs = @("5.0", "6.0", "7.0", "8.0", "9.0", "10.0")
         if ([string]::IsNullOrEmpty($fallbackArchitecture)) {
             # Also install the exact runtime versions that arcade's toolset requires
             # (from Version.Details.props) so tests can target those specific versions.
