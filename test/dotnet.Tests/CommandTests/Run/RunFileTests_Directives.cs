@@ -641,7 +641,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
+                {DirectiveError(programPath, 1, FileBasedProgramsResources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
@@ -1221,7 +1221,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(programPath, 1, Resources.IncludedFileNotFound, Path.Join(testInstance.Path, "B.cs")));
+            .And.HaveStdErrContaining(DirectiveError(programPath, 1, FileBasedProgramsResources.IncludedFileNotFound, Path.Join(testInstance.Path, "B.cs")));
     }
 
     /// <summary>
@@ -1559,6 +1559,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """;
 
         var builder = new VirtualProjectBuilder(
+            BuildService.Instance,
             entryPointFileFullPath: programPath,
             targetFramework: VirtualProjectBuildingCommand.TargetFramework,
             sourceText: SourceText.From(code, Encoding.UTF8));

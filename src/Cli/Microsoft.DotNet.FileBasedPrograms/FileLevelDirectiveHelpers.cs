@@ -10,7 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -39,7 +38,7 @@ internal static class FileLevelDirectiveHelpers
     public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter errorReporter, bool checkDuplicates = true)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
-        var tokenizer = CreateTokenizer(sourceFile.Text);
+        using var tokenizer = CreateTokenizer(sourceFile.Text);
 
         var result = tokenizer.ParseLeadingTrivia();
         var triviaList = result.Token.LeadingTrivia;
@@ -984,7 +983,9 @@ internal sealed class SimpleDiagnostic
     {
         public required string Path { get; init; }
         public required LinePositionSpan Span { get; init; }
-        [JsonIgnore]
+#if FILE_BASED_PROGRAMS_SYSTEM_TEXT_JSON
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public TextSpan TextSpan { get; init; }
     }
 }

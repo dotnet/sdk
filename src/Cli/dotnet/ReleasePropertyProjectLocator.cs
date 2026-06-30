@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
-using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 

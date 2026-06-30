@@ -1721,8 +1721,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             [
                 (7, string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", RunFileTestBase.s_includeExcludeDefaultKnownExtensions)),
                 (8, string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:exclude", RunFileTestBase.s_includeExcludeDefaultKnownExtensions)),
-                (1, string.Format(Resources.IncludedFileNotFound, Path.Join(testInstance.Path, "A.cs"))),
-                (1, string.Format(Resources.IncludedFileNotFound, Path.Join(testInstance.Path, "|.cs"))),
+                (1, string.Format(FileBasedProgramsResources.IncludedFileNotFound, Path.Join(testInstance.Path, "A.cs"))),
+                (1, string.Format(FileBasedProgramsResources.IncludedFileNotFound, Path.Join(testInstance.Path, "|.cs"))),
             ]);
     }
 
@@ -3033,6 +3033,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         out ImmutableArray<SimpleDiagnostic>.Builder? actualDiagnostics)
     {
         var builder = new VirtualProjectBuilder(
+            BuildService.Instance,
             entryPointFileFullPath: filePath,
             targetFramework: VirtualProjectBuildingCommand.TargetFramework,
             sourceText: SourceText.From(inputCSharp, Encoding.UTF8));
@@ -3043,7 +3044,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         if (evaluateDirectives)
         {
             builder.CreateProjectInstance(
-                new ProjectCollection(),
+                new ProjectCollection().Wrap(),
                 errorReporter,
                 project: out _,
                 projectRootElement: out _,

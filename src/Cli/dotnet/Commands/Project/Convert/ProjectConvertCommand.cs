@@ -10,7 +10,6 @@ using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
@@ -47,9 +46,9 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         string targetDirectory = DetermineOutputDirectory(file);
 
         // Create a project instance for evaluation.
-        var projectCollection = new ProjectCollection();
+        var projectCollection = new ProjectCollection().Wrap();
 
-        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFramework);
+        var builder = new VirtualProjectBuilder(BuildService.Instance, file, VirtualProjectBuildingCommand.TargetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,
@@ -111,7 +110,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             var sourceDirectory = Path.GetDirectoryName(sourceFile)!;
 
             VirtualProjectBuilder fileBuilder;
-            ProjectInstance fileProjectInstance;
+            IProjectInstance fileProjectInstance;
             ImmutableArray<CSharpDirective> fileDirectives;
 
             if (isEntryPointFile)
@@ -122,7 +121,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
             else
             {
-                fileBuilder = new VirtualProjectBuilder(sourceFile, VirtualProjectBuildingCommand.TargetFramework);
+                fileBuilder = new VirtualProjectBuilder(BuildService.Instance, sourceFile, VirtualProjectBuildingCommand.TargetFramework);
 
                 fileBuilder.CreateProjectInstance(
                     projectCollection,
@@ -328,7 +327,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 }
 
                 // Recursively validate transitive refs.
-                var refBuilder = new VirtualProjectBuilder(refPath, VirtualProjectBuildingCommand.TargetFramework);
+                var refBuilder = new VirtualProjectBuilder(BuildService.Instance, refPath, VirtualProjectBuildingCommand.TargetFramework);
                 refBuilder.CreateProjectInstance(
                     projectCollection,
                     VirtualProjectBuildingCommand.ThrowingReporter,
@@ -341,7 +340,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         }
 
         IEnumerable<IncludedItem> FindIncludedItems(
-            VirtualProjectBuilder fileBuilder, ProjectInstance fileProjectInstance, string sourceFile)
+            VirtualProjectBuilder fileBuilder, IProjectInstance fileProjectInstance, string sourceFile)
         {
             string sourceFileDirectory = PathUtilities.EnsureTrailingSlash(Path.GetDirectoryName(sourceFile)!);
 
@@ -462,7 +461,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        string? DetermineUserSecretsId(ProjectInstance projectInstance)
+        string? DetermineUserSecretsId(IProjectInstance projectInstance)
         {
             var implicitValue = projectInstance.GetPropertyValue("_ImplicitFileBasedProgramUserSecretsId");
             var actualValue = projectInstance.GetPropertyValue("UserSecretsId");
@@ -552,7 +551,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             return result.DrainToImmutable();
         }
 
-        IEnumerable<(string name, string value)> GetDefaultProperties(ProjectInstance projectInstance)
+        IEnumerable<(string name, string value)> GetDefaultProperties(IProjectInstance projectInstance)
         {
             foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework))
             {
