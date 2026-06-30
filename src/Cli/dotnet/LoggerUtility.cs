@@ -63,23 +63,6 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
-    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
-    {
-        binLogArgs = new List<string>();
-        nonBinLogArgs = new List<string>();
-        foreach (var arg in args ?? [])
-        {
-            if (IsBinLogArgument(arg))
-            {
-                binLogArgs.Add(arg);
-            }
-            else
-            {
-                nonBinLogArgs.Add(arg);
-            }
-        }
-    }
-
     internal static void SeparateLoggerArguments(IEnumerable<string>? args, out ImmutableArray<string> loggerArgs, out ImmutableArray<string> nonLoggerArgs)
     {
         var loggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
@@ -112,7 +95,7 @@ internal static class LoggerUtility
     internal static bool HasNoConsoleLoggerArgument(IEnumerable<string>? args) =>
         args?.Any(IsNoConsoleLoggerArgument) == true;
 
-    internal static bool IsNoConsoleLoggerArgument(string arg)
+    private static bool IsNoConsoleLoggerArgument(string arg)
     {
         return TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue) &&
             prefix is "-" or "/" &&

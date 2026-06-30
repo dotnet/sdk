@@ -37,7 +37,7 @@ public class PublishCommand : RestoringCommand
 
         string[] args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
 
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
+        LoggerUtility.SeparateLoggerArguments(args, out var loggerArgs, out var nonLoggerArgs);
 
         CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(definition.SelfContainedOption),
             parseResult.HasOption(definition.NoSelfContainedOption));
@@ -75,7 +75,7 @@ public class PublishCommand : RestoringCommand
             transformer: (msbuildArgs) =>
             {
                 var options = new ReleasePropertyProjectLocator.DependentCommandOptions(
-                        nonBinLogArgs,
+                        nonLoggerArgs,
                         parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null,
                         parseResult.HasOption(definition.FrameworkOption) ? parseResult.GetValue(definition.FrameworkOption) : null
                     );

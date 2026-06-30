@@ -34,7 +34,7 @@ public class PackCommand(
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
         var args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
 
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
+        LoggerUtility.SeparateLoggerArguments(args, out var loggerArgs, out var nonLoggerArgs);
 
         bool noBuild = parseResult.HasOption(definition.NoBuildOption);
 
@@ -69,7 +69,7 @@ public class PackCommand(
             {
                 ReleasePropertyProjectLocator projectLocator = new(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
-                            nonBinLogArgs,
+                            nonLoggerArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null
                         )
                 );
