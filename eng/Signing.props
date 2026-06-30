@@ -123,6 +123,14 @@
     <FileSignInfo Condition="'$(TargetOS)' == 'osx' and '$(TargetRid)' != ''"
                   Include="dotnetup-$(TargetRid)"
                   CertificateName="MacDeveloperHardenWithNotarization" />
+
+    <!-- Sign the powershell script as powershell blocks running unsigned scripts -->
+    <FileSignInfo Condition="'$(OS)' == 'Windows_NT'"
+                  Include="get-dotnetup.ps1"
+                  CertificateName="MicrosoftDotNet500" />
+
+    <!-- Avoid SignTool flagging the .sh script as missing sign info. -->
+    <FileSignInfo Include="get-dotnetup.sh" CertificateName="None" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetOS)' == 'osx'">
@@ -198,6 +206,21 @@
     <!-- The '*' wildcard is for the TargetFramework, which isn't set when evaluating this file. -->
     <_DotnetupPublishedBinary Include="$(ArtifactsBinDir)dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
     <Artifact Include="@(_DotnetupPublishedBinary)" Kind="Blob">
+      <ChecksumPath>%(FullPath).sha512</ChecksumPath>
+    </Artifact>
+  </ItemGroup>
+
+  <!--
+    Register the get-dotnetup bootstrap scripts as Blob artifacts from their staged copies
+    (see StageGetDotnetupScripts in src/Installer/dotnetup/dotnetup.csproj). The scripts are
+    RID-independent and are staged/signed/published only from the win-x64 leg to avoid
+    duplicate blob paths, so this registration is gated to that single leg. get-dotnetup.ps1
+    is Authenticode-signed via the FileSignInfo above; get-dotnetup.sh is published unsigned.
+  -->
+  <ItemGroup Condition="'$(TargetRid)' == 'win-x64'">
+    <_GetDotnetupPublishedScript Include="$(ArtifactsBinDir)dotnetup-scripts\get-dotnetup.ps1" />
+    <_GetDotnetupPublishedScript Include="$(ArtifactsBinDir)dotnetup-scripts\get-dotnetup.sh" />
+    <Artifact Include="@(_GetDotnetupPublishedScript)" Kind="Blob">
       <ChecksumPath>%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>

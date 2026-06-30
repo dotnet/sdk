@@ -88,6 +88,17 @@
                 RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
       <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512'"
                 RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512" />
+      <!-- Publish get-dotnetup scripts under the same dotnetup/<version>/ prefix as the binaries.
+      This allows arcade's DotnetupAkaMSCreateLinkPatterns to properly produce aka.ms/dotnet/dotnetup/daily/get-dotnetup.{ps1,sh}.
+      -->
+      <Artifact Condition="'%(Filename)%(Extension)' == 'get-dotnetup.ps1'"
+                RelativeBlobPath="dotnetup/$(DotnetupVersion)/get-dotnetup.ps1" />
+      <Artifact Condition="'%(Filename)%(Extension)' == 'get-dotnetup.ps1.sha512'"
+                RelativeBlobPath="dotnetup/$(DotnetupVersion)/get-dotnetup.ps1.sha512" />
+      <Artifact Condition="'%(Filename)%(Extension)' == 'get-dotnetup.sh'"
+                RelativeBlobPath="dotnetup/$(DotnetupVersion)/get-dotnetup.sh" />
+      <Artifact Condition="'%(Filename)%(Extension)' == 'get-dotnetup.sh.sha512'"
+                RelativeBlobPath="dotnetup/$(DotnetupVersion)/get-dotnetup.sh.sha512" />
     </ItemGroup>
   </Target>
 
