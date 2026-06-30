@@ -74,7 +74,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>11.0.0-preview.7.26325.102</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>11.0.0-preview.7.26325.102</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>11.0.0-preview.7.26325.102</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftFSharpCompilerPackageVersion>15.2.101-preview6.26325.102</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>15.2.101-preview7.26325.102</MicrosoftFSharpCompilerPackageVersion>
     <MicrosoftJSInteropPackageVersion>11.0.0-preview.7.26325.102</MicrosoftJSInteropPackageVersion>
     <MicrosoftMcpServerProjectTemplates110PackageVersion>11.0.0-preview.7.26325.102</MicrosoftMcpServerProjectTemplates110PackageVersion>
     <MicrosoftNetCompilersToolsetPackageVersion>5.9.0-1.26325.102</MicrosoftNetCompilersToolsetPackageVersion>
