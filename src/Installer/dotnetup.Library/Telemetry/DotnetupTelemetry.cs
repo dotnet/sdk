@@ -99,6 +99,15 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </summary>
     public bool IsOneAndDoneEnvironment { get; }
 
+    /// <summary>
+    /// The telemetry name of the subcommand the current invocation is running
+    /// (e.g. <c>sdk/install</c>, <c>print-env-script</c>), captured when
+    /// <see cref="StartTrackedCommand"/> is called. Null until a command starts
+    /// (parse-only / root-only invocations). Used to fast-path the flush budget
+    /// for latency-critical shell-startup commands.
+    /// </summary>
+    internal string? CurrentCommandName { get; private set; }
+
     private DotnetupTelemetry()
     {
         SessionId = Guid.NewGuid().ToString();
@@ -302,6 +311,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </summary>
     internal TrackedOperation StartTrackedCommand(string commandName)
     {
+        CurrentCommandName = commandName;
         var activity = Enabled
             ? CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal)
             : null;
@@ -421,12 +431,60 @@ public sealed class DotnetupTelemetry : IDisposable
     private const int DurableFlushTimeoutMs = 5000;
 
     /// <summary>
-    /// Returns the flush timeout appropriate for the current environment.
-    /// Interactive / shell-startup exits get the default budget; one-and-done
-    /// (CI / piped) exits get the durable budget because there's no follow-up
-    /// invocation to drain the AzMonitor offline store.
+    /// True when the current invocation is the latency-critical shell-startup
+    /// command (<c>print-env-script</c>), which is sourced from the user's shell
+    /// profile on every new shell. Its output is redirected (eval/source), which
+    /// would otherwise route it to the durable budget — so it is fast-pathed to
+    /// keep shell startup snappy even on a slow network.
     /// </summary>
-    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? DurableFlushTimeoutMs : DefaultFlushTimeoutMs;
+    private bool IsShellStartupCommand =>
+        string.Equals(CurrentCommandName, "print-env-script", StringComparison.Ordinal);
+
+    /// <summary>
+    /// Returns the on-exit flush budget (ms) for the current run. Precedence:
+    /// <list type="number">
+    /// <item>A non-negative <c>DOTNETUP_TELEMETRY_FLUSH_TIMEOUT_MS</c> override (validation knob).</item>
+    /// <item>Failure (<paramref name="exitCode"/> != 0): the durable budget, so error rows reach AppInsights even on shell-init / interactive paths (failures there should be rare).</item>
+    /// <item>Shell-startup command (print-env-script): the default budget — even though its output is redirected — so a slow network can't delay shell startup; frequent invocations drain any miss from the offline store next run.</item>
+    /// <item>Interactive foreground (not CI, not redirected): the default budget; the persistent offline store drains on the user's next command.</item>
+    /// <item>Otherwise (CI / piped / non-interactive — effectively one-and-done with no guaranteed next run): the durable budget, to deliver the row live.</item>
+    /// </list>
+    /// </summary>
+    internal int GetFlushTimeoutMs(int exitCode)
+    {
+        var overrideValue = Environment.GetEnvironmentVariable(Constants.Telemetry.FlushTimeoutOverrideEnvVar);
+        if (!string.IsNullOrWhiteSpace(overrideValue)
+            && int.TryParse(overrideValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var forced)
+            && forced >= 0)
+        {
+            return forced;
+        }
+
+        // Failure always spends the durable budget so the error row is delivered
+        // live; ForceFlush still returns early once the queue drains.
+        if (exitCode != 0)
+        {
+            return DurableFlushTimeoutMs;
+        }
+
+        // Shell-startup hot path: keep new-shell latency bounded even though the
+        // command's output is redirected.
+        if (IsShellStartupCommand)
+        {
+            return DefaultFlushTimeoutMs;
+        }
+
+        // Interactive foreground use: keep exit snappy; the persistent offline
+        // store drains on the user's next command.
+        if (!IsOneAndDoneEnvironment && !Console.IsOutputRedirected)
+        {
+            return DefaultFlushTimeoutMs;
+        }
+
+        // CI / piped / non-interactive: one-and-done with no guaranteed next run
+        // to drain the offline store, so spend the durable budget.
+        return DurableFlushTimeoutMs;
+    }
 
     /// <summary>
     /// Drains the logger and tracer batch export processors out to their
@@ -439,7 +497,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <param name="timeoutMilliseconds">Maximum time to wait for flush. If not specified, uses <see cref="GetFlushTimeoutMs"/>.</param>
     public void Flush(int? timeoutMilliseconds = null)
     {
-        FlushCore(timeoutMilliseconds ?? GetFlushTimeoutMs());
+        FlushCore(timeoutMilliseconds ?? GetFlushTimeoutMs(0));
     }
 
     /// <summary>

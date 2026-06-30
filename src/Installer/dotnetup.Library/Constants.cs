@@ -66,5 +66,14 @@ internal static class Constants
         /// in-process saves bandwidth, batch overhead, and offline retry blobs.
         /// </summary>
         public const string EnablePerfTraceEnvVar = "DOTNETUP_CLI_GET_PERF_TRACE";
+
+        /// <summary>
+        /// Diagnostic override for the on-exit flush budget, in milliseconds.
+        /// When set to a non-negative integer it replaces the
+        /// environment-derived budget computed by <c>GetFlushTimeoutMs</c>.
+        /// Intended for telemetry-delivery validation (forcing e.g. 0 / 200 /
+        /// 5000 ms to compare what reaches the dashboard); unset in normal use.
+        /// </summary>
+        public const string FlushTimeoutOverrideEnvVar = "DOTNETUP_TELEMETRY_FLUSH_TIMEOUT_MS";
     }
 }
