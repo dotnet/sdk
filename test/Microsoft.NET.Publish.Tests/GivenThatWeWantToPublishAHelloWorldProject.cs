@@ -422,8 +422,7 @@ public static class Program
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_publishes_on_release_if_PublishRelease_property_set(bool optedOut)
         {
             var helloWorldAsset = TestAssetsManager

@@ -46,8 +46,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_has_consistent_behavior_when_publishing_single_file(bool shouldPublishSingleFile)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
