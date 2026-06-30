@@ -360,7 +360,7 @@ namespace Microsoft.NET.Build.Tasks
 
             if (GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile)
             {
-                JObject configProperties = GetConfigProperties(devConfig.RuntimeOptions);
+                JsonObject configProperties = GetConfigProperties(devConfig.RuntimeOptions);
                 configProperties["System.Reflection.Metadata.MetadataUpdater.IsSupported"] = true;
                 configProperties["System.StartupHookProvider.IsSupported"] = true;
             }
