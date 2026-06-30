@@ -20,15 +20,23 @@ diffs the same `.mstat` artifacts with `sizoscope-cli`.
 pwsh .github/skills/aot-impact-analysis/scripts/Measure-AotSize.ps1 -Rid win-x64
 ```
 
+Bash equivalent (same parameters as `--kebab-case` flags):
+
+```bash
+.github/skills/aot-impact-analysis/scripts/measure-aot-size.sh --rid linux-x64
+```
+
 Useful parameters:
 
-- `-Rid` — runtime identifier to publish. CI publishes **win-x64** and
-  **osx-arm64**; re-run with `-Rid osx-arm64` on a Mac for that leg.
-- `-Configuration` — defaults to `Release` (matches CI's `buildConfiguration`).
-- `-BaseRef` — baseline ref; defaults to `git merge-base HEAD origin/main` (the
-  fork point), which yields a clean additive diff.
-- `-SkipBaseline` — reuse an already-built baseline worktree (faster re-runs).
-- `-OutputPath` — where to write the Markdown report.
+- `-Rid` / `--rid` — runtime identifier to publish. CI publishes **win-x64** and
+  **osx-arm64**; re-run with `osx-arm64` on a Mac for that leg.
+- `-Configuration` / `--configuration` — defaults to `Release` (matches CI's
+  `buildConfiguration`).
+- `-BaseRef` / `--base-ref` — baseline ref; defaults to `git merge-base HEAD
+  origin/main` (the fork point), which yields a clean additive diff.
+- `-SkipBaseline` / `--skip-baseline` — reuse an already-built baseline worktree
+  (faster re-runs).
+- `-OutputPath` / `--output-path` — where to write the Markdown report.
 
 ## How it works
 

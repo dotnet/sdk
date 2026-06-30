@@ -56,6 +56,10 @@ pwsh .github/skills/aot-impact-analysis/scripts/Start-AspireDashboard.ps1
 pwsh .github/skills/aot-impact-analysis/scripts/Measure-AotStartup.ps1 -Arguments '--version'
 ```
 
+Each script ships in two equivalent forms — PowerShell (`*.ps1`) and bash
+(`*.sh`); use whichever fits your shell. The bash equivalents are
+`scripts/measure-aot-size.sh`, `scripts/start-aspire-dashboard.sh`, and
+`scripts/measure-aot-startup.sh` (e.g. `scripts/measure-aot-size.sh --rid linux-x64`).
 Each subskill page documents the parameters, mechanics, and how to read the
 output. The size script writes `artifacts/aot-size-<rid>.md`; the startup script
 writes `artifacts/aot-startup.md`.

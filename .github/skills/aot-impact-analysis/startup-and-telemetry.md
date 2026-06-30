@@ -24,6 +24,9 @@ It blocks, so run it in its own terminal or a detached/background shell:
 pwsh .github/skills/aot-impact-analysis/scripts/Start-AspireDashboard.ps1
 ```
 
+Bash equivalent: `scripts/start-aspire-dashboard.sh` (flags `--use-docker`,
+`--otlp-grpc-port`, `--ui-port`).
+
 Endpoints: UI `http://localhost:18888`, OTLP/gRPC `http://localhost:4317`,
 OTLP/HTTP `http://localhost:4318`. It prefers the `aspire` CLI and falls back to
 the `mcr.microsoft.com/dotnet/aspire-dashboard` container. With the CLI it prints
@@ -34,6 +37,11 @@ a `…/login?t=<token>` URL — pass that whole URL to `aspire otel --dashboard-
 ```powershell
 pwsh .github/skills/aot-impact-analysis/scripts/Measure-AotStartup.ps1 -Arguments '--version'
 ```
+
+Bash equivalent: `scripts/measure-aot-startup.sh --arguments '--version'` (same
+options as `--kebab-case` flags: `--baseline-dotnet`, `--iterations`, `--warmup`,
+`--otlp-endpoint`, …). Sub-second timing needs bash ≥ 5 (`EPOCHREALTIME`) or GNU
+coreutils `gdate` on macOS.
 
 - **Scenarios.** By default it compares the *same* muxer with
   `DOTNET_CLI_ENABLEAOT=false` (managed) vs `true` (AOT). Pass
