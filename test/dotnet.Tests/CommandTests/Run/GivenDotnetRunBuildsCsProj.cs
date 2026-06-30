@@ -713,6 +713,28 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
+        public void ItDoesNotLogBuildOutputWhenNoConsoleLoggerIsSpecified()
+        {
+            var testAppName = "MSBuildTestApp";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-v:n")
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello World!")
+                .And.HaveStdOutContaining("Restore")
+                .And.HaveStdOutContaining("CoreCompile");
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-v:n", "-noconsolelogger")
+                .Should().Pass()
+                .And.HaveStdOut("Hello World!");
+        }
+
+        [Fact]
         public void ItDoesNotShowImportantLevelMessageByDefaultWhenInteractivityDisabled()
         {
             var testAppName = "MSBuildTestApp";

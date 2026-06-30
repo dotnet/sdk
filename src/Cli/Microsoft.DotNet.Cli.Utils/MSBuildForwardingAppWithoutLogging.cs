@@ -62,7 +62,12 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
         MSBuildPath = msbuildPath ?? defaultMSBuildPath;
 
-        EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
+        // Only force MSBUILDUSESERVER on when DOTNET_CLI_USE_MSBUILD_SERVER opts in; otherwise leave
+        // any user-provided MSBUILDUSESERVER value untouched so it can toggle the server on its own.
+        if (UseMSBuildServer)
+        {
+            EnvironmentVariable("MSBUILDUSESERVER", "1");
+        }
 
         // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set or we're asked to execute a non-default binary, call MSBuild out-of-proc.
         if (AlwaysExecuteMSBuildOutOfProc || !string.Equals(MSBuildPath, defaultMSBuildPath, StringComparison.OrdinalIgnoreCase))

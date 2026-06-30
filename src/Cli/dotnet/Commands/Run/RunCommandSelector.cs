@@ -602,6 +602,8 @@ internal sealed class RunCommandSelector : IDisposable
     {
         if (_binaryLogger is not null)
             yield return _binaryLogger;
-        yield return CommonRunHelpers.GetConsoleLogger(_msbuildArgs);
+
+        if (!LoggerUtility.HasNoConsoleLoggerArgument(_msbuildArgs.OtherMSBuildArgs))
+            yield return CommonRunHelpers.GetConsoleLogger(_msbuildArgs);
     }
 }
