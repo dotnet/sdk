@@ -21,8 +21,6 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 #endif
 internal static class VisualStudioWorkloads
 {
-    private static readonly object s_guard = new();
-
     /// <summary>
     /// Named mutex used to serialize cross-process access to the VS Setup Configuration COM API,
     /// which is not safe for concurrent calls from multiple processes.
@@ -31,14 +29,20 @@ internal static class VisualStudioWorkloads
     private const string VsSetupConfigurationMutexName = @"Global\DotNetSdk_VSSetupConfiguration";
 
     /// <summary>
-    /// Maximum number of retry attempts when the COM API fails due to concurrent access.
+    /// Maximum number of retries after the initial attempt fails due to concurrent access.
+    /// Total attempts = 1 (initial) + MaxRetryAttempts.
     /// </summary>
     private const int MaxRetryAttempts = 3;
 
     /// <summary>
-    /// Base delay in milliseconds between retry attempts (doubled on each retry).
+    /// Base delay in milliseconds between retry attempts (doubled on each retry, plus a random offset).
     /// </summary>
-    private const int RetryBaseDelayMs = 100;
+    private const int RetryBaseDelayMilliseconds = 100;
+
+    /// <summary>
+    /// Maximum random offset in milliseconds added to retry delays to stagger concurrent processes.
+    /// </summary>
+    private const int RetryRandomOffsetMaxMilliseconds = 50;
 
     /// <summary>
     /// Visual Studio product ID filters. We dont' want to query SKUs such as Server, TeamExplorer, TestAgent
@@ -161,8 +165,9 @@ internal static class VisualStudioWorkloads
             }
             catch (Exception) when (attempt < MaxRetryAttempts)
             {
-                // Retry with exponential backoff for transient COM failures.
-                Thread.Sleep(RetryBaseDelayMs * (1 << attempt));
+                // Retry with exponential backoff plus a random offset for transient COM failures.
+                int delay = RetryBaseDelayMilliseconds * (1 << attempt) + Random.Shared.Next(0, RetryRandomOffsetMaxMilliseconds);
+                Thread.Sleep(delay);
             }
         }
     }
