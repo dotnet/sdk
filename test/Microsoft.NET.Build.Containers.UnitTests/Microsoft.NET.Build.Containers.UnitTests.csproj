@@ -5,9 +5,6 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
-    <!-- True unit tests: opt back in to method-level parallelization (the repo-wide default is None).
-         Emits [assembly: Parallelize(Scope = MethodLevel)]. The few classes that mutate process-global
-         state (environment variables) are individually marked [DoNotParallelize]. -->
     <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
