@@ -308,6 +308,27 @@ internal static class DotnetupTestUtilities
                     Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to managed build output at '{managedPath}'.");
                     return Path.GetFullPath(managedPath);
                 }
+
+                string? ridManagedPath = FindRidSpecificOutput(tfmDir, rid, executableName);
+                if (ridManagedPath is not null)
+                {
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to RID-specific managed build output at '{ridManagedPath}'.");
+                    return Path.GetFullPath(ridManagedPath);
+                }
+
+                string managedDllPath = Path.Combine(tfmDir, "dotnetup.dll");
+                if (File.Exists(managedDllPath))
+                {
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to managed DLL output at '{managedDllPath}'.");
+                    return Path.GetFullPath(managedDllPath);
+                }
+
+                string? ridManagedDllPath = FindRidSpecificOutput(tfmDir, rid, "dotnetup.dll");
+                if (ridManagedDllPath is not null)
+                {
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to RID-specific managed DLL output at '{ridManagedDllPath}'.");
+                    return Path.GetFullPath(ridManagedDllPath);
+                }
             }
         }
 
@@ -332,11 +353,8 @@ internal static class DotnetupTestUtilities
         string? workingDirectory = null,
         Dictionary<string, string>? environmentVariables = null)
     {
-        string dotnetupPath = GetDotnetupExecutablePath();
-
         using var process = new Process();
-        process.StartInfo.FileName = dotnetupPath;
-        process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
+        ConfigureDotnetupProcess(process.StartInfo, args);
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;
@@ -389,6 +407,105 @@ internal static class DotnetupTestUtilities
         process.WaitForExit();
         return (process.ExitCode, outputBuilder.ToString());
     }
+
+    public static void ConfigureDotnetupProcess(ProcessStartInfo startInfo, string[] args)
+    {
+        string dotnetupPath = GetDotnetupExecutablePath();
+        if (Path.GetExtension(dotnetupPath).Equals(".dll", StringComparison.OrdinalIgnoreCase))
+        {
+            startInfo.FileName = GetRepoDotnetPath();
+            startInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart([dotnetupPath, .. args]);
+        }
+        else
+        {
+            startInfo.FileName = dotnetupPath;
+            startInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
+        }
+    }
+
+    public static string GetDotnetupScriptInvocation(string shell, string[] args)
+    {
+        string dotnetupPath = GetDotnetupExecutablePath();
+        if (Path.GetExtension(dotnetupPath).Equals(".dll", StringComparison.OrdinalIgnoreCase))
+        {
+            dotnetupPath = CreateManagedDotnetupShim(dotnetupPath);
+        }
+
+        return shell switch
+        {
+            "bash" or "zsh" =>
+                $"'{EscapeSingleQuotedShellArgument(dotnetupPath)}' {string.Join(" ", args.Select(arg => $"'{EscapeSingleQuotedShellArgument(arg)}'"))}",
+            "pwsh" =>
+                $"& '{EscapeSingleQuotedPowerShellArgument(dotnetupPath)}' {string.Join(" ", args.Select(arg => $"'{EscapeSingleQuotedPowerShellArgument(arg)}'"))}",
+            _ => throw new ArgumentException($"Unsupported shell '{shell}'.", nameof(shell)),
+        };
+    }
+
+    public static string? GetManagedDotnetupRuntimeDirectory()
+    {
+        string dotnetupPath = GetDotnetupExecutablePath();
+        return Path.GetExtension(dotnetupPath).Equals(".dll", StringComparison.OrdinalIgnoreCase)
+            ? GetRepoDotnetDirectory()
+            : null;
+    }
+
+    public static string GetRepoDotnetDirectory()
+        => Path.GetDirectoryName(GetRepoDotnetPath())!;
+
+    private static string CreateManagedDotnetupShim(string dotnetupPath)
+    {
+        string shimPath = Path.Combine(
+            Path.GetTempPath(),
+            "dotnetup-test-shim-" + Guid.NewGuid().ToString("N") + (OperatingSystem.IsWindows() ? ".cmd" : ".sh"));
+
+        if (OperatingSystem.IsWindows())
+        {
+            File.WriteAllText(
+                shimPath,
+                $"@echo off{Environment.NewLine}\"{GetRepoDotnetPath()}\" \"{dotnetupPath}\" %*{Environment.NewLine}");
+        }
+        else
+        {
+            File.WriteAllText(
+                shimPath,
+                $"#!/bin/sh{Environment.NewLine}exec '{EscapeSingleQuotedShellArgument(GetRepoDotnetPath())}' '{EscapeSingleQuotedShellArgument(dotnetupPath)}' \"$@\"{Environment.NewLine}");
+            File.SetUnixFileMode(shimPath, File.GetUnixFileMode(shimPath) | UnixFileMode.UserExecute);
+        }
+
+        return shimPath;
+    }
+
+    private static string GetRepoDotnetPath()
+    {
+        string repoDotnet = Path.Combine(GetRepositoryRoot(), ".dotnet", OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        if (!File.Exists(repoDotnet))
+        {
+            throw new FileNotFoundException(
+                $"The repo-local dotnet executable was not found at '{repoDotnet}'. Run build.cmd or build.cmd -restore from the repository root before running dotnetup process tests.",
+                repoDotnet);
+        }
+
+        return repoDotnet;
+    }
+
+    private static string? FindRidSpecificOutput(string tfmDir, string rid, string fileName)
+    {
+        string currentRidPath = Path.Combine(tfmDir, rid, fileName);
+        if (File.Exists(currentRidPath))
+        {
+            return currentRidPath;
+        }
+
+        return Directory.GetFiles(tfmDir, fileName, SearchOption.AllDirectories)
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+    }
+
+    private static string EscapeSingleQuotedShellArgument(string value)
+        => value.Replace("'", "'\\''");
+
+    private static string EscapeSingleQuotedPowerShellArgument(string value)
+        => value.Replace("'", "''");
 
     private static string GetRepositoryRoot()
     {

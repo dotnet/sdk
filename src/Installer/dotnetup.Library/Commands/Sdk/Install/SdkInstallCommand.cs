@@ -18,6 +18,13 @@ internal class SdkInstallCommand(ParseResult result) : InstallCommand(result)
 
     protected override void ExecuteCore()
     {
+        if (LocalInstall && _channels.Length > 1)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ContextResolutionFailed,
+                "The --local option can configure one SDK version in global.json. Specify a single channel or version.");
+        }
+
         // Map each channel to a MinimalInstallSpec. If none provided, a single null-channel
         // entry lets the workflow fall back to global.json or "latest".
         var specs = _channels.Length > 0

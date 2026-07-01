@@ -288,4 +288,23 @@ public class LibraryTests
 
         globalJsonInfo.SdkPath.Should().BeNull();
     }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_SkipsHostFallbackEntry()
+    {
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = ["$host$", ".dotnet"]
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().Be(Path.Combine(repoDir, ".dotnet"));
+    }
 }

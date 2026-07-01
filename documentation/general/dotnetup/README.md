@@ -162,3 +162,4 @@ This lets you change your path preference (Isolation → Terminal, etc.) or inst
 - [Install SDKs with global.json](./usecases/install-with-global-json.md) — Install the right SDK version for a project automatically
 - [Update SDK and Runtime Installations](./usecases/update-installations.md) — Keep your .NET installations current
 - [Try Daily Builds](./usecases/try-daily-builds.md) — Safely test pre-release .NET builds
+- [Project-local SDK setup design](./designs/project-local-sdk-setup.md) — API rationale and tradeoffs for repository-local SDK installs

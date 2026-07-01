@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -213,6 +215,92 @@ public class GlobalJsonUpdateTests : IDisposable
     }
 
     [Fact]
+    public void ApplyLocalSdkSetup_CreatesGlobalJsonWithLocalPaths()
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        var settings = new LocalSdkSetupSettings(
+            SdkVersion: "10.0.100",
+            RollForward: "disable",
+            UpdateRollForward: true,
+            AllowPrerelease: null,
+            UpdateAllowPrerelease: true);
+
+        GlobalJsonModifier.ApplyLocalSdkSetup(path, settings);
+
+        var updated = File.ReadAllText(path);
+        updated.Should().Contain("\"version\": \"10.0.100\"");
+        updated.Should().Contain("\"rollForward\": \"disable\"");
+        updated.Should().Contain("\"paths\"");
+        updated.Should().Contain("\".dotnet\"");
+        updated.Should().Contain("\"$host$\"");
+        updated.Should().NotContain("allowPrerelease");
+    }
+
+    [Fact]
+    public void ApplyLocalSdkSetup_PreservesExistingSectionsAndMergesSdk()
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, """
+            {
+              "sdk": {
+                "version": "9.0.100",
+                "rollForward": "latestFeature"
+              },
+              "msbuild-sdks": {
+                "Example.Sdk": "1.2.3"
+              },
+              "tools": {
+                "dotnet-example": "4.5.6"
+              }
+            }
+            """);
+        var settings = new LocalSdkSetupSettings(
+            SdkVersion: "10.0.100-preview.1",
+            RollForward: "latestPatch",
+            UpdateRollForward: true,
+            AllowPrerelease: true,
+            UpdateAllowPrerelease: true);
+
+        GlobalJsonModifier.ApplyLocalSdkSetup(path, settings);
+
+        var updated = File.ReadAllText(path);
+        updated.Should().Contain("\"version\": \"10.0.100-preview.1\"");
+        updated.Should().Contain("\"allowPrerelease\": true");
+        updated.Should().Contain("\"rollForward\": \"latestPatch\"");
+        updated.Should().Contain("\"paths\"");
+        updated.Should().Contain("\"msbuild-sdks\"");
+        updated.Should().Contain("\"Example.Sdk\": \"1.2.3\"");
+        updated.Should().Contain("\"tools\"");
+        updated.Should().Contain("\"dotnet-example\": \"4.5.6\"");
+    }
+
+    [Theory]
+    [InlineData("10.0.100", "disable")]
+    [InlineData("10.0.1xx", "latestPatch")]
+    [InlineData("10.0", "latestFeature")]
+    [InlineData("10", "latestMinor")]
+    [InlineData("latest", "latestPatch")]
+    [InlineData("preview", "latestPatch")]
+    public void LocalSdkSetupSettings_ChoosesRollForwardForRequestedChannel(string requestedChannel, string expectedRollForward)
+    {
+        LocalSdkSetupSettings.GetRollForwardForRequestedChannel(requestedChannel)
+            .Should().Be(expectedRollForward);
+    }
+
+    [Fact]
+    public void LocalSdkSetupSettings_SetsAllowPrereleaseForPrereleaseResolvedVersion()
+    {
+        var settings = LocalSdkSetupSettings.Create(
+            requestedChannel: "preview",
+            globalJsonExisted: false,
+            new GlobalJsonInfo(),
+            new ReleaseVersion("10.0.100-preview.1"));
+
+        settings.AllowPrerelease.Should().BeTrue();
+        settings.UpdateAllowPrerelease.Should().BeTrue();
+    }
+
+    [Fact]
     public void UpdateGlobalJson_DoesNotWriteFile_WhenNoSdkVersionToReplace()
     {
         var path = Path.Combine(_testDir, "global.json");
@@ -227,6 +315,118 @@ public class GlobalJsonUpdateTests : IDisposable
 
         File.ReadAllText(path).Should().Be(original);
         File.GetLastWriteTimeUtc(path).Should().Be(lastWrite);
+    }
+
+    [Fact]
+    public void LocalSdkSetupPlan_UsesNearestGlobalJsonDirectoryForNestedStart()
+    {
+        var projectDir = Path.Combine(_testDir, "project");
+        var nestedDir = Path.Combine(projectDir, "src", "app");
+        Directory.CreateDirectory(nestedDir);
+        File.WriteAllText(Path.Combine(projectDir, "global.json"), """{ "sdk": { "version": "10.0.100" } }""");
+
+        var plan = LocalSdkSetupPlan.Create(nestedDir, requestedChannel: null);
+
+        plan.ProjectDirectory.Should().Be(projectDir);
+        plan.GlobalJsonPath.Should().Be(Path.Combine(projectDir, "global.json"));
+        plan.LocalDotnetPath.Should().Be(Path.Combine(projectDir, ".dotnet"));
+    }
+
+    [Fact]
+    public void LocalSdkSetupPlan_AcceptsGlobalJsonCommentsAndTrailingCommas()
+    {
+        File.WriteAllText(Path.Combine(_testDir, "global.json"), """
+            {
+              // global.json accepts comments and trailing commas.
+              "sdk": {
+                "version": "10.0.100",
+              },
+            }
+            """);
+
+        var plan = LocalSdkSetupPlan.Create(_testDir, requestedChannel: null);
+
+        plan.GlobalJsonInfo.SdkVersion.Should().Be("10.0.100");
+    }
+
+    [Fact]
+    public void LocalSdkSetupPlan_ThrowsWhenExistingGlobalJsonHasNoSdkVersionAndNoChannel()
+    {
+        File.WriteAllText(Path.Combine(_testDir, "global.json"), """{ "sdk": { "rollForward": "latestFeature" } }""");
+
+        var act = () => LocalSdkSetupPlan.Create(_testDir, requestedChannel: null);
+
+        act.Should().Throw<DotnetInstallException>()
+            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.ContextResolutionFailed)
+            .WithMessage("*does not specify sdk.version*");
+    }
+
+    [Theory]
+    [InlineData("10.0.100", true)]
+    [InlineData("10.0.100-preview.1.12345", true)]
+    [InlineData("9.0.306", true)]
+    [InlineData("not-a-version", false)]
+    public void LocalSdkHostValidator_TryGetMajorVersion(string version, bool expected)
+    {
+        LocalSdkHostValidator.TryGetMajorVersion(version, out int major).Should().Be(expected);
+        if (expected)
+        {
+            major.Should().Be(int.Parse(version.Split('.')[0], System.Globalization.CultureInfo.InvariantCulture));
+        }
+    }
+
+    [Fact]
+    public void LocalSdkHostValidator_ParsesHostVersionFromDotnetInfo()
+    {
+        var dotnetInfo = """
+            .NET SDK:
+             Version:           9.0.306
+
+            Host:
+              Version:      10.0.0
+              Architecture: arm64
+
+            .NET SDKs installed:
+              9.0.306 [C:\Program Files\dotnet\sdk]
+            """;
+
+        LocalSdkHostValidator.TryGetHostVersionFromInfo(dotnetInfo, out string? hostVersion)
+            .Should().BeTrue();
+        hostVersion.Should().Be("10.0.0");
+    }
+
+    [Fact]
+    public void GitIgnoreUpdater_CreatesGitIgnoreWhenMissing()
+    {
+        GitIgnoreUpdater.EnsureDotnetDirectoryIgnored(_testDir);
+
+        File.ReadAllText(Path.Combine(_testDir, ".gitignore"))
+            .Should().Be(".dotnet/" + Environment.NewLine);
+    }
+
+    [Fact]
+    public void GitIgnoreUpdater_AppendsNewlineSafely()
+    {
+        var path = Path.Combine(_testDir, ".gitignore");
+        File.WriteAllText(path, "bin/");
+
+        GitIgnoreUpdater.EnsureDotnetDirectoryIgnored(_testDir);
+
+        File.ReadAllText(path).Should().Be("bin/\n.dotnet/\n");
+    }
+
+    [Theory]
+    [InlineData(".dotnet/")]
+    [InlineData(".dotnet")]
+    [InlineData("/.dotnet/")]
+    public void GitIgnoreUpdater_DoesNotDuplicateExistingDotnetEntry(string existingEntry)
+    {
+        var path = Path.Combine(_testDir, ".gitignore");
+        File.WriteAllText(path, existingEntry + Environment.NewLine);
+
+        GitIgnoreUpdater.EnsureDotnetDirectoryIgnored(_testDir);
+
+        File.ReadAllLines(path).Should().ContainSingle(line => line == existingEntry);
     }
 
     // ──────────────────────────────────────────────────────────────

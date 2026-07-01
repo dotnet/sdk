@@ -20,6 +20,20 @@ public class ParserTests
         [new[] { "runtime", "install", "aspnetcore@9.0", "--migrate-from-system" }]
     ];
 
+    public static IEnumerable<object[]> LocalInstallCommandArgs =>
+    [
+        [new[] { "sdk", "install", "10.0.100", "--local" }],
+        [new[] { "install", "10.0.100", "--local" }]
+    ];
+
+    public static IEnumerable<object[]> LocalInstallConflictingCommandArgs =>
+    [
+        [new[] { "sdk", "install", "10.0.100", "--local", "--install-path", @"C:\dotnet" }, "--install-path"],
+        [new[] { "sdk", "install", "10.0.100", "--local", "--set-default-install" }, "--set-default-install"],
+        [new[] { "sdk", "install", "10.0.100", "--local", "--migrate-from-system" }, "--migrate-from-system"],
+        [new[] { "sdk", "install", "10.0.100", "--local", "--update-global-json" }, "--update-global-json"]
+    ];
+
     [Fact]
     public void Parser_ShouldParseValidCommands()
     {
@@ -32,6 +46,29 @@ public class ParserTests
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [MemberData(nameof(LocalInstallCommandArgs))]
+    public void Parser_ShouldParseSdkLocalInstallCommands(string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.LocalInstallOption).Should().BeTrue();
+    }
+
+    [Theory]
+    [MemberData(nameof(LocalInstallConflictingCommandArgs))]
+    public void Parser_ShouldRejectLocalInstallConflictingOptions(string[] args, string optionName)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
+        parseResult.Errors.Select(error => error.Message)
+            .Should().Contain(message => message.Contains(optionName, StringComparison.Ordinal));
     }
 
     [Fact]

@@ -41,6 +41,7 @@ internal static class SdkInstallCommandParser
         command.Arguments.Add(ChannelArguments);
 
         command.Options.Add(CommonOptions.InstallPathOption);
+        command.Options.Add(CommonOptions.LocalInstallOption);
         command.Options.Add(CommonOptions.SetDefaultInstallOption);
         command.Options.Add(CommonOptions.MigrateFromSystemOption);
         command.Options.Add(UpdateGlobalJsonOption);
@@ -55,9 +56,37 @@ internal static class SdkInstallCommandParser
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
         command.Options.Add(CommonOptions.UntrackedOption);
         command.Validators.Add(CommonOptions.RejectShellOptionOnInstallCommand());
+        command.Validators.Add(RejectConflictingLocalInstallOptions());
 
         command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 
         return command;
     }
+
+    private static Action<System.CommandLine.Parsing.CommandResult> RejectConflictingLocalInstallOptions()
+    {
+        return commandResult =>
+        {
+            if (!HasOption(commandResult, CommonOptions.LocalInstallOption))
+            {
+                return;
+            }
+
+            RejectIfPresent(commandResult, CommonOptions.InstallPathOption, "The --local option chooses the project-local .dotnet install path, so it can't be combined with --install-path.");
+            RejectIfPresent(commandResult, CommonOptions.SetDefaultInstallOption, "The --local option does not modify PATH or DOTNET_ROOT, so it can't be combined with --set-default-install.");
+            RejectIfPresent(commandResult, CommonOptions.MigrateFromSystemOption, "The --local option installs only the requested project SDK, so it can't be combined with --migrate-from-system.");
+            RejectIfPresent(commandResult, UpdateGlobalJsonOption, "The --local option always configures global.json, so it can't be combined with --update-global-json.");
+        };
+    }
+
+    private static void RejectIfPresent(System.CommandLine.Parsing.CommandResult commandResult, Option option, string message)
+    {
+        if (HasOption(commandResult, option))
+        {
+            commandResult.AddError(message);
+        }
+    }
+
+    private static bool HasOption(System.CommandLine.Parsing.CommandResult commandResult, Option option)
+        => commandResult.GetResult(option) is not null;
 }

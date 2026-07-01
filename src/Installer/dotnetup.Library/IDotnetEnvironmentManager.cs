@@ -59,8 +59,18 @@ public class GlobalJsonInfo
     {
         get
         {
-            return (GlobalJsonContents?.Sdk?.Paths is not null && GlobalJsonContents.Sdk.Paths.Length > 0) ?
-                Path.GetFullPath(GlobalJsonContents.Sdk.Paths[0], Path.GetDirectoryName(GlobalJsonPath)!) : null;
+            if (GlobalJsonContents?.Sdk?.Paths is null || GlobalJsonContents.Sdk.Paths.Length == 0)
+            {
+                return null;
+            }
+
+            string? configuredPath = GlobalJsonContents.Sdk.Paths.FirstOrDefault(path =>
+                !string.IsNullOrWhiteSpace(path) &&
+                !string.Equals(path, "$host$", StringComparison.OrdinalIgnoreCase));
+
+            return configuredPath is not null
+                ? Path.GetFullPath(configuredPath, Path.GetDirectoryName(GlobalJsonPath)!)
+                : null;
         }
     }
 }

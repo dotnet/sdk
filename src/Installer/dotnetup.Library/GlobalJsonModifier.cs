@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -104,6 +106,33 @@ public static class GlobalJsonModifier
     }
 
     /// <summary>
+    /// Merges the SDK properties required for project-local SDK resolution into global.json.
+    /// Unknown root sections are preserved; comments are accepted while reading but are not preserved on write.
+    /// </summary>
+    internal static void ApplyLocalSdkSetup(string globalJsonPath, LocalSdkSetupSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(globalJsonPath);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        var (root, encoding) = ReadOrCreateGlobalJsonObject(globalJsonPath);
+        var sdkObject = GetOrCreateSdkObject(root, globalJsonPath);
+
+        sdkObject["version"] = settings.SdkVersion;
+        SetOrRemove(sdkObject, "rollForward", settings.RollForward, settings.UpdateRollForward);
+        SetOrRemove(sdkObject, "allowPrerelease", settings.AllowPrerelease, settings.UpdateAllowPrerelease);
+        sdkObject["paths"] = new JsonArray(".dotnet", "$host$");
+
+        string updatedJson = root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine;
+        string? directory = Path.GetDirectoryName(globalJsonPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        File.WriteAllText(globalJsonPath, updatedJson, encoding);
+    }
+
+    /// <summary>
     /// Replaces the "version" value inside the "sdk" section of a global.json string,
     /// preserving all existing formatting. Uses <see cref="Utf8JsonReader"/> to find
     /// exact token positions.
@@ -155,6 +184,94 @@ public static class GlobalJsonModifier
         }
 
         return null;
+    }
+
+    private static (JsonObject Root, System.Text.Encoding Encoding) ReadOrCreateGlobalJsonObject(string globalJsonPath)
+    {
+        if (!File.Exists(globalJsonPath))
+        {
+            return ([], System.Text.Encoding.UTF8);
+        }
+
+        var (fileText, encoding) = GlobalJsonFileHelper.ReadFileWithEncodingDetection(globalJsonPath);
+        try
+        {
+            JsonNode? rootNode = JsonNode.Parse(
+                fileText,
+                nodeOptions: null,
+                documentOptions: new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = JsonCommentHandling.Skip
+                });
+
+            if (rootNode is JsonObject rootObject)
+            {
+                return (rootObject, encoding);
+            }
+        }
+        catch (JsonException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UserConfigurationCorrupted,
+                $"The global.json file at '{globalJsonPath}' is not valid JSON: {ex.Message}",
+                ex);
+        }
+
+        throw new DotnetInstallException(
+            DotnetInstallErrorCode.UserConfigurationCorrupted,
+            $"The global.json file at '{globalJsonPath}' must contain a JSON object.");
+    }
+
+    private static JsonObject GetOrCreateSdkObject(JsonObject root, string globalJsonPath)
+    {
+        if (root["sdk"] is null)
+        {
+            var newSdkObject = new JsonObject();
+            root["sdk"] = newSdkObject;
+            return newSdkObject;
+        }
+
+        if (root["sdk"] is JsonObject sdkObject)
+        {
+            return sdkObject;
+        }
+
+        throw new DotnetInstallException(
+            DotnetInstallErrorCode.UserConfigurationCorrupted,
+            $"The sdk section in global.json at '{globalJsonPath}' must be a JSON object.");
+    }
+
+    private static void SetOrRemove(JsonObject sdkObject, string propertyName, string? value, bool update)
+    {
+        if (!update)
+        {
+            return;
+        }
+
+        if (value is null)
+        {
+            sdkObject.Remove(propertyName);
+            return;
+        }
+
+        sdkObject[propertyName] = value;
+    }
+
+    private static void SetOrRemove(JsonObject sdkObject, string propertyName, bool? value, bool update)
+    {
+        if (!update)
+        {
+            return;
+        }
+
+        if (value is null)
+        {
+            sdkObject.Remove(propertyName);
+            return;
+        }
+
+        sdkObject[propertyName] = value;
     }
 
     private static string SpliceUtf8Token(byte[] bytes, int tokenStart, int bytesConsumed, string newVersion)
