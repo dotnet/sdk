@@ -10,7 +10,6 @@ using Microsoft.NET.Build.Containers.IntegrationTests;
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
 [TestClass]
-[DoNotParallelize]
 public class CreateNewImageTests : SdkTest
 {
     [TestMethod]

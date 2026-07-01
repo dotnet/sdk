@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
-            => s_settingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+            => s_settingsHelper = new EnvironmentSettingsHelper();
 
         [ClassCleanup]
         public static void ClassCleanup() => s_settingsHelper?.Dispose();

@@ -14,7 +14,6 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 [TestClass]
-[DoNotParallelize]
 public class EndToEndTests : SdkTest, IDisposable
 {
     private TestLoggerFactory? _loggerFactory;

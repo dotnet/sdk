@@ -12,14 +12,13 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class TemplateJsonDefinedFormsTests
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
-            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
         [ClassCleanup]
         public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
