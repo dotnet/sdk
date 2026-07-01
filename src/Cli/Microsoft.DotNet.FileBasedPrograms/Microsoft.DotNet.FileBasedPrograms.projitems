@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)FileBasedProgramsResources.resx" GenerateSource="true" Namespace="Microsoft.DotNet.FileBasedPrograms" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)FileBasedProgramsResources.resx" GenerateSource="true" Namespace="Microsoft.DotNet.FileBasedPrograms">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

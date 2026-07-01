@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.JsonNetTypeNameHandling,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -16,11 +15,12 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class JsonNetTypeNameHandlingTests
     {
         private static readonly DiagnosticDescriptor Rule = JsonNetTypeNameHandling.Rule;
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -40,7 +40,7 @@ public class ExampleClass
                 GetCSharpResultAt(11, 37, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_VB_Violation_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -58,7 +58,7 @@ End Class",
                 GetBasicResultAt(9, 37, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -78,7 +78,7 @@ public class ExampleClass
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_VB_Solution_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -96,7 +96,7 @@ Public Class ExampleClass
 End Class");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Reference_TypeNameHandling_None_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -113,7 +113,7 @@ class Blah
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Reference_TypeNameHandling_All_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -131,7 +131,7 @@ class Blah
                 GetCSharpResultAt(9, 27, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Reference_AttributeTargets_All_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -148,7 +148,7 @@ class Blah
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Assign_TypeNameHandling_Objects_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -166,7 +166,7 @@ class Blah
                 GetCSharpResultAt(9, 32, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Assign_TypeNameHandling_1_Or_Arrays_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -184,7 +184,7 @@ class Blah
                 GetCSharpResultAt(9, 55, Rule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Assign_TypeNameHandling_0_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -201,7 +201,7 @@ class Blah
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Assign_TypeNameHandling_None_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -236,7 +236,7 @@ class Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyBasicWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
@@ -257,7 +257,7 @@ class Blah
 
             vbTest.ExpectedDiagnostics.AddRange(expected);
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

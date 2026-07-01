@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.Testing.EmptyDiagnosticAnalyzer, // Diagnostic is from the compiler
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpOverrideEqualsOnOverloadingOperatorEqualsFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OverrideEqualsOnOverloadingOperatorEqualsFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CS0660Async()
         {
             await new VerifyCS.Test
@@ -70,10 +70,10 @@ class {|CS0659:{|CS0661:C|}|}
                         return solution.WithProjectCompilationOptions(projectId, compilationOptions);
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS0660_SimplifiedAsync()
         {
             await new VerifyCS.Test
@@ -132,10 +132,10 @@ class {|CS0659:{|CS0661:C|}|}
                         return solution.WithProjectCompilationOptions(projectId, compilationOptions);
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2224Async()
         {
             await new VerifyVB.Test
@@ -174,10 +174,10 @@ Class C
     End Function
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2224_SimplifiedAsync()
         {
             await new VerifyVB.Test
@@ -220,7 +220,7 @@ Class C
     End Function
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

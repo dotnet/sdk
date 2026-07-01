@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.MarkMembersAsStaticAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpMarkMembersAsStaticFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class MarkMembersAsStaticFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_SimpleMembers_NoReferencesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -102,7 +102,7 @@ public class MembersTests
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_SimpleMembers_NoReferencesAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -185,7 +185,7 @@ Public Class MembersTests
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ReferencesInSameType_MemberReferencesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -240,7 +240,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_ReferencesInSameType_MemberReferencesAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -289,7 +289,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ReferencesInSameType_InvocationsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -334,7 +334,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_ReferencesInSameType_InvocationsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -369,7 +369,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ReferencesInSameFile_MemberReferencesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -430,7 +430,7 @@ class C2
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ReferencesInSameFile_InvocationsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -485,7 +485,7 @@ class C2
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ReferencesInMultipleFiles_MemberReferencesAsync()
         {
             await new VerifyCS.Test
@@ -594,10 +594,10 @@ class C3
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ReferencesInMultipleFiles_InvocationsAsync()
         {
             await new VerifyCS.Test
@@ -694,10 +694,10 @@ class C3
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ReferenceInArgumentAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -732,7 +732,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_ReferenceInArgumentAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -763,7 +763,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_GenericMethodAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -822,7 +822,7 @@ public class C2<T2>
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_GenericMethod_02Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -875,7 +875,7 @@ public class C2<T2>
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_GenericMethodAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -928,7 +928,7 @@ Public Class C2(Of T2)
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_InvocationInInstanceAsync()
         {
             // We don't make the replacement if instance has an invocation.
@@ -976,10 +976,10 @@ public class C
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_InvocationInInstanceAsync()
         {
             // We don't make the replacement if instance has an invocation.
@@ -1011,7 +1011,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ConversionInInstanceAsync()
         {
             // We don't make the replacement if instance has a conversion.
@@ -1059,10 +1059,10 @@ public class C
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_ConversionInInstanceAsync()
         {
             // We don't make the replacement if instance has a conversion.
@@ -1094,7 +1094,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_FixAllAsync()
         {
             await new VerifyCS.Test
@@ -1201,10 +1201,10 @@ class C3
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_FixAllAsync()
         {
             await new VerifyVB.Test
@@ -1297,10 +1297,10 @@ Class C3
 End Class",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_PropertyWithReferencesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -1331,7 +1331,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_PropertyWithReferencesAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1372,7 +1372,7 @@ Public Class C
 End Class");
         }
 
-        [Fact, WorkItem(2888, "https://github.com/dotnet/roslyn-analyzers/issues/2888")]
+        [TestMethod, WorkItem(2888, "https://github.com/dotnet/roslyn-analyzers/issues/2888")]
         public async Task CA1822_CSharp_AsyncModifierAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -1417,7 +1417,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
         [WorkItem(5168, "https://github.com/dotnet/roslyn-analyzers/issues/5168")]
         public async Task CA1822_PartialMethod_CannotBeStaticAsync()
@@ -1451,10 +1451,10 @@ partial class Class1
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = source,
                 FixedCode = source,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
         [WorkItem(5168, "https://github.com/dotnet/roslyn-analyzers/issues/5168")]
         public async Task CA1822_PartialMethod_CanBeStaticAsync()
@@ -1513,10 +1513,10 @@ partial class Class1
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = source,
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ReadonlyMembers_RemoveReadonlyKeyword()
         {
             await new VerifyCS.Test
@@ -1634,7 +1634,7 @@ partial class Class1
                         }
                     }
                     """,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

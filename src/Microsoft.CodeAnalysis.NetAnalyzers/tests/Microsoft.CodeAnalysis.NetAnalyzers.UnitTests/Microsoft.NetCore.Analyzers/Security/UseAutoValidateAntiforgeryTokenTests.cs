@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseAutoValidateAntiforgeryToken,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class UseAutoValidateAntiforgeryTokenTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
@@ -34,10 +34,10 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_ChildrenOfIAsyncAuthorizationFilter_NotCallMethodsOf_DescedantOfIAntiForgery_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -82,7 +82,7 @@ class BlahClass
             GetCSharpResultAt(26, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_ChildrenOfIAuthorizationFilter_NotCallMethodsOf_DescedantOfIAntiForgery_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -126,7 +126,7 @@ class BlahClass
             GetCSharpResultAt(25, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_DerivedIAuthorizationFilter_NotCallMethodsOf_DescedantOfIAntiForgery_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -178,7 +178,7 @@ class BlahClass
             GetCSharpResultAt(33, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ChildrenOfController_ActionMethodWithHttpPostAndHttpGetAttributes_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -201,7 +201,7 @@ class TestClass : Controller
             GetCSharpResultAt(13, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpPost"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ChildrenOfController_ActionMethodWithHttpPatchAttribute_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -224,7 +224,7 @@ class TestClass : Controller
             GetCSharpResultAt(13, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpPatch"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ChildrenOfController_ActionMethodWithHttpPostAttribute_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -246,7 +246,7 @@ class TestClass : Controller
             GetCSharpResultAt(12, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpPost"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ChildrenOfController_ActionMethodWithHttpPutAttribute_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -268,7 +268,7 @@ class TestClass : Controller
             GetCSharpResultAt(12, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpPut"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ChildrenOfController_ActionMethodWithHttpDeleteAttribute_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -290,7 +290,7 @@ class TestClass : Controller
             GetCSharpResultAt(12, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithoutValidateAntiForgeryAttribute_ActionMethodWithTwoHttpVervAttributes_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -317,7 +317,7 @@ class TestClass : Controller
             GetCSharpResultAt(17, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_NoValidateAntiForgeryTokenAttribute_ActionMethodMissingHttpVerbAttribute_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -342,7 +342,7 @@ class TestClass : Controller
             GetCSharpResultAt(15, 35, UseAutoValidateAntiforgeryToken.MissHttpVerbAttributeRule, "CustomizedActionMethod"));
         }
 
-        [Fact, WorkItem(2844, "https://github.com/dotnet/roslyn-analyzers/issues/2844")]
+        [TestMethod, WorkItem(2844, "https://github.com/dotnet/roslyn-analyzers/issues/2844")]
         public async Task Test_ConcurrencyIssue_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -404,7 +404,7 @@ class TestClass5 : Controller
             GetCSharpResultAt(48, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod5", "HttpPut"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EditorConfigConfiguration_OnlyLookAtDerivedClassesOfController_DefaultValue_DiagnosticAsync()
         {
             var csharpTest = new VerifyCS.Test
@@ -445,10 +445,10 @@ dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false") }
                 GetCSharpResultAt(15, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete")
             );
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_ChildrenOfIAsyncAuthorizationFilter_DirectlyCallMethodsOf_ChildrenOfIAntiForgery_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -494,7 +494,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_DerivedFilter_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -544,7 +544,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_DerivedFilterOverrides_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -599,7 +599,7 @@ class BlahClass
                 GetCSharpResultAt(36, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpPost"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_MethodReferItSelft_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -658,7 +658,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_DelegateField_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -716,7 +716,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_StaticDelegateField_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -772,7 +772,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Interface_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -826,7 +826,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_ChildrenOfIAsyncAuthorizationFilter_DirectlyCallMethodsOf_ChildrenOfIAntiForgeryImplicitly_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -873,7 +873,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_ChildrenOfIAsyncAuthorizationFilter_DirectlyCallMethodsOf_DescedantOfIAntiForgery_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -928,7 +928,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_ChildrenOfIAsyncAuthorizationFilter_IndirectlyCallMethodsOf_ChildrenOfIAntiForgery_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -979,7 +979,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_ChildrenOfIAsyncAuthorizationFilter_IndirectlyCallMethodsOf_DescedantOfIAntiForgery_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1040,7 +1040,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_DescedantOfIAsyncAuthorizationFilter_DirectlyCallMethodsOf_ChildrenOfIAntiForgery_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1090,7 +1090,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_AddIsAGenericMethod_ChildrenOfIAsyncAuthorizationFilter_DirectlyCallMethodsOf_ChildrenOfIAntiForgery_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1136,7 +1136,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_ChildrenOfIFilterMetadata_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1174,7 +1174,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_Add_DescedantOfIFilterMetadata_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1216,7 +1216,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_AddIsAGenericMethod_ChildrenOfIFilterMetadata_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1254,7 +1254,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_AddIsAGenericMethod_DescedantOfIFilterMetadata_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1296,7 +1296,7 @@ class BlahClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ActionMethodIsNotPublic_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1317,7 +1317,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ActionMethodIsStatic_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1338,7 +1338,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ActionMethodWithNonActionAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1359,7 +1359,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_OverridenMethodWithNonActionAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1380,7 +1380,7 @@ class TestClass : Controller
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ActionMethodWitoutAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1395,7 +1395,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ChildrenOfControllerBase_ActionMethodWithBothValidateAntiForgeryAndHttpPostAttributes_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1413,7 +1413,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ChildrenOfControllerBase_ActionMethodWithHttpPostAttributeWhileTypeWithValidateAntiForgeryAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1431,7 +1431,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_NotUsingValidateAntiForgeryAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1447,7 +1447,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ActionMethodWithHttpGetAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1468,7 +1468,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ValidateAntiForgeryTokenAttributeOnActionMethod_ActionMethodMissingHttpVerbAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1488,7 +1488,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ValidateAntiForgeryTokenAttributeOnController_ActionMethodMissingHttpVerbAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1508,7 +1508,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_NoValidateAntiForgeryTokenAttribute_ActionMethodMissingHttpVerbAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1527,7 +1527,7 @@ class TestClass : ControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_GlobalAntiForgeryFilter_ActionMethodMissingHttpVerbAttribute_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1572,9 +1572,9 @@ class BlahClass
 }");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = true")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = true")]
         public async Task EditorConfigConfiguration_OnlyLookAtDerivedClassesOfController_NonDefaultValue_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -1610,7 +1610,7 @@ class TestClass : ControllerBase
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

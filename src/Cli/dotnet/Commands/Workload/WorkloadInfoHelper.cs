@@ -6,7 +6,9 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+#endif
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -14,7 +16,14 @@ using Product = Microsoft.DotNet.Cli.Utils.Product;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
+#if CLI_AOT
+// Under NativeAOT the workload installer (and its NuGet/MSI machinery) is not compiled in; this type
+// only provides the read-only info-reporting surface (workload version + installed workloads), so it
+// does not implement IWorkloadInfoHelper (which exposes the installer) in the AOT build.
+internal class WorkloadInfoHelper
+#else
 internal class WorkloadInfoHelper : IWorkloadInfoHelper
+#endif
 {
     public readonly SdkFeatureBand _currentSdkFeatureBand;
     private readonly string? _targetSdkVersion;
@@ -25,7 +34,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         bool isInteractive,
         VerbosityOptions verbosity = VerbosityOptions.normal,
         string? targetSdkVersion = null,
-        bool? verifySignatures = null,
+        bool? verifyMsiSignature = null,
         IReporter? reporter = null,
         IWorkloadInstallationRecordRepository? workloadRecordRepo = null,
         string? currentSdkVersion = null,
@@ -49,15 +58,26 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
             ManifestProvider, DotnetPath,
             currentSdkReleaseVersion.ToString(), userProfileDir);
 
+#if CLI_AOT
+        // The NativeAOT build does not compile in the workload installer (NuGet/MSI machinery). The info
+        // path only needs the installation-record repository, so build it directly here - mirroring the
+        // read-only construction in WorkloadInstallDetector.
+        WorkloadRecordRepo = workloadRecordRepo ?? CreateInstallationRecordRepository(DotnetPath, _currentSdkFeatureBand, userProfileDir);
+
+        UserLocalPath = dotnetDir ?? (IsUserLocal(DotnetPath, _currentSdkFeatureBand.ToString()) ? userProfileDir : DotnetPath);
+#else
         var restoreConfig = new RestoreActionConfig(Interactive: isInteractive);
 
+        // When verifyMsiSignature is not specified by the caller, we delegate to
+        // WorkloadUtilities.ShouldVerifySignatures() which respects the registry policy
+        // and dotnet host signing status.
         Installer = WorkloadInstallerFactory.GetWorkloadInstaller(
             reporter,
             _currentSdkFeatureBand,
             WorkloadResolver,
             verbosity,
             userProfileDir,
-            verifySignatures ?? !SignCheck.IsDotNetSigned(),
+            verifyMsiSignature: verifyMsiSignature ?? WorkloadUtilities.ShouldVerifySignatures(),
             restoreActionConfig: restoreConfig,
             elevationRequired: false,
             shouldLog: false);
@@ -65,9 +85,31 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         WorkloadRecordRepo = workloadRecordRepo ?? Installer.GetWorkloadInstallationRecordRepository();
 
         UserLocalPath = dotnetDir ?? (WorkloadFileBasedInstall.IsUserLocal(DotnetPath, _currentSdkFeatureBand.ToString()) ? userProfileDir : DotnetPath);
+#endif
     }
 
+#if CLI_AOT
+    // Build the installation-record repository without the workload installer (not compiled into the
+    // AOT build). Mirrors WorkloadInstallDetector: registry-backed for MSI installs on Windows,
+    // file-based otherwise.
+    private static IWorkloadInstallationRecordRepository CreateInstallationRecordRepository(string dotnetDir, SdkFeatureBand sdkFeatureBand, string userProfileDir)
+        => WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetDir) switch
+        {
+            InstallType.Msi => new RegistryWorkloadInstallationRecordRepository(),
+            _ => new FileBasedInstallationRecordRepository(Path.Combine(
+                     IsUserLocal(dotnetDir, sdkFeatureBand.ToString()) ? userProfileDir : dotnetDir,
+                     "metadata", "workloads")),
+        };
+
+    // Inlined equivalent of WorkloadFileBasedInstall.IsUserLocal, avoiding that type's workload-history
+    // (System.Text.Json) helpers compiled under '#if DotnetCsproj'.
+    private static bool IsUserLocal(string dotnetDir, string sdkFeatureBand)
+        => File.Exists(Path.Combine(dotnetDir, "metadata", "workloads", sdkFeatureBand, "userlocal"));
+#endif
+
+#if !CLI_AOT
     public IInstaller Installer { get; private init; }
+#endif
     public SdkDirectoryWorkloadManifestProvider ManifestProvider { get; }
     public IWorkloadInstallationRecordRepository WorkloadRecordRepo { get; private init; }
     public IWorkloadResolver WorkloadResolver { get; private init; }
@@ -77,7 +119,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     public InstalledWorkloadsCollection AddInstalledVsWorkloads(IEnumerable<WorkloadId> sdkWorkloadIds)
     {
         InstalledWorkloadsCollection installedWorkloads = new(sdkWorkloadIds, $"SDK {_currentSdkFeatureBand}");
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         if (OperatingSystem.IsWindows())
         {
             VisualStudioWorkloads.GetInstalledWorkloads(WorkloadResolver, installedWorkloads);
@@ -86,6 +128,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         return installedWorkloads;
     }
 
+#if !CLI_AOT
     public void CheckTargetSdkVersionIsValid()
     {
         if (!string.IsNullOrWhiteSpace(_targetSdkVersion))
@@ -109,6 +152,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                 installed.AsEnumerable().Select(t => new WorkloadId(t.Key)));
         }
     }
+#endif
 
     internal static string GetWorkloadsVersion(WorkloadInfoHelper? workloadInfoHelper = null)
     {

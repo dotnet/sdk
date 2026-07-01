@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
+    [TestClass]
     public class FormattedFilesTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new FinalNewlineFormatter();
@@ -22,29 +23,24 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             ["end_of_line"] = "lf",
         };
 
-        public FormattedFilesTests(ITestOutputHelper output)
-        {
-            TestOutputHelper = output;
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task ReturnsItem_WhenFileFormatted()
         {
             var testCode = "class C\n{\n}";
 
             var result = await TestFormattedFiles(testCode);
 
-            Assert.Single(result);
+            Assert.ContainsSingle(result);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReturnsEmptyList_WhenNoFilesFormatted()
         {
             var testCode = "class C\n{\n}\n";
 
             var result = await TestFormattedFiles(testCode);
 
-            Assert.Empty(result);
+            Assert.IsEmpty(result);
         }
 
         private async Task<List<FormattedFile>> TestFormattedFiles(string testCode)
@@ -72,7 +68,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 fileMatcher,
                 ReportPath: string.Empty,
                 IncludeGeneratedFiles: false,
-                BinaryLogPath: null);
+                BinaryLogPath: null,
+                TargetFramework: null);
 
             var pathsToFormat = GetOnlyFileToFormat(solution);
 

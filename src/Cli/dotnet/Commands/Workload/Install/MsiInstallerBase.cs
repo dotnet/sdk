@@ -19,12 +19,12 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 /// <summary>
 /// Creates a new <see cref="MsiInstallerBase"/> instance.
 /// </summary>
-/// <param name="dispatcher">The command dispatcher used for sending and receiving commands.</param>
-/// <param name="logger"></param>
-/// <param name="reporter"></param>
 [SupportedOSPlatform("windows")]
-internal abstract class MsiInstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger,
-    bool verifySignatures, IReporter reporter = null) : InstallerBase(elevationContext, logger, verifySignatures)
+internal abstract class MsiInstallerBase(
+    InstallElevationContextBase elevationContext,
+    ISetupLogger logger,
+    bool verifyMsiSignature,
+    IReporter reporter = null) : InstallerBase(elevationContext, logger, verifyMsiSignature)
 {
     /// <summary>
     /// Track messages that should never be reported more than once.
@@ -70,7 +70,7 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
     {
         get;
         private set;
-    } = new MsiPackageCache(elevationContext, logger, verifySignatures);
+    } = new MsiPackageCache(elevationContext, logger, verifyMsiSignature);
 
     /// <summary>
     /// The install location of the .NET based on the host and OS architecture as stored in the registry. If
@@ -99,7 +99,7 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
     /// <summary>
     /// Provides access to workload installation records in the registry.
     /// </summary>
-    protected readonly RegistryWorkloadInstallationRecordRepository RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, verifySignatures);
+    protected readonly RegistryWorkloadInstallationRecordRepository RecordRepository = new(elevationContext, logger, verifyMsiSignature);
 
     /// <summary>
     /// Determines the per-machine install location for .NET. This is similar to the logic in the standalone installers.
@@ -140,18 +140,19 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
     /// <param name="logFile">The path of the log file.</param>
     protected void ConfigureInstall(string logFile)
     {
+        string validatedLogFile = WindowsUtils.ValidateLogFilePath(logFile);
 
         // Turn off the MSI UI.
         _ = WindowsInstaller.SetInternalUI(InstallUILevel.None);
 
         // The log file must be created before calling MsiEnableLog and we should avoid having active handles
         // against it.
-        FileStream logFileStream = File.Create(logFile);
+        FileStream logFileStream = File.Create(validatedLogFile);
         logFileStream.Close();
-        uint error = WindowsInstaller.EnableLog(InstallLogMode.DEFAULT | InstallLogMode.VERBOSE, logFile, InstallLogAttributes.NONE);
+        uint error = WindowsInstaller.EnableLog(InstallLogMode.DEFAULT | InstallLogMode.VERBOSE, validatedLogFile, InstallLogAttributes.NONE);
 
         // We can report issues with the log file creation, but shouldn't fail the workload operation.
-        LogError(error, $"Failed to configure log file: {logFile}");
+        LogError(error, $"Failed to configure log file: {validatedLogFile}");
     }
 
     /// <summary>
@@ -306,7 +307,7 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
     protected uint InstallMsi(string packagePath, string logFile)
     {
         // Make sure the package we're going to run is coming from the cache.
-        if (!packagePath.StartsWith(Cache.PackageCacheRoot))
+        if (!WindowsUtils.ValidatePackagePath(packagePath, Cache.PackageCacheRoot))
         {
             return Error.INSTALL_PACKAGE_INVALID;
         }

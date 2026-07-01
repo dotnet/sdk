@@ -6,18 +6,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldDifferByMoreThanCaseAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class IdentifiersShouldDifferByMoreThanCaseTests
     {
         #region Namespace Level
 
-        [Fact]
+        [TestMethod]
         public async Task TestGlobalNamespaceNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -33,7 +33,7 @@ namespace n
                 GetGlobalCA1708CSharpResult(Namespace, GetSymbolDisplayString("n", "N")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNestedNamespaceNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -59,7 +59,7 @@ namespace n
                 GetGlobalCA1708CSharpResult(Namespace, GetSymbolDisplayString("n", "N")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGlobalTypeNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -76,7 +76,7 @@ public interface nI
                 GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("nI", "ni", "Ni")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericClassesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -96,7 +96,7 @@ public class C<T,X>
                 GetGlobalCA1708CSharpResult(Type, GetSymbolDisplayString("c<S>", "C<T>")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPartialTypesAsync()
         {
             await new VerifyCS.Test
@@ -141,10 +141,10 @@ namespace N
                         GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.F.x", "N.F.X"), ("/0/Test0.cs", 12, 26), ("/0/Test1.cs", 7, 26)),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
+        [TestMethod, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
         public async Task FileScopedTypesInNamespaceAsync()
         {
             string fileWithClass = """
@@ -167,10 +167,10 @@ namespace N
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
+        [TestMethod, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
         public async Task FileScopedTypesGlobalAsync()
         {
             string fileWithClass = """
@@ -191,14 +191,14 @@ namespace N
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region Type Level
 
-        [Fact]
+        [TestMethod]
         public async Task TestNestedTypeNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -245,7 +245,7 @@ namespace NI
             GetCA1708CSharpResultAt(19, 34, Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.method()", "NI.Ni.C.nd.Ci.Method()")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNestedTypeNamesWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -293,7 +293,7 @@ namespace NI
             GetCA1708CSharpResultAt(20, 34, Member, GetSymbolDisplayString("NI.Ni.C.nd.Ci.Method()", "NI.Ni.C.nd.Ci.method()")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMethodOverloadsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -309,7 +309,7 @@ namespace NI
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericMethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -328,7 +328,7 @@ namespace NI
             GetCA1708CSharpResultAt(4, 18, Member, GetSymbolDisplayString("NI.C.method()", "NI.C.methoD(int)", "NI.C.mEthod(int)", "NI.C.METHOD<T>(T)")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -363,7 +363,7 @@ namespace NI
             GetCA1708CSharpResultAt(4, 18, Member, GetSymbolDisplayStringNoSorting("NI.CASE1.CASe1", "NI.CASE1.CAsE1", "NI.CASE1.CAse1(int)", "NI.CASE1.CaSe1<T>(T)", "NI.CASE1.CasE1", "NI.CASE1.Case1", "NI.CASE1.caSE1")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCultureSpecificNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -376,7 +376,7 @@ public class C
             GetCA1708CSharpResultAt(2, 14, Member, GetSymbolDisplayString("C.\u03B3", "C.\u0393")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestParametersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -418,6 +418,35 @@ namespace N
             GetCA1708CSharpResultAt(12, 36, Parameter, "N.C.operator +(N.C, int)"),
             GetCA1708CSharpResultAt(18, 20, Parameter, "N.C.this[int, int]"),
             GetCA1708CSharpResultAt(30, 30, Parameter, "N.D.SomeDelegate"));
+        }
+
+        [TestMethod]
+        public async Task TestMultipleExtensionBlocks()
+        {
+            string code = @"
+public static class StringExtensions
+{
+    private const string ExtensionString = ""Extension"";
+
+    // Static class extensions
+    extension(string)
+    {
+        public static string CreateExtension() => ExtensionString;
+    }
+
+    // Instance extensions
+    extension(string s)
+    {
+        public bool IsExtensionString() => s == ExtensionString;
+    }
+}
+";
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp14,
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion

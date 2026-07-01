@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.ModuleInitializerAttributeShouldNotBeUsedInLibraries,
@@ -11,17 +10,18 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class ModuleInitializerAttributeShouldNotBeUsedInLibrariesTests
     {
-        [Theory]
-        [InlineData("public", "public", false)]
-        [InlineData("public", "internal", false)]
-        [InlineData("internal", "public", false)]
-        [InlineData("internal", "internal", false)]
-        [InlineData("public", "public", true)]
-        [InlineData("public", "internal", true)]
-        [InlineData("internal", "public", true)]
-        [InlineData("internal", "internal", true)]
+        [TestMethod]
+        [DataRow("public", "public", false)]
+        [DataRow("public", "internal", false)]
+        [DataRow("internal", "public", false)]
+        [DataRow("internal", "internal", false)]
+        [DataRow("public", "public", true)]
+        [DataRow("public", "internal", true)]
+        [DataRow("internal", "public", true)]
+        [DataRow("internal", "internal", true)]
         public async Task CA2255ModuleInitializerOnMethodAsync(string classModifier, string methodModifier, bool useAsync)
         {
             await new VerifyCS.Test
@@ -40,18 +40,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("public", "public", false)]
-        [InlineData("public", "internal", false)]
-        [InlineData("internal", "public", false)]
-        [InlineData("internal", "internal", false)]
-        [InlineData("public", "public", true)]
-        [InlineData("public", "internal", true)]
-        [InlineData("internal", "public", true)]
-        [InlineData("internal", "internal", true)]
+        [TestMethod]
+        [DataRow("public", "public", false)]
+        [DataRow("public", "internal", false)]
+        [DataRow("internal", "public", false)]
+        [DataRow("internal", "internal", false)]
+        [DataRow("public", "public", true)]
+        [DataRow("public", "internal", true)]
+        [DataRow("internal", "public", true)]
+        [DataRow("internal", "internal", true)]
         public async Task CA2255ModuleInitializerOnMethod_WithParensAsync(string classModifier, string methodModifier, bool useAsync)
         {
             await new VerifyCS.Test
@@ -70,18 +70,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("public", "public", false)]
-        [InlineData("public", "internal", false)]
-        [InlineData("internal", "public", false)]
-        [InlineData("internal", "internal", false)]
-        [InlineData("public", "public", true)]
-        [InlineData("public", "internal", true)]
-        [InlineData("internal", "public", true)]
-        [InlineData("internal", "internal", true)]
+        [TestMethod]
+        [DataRow("public", "public", false)]
+        [DataRow("public", "internal", false)]
+        [DataRow("internal", "public", false)]
+        [DataRow("internal", "internal", false)]
+        [DataRow("public", "public", true)]
+        [DataRow("public", "internal", true)]
+        [DataRow("internal", "public", true)]
+        [DataRow("internal", "internal", true)]
         public async Task CA2255ModuleInitializerOnMethod_SuppressedAsync(string classModifier, string methodModifier, bool useAsync)
         {
             await new VerifyCS.Test
@@ -102,10 +102,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2255DoesNotApply_ToPrivateMethodsAsync()
         {
             await new VerifyCS.Test
@@ -126,10 +126,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8814 is reported on inaccessible initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2255DoesNotApply_ToPrivateNestedClassesAsync()
         {
             await new VerifyCS.Test
@@ -153,10 +153,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8814 is reported on inaccessible initializers 
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2255DoesNotApply_ToNonVoidMethodsAsync()
         {
             await new VerifyCS.Test
@@ -177,10 +177,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8815 is reported on non-void initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2255DoesNotApply_ToInstanceMethodsAsync()
         {
             await new VerifyCS.Test
@@ -201,10 +201,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8815 is reported on instance initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2255DoesNotApply_ToGenericTypesAsync()
         {
             await new VerifyCS.Test
@@ -225,10 +225,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8816 is reported on Generic type initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2255DoesNotApply_ToGenericMethodsAsync()
         {
             await new VerifyCS.Test
@@ -249,7 +249,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8816 is reported on Generic initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

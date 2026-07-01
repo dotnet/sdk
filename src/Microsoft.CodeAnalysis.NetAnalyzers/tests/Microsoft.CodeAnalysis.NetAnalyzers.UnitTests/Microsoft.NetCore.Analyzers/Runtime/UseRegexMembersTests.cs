@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseRegexMembers,
     Microsoft.NetCore.Analyzers.Runtime.UseRegexMembersFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseRegexMembersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Regex_MatchToIsMatch_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync("""
@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Regex_MatchToIsMatch_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync("""
@@ -151,7 +151,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Regex_MatchesToCount_CSharpAsync()
         {
             await new VerifyCS.Test()
@@ -227,10 +227,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void Use(int count) {}
                 }
                 """
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_NoRegexCount_CSharpAsync()
         {
             await new VerifyCS.Test()
@@ -248,7 +248,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         }
                     }
                     """
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

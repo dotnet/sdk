@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
@@ -6,9 +6,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests;
 
+[TestClass]
 public class CliSchemaTests : SdkTest
 {
-    public CliSchemaTests(ITestOutputHelper log) : base(log)
+    public CliSchemaTests()
     {
     }
 
@@ -1193,29 +1194,29 @@ public class CliSchemaTests : SdkTest
 }
 """;
 
-    public static TheoryData<string[], string> CommandsJson => new()
-    {
-        { new[] { "solution", "list", "--cli-schema" }, SolutionListJson },
-        { new[] { "clean", "--cli-schema" }, CleanJson },
-        { new[] { "reference", "--cli-schema" }, ReferenceJson },
-        { new[] { "workload", "install", "--cli-schema" }, WorkloadInstallJson },
-        { new[] { "build", "--cli-schema" }, BuildJson }
-    };
+    public static IEnumerable<object[]> CommandsJson =>
+    [
+        [new[] { "solution", "list", "--cli-schema" }, SolutionListJson],
+        [new[] { "clean", "--cli-schema" }, CleanJson],
+        [new[] { "reference", "--cli-schema" }, ReferenceJson],
+        [new[] { "workload", "install", "--cli-schema" }, WorkloadInstallJson],
+        [new[] { "build", "--cli-schema" }, BuildJson]
+    ];
 
-    [Theory]
-    [MemberData(nameof(CommandsJson))]
+    [TestMethod]
+    [DynamicData(nameof(CommandsJson))]
     public void PrintCliSchema_WritesExpectedJson(string[] commandArgs, string json)
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
-        CliSchema.PrintCliSchema(Parser.Parse(commandArgs).CommandResult, writer, null);
+        CliSchema.PrintCliSchema(Parser.Parse(commandArgs), writer, null);
         stream.Position = 0;
         var reader = new StreamReader(stream);
         var output = reader.ReadToEnd();
         output.Should().BeVisuallyEquivalentTo(json);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanGenerateJsonSchemaForCLIOutput()
     {
         var schema = CliSchema.GetJsonSchema();

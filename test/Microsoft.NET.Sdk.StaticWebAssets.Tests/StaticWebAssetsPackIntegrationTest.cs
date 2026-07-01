@@ -3,12 +3,18 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class StaticWebAssetsPackIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsPackIntegrationTest))
+    [TestClass]
+    public class StaticWebAssetsPackIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => nameof(StaticWebAssetsPackIntegrationTest);
+        [TestMethod]
         public void Pack_FailsWhenStaticWebAssetsHaveConflictingPaths()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -35,7 +41,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         // If you modify this test, make sure you also modify the test below this one to assert that things are not included as content.
-        [Fact]
+        [TestMethod]
         public void Pack_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -57,14 +63,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
                     Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_NoAssets_DoesNothing()
         {
             var testAsset = "PackageLibraryNoStaticAssets";
@@ -91,7 +98,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_NoAssets_Multitargeting_DoesNothing()
         {
             var testAsset = "PackageLibraryNoStaticAssets";
@@ -125,7 +132,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Incremental_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -152,14 +159,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
                     Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_StaticWebAssets_WithoutFileExtension_AreCorrectlyPacked()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -184,30 +192,18 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("staticwebassets", "css", "site.css"),
                     Path.Combine("staticwebassets", "LICENSE"),
                     Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_MultipleTargetFrameworks_Works()
         {
-            var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges((project, document) =>
-            {
-                var tfm = document.Descendants("TargetFramework").Single();
-                tfm.Name = "TargetFrameworks";
-                tfm.FirstNode.ReplaceWith(tfm.FirstNode.ToString() + ";netstandard2.1");
-
-                document.Descendants("AddRazorSupportForMvc").SingleOrDefault()?.Remove();
-                document.Descendants("FrameworkReference").SingleOrDefault()?.Remove();
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "PackageLibraryDirectDependency", "Components"), recursive: true);
+            var projectDirectory = SetupMultiTargetProject();
 
             var pack = CreatePackCommand(projectDirectory, "PackageLibraryDirectDependency");
             var result = ExecuteCommand(pack);
@@ -224,30 +220,18 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_MultipleTargetFrameworks_NoBuild_IncludesStaticWebAssets()
         {
-            var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges((project, document) =>
-            {
-                var tfm = document.Descendants("TargetFramework").Single();
-                tfm.Name = "TargetFrameworks";
-                tfm.FirstNode.ReplaceWith(tfm.FirstNode.ToString() + ";netstandard2.1");
-
-                document.Descendants("AddRazorSupportForMvc").SingleOrDefault()?.Remove();
-                document.Descendants("FrameworkReference").SingleOrDefault()?.Remove();
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "PackageLibraryDirectDependency", "Components"), recursive: true);
+            var projectDirectory = SetupMultiTargetProject();
 
             var build = CreateBuildCommand(projectDirectory, "PackageLibraryDirectDependency");
             var buildResult = build.Execute();
@@ -267,30 +251,18 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_MultipleTargetFrameworks_NoBuild_DoesNotIncludeAssetsAsContent()
         {
-            var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges((project, document) =>
-            {
-                var tfm = document.Descendants("TargetFramework").Single();
-                tfm.Name = "TargetFrameworks";
-                tfm.FirstNode.ReplaceWith(tfm.FirstNode.ToString() + ";netstandard2.1");
-
-                document.Descendants("AddRazorSupportForMvc").SingleOrDefault()?.Remove();
-                document.Descendants("FrameworkReference").SingleOrDefault()?.Remove();
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "PackageLibraryDirectDependency", "Components"), recursive: true);
+            var projectDirectory = SetupMultiTargetProject();
 
             var build = CreateBuildCommand(projectDirectory, "PackageLibraryDirectDependency");
             var buildResult = build.Execute();
@@ -315,23 +287,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_MultipleTargetFrameworks_GeneratePackageOnBuild_IncludesStaticWebAssets()
         {
-            var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges((project, document) =>
-            {
-                var tfm = document.Descendants("TargetFramework").Single();
-                tfm.Name = "TargetFrameworks";
-                tfm.FirstNode.ReplaceWith(tfm.FirstNode.ToString() + ";netstandard2.1");
-
-                document.Descendants("AddRazorSupportForMvc").SingleOrDefault()?.Remove();
-                document.Descendants("FrameworkReference").SingleOrDefault()?.Remove();
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "PackageLibraryDirectDependency", "Components"), recursive: true);
+            var projectDirectory = SetupMultiTargetProject();
 
             var build = CreateBuildCommand(projectDirectory, "PackageLibraryDirectDependency");
             var result = build.Execute("/p:GeneratePackageOnBuild=true");
@@ -348,30 +307,18 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_MultipleTargetFrameworks_GeneratePackageOnBuild_DoesNotIncludeAssetsAsContent()
         {
-            var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges((project, document) =>
-            {
-                var tfm = document.Descendants("TargetFramework").Single();
-                tfm.Name = "TargetFrameworks";
-                tfm.FirstNode.ReplaceWith(tfm.FirstNode.ToString() + ";netstandard2.1");
-
-                document.Descendants("AddRazorSupportForMvc").SingleOrDefault()?.Remove();
-                document.Descendants("FrameworkReference").SingleOrDefault()?.Remove();
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "PackageLibraryDirectDependency", "Components"), recursive: true);
+            var projectDirectory = SetupMultiTargetProject();
 
             var build = CreateBuildCommand(projectDirectory, "PackageLibraryDirectDependency");
             var result = build.Execute("/p:GeneratePackageOnBuild=true");
@@ -393,45 +340,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
-    <RazorLangVersion>3.0</RazorLangVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-    <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""3.1.0"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupBeforeNet60ScopedCssProject();
 
             var pack = CreatePackCommand(projectDirectory);
             var result = ExecuteCommand(pack);
@@ -462,45 +374,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
-    <RazorLangVersion>3.0</RazorLangVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-    <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""3.1.0"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupBeforeNet60ScopedCssProject();
 
             var pack = CreatePackCommand(projectDirectory);
             var result = ExecuteCommand(pack);
@@ -530,45 +407,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_NoBuild_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
-    <RazorLangVersion>3.0</RazorLangVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-    <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""3.1.0"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupBeforeNet60ScopedCssProject();
 
             var build = CreateBuildCommand(projectDirectory);
             var buildResult = build.Execute();
@@ -604,45 +446,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_NoBuild_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
-    <RazorLangVersion>3.0</RazorLangVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-    <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""3.1.0"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupBeforeNet60ScopedCssProject();
 
             var build = CreateBuildCommand(projectDirectory);
             var buildResult = build.Execute();
@@ -677,45 +484,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_GeneratePackageOnBuild_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
-    <RazorLangVersion>3.0</RazorLangVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-    <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""3.1.0"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupBeforeNet60ScopedCssProject();
 
             var build = CreateBuildCommand(projectDirectory);
             var result = build.Execute("/p:GeneratePackageOnBuild=true");
@@ -746,45 +518,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_GeneratePackageOnBuild_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
-    <RazorLangVersion>3.0</RazorLangVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-    <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""3.1.0"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupBeforeNet60ScopedCssProject();
 
             var build = CreateBuildCommand(projectDirectory);
             var result = build.Execute("/p:GeneratePackageOnBuild=true");
@@ -814,43 +551,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Net50_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupNet50ScopedCssProject();
 
             var pack = CreatePackCommand(projectDirectory);
             var result = ExecuteCommand(pack);
@@ -881,43 +585,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Net50_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupNet50ScopedCssProject();
 
             var pack = CreatePackCommand(projectDirectory);
             var result = ExecuteCommand(pack);
@@ -947,43 +618,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Net50_NoBuild_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupNet50ScopedCssProject();
 
             var build = CreateBuildCommand(projectDirectory);
             var buildResult = build.Execute();
@@ -1019,43 +657,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Net50_NoBuild_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupNet50ScopedCssProject();
 
             var build = CreateBuildCommand(projectDirectory);
             var buildResult = build.Execute();
@@ -1090,43 +695,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Net50_GeneratePackageOnBuild_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupNet50ScopedCssProject();
 
             var build = CreateBuildCommand(projectDirectory);
             var result = build.Execute("/p:GeneratePackageOnBuild=true");
@@ -1157,43 +729,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Net50_GeneratePackageOnBuild_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
-            var testAsset = "PackageLibraryTransitiveDependency";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, subdirectory: "TestPackages");
-
-            projectDirectory.WithProjectChanges(document =>
-            {
-                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
-  </ItemGroup>
-
-</Project>
-");
-                document.Root.ReplaceWith(parse.Root);
-            });
-
-            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
-
-            var componentText = @"<div class=""my-component"">
-    This component is defined in the <strong>razorclasslibrarypack</strong> library.
-</div>";
-
-            // This mimics the structure of our default template project
-            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
-            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
+            var projectDirectory = SetupNet50ScopedCssProject();
 
             var build = CreateBuildCommand(projectDirectory);
             var result = build.Execute("/p:GeneratePackageOnBuild=true");
@@ -1223,7 +762,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_MultipleTargetFrameworks_WithScopedCssAndJsModules_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1291,14 +830,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("staticwebassets", "Component1.razor.js"),
                     Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.lib.module.js"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryTransitiveDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryTransitiveDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryTransitiveDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryTransitiveDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Incremental_MultipleTargetFrameworks_WithScopedCssAndJsModules_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1368,14 +908,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("staticwebassets", "Component1.razor.js"),
                     Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.bundle.scp.css"),
                     Path.Combine("staticwebassets", "PackageLibraryTransitiveDependency.*.lib.module.js"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryTransitiveDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryTransitiveDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryTransitiveDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryTransitiveDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryTransitiveDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryTransitiveDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_MultipleTargetFrameworks_WithScopedCssAndJsModules_DoesNotIncludeApplicationBundleNorModulesManifest()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1441,7 +982,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_MultipleTargetFrameworks_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1479,7 +1020,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_DoesNotInclude_TransitiveBundleOrScopedCssAsStaticWebAsset()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1504,7 +1045,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_DoesNotIncludeStaticWebAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1536,7 +1077,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_NoBuild_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1559,14 +1100,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
                     Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_NoBuild_DoesNotIncludeFilesAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1595,7 +1137,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_DoesNotIncludeAnyCustomPropsFiles_WhenNoStaticAssetsAreAvailable()
         {
             var testAsset = "RazorComponentLibrary";
@@ -1619,7 +1161,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_Incremental_DoesNotRegenerateCacheAndPropsFiles()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1635,19 +1177,19 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryTransitiveDependency.dll")).Should().Exist();
 
-            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.PackageLibraryTransitiveDependency.Microsoft.AspNetCore.StaticWebAssets.props")).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.build.PackageLibraryTransitiveDependency.props")).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.buildMultiTargeting.PackageLibraryTransitiveDependency.props")).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.buildTransitive.PackageLibraryTransitiveDependency.props")).Should().Exist();
+            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.PackageLibraryTransitiveDependency.Microsoft.AspNetCore.StaticWebAssets.targets")).Should().Exist();
+            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.build.PackageLibraryTransitiveDependency.targets")).Should().Exist();
+            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.buildMultiTargeting.PackageLibraryTransitiveDependency.targets")).Should().Exist();
+            new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "msbuild.buildTransitive.PackageLibraryTransitiveDependency.targets")).Should().Exist();
 
             var directoryPath = Path.Combine(intermediateOutputPath, "staticwebassets");
             var thumbPrints = new Dictionary<string, FileThumbPrint>();
             var thumbPrintFiles = new[]
             {
-                Path.Combine(directoryPath, "msbuild.PackageLibraryTransitiveDependency.Microsoft.AspNetCore.StaticWebAssets.props"),
-                Path.Combine(directoryPath, "msbuild.build.PackageLibraryTransitiveDependency.props"),
-                Path.Combine(directoryPath, "msbuild.buildMultiTargeting.PackageLibraryTransitiveDependency.props"),
-                Path.Combine(directoryPath, "msbuild.buildTransitive.PackageLibraryTransitiveDependency.props"),
+                Path.Combine(directoryPath, "msbuild.PackageLibraryTransitiveDependency.Microsoft.AspNetCore.StaticWebAssets.targets"),
+                Path.Combine(directoryPath, "msbuild.build.PackageLibraryTransitiveDependency.targets"),
+                Path.Combine(directoryPath, "msbuild.buildMultiTargeting.PackageLibraryTransitiveDependency.targets"),
+                Path.Combine(directoryPath, "msbuild.buildTransitive.PackageLibraryTransitiveDependency.targets"),
             };
 
             foreach (var file in thumbPrintFiles)
@@ -1662,11 +1204,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             foreach (var file in thumbPrintFiles)
             {
                 var thumbprint = FileThumbPrint.Create(file);
-                Assert.Equal(thumbPrints[file], thumbprint);
+                Assert.AreEqual(thumbPrints[file], thumbprint);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_StaticWebAssets_GeneratePackageOnBuild_PacksStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1690,14 +1232,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
                     Path.Combine("staticwebassets", "PackageLibraryDirectDependency.*.bundle.scp.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.targets"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.PackageAssets.json"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.targets"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.targets")
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_StaticWebAssets_GeneratePackageOnBuild_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1725,6 +1268,93 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     Path.Combine("contentFiles", "css", "site.css"),
                     Path.Combine("contentFiles", "PackageLibraryDirectDependency.bundle.scp.css"),
                 });
+        }
+
+        private TestAsset SetupMultiTargetProject()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset("PackageLibraryDirectDependency", subdirectory: "TestPackages");
+
+            projectDirectory.WithProjectChanges((project, document) =>
+            {
+                var tfm = document.Descendants("TargetFramework").Single();
+                tfm.Name = "TargetFrameworks";
+                tfm.FirstNode.ReplaceWith(tfm.FirstNode.ToString() + ";netstandard2.1");
+
+                document.Descendants("AddRazorSupportForMvc").SingleOrDefault()?.Remove();
+                document.Descendants("FrameworkReference").SingleOrDefault()?.Remove();
+            });
+
+            Directory.Delete(Path.Combine(projectDirectory.Path, "PackageLibraryDirectDependency", "Components"), recursive: true);
+            return projectDirectory;
+        }
+
+        private TestAsset SetupBeforeNet60ScopedCssProject()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset("PackageLibraryTransitiveDependency", subdirectory: "TestPackages");
+
+            projectDirectory.WithProjectChanges(document =>
+            {
+                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    <RazorLangVersion>3.0</RazorLangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
+    <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""3.1.0"" />
+  </ItemGroup>
+
+</Project>
+");
+                document.Root.ReplaceWith(parse.Root);
+            });
+
+            SetupScopedCssFiles(projectDirectory);
+            return projectDirectory;
+        }
+
+        private TestAsset SetupNet50ScopedCssProject()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset("PackageLibraryTransitiveDependency", subdirectory: "TestPackages");
+
+            projectDirectory.WithProjectChanges(document =>
+            {
+                var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""Microsoft.AspNetCore.Components.Web"" Version=""{DefaultPackageVersion}"" />
+  </ItemGroup>
+
+</Project>
+");
+                document.Root.ReplaceWith(parse.Root);
+            });
+
+            SetupScopedCssFiles(projectDirectory);
+            return projectDirectory;
+        }
+
+        private static void SetupScopedCssFiles(TestAsset projectDirectory)
+        {
+            Directory.Delete(Path.Combine(projectDirectory.Path, "wwwroot"), recursive: true);
+
+            var componentText = @"<div class=""my-component"">
+    This component is defined in the <strong>razorclasslibrarypack</strong> library.
+</div>";
+
+            Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "wwwroot"));
+            File.WriteAllText(Path.Combine(projectDirectory.Path, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web" + Environment.NewLine);
+            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor"), componentText);
+            File.WriteAllText(Path.Combine(projectDirectory.Path, "Component1.razor.css"), "");
+            File.WriteAllText(Path.Combine(projectDirectory.Path, "ExampleJsInterop.cs"), "");
+            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "background.png"), "");
+            File.WriteAllText(Path.Combine(projectDirectory.Path, "wwwroot", "exampleJsInterop.js"), "");
         }
     }
 }

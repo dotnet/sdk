@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.TypesThatOwnDisposableFieldsShouldBeDisposableFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpTestWithNoDisposableTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -28,7 +28,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpTestWithNoCreationOfDisposableObjectAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -41,7 +41,7 @@ using System.IO;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpTestWithFieldInitAndNoDisposeMethodAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -66,7 +66,7 @@ using System.IO;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5834, "https://github.com/dotnet/roslyn-analyzers/issues/5834")]
         public async Task CA1001CSharpTestWithFieldInitAndNoDisposeMethod_TargetTypedNewAsync()
         {
@@ -94,10 +94,10 @@ public class NoDisposeClass : System.IDisposable
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpTestWithCtorInitAndNoDisposeMethodAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -134,7 +134,7 @@ using System.IO;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpTestWithCreationOfDisposableObjectInOtherClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -169,7 +169,7 @@ using System.IO;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpTestWithNoDisposeMethodInScopeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -206,7 +206,7 @@ using System.IO;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5834, "https://github.com/dotnet/roslyn-analyzers/issues/5834")]
         public async Task CA1001CSharpTestWithNoDisposeMethodInScope_TargetTypedNewAsync()
         {
@@ -246,10 +246,10 @@ public class NoDisposeClass : System.IDisposable
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpScopedTestWithNoDisposeMethodOutOfScopeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -296,7 +296,7 @@ public class SomeClass
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpTestWithADisposeMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -332,7 +332,7 @@ public class HasDisposeMethod : IDisposable
 ");
         }
 
-        [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
+        [TestMethod, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
         public async Task CA1001CSharpTestWithIDisposableFieldAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -365,7 +365,7 @@ namespace ClassLibrary1
 ");
         }
 
-        [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
+        [TestMethod, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
         public async Task CA1001CSharpTestWithIAsyncDisposableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -399,7 +399,7 @@ namespace ClassLibrary1
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicTestWithNoDisposableTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -413,7 +413,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicTestWithNoCreationOfDisposableObjectAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -425,7 +425,7 @@ Imports System.IO
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicTestWithFieldInitAndNoDisposeMethodAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -497,7 +497,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicTestWithCtorInitAndNoDisposeMethodAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -535,7 +535,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicTestWithCreationOfDisposableObjectInOtherClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -565,7 +565,7 @@ Imports System.IO
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicTestWithNoDisposeMethodInScopeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -601,7 +601,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicTestWithNoDisposeMethodOutOfScopeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -643,7 +643,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicTestWithADisposeMethodAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -683,7 +683,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
+        [TestMethod, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
         public async Task CA1001BasicTestWithIDisposableFieldAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -713,7 +713,7 @@ End Namespace
 ");
         }
 
-        [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        [TestMethod, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
         public async Task CA1001_OnlyListDisposableFieldsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -786,7 +786,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        [TestMethod, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
         public async Task CA1001_ListDisposableFieldsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -863,12 +863,12 @@ End Class
 ");
         }
 
-        [Theory, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = FileStream")]
-        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = FileStream")]
-        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = T:System.IO.FileStream")]
-        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = FileStr*")]
+        [TestMethod, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = FileStream")]
+        [DataRow("dotnet_code_quality.CA1001.excluded_symbol_names = FileStream")]
+        [DataRow("dotnet_code_quality.CA1001.excluded_symbol_names = T:System.IO.FileStream")]
+        [DataRow("dotnet_code_quality.CA1001.excluded_symbol_names = FileStr*")]
         public async Task CA1001_ExcludedSymbolNamesAsync(string editorConfigText)
         {
             var args = editorConfigText.Length == 0 ? "_fs', '_ms" : "_ms";
@@ -910,7 +910,7 @@ public class SomeClass : System.IDisposable
     }
 }
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -948,10 +948,10 @@ Public Class SomeClass
     End Sub
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpCodeFixNoDisposeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -991,7 +991,7 @@ public class NoDisposeClass : IDisposable
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicCodeFixNoDisposeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1030,7 +1030,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpCodeFixHasDisposeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -1063,7 +1063,7 @@ public class NoDisposeClass : IDisposable
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001CSharpCodeFixHasWrongDisposeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -1101,7 +1101,7 @@ public partial class NoDisposeClass : IDisposable
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicCodeFixHasDisposeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1134,7 +1134,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1001BasicCodeFixHasWrongDisposeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

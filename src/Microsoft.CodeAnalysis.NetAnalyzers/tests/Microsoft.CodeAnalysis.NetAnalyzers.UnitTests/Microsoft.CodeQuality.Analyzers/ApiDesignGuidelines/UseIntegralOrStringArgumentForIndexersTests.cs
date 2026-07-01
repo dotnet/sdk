@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseIntegralOrStringArgumentForIndexersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UseIntegralOrStringArgumentForIndexersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestBasicUseIntegralOrStringArgumentForIndexersWarning1Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -33,7 +33,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", CreateBasicResult(6, 35));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestBasicUseIntegralOrStringArgumentForIndexersNoWarning_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -59,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicUseIntegralOrStringArgumentForIndexersNoWarning1Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -74,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpUseIntegralOrStringArgumentForIndexersWarning1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -91,7 +91,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     }", CreateCSharpResult(5, 23));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestCSharpUseIntegralOrStringArgumentForIndexersNoWarning_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -120,7 +120,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpUseIntegralOrStringArgumentForIndexersNoWarning1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -137,7 +137,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpGenericIndexerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -153,7 +153,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicGenericIndexerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -166,7 +166,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpEnumIndexerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -184,7 +184,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicEnumIndexerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -201,7 +201,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     End Class");
         }
 
-        [Fact, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
+        [TestMethod, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
         public async Task CA1043_IndexerOfTypeSystemIndex_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -215,7 +215,7 @@ public class C
         get => null;
     }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -228,10 +228,10 @@ Public Class Months
         End Get
     End Property
 End Class",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
+        [TestMethod, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
         public async Task CA1043_IndexerOfTypeSystemRange_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -245,7 +245,7 @@ public class C
         get => null;
     }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -258,7 +258,7 @@ Public Class Months
         End Get
     End Property
 End Class",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult CreateCSharpResult(int line, int col)

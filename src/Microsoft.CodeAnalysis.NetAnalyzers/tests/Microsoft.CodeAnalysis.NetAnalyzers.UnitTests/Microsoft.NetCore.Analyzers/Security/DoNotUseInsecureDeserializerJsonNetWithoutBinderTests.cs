@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureDeserializerJsonNetWithoutBinder,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -16,7 +15,8 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotUseInsecureDeserializerJsonNetWithoutBinderTests
     {
         private static readonly DiagnosticDescriptor DefinitelyRule =
@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         private static readonly DiagnosticDescriptor MaybeRule =
             DoNotUseInsecureDeserializerJsonNetWithoutBinder.MaybeInsecureSerializer;
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_CSharp_ViolationAsync(NewtonsoftJsonVersion version)
         {
@@ -67,7 +67,7 @@ public class ExampleClass
             GetCSharpResultAt(33, 16, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_VB_ViolationAsync(NewtonsoftJsonVersion version)
         {
@@ -108,7 +108,7 @@ End Class
                 GetBasicResultAt(31, 16, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_CSharp_SolutionAsync(NewtonsoftJsonVersion version)
         {
@@ -175,7 +175,7 @@ public class ExampleClass
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_VB_SolutionAsync(NewtonsoftJsonVersion version)
         {
@@ -238,7 +238,7 @@ End Class
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample2_CSharp_ViolationAsync(NewtonsoftJsonVersion version)
         {
@@ -311,7 +311,7 @@ public class ExampleClass
                 GetCSharpResultAt(63, 16, MaybeRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample2_VB_ViolationAsync(NewtonsoftJsonVersion version)
         {
@@ -379,7 +379,7 @@ End Class
                 GetBasicResultAt(58, 16, MaybeRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample2_CSharp_SolutionAsync(NewtonsoftJsonVersion version)
         {
@@ -454,7 +454,7 @@ public class ExampleClass
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample2_VB_SolutionAsync(NewtonsoftJsonVersion version)
         {
@@ -524,7 +524,7 @@ End Class
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonSerializer_Deserialize_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -543,7 +543,7 @@ class Blah
                 GetCSharpResultAt(10, 16, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task ExplicitlyNone_JsonSerializer_Deserialize_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -561,7 +561,7 @@ class Blah
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task AllAndBinder_JsonSerializer_Deserialize_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -592,7 +592,7 @@ class Blah
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task InitializeField_JsonSerializer_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -612,7 +612,7 @@ class Blah
                 GetCSharpResultAt(10, 9, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonSerializer_Populate_MaybeDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -638,7 +638,7 @@ class Blah
                 GetCSharpResultAt(16, 9, MaybeRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonSerializer_DeserializeGeneric_MaybeDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -663,7 +663,7 @@ class Blah
         }
 
         // Ideally, we'd transfer the JsonSerializerSettings' TypeNameHandling's state to the JsonSerializer's TypeNameHandling's state.
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonSerializer_FromInsecureSettings_DeserializeGeneric_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -688,7 +688,7 @@ class Blah
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task TypeNameHandlingNoneBinderNonNull_JsonSerializer_Populate_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -728,14 +728,14 @@ class Blah
 }}");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = Method")]
-        [InlineData(@"dotnet_code_quality.CA2329.excluded_symbol_names = Method
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = Method")]
+        [DataRow(@"dotnet_code_quality.CA2329.excluded_symbol_names = Method
                       dotnet_code_quality.CA2330.excluded_symbol_names = Method")]
-        [InlineData(@"dotnet_code_quality.CA2329.excluded_symbol_names = Met*
+        [DataRow(@"dotnet_code_quality.CA2329.excluded_symbol_names = Met*
                       dotnet_code_quality.CA2330.excluded_symbol_names = Met*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = Method")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = Method")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -773,7 +773,7 @@ class Blah
                 );
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyCSharpWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
@@ -794,7 +794,7 @@ class Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyBasicWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
@@ -815,7 +815,7 @@ class Blah
 
             vbTest.ExpectedDiagnostics.AddRange(expected);
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

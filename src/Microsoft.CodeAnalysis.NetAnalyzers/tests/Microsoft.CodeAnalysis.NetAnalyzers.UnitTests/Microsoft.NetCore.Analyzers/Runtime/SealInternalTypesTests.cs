@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SealInternalTypes,
@@ -16,6 +15,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class SealInternalTypesTests
     {
         // NOTE: 'SealInternalTypes' analyzer reports a compilation end diagnostic.
@@ -27,9 +27,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         //       as compilation end diagnostics are non-local diagnostics.
 
         #region Diagnostic
-        [Theory]
-        [InlineData("internal ")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("internal ")]
+        [DataRow("")]
         public async Task TopLevelInternalClass_Diagnostic_CS(string accessModifier)
         {
             string source = $"{accessModifier}class {{|#0:C|}} {{ }}";
@@ -44,12 +44,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Friend ")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("Friend ")]
+        [DataRow("")]
         public async Task TopLevelInternalClass_Diagnostic_VB(string accessModifier)
         {
             string source = $@"
@@ -68,10 +68,10 @@ End Class";
                     VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonEmptyInternalClass_Diagnostic_CS()
         {
             string source = @"
@@ -94,12 +94,12 @@ internal sealed class C
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("internal ")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("internal ")]
+        [DataRow("")]
         public async Task InternalClassInNamespace_Diagnostic_CS(string accessModifier)
         {
             string source = $@"
@@ -122,12 +122,12 @@ namespace N
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Friend ")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("Friend ")]
+        [DataRow("")]
         public async Task InternalClassInNamespace_Diagnostic_VB(string accessModifier)
         {
             string source = $@"
@@ -150,15 +150,15 @@ End Namespace";
                     VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("public", "internal")]
-        [InlineData("public", "private")]
-        [InlineData("public", "private protected")]
-        [InlineData("internal", "public")]
-        [InlineData("internal", "protected internal")]
+        [TestMethod]
+        [DataRow("public", "internal")]
+        [DataRow("public", "private")]
+        [DataRow("public", "private protected")]
+        [DataRow("internal", "public")]
+        [DataRow("internal", "protected internal")]
         public async Task NestedOneDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string innerModifiers)
         {
             string source = $@"
@@ -181,15 +181,15 @@ End Namespace";
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Public", "Friend")]
-        [InlineData("Public", "Private")]
-        [InlineData("Public", "Private Protected")]
-        [InlineData("Friend", "Public")]
-        [InlineData("Friend", "Friend Protected")]
+        [TestMethod]
+        [DataRow("Public", "Friend")]
+        [DataRow("Public", "Private")]
+        [DataRow("Public", "Private Protected")]
+        [DataRow("Friend", "Public")]
+        [DataRow("Friend", "Friend Protected")]
         public async Task NestedOneDeep_NotExternallyVisible_Diagnostic_VB(string outerModifiers, string innerModifiers)
         {
             string source = $@"
@@ -212,13 +212,13 @@ End Class";
                     VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("public", "public", "internal")]
-        [InlineData("internal", "internal protected", "public")]
-        [InlineData("public", "private protected", "public")]
+        [TestMethod]
+        [DataRow("public", "public", "internal")]
+        [DataRow("internal", "internal protected", "public")]
+        [DataRow("public", "private protected", "public")]
         public async Task NestedTwoDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string middleModifiers, string innerModifiers)
         {
             string source = $@"
@@ -247,13 +247,13 @@ End Class";
                     VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Public", "Public", "Friend")]
-        [InlineData("Friend", "Friend Protected", "Public")]
-        [InlineData("Public", "Private Protected", "Public")]
+        [TestMethod]
+        [DataRow("Public", "Public", "Friend")]
+        [DataRow("Friend", "Friend Protected", "Public")]
+        [DataRow("Public", "Private Protected", "Public")]
         public async Task NestedTwoDeep_NotExternallyVisible_Diagnostic_VB(string outerModifiers, string middleModifiers, string innerModifiers)
         {
             string source = $@"
@@ -280,10 +280,10 @@ End Class";
                     VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
                 },
                 FixedCode = fixedSource,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task InternalsVisibleTo_Diagnostic_WhenOptionsDemandIt(bool ignoreInternalsVisibleTo)
         {
@@ -311,13 +311,13 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
                         .WithArguments("C"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region No Diagnostic
-        [Fact, WorkItem(6141, "https://github.com/dotnet/roslyn-analyzers/issues/6141")]
+        [TestMethod, WorkItem(6141, "https://github.com/dotnet/roslyn-analyzers/issues/6141")]
         public Task TopLevelStatementsProgram()
         {
             return new VerifyCS.Test()
@@ -328,10 +328,10 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
                     OutputKind = OutputKind.ConsoleApplication,
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task PublicClassType_NoDiagnostic_CS()
         {
             string source = $"public class C {{ protected class P {{ }} }}";
@@ -339,7 +339,7 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public Task AlreadySealedType_NoDiagnostic_CS()
         {
             string source = $"internal sealed class C {{ }}";
@@ -347,7 +347,7 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public Task InternalsVisibleTo_NoDiagnostic()
         {
             string source = @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""TestProject"")]
@@ -356,7 +356,7 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ComImportAttributedType_NoDiagnostic_CS()
         {
             string source = $"[System.Runtime.InteropServices.ComImport] [System.Runtime.InteropServices.Guid(\"E8D59775-E821-4D6C-B63D-BB0D969361DA\")] internal class C {{ }}";
@@ -364,12 +364,12 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("interface I { }")]
-        [InlineData("struct S { }")]
-        [InlineData("enum E { None }")]
-        [InlineData("delegate void D();")]
-        [InlineData("static class C { }")]
+        [TestMethod]
+        [DataRow("interface I { }")]
+        [DataRow("struct S { }")]
+        [DataRow("enum E { None }")]
+        [DataRow("delegate void D();")]
+        [DataRow("static class C { }")]
         public Task NonClassType_NoDiagnostic_CS(string declaration)
         {
             string source = $"internal {declaration}";
@@ -377,13 +377,13 @@ dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("Interface I", "End Interface")]
-        [InlineData("Structure S", "End Structure")]
-        [InlineData(@"Enum E
+        [TestMethod]
+        [DataRow("Interface I", "End Interface")]
+        [DataRow("Structure S", "End Structure")]
+        [DataRow(@"Enum E
     None", "End Enum")]
-        [InlineData("Delegate Sub D()", "")]
-        [InlineData("Module M", "End Module")]
+        [DataRow("Delegate Sub D()", "")]
+        [DataRow("Module M", "End Module")]
         public Task NonClassType_NoDiagnostic_VB(string declaration, string endDeclaration)
         {
             string source = $@"
@@ -393,7 +393,7 @@ Friend {declaration}
             return VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ClassWithDerivedType_NoDiagnostic_CS()
         {
             string source = @"
@@ -403,7 +403,7 @@ internal sealed class D : B { }";
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ClassWithDerivedType_NoDiagnostic_VB()
         {
             string source = @"
@@ -415,7 +415,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public Task AbstractClass_NoDiagnostic_CS()
         {
             string source = "internal abstract class C { }";
@@ -423,7 +423,7 @@ End Class";
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public Task AbstractClass_NoDiagnostic_VB()
         {
             string source = @"
@@ -433,10 +433,10 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("B<T> { }", "D : B<int> { }")]
-        [InlineData("B<T> { }", "D<T> : B<T> { }")]
-        [InlineData("B<T, U> { }", "D<T> : B<T, int> { }")]
+        [TestMethod]
+        [DataRow("B<T> { }", "D : B<int> { }")]
+        [DataRow("B<T> { }", "D<T> : B<T> { }")]
+        [DataRow("B<T, U> { }", "D<T> : B<T, int> { }")]
         public Task GenericClass_WithSubclass_NoDiagnostic_CS(string baseClass, string derivedClass)
         {
             string source = $@"
@@ -446,10 +446,10 @@ internal sealed class {derivedClass}";
             return VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("B(Of T)", "D : Inherits B(Of Integer)")]
-        [InlineData("B(Of T)", "D(Of T) : Inherits B(Of T)")]
-        [InlineData("B(Of T, U)", "D(Of T) : Inherits B(Of T, Integer)")]
+        [TestMethod]
+        [DataRow("B(Of T)", "D : Inherits B(Of Integer)")]
+        [DataRow("B(Of T)", "D(Of T) : Inherits B(Of T)")]
+        [DataRow("B(Of T, U)", "D(Of T) : Inherits B(Of T, Integer)")]
         public Task GenericClass_WithSubclass_NoDiagnostic_VB(string baseClass, string derivedClass)
         {
             string source = $@"
@@ -462,7 +462,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public Task PartialClass_ReportedAndFixedAtAllLocations_CS()
         {
             var test = new VerifyCS.Test
@@ -491,10 +491,10 @@ End Class";
                     }
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact(Skip = "Changes are being applied to .g.cs file")]
+        [TestMethod, Ignore("Changes are being applied to .g.cs file")]
         public Task PartialClass_OneGenerated_ReportedAndFixedAtAllNonGeneratedLocations_CS()
         {
             var test = new VerifyCS.Test
@@ -522,10 +522,10 @@ End Class";
                     }
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task PartialClass_ReportedAndFixedAtAllLocations_VB()
         {
             var test = new VerifyVB.Test
@@ -562,7 +562,7 @@ End Class"
                     }
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
         #endregion
 

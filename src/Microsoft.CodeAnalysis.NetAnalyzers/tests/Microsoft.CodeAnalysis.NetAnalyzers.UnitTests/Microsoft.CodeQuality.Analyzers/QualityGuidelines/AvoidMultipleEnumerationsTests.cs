@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpAvoidMultipleEnumerationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,6 +12,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
+    [TestClass]
     public class AvoidMultipleEnumerationsTests
     {
         private static Task VerifyCSharpAsync(
@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                 },
             };
 
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         private static Task VerifyVisualBasicAsync(
@@ -94,10 +94,10 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                 },
             };
 
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMultipleInvocations()
         {
             var csharpCode = @"
@@ -140,7 +140,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestForLoop()
         {
             var csharpCode = @"
@@ -182,7 +182,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationsInForEachLoop()
         {
             var csharpCode = @"
@@ -223,7 +223,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationsAfterForEachLoop()
         {
             var csharpCode = @"
@@ -262,7 +262,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationsAfterForEachLoopForArray()
         {
             var csharpCode = @"
@@ -301,7 +301,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWhileLoop()
         {
             var csharpCode = @"
@@ -342,7 +342,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationAfterIfBranchWithElse()
         {
             var csharpCode = @"
@@ -405,7 +405,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationAfterIfbranch()
         {
             var csharpCode = @"
@@ -449,7 +449,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationBeforeIfbranch()
         {
             var csharpCode = @"
@@ -495,7 +495,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationAfterIfbranchForArray()
         {
             var csharpCode = @"
@@ -539,7 +539,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNoInvocationAfterIfbranch()
         {
             var csharpCode = @"
@@ -579,7 +579,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOneInvocationAfterIfBranch1()
         {
             var csharpCode = @"
@@ -642,7 +642,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOneInvocationAfterIfBranch2()
         {
             var csharpCode = @"
@@ -704,7 +704,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTwoInvocationsAfterIfElseBranch()
         {
             var csharpCode = @"
@@ -767,7 +767,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestExplicitDeclaration()
         {
             var csharpCode = @"
@@ -817,7 +817,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTwoInvocationsAfterIfBranch()
         {
             var csharpCode = @"
@@ -881,7 +881,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDifferntInvocationsInIfBranch()
         {
             var csharpCode = @"
@@ -951,7 +951,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDifferntInvocationsInIfBranch2()
         {
             var csharpCode = @"
@@ -1002,7 +1002,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDifferntInvocationsInIfBranch3()
         {
             var csharpCode = @"
@@ -1058,7 +1058,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationOnBranch1()
         {
             var csharpCode = @"
@@ -1103,7 +1103,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationOnBranch2()
         {
             var csharpCode = @"
@@ -1156,7 +1156,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationOnBranch3()
         {
             var csharpCode = @"
@@ -1214,7 +1214,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationOnBranch4()
         {
             var csharpCode = @"
@@ -1265,7 +1265,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationOnBranch5()
         {
             var csharpCode = @"
@@ -1317,7 +1317,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationOnBranch6()
         {
             var csharpCode = @"
@@ -1363,7 +1363,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationOnBranch7()
         {
             var csharpCode = @"
@@ -1415,7 +1415,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationWithForEachLoop1()
         {
             var csharpCode = @"
@@ -1467,7 +1467,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationWithForEachLoop2()
         {
             var csharpCode = @"
@@ -1532,7 +1532,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationWithForEachLoop3()
         {
             var csharpCode = @"
@@ -1603,7 +1603,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationAcceptObject()
         {
             var csharpCode = @"
@@ -1653,7 +1653,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationAcceptGenerics()
         {
             var csharpCode = @"
@@ -1721,7 +1721,7 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationAcceptGenericsConstraintToIEnumerable()
         {
             var csharpCode = @"
@@ -1773,7 +1773,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestExplictInvocations()
         {
             var csharpCode = @"
@@ -1817,7 +1817,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTakesTwoIEnumerables1()
         {
             var csharpCode = @"
@@ -1852,7 +1852,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTakesTwoIEnumerables2()
         {
             var csharpCode = @"
@@ -1887,7 +1887,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTakesTwoIEnumerables3()
         {
             var csharpCode = @"
@@ -1922,7 +1922,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelayExecutions()
         {
             var csharpCode = @"
@@ -1981,7 +1981,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGroupBy()
         {
             var csharpCode = @"
@@ -2017,7 +2017,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelectMany()
         {
             var csharpCode = @"
@@ -2050,7 +2050,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestIEnumerable()
         {
             var csharpCode = @"
@@ -2085,7 +2085,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestIOrderedEnumerable()
         {
             var csharpCode = @"
@@ -2116,7 +2116,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestExecutionInTheMiddle()
         {
             var csharpCode = @"
@@ -2149,7 +2149,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignmentAfterEnumeration()
         {
             var csharpCode = @"
@@ -2197,7 +2197,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestForEachLoopForLocalAssignment()
         {
             var csharpCode = @"
@@ -2244,7 +2244,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationLocalAssignment()
         {
             var csharpCode = @"
@@ -2280,7 +2280,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInvocationWithAssignment()
         {
             var csharpCode = @"
@@ -2362,7 +2362,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestForEachForIEnumerable()
         {
             var csharpCode = @"
@@ -2405,7 +2405,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestForEachForIOrderedEnumerable()
         {
             var csharpCode = @"
@@ -2448,7 +2448,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestForEachLoop()
         {
             var csharpCode = @"
@@ -2488,7 +2488,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnumeratedParameterAfterLinqCallChain()
         {
             var csharpCode = @"
@@ -2526,7 +2526,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnumeratedLocalAfterLinqCallChain1()
         {
             var csharpCode = @"
@@ -2566,7 +2566,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnumeratedLocalAfterLinqCallChain2()
         {
             var csharp = @"
@@ -2604,7 +2604,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnumeratedLocalAfterLinqCallChain3()
         {
             var csharpCode = @"
@@ -2644,7 +2644,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConcatOneParameterMultipleTimes()
         {
             var csharpCode = @"
@@ -2678,7 +2678,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations1()
         {
             var csharpCode = @"
@@ -2720,7 +2720,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations2()
         {
             var csharpCode = @"
@@ -2762,7 +2762,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations3()
         {
             var csharpCode = @"
@@ -2802,7 +2802,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelayEnumerableFromArray()
         {
             var csharpCode = @"
@@ -2839,7 +2839,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelayIOrderedEnumerable()
         {
             var csharpCode = @"
@@ -2875,7 +2875,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNestedDelayIEnumerable()
         {
             var csharpCode = @"
@@ -2911,7 +2911,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestImplictExplictedFromArrayToIEnumerable()
         {
             var csharpCode = @"
@@ -2949,7 +2949,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCallExtensionMethodAsOrdinaryMethod()
         {
             var csharpCode = @"
@@ -2987,7 +2987,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignFromTranslatedQuery()
         {
             var csharpCode = @"
@@ -3026,7 +3026,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVBAggregateQuery()
         {
             var vbCode = @"
@@ -3051,7 +3051,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAsEnumerable1()
         {
             var csharpCode = @"
@@ -3097,7 +3097,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAsEnumerable2()
         {
             var csharpCode = @"
@@ -3135,7 +3135,7 @@ End Namespace";
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestZip()
         {
             var csharpCode1 = @"
@@ -3172,9 +3172,9 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Theory]
-        [InlineData("MaxBy")]
-        [InlineData("MinBy")]
+        [TestMethod]
+        [DataRow("MaxBy")]
+        [DataRow("MinBy")]
         public async Task TestNet6AddedEnumeratedMethods(string methodName)
         {
             var csharpCode = $@"
@@ -3207,10 +3207,10 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Theory]
-        [InlineData("ExceptBy")]
-        [InlineData("IntersectBy")]
-        [InlineData("UnionBy")]
+        [TestMethod]
+        [DataRow("ExceptBy")]
+        [DataRow("IntersectBy")]
+        [DataRow("UnionBy")]
         public async Task TestNet6AddedLinqChainMethods(string methodName)
         {
             var csharpCode = $@"
@@ -3243,7 +3243,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDistinctBy()
         {
             var csharpCode = $@"
@@ -3276,7 +3276,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChunk()
         {
             var csharpCode = @"
@@ -3309,7 +3309,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTryGetNonEnumeratedCount()
         {
             var csharpCode = @"
@@ -3348,10 +3348,10 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        [DataRow(null)]
         public async Task TestAssumeMethodEnumeratesParametersFromEditorConfig(bool? assumeMethodEnumeratesParameters)
         {
             var diagnostic = assumeMethodEnumeratesParameters == true ? "[|j|]" : "j";
@@ -3396,9 +3396,9 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode, assumeMethodEnumeratesParameters: assumeMethodEnumeratesParameters);
         }
 
-        [Theory]
-        [InlineData("M:Bar.Method1*")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("M:Bar.Method1*")]
+        [DataRow("")]
         public async Task TestEnumerationMethodFromEditorConfig(string editorConfig)
         {
             var diagnositcReference = string.IsNullOrEmpty(editorConfig) ? "j" : "[|j|]";
@@ -3437,9 +3437,9 @@ End Class
             await VerifyVisualBasicAsync(vbCode, customizedEnumerationMethods: editorConfig);
         }
 
-        [Theory]
-        [InlineData("M:Bar.Chain*")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("M:Bar.Chain*")]
+        [DataRow("")]
         public async Task TestLinqChainMethodFromEditorConfig(string editorConfig)
         {
             var diagnositcReference = string.IsNullOrEmpty(editorConfig) ? "j" : "[|j|]";
@@ -3480,7 +3480,7 @@ End Class
             await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericConstraints1()
         {
             var csharpCode = @"
@@ -3514,7 +3514,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericConstraints2()
         {
             var csharpCode = @"
@@ -3548,9 +3548,9 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Theory]
-        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [DataRow("")]
         public async Task TestGenericConstraints3(string editorConfig)
         {
             var diagnosticReference = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
@@ -3611,9 +3611,9 @@ End Module
             await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
         }
 
-        [Theory]
-        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [DataRow("")]
         public async Task TestGenericConstraints4(string editorConfig)
         {
             var diagnosticReference = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
@@ -3674,9 +3674,9 @@ End Module
             await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
         }
 
-        [Theory]
-        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [DataRow("")]
         public async Task TestGenericConstraints5(string editorConfig)
         {
             var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
@@ -3738,9 +3738,9 @@ End Module
             await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
         }
 
-        [Theory]
-        [InlineData("M:Bar.TestMethod*")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("M:Bar.TestMethod*")]
+        [DataRow("")]
         public async Task TestGenericConstraints6(string editorConfig)
         {
             var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "i" : "[|i|]";
@@ -3792,7 +3792,7 @@ End Class
             await VerifyVisualBasicAsync(vbCode, customizedEnumerationMethods: editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericConstraints7()
         {
             var csharpCode = @"
@@ -3845,7 +3845,7 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericConstraints8()
         {
             var csharpCode = @"
@@ -3898,13 +3898,13 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Theory]
-        [InlineData("HashSet")]
-        [InlineData("LinkedList")]
-        [InlineData("List")]
-        [InlineData("Queue")]
-        [InlineData("SortedSet")]
-        [InlineData("Stack")]
+        [TestMethod]
+        [DataRow("HashSet")]
+        [DataRow("LinkedList")]
+        [DataRow("List")]
+        [DataRow("Queue")]
+        [DataRow("SortedSet")]
+        [DataRow("Stack")]
         public async Task TestObjectCreationOperation1(string typeName)
         {
             var csharpCode = $@"
@@ -3936,7 +3936,7 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestObjectCreationOperation2()
         {
             var csharpCode = @"
@@ -3968,7 +3968,7 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestObjectCreationOperation3()
         {
             var csharpCode = @"
@@ -4000,9 +4000,9 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Theory]
-        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [DataRow("")]
         public async Task TestLinqChainEnumeratedTheArgument(string editorConfig)
         {
             var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
@@ -4068,7 +4068,7 @@ End Module
                 customizedLinqChainMethods: editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDomainMerge()
         {
             var csharpCode1 = @"
@@ -4106,7 +4106,7 @@ End Namespace
             await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestValueReset1()
         {
             var csharpCode = @"
@@ -4150,7 +4150,7 @@ End Namespace
             await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestValueReset2()
         {
             var csharpCode = @"
@@ -4198,7 +4198,7 @@ End Namespace
             await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestValueReset3()
         {
             var csharpCode = @"

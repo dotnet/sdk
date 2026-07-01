@@ -1,10 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
 using Newtonsoft.Json.Linq;
@@ -15,11 +16,9 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildANetCoreApp : SdkTest
     {
-        public GivenThatWeWantToBuildANetCoreApp(ITestOutputHelper log) : base(log)
-        {
-        }
 
         private BuildCommand GetBuildCommand([CallerMemberName] string callingMethod = "")
         {
@@ -30,16 +29,16 @@ namespace Microsoft.NET.Build.Tests
             return new BuildCommand(testAsset);
         }
 
-        [Theory]
+        [TestMethod]
         //  TargetFramework, RuntimeFrameworkVersion, ExpectedPackageVersion, ExpectedRuntimeFrameworkVersion
-        [InlineData("netcoreapp1.0", null, "1.0.5", "1.0.5")]
-        [InlineData("netcoreapp1.0", "1.0.0", "1.0.0", "1.0.0")]
-        [InlineData("netcoreapp1.0", "1.0.3", "1.0.3", "1.0.3")]
-        [InlineData("netcoreapp1.1", null, "1.1.2", "1.1.2")]
-        [InlineData("netcoreapp1.1", "1.1.0", "1.1.0", "1.1.0")]
-        [InlineData("netcoreapp1.1.1", null, "1.1.1", "1.1.1")]
-        [InlineData("netcoreapp2.0", null, "2.0.0", "2.0.0")]
-        [InlineData("netcoreapp2.1", null, "2.1.0", "2.1.0")]
+        [DataRow("netcoreapp1.0", null, "1.0.5", "1.0.5")]
+        [DataRow("netcoreapp1.0", "1.0.0", "1.0.0", "1.0.0")]
+        [DataRow("netcoreapp1.0", "1.0.3", "1.0.3", "1.0.3")]
+        [DataRow("netcoreapp1.1", null, "1.1.2", "1.1.2")]
+        [DataRow("netcoreapp1.1", "1.1.0", "1.1.0", "1.1.0")]
+        [DataRow("netcoreapp1.1.1", null, "1.1.1", "1.1.1")]
+        [DataRow("netcoreapp2.0", null, "2.0.0", "2.0.0")]
+        [DataRow("netcoreapp2.1", null, "2.1.0", "2.1.0")]
         public void It_targets_the_right_shared_framework(string targetFramework, string runtimeFrameworkVersion,
             string expectedPackageVersion, string expectedRuntimeVersion)
         {
@@ -51,16 +50,16 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Test behavior when implicit version differs for framework-dependent and self-contained apps
-        [Theory]
-        [InlineData("netcoreapp1.0", false, true, "1.0.5")]
-        [InlineData("netcoreapp1.0", true, true, "1.0.16")]
-        [InlineData("netcoreapp1.0", false, false, "1.0.5")]
-        [InlineData("netcoreapp1.1", false, true, "1.1.2")]
-        [InlineData("netcoreapp1.1", true, true, "1.1.13")]
-        [InlineData("netcoreapp1.1", false, false, "1.1.2")]
-        [InlineData("netcoreapp2.0", false, true, "2.0.0")]
-        [InlineData("netcoreapp2.0", true, true, SdkTestContext.LatestRuntimePatchForNetCoreApp2_0)]
-        [InlineData("netcoreapp2.0", false, false, "2.0.0")]
+        [TestMethod]
+        [DataRow("netcoreapp1.0", false, true, "1.0.5")]
+        [DataRow("netcoreapp1.0", true, true, "1.0.16")]
+        [DataRow("netcoreapp1.0", false, false, "1.0.5")]
+        [DataRow("netcoreapp1.1", false, true, "1.1.2")]
+        [DataRow("netcoreapp1.1", true, true, "1.1.13")]
+        [DataRow("netcoreapp1.1", false, false, "1.1.2")]
+        [DataRow("netcoreapp2.0", false, true, "2.0.0")]
+        [DataRow("netcoreapp2.0", true, true, SdkTestContext.LatestRuntimePatchForNetCoreApp2_0)]
+        [DataRow("netcoreapp2.0", false, false, "2.0.0")]
         public void It_targets_the_right_framework_depending_on_output_type(string targetFramework, bool selfContained, bool isExe, string expectedFrameworkVersion)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
@@ -73,7 +72,7 @@ namespace Microsoft.NET.Build.Tests
             It_targets_the_right_framework(testIdentifier, targetFramework, null, selfContained, isExe, expectedFrameworkVersion, expectedFrameworkVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void The_RuntimeFrameworkVersion_can_float()
         {
             var testProject = new TestProject()
@@ -180,9 +179,9 @@ namespace Microsoft.NET.Build.Tests
             netCoreAppLibrary.Version.ToString().Should().Be(expectedPackageVersion);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void It_handles_mismatched_implicit_package_versions(bool allowMismatch)
         {
             var testProject = new TestProject()
@@ -231,7 +230,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_restores_only_ridless_tfm()
         {
             var testAsset = TestAssetsManager
@@ -257,10 +256,10 @@ namespace Microsoft.NET.Build.Tests
             targetDefs.Should().Contain(ToolsetInfo.CurrentTargetFramework);
         }
 
-        [Theory]
-        [InlineData("net6.0")]
-        [InlineData("net7.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("net6.0")]
+        [DataRow("net7.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_the_app_from_the_output_folder(string targetFramework)
         {
             if ((targetFramework == "net6.0" || targetFramework == "net7.0") &&
@@ -273,19 +272,19 @@ namespace Microsoft.NET.Build.Tests
             RunAppFromOutputFolder("RunFromOutputFolder_" + targetFramework, false, false, targetFramework);
         }
 
-        [Theory]
-        [InlineData("net6.0")]
-        [InlineData("net7.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("net6.0")]
+        [DataRow("net7.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_a_rid_specific_app_from_the_output_folder(string targetFramework)
         {
             RunAppFromOutputFolder("RunFromOutputFolderWithRID_" + targetFramework, true, false, targetFramework);
         }
 
-        [Theory]
-        [InlineData("net6.0")]
-        [InlineData("net7.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("net6.0")]
+        [DataRow("net7.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_the_app_with_conflicts_from_the_output_folder(string targetFramework)
         {
             if ((targetFramework == "net6.0" || targetFramework == "net7.0") &&
@@ -298,10 +297,10 @@ namespace Microsoft.NET.Build.Tests
             RunAppFromOutputFolder("RunFromOutputFolderConflicts_" + targetFramework, false, true, targetFramework);
         }
 
-        [Theory]
-        [InlineData("net6.0")]
-        [InlineData("net7.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("net6.0")]
+        [DataRow("net7.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_a_rid_specific_app_with_conflicts_from_the_output_folder(string targetFramework)
         {
             RunAppFromOutputFolder("RunFromOutputFolderWithRIDConflicts_" + targetFramework, true, true, targetFramework);
@@ -371,11 +370,11 @@ public static class Program
 
         }
 
-        [Theory]
-        [InlineData("netcoreapp2.0", true)]
-        [InlineData("netcoreapp3.0", true)]
-        [InlineData("net5.0", true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
+        [TestMethod]
+        [DataRow("netcoreapp2.0", true)]
+        [DataRow("netcoreapp3.0", true)]
+        [DataRow("net5.0", true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, false)]
         public void It_stops_generating_runtimeconfig_dev_json_after_net6(string targetFramework, bool shouldGenerateRuntimeConfigDevJson)
         {
             TestProject proj = new()
@@ -400,11 +399,12 @@ public static class Program
             File.Exists(runtimeconfigFile).Should().Be(shouldGenerateRuntimeConfigDevJson);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("netcoreapp2.0")]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("net5.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow("netcoreapp2.0")]
+        [DataRow("netcoreapp3.0")]
+        [DataRow("net5.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_stops_generating_runtimeconfig_dev_json_after_net6_allow_property_override(string targetFramework)
         {
             TestProject proj = new()
@@ -433,9 +433,9 @@ public static class Program
             File.Exists(runtimeconfigFile).Should().BeFalse();
         }
 
-        [Theory]
-        [InlineData("netcoreapp2.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("netcoreapp2.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_trims_conflicts_from_the_deps_file(string targetFramework)
         {
             TestProject project = new()
@@ -496,9 +496,9 @@ public static class Program
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_generates_rid_fallback_graph(bool isSelfContained)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -540,7 +540,7 @@ public static class Program
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void There_are_no_conflicts_when_targeting_netcoreapp_1_1()
         {
             var testProject = new TestProject()
@@ -562,9 +562,9 @@ public static class Program
                 .NotHaveStdOutMatching("Encountered conflict", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_publishes_package_satellites_correctly(bool crossTarget)
         {
             var testProject = new TestProject()
@@ -607,9 +607,9 @@ public static class Program
             outputDirectory.Should().HaveFile(Path.Combine("fr", "Humanizer.resources.dll"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_uses_lowercase_form_of_the_target_framework_for_the_output_path(bool useStandardOutputPaths)
         {
             var testProject = new TestProject()
@@ -656,7 +656,7 @@ public static class Program
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void BuildWithTransitiveReferenceToNetCoreAppPackage()
         {
             var testProject = new TestProject()
@@ -688,7 +688,8 @@ public static class Program
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_escapes_resolved_package_assets_paths()
         {
             var testProject = new TestProject()
@@ -737,7 +738,8 @@ class Program
                 .Pass();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/3044")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/3044")]
         public void ReferenceLegacyContracts()
         {
             var testProject = new TestProject()
@@ -764,7 +766,7 @@ class Program
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHasNoPackageReferences()
         {
             var testProject = new TestProject()
@@ -794,7 +796,8 @@ class Program
                 .BeEmpty();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItResolvesPackageAssetsMultiTargetingNetStandard()
         {
             var testProject = new TestProject()
@@ -818,7 +821,8 @@ class Program
                 .HaveStdOutContaining("NU1603");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_with_unicode_characters_in_path()
         {
             var testProject = new TestProject()
@@ -839,7 +843,7 @@ class Program
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_regenerates_files_if_self_contained_changes()
         {
             const string TFM = ToolsetInfo.CurrentTargetFramework;
@@ -883,7 +887,7 @@ class Program
             runtimeConfigLastWriteTime.Should().NotBe(File.GetLastWriteTimeUtc(runtimeConfigPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_passes_when_building_single_file_app_without_rid()
         {
             GetBuildCommand()
@@ -892,7 +896,7 @@ class Program
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_errors_when_publishing_single_file_without_apphost()
         {
             GetBuildCommand()
@@ -901,9 +905,9 @@ class Program
                 .Pass();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_builds_the_project_successfully_with_only_reference_assembly_set(bool produceOnlyReferenceAssembly)
         {
             var testProject = new TestProject()
@@ -982,23 +986,23 @@ class Program
             return packageProject;
         }
 
-        [Theory]
+        [TestMethod]
         // Non-portable RID should warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, true, null, true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, false, null, true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, false, true, null, true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, true, null, true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, false, null, true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, false, true, null, true)]
         // Non-portable and portable RIDs should warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64", "win7-x86", "unix" }, true, true, null, true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64", "win7-x86", "unix" }, true, true, null, true)]
         // Portable RIDs only should not warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "win-x86", "win", "linux", "linux-musl-x64", "osx", "osx-arm64", "unix", "browser", "browser-wasm", "ios-arm64" }, true, true, null, false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, new[] { "win-x86", "win", "linux", "linux-musl-x64", "osx", "osx-arm64", "unix", "browser", "browser-wasm", "ios-arm64" }, true, true, null, false)]
         // No RID assets should not warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new string[] { }, false, false, null, false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, new string[] { }, false, false, null, false)]
         // Below .NET 8 should not warn
-        [InlineData("net7.0", new string[] { "ubuntu.22.04-x64", "win7-x86" }, true, true, null, false)]
+        [DataRow("net7.0", new string[] { "ubuntu.22.04-x64", "win7-x86" }, true, true, null, false)]
         // Explicitly set to use RID graph should not warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, true, false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, true, false)]
         // Explicitly set to not use RID graph should warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, false, true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, false, true)]
         public void It_warns_on_nonportable_rids(string targetFramework, string[] rids, bool addLibAssets, bool addNativeAssets, bool? useRidGraph, bool shouldWarn)
         {
             var packageProject = CreateProjectWithRidAssets(targetFramework, rids, addLibAssets, addNativeAssets);
@@ -1054,7 +1058,7 @@ class Program
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_warn_on_rids_if_no_framework_references()
         {
             var packageProject = CreateProjectWithRidAssets(ToolsetInfo.CurrentTargetFramework, new string[] { "unix", "win", "alpine-x64" }, true, true);
@@ -1088,9 +1092,9 @@ class Program
                 .And.NotHaveStdOutContaining("NETSDK1206");
         }
 
-        [Theory]
-        [InlineData(true, "TRACE DISABLED")]
-        [InlineData(false, "TRACE ENABLED")]
+        [TestMethod]
+        [DataRow(true, "TRACE DISABLED")]
+        [DataRow(false, "TRACE ENABLED")]
         public void It_can_use_implicitly_defined_compilation_constants(bool disableTracing, string expectedOutput)
         {
             var testProj = new TestProject()
@@ -1130,6 +1134,251 @@ class Program
             runCommand
                 .Execute()
                 .Should().HaveStdOut(expectedOutput);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void It_includes_local_path_for_package_dependencies(bool useCustomSubdirectory)
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            // Create a test project that references the package
+            TestProject testProject = new()
+            {
+                Name = "TestProjWithPackageDependencies",
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+
+            string culture = "fr";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
+            testProject.PackageReferences.Add(new TestPackageReference($"Humanizer.Core.{culture}", "2.14.1"));
+            testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
+
+            // Libuv package does not have a native library for macOS arm64, so don't try to call into it.
+            bool shouldUseLibuv = !OperatingSystem.IsMacOS() || RuntimeInformation.OSArchitecture != Architecture.Arm64;
+
+            // Add source that uses all the packages
+            testProject.SourceFiles[$"{testProject.Name}.cs"] =
+                $$""""
+                using System;
+                using System.Runtime.InteropServices;
+                using Humanizer;
+                class Program
+                {
+                    private static void UseNewtonsoftJson()
+                    {
+                        var jsonObject = Newtonsoft.Json.JsonConvert.DeserializeObject("{}");
+                        Console.WriteLine($"Used Newtonsoft.Json - deserialized: {jsonObject}");
+                    }
+                    private static void UseHumanizer()
+                    {
+                        string humanized = DateTime.Now.AddDays(-1).Humanize(culture: new System.Globalization.CultureInfo("{{culture}}"));
+                        Console.WriteLine($"Used Humanizer.Core.{{culture}} - yesterday humanized: {humanized}");
+                    }
+                    private static void UseLibuv()
+                    {
+                        uint libuvVersion = uv_version();
+                        Console.WriteLine($"Used Libuv - version: {libuvVersion}");
+
+                        [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+                        static extern uint uv_version();
+                    }
+                    static void Main(string[] args)
+                    {
+                        try
+                        {
+                            UseNewtonsoftJson();
+                        }
+                        catch (Exception ex) { Console.Error.WriteLine($"Failure using Newtonsoft.Json: {ex}"); }
+
+                        try
+                        {
+                            UseHumanizer();
+                        }
+                        catch (Exception ex) { Console.Error.WriteLine($"Failure using Humanizer.Core.{{culture}}: {ex}"); }
+
+                        if ({{shouldUseLibuv.ToString().ToLowerInvariant()}})
+                        {
+                            try
+                            {
+                                UseLibuv();
+                            }
+                            catch (Exception ex) { Console.Error.WriteLine($"Failure using Libuv: {ex}"); }
+                        }
+                    }
+                }
+                """";
+
+            string subdirectory = string.Empty;
+            if (useCustomSubdirectory)
+            {
+                // Put the resolved package assets in a subdirectory
+                subdirectory = "pkg-ref/";
+                testProject.ProjectChanges.Add(xml =>
+                {
+                    xml.Root.Add(XElement.Parse(
+                        $"""
+                        <Target Name="UpdateRuntimeCopyLocalItems" AfterTargets="ResolvePackageAssets">
+                          <ItemGroup>
+                            <RuntimeCopyLocalItems Update="@(RuntimeCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(RuntimeCopyLocalItems.DestinationSubDirectory)" />
+                            <ResourceCopyLocalItems Update="@(ResourceCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(ResourceCopyLocalItems.DestinationSubDirectory)" />
+                            <RuntimeTargetsCopyLocalItems Update="@(RuntimeTargetsCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(RuntimeTargetsCopyLocalItems.DestinationSubDirectory)" />
+                          </ItemGroup>
+                        </Target>
+                        """));
+                });
+            }
+
+            var buildCommand = new BuildCommand(TestAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}"));
+            buildCommand.Execute().Should().Pass();
+
+            // Expected package and local output paths for package assets
+            // Path for runtime and resource assets is a regex to match for the expected path in the .deps.json
+            (string Name, (string, string)[] Runtime, (string, string)[] Native, (string, string)[] Resource)[] expectedPackages = [
+                ("Newtonsoft.Json",
+                    Runtime: [
+                        ("lib/.*/Newtonsoft.Json.dll", $"{subdirectory}Newtonsoft.Json.dll") ],
+                    Native: [],
+                    Resource: []),
+                ("Libuv",
+                    Runtime: [],
+                    Native: [
+                        ("runtimes/linux-x64/native/libuv.so", $"{subdirectory}runtimes/linux-x64/native/libuv.so"),
+                        ("runtimes/win-x64/native/libuv.dll", $"{subdirectory}runtimes/win-x64/native/libuv.dll") ],
+                    Resource: []),
+                ($"Humanizer.Core",
+                    Runtime: [
+                        ("lib/.*/Humanizer.dll", $"{subdirectory}Humanizer.dll") ],
+                    Native: [],
+                    Resource: []),
+                ($"Humanizer.Core.{culture}",
+                    Runtime: [],
+                    Native: [],
+                    Resource: [
+                        ($"lib/.*/{culture}/Humanizer.resources.dll", $"{subdirectory}{culture}/Humanizer.resources.dll") ])
+            ];
+
+            string outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName;
+            string depsFile = Path.Combine(outputDirectory, $"{testProject.Name}.deps.json");
+            using (FileStream stream = File.OpenRead(depsFile))
+            {
+                DependencyContext dependencyContext = new DependencyContextJsonReader().Read(stream);
+                foreach (var expected in expectedPackages)
+                {
+                    // Validate package assets are in the deps file with the expected path and local paths
+                    RuntimeLibrary lib = dependencyContext.RuntimeLibraries.FirstOrDefault(lib => lib.Name == expected.Name);
+                    Assert.IsNotNull(lib);
+
+                    foreach ((string packagePath, string localPath) in expected.Runtime)
+                    {
+                        lib.RuntimeAssemblyGroups.Should().Contain(
+                            g => g.RuntimeFiles.Any(f => f.LocalPath == localPath && Regex.IsMatch(f.Path, packagePath)),
+                            $"runtime assemblies should have item with LocalPath={localPath} and Path matching {packagePath}");
+                    }
+
+                    foreach ((string packagePath, string localPath) in expected.Native)
+                    {
+                        lib.NativeLibraryGroups.Should().Contain(
+                            g => g.RuntimeFiles.Any(f => f.LocalPath == localPath && f.Path == packagePath),
+                            $"native libraries should have item with LocalPath={localPath} and Path={packagePath}");
+                    }
+
+                    foreach ((string packagePath, string localPath) in expected.Resource)
+                    {
+                        lib.ResourceAssemblies.Should().Contain(
+                            a => a.LocalPath == localPath && Regex.IsMatch(a.Path, packagePath),
+                            $"resource assemblies should have item with LocalPath={localPath} and Path matching {packagePath}");
+                    }
+                }
+            }
+
+            string app = Path.Join(outputDirectory, $"{testProject.Name}.dll");
+            var result = new DotnetCommand(Log, app).Execute();
+            result.Should().Pass().And.NotHaveStdErr();
+            foreach (var pkg in testProject.PackageReferences)
+            {
+                if (!shouldUseLibuv && pkg.ID == "Libuv")
+                    continue;
+
+                result.Should().HaveStdOutContaining($"Used {pkg.ID}");
+            }
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void It_includes_local_path_for_project_references(bool useCustomSubdirectory)
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            // Create a referenced library project
+            TestProject referencedProject = new()
+            {
+                Name = "ReferencedLibrary",
+                TargetFrameworks = targetFramework,
+                IsExe = false
+            };
+
+            // Create test project that references the library
+            TestProject testProject = new()
+            {
+                Name = "TestProjWithProjectReference",
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            string subdirectory = string.Empty;
+            if (useCustomSubdirectory)
+            {
+                // Put the project reference in a subdirectory
+                subdirectory = "proj-ref/";
+                testProject.ProjectChanges.Add(xml =>
+                {
+                    xml.Root.Add(XElement.Parse(
+                        $"""
+                    <Target Name="UpdateReferencePaths" AfterTargets="ResolveReferences">
+                      <ItemGroup>
+                        <ReferencePath Update="@(ReferencePath)->WithMetadataValue('CopyLocal', 'true')"
+                                       DestinationSubDirectory="{subdirectory}" />
+                        <_ToUpdate Include="@(ReferencePath)" Condition="'%(ReferencePath.CopyLocal)' == 'true'" />
+                        <ReferenceCopyLocalPaths Remove="@(_ToUpdate)" />
+                        <ReferenceCopyLocalPaths Include="@(_ToUpdate)" />
+                      </ItemGroup>
+                    </Target>
+                    """));
+                });
+            }
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            string outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName;
+            string depsFile = Path.Combine(outputDirectory, $"{testProject.Name}.deps.json");
+            using (FileStream stream = File.OpenRead(depsFile))
+            {
+                DependencyContext dependencyContext = new DependencyContextJsonReader().Read(stream);
+
+                // Find the referenced project in runtime libraries
+                RuntimeLibrary lib = dependencyContext.RuntimeLibraries.FirstOrDefault(lib => lib.Name.Contains(referencedProject.Name));
+                Assert.IsNotNull(lib);
+
+                // Validate project reference is the deps file with the expected path and local paths
+                string expectedPath = $"{referencedProject.Name}.dll";
+                string expectedLocalPath = useCustomSubdirectory ? $"{subdirectory}{referencedProject.Name}.dll" : null;
+                lib.RuntimeAssemblyGroups.Should().Contain(
+                    g => g.RuntimeFiles.Any(f => f.LocalPath == expectedLocalPath && f.Path == expectedPath),
+                    $"project reference should have LocalPath={expectedLocalPath} and Path={expectedPath}");
+            }
+
+            string app = Path.Join(outputDirectory, $"{testProject.Name}.dll");
+            var result = new DotnetCommand(Log, app).Execute();
+            result.Should().Pass()
+                .And.HaveStdOutContaining(referencedProject.Name);
         }
     }
 }

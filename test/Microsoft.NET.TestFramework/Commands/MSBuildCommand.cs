@@ -142,7 +142,10 @@ namespace Microsoft.NET.TestFramework.Commands
             var output = command.StdOut?.ToString();
             if ((!String.IsNullOrEmpty(error) && error.Contains("NU3003")) || (!String.IsNullOrEmpty(output) && output.Contains("NU3003")))
             {
-                args = args.Concat(new[] { "-v:diag" });
+                // NU3003 (NuGet signature verification) is typically transient. Retry the
+                // command as-is. The binlog (uploaded to Helix) captures full diagnostic
+                // data if deeper investigation is needed.
+                Log.WriteLine("NU3003 (signature verification) detected — retrying. Check the uploaded binlog for diagnostic details.");
                 command = base.Execute(args);
             }
 

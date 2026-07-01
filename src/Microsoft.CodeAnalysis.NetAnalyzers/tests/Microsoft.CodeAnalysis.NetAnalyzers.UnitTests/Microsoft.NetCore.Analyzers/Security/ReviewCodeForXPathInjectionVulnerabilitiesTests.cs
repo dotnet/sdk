@@ -4,17 +4,17 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXPathInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXPathInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForXPathInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXPathInjectionVulnerabilities, ReviewCodeForXPathInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForXPathInjectionVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Diagnostic_ViolationAsync()
         {
             await new VerifyCS.Test
@@ -51,10 +51,10 @@ public partial class WebForm : System.Web.UI.Page
                         GetCSharpResultAt(18, 31, 11, 28, "XPathNavigator XPathNavigator.SelectSingleNode(string xpath)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Diagnostic_ViolationAsync()
         {
             await new VerifyVB.Test
@@ -92,10 +92,10 @@ End Class
                         GetBasicResultAt(18, 38, 11, 35, "Function XPathNavigator.SelectSingleNode(xpath As String) As XPathNavigator", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XPathNavigator_Select_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -115,7 +115,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(12, 9, 11, 24, "XPathNodeIterator XPathNavigator.Select(string xpath)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XPathNavigator_Select_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -134,7 +134,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlNode_SelectSingleNode_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -154,7 +154,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(12, 9, 11, 24, "XmlNode XmlNode.SelectSingleNode(string xpath)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TemplateControl_XPath_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -184,7 +184,7 @@ public class MyTemplateControl : TemplateControl
                 GetCSharpResultAt(21, 16, 12, 24, "object TemplateControl.XPath(string xPathExpression, IXmlNamespaceResolver resolver)", "object MyTemplateControl.UntrustedInputGoesHere(string untrustedInput)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDataSource_XPath_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

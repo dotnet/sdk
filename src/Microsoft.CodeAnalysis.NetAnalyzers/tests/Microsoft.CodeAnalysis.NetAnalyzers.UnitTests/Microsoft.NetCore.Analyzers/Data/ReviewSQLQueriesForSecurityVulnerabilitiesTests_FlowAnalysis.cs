@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Data.ReviewSqlQueriesForSecurityVulnerabilities,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,7 +13,8 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Data.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+    [TestClass]
     public class ReviewSQLQueriesForSecurityVulnerabilitiesTests_FlowAnalysis : ReviewSQLQueriesForSecurityVulnerabilitiesTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invokedSymbol, string containingMethod)
@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Data.UnitTests
 #pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalWithConstantInitializer_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -72,7 +72,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalWithConstantAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -115,7 +115,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ParameterWithConstantAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -156,7 +156,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalWithAllConstantAssignments_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -206,7 +206,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ParameterWithAllConstantAssignments_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -258,7 +258,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ConstantFieldInitializer_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -301,7 +301,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ConversionsInInitializer_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -344,7 +344,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ImplicitUserDefinedConversionsInInitializer_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -416,7 +416,7 @@ End Class",
             GetBasicResultAt(140, 18, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ExplicitUserDefinedConversionsInInitializer_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -490,7 +490,7 @@ End Class",
             GetBasicResultAt(142, 18, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalInitializerWithInvocation_DiagnosticAsync()
         {
             // Currently, we do not do any interprocedural or context sensitive flow analysis.
@@ -541,7 +541,7 @@ End Module",
             GetBasicResultAt(134, 18, "Sub Adapter1.New(cmd As String, command As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalWithByRefEscape_DiagnosticAsync()
         {
             // Local/parameter passed by ref/out are assumed to be non-constant after the usage.
@@ -606,7 +606,7 @@ End Module",
             GetBasicResultAt(139, 13, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_StringEmptyInitializer_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -647,7 +647,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_NameOfExpression_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -688,7 +688,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_NullOrDefaultValue_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -732,7 +732,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_InterpolatedString_Constant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -781,7 +781,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_InterpolatedString_NonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -826,7 +826,7 @@ End Module",
             GetBasicResultAt(135, 18, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_BinaryAdd_Constant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -875,7 +875,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_BinaryAdd_NonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -930,7 +930,7 @@ End Module",
             GetBasicResultAt(139, 13, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_NullCoalesce_Constant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -981,7 +981,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_NullCoalesce_NonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1044,7 +1044,7 @@ End Module",
             GetBasicResultAt(142, 13, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/1569")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/1569")]
         public async Task FlowAnalysis_ConditionalAccess_Constant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1110,7 +1110,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ConditionalAccess_NonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1198,7 +1198,7 @@ End Module",
             GetBasicResultAt(150, 13, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_WhileLoop_NonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1248,7 +1248,7 @@ End Module",
             GetBasicResultAt(135, 22, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ForLoop_NonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1298,7 +1298,7 @@ End Module",
             GetBasicResultAt(135, 22, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_ForEachLoop_NonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1348,7 +1348,7 @@ End Module",
             GetBasicResultAt(135, 22, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_Conditional_Constant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1396,7 +1396,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalFunctionInvocation_EmptyBody_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1429,7 +1429,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalFunctionInvocation_ChangesCapturedValueToConstant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1463,7 +1463,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalFunctionInvocation_ChangesCapturedValueToNonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1520,7 +1520,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalFunctionInvocation_ChangesCapturedValueContextSensitive_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1554,7 +1554,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LocalFunctionInvocation_ReturnValueContextSensitive_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1588,7 +1588,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LambdaInvocation_EmptyBody_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1642,7 +1642,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LambdaInvocation_ChangesCapturedValueToConstant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1698,7 +1698,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LambdaInvocation_ChangesCapturedValueToNonConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1800,7 +1800,7 @@ End Module",
             GetBasicResultAt(160, 13, "Sub Command3.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LambdaInvocation_ChangesCapturedValueContextSensitive_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1856,7 +1856,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_LambdaInvocation_ReturnValueContextSensitive_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1912,8 +1912,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsToAnalysis_CopySemanticsForString_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1960,8 +1960,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceTypeCopy_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2008,8 +2008,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueTypeCopy_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2056,8 +2056,8 @@ Structure Test
 End Structure");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceTypeNestingCopy_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2138,8 +2138,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueTypeNestingCopy_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2223,8 +2223,8 @@ End Class",
             GetBasicResultAt(153, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
 
         public async Task FlowAnalysis_PointsTo_ValueTypeNestingCopy_02_DiagnosticAsync()
         {
@@ -2305,8 +2305,8 @@ End Class",
             GetBasicResultAt(149, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceTypeAllocationAndInitializer_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2367,8 +2367,8 @@ End Class",
             GetBasicResultAt(143, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceTypeAllocationAndInitializer_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2439,8 +2439,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueTypeAllocationAndInitializer_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2501,8 +2501,8 @@ End Class",
             GetBasicResultAt(143, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueTypeAllocationAndInitializer_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2574,8 +2574,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueTypeAllocationAndInitializer_02_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2651,8 +2651,8 @@ Structure Test
 End Structure");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceTypeCollectionInitializer_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2732,8 +2732,8 @@ End Class",
             GetBasicResultAt(151, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/1570")]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/1570")]
         public async Task FlowAnalysis_PointsTo_ReferenceTypeCollectionInitializer_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2805,8 +2805,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_DynamicObjectCreation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2846,8 +2846,8 @@ class Test
             GetCSharpResultAt(112, 21, "Command1.Command1(string cmd, string parameter2)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_DynamicObjectCreation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2892,8 +2892,8 @@ class Test
 ");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_AnonymousObjectCreation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2940,8 +2940,8 @@ End Class",
             GetBasicResultAt(135, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task CSharp_FlowAnalysis_PointsTo_AnonymousObjectCreation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -2973,8 +2973,8 @@ class Test
 ");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/1568")]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/1568")]
         public async Task VisualBasic_FlowAnalysis_PointsTo_AnonymousObjectCreation_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync($@"
@@ -3003,8 +3003,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_BaseDerived__DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3080,8 +3080,8 @@ End Class",
             GetBasicResultAt(150, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_BaseDerived_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3153,8 +3153,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_BaseDerived_IfStatement_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3246,8 +3246,8 @@ End Class",
             GetBasicResultAt(156, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_BaseDerived_IfStatement_02_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3346,8 +3346,8 @@ End Class",
             GetBasicResultAt(159, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_BaseDerived_IfStatement_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -3403,7 +3403,7 @@ class Test
                     // /0/Test0.cs(126,21): warning CA2100: Review if the query string passed to 'Command1.Command1(string cmd, string parameter2)' in 'M1', accepts any user input
                     GetCSharpResultAt(126, 21, "Command1.Command1(string cmd, string parameter2)", "M1"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -3453,11 +3453,11 @@ End Class",
                     // /0/Test0.vb(159,28): warning CA2100: Review if the query string passed to 'Sub Command1.New(cmd As String, parameter2 As String)' in 'M1', accepts any user input
                     GetBasicResultAt(159, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1")
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_ThisInstanceReference_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3529,8 +3529,8 @@ End Class",
             GetBasicResultAt(146, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_ThisInstanceReference_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3616,8 +3616,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueType_ThisInstanceReference_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3689,8 +3689,8 @@ End Structure",
             GetBasicResultAt(146, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueType_ThisInstanceReference_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3776,8 +3776,8 @@ Structure Test
 End Structure");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_InvocationInstanceReceiver_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3865,8 +3865,8 @@ End Class",
             GetBasicResultAt(150, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueType_InvocationInstanceReceiver_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -3954,8 +3954,8 @@ End Structure",
             GetBasicResultAt(150, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_Argument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4064,8 +4064,8 @@ End Class",
             GetBasicResultAt(155, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceType_ThisArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4153,8 +4153,8 @@ End Class",
             GetBasicResultAt(150, 13, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueType_Argument_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4237,8 +4237,8 @@ Structure Test
 End Structure");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueType_Argument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4312,8 +4312,8 @@ End Structure",
             GetBasicResultAt(145, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ValueType_ThisArgument_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4393,8 +4393,8 @@ Structure Test
 End Structure");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ConstantArrayElement_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4437,8 +4437,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_NonConstantArrayElement_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4485,8 +4485,8 @@ End Module",
             GetBasicResultAt(135, 18, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/1577")]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/1577")]
         public async Task FlowAnalysis_PointsTo_ConstantArrayElement_NonConstantIndex_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4529,8 +4529,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_NonConstantArrayElement_NonConstantIndex_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4579,8 +4579,8 @@ End Module",
             GetBasicResultAt(136, 18, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ArrayInitializer_ConstantArrayElement_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4623,8 +4623,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ArrayInitializer_NonConstantArrayElement_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4669,8 +4669,8 @@ End Module",
             GetBasicResultAt(135, 18, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ConstantArrayElement_ArrayFieldInReferenceType_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4752,8 +4752,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_NonConstantArrayElement_ArrayFieldInReferenceType_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4851,8 +4851,8 @@ End Class",
             GetBasicResultAt(156, 13, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ConstantArrayElement_ArrayFieldInValueType_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -4934,8 +4934,8 @@ Structure Test
 End Structure");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_NonConstantArrayElement_ArrayFieldInValueType_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5033,8 +5033,8 @@ End Structure",
             GetBasicResultAt(156, 13, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ConstantArrayElement_IndexerFieldInReferenceType_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5137,8 +5137,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_NonConstantArrayElement_IndexerFieldInReferenceType_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5247,7 +5247,7 @@ End Class",
             GetBasicResultAt(166, 13, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceTypeArray_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5325,8 +5325,8 @@ End Class
             GetBasicResultAt(148, 15, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_ReferenceTypeArray_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5395,8 +5395,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_AutoGeneratedProperty_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5442,8 +5442,8 @@ Class Test
 End Class");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PointsTo_CustomProperty_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5506,8 +5506,8 @@ End Class",
             GetBasicResultAt(146, 18, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ParameterComparedWithConstant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5586,8 +5586,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ParameterComparedWithConstant_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5648,8 +5648,8 @@ End Module",
             GetBasicResultAt(138, 23, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ParameterComparedWithConstant_WithNegation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5728,8 +5728,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ParameterComparedWithConstant_WithNegation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5807,8 +5807,8 @@ End Module",
             GetBasicResultAt(143, 23, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ParameterComparedWithLocal_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5889,8 +5889,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ParameterComparedWithLocal_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -5989,7 +5989,7 @@ End Module",
             GetBasicResultAt(150, 23, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_NestedIfElse_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -6070,8 +6070,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_NestedIfElse_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -6206,8 +6206,8 @@ End Class",
             GetBasicResultAt(166, 33, "Sub Command4.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_LoopsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -6361,7 +6361,7 @@ End Module",
             GetBasicResultAt(188, 17, "Sub Command2.New(cmd As String, parameter2 As String)", "M5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_SwitchStatementAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -6579,7 +6579,7 @@ End Module",
             GetBasicResultAt(196, 28, "Sub Command2.New(cmd As String, parameter2 As String)", "M4"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FlowAnalysis_TryCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -6809,8 +6809,8 @@ End Module",
             GetBasicResultAt(209, 28, "Sub Command2.New(cmd As String, parameter2 As String)", "M6"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_CatchFilterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -6884,9 +6884,9 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_CopyAnalysis_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -6945,7 +6945,7 @@ class Test
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -6994,12 +6994,12 @@ End Module"
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_CopyAnalysis_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -7126,7 +7126,7 @@ dotnet_code_quality.copy_analysis = true") },
                         GetCSharpResultAt(177, 25, "Command7.Command7(string cmd, string parameter2)", "M1"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -7240,11 +7240,11 @@ dotnet_code_quality.copy_analysis = true") },
                         GetBasicResultAt(204, 32, "Sub Command7.New(cmd As String, parameter2 As String)", "M1"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ConditionalOr_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -7328,8 +7328,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ConditionalOr_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -7439,8 +7439,8 @@ End Module",
             GetBasicResultAt(158, 22, "Sub Command2.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ConditionalOr_02_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -7575,8 +7575,8 @@ End Module",
             GetBasicResultAt(162, 22, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ConditionalAnd_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -7656,8 +7656,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ConditionalAnd_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -7813,8 +7813,8 @@ End Module",
             GetBasicResultAt(172, 22, "Sub Command2.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ConditionalAnd_02_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -7954,8 +7954,8 @@ End Module",
             GetBasicResultAt(164, 22, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_Conditional_WithNegation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -8038,8 +8038,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ConditionalAndOrNegation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -8113,8 +8113,8 @@ Module Test
 End Module");
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ConditionalAndOrNegation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -8284,8 +8284,8 @@ End Module",
             GetBasicResultAt(187, 32, "Sub Command6.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ComparisonInNonCondition_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -8330,8 +8330,8 @@ End Module",
             GetBasicResultAt(134, 18, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ComparisonInNonCondition_02_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -8365,8 +8365,8 @@ class Test
             GetCSharpResultAt(106, 13, "Command2.Command2(string cmd, string parameter2)", "M1"));
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ContractCheck_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -8426,7 +8426,7 @@ class Test
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -8478,11 +8478,11 @@ End Module"
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-        [Fact]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
+        [TestMethod]
         public async Task FlowAnalysis_PredicateAnalysis_ContractCheck_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"

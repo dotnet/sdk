@@ -1,21 +1,20 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseConcreteTypeAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    public static partial class UseConcreteTypeTests
+    public partial class UseConcreteTypeTests
     {
-        [Fact]
+        [TestMethod]
         [WorkItem(6904, "https://github.com/dotnet/roslyn-analyzers/issues/6904")]
-        public static async Task AwaitBug()
+        public async Task AwaitBug()
         {
             await TestCSAsync(@"
                 using System.Threading.Tasks;
@@ -48,9 +47,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(7078, "https://github.com/dotnet/roslyn-analyzers/issues/7078")]
-        public static async Task IndexerBug()
+        public async Task IndexerBug()
         {
             await TestCSAsync(@"
                 using System.Collections.Generic;
@@ -107,9 +106,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 .WithArguments("result", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(7127, "https://github.com/dotnet/roslyn-analyzers/issues/7127")]
-        public static async Task ImmutableArrayBug()
+        public async Task ImmutableArrayBug()
         {
             await TestCSAsync(@"
                 using System.Collections.Generic;
@@ -130,9 +129,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 .WithArguments("CreateImmutableArrayPrivately", "System.Collections.Generic.IEnumerable<int>", "System.Collections.Immutable.ImmutableArray<int>"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6751, "https://github.com/dotnet/roslyn-analyzers/issues/6751")]
-        public static async Task MultipleReturns()
+        public async Task MultipleReturns()
         {
             await TestCSAsync(@"
                 using System;
@@ -163,9 +162,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6565, "https://github.com/dotnet/roslyn-analyzers/issues/6565")]
-        public static async Task DiscoverArrayUpgrades()
+        public async Task DiscoverArrayUpgrades()
         {
             await TestCSAsync(@"
                 using System;
@@ -183,9 +182,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 .WithArguments("GetListPrivate", "System.Collections.Generic.IList<string>", "string[]"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6687, "https://github.com/dotnet/roslyn-analyzers/issues/6687")]
-        public static async Task ShouldNotTrigger_ConflictingOverloads()
+        public async Task ShouldNotTrigger_ConflictingOverloads()
         {
             await TestCSAsync(@"
                 abstract class Base
@@ -211,9 +210,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6704, "https://github.com/dotnet/roslyn-analyzers/issues/6704")]
-        public static async Task ShouldNotTrigger_ExplicitInterfaceImplementation()
+        public async Task ShouldNotTrigger_ExplicitInterfaceImplementation()
         {
             await TestCSAsync(@"
                 class Class1
@@ -243,9 +242,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6659, "https://github.com/dotnet/roslyn-analyzers/issues/6659")]
-        public static async Task ShouldNotTrigger_Visibility()
+        public async Task ShouldNotTrigger_Visibility()
         {
             await TestCSAsync(@"
                 internal class C
@@ -269,8 +268,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger_VisibilityNestedTypes()
+        [TestMethod]
+        public async Task ShouldNotTrigger_VisibilityNestedTypes()
         {
             await TestCSAsync(@"
                 using System;
@@ -295,8 +294,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger_VirtualOverrides()
+        [TestMethod]
+        public async Task ShouldNotTrigger_VirtualOverrides()
         {
             const string Source = @"
                 internal class Foo {}
@@ -315,8 +314,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger_ParameterAssignment()
+        [TestMethod]
+        public async Task ShouldNotTrigger_ParameterAssignment()
         {
             const string Source = @"
                 class Foo
@@ -335,8 +334,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger_ConflictingReturns()
+        [TestMethod]
+        public async Task ShouldNotTrigger_ConflictingReturns()
         {
             const string Source = @"
                 using System;
@@ -357,8 +356,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger_Switch()
+        [TestMethod]
+        public async Task ShouldNotTrigger_Switch()
         {
             const string Source = @"
                 using System.Collections.Generic;
@@ -382,8 +381,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger_ValidatePublicSymbolUsage()
+        [TestMethod]
+        public async Task ShouldNotTrigger_ValidatePublicSymbolUsage()
         {
             const string Source = @"
 #nullable enable
@@ -428,16 +427,16 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
         }
 
-        [Theory]
-        [InlineData("private", "", true)]
-        [InlineData("private", "private", true)]
-        [InlineData("private", "public", false)]
-        [InlineData("private", "public,private", true)]
-        [InlineData("public", "", false)]
-        [InlineData("public", "private", false)]
-        [InlineData("public", "public", true)]
-        [InlineData("public", "public,private", true)]
-        public static async Task ConfigTest(string accessibility, string editorConfigText, bool trigger)
+        [TestMethod]
+        [DataRow("private", "", true)]
+        [DataRow("private", "private", true)]
+        [DataRow("private", "public", false)]
+        [DataRow("private", "public,private", true)]
+        [DataRow("public", "", false)]
+        [DataRow("public", "private", false)]
+        [DataRow("public", "public", true)]
+        [DataRow("public", "public,private", true)]
+        public async Task ConfigTest(string accessibility, string editorConfigText, bool trigger)
         {
             var source = $@"
                 namespace Example
@@ -496,8 +495,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             }
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger1()
+        [TestMethod]
+        public async Task ShouldNotTrigger1()
         {
             const string Source = @"
 #nullable enable
@@ -530,8 +529,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger2()
+        [TestMethod]
+        public async Task ShouldNotTrigger2()
         {
             const string Source = @"
 #nullable enable
@@ -572,8 +571,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger3()
+        [TestMethod]
+        public async Task ShouldNotTrigger3()
         {
             const string Source = @"
 #nullable enable
@@ -603,8 +602,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger4()
+        [TestMethod]
+        public async Task ShouldNotTrigger4()
         {
             const string Source = @"
 #nullable enable
@@ -634,8 +633,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
-        public static async Task ShouldNotTrigger5()
+        [TestMethod]
+        public async Task ShouldNotTrigger5()
         {
             const string Source = @"
 #nullable enable
@@ -663,9 +662,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(50328, "https://github.com/dotnet/sdk/issues/50328")]
-        public static async Task ShouldNotTrigger6()
+        public async Task ShouldNotTrigger6()
         {
             const string Source = @"
 #nullable enable
@@ -689,8 +688,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact]
-        public static async Task ShouldTrigger_InterpolatedString_Mameof()
+        [TestMethod]
+        public async Task ShouldTrigger_InterpolatedString_Mameof()
         {
             const string Source = @"
                 namespace Example
@@ -719,8 +718,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("M1", "object", "string"));
         }
 
-        [Fact]
-        public static async Task ShouldTrigger1()
+        [TestMethod]
+        public async Task ShouldTrigger1()
         {
             const string Source = @"
                 namespace Example
@@ -756,8 +755,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("foo", "Example.IFoo<T>", "Example.Foo<int>"));
         }
 
-        [Fact]
-        public static async Task ShouldTrigger2()
+        [TestMethod]
+        public async Task ShouldTrigger2()
         {
             const string Source = @"
                 namespace Example
@@ -792,8 +791,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("foo", "Example.IFoo<T>", "Example.Foo<T>"));
         }
 
-        [Fact]
-        public static async Task ShouldTrigger3()
+        [TestMethod]
+        public async Task ShouldTrigger3()
         {
             const string Source = @"
 #nullable enable
@@ -823,8 +822,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("GetStream", "System.IO.Stream", "System.IO.MemoryStream"));
         }
 
-        [Fact]
-        public static async Task ShouldTrigger4()
+        [TestMethod]
+        public async Task ShouldTrigger4()
         {
             const string Source = @"
 #nullable enable
@@ -854,8 +853,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("GetStream", "System.IO.Stream?", "System.IO.MemoryStream?"));
         }
 
-        [Fact]
-        public static async Task Params()
+        [TestMethod]
+        public async Task Params()
         {
             const string Source = @"
                 namespace Example
@@ -897,8 +896,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("foo", "Example.IFoo", "Example.Foo"));
         }
 
-        [Fact]
-        public static async Task Conditional()
+        [TestMethod]
+        public async Task Conditional()
         {
             const string Source = @"
 #nullable enable
@@ -959,8 +958,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("Method1", "Example.IFoo?", "Example.Foo?"));
         }
 
-        [Fact]
-        public static async Task Tuples()
+        [TestMethod]
+        public async Task Tuples()
         {
             const string Source = @"
             namespace Example
@@ -1011,8 +1010,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("MethodTuple", "Example.IFoo", "Example.Foo"));
         }
 
-        [Fact]
-        public static async Task Locals()
+        [TestMethod]
+        public async Task Locals()
         {
             const string Source = @"
 #nullable enable
@@ -1110,8 +1109,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("l0", "Example.IFoo?", "Example.Foo?"));
         }
 
-        [Fact]
-        public static async Task Complex()
+        [TestMethod]
+        public async Task Complex()
         {
             const string Source = @"
 #pragma warning disable CS0619
@@ -1242,8 +1241,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     .WithArguments("l7", "Example.IFoo", "Example.Foo"));
         }
 
-        [Fact]
-        public static async Task Fields()
+        [TestMethod]
+        public async Task Fields()
         {
             const string Source = @"
 #nullable enable
@@ -1345,8 +1344,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("l0", "Example.IFoo?", "Example.Foo?"));
         }
 
-        [Fact]
-        public static async Task Properties()
+        [TestMethod]
+        public async Task Properties()
         {
             const string Source = @"
 #nullable enable
@@ -1414,8 +1413,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("P5", "Example.IFoo?", "Example.Foo?"));
         }
 
-        [Fact]
-        public static async Task Methods()
+        [TestMethod]
+        public async Task Methods()
         {
             const string Source = @"
             using System;
@@ -1472,8 +1471,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         .WithArguments("M3", "Example.IFoo", "Example.Foo"));
         }
 
-        [Fact]
-        public static async Task OutParams()
+        [TestMethod]
+        public async Task OutParams()
         {
             const string Source = @"
             namespace Example
@@ -1511,8 +1510,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
-        [Fact, WorkItem(6852, "https://github.com/dotnet/roslyn-analyzers/issues/6852")]
-        public static async Task ShouldNotCrashForInvocationsIntoMetadata()
+        [TestMethod, WorkItem(6852, "https://github.com/dotnet/roslyn-analyzers/issues/6852")]
+        public async Task ShouldNotCrashForInvocationsIntoMetadata()
         {
             const string Source = @"
 using System;
@@ -1539,7 +1538,7 @@ class C
             };
 
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task TestCSAsync(string source, string editorConfigText, params DiagnosticResult[] diagnosticResults)
@@ -1562,7 +1561,7 @@ class C
             };
 
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -4,20 +4,20 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.RecommendCaseInsensitiveStringComparisonAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpRecommendCaseInsensitiveStringComparisonFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class RecommendCaseInsensitiveStringComparison_CSharp_Tests : RecommendCaseInsensitiveStringComparison_Base_Tests
     {
-        [Theory]
-        [MemberData(nameof(DiagnosedAndFixedData))]
-        [MemberData(nameof(DiagnosedAndFixedInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedNamedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosedAndFixedData))]
+        [DynamicData(nameof(DiagnosedAndFixedInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedNamedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_Assign(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -43,11 +43,11 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosedAndFixedData))]
-        [MemberData(nameof(DiagnosedAndFixedInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedNamedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosedAndFixedData))]
+        [DynamicData(nameof(DiagnosedAndFixedInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedNamedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_Return(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -73,11 +73,11 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosedAndFixedImplicitBooleanData))]
-        [MemberData(nameof(DiagnosedAndFixedWithAppendedMethodData))]
-        [MemberData(nameof(DiagnosedAndFixedWithAppendedMethodInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedWithAppendedMethodNamedData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosedAndFixedImplicitBooleanData))]
+        [DynamicData(nameof(DiagnosedAndFixedWithAppendedMethodData))]
+        [DynamicData(nameof(DiagnosedAndFixedWithAppendedMethodInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedWithAppendedMethodNamedData))]
         public async Task Diagnostic_If(string diagnosedLine, string fixedLine, string appendedMethod)
         {
             string originalCode = $@"using System;
@@ -113,11 +113,11 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosedAndFixedData))]
-        [MemberData(nameof(DiagnosedAndFixedInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedNamedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosedAndFixedData))]
+        [DynamicData(nameof(DiagnosedAndFixedInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedNamedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_IgnoreResult(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -143,11 +143,11 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosedAndFixedStringLiteralsData))]
-        [MemberData(nameof(DiagnosedAndFixedStringLiteralsInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedStringLiteralsNamedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedStringLiteralsInvertedNamedData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosedAndFixedStringLiteralsData))]
+        [DynamicData(nameof(DiagnosedAndFixedStringLiteralsInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedStringLiteralsNamedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedStringLiteralsInvertedNamedData))]
         public async Task Diagnostic_StringLiterals_ReturnExpressionBody(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -163,11 +163,11 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosedAndFixedStringReturningMethodsData))]
-        [MemberData(nameof(DiagnosedAndFixedStringReturningMethodsInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedStringReturningMethodsNamedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedStringReturningMethodsInvertedNamedData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosedAndFixedStringReturningMethodsData))]
+        [DynamicData(nameof(DiagnosedAndFixedStringReturningMethodsInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedStringReturningMethodsNamedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedStringReturningMethodsInvertedNamedData))]
         public async Task Diagnostic_StringReturningMethods_Discard(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -193,12 +193,12 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosedAndFixedParenthesizedData))]
-        [MemberData(nameof(DiagnosedAndFixedParenthesizedInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedParenthesizedNamedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedParenthesizedNamedInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedParenthesizedComplexCasesData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosedAndFixedParenthesizedData))]
+        [DynamicData(nameof(DiagnosedAndFixedParenthesizedInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedParenthesizedNamedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedParenthesizedNamedInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedParenthesizedComplexCasesData))]
         public async Task Diagnostic_Parenthesized_ReturnCastedToString(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -226,8 +226,8 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(CSharpDiagnosedAndFixedEqualityToEqualsData))]
+        [TestMethod]
+        [DynamicData(nameof(CSharpDiagnosedAndFixedEqualityToEqualsData))]
         public async Task Diagnostic_Equality_To_Equals(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -255,7 +255,7 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_Equality_To_Equals_Trivia()
         {
             string originalCode = $@"using System;
@@ -290,12 +290,12 @@ class C
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(NoDiagnosticData))]
-        [InlineData("\"aBc\".CompareTo(null)")]
-        [InlineData("\"aBc\".ToUpperInvariant().CompareTo((object)null)")]
-        [InlineData("\"aBc\".CompareTo(value: (object)\"cDe\")")]
-        [InlineData("\"aBc\".CompareTo(strB: \"cDe\")")]
+        [TestMethod]
+        [DynamicData(nameof(NoDiagnosticData))]
+        [DataRow("\"aBc\".CompareTo(null)")]
+        [DataRow("\"aBc\".ToUpperInvariant().CompareTo((object)null)")]
+        [DataRow("\"aBc\".CompareTo(value: (object)\"cDe\")")]
+        [DataRow("\"aBc\".CompareTo(strB: \"cDe\")")]
         public async Task NoDiagnostic_All(string ignoredLine)
         {
             string originalCode = $@"using System;
@@ -312,8 +312,8 @@ class C
             await VerifyNoDiagnosticCSharpAsync(originalCode);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticNoFixStartsWithContainsIndexOfData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticNoFixStartsWithContainsIndexOfData))]
         public async Task Diagnostic_NoFix_StartsWithContainsIndexOf(string diagnosedLine)
         {
             string originalCode = $@"using System;
@@ -331,11 +331,11 @@ class C
             await VerifyFixCSharpAsync(originalCode, originalCode);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticNoFixCompareToData))]
-        [MemberData(nameof(DiagnosticNoFixCompareToInvertedData))]
-        [MemberData(nameof(CSharpDiagnosticNoFixCompareToNamedData))]
-        [MemberData(nameof(CSharpDiagnosticNoFixCompareToInvertedNamedData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticNoFixCompareToData))]
+        [DynamicData(nameof(DiagnosticNoFixCompareToInvertedData))]
+        [DynamicData(nameof(CSharpDiagnosticNoFixCompareToNamedData))]
+        [DynamicData(nameof(CSharpDiagnosticNoFixCompareToInvertedNamedData))]
         public async Task Diagnostic_NoFix_CompareTo(string diagnosedLine)
         {
             string originalCode = $@"using System;
@@ -353,8 +353,8 @@ class C
             await VerifyFixCSharpAsync(originalCode, originalCode);
         }
 
-        [Theory]
-        [MemberData(nameof(CSharpDiagnosticNoFixEqualsData))]
+        [TestMethod]
+        [DynamicData(nameof(CSharpDiagnosticNoFixEqualsData))]
         public async Task Diagnostic_NoFix_Equals(string diagnosedLine)
         {
             string originalCode = $@"using System;
@@ -372,7 +372,7 @@ class C
             await VerifyFixCSharpAsync(originalCode, originalCode);
         }
 
-        [Fact, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
+        [TestMethod, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
         public Task Net48_Contains_NoDiagnostic()
         {
             const string code = """
@@ -392,12 +392,12 @@ class C
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
-        [InlineData("StartsWith")]
-        [InlineData("IndexOf")]
+        [TestMethod, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
+        [DataRow("StartsWith")]
+        [DataRow("IndexOf")]
         public Task Net48_Diagnostic(string method)
         {
             var code = $$"""
@@ -429,7 +429,7 @@ class C
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyNoDiagnosticCSharpAsync(string originalSource)
@@ -440,7 +440,7 @@ class C
                 FixedCode = originalSource
             };
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyFixCSharpAsync(string originalSource, string fixedSource)
@@ -452,7 +452,7 @@ class C
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
             };
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

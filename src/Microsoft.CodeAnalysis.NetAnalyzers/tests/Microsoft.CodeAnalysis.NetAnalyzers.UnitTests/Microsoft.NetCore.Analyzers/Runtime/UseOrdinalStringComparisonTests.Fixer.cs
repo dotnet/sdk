@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseOrdinalStringComparisonAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseOrdinalStringComparisonFixer>;
@@ -13,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseOrdinalStringComparisonFixerTests
     {
         #region Code fix tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixStaticEqualsOverloadCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -45,7 +45,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixStaticEqualsOverloadBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -75,7 +75,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixInstanceEqualsOverloadCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -105,7 +105,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixInstanceEqualsOverloadBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -139,7 +139,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixStaticCompareOverloadCSharpAsync()
         {
             await new VerifyCS.Test
@@ -209,10 +209,10 @@ class C
                     // Not everything is fixed; we use markup to indicate the remaining ones.
                     MarkupHandling = MarkupMode.Allow,
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixStaticCompareOverloadBasicAsync()
         {
             await new VerifyVB.Test
@@ -300,7 +300,7 @@ End Class
                     // Not everything is fixed; we use markup to indicate the remaining ones.
                     MarkupHandling = MarkupMode.Allow,
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion

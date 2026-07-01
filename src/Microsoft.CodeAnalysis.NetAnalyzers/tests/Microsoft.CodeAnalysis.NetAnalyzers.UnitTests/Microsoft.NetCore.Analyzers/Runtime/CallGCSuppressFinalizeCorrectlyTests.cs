@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.CallGCSuppressFinalizeCorrectlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpCallGCSuppressFinalizeCorrectlyFixer>;
@@ -15,6 +14,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class CallGCSuppressFinalizeCorrectlyTests
     {
         private const string GCSuppressFinalizeMethodSignature_CSharp = "GC.SuppressFinalize(object)";
@@ -36,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region NoDiagnosticCases
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithoutFinalizer_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -60,7 +60,7 @@ public class DisposableWithoutFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithoutFinalizer_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -82,7 +82,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithFinalizer_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -111,7 +111,7 @@ public class DisposableWithFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithFinalizer_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -141,7 +141,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncDisposableWithFinalizer_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -179,10 +179,10 @@ class MyAsyncDisposable : IAsyncDisposable
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
                 TestCode = code
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithoutFinalizer_CSharp_NoDiagnosticAsync()
         {
 
@@ -207,7 +207,7 @@ public sealed class SealedDisposableWithoutFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithoutFinalizer_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -229,7 +229,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithFinalizer_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -258,7 +258,7 @@ public sealed class SealedDisposableWithFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithFinalizer_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -288,7 +288,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalDisposableWithoutFinalizer_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -312,7 +312,7 @@ internal class InternalDisposableWithoutFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalDisposableWithoutFinalizer_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -334,7 +334,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PrivateDisposableWithoutFinalizer_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -361,7 +361,7 @@ public static class NestedClassHolder
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PrivateDisposableWithoutFinalizer_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -387,7 +387,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFinalize_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -410,7 +410,7 @@ public sealed class SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFin
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithoutFinalizerAndWithoutCallingSuppressFinalize_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -431,7 +431,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableStruct_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -454,7 +454,7 @@ public struct DisposableStruct : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableStruct_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -475,7 +475,7 @@ End Structure";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableCallingGCSuppressFinalizeInConstructor_CSharp_NoDiagnosticAsync()
         {
             var code = @"
@@ -494,7 +494,7 @@ public sealed class SealedDisposableCallingGCSuppressFinalizeInConstructor : Com
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableCallingGCSuppressFinalizeInConstructor_Basic_NoDiagnosticAsync()
         {
             var code = @"
@@ -512,7 +512,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Disposable_ImplementedExplicitly_NoDiagnosticAsync()
         {
             var csharpCode = @"
@@ -553,7 +553,7 @@ End Class";
 
         #region DiagnosticCases
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithFinalizer_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -594,7 +594,7 @@ using System.ComponentModel;
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SealedDisposableWithFinalizer_Basic_DiagnosticAsync()
         {
             var code = @"
@@ -636,7 +636,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithFinalizer_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -672,7 +672,7 @@ public class DisposableWithFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithFinalizer_Basic_DiagnosticAsync()
         {
             var code = @"
@@ -710,7 +710,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalDisposableWithFinalizer_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -746,7 +746,7 @@ internal class InternalDisposableWithFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalDisposableWithFinalizer_Basic_DiagnosticAsync()
         {
             var code = @"
@@ -784,7 +784,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PrivateDisposableWithFinalizer_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -823,7 +823,7 @@ public static class NestedClassHolder
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PrivateDisposableWithFinalizer_Basic_DiagnosticAsync()
         {
             var code = @"
@@ -865,7 +865,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithoutFinalizer_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -896,7 +896,7 @@ public class DisposableWithoutFinalizer : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableWithoutFinalizer_Basic_DiagnosticAsync()
         {
             var code = @"
@@ -926,7 +926,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableComponent_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -951,7 +951,7 @@ public class DisposableComponent : Component, IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableComponent_Basic_DiagnosticAsync()
         {
             var code = @"
@@ -980,7 +980,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotADisposableClass_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -1004,7 +1004,7 @@ public class NotADisposableClass
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotADisposableClass_Basic_DiagnosticAsync()
         {
             var code = @"
@@ -1027,7 +1027,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -1089,7 +1089,7 @@ public class DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces : IDispo
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult1, diagnosticResult2, diagnosticResult3, diagnosticResult4);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableClassThatCallsGCSuppressFinalizeInTheWrongPlaces_Basic_DiagnosticAsync()
         {
             var code = @"
@@ -1147,7 +1147,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(code, diagnosticResult1, diagnosticResult2, diagnosticResult3, diagnosticResult4);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments_CSharp_DiagnosticAsync()
         {
             var code = @"
@@ -1184,7 +1184,7 @@ public class DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments : I
             await VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableClassThatCallsGCSuppressFinalizeWithTheWrongArguments_Basic_DiagnosticAsync()
         {
             var code = @"

@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.AvoidOutParameters,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class AvoidOutParametersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task SimpleCases_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -66,12 +66,12 @@ Public Class C
 End Class");
         }
 
-        [Theory]
-        [InlineData("public", "dotnet_code_quality.api_surface = private")]
-        [InlineData("private", "dotnet_code_quality.api_surface = internal, public")]
-        [InlineData("public", "dotnet_code_quality.CA1021.api_surface = private")]
-        [InlineData("private", "dotnet_code_quality.CA1021.api_surface = internal, public")]
-        [InlineData("public", @"dotnet_code_quality.api_surface = all
+        [TestMethod]
+        [DataRow("public", "dotnet_code_quality.api_surface = private")]
+        [DataRow("private", "dotnet_code_quality.api_surface = internal, public")]
+        [DataRow("public", "dotnet_code_quality.CA1021.api_surface = private")]
+        [DataRow("private", "dotnet_code_quality.CA1021.api_surface = internal, public")]
+        [DataRow("public", @"dotnet_code_quality.api_surface = all
                                 dotnet_code_quality.CA1021.api_surface = private")]
         public async Task ApiSurface_NoDiagnosticAsync(string accessibility, string editorConfigText)
         {
@@ -96,7 +96,7 @@ public class C
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -119,17 +119,17 @@ End Class"
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("private", "dotnet_code_quality.api_surface = private")]
-        [InlineData("internal", "dotnet_code_quality.api_surface = internal")]
-        [InlineData("public", "dotnet_code_quality.api_surface = public")]
-        [InlineData("private", "dotnet_code_quality.CA1021.api_surface = private")]
-        [InlineData("internal", "dotnet_code_quality.CA1021.api_surface = internal")]
-        [InlineData("public", "dotnet_code_quality.CA1021.api_surface = public")]
-        [InlineData("public", @"dotnet_code_quality.api_surface = private
+        [TestMethod]
+        [DataRow("private", "dotnet_code_quality.api_surface = private")]
+        [DataRow("internal", "dotnet_code_quality.api_surface = internal")]
+        [DataRow("public", "dotnet_code_quality.api_surface = public")]
+        [DataRow("private", "dotnet_code_quality.CA1021.api_surface = private")]
+        [DataRow("internal", "dotnet_code_quality.CA1021.api_surface = internal")]
+        [DataRow("public", "dotnet_code_quality.CA1021.api_surface = public")]
+        [DataRow("public", @"dotnet_code_quality.api_surface = private
                                 dotnet_code_quality.CA1021.api_surface = public")]
         public async Task ApiSurface_DiagnosticAsync(string accessibility, string editorConfigText)
         {
@@ -154,7 +154,7 @@ public class C
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             if (accessibility.Equals("internal", System.StringComparison.Ordinal))
             {
@@ -182,10 +182,10 @@ End Class"
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleOut_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -220,7 +220,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutAndRef_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -253,7 +253,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Ref_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -271,7 +271,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TryPattern_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -336,7 +336,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvalidTryPattern_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -380,7 +380,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deconstruct_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -394,7 +394,7 @@ public class Person
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeconstructExtensionMethod_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -412,7 +412,7 @@ public static class Ext
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvalidDeconstruct_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -425,7 +425,7 @@ public class Person
 }");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5854, "https://github.com/dotnet/roslyn-analyzers/issues/5854")]
         public async Task MethodIsOverrideOrInterfaceImplementation_NoDiagnosticAsync()
         {
@@ -489,7 +489,7 @@ public class InterfaceBothImplicitAndExplicitImpl : IInterface
 dotnet_code_quality.CA1021.api_surface = all
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             var vbSource = @"
 Imports System.Runtime.InteropServices
@@ -543,10 +543,10 @@ End Class
 dotnet_code_quality.CA1021.api_surface = all
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTryPatternInterface()
         {
             var source = @"
@@ -586,7 +586,7 @@ public class Try : ITry
 dotnet_code_quality.CA1021.api_surface = all
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

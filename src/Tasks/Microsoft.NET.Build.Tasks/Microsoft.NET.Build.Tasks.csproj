@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <PackageId>Microsoft.NET.Sdk</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
   </PropertyGroup>
@@ -12,6 +13,7 @@
     <Description>The MSBuild targets and properties for building .NET Core projects.</Description>
     <OutputType>Library</OutputType>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -60,7 +62,7 @@
     <PackageReference Include="NuGet.Build.Tasks.Pack" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
@@ -113,7 +115,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.NET.Build.Tasks.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.NET.Build.Tasks.Tests" />
     <InternalsVisibleTo Include="Microsoft.NET.Build.Tests" />
     <InternalsVisibleTo Include="Microsoft.NET.ToolPack.Tests" />
   </ItemGroup>

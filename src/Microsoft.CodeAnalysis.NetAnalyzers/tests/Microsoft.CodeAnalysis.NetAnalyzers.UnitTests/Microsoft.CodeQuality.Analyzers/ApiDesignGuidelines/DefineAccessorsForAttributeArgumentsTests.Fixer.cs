@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public partial class DefineAccessorsForAttributeArgumentsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_AddAccessorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -48,7 +48,7 @@ public sealed class NoAccessorTestAttribute : Attribute
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_AddAccessor1Async()
         {
             await new VerifyCS.Test
@@ -112,10 +112,10 @@ public sealed class SetterOnlyTestAttribute : Attribute
                     },
                 },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_MakeGetterPublicAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -159,7 +159,7 @@ public sealed class InternalGetterTestAttribute : Attribute
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_MakeGetterPublic2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -203,7 +203,7 @@ public sealed class InternalGetterTestAttribute : Attribute
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_MakeGetterPublic3Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -245,7 +245,7 @@ public sealed class InternalGetterTestAttribute : Attribute
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_MakeSetterInternalAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -289,7 +289,7 @@ public sealed class PublicSetterTestAttribute : Attribute
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_AddAccessorAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -324,7 +324,7 @@ Public NotInheritable Class NoAccessorTestAttribute
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_AddAccessor2Async()
         {
             await new VerifyVB.Test
@@ -386,10 +386,10 @@ End Class",
                 },
                 NumberOfIncrementalIterations = 2,
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_MakeGetterPublicAsync()
         {
             await new VerifyVB.Test
@@ -454,10 +454,10 @@ End Class",
                     },
                 },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_MakeGetterPublic2Async()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -505,7 +505,7 @@ Public NotInheritable Class InternalGetterTestAttribute
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_MakeGetterPublic3Async()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -547,7 +547,7 @@ Public NotInheritable Class InternalGetterTestAttribute
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_MakeSetterInternalAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

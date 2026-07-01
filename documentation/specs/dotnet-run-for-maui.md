@@ -1,4 +1,4 @@
-# `dotnet run` for .NET MAUI Scenarios
+# `dotnet run` and `dotnet test` for .NET MAUI Scenarios
 
 The current state of `dotnet run` for .NET MAUI projects is summarized
 by this issue from 2021:
@@ -82,6 +82,7 @@ devices`, or `xcrun devicectl list devices`._
     `ComputeAvailableDevices` MSBuild target.
 
 * `build`: unchanged, but is passed `-p:Device`.
+  Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
 * `deploy`
 
@@ -91,23 +92,69 @@ devices`, or `xcrun devicectl list devices`._
   * Call the MSBuild target, passing in the identifier for the selected
     `-p:Device` global MSBuild property.
 
+  * Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
+
   * This step needs to run, even with `--no-build`, as you may have
     selected a different device.
 
 * `ComputeRunArguments`: unchanged, but is passed `-p:Device`.
+  Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
 * `run`: unchanged. `ComputeRunArguments` should have set a valid
   `$(RunCommand)` and `$(RunArguments)` using the value supplied by
   `-p:Device`.
 
-## New `dotnet run` Command-line Switches
+## `dotnet test` Behavior
+
+`dotnet test` on a multi-targeted project already runs tests for all
+target frameworks. This is existing behavior which differs from `dotnet
+run`, which previously errored when multiple `$(TargetFrameworks)` were
+present and `-f` was not supplied.
+
+For .NET MAUI projects, `dotnet test` extends this behavior with
+device selection:
+
+* **No `$(TargetFramework)` prompt by default** — unlike `dotnet run`,
+  `dotnet test` does _not_ prompt for a target framework. It iterates
+  over all `$(TargetFrameworks)` as it does today.
+
+* **Device prompt per target framework** — for each target framework
+  that provides a `ComputeAvailableDevices` MSBuild target (e.g.,
+  `net11.0-android`, `net11.0-ios`), the user is prompted to select a
+  device. This means a project targeting both Android and iOS may
+  prompt twice.
+
+  * In non-interactive mode, this will error with a friendly message
+    suggesting the `--device` switch, same as `dotnet run`.
+
+* **`--device` forces a `$(TargetFramework)` prompt** — if `--device`
+  is passed, the user _must_ be prompted to select a single
+  `$(TargetFramework)`, because the device identifier is
+  platform-specific and the SDK cannot determine which target framework
+  it applies to.
+
+  * In non-interactive mode with `--device` but no `-f`, this will
+    error suggesting to supply `-f`.
+
+* **`-f` works as normal** — passing `-f` limits the test run to a
+  single target framework. If that framework provides
+  `ComputeAvailableDevices`, the user may be prompted for a device.
+
+* **`--list-devices`** works the same as with `dotnet run`.
+
+* **`-e` / `--environment`** — `dotnet test` already supports `-e` to
+  pass environment variables to the test process. This existing
+  behavior is unchanged.
+
+## New Command-line Switches
 
 So far, it feels like no new subcommand is needed. In interactive
 mode, `dotnet run` will now prompt to select a `$(TargetFramework)`
 for all multi-targeted projects. Platform-specific projects like
-Android, iOS, etc. will prompt for device selection.
+Android, iOS, etc. will prompt for device selection. `dotnet test`
+shares the `--list-devices` and `--device` switches described below.
 
-`dotnet run --list-devices` will:
+`dotnet run --list-devices` (or `dotnet test --list-devices`) will:
 
 * Prompt for `$(TargetFramework)` for multi-targeted projects just
   like when `--list-devices` is omitted.
@@ -138,6 +185,103 @@ A new `--device` switch will:
 
 * The iOS and Android workloads will know how to interpret `$(Device)`
   to select an appropriate device, emulator, or simulator.
+
+## Environment Variables
+
+The `dotnet run` command supports passing environment variables via the
+`-e` or `--environment` option:
+
+```dotnetcli
+dotnet run -e FOO=BAR -e ANOTHER=VALUE
+```
+
+These environment variables are:
+
+1. **Passed to the running application** - as process environment
+   variables when the app is launched.
+
+2. **Passed to MSBuild during build, deploy, and ComputeRunArguments** -
+   as `@(RuntimeEnvironmentVariable)` items that workloads can consume.
+   **This behavior is opt-in**: projects must declare the `RuntimeEnvironmentVariableSupport`
+   project capability to receive these items.
+
+```xml
+<ItemGroup>
+  <RuntimeEnvironmentVariable Include="FOO" Value="BAR" />
+  <RuntimeEnvironmentVariable Include="ANOTHER" Value="VALUE" />
+</ItemGroup>
+```
+
+This allows workloads (iOS, Android, etc.) to access environment
+variables during the `build`, `DeployToDevice`, and `ComputeRunArguments` target execution.
+
+### Opting In
+
+To receive environment variables as MSBuild items, projects must opt in by declaring
+the `RuntimeEnvironmentVariableSupport` project capability:
+
+```xml
+<ItemGroup>
+  <ProjectCapability Include="RuntimeEnvironmentVariableSupport" />
+</ItemGroup>
+```
+
+Mobile workloads (iOS, Android, etc.) should declare this capability in their SDK targets
+so that all projects using those workloads automatically opt in.
+
+Workloads can consume these items in their MSBuild targets:
+
+```xml
+<Target Name="DeployToDevice">
+  <!-- Access environment variables from dotnet run -e -->
+  <Message Text="Environment: @(RuntimeEnvironmentVariable->'%(Identity)=%(Value)')" />
+</Target>
+```
+
+### Implementation Details
+
+For the **build step**, which uses out-of-process MSBuild via `dotnet build`,
+environment variables are injected by creating a temporary `.props` file.
+The file is created in the project's `$(IntermediateOutputPath)` directory
+(e.g., `obj/Debug/net11.0-android/dotnet-run-env.props`). The path is
+obtained from the project evaluation performed during target framework and
+device selection. If `IntermediateOutputPath` is not available, the file
+falls back to the `obj/` directory.
+
+The file is passed to MSBuild via the `CustomBeforeMicrosoftCommonProps` property,
+ensuring the items are available early in evaluation.
+The temporary file is automatically deleted after the build completes.
+
+The generated props file looks like:
+
+```xml
+<Project>
+  <ItemGroup>
+    <RuntimeEnvironmentVariable Include="FOO" Value="BAR" />
+    <RuntimeEnvironmentVariable Include="ANOTHER" Value="VALUE" />
+  </ItemGroup>
+</Project>
+```
+
+For the **deploy step** (`DeployToDevice` target) and
+**ComputeRunArguments target**, which use in-process MSBuild,
+environment variables are added directly as
+`@(RuntimeEnvironmentVariable)` items to the `ProjectInstance` before
+invoking the target.
+
+## Binary Logs for Device Selection
+
+When using `-bl` with `dotnet run`, all MSBuild operations are logged to a single
+binlog file: device selection, build, deploy, and run argument computation.
+
+File naming for `dotnet run` binlogs:
+
+* `-bl:filename.binlog` creates `filename-dotnet-run.binlog`
+* `-bl` creates `msbuild-dotnet-run.binlog`
+
+Note: The build step may also create `msbuild.binlog` separately. Use
+`--no-build` with `-bl` to only capture run-specific MSBuild
+operations.
 
 ## What about Launch Profiles?
 

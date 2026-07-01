@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.ReviewCodeForLdapInjectionVulnerabilities,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,11 +13,12 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForLdapInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForLdapInjectionVulnerabilities, ReviewCodeForLdapInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForLdapInjectionVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -59,10 +59,10 @@ public partial class WebForm : System.Web.UI.Page
                         GetCSharpResultAt(16, 38, 9, 27, "DirectorySearcher.DirectorySearcher(string filter)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Params", "void WebForm.Page_Load(object sender, EventArgs e)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -102,10 +102,10 @@ End Class",
                         GetBasicResultAt(16, 45, 9, 34, "Sub DirectorySearcher.New(filter As String)", "Sub WebForm.Page_Load(send As Object, e As EventArgs)", "Property HttpRequest.Params As NameValueCollection", "Sub WebForm.Page_Load(send As Object, e As EventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DirectoryEntry_Path_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -125,7 +125,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(12, 9, 11, 24, "DirectoryEntry.DirectoryEntry(string path)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DirectoryEntry_Username_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -144,7 +144,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DirectorySearcher_Filter_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -165,7 +165,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(13, 9, 11, 24, "string DirectorySearcher.Filter", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DirectoryEntry_Path_Sanitized_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -186,7 +186,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AspNetCoreHttpRequest_DirectoryEntry_Path_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

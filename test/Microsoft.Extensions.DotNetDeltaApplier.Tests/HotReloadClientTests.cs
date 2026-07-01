@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.Test.MSTest.Utilities;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class HotReloadClientTests(ITestOutputHelper output)
+[TestClass]
+public class HotReloadClientTests
 {
+    public TestContext TestContext { get; set; } = null!;
     private sealed class Test : IAsyncDisposable
     {
         public readonly TestLogger Logger;
@@ -15,66 +18,39 @@ public class HotReloadClientTests(ITestOutputHelper output)
         private readonly CancellationTokenSource _cancellationSource;
         private readonly Task<Task> _listenerTaskFactory;
 
-        public Test(ITestOutputHelper output, TestHotReloadAgent agent)
+        public Test(TestContext testContext, TestHotReloadAgent agent)
         {
-            Logger = new TestLogger(output);
-            AgentLogger = new TestLogger(output);
-            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", enableStaticAssetUpdates: true);
+            Logger = new TestLogger(testContext);
+            AgentLogger = new TestLogger(testContext);
+            var clientTransport = new NamedPipeClientTransport(Logger);
+            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", handlesStaticAssetUpdates: true, clientTransport);
 
             _cancellationSource = new CancellationTokenSource();
 
             Client.InitiateConnection(CancellationToken.None);
-            var listener = new PipeListener(Client.NamedPipeName, agent, log: _ => { }, connectionTimeoutMS: Timeout.Infinite);
-            _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token));
+            var agentTransport = new NamedPipeTransport(clientTransport.NamedPipeName, log: _ => { }, timeoutMS: Timeout.Infinite);
+            var listener = new Listener(agentTransport, agent, log: _ => { });
+            _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token), testContext.CancellationToken);
         }
 
         public async ValueTask DisposeAsync()
         {
             _cancellationSource.Cancel();
-            await await _listenerTaskFactory;
+            try
+            {
+                await await _listenerTaskFactory;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation is requested during disposal
+            }
 
             Client.Dispose();
         }
     }
 
-    [Fact]
-    public async Task ApplyManagedCodeUpdates_ProcessNotSuspended()
-    {
-        var moduleId = Guid.NewGuid();
-
-        var agent = new TestHotReloadAgent()
-        {
-            Capabilities = "Baseline AddMethodToExistingType AddStaticFieldToExistingType",
-            ApplyManagedCodeUpdatesImpl = updates =>
-            {
-                Assert.Single(updates);
-                var update = updates.First();
-                Assert.Equal(moduleId, update.ModuleId);
-                AssertEx.SequenceEqual<byte>([1, 2, 3], update.MetadataDelta);
-            }
-        };
-
-        await using var test = new Test(output, agent);
-
-        var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
-
-        var update = new HotReloadManagedCodeUpdate(
-            moduleId: moduleId,
-            metadataDelta: [1, 2, 3],
-            ilDelta: [],
-            pdbDelta: [],
-            updatedTypes: [],
-            requiredCapabilities: ["Baseline"]);
-
-        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: false, CancellationToken.None));
-
-        Assert.Contains("[Debug] Writing capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType", test.AgentLogger.GetAndClearMessages());
-        Assert.Contains("[Debug] Updates applied: 1 out of 1.", test.Logger.GetAndClearMessages());
-    }
-
-    [Fact]
-    public async Task ApplyManagedCodeUpdates_ProcessSuspended()
+    [TestMethod]
+    public async Task ApplyManagedCodeUpdates()
     {
         var moduleId = Guid.NewGuid();
 
@@ -83,10 +59,10 @@ public class HotReloadClientTests(ITestOutputHelper output)
             Capabilities = "Baseline AddMethodToExistingType AddStaticFieldToExistingType",
         };
 
-        await using var test = new Test(output, agent);
+        await using var test = new Test(TestContext, agent);
 
         var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
+        Assert.AreSequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: moduleId,
@@ -98,22 +74,17 @@ public class HotReloadClientTests(ITestOutputHelper output)
 
         var agentMessage = "[Debug] Writing capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType";
 
-        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: true, CancellationToken.None));
-
-        // emulate process being resumed:
-        await test.Client.PendingUpdates;
+        await await test.Client.ApplyManagedCodeUpdatesAsync([update], CancellationToken.None, CancellationToken.None);
 
         var clientMessages = test.Logger.GetAndClearMessages();
         var agentMessages = test.AgentLogger.GetAndClearMessages();
 
-        // agent log messages not reported to the client logger while the process is suspended:
-        Assert.Contains("[Debug] Sending update batch #0", clientMessages);
-        Assert.Contains("[Debug] Updates applied: 1 out of 1.", clientMessages);
-        Assert.Contains("[Debug] Update batch #0 completed.", clientMessages);
+        Assert.Contains("[Debug] " + string.Format(LogEvents.SendingUpdateBatch.Message, 0), clientMessages);
+        Assert.Contains("[Debug] " + string.Format(LogEvents.UpdateBatchCompleted.Message, 0), clientMessages);
         Assert.Contains(agentMessage, agentMessages);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ApplyManagedCodeUpdates_Failure()
     {
         var agent = new TestHotReloadAgent()
@@ -122,10 +93,10 @@ public class HotReloadClientTests(ITestOutputHelper output)
             ApplyManagedCodeUpdatesImpl = updates => throw new Exception("Bug!")
         };
 
-        await using var test = new Test(output, agent);
+        await using var test = new Test(TestContext, agent);
 
         var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
-        AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
+        Assert.AreSequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "AddExplicitInterfaceImplementation"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
             moduleId: Guid.NewGuid(),
@@ -135,9 +106,8 @@ public class HotReloadClientTests(ITestOutputHelper output)
             updatedTypes: [],
             requiredCapabilities: ["Baseline"]);
 
-        Assert.Equal(ApplyStatus.Failed, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: false, CancellationToken.None));
+        await await test.Client.ApplyManagedCodeUpdatesAsync([update], CancellationToken.None, CancellationToken.None);
 
-        // agent log messages were reported to the agent logger:
         var agentMessages = test.AgentLogger.GetAndClearMessages();
         Assert.Contains("[Error] The runtime failed to applying the change: Bug!", agentMessages);
         Assert.Contains("[Warning] Further changes won't be applied to this process.", agentMessages);

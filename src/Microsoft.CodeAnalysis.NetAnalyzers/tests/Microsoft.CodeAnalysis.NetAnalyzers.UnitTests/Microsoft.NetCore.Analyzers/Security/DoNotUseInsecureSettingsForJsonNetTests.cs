@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureSettingsForJsonNet,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -16,13 +15,14 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotUseInsecureSettingsForJsonNetTests
     {
         private static readonly DiagnosticDescriptor DefinitelyRule = DoNotUseInsecureSettingsForJsonNet.DefinitelyInsecureSettings;
         private static readonly DiagnosticDescriptor MaybeRule = DoNotUseInsecureSettingsForJsonNet.MaybeInsecureSettings;
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_CSharp_ViolationAsync(NewtonsoftJsonVersion version)
         {
@@ -66,7 +66,7 @@ public class ExampleClass
             GetCSharpResultAt(34, 16, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_VB_ViolationAsync(NewtonsoftJsonVersion version)
         {
@@ -107,7 +107,7 @@ End Class
                 GetBasicResultAt(31, 16, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_CSharp_SolutionAsync(NewtonsoftJsonVersion version)
         {
@@ -174,7 +174,7 @@ public class ExampleClass
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample1_VB_SolutionAsync(NewtonsoftJsonVersion version)
         {
@@ -237,7 +237,7 @@ End Class
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample2_CSharp_ViolationAsync(NewtonsoftJsonVersion version)
         {
@@ -310,7 +310,7 @@ public class ExampleClass
                 GetCSharpResultAt(63, 16, MaybeRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample2_VB_ViolationAsync(NewtonsoftJsonVersion version)
         {
@@ -378,7 +378,7 @@ End Class
                 GetBasicResultAt(58, 16, MaybeRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample2_CSharp_SolutionAsync(NewtonsoftJsonVersion version)
         {
@@ -453,7 +453,7 @@ public class ExampleClass
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DocSample2_VB_SolutionAsync(NewtonsoftJsonVersion version)
         {
@@ -523,7 +523,7 @@ End Class
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Field_Interprocedural_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -573,7 +573,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Secure_SometimesInitialization_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -595,7 +595,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonConvert_DeserializeObject_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -614,7 +614,7 @@ class Blah
                 GetCSharpResultAt(10, 16, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonConvert_DeserializeAnonymousType_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -633,7 +633,7 @@ class Blah
                 GetCSharpResultAt(10, 16, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonSerializer_Create_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -654,7 +654,7 @@ class Blah
                 GetCSharpResultAt(11, 37, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Secure_JsonSerializer_CreateDefault_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -673,7 +673,7 @@ class Blah
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonConvert_DefaultSettings_Lambda_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -695,7 +695,7 @@ class Blah
                 GetCSharpResultAt(12, 20, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonConvert_DefaultSettings_Lambda_ImplicitReturn_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -716,7 +716,7 @@ class Blah
                 GetCSharpResultAt(9, 13, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonConvert_DefaultSettings_LocalFunction_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -740,7 +740,7 @@ class Blah
                 GetCSharpResultAt(14, 20, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonConvert_DefaultSettings_LocalFunctionWithTryCatch_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -780,7 +780,7 @@ class Blah
                 GetCSharpResultAt(24, 20, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonConvert_DefaultSettings_LocalFunction_CapturedVariables_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -808,7 +808,7 @@ class Blah
         }
 
         // Ideally, we'd only generate one diagnostic in this case.
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_JsonConvert_DefaultSettings_NestedLocalFunction_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -838,7 +838,7 @@ class Blah
                 GetCSharpResultAt(18, 24, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_FieldInitialization_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -852,7 +852,7 @@ class Blah
                 GetCSharpResultAt(6, 60, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Secure_FieldInitialization_SerializationBinderSet_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -877,7 +877,7 @@ public class MyISerializationBinder : Newtonsoft.Json.Serialization.ISerializati
 }");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Secure_FieldInitialization_BinderSet_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -910,7 +910,7 @@ public class MyBinder : {serializationBinderType}
 }}");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_PropertyInitialization_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -924,7 +924,7 @@ class Blah
                 GetCSharpResultAt(6, 60, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_PropertyInitialization_MaybeDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -950,7 +950,7 @@ class Blah
                 GetCSharpResultAt(14, 60, MaybeRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_Lazy_Field_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -969,7 +969,7 @@ class Blah
             GetCSharpResultAt(9, 13, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_Instance_Constructor_Initializer_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -992,7 +992,7 @@ class Blah
             GetCSharpResultAt(11, 9, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_Instance_Constructor_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1013,7 +1013,7 @@ class Blah
             GetCSharpResultAt(11, 9, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_Instance_Constructor_Interprocedural_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1046,7 +1046,7 @@ class Blah
                 GetCSharpResultAt(18, 13, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task InsecureButNotInitialized_Instance_Constructor_Interprocedural_LValuesWithMoreThanOneCapturedOperation_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1084,7 +1084,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Unknown_PropertyInitialized_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1106,7 +1106,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task UnknownThenNull_PropertyInitialized_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1129,7 +1129,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task UnknownOrNull_PropertyInitialized_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1154,7 +1154,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task InsecureThenNull_PropertyInitialized_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1175,7 +1175,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task InsecureThenSecure_PropertyInitialized_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1196,7 +1196,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task SecureThenInsecure_FieldInitialized_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1218,7 +1218,7 @@ class Blah
                 GetCSharpResultAt(11, 9, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task InsecureOrNull_PropertyInitialized_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1242,7 +1242,7 @@ class Blah
                 GetCSharpResultAt(12, 13, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task InsecureOrSecure_PropertyInitialized_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1266,7 +1266,7 @@ class Blah
                 GetCSharpResultAt(12, 13, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_Field_Initialized_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1287,7 +1287,7 @@ class Blah
                 GetCSharpResultAt(11, 9, DefinitelyRule));
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_UnusedLocalVariable_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1313,7 +1313,7 @@ class Blah
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task Insecure_Return_InstanceMethod_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
@@ -1341,14 +1341,14 @@ class Blah
                 GetCSharpResultAt(19, 16, DefinitelyRule));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = Method")]
-        [InlineData(@"dotnet_code_quality.CA2327.excluded_symbol_names = Method
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = Method")]
+        [DataRow(@"dotnet_code_quality.CA2327.excluded_symbol_names = Method
                       dotnet_code_quality.CA2328.excluded_symbol_names = Method")]
-        [InlineData(@"dotnet_code_quality.CA2327.excluded_symbol_names = Met*
+        [DataRow(@"dotnet_code_quality.CA2327.excluded_symbol_names = Met*
                       dotnet_code_quality.CA2328.excluded_symbol_names = Met*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = Method")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = Method")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1384,7 +1384,7 @@ class Blah
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(10, 16, DefinitelyRule));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyCSharpWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
@@ -1405,7 +1405,7 @@ class Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyBasicWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
@@ -1426,7 +1426,7 @@ class Blah
 
             vbTest.ExpectedDiagnostics.AddRange(expected);
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

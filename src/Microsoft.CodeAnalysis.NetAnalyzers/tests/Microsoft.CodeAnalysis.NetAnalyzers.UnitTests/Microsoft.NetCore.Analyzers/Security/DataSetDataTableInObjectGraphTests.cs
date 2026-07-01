@@ -5,16 +5,16 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInSerializableObjectGraphAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DataSetDataTableInSerializableObjectGraphTests
     {
-        [Fact]
+        [TestMethod]
         public async Task JavaScriptSerializer_Deserialize_Generic_DiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
@@ -38,7 +38,7 @@ namespace Blah
                 GetCSharpResultAt(15, 20, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task JavaScriptSerializer_Deserialize_Generic_NoDiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
@@ -60,7 +60,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task JavaScriptSerializer_Deserialize_NonGeneric_DiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
@@ -84,7 +84,7 @@ namespace Blah
                 GetCSharpResultAt(15, 55, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task JavaScriptSerializer_Deserialize_NonGeneric_OutOfOrderArguments_DiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
@@ -108,7 +108,7 @@ namespace Blah
                 GetCSharpResultAt(15, 60, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task JavaScriptSerializer_DeserializeObject_As_DiagnosticAsync()
         {
             await VerifyCSharpJssAsync(@"
@@ -132,7 +132,7 @@ namespace Blah
                 GetCSharpResultAt(15, 20, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_Type_DiagnosticAsync()
         {
             await VerifyCSharpAsync(@"
@@ -157,7 +157,7 @@ namespace Blah
                 GetCSharpResultAt(15, 69, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_Type_Types_DiagnosticAsync()
         {
             await VerifyCSharpAsync(@"
@@ -183,7 +183,7 @@ namespace Blah
                 GetCSharpResultAt(15, 96, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlSerializer_Constructor_DiagnosticAsync()
         {
             await VerifyCSharpAsync(@"
@@ -208,7 +208,7 @@ namespace Blah
                 GetCSharpResultAt(15, 50, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlSerializer_FromType_DiagnosticAsync()
         {
             await VerifyCSharpAsync(@"
@@ -233,7 +233,7 @@ namespace Blah
                 GetCSharpResultAt(15, 66, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Newtonsoft_JsonSerializer_Deserialize_Casted_DiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
@@ -257,7 +257,7 @@ namespace Blah
                 GetCSharpResultAt(15, 20, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Newtonsoft_JsonSerializer_Deserialize_TypeSpecified_DiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
@@ -281,7 +281,7 @@ namespace Blah
                 GetCSharpResultAt(15, 43, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Newtonsoft_JsonSerializer_Deserialize_TypeSpecified_OutOfOrderArguments_DiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
@@ -305,7 +305,7 @@ namespace Blah
                 GetCSharpResultAt(15, 47, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Newtonsoft_JsonSerializer_Deserialize_Casted_JsonIgnore_NoDiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
@@ -329,7 +329,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Newtonsoft_JsonConvert_DeserializeObject_Generic_DiagnosticAsync()
         {
             await VerifyCSharpNewtonsoftAsync(@"
@@ -366,7 +366,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         /// <summary>
@@ -390,7 +390,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         /// <summary>
@@ -414,7 +414,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

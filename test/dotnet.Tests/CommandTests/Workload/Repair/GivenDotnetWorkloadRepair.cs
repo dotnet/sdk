@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.Text.Json;
 using ManifestReaderTests;
@@ -11,27 +9,30 @@ using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Repair;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
 namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
 {
+    [TestClass]
     public class GivenDotnetWorkloadRepair : SdkTest
     {
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
         private readonly string _manifestPath;
 
-        public GivenDotnetWorkloadRepair(ITestOutputHelper log) : base(log)
+        public GivenDotnetWorkloadRepair()
         {
             _reporter = new BufferedReporter();
             _parseResult = Parser.Parse("dotnet workload repair");
             _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenNoWorkloadsAreInstalledRepairIsNoOp(bool userLocal)
         {
             _reporter.Clear();
@@ -56,9 +57,9 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             _reporter.Lines.Should().Contain(CliCommandStrings.NoWorkloadsToRepair);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenExtraPacksInstalledRepairGarbageCollects(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -86,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
 
             // Add extra pack dirs and records
             var extraPackRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Test.Pack.A", "1.0.0", sdkFeatureVersion);
-            Directory.CreateDirectory(Path.GetDirectoryName(extraPackRecordPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(extraPackRecordPath)!);
             var extraPackPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(extraPackPath);
             var packRecordContents = JsonSerializer.Serialize(new WorkloadResolver.PackInfo(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, extraPackPath, "Test.Pack.A"), PackInfoJsonSerializerContext.Default.PackInfo);
@@ -106,9 +107,9 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             Directory.GetDirectories(Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1")).Length.Should().Be(8);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void GivenMissingPacksRepairFixesInstall(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -151,6 +152,44 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             // All expected packs are still present
             Directory.GetDirectories(Path.Combine(installRoot, "packs")).Length.Should().Be(7);
             Directory.GetDirectories(Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1")).Length.Should().Be(8);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void GivenMissingManifestsInWorkloadSetModeRepairReinstallsManifests(bool userLocal)
+        {
+            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider) =
+                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(TestAssetsManager, userLocal, out string sdkFeatureVersion);
+
+            mockInstaller.InstalledManifests.Should().HaveCount(0);
+
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+
+            // Attach the corruption repairer to the manifest provider
+            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot, manifestDownload: true);
+            var corruptionRepairer = new WorkloadManifestCorruptionRepairer(
+                _reporter,
+                mockInstaller,
+                workloadResolver,
+                new SdkFeatureBand(sdkFeatureVersion),
+                dotnetRoot,
+                userProfileDir,
+                nugetDownloader,
+                packageSourceLocation: null,
+                VerbosityOptions.detailed);
+            manifestProvider.CorruptionRepairer = corruptionRepairer;
+
+            // Directly trigger the manifest health check and repair
+            corruptionRepairer.EnsureManifestsHealthy(ManifestCorruptionFailureMode.Repair);
+
+            // Verify that manifests were installed by the corruption repairer
+            mockInstaller.InstalledManifests.Should().HaveCount(2, "Manifests should be installed after EnsureManifestsHealthy call");
+            mockInstaller.InstalledManifests.Should().Contain(m => m.manifestUpdate.ManifestId.ToString() == "xamarin-android-build");
+            mockInstaller.InstalledManifests.Should().Contain(m => m.manifestUpdate.ManifestId.ToString() == "xamarin-ios-sdk");
+
+            // Verify the repair process was triggered (the corruption repairer shows this message)
+            _reporter.Lines.Should().Contain(line => line.Contains("Repairing workload set"));
         }
     }
 }

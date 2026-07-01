@@ -3,16 +3,16 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseWeakKDFAlgorithm,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseWeakKDFAlgorithmTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestMD5DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -38,10 +38,10 @@ class TestClass
                         GetCSharpResultAt(8, 34, "Rfc2898DeriveBytes"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSHA1DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -67,10 +67,10 @@ class TestClass
                         GetCSharpResultAt(8, 34, "Rfc2898DeriveBytes"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNoHashAlgorithmNameDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -86,7 +86,7 @@ class TestClass
             GetCSharpResultAt(8, 34, "Rfc2898DeriveBytes"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDerivedClassOfRfc2898DeriveBytesDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -119,10 +119,10 @@ class TestClass
                         GetCSharpResultAt(15, 28, "DerivedClass"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDerivedClassOfRfc2898DeriveBytesNewPropertyDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -158,10 +158,10 @@ class TestClass
                         GetCSharpResultAt(17, 28, "DerivedClass"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -180,7 +180,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSHA256NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -202,10 +202,10 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDerivedClassOfRfc2898DeriveBytesNoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -234,10 +234,10 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDerivedClassOfRfc2898DeriveBytesNewPropertyNoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -269,7 +269,7 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

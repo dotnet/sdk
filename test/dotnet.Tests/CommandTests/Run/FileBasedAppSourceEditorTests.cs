@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Text;
@@ -7,17 +7,18 @@ using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class FileBasedAppSourceEditorTests : SdkTest
 {
     private static FileBasedAppSourceEditor CreateEditor(string source)
     {
         return FileBasedAppSourceEditor.Load(new SourceFile("/app/Program.cs", SourceText.From(source, Encoding.UTF8)));
     }
 
-    [Theory]
-    [InlineData("#:package MyPackage@1.0.1")]
-    [InlineData("#:package   MyPackage @ abc")]
-    [InlineData("#:package MYPACKAGE")]
+    [TestMethod]
+    [DataRow("#:package MyPackage@1.0.1")]
+    [DataRow("#:package   MyPackage @ abc")]
+    [DataRow("#:package MYPACKAGE")]
     public void ReplaceExisting(string inputLine)
     {
         Verify(
@@ -32,7 +33,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void OnlyStatement()
     {
         Verify(
@@ -51,9 +52,9 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Theory]
-    [InlineData("// only comment")]
-    [InlineData("/* only comment */")]
+    [TestMethod]
+    [DataRow("// only comment")]
+    [DataRow("/* only comment */")]
     public void OnlyComment(string comment)
     {
         Verify(
@@ -73,7 +74,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void Empty()
     {
         Verify(
@@ -87,7 +88,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             ""));
     }
 
-    [Fact]
+    [TestMethod]
     public void PreExistingWhiteSpace()
     {
         Verify(
@@ -109,7 +110,52 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
+    public void LeadingWhiteSpace()
+    {
+        Verify(
+            """
+
+            #:package MyPackage@1.0.0
+            Console.WriteLine();
+            """,
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+
+            Console.WriteLine();
+            """));
+
+        Verify(
+            """
+              #:package MyPackage@1.0.0
+            Console.WriteLine();
+            """,
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
+    public void WhiteSpaceOutsideLines()
+    {
+        Verify(
+            $"""
+            // trailing{"  "}
+
+            #:package MyPackage@1.0.0
+
+              // leading
+            """,
+            (static editor => editor.Remove(editor.Directives.Single()),
+            $"""
+            // trailing{"  "}
+
+              // leading
+            """));
+    }
+
+    [TestMethod]
     public void Comments()
     {
         Verify(
@@ -148,7 +194,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void CommentsWithWhiteSpaceAfter()
     {
         Verify(
@@ -176,7 +222,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void Comment_Documentation()
     {
         Verify(
@@ -200,7 +246,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void Comment_MultiLine()
     {
         Verify(
@@ -224,7 +270,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void Comment_MultiLine_NoNewLine()
     {
         Verify(
@@ -243,7 +289,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void Comment_MultiLine_NoNewLine_Multiple()
     {
         Verify(
@@ -267,7 +313,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void Group()
     {
         Verify(
@@ -300,7 +346,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void GroupEnd()
     {
         Verify(
@@ -327,7 +373,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void GroupWithoutSpace()
     {
         Verify(
@@ -351,7 +397,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     /// <summary>
     /// New package directive should be sorted into the correct location in the package group.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Sort()
     {
         Verify(
@@ -387,7 +433,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void OtherDirectives()
     {
         Verify(
@@ -414,7 +460,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     /// <summary>
     /// Shebang directive should always stay first.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Shebang()
     {
         Verify(
@@ -438,7 +484,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void AfterTokens()
     {
         Verify(
@@ -469,7 +515,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void SkippedTokensTrivia()
     {
         Verify(
@@ -494,7 +540,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void RemoveMultiple()
     {
         Verify(
@@ -522,7 +568,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     /// This is critical for shebang (#!) scripts on Unix-like systems.
     /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void PreservesNoBomEncoding()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -540,20 +586,20 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
 
         // Verify no BOM was added
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.True(bytes is not [0xEF, 0xBB, 0xBF, ..],
+        Assert.IsTrue(bytes is not [0xEF, 0xBB, 0xBF, ..],
             "File should not have UTF-8 BOM");
 
         // Verify the complete file content is correct
         var savedContent = File.ReadAllText(tempFile);
         var expectedContent = "#!/usr/bin/env dotnet run\n\n#:package MyPackage@1.0.0\n\nConsole.WriteLine();";
-        Assert.Equal(expectedContent, savedContent);
+        Assert.AreEqual(expectedContent, savedContent);
     }
 
     /// <summary>
     /// Verifies that files with UTF-8 BOM preserve it when saved.
     /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void PreservesBomEncoding()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -571,7 +617,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
 
         // Verify BOM is still present
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.True(bytes is [0xEF, 0xBB, 0xBF, ..],
+        Assert.IsTrue(bytes is [0xEF, 0xBB, 0xBF, ..],
             "File should have UTF-8 BOM");
     }
 
@@ -579,7 +625,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     /// Verifies that files with non-UTF-8 encodings (like UTF-16) preserve their encoding when saved.
     /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void PreservesNonUtf8Encoding()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -597,7 +643,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
 
         // Verify UTF-16 BOM is still present (0xFF 0xFE for UTF-16 LE)
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.True(bytes is [0xFF, 0xFE, ..],
+        Assert.IsTrue(bytes is [0xFF, 0xFE, ..],
             "File should have UTF-16 LE BOM");
 
         // Verify content is still readable as UTF-16

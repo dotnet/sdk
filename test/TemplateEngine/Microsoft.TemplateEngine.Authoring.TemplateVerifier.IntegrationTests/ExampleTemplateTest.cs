@@ -1,0 +1,94 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
+using Microsoft.TemplateEngine.Tests;
+using VerifyMSTest;
+
+namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
+{
+    [TestClass]
+    [UsesVerify]
+    [DoNotParallelize]
+    public partial class ExampleTemplateTest : TestBase
+    {
+        private ILogger Log => new TestContextLogger(TestContext);
+
+        // Following 2 tests share identical snapshot folder - that's the reason for the additional
+        //  naming parameters (DoNotPrependCallerMethodNameToScenarioName, DoNotAppendTemplateArgsToScenarioName, ScenarioName)
+        // The identity of snapshots ilustrates that execution through API and through full blown command leads to identical results
+
+        [TestMethod]
+        public async Task VerificationEngineSampleDogfoodTest()
+        {
+            string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
+            string templateShortName = "TestAssets.SampleTestTemplate";
+
+            //get the template location
+            string templateLocation = Path.Combine(TestTemplatesLocation, "TestTemplate");
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
+            {
+                TemplateSpecificArgs = new string[] { "--paramB", "true" },
+                TemplatePath = templateLocation,
+                SnapshotsDirectory = SnapshotsDirectory,
+                OutputDirectory = workingDir,
+                VerifyCommandOutput = true,
+                DoNotPrependCallerMethodNameToScenarioName = true,
+                DoNotAppendTemplateArgsToScenarioName = true,
+                ScenarioName = "SampleDogfoodTest",
+                // This is here just for testing and documentation purposes - showing functionality of differing snapshots for arch
+                UniqueFor = UniqueForOption.Architecture,
+            }
+                .WithCustomScrubbers(
+                    ScrubbersDefinition.Empty
+                        .AddScrubber(sb => sb.Replace("B is enabled", "*******"))
+                        .AddScrubber((path, content) =>
+                        {
+                            if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
+                            {
+                                content.Replace("SampleTestTemplate", "%TEMPLATE%");
+                            }
+                        }));
+
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.CancellationToken);
+        }
+
+        [TestMethod]
+        public async Task VerificationEngineSampleDogfoodTest_ExecThroughApi()
+        {
+            string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
+            string templateShortName = "TestAssets.SampleTestTemplate";
+
+            //get the template location
+            string templateLocation = Path.Combine(TestTemplatesLocation, "TestTemplate");
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
+            {
+                TemplatePath = templateLocation,
+                SnapshotsDirectory = SnapshotsDirectory,
+                OutputDirectory = workingDir,
+                VerifyCommandOutput = true,
+                DoNotPrependCallerMethodNameToScenarioName = true,
+                ScenarioName = "SampleDogfoodTest",
+                UniqueFor = UniqueForOption.Architecture,
+            }
+                .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>() { { "paramB", "true" } })
+                .WithCustomScrubbers(
+                    ScrubbersDefinition.Empty
+                        .AddScrubber(sb => sb.Replace("B is enabled", "*******"))
+                        .AddScrubber((path, content) =>
+                        {
+                            if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
+                            {
+                                content.Replace("SampleTestTemplate", "%TEMPLATE%");
+                            }
+                        }));
+
+            VerificationEngine engine = new VerificationEngine(Log);
+            await engine.Execute(options, TestContext.CancellationToken);
+        }
+    }
+}

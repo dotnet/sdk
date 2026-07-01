@@ -6,18 +6,18 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotAlwaysSkipTokenValidationInDelegates,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotAlwaysSkipTokenValidationInDelegatesTests
     {
-        [Theory]
-        [InlineData("AudienceValidator = [|(a, b, c)")]
-        [InlineData("LifetimeValidator = [|(a, b, c, d)")]
+        [TestMethod]
+        [DataRow("AudienceValidator = [|(a, b, c)")]
+        [DataRow("LifetimeValidator = [|(a, b, c, d)")]
         public async Task TestLambdaDiagnostic(string declaration)
         {
             string code = @$"
@@ -36,9 +36,9 @@ class TestClass
             await VerifyCSharpAnalyzerAsync(code);
         }
 
-        [Theory]
-        [InlineData("AudienceValidator = [|(a, b, c)")]
-        [InlineData("LifetimeValidator = [|(a, b, c, d)")]
+        [TestMethod]
+        [DataRow("AudienceValidator = [|(a, b, c)")]
+        [DataRow("LifetimeValidator = [|(a, b, c, d)")]
         public async Task TestLambdaWithLiteralValueDiagnostic(string declaration)
         {
             string code = @$"
@@ -56,9 +56,9 @@ class TestClass
             await VerifyCSharpAnalyzerAsync(code);
         }
 
-        [Theory]
-        [InlineData("AudienceValidator")]
-        [InlineData("LifetimeValidator")]
+        [TestMethod]
+        [DataRow("AudienceValidator")]
+        [DataRow("LifetimeValidator")]
         public async Task TestAnonymousMethodDiagnostic(string declaration)
         {
             string code = @$"
@@ -76,7 +76,7 @@ class TestClass
             await VerifyCSharpAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationLocalFunctionDiagnostic_LifetimeValidator()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -103,7 +103,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationLocalFunctionDiagnostic_AudienceValidator()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -129,7 +129,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationDiagnostic_LifetimeValidator()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -156,7 +156,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationDiagnostic_AudienceValidator()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -182,7 +182,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNormalMethodWithLambdaDiagnostic_AudienceValidator()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -206,7 +206,7 @@ class TestClass
         }
 
         // Ideally we could detect this but we'll have to rely on CodeQL instead for more robust detection.
-        [Fact]
+        [TestMethod]
         public async Task TestDelegatedMethodFromDifferentAssemblyNoDiagnostic()
         {
             string source1 = @"
@@ -264,11 +264,11 @@ class TestClass
                             .Solution;
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         // Ideally we could detect this but we'll have to rely on CodeQL instead for more robust detection.
-        [Fact]
+        [TestMethod]
         public async Task TestDelegatedMethodFromLocalFromDifferentAssemblyNoDiagnostic()
         {
             string source1 = @"
@@ -334,10 +334,10 @@ class TestClass
                             .Solution;
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -355,7 +355,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaWithLiteralValueNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -373,7 +373,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAnonymousMethodNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -391,7 +391,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationLocalFunctionNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -422,7 +422,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -453,7 +453,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNoDiagnostic2()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -482,7 +482,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNormalMethodWithLambdaNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -506,7 +506,7 @@ class TestClass
         }
 
         // Ideally we could detect this but we'll have to rely on CodeQL instead for more robust detection.
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationFromLocalFromLocalNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -556,7 +556,7 @@ class TestClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
     }
 }

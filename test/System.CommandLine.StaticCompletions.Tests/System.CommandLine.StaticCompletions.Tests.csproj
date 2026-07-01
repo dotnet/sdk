@@ -1,23 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.MSTest" />
     <PackageReference Include="Verify.DiffPlex" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>

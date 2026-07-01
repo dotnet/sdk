@@ -5,13 +5,13 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseContainerLevelAccessPolicy,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class UseContainerLevelAccessPolicyTests
     {
         private async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -27,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyCSharpWithDependenciesAsync(string source, string editorConfigText, params DiagnosticResult[] expected)
@@ -48,10 +48,10 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGroupPolicyIdentifierOfBlobNamespaceIsNullDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -71,7 +71,7 @@ class TestClass
             GetCSharpResultAt(12, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPropertyInitializerGroupPolicyIdentifierOfBlobNamespaceIsNullDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -86,7 +86,7 @@ class TestClass
             GetCSharpResultAt(8, 34));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFieldInitializerGroupPolicyIdentifierOfBlobNamespaceIsNullDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -101,7 +101,7 @@ class TestClass
             GetCSharpResultAt(8, 25));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPropertyInitializerGroupPolicyIdentifierOfBlobNamespaceNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -115,7 +115,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFieldInitializerGroupPolicyIdentifierOfBlobNamespaceNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -129,7 +129,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAccessPolicyIdentifierOfTableNamespaceIsNullDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -148,7 +148,7 @@ class TestClass
             GetCSharpResultAt(11, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGroupPolicyIdentifierOfFileNamespaceIsNullDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -167,7 +167,7 @@ class TestClass
             GetCSharpResultAt(11, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAccessPolicyIdentifierOfQueueNamespaceIsNullDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -187,7 +187,7 @@ class TestClass
             GetCSharpResultAt(12, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutGroupPolicyIdentifierParameterOfBlobNamespaceDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -206,7 +206,7 @@ class TestClass
             GetCSharpResultAt(11, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutAccessPolicyIdentifierParameterOfTableNamespaceDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -224,7 +224,7 @@ class TestClass
             GetCSharpResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutGroupPolicyIdentifierParameterOfFileNamespaceDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -242,7 +242,7 @@ class TestClass
             GetCSharpResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutAccessPolicyIdentifierParameterOfQueueNamespaceDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -261,7 +261,7 @@ class TestClass
             GetCSharpResultAt(11, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGroupPolicyIdentifierOfBlobNamespaceIsNotNullNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -280,7 +280,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGroupPolicyIdentifierOfFileNamespaceIsNotNullNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -298,7 +298,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetSharedAccessSignatureOfANormalTypeNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -319,7 +319,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAccessPolicyIdentifierOfQueueNamespaceIsNotNullNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -337,7 +337,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAccessPolicyIdentifierOfTableNamespaceIsNotNullNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -355,12 +355,12 @@ class TestClass
 }");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality.CA5377.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality.CA5377.excluded_symbol_names = TestMet*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.CA5377.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.CA5377.excluded_symbol_names = TestMet*")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();

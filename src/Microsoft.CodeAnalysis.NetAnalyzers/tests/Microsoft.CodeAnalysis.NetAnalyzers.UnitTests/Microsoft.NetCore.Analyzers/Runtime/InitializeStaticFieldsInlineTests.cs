@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineFixer>;
@@ -14,11 +13,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class InitializeStaticFieldsInlineTests
     {
         #region Unit tests for no analyzer diagnostic
 
-        [Fact]
+        [TestMethod]
         public async Task CA1810_EmptyStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -39,7 +39,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2207_EmptyStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +60,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1810_NoStaticFieldInitializedInStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -91,7 +91,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1810_StaticPropertyInStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -124,7 +124,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1810_InitializionInNonStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -156,7 +156,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        [TestMethod, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_EventLambdas_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -193,7 +193,7 @@ Class C
 End Class");
         }
 
-        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        [TestMethod, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_EventDelegate_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -210,7 +210,7 @@ class C
 }");
         }
 
-        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        [TestMethod, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_TaskRunActionAndFunc_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -251,7 +251,7 @@ Class C
 End Class");
         }
 
-        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        [TestMethod, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_EnumerableWhere_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -298,7 +298,7 @@ Class C
 End Class");
         }
 
-        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        [TestMethod, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_MixedFieldInitialization_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -332,7 +332,7 @@ Class C
 End Class");
         }
 
-        [Fact, WorkItem(3852, "https://github.com/dotnet/roslyn-analyzers/issues/3852")]
+        [TestMethod, WorkItem(3852, "https://github.com/dotnet/roslyn-analyzers/issues/3852")]
         public async Task CA1810_EventSubscriptionInStaticCtorPreventsDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -368,14 +368,14 @@ public class C2
     private static void OnThreadExit(object sender, EventArgs e) {}
 }
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region Unit tests for analyzer diagnostic(s)
 
-        [Fact]
+        [TestMethod]
         public async Task CA1810_InitializationInStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -402,7 +402,7 @@ End Class
     GetCA1810BasicDefaultResultAt(4, 13, "Class1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2207_InitializationInStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -429,7 +429,7 @@ End Structure
     GetCA2207BasicDefaultResultAt(4, 13, "Struct1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1810_NoDuplicateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -457,7 +457,7 @@ End Class",
     GetCA1810BasicDefaultResultAt(4, 13, "Class1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2207_NoDuplicateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -485,7 +485,7 @@ End Structure",
     GetCA2207BasicDefaultResultAt(4, 13, "Struct1"));
         }
 
-        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        [TestMethod, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_LocalFunc_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -507,7 +507,7 @@ class C
                 GetCA1810CSharpDefaultResultAt(9, 12, "C"));
         }
 
-        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        [TestMethod, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_StaticLocalFunc_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -534,7 +534,7 @@ class C
                     GetCA1810CSharpDefaultResultAt(9, 12, "C")
                 },
             }
-            .RunAsync();
+            .RunAsync(CancellationToken.None);
         }
 
         #endregion

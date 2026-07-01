@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -14,9 +13,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Theory]
-        [InlineData("float", "AdvSimd.Arm64.Divide")]
-        [InlineData("double", "AdvSimd.DivideScalar")]
+        [TestMethod]
+        [DataRow("float", "AdvSimd.Arm64.Divide")]
+        [DataRow("double", "AdvSimd.DivideScalar")]
         public async Task Fixer_opDivisionArmV64Async(string type, string method)
         {
             // lang=C#-test
@@ -53,11 +52,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "AdvSimd.DivideScalar")]
+        [TestMethod]
+        [DataRow("float", "AdvSimd.DivideScalar")]
         public async Task Fixer_opDivisionArmV64Async_NoReplacement(string type, string method)
         {
             // lang=C#-test
@@ -81,12 +80,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 ExpectedDiagnostics = { },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "AdvSimd.Arm64.Divide")]
-        [InlineData("double", "AdvSimd.Arm64.Divide")]
+        [TestMethod]
+        [DataRow("float", "AdvSimd.Arm64.Divide")]
+        [DataRow("double", "AdvSimd.Arm64.Divide")]
         public async Task Fixer_opDivisionArmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -123,12 +122,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "PackedSimd.Divide")]
-        [InlineData("double", "PackedSimd.Divide")]
+        [TestMethod]
+        [DataRow("float", "PackedSimd.Divide")]
+        [DataRow("double", "PackedSimd.Divide")]
         public async Task Fixer_opDivisionWasmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -165,12 +164,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "Sse.Divide")]
-        [InlineData("double", "Sse2.Divide")]
+        [TestMethod]
+        [DataRow("float", "Sse.Divide")]
+        [DataRow("double", "Sse2.Divide")]
         public async Task Fixer_opDivisionx86V128Async(string type, string method)
         {
             // lang=C#-test
@@ -207,12 +206,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "Avx.Divide")]
-        [InlineData("double", "Avx.Divide")]
+        [TestMethod]
+        [DataRow("float", "Avx.Divide")]
+        [DataRow("double", "Avx.Divide")]
         public async Task Fixer_opDivisionx86V256Async(string type, string method)
         {
             // lang=C#-test
@@ -249,12 +248,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "Avx512F.Divide")]
-        [InlineData("double", "Avx512F.Divide")]
+        [TestMethod]
+        [DataRow("float", "Avx512F.Divide")]
+        [DataRow("double", "Avx512F.Divide")]
         public async Task Fixer_opDivisionx86V512Async(string type, string method)
         {
             // lang=C#-test
@@ -291,7 +290,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -18,7 +18,11 @@ namespace Analyzer.Utilities.Extensions
 
         private static readonly Func<INamedTypeSymbol, bool> s_isFileLocal = LightupHelpers.CreateSymbolPropertyAccessor<INamedTypeSymbol, bool>(typeof(INamedTypeSymbol), nameof(IsFileLocal), fallbackResult: false);
 
+        private static readonly Func<INamedTypeSymbol, bool> s_isExtension = LightupHelpers.CreateSymbolPropertyAccessor<INamedTypeSymbol, bool>(typeof(INamedTypeSymbol), nameof(IsExtension), fallbackResult: false);
+
         public static bool IsFileLocal(this INamedTypeSymbol symbol) => s_isFileLocal(symbol);
+
+        public static bool IsExtension(this INamedTypeSymbol symbol) => s_isExtension(symbol);
 
         public static IEnumerable<INamedTypeSymbol> GetBaseTypesAndThis(this INamedTypeSymbol type)
         {

@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpDoNotInitializeUnnecessarilyAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpDoNotInitializeUnnecessarilyFixer>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotInitializeUnnecessarilyTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -73,7 +73,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -119,7 +119,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_NullableAsync()
         {
             await new VerifyCS.Test
@@ -148,10 +148,10 @@ namespace System.Diagnostics.CodeAnalysis
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_InitializerRemovedAsync()
         {
             await new VerifyCS.Test()
@@ -245,10 +245,10 @@ public class C
     public string SomeStringProp { get; set; }
 }",
                 NumberOfFixAllIterations = 2
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -259,7 +259,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LeadingTriviaTest()
         {
             string csInput = @"
@@ -313,7 +313,7 @@ public class Test
                     .WithLocation(3));
         }
 
-        [Fact, WorkItem(5750, "https://github.com/dotnet/roslyn-analyzers/issues/5750")]
+        [TestMethod, WorkItem(5750, "https://github.com/dotnet/roslyn-analyzers/issues/5750")]
         public async Task ParameterlessValueTypeCtor()
         {
             await new VerifyCS.Test
@@ -369,10 +369,10 @@ class C
     private S2 s4;
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
+        [TestMethod, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
         public async Task DoNotReportOnInstanceMembersForStructs()
         {
             await new VerifyCS.Test
@@ -398,10 +398,10 @@ public record struct MyRecord2()
     private bool _x = false;
     public bool SomeBool { get; set; } = false;
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
+        [TestMethod, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
         public async Task ReportOnStaticMembersForStructs()
         {
             await new VerifyCS.Test
@@ -471,7 +471,7 @@ public struct MyStruct3
     public MyStruct3() { }
     public static bool SomeBool { get; set; }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static async Task TestCSAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
@@ -484,7 +484,7 @@ public struct MyStruct3
             };
 
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -5,16 +5,16 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInIFormatterSerializableObjectGraphAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DataSetDataTableInIFormatterObjectGraphTests
     {
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_Cast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -41,7 +41,7 @@ namespace Blah
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NetDataContractSerializer_Cast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -68,7 +68,7 @@ namespace Blah
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObjectStateFormatter_Cast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -95,7 +95,7 @@ namespace Blah
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SoapFormatter_Cast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -122,7 +122,7 @@ namespace Blah
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_As_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -149,7 +149,7 @@ namespace Blah
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_As_PrivateAutoProperty_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -176,7 +176,7 @@ namespace Blah
                 GetCSharpResultAt(17, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_Cast_ReferenceLoop_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -205,7 +205,7 @@ namespace Blah
                 GetCSharpResultAt(19, 28, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinaryFormatter_Cast_ReferenceIndirectLoop_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -254,7 +254,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

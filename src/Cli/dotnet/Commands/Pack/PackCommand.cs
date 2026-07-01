@@ -4,8 +4,8 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
@@ -13,10 +13,10 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
@@ -25,22 +25,19 @@ public class PackCommand(
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "pack", ..args]);
+        var parseResult = Parser.Parse(["dotnet", "pack", .. args]);
         return FromParseResult(parseResult, msbuildPath);
     }
 
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
-        var args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
-
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         bool noBuild = parseResult.HasOption(definition.NoBuildOption);
 
         bool noRestore = noBuild || parseResult.HasOption(definition.NoRestoreOption);
 
-        return CommandFactory.CreateVirtualOrPhysicalCommand(
+        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
@@ -65,11 +62,11 @@ public class PackCommand(
             ],
             parseResult,
             msbuildPath,
-            transformer: (msbuildArgs) =>
+            transformer: (msbuildArgs, nonLoggerArgs) =>
             {
                 ReleasePropertyProjectLocator projectLocator = new(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
-                            nonBinLogArgs,
+                            nonLoggerArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null
                         )
                 );
@@ -97,14 +94,14 @@ public class PackCommand(
 
         if (args.Count != 1)
         {
-            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed); 
+            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed);
             return 1;
         }
 
         var nuspecPath = args[0];
 
         var packArgs = new PackArgs()
-        { 
+        {
             Logger = new NuGetConsoleLogger(),
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(definition.OutputOption),

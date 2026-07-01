@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,13 +8,10 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackAToolWithCustomNuspec : SdkTest
     {
-        public GivenThatWeWantToPackAToolWithCustomNuspec(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_should_warn_when_using_custom_nuspec_file()
         {
             const string customNuspecFileName = "custom.nuspec";
@@ -56,7 +53,7 @@ namespace Microsoft.NET.ToolPack.Tests
             result.StdOut.Should().Contain(customNuspecFileName);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_not_warn_when_nuspec_file_is_not_specified()
         {
             TestAsset helloWorldAsset = TestAssetsManager

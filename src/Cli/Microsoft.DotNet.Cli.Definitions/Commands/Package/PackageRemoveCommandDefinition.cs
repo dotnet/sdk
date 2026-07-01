@@ -16,6 +16,9 @@ internal sealed class PackageRemoveCommandDefinition : PackageRemoveCommandDefin
         Options.Add(ProjectOption);
         Options.Add(FileOption);
     }
+
+    public override Argument<string>? GetProjectOrFileArgument()
+        => null;
 }
 
 internal abstract class PackageRemoveCommandDefinitionBase : Command
@@ -36,4 +39,6 @@ internal abstract class PackageRemoveCommandDefinitionBase : Command
         Arguments.Add(CmdPackageArgument);
         Options.Add(InteractiveOption);
     }
+
+    public abstract Argument<string>? GetProjectOrFileArgument();
 }

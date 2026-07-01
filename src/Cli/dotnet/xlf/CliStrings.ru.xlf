@@ -59,6 +59,11 @@
         <target state="translated">Указание параметров "-r|--runtime" и "-os" не поддерживается.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotUseAddSourceWithSourceMapping">
+        <source>The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</source>
+        <target state="translated">Параметр --add-source нельзя использовать вместе с сопоставлением источников пакетов. Чтобы добавить дополнительный источник, обновите параметры сопоставления источников в файле конфигурации NuGet. Подробнее: https://aka.ms/nuget-package-source-mapping</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnMaxWidthMustBeGreaterThanZero">
         <source>Column maximum width must be greater than zero.</source>
         <target state="translated">Максимальная ширина столбца должна быть больше нуля.</target>
@@ -491,8 +496,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
-        <source>Settings file 'DotnetToolSettings.xml' was not found in the package.</source>
-        <target state="translated">Файл параметров "DotnetToolSettings.xml" не найден в пакете.</target>
+        <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
+        <target state="new">Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">

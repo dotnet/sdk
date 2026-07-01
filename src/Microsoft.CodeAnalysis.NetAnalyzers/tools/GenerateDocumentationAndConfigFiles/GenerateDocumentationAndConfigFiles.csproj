@@ -5,6 +5,8 @@
     <OutputType>Exe</OutputType>
     <RollForward>Major</RollForward>
     <UseAppHost>false</UseAppHost>
+    <!-- This tool needs to run during the build.-->
+    <EnableKnownPackVersionUpdatesForCurrentTargetFramework>false</EnableKnownPackVersionUpdatesForCurrentTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

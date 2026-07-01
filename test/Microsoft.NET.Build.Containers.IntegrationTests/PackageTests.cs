@@ -1,13 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
+[TestClass]
 public class PackageTests
 {
-    [Fact]
+    [TestMethod]
     public void SanityTest_ContainerizeDependencies()
     {
         IReadOnlyList<string> knownPackageReferences = new List<string>()
@@ -33,7 +34,7 @@ public class PackageTests
         projectReferences.Should().BeEquivalentTo(knownProjectReferences, $"Known project references for containerize project are different from actual. Check if this is expected. If the new project reference is expected, add it to {nameof(knownProjectReferences)} and verify they are included to NuGet package in package.csproj correctly");
     }
 
-    [Fact]
+    [TestMethod]
     public void SanityTest_NET_Build_ContainersDependencies()
     {
         IReadOnlyList<string> knownPackageReferences = new List<string>()
@@ -41,10 +42,8 @@ public class PackageTests
             "Microsoft.Build.Utilities.Core",
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
-            "System.Text.Json",
             "Valleysoft.DockerCredsProvider",
-            "Microsoft.Extensions.Logging",
-            "Microsoft.Extensions.Logging.Abstractions"
+            "Microsoft.Extensions.Logging"
         };
         IReadOnlyList<string> knownProjectReferences = new List<string>()
         {
@@ -63,7 +62,7 @@ public class PackageTests
         projectReferences.Should().BeEquivalentTo(knownProjectReferences, $"Known project references for Microsoft.NET.Build.Containers project are different from actual. Check if this is expected. If the new project reference is expected, add it to {nameof(knownProjectReferences)} and verify they are included to NuGet package in package.csproj correctly");
     }
 
-    [Fact]
+    [TestMethod]
     public void PackageContentTest()
     {
         string ignoredZipFileEntriesPrefix = "package/services/metadata";
@@ -77,20 +76,15 @@ public class PackageTests
               "containerize/containerize.dll",
               "containerize/containerize.runtimeconfig.json",
               "containerize/Microsoft.DotNet.Cli.Utils.dll",
-              "containerize/Microsoft.Extensions.Configuration.Abstractions.dll",
               "containerize/Microsoft.Extensions.Configuration.Binder.dll",
               "containerize/Microsoft.Extensions.Configuration.dll",
-              "containerize/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
               "containerize/Microsoft.Extensions.DependencyInjection.dll",
               "containerize/Microsoft.Extensions.DependencyModel.dll",
-              "containerize/Microsoft.Extensions.Logging.Abstractions.dll",
               "containerize/Microsoft.Extensions.Logging.Configuration.dll",
               "containerize/Microsoft.Extensions.Logging.Console.dll",
               "containerize/Microsoft.Extensions.Logging.MSBuild.dll",
               "containerize/Microsoft.Extensions.Logging.dll",
               "containerize/Microsoft.Extensions.Options.ConfigurationExtensions.dll",
-              "containerize/Microsoft.Extensions.Options.dll",
-              "containerize/Microsoft.Extensions.Primitives.dll",
               "containerize/Microsoft.NET.Build.Containers.dll",
               "containerize/Newtonsoft.Json.dll",
               "containerize/NuGet.Common.dll",
@@ -107,21 +101,10 @@ public class PackageTests
               "Icon.png",
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",
-              "tasks/net472/Microsoft.NET.Build.Containers.dll",
-              "tasks/net472/Newtonsoft.Json.dll",
-              "tasks/net472/NuGet.Common.dll",
-              "tasks/net472/NuGet.Configuration.dll",
-              "tasks/net472/NuGet.Frameworks.dll",
-              "tasks/net472/NuGet.Packaging.dll",
-              "tasks/net472/NuGet.Versioning.dll",
               $"tasks/{netTFM}/Microsoft.DotNet.Cli.Utils.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Logging.Abstractions.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.MSBuild.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Options.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Primitives.dll",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.deps.json",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.dll",
               $"tasks/{netTFM}/Newtonsoft.Json.dll",

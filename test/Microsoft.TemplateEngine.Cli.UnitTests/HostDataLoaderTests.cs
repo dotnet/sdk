@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FakeItEasy;
@@ -7,26 +7,42 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
-    public class HostDataLoaderTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class HostDataLoaderTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
+        // mirrors the per-class lifetime that xUnit's IClassFixture provides.
+        private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
+            new(() => new EnvironmentSettingsHelper());
 
-        public HostDataLoaderTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        private EnvironmentSettingsHelper _environmentSettingsHelper = null!;
+
+        [TestInitialize]
+        public void TestInitialize()
         {
-            _environmentSettingsHelper = environmentSettingsHelper;
+            _environmentSettingsHelper = s_environmentSettingsHelper.Value;
         }
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            if (s_environmentSettingsHelper.IsValueCreated)
+            {
+                s_environmentSettingsHelper.Value.Dispose();
+            }
+        }
+
+        [TestMethod]
         public void CanLoadHostDataFile()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             HostSpecificDataLoader hostSpecificDataLoader = new(engineEnvironmentSettings);
-            Assert.True(engineEnvironmentSettings.TryGetMountPoint(Directory.GetCurrentDirectory(), out IMountPoint? mountPoint));
-            Assert.NotNull(mountPoint);
+            Assert.IsTrue(engineEnvironmentSettings.TryGetMountPoint(Directory.GetCurrentDirectory(), out IMountPoint? mountPoint));
+            Assert.IsNotNull(mountPoint);
             IFile? dataFile = mountPoint!.FileInfo("/Resources/dotnetcli.host.json");
 
             ITemplateInfo template = A.Fake<ITemplateInfo>();
@@ -34,31 +50,31 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             A.CallTo(() => template.HostConfigPlace).Returns("/Resources/dotnetcli.host.json");
 
             HostSpecificTemplateData data = hostSpecificDataLoader.ReadHostSpecificTemplateData(template);
-            Assert.NotNull(data);
+            Assert.IsNotNull(data);
 
-            Assert.False(data.IsHidden);
-            Assert.Equal(2, data.UsageExamples?.Count);
-            Assert.NotNull(data.UsageExamples);
+            Assert.IsFalse(data.IsHidden);
+            Assert.HasCount(2, data.UsageExamples);
+            Assert.IsNotNull(data.UsageExamples);
             Assert.Contains("--framework netcoreapp3.1 --langVersion '9.0'", data.UsageExamples);
-            Assert.Equal(4, data.SymbolInfo?.Count);
+            Assert.HasCount(4, data.SymbolInfo);
             Assert.Contains("TargetFrameworkOverride", data.HiddenParameterNames);
             Assert.Contains("Framework", data.ParametersToAlwaysShow);
-            Assert.True(data.LongNameOverrides.ContainsKey("skipRestore"));
-            Assert.Equal("no-restore", data.LongNameOverrides["skipRestore"]);
-            Assert.True(data.ShortNameOverrides.ContainsKey("skipRestore"));
-            Assert.Equal("", data.ShortNameOverrides["skipRestore"]);
-            Assert.Equal("no-restore", data.DisplayNameForParameter("skipRestore"));
+            Assert.IsTrue(data.LongNameOverrides.ContainsKey("skipRestore"));
+            Assert.AreEqual("no-restore", data.LongNameOverrides["skipRestore"]);
+            Assert.IsTrue(data.ShortNameOverrides.ContainsKey("skipRestore"));
+            Assert.AreEqual("", data.ShortNameOverrides["skipRestore"]);
+            Assert.AreEqual("no-restore", data.DisplayNameForParameter("skipRestore"));
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadHostDataFromITemplateInfo()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             HostSpecificDataLoader hostSpecificDataLoader = new(engineEnvironmentSettings);
-            Assert.True(engineEnvironmentSettings.TryGetMountPoint(Directory.GetCurrentDirectory(), out IMountPoint? mountPoint));
-            Assert.NotNull(mountPoint);
+            Assert.IsTrue(engineEnvironmentSettings.TryGetMountPoint(Directory.GetCurrentDirectory(), out IMountPoint? mountPoint));
+            Assert.IsNotNull(mountPoint);
             IFile? dataFile = mountPoint!.FileInfo("/Resources/dotnetcli.host.json");
-            Assert.NotNull(dataFile);
+            Assert.IsNotNull(dataFile);
             using Stream s = dataFile.OpenRead();
             using TextReader tr = new StreamReader(s, Encoding.UTF8, true);
 
@@ -67,23 +83,23 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             A.CallTo(() => ((ITemplateInfoHostJsonCache)template).HostData).Returns(json);
 
             HostSpecificTemplateData data = hostSpecificDataLoader.ReadHostSpecificTemplateData(template);
-            Assert.NotNull(data);
+            Assert.IsNotNull(data);
 
-            Assert.False(data.IsHidden);
-            Assert.Equal(2, data.UsageExamples?.Count);
-            Assert.NotNull(data.UsageExamples);
+            Assert.IsFalse(data.IsHidden);
+            Assert.HasCount(2, data.UsageExamples);
+            Assert.IsNotNull(data.UsageExamples);
             Assert.Contains("--framework netcoreapp3.1 --langVersion '9.0'", data.UsageExamples);
-            Assert.Equal(4, data.SymbolInfo?.Count);
+            Assert.HasCount(4, data.SymbolInfo);
             Assert.Contains("TargetFrameworkOverride", data.HiddenParameterNames);
             Assert.Contains("Framework", data.ParametersToAlwaysShow);
-            Assert.True(data.LongNameOverrides.ContainsKey("skipRestore"));
-            Assert.Equal("no-restore", data.LongNameOverrides["skipRestore"]);
-            Assert.True(data.ShortNameOverrides.ContainsKey("skipRestore"));
-            Assert.Equal("", data.ShortNameOverrides["skipRestore"]);
-            Assert.Equal("no-restore", data.DisplayNameForParameter("skipRestore"));
+            Assert.IsTrue(data.LongNameOverrides.ContainsKey("skipRestore"));
+            Assert.AreEqual("no-restore", data.LongNameOverrides["skipRestore"]);
+            Assert.IsTrue(data.ShortNameOverrides.ContainsKey("skipRestore"));
+            Assert.AreEqual("", data.ShortNameOverrides["skipRestore"]);
+            Assert.AreEqual("no-restore", data.DisplayNameForParameter("skipRestore"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnDefaultForInvalidEntry()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -93,11 +109,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             A.CallTo(() => ((ITemplateInfoHostJsonCache)template).HostData).Returns(null);
 
             HostSpecificTemplateData data = hostSpecificDataLoader.ReadHostSpecificTemplateData(template);
-            Assert.NotNull(data);
-            Assert.Equal(HostSpecificTemplateData.Default, data);
+            Assert.IsNotNull(data);
+            Assert.AreEqual(HostSpecificTemplateData.Default, data);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnDefaultForInvalidFile()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -108,11 +124,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             A.CallTo(() => template.HostConfigPlace).Returns("unknown");
 
             HostSpecificTemplateData data = hostSpecificDataLoader.ReadHostSpecificTemplateData(template);
-            Assert.NotNull(data);
-            Assert.Equal(HostSpecificTemplateData.Default, data);
+            Assert.IsNotNull(data);
+            Assert.AreEqual(HostSpecificTemplateData.Default, data);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanSerializeData()
         {
             var usageExamples = new[] { "example1" };
@@ -145,17 +161,17 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 }
             };
             var data = new HostSpecificTemplateData(symbolInfo, usageExamples, isHidden: true);
-            var serialized = JObject.FromObject(data);
+            var serialized = JsonSerializer.SerializeToNode(data)!.AsObject();
 
-            Assert.NotNull(serialized);
-            Assert.Equal(3, serialized.Children().Count());
+            Assert.IsNotNull(serialized);
+            Assert.HasCount(3, serialized);
 
-            Assert.Single<JProperty>(serialized.Properties(), p => p.Name == "UsageExamples");
-            Assert.Single<JProperty>(serialized.Properties(), p => p.Name == "SymbolInfo");
-            Assert.Single<JProperty>(serialized.Properties(), p => p.Name == "IsHidden");
+            Assert.Contains("UsageExamples", serialized.Select(p => p.Key));
+            Assert.Contains("SymbolInfo", serialized.Select(p => p.Key));
+            Assert.Contains("IsHidden", serialized.Select(p => p.Key));
         }
 
-        [Fact]
+        [TestMethod]
         public void CanSerializeData_SkipsEmpty()
         {
             var usageExamples = Array.Empty<string>();
@@ -188,23 +204,23 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 }
             };
             var data = new HostSpecificTemplateData(symbolInfo, usageExamples, isHidden: false);
-            var serialized = JObject.FromObject(data);
+            var serialized = JsonSerializer.SerializeToNode(data)!.AsObject();
 
-            Assert.NotNull(serialized);
-            Assert.Single(serialized.Children());
+            Assert.IsNotNull(serialized);
+            Assert.HasCount(1, serialized);
 
-            Assert.Single<JProperty>(serialized.Properties(), p => p.Name == "SymbolInfo");
+            Assert.Contains("SymbolInfo", serialized.Select(p => p.Key));
 
-            var symbolInfoArray = serialized.Properties().Single().Value as JObject;
-            Assert.NotNull(symbolInfoArray);
+            var symbolInfoObj = serialized["SymbolInfo"]!.AsObject();
+            Assert.IsNotNull(symbolInfoObj);
             //empty values should stay when deserializing symbol info
-            Assert.Equal(3, ((JObject)symbolInfoArray!["param1"]!).Properties().Count());
-            Assert.Equal("", symbolInfoArray!["param2"]!["longName"]);
-            Assert.Equal(3, ((JObject)symbolInfoArray!["param2"]!).Properties().Count());
-            Assert.Single(((JObject)symbolInfoArray!["param3"]!).Properties());
+            Assert.HasCount(3, symbolInfoObj["param1"]!.AsObject());
+            Assert.AreEqual("", symbolInfoObj["param2"]!["longName"]!.GetValue<string>());
+            Assert.HasCount(3, symbolInfoObj["param2"]!.AsObject());
+            Assert.HasCount(1, symbolInfoObj["param3"]!.AsObject());
 
-            Assert.DoesNotContain(serialized.Properties(), p => p.Name == "IsHidden");
-            Assert.DoesNotContain(serialized.Properties(), p => p.Name == "UsageExamples");
+            Assert.DoesNotContain("IsHidden", serialized.Select(p => p.Key));
+            Assert.DoesNotContain("UsageExamples", serialized.Select(p => p.Key));
         }
     }
 }

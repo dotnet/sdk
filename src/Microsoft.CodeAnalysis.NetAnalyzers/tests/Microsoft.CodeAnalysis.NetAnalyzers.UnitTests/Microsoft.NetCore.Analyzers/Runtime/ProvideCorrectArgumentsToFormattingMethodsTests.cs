@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.ProvideCorrectArgumentsToFormattingMethodsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,11 +14,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class ProvideCorrectArgumentsToFormattingMethodsTests
     {
         #region Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241CSharpStringAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -55,7 +55,7 @@ public class C
             GetCSharpResultAt(18, 17));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241CSharpConsoleWriteAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -80,7 +80,7 @@ public class C
             GetCSharpResultAt(12, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241CSharpConsoleWriteLineAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -105,7 +105,7 @@ public class C
             GetCSharpResultAt(12, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241CSharpPassingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -142,7 +142,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241CSharpDifferentDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -180,7 +180,7 @@ public class C
             GetCSharpResultAt(21, 9, ProvideCorrectArgumentsToFormattingMethodsAnalyzer.InvalidFormatRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241CSharpExplicitObjectArraySupportedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -201,7 +201,7 @@ public class C
             GetCSharpResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241CSharpVarArgsNotSupportedAsync()
         {
             // currently not supported due to "https://github.com/dotnet/roslyn/issues/7346"
@@ -220,10 +220,10 @@ public class C
     }
 }
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241VBStringAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -255,7 +255,7 @@ End Class
             GetBasicResultAt(15, 17));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241VBConsoleWriteAsync()
         {
             // this works in VB
@@ -285,7 +285,7 @@ End Class
             GetBasicResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241VBConsoleWriteLineAsync()
         {
             // this works in VB
@@ -315,7 +315,7 @@ End Class
             GetBasicResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241VBPassingAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -344,7 +344,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241VBExplicitObjectArraySupportedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -363,7 +363,7 @@ End Class
             GetBasicResultAt(8, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2241CSharpFormatStringParserAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -388,14 +388,14 @@ public class C
 ");
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]
         // No configuration - validate no diagnostics in default configuration
-        [InlineData(null)]
+        [DataRow(null)]
         // Configured but disabled
-        [InlineData(false)]
+        [DataRow(false)]
         // Configured and enabled
-        [InlineData(true)]
+        [DataRow(true)]
         public async Task EditorConfigConfiguration_HeuristicAdditionalStringFormattingMethodsAsync(bool? editorConfig)
         {
             string editorConfigText = editorConfig == null ? string.Empty :
@@ -433,7 +433,7 @@ class Test
                     GetCSharpResultAt(8, 17));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var basicTest = new VerifyVB.Test
             {
@@ -467,10 +467,10 @@ End Class"
                     GetBasicResultAt(8, 17));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(7023, "https://github.com/dotnet/roslyn-analyzers/issues/7023")]
 
         public async Task EditorConfigConfiguration_HeuristicAdditionalStringFormattingMethodsShouldNotConsiderIFormattableToString()
@@ -503,7 +503,7 @@ class Test
                 }
             };
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var basicTest = new VerifyVB.Test
             {
@@ -530,21 +530,21 @@ End Class"
                 }
             };
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]
         // No configuration - validate no diagnostics in default configuration
-        [InlineData("")]
+        [DataRow("")]
         // Match by method name
-        [InlineData("dotnet_code_quality.additional_string_formatting_methods = MyFormat")]
+        [DataRow("dotnet_code_quality.additional_string_formatting_methods = MyFormat")]
         // Setting only for Rule ID
-        [InlineData("dotnet_code_quality." + ProvideCorrectArgumentsToFormattingMethodsAnalyzer.RuleId + ".additional_string_formatting_methods = MyFormat")]
+        [DataRow("dotnet_code_quality." + ProvideCorrectArgumentsToFormattingMethodsAnalyzer.RuleId + ".additional_string_formatting_methods = MyFormat")]
         // Match by documentation ID without "M:" prefix
-        [InlineData("dotnet_code_quality.additional_string_formatting_methods = Test.MyFormat(System.String,System.Object[])~System.String")]
+        [DataRow("dotnet_code_quality.additional_string_formatting_methods = Test.MyFormat(System.String,System.Object[])~System.String")]
         // Match by documentation ID with "M:" prefix
-        [InlineData("dotnet_code_quality.additional_string_formatting_methods = M:Test.MyFormat(System.String,System.Object[])~System.String")]
+        [DataRow("dotnet_code_quality.additional_string_formatting_methods = M:Test.MyFormat(System.String,System.Object[])~System.String")]
         public async Task EditorConfigConfiguration_AdditionalStringFormattingMethodsAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -579,7 +579,7 @@ class Test
                     GetCSharpResultAt(8, 17));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var basicTest = new VerifyVB.Test
             {
@@ -613,10 +613,10 @@ End Class"
                     GetBasicResultAt(8, 17));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6012, "https://github.com/dotnet/roslyn-analyzers/issues/6012")]
         public async Task EditorConfigConfiguration_StringSyntaxAnnotatedMethodsAsync()
         {
@@ -647,7 +647,7 @@ class Test
                 // Test0.cs(10,17): warning CA2241: Provide correct arguments to formatting methods
                 GetCSharpResultAt(10, 17));
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var basicTest = new VerifyVB.Test
             {
@@ -676,10 +676,10 @@ End Class"
                 // Test0.vb(10,17): warning CA2241: Provide correct arguments to formatting methods
                 GetBasicResultAt(10, 17));
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EditorConfigConfiguration_StringSyntaxAnnotatedMethodsMultipleFrameworksAsync()
         {
             await new VerifyCS.Test
@@ -752,7 +752,7 @@ End Class"
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -824,10 +824,10 @@ End Class"
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(90357, "https://github.com/dotnet/runtime/issues/90357")]
         public async Task CA2241CSharpMethodWithNoPossibleArgumentsOnlyChecksFormat()
         {
@@ -858,7 +858,7 @@ class Test
             csharpTest.ExpectedDiagnostics.Add(
                 GetCSharpResultAt(11, 17, ProvideCorrectArgumentsToFormattingMethodsAnalyzer.InvalidFormatRule));
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         #endregion

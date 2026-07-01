@@ -10,7 +10,6 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.CSharp.Analyzers.Performance;
 using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>;
@@ -20,10 +19,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    public static partial class UsePropertyInsteadOfCountMethodWhenAvailableTests
+    [TestClass]
+    public partial class UsePropertyInsteadOfCountMethodWhenAvailableTests
     {
-        [Fact]
-        public static Task CSharp_AsMethodArgument_TestsAsync()
+        [TestMethod]
+        public Task CSharp_AsMethodArgument_TestsAsync()
             => new VerifyCS.Test
             {
                 TestState =
@@ -64,10 +64,10 @@ public static class C
 " ,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
-        [Fact]
-        public static Task Basic_AsMethodArgument_TestsAsync()
+        [TestMethod]
+        public Task Basic_AsMethodArgument_TestsAsync()
             => new VerifyVB.Test
             {
                 TestState =
@@ -108,10 +108,10 @@ End Class
 " ,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
-        [Fact]
-        public static Task CSharp_ImmutableArray_TestsAsync()
+        [TestMethod]
+        public Task CSharp_ImmutableArray_TestsAsync()
             => new VerifyCS.Test
             {
                 TestState =
@@ -144,10 +144,10 @@ public static class C
 " ,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
-        [Fact]
-        public static Task Basic_ImmutableArray_TestsAsync()
+        [TestMethod]
+        public Task Basic_ImmutableArray_TestsAsync()
             => new VerifyVB.Test
             {
                 TestState =
@@ -190,15 +190,15 @@ End Module
 " ,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
-        [Theory]
-        [InlineData("string[]", nameof(Array.Length))]
-        [InlineData("System.Collections.Immutable.ImmutableArray<int>", nameof(ImmutableArray<int>.Length))]
-        [InlineData("System.Collections.Generic.List<int>", nameof(List<int>.Count))]
-        [InlineData("System.Collections.Generic.IList<int>", nameof(IList<int>.Count))]
-        [InlineData("System.Collections.Generic.ICollection<int>", nameof(ICollection<int>.Count))]
-        public static Task CSharp_FixedAsync(string type, string propertyName)
+        [TestMethod]
+        [DataRow("string[]", nameof(Array.Length))]
+        [DataRow("System.Collections.Immutable.ImmutableArray<int>", nameof(ImmutableArray<int>.Length))]
+        [DataRow("System.Collections.Generic.List<int>", nameof(List<int>.Count))]
+        [DataRow("System.Collections.Generic.IList<int>", nameof(IList<int>.Count))]
+        [DataRow("System.Collections.Generic.ICollection<int>", nameof(ICollection<int>.Count))]
+        public Task CSharp_FixedAsync(string type, string propertyName)
             => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
@@ -222,13 +222,13 @@ public static class C
 }}
 ");
 
-        [Theory]
-        [InlineData("string[]", nameof(Array.Length))]
-        [InlineData("System.Collections.Immutable.ImmutableArray<int>?", nameof(ImmutableArray<int>.Length))]
-        [InlineData("System.Collections.Generic.List<int>", nameof(List<int>.Count))]
-        [InlineData("System.Collections.Generic.IList<int>", nameof(IList<int>.Count))]
-        [InlineData("System.Collections.Generic.ICollection<int>", nameof(ICollection<int>.Count))]
-        public static Task CSharp_Conditional_FixedAsync(string type, string propertyName)
+        [TestMethod]
+        [DataRow("string[]", nameof(Array.Length))]
+        [DataRow("System.Collections.Immutable.ImmutableArray<int>?", nameof(ImmutableArray<int>.Length))]
+        [DataRow("System.Collections.Generic.List<int>", nameof(List<int>.Count))]
+        [DataRow("System.Collections.Generic.IList<int>", nameof(IList<int>.Count))]
+        [DataRow("System.Collections.Generic.ICollection<int>", nameof(ICollection<int>.Count))]
+        public Task CSharp_Conditional_FixedAsync(string type, string propertyName)
             => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
@@ -252,10 +252,10 @@ public static class C
 }}
 ");
 
-        [Theory]
-        [InlineData("string()", nameof(Array.Length))]
-        [InlineData("System.Collections.Immutable.ImmutableArray(Of Integer)", nameof(ImmutableArray<int>.Length))]
-        public static Task Basic_FixedAsync(string type, string propertyName)
+        [TestMethod]
+        [DataRow("string()", nameof(Array.Length))]
+        [DataRow("System.Collections.Immutable.ImmutableArray(Of Integer)", nameof(ImmutableArray<int>.Length))]
+        public Task Basic_FixedAsync(string type, string propertyName)
             => VerifyVB.VerifyCodeFixAsync(
                 $@"Imports System
 Imports System.Linq
@@ -285,10 +285,10 @@ Public Module M
 End Module
 ");
 
-        [Theory]
-        [InlineData("string()", nameof(Array.Length))]
-        [InlineData("System.Collections.Immutable.ImmutableArray(Of Integer)?", nameof(ImmutableArray<int>.Length))]
-        public static Task Basic_Conditional_FixedAsync(string type, string propertyName)
+        [TestMethod]
+        [DataRow("string()", nameof(Array.Length))]
+        [DataRow("System.Collections.Immutable.ImmutableArray(Of Integer)?", nameof(ImmutableArray<int>.Length))]
+        public Task Basic_Conditional_FixedAsync(string type, string propertyName)
             => VerifyVB.VerifyCodeFixAsync(
                 $@"Imports System
 Imports System.Linq
@@ -318,9 +318,9 @@ Public Module M
 End Module
 ");
 
-        [Theory]
-        [InlineData("System.Collections.Generic.IEnumerable<int>")]
-        public static Task CSharp_NoDiagnosticAsync(string type)
+        [TestMethod]
+        [DataRow("System.Collections.Generic.IEnumerable<int>")]
+        public Task CSharp_NoDiagnosticAsync(string type)
             => VerifyCS.VerifyAnalyzerAsync(
                 $@"using System;
 using System.Linq;
@@ -331,9 +331,9 @@ public static class C
 }}
 ");
 
-        [Theory]
-        [InlineData("System.Collections.Generic.IEnumerable(Of Integer)")]
-        public static Task Basic_NoDiagnosticAsync(string type)
+        [TestMethod]
+        [DataRow("System.Collections.Generic.IEnumerable(Of Integer)")]
+        public Task Basic_NoDiagnosticAsync(string type)
             => VerifyVB.VerifyAnalyzerAsync(
                 $@"Imports System
 Imports System.Linq
@@ -347,11 +347,11 @@ Public Module M
 End Module
 ");
 
-        [Theory]
-        [InlineData("System.Collections.Generic.List(Of Integer)")]
-        [InlineData("System.Collections.Generic.IList(Of Integer)")]
-        [InlineData("System.Collections.Generic.ICollection(Of Integer)")]
-        public static Task Basic_PropertyInvocationWithParenthesis_NoDiagnosticAsync(string type)
+        [TestMethod]
+        [DataRow("System.Collections.Generic.List(Of Integer)")]
+        [DataRow("System.Collections.Generic.IList(Of Integer)")]
+        [DataRow("System.Collections.Generic.ICollection(Of Integer)")]
+        public Task Basic_PropertyInvocationWithParenthesis_NoDiagnosticAsync(string type)
             => VerifyVB.VerifyAnalyzerAsync(
                 $@"Imports System
 Imports System.Linq
@@ -365,8 +365,8 @@ Public Module M
 End Module
 ");
 
-        [Fact]
-        public static Task CSharp_ICollectionOfTImplementerWithImplicitCount_FixedAsync()
+        [TestMethod]
+        public Task CSharp_ICollectionOfTImplementerWithImplicitCount_FixedAsync()
             => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
@@ -414,8 +414,8 @@ public static class C
 }}
 ");
 
-        [Fact]
-        public static Task CSharp_ICollectionImplementerWithImplicitCount_FixedAsync()
+        [TestMethod]
+        public Task CSharp_ICollectionImplementerWithImplicitCount_FixedAsync()
             => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
@@ -461,8 +461,8 @@ public static class C
 }}
 ");
 
-        [Fact]
-        public static Task CSharp_ICollectionOfTImplementerWithExplicitCount_NoDiagnosticAsync()
+        [TestMethod]
+        public Task CSharp_ICollectionOfTImplementerWithExplicitCount_NoDiagnosticAsync()
             => VerifyCS.VerifyAnalyzerAsync(
                 $@"using System;
 using System.Linq;
@@ -485,8 +485,8 @@ public static class C
 }}
 ");
 
-        [Fact]
-        public static Task CSharp_InterfaceShadowingICollectionOfT_FixedAsync()
+        [TestMethod]
+        public Task CSharp_InterfaceShadowingICollectionOfT_FixedAsync()
             => VerifyCS.VerifyCodeFixAsync(
                 @"using System;
 using System.Linq;
@@ -518,8 +518,8 @@ public static class C
 }
 ");
 
-        [Fact]
-        public static Task CSharp_InterfaceShadowingICollection_FixedAsync()
+        [TestMethod]
+        public Task CSharp_InterfaceShadowingICollection_FixedAsync()
             => VerifyCS.VerifyCodeFixAsync(
                 @"using System;
 using System.Linq;
@@ -555,8 +555,8 @@ public static class C
 }
 ");
 
-        [Fact]
-        public static Task CSharp_ClassShadowingICollectionOfT_FixedAsync()
+        [TestMethod]
+        public Task CSharp_ClassShadowingICollectionOfT_FixedAsync()
             => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
@@ -606,8 +606,8 @@ public static class C
 }}
 ");
 
-        [Fact]
-        public static Task CSharp_ClassShadowingICollection_FixedAsync()
+        [TestMethod]
+        public Task CSharp_ClassShadowingICollection_FixedAsync()
             => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
@@ -655,8 +655,8 @@ public static class C
 }}
 ");
 
-        [Fact, WorkItem(2974, "https://github.com/dotnet/roslyn-analyzers/issues/2974")]
-        public static async Task CA1829_IReadOnlyCollectionAsync()
+        [TestMethod, WorkItem(2974, "https://github.com/dotnet/roslyn-analyzers/issues/2974")]
+        public async Task CA1829_IReadOnlyCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -674,8 +674,8 @@ public class SomeClass
                     .WithArguments(nameof(IReadOnlyCollection<int>.Count)));
         }
 
-        [Fact, WorkItem(3724, "https://github.com/dotnet/roslyn-analyzers/issues/3724")]
-        public static async Task PropertyAccessParentIsNotAlwaysDirectlyTheInvocationAsync()
+        [TestMethod, WorkItem(3724, "https://github.com/dotnet/roslyn-analyzers/issues/3724")]
+        public async Task PropertyAccessParentIsNotAlwaysDirectlyTheInvocationAsync()
         {
             await new VerifyCS.Test
             {
@@ -707,7 +707,7 @@ public class C
 
     public static bool IsDirectorySeparator(char c) => false;
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -739,11 +739,11 @@ Public Class C
     End Function
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public static async Task CA1827_CA1829_ExpressionTree_NoDiagnosticAsync()
+        [TestMethod]
+        public async Task CA1827_CA1829_ExpressionTree_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Linq;
@@ -757,8 +757,8 @@ class C
 }");
         }
 
-        [Fact]
-        public static async Task CA1836_ExpressionTree_NoDiagnosticAsync()
+        [TestMethod]
+        public async Task CA1836_ExpressionTree_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Concurrent;
@@ -774,13 +774,14 @@ class C
         }
     }
 
+    [TestClass]
     public abstract class UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
         protected UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests(TestsSourceCodeProvider sourceProvider, VerifierBase verifier)
             : base(sourceProvider, verifier) { }
 
-        [Fact]
+        [TestMethod]
         public Task CountEqualsNonZero_WithoutPredicate_FixedAsync()
             => VerifyAsync(
                 methodName: SourceProvider.MemberName,
@@ -792,7 +793,7 @@ class C
                     SourceProvider.ExtensionsNamespace),
                 extensionsSource: null);
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3700"), WorkItem(3700, "https://github.com/dotnet/roslyn-analyzers/issues/3700")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/3700"), WorkItem(3700, "https://github.com/dotnet/roslyn-analyzers/issues/3700")]
         public Task NonZeroEqualsCount_WithoutPredicate_FixedAsync()
             => VerifyAsync(
                 methodName: SourceProvider.MemberName,
@@ -809,9 +810,9 @@ class C
             .Where(x => (bool)x[0])
             .Select(x => new object[] { x[1], x[2], x[3] });
 
-        [Theory]
+        [TestMethod]
         // Scenarios that are not diagnosed with CA1836 should fallback in CA1829.
-        [MemberData(nameof(NoDiagnosisOnlyTestData))]
+        [DynamicData(nameof(NoDiagnosisOnlyTestData))]
         public Task PropertyOnBinaryOperationAsync(int literal, BinaryOperatorKind @operator, bool isRightSideExpression)
         {
             string testSource;
@@ -867,6 +868,7 @@ class C
         }
     }
 
+    [TestClass]
     public class CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Concurrent
         : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
     {
@@ -882,6 +884,7 @@ class C
         { }
     }
 
+    [TestClass]
     public class CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable
         : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
     {
@@ -897,6 +900,7 @@ class C
         { }
     }
 
+    [TestClass]
     public class BasicUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable
         : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
     {

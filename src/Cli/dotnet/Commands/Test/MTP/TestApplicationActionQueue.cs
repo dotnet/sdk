@@ -3,7 +3,7 @@
 
 using System.Threading.Channels;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -15,16 +15,16 @@ internal class TestApplicationActionQueue
 
     private int? _aggregateExitCode;
 
-    private static readonly Lock _lock = new();
+    private readonly Lock _lock = new();
 
-    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
+    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested));
+            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested, ctrlC));
         }
     }
 
@@ -36,8 +36,11 @@ internal class TestApplicationActionQueue
         }
     }
 
-    public int WaitAllActions()
+    public int CompleteEnqueueAndWait()
     {
+        // Notify readers that no more data will be written
+        _channel.Writer.Complete();
+
         Task.WaitAll(_readers);
 
         // If _aggregateExitCode is null, that means we didn't get any results.
@@ -45,69 +48,75 @@ internal class TestApplicationActionQueue
         return _aggregateExitCode ?? ExitCode.ZeroTests;
     }
 
-    public void EnqueueCompleted()
+    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
     {
-        //Notify readers that no more data will be written
-        _channel.Writer.Complete();
-    }
-
-    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
-    {
-        await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync())
+        try
         {
-            foreach (var module in nonParallelizedGroup)
+            await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync(ctrlC.Token))
             {
-                int result = ExitCode.GenericFailure;
-                var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested);
-                try
+                foreach (var module in nonParallelizedGroup)
                 {
-                    using (testApp)
-                    {
-                        result = await testApp.RunAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    var exAsString = ex.ToString();
-                    Logger.LogTrace($"Exception running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {exAsString}");
-                    Reporter.Error.WriteLine(string.Format(CliCommandStrings.ErrorRunningTestModule, module.RunProperties?.Command, module.RunProperties?.Arguments, exAsString));
-                    result = ExitCode.GenericFailure;
-                }
+                    ctrlC.Token.ThrowIfCancellationRequested();
 
-                if (result == ExitCode.Success && testApp.HasFailureDuringDispose)
-                {
-                    result = ExitCode.GenericFailure;
-                }
-                
-                lock (_lock)
-                {
-                    if (_aggregateExitCode is null)
+                    int result = ExitCode.GenericFailure;
+                    var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested);
+                    try
                     {
-                        // This is the first result we are getting.
-                        // So we assign the exit code, regardless of whether it's failure or success.
-                        _aggregateExitCode = result;
-                    }
-                    else if (_aggregateExitCode.Value != result)
-                    {
-                        if (_aggregateExitCode == ExitCode.Success)
+                        using (testApp)
                         {
-                            // The current result we are dealing with is the first failure after previous Success.
-                            // So we assign the current failure.
+                            result = await testApp.RunAsync(ctrlC);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        var exAsString = ex.ToString();
+                        Logger.LogTrace($"Exception running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {exAsString}");
+                        Reporter.Error.WriteLine(string.Format(CliCommandStrings.ErrorRunningTestModule, module.RunProperties?.Command, module.RunProperties?.Arguments, exAsString));
+                        result = ExitCode.GenericFailure;
+                    }
+
+                    if (result == ExitCode.Success && testApp.HasFailureDuringDispose)
+                    {
+                        result = ExitCode.GenericFailure;
+                    }
+
+                    lock (_lock)
+                    {
+                        if (_aggregateExitCode is null)
+                        {
+                            // This is the first result we are getting.
+                            // So we assign the exit code, regardless of whether it's failure or success.
                             _aggregateExitCode = result;
                         }
-                        else if (result != ExitCode.Success)
+                        else if (_aggregateExitCode.Value != result)
                         {
-                            // If we get a new failure result, which is different from a previous failure, we use GenericFailure.
-                            _aggregateExitCode = ExitCode.GenericFailure;
-                        }
-                        else
-                        {
-                            // The current result is a success, but we already have a failure.
-                            // So, we keep the failure exit code.
+                            if (_aggregateExitCode == ExitCode.Success)
+                            {
+                                // The current result we are dealing with is the first failure after previous Success.
+                                // So we assign the current failure.
+                                _aggregateExitCode = result;
+                            }
+                            else if (result != ExitCode.Success)
+                            {
+                                // If we get a new failure result, which is different from a previous failure, we use GenericFailure.
+                                _aggregateExitCode = ExitCode.GenericFailure;
+                            }
+                            else
+                            {
+                                // The current result is a success, but we already have a failure.
+                                // So, we keep the failure exit code.
+                            }
                         }
                     }
                 }
             }
+        }
+        catch (OperationCanceledException) when (ctrlC.Token.IsCancellationRequested)
+        {
+            // Stop scheduling new test apps once the user has pressed Ctrl+C the first time.
+            // Already-running test apps are left alone so they can gracefully cancel themselves
+            // (and report final session state via IPC); a second Ctrl+C is what force-kills them
+            // via the CtrlCCancellationManager.
         }
     }
 }

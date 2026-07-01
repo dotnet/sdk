@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DisposeObjectsBeforeLosingScope,
@@ -21,9 +20,10 @@ using VisualBasicLanguageVersion = Microsoft.CodeAnalysis.VisualBasic.LanguageVe
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.DisposeAnalysis)]
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.DisposeAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+    [TestClass]
     public partial class DisposeObjectsBeforeLosingScopeTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
@@ -76,7 +76,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                    dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
                 string.Empty;
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableInitializer_DisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -116,7 +116,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableInitializer_NoDisposeCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -158,7 +158,7 @@ End Class",
             GetBasicResultAt(12, 18, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableAssignment_DisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -208,7 +208,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableAssignment_NoDisposeCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -252,7 +252,7 @@ End Class",
             GetBasicResultAt(13, 13, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithDisposableAssignment_DisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -292,7 +292,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithDisposableAssignment_NoDisposeCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -334,7 +334,7 @@ End Class",
             GetBasicResultAt(12, 13, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutAndRefParametersWithDisposableAssignment_NoDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -373,7 +373,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutDisposableArgument_NoDisposeCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -428,7 +428,7 @@ class Test
             GetCSharpResultAt(39, 12, "out a3"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutDisposableArgument_DisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -480,7 +480,7 @@ class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TryGetSpecialCase_OutDisposableArgument_NoDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -511,7 +511,7 @@ class MyCollection
 ");
         }
 
-        [Fact, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
+        [TestMethod, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
         public async Task OutDisposableArgument_StoredIntoField_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -540,7 +540,7 @@ class Test
 ");
         }
 
-        [Fact, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
+        [TestMethod, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
         public async Task OutDisposableArgument_WithinTryXXXInvocation_DisposedOnSuccessPath_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -575,7 +575,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
+        [TestMethod, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
         public async Task OutDisposableArgument_WithinTryXXXInvocation_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -602,7 +602,7 @@ public class C
             GetCSharpResultAt(15, 40, "out IDisposable value"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithMultipleDisposableAssignment_DisposeCallOnSome_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -656,7 +656,7 @@ End Class",
             GetBasicResultAt(16, 13, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FieldWithDisposableAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -708,7 +708,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PropertyWithDisposableAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -760,7 +760,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Interprocedural_DisposedInHelper_MethodInvocation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -837,7 +837,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Interprocedural_DisposeOwnershipTransfer_MethodInvocation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -918,7 +918,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Interprocedural_NoDisposeOwnershipTransfer_MethodInvocation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1017,7 +1017,7 @@ End Class
             GetBasicResultAt(18, 51, "new A(3)"));
         }
 
-        [Fact, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
+        [TestMethod, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
         public async Task Interprocedural_DisposedInHelper_ConstructorInvocation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1090,7 +1090,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
+        [TestMethod, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
         public async Task Interprocedural_DisposeOwnershipTransfer_ConstructorInvocation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1165,7 +1165,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
+        [TestMethod, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
         public async Task Interprocedural_NoDisposeOwnershipTransfer_ConstructorInvocation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1254,9 +1254,9 @@ End Class
             GetBasicResultAt(16, 51, "new A(2)"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public async Task Configured_DisposeOwnershipTransfer_AtConstructorInvocationAsync(bool disposeOwnershipTransferAtConstructor)
         {
             var editorConfigText = disposeOwnershipTransferAtConstructor ?
@@ -1311,7 +1311,7 @@ class DisposableOwnerType
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             source = @"
 Imports System
@@ -1357,12 +1357,12 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public async Task Configured_DisposeOwnershipTransfer_AtMethodCallAsync(bool disposeOwnershipTransferAtMethodCall)
         {
             var editorConfigText = disposeOwnershipTransferAtMethodCall ?
@@ -1414,7 +1414,7 @@ class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             source = @"
 Imports System
@@ -1458,15 +1458,15 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404")]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task DocsMicrosoft_SampleAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404")]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task DocsMicrosoft_SampleAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             // See https://learn.microsoft.com/visualstudio/code-quality/ca2000
 
@@ -1562,7 +1562,7 @@ public class SerialPort : IDisposable
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             source = @"
 Imports System
@@ -1642,10 +1642,10 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404#issuecomment-446715696")]
+        [TestMethod, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404#issuecomment-446715696")]
         public async Task DisposableCreationInLoopAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1677,12 +1677,12 @@ End Class
 ");
         }
 
-        [Theory, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404#issuecomment-446715696")]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task ExceptionInFinallyAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404#issuecomment-446715696")]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task ExceptionInFinallyAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var vbTest = new VerifyVB.Test
             {
@@ -1735,15 +1735,15 @@ End Class
             {
                 vbTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    // Test0.vb(7,26): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                    // Test0.vb(7,26): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                     GetBasicMayBeNotDisposedOnExceptionPathsResultAt(7, 26, "New A(1)")
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableAssignment_DisposeBoolCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1802,7 +1802,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableAssignment_CloseCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1861,7 +1861,7 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
+        [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task LocalWithDisposableAssignment_DisposeAsyncCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1919,7 +1919,7 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
+        [TestMethod, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
         public async Task LocalWithAsyncDisposableAssignment_DisposeAsyncCall_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -1946,7 +1946,7 @@ class Test
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1969,10 +1969,10 @@ Class Test
         Await e.DisposeAsync()
     End Function
 End Class"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
+        [TestMethod, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
         public async Task LocalWithAsyncDisposableAssignment_NoDisposeAsyncCall_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -2002,7 +2002,7 @@ class Test
                 {
                     GetCSharpResultAt(17, 17, "new AsyncDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2028,10 +2028,10 @@ End Class",
                 {
                     GetBasicResultAt(15, 17, "New AsyncDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
+        [TestMethod, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
         public async Task LocalWithAsyncDisposableAndDisposableAssignment_Disposed_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -2067,7 +2067,7 @@ class Test
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2100,10 +2100,10 @@ Class Test
         End Using
     End Function
 End Class"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
+        [TestMethod, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
         public async Task LocalWithAsyncDisposableAndDisposableAssignment_NotDisposed_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -2137,7 +2137,7 @@ class Test
                 {
                     GetCSharpResultAt(21, 17, "new AsyncDisposableAndDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2167,10 +2167,10 @@ End Class",
                 {
                     GetBasicResultAt(19, 17, "New AsyncDisposableAndDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6765, "https://github.com/dotnet/roslyn-analyzers/issues/6765")]
+        [TestMethod, WorkItem(6765, "https://github.com/dotnet/roslyn-analyzers/issues/6765")]
         public async Task LocalWithAsyncDisposableAndAwaitUsingStatement_Disposed_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -2217,10 +2217,10 @@ class Test
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6765, "https://github.com/dotnet/roslyn-analyzers/issues/6765")]
+        [TestMethod, WorkItem(6765, "https://github.com/dotnet/roslyn-analyzers/issues/6765")]
         public async Task LocalWithAsyncDisposableAndAwaitUsingStatement_NotDisposed_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -2265,10 +2265,10 @@ class Test
                     // /0/Test0.cs(26,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposableAndDisposable()' before all references to it are out of scope
                     GetCSharpResultAt(26, 18, "new AsyncDisposableAndDisposable()")
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
+        [TestMethod, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
         public async Task LocalWithRefStructDisposableAssignment_NotDisposed_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -2296,10 +2296,10 @@ class Test
                 {
                     GetCSharpResultAt(15, 17, "new RefStructDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
+        [TestMethod, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
         public async Task LocalWithRefStructDisposableAssignment_Internal_NotDisposed_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -2327,10 +2327,10 @@ class Test
                 {
                     GetCSharpResultAt(15, 17, "new RefStructDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
+        [TestMethod, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
         public async Task LocalWithRefStructDisposableAssignment_Disposed_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -2354,10 +2354,10 @@ class Test
         e.Dispose();
     }
 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArrayElementWithDisposableAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2398,7 +2398,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArrayElementWithDisposableAssignment_ConstantIndex_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2441,7 +2441,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArrayElementWithDisposableAssignment_NonConstantIndex_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2484,7 +2484,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArrayElementWithDisposableAssignment_NonConstantIndex_02_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2529,7 +2529,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArrayInitializer_ElementWithDisposableAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2569,7 +2569,7 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(37528, "https://github.com/dotnet/roslyn/issues/37528")]
+        [TestMethod, WorkItem(37528, "https://github.com/dotnet/roslyn/issues/37528")]
         public async Task ArrayInitializer_MultipleElementsWithDisposableAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2609,7 +2609,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArrayInitializer_ElementWithDisposableAssignment_ConstantIndex_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2651,7 +2651,7 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(37528, "https://github.com/dotnet/roslyn/issues/37528")]
+        [TestMethod, WorkItem(37528, "https://github.com/dotnet/roslyn/issues/37528")]
         public async Task ArrayInitializer_MultipleElementsWithDisposableAssignment_ConstantIndices_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2695,7 +2695,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArrayInitializer_ElementWithDisposableAssignment_NonConstantIndex_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2737,12 +2737,12 @@ Class Test
 End Class");
         }
 
-        [Theory]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task CollectionInitializer_ElementWithDisposableAssignment_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task CollectionInitializer_ElementWithDisposableAssignment_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -2779,7 +2779,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2810,15 +2810,15 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task CollectionInitializer_ElementWithDisposableAssignment_ConstantIndex_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task CollectionInitializer_ElementWithDisposableAssignment_ConstantIndex_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -2856,7 +2856,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2888,15 +2888,15 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task CollectionInitializer_ElementWithDisposableAssignment_NonConstantIndex_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task CollectionInitializer_ElementWithDisposableAssignment_NonConstantIndex_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -2934,7 +2934,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2966,15 +2966,15 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task CollectionAdd_SpecialCases_ElementWithDisposableAssignment_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task CollectionAdd_SpecialCases_ElementWithDisposableAssignment_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -3045,7 +3045,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -3122,15 +3122,15 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task CollectionAdd_IReadOnlyCollection_SpecialCases_ElementWithDisposableAssignment_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task CollectionAdd_IReadOnlyCollection_SpecialCases_ElementWithDisposableAssignment_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -3202,7 +3202,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -3272,10 +3272,10 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemberInitializerWithDisposableAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3321,7 +3321,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StructImplementingIDisposable_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3361,7 +3361,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonUserDefinedConversions_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3417,7 +3417,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonUserDefinedConversions_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3475,7 +3475,7 @@ End Class",
             GetBasicResultAt(18, 33, "New B()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UserDefinedConversions_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3559,7 +3559,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableAssignment_ByRef_DisposedInCallee_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3612,7 +3612,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableAssignment_ByRefEscape_AbstractVirtualMethod_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3671,7 +3671,7 @@ Public MustInherit Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDisposableAssignment_OutRefKind_NotDisposed_DiagnosticAsync()
         {
             // Local/parameter passed as out is not considered escaped.
@@ -3706,7 +3706,7 @@ class Test
             GetCSharpResultAt(17, 12, "out a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalWithDefaultOfDisposableAssignment_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3746,7 +3746,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NullCoalesce_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3796,7 +3796,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NullCoalesce_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3848,7 +3848,7 @@ End Class",
             GetBasicResultAt(12, 28, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhileLoop_DisposeOnBackEdge_NoDiagnosticAsync()
         {
             // Need precise CFG to avoid false reports.
@@ -3905,7 +3905,7 @@ Module Test
 End Module");
         }
 
-        [Fact, WorkItem(1648, "https://github.com/dotnet/roslyn-analyzers/issues/1648")]
+        [TestMethod, WorkItem(1648, "https://github.com/dotnet/roslyn-analyzers/issues/1648")]
         public async Task WhileLoop_MissingDisposeOnExit_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3933,7 +3933,7 @@ class Test
     }
 }
 ",
-            // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(17, 15, "new A(1)"),
             // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
             GetCSharpResultAt(21, 17, "new A(2)"));
@@ -3960,13 +3960,13 @@ Module Test
         End While
     End Sub
 End Module",
-            // Test0.vb(16,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(16,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(16, 18, "New A(1)"),
             // Test0.vb(19,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A(2)' before all references to it are out of scope.
             GetBasicResultAt(19, 17, "New A(2)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhileLoop_MissingDisposeOnEntry_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4035,7 +4035,7 @@ End Module",
             GetBasicResultAt(13, 18, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DoWhileLoop_DisposeOnBackEdge_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4091,7 +4091,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DoWhileLoop_MissingDisposeOnExit_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4146,7 +4146,7 @@ End Module",
             GetBasicResultAt(18, 17, "New A(2)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DoWhileLoop_MissingDisposeOnEntry_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4214,7 +4214,7 @@ End Module",
             GetBasicResultAt(13, 18, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ForLoop_DisposeOnBackEdge_NoDiagnosticAsync()
         {
             // Need precise CFG to avoid false reports.
@@ -4247,9 +4247,9 @@ class Test
     }
 }
 ",
-            // Test0.cs(16,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(16,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(16, 15, "new A(1)"),
-            // Test0.cs(25,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(25,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(25, 17, "new A(2)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -4276,13 +4276,13 @@ Module Test
         Next
     End Sub
 End Module",
-            // Test0.vb(15,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(15,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(15, 18, "New A(1)"),
-            // Test0.vb(21,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(21,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(21, 17, "New A(2)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ForLoop_MissingDisposeOnExit_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4310,7 +4310,7 @@ class Test
     }
 }
 ",
-            // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(17, 15, "new A(1)"),
             // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
             GetCSharpResultAt(21, 17, "new A(2)"));
@@ -4337,13 +4337,13 @@ Module Test
         Next
     End Sub
 End Module",
-            // Test0.vb(16,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(16,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(16, 18, "New A(1)"),
             // Test0.vb(19,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A(2)' before all references to it are out of scope.
             GetBasicResultAt(19, 17, "New A(2)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ForLoop_MissingDisposeOnEntry_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4397,7 +4397,7 @@ End Module",
             GetBasicResultAt(13, 18, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IfStatement_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4472,7 +4472,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IfStatement_02_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4572,7 +4572,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IfStatement_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4711,7 +4711,7 @@ End Class",
             GetBasicResultAt(37, 17, "New D()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IfStatement_02_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4881,7 +4881,7 @@ End Class",
                 GetBasicResultAt(36, 21, "New D()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UsingStatement_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4952,7 +4952,7 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(2201, "https://github.com/dotnet/roslyn-analyzers/issues/2201")]
+        [TestMethod, WorkItem(2201, "https://github.com/dotnet/roslyn-analyzers/issues/2201")]
         public async Task UsingStatementInTryCatch_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -4988,7 +4988,7 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(2201, "https://github.com/dotnet/roslyn-analyzers/issues/2201")]
+        [TestMethod, WorkItem(2201, "https://github.com/dotnet/roslyn-analyzers/issues/2201")]
         public async Task NestedTryFinallyInTryCatch_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5032,7 +5032,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReturnStatement_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5109,7 +5109,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReturnStatement_02_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5168,7 +5168,7 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
+        [TestMethod, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
         public async Task ReturnStatement_03_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5198,7 +5198,7 @@ public class C
 ");
         }
 
-        [Fact, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
+        [TestMethod, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
         public async Task ReturnStatement_04_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5230,7 +5230,7 @@ public class C
 ");
         }
 
-        [Fact, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
+        [TestMethod, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
         public async Task ReturnStatement_05_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5258,7 +5258,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunctionInvocation_EmptyBody_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5293,7 +5293,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunctionInvocation_DisposesCapturedValue_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5326,7 +5326,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunctionInvocation_CapturedValueAssignedNewDisposable_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5361,7 +5361,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunctionInvocation_ChangesCapturedValueContextSensitive_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5396,7 +5396,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreationNotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5429,7 +5429,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreation_InvokedMultipleTimes_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5463,7 +5463,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreationReturned_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5499,7 +5499,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreationReturned_Disposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5531,7 +5531,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreationAssignedToRefOutParameter_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5569,7 +5569,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreationAssignedToRefOutParameter_Disposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5605,7 +5605,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreationAssignedToRefOutParameter_MultipleCalls_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5645,7 +5645,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreation_MultipleLevelsBelow_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5688,7 +5688,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunction_DisposableCreation_MultipleLevelsBelow_Nested_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5731,7 +5731,7 @@ class Test
             // VB has no local functions.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LambdaInvocation_EmptyBody_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5788,7 +5788,7 @@ End Module",
             GetBasicResultAt(14, 13, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LambdaInvocation_DisposesCapturedValue_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5842,7 +5842,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LambdaInvocation_CapturedValueAssignedNewDisposable_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5900,7 +5900,7 @@ End Module",
             GetBasicResultAt(16, 49, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LambdaInvocation_ChangesCapturedValueContextSensitive_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5957,7 +5957,7 @@ End Module",
             GetBasicResultAt(19, 18, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreationNotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -5988,7 +5988,7 @@ class Test
             GetCSharpResultAt(18, 19, "new A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreation_InvokedMultipleTimes_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6020,7 +6020,7 @@ class Test
             GetCSharpResultAt(18, 19, "new A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreationReturned_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6054,7 +6054,7 @@ class Test
             GetCSharpResultAt(22, 17, "myLambda(/*2*/)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreationReturned_Disposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6084,7 +6084,7 @@ class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreationAssignedToRefOutParameter_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6121,7 +6121,7 @@ class Test
             GetCSharpResultAt(24, 28, "out a2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreationAssignedToRefOutParameter_Disposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6156,7 +6156,7 @@ class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreationAssignedToRefOutParameter_MultipleCalls_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6195,7 +6195,7 @@ class Test
             GetCSharpResultAt(23, 33, "out /*1*/a2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreation_MultipleLevelsBelow_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6236,7 +6236,7 @@ class Test
             GetCSharpResultAt(29, 34, "out /*1*/a2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_DisposableCreation_MultipleLevelsBelow_Nested_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6277,7 +6277,7 @@ class Test
             GetCSharpResultAt(29, 34, "out /*1*/a2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Lambda_InvokedFromInterprocedural_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6303,12 +6303,12 @@ class Test
 ");
         }
 
-        [Theory]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task Lambda_MayBeInvokedFromInterprocedural_DiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task Lambda_MayBeInvokedFromInterprocedural_DiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -6363,17 +6363,17 @@ class Test
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    // Test0.cs(17,16): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                    // Test0.cs(17,16): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                     GetCSharpMayBeNotDisposedResultAt(17, 16, "new A(1)"),
-                    // Test0.cs(20,16): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                    // Test0.cs(20,16): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                     GetCSharpMayBeNotDisposedResultAt(20, 16, "new A(2)")
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateInvocation_EmptyBody_NoArguments_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6430,7 +6430,7 @@ End Module",
             GetBasicResultAt(14, 13, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateInvocation_PassedAsArgumentButNotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6487,7 +6487,7 @@ End Module",
             GetBasicResultAt(14, 13, "New A()"));
         }
 
-        [Fact, WorkItem(1813, "https://github.com/dotnet/roslyn-analyzers/issues/1813")]
+        [TestMethod, WorkItem(1813, "https://github.com/dotnet/roslyn-analyzers/issues/1813")]
         public async Task DelegateInvocation_DisposesCapturedValue_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6539,7 +6539,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PointsTo_ReferenceTypeCopyDisposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6584,7 +6584,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicObjectCreation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6617,7 +6617,7 @@ class Test
             GetCSharpResultAt(23, 15, "new A(d)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicObjectCreation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6649,7 +6649,7 @@ class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpecialDisposableObjectCreationApis_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6687,7 +6687,7 @@ End Class
             GetBasicResultAt(8, 18, "File.CreateText(filePath)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpecialDisposableObjectCreationApis_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6724,7 +6724,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvocationInstanceReceiverOrArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6789,7 +6789,7 @@ End Class",
             GetBasicResultAt(16, 17, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableCreationInArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6841,7 +6841,7 @@ End Class",
             GetBasicResultAt(13, 12, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableCreationNotAssignedToAVariable_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -6900,7 +6900,7 @@ Class Test
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableCreationPassedToDisposableConstructor_NoDiagnosticAsync()
         {
             // Dispose ownership transfer
@@ -7016,7 +7016,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableCreationPassedToDisposableConstructor_SpecialCases_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -7139,7 +7139,7 @@ class Test
     }
 }
 ",
-            // Test0.cs(92,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(92,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(92, 18, "new FileStream(filePath + filePath, fileMode)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -7232,11 +7232,11 @@ Class Test
     End Sub
 End Class
 ",
-            // Test0.vb(70,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(70,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(70, 18, "New FileStream(filePath + filePath, fileMode)"));
         }
 
-        [Fact, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
+        [TestMethod, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
         public async Task DisposableCreationPassedToDisposableConstructor_SpecialCases_ExceptionPath_DiagnosticAsync()
         {
             // Disable interprocedural analysis to test special ctor invocation cases from metadata.
@@ -7373,19 +7373,19 @@ class Test
 ") },
                     ExpectedDiagnostics =
                     {
-                        // Test0.cs(34,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(34,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(34, 25, "new FileStream(filePath, fileMode)"),
-                        // Test0.cs(52,29): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.OpenText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(52,29): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.OpenText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(52, 29, "File.OpenText(filePath)"),
-                        // Test0.cs(70,29): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.CreateText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(70,29): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.CreateText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(70, 29, "File.CreateText(filePath)"),
-                        // Test0.cs(87,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(87,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(87, 18, "new FileStream(filePath + filePath, fileMode)"),
-                        // Test0.cs(92,30): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new ResourceReader(stream)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(92,30): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new ResourceReader(stream)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(92, 30, "new ResourceReader(stream)"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -7487,22 +7487,22 @@ End Class
 ") },
                     ExpectedDiagnostics =
                     {
-                        // Test0.vb(30,32): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(30,32): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedOnExceptionPathsResultAt(30, 32, "New FileStream(filePath, fileMode)"),
-                        // Test0.vb(42,36): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.OpenText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(42,36): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.OpenText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedOnExceptionPathsResultAt(42, 36, "File.OpenText(filePath)"),
-                        // Test0.vb(54,36): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.CreateText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(54,36): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.CreateText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedOnExceptionPathsResultAt(54, 36, "File.CreateText(filePath)"),
-                        // Test0.vb(66,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(66,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(66, 18, "New FileStream(filePath + filePath, fileMode)"),
-                        // Test0.vb(70,30): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New ResourceReader(stream)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(70,30): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New ResourceReader(stream)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedOnExceptionPathsResultAt(70, 30, "New ResourceReader(stream)"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
+        [TestMethod, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
         public async Task DisposableCreationPassedToDisposableConstructor_SpecialCases_InterproceduralAnalysis_ExceptionPath_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -7625,7 +7625,7 @@ class Test
     }
 }
 ",
-            // Test0.cs(92,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(92,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(92, 18, "new FileStream(filePath + filePath, fileMode)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -7719,16 +7719,16 @@ Class Test
     End Sub
 End Class
 ",
-            // Test0.vb(71,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(71,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(71, 18, "New FileStream(filePath + filePath, fileMode)"));
         }
 
-        [Theory, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task DisposableObjectNotDisposed_ExceptionPath_DiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task DisposableObjectNotDisposed_ExceptionPath_DiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -7802,7 +7802,7 @@ class Test
             else if (disposeAnalysisKind.AreMayBeNotDisposedViolationsEnabled())
             {
                 builder.Add(
-                    // Test0.cs(23,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A()' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                    // Test0.cs(23,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A()' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                     GetCSharpMayBeNotDisposedResultAt(23, 17, "new A()"));
             }
 
@@ -7819,7 +7819,7 @@ class Test
                 }
             };
             csharpTest.ExpectedDiagnostics.AddRange(builder);
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             source = @"
 Imports System
@@ -7882,7 +7882,7 @@ End Class
             {
                 var index = builder.Count == 0 ? 0 : 1;
                 builder.Insert(index,
-                    // Test0.vb(21,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A()' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                    // Test0.vb(21,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A()' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                     GetBasicMayBeNotDisposedResultAt(21, 17, "New A()"));
             }
 
@@ -7899,10 +7899,10 @@ End Class
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(builder);
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableObjectOnlyDisposedOnExceptionPath_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8057,7 +8057,7 @@ End Class
             GetBasicResultAt(43, 17, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableObjectDisposed_FinallyPath_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8180,7 +8180,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1597, "https://github.com/dotnet/roslyn-analyzers/issues/1597")]
+        [TestMethod, WorkItem(1597, "https://github.com/dotnet/roslyn-analyzers/issues/1597")]
         public async Task DisposableObjectInErrorCode_NotDisposed_BailOut_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8205,7 +8205,7 @@ class B : IDisposable
 ");
         }
 
-        [Fact, WorkItem(1597, "https://github.com/dotnet/roslyn-analyzers/issues/1597")]
+        [TestMethod, WorkItem(1597, "https://github.com/dotnet/roslyn-analyzers/issues/1597")]
         public async Task DisposableObjectInErrorCode_02_NotDisposed_BailOut_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8238,7 +8238,7 @@ class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateCreation_Disposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8291,11 +8291,11 @@ Class Test
 End Class");
         }
 
-        [Theory, WorkItem(1602, "https://github.com/dotnet/roslyn-analyzers/issues/1602")]
-        [InlineData(null)]
-        [InlineData(PointsToAnalysisKind.None)]
-        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
-        [InlineData(PointsToAnalysisKind.Complete)]
+        [TestMethod, WorkItem(1602, "https://github.com/dotnet/roslyn-analyzers/issues/1602")]
+        [DataRow(null)]
+        [DataRow(PointsToAnalysisKind.None)]
+        [DataRow(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [DataRow(PointsToAnalysisKind.Complete)]
         public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnosticAsync(PointsToAnalysisKind? analysisKind)
         {
             var source = @"
@@ -8344,10 +8344,10 @@ class Test
                     Sources = { source },
                     AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(analysisKind)) },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SystemThreadingTask_SpecialCase_NotDisposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8387,7 +8387,7 @@ Public Class A
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleReturnStatements_AllInstancesReturned_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8449,7 +8449,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleReturnStatements_AllInstancesEscapedWithOutParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8509,7 +8509,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleReturnStatements_AllButOneInstanceReturned_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8572,13 +8572,13 @@ public class Test
     }
 }
 ",
-            // Test0.cs(20,20): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(20,20): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(20, 20, "new A(1)"),
-            // Test0.cs(33,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(33,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(33, 17, "new A(2)"),
             // Test0.cs(36,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
             GetCSharpResultAt(36, 21, "new A(3)"),
-            // Test0.cs(42,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(42,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(42, 25, "new A(4)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -8630,17 +8630,17 @@ Public Class Test
     End Function
 End Class
 ",
-            // Test0.vb(21,27): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(21,27): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(21, 27, "New A(1)"),
-            // Test0.vb(29,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(29,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(29, 17, "New A(2)"),
             // Test0.vb(31,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A(3)' before all references to it are out of scope.
             GetBasicResultAt(31, 21, "New A(3)"),
-            // Test0.vb(34,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.vb(34,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetBasicMayBeNotDisposedResultAt(34, 25, "New A(4)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleReturnStatements_AllButOneInstanceEscapedWithOutParameter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8762,7 +8762,7 @@ End Class
             GetBasicResultAt(31, 21, "New B()"));
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
         public async Task DisposableAllocation_AssignedToTuple_Escaped_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -8820,12 +8820,12 @@ End Class
 ");
         }
 
-        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task DisposableAllocation_AssignedToTuple_Escaped_SpecialCases_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task DisposableAllocation_AssignedToTuple_Escaped_SpecialCases_NoDiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -8905,14 +8905,14 @@ public class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        [InlineData(null)]
-        [InlineData(PointsToAnalysisKind.None)]
-        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
-        [InlineData(PointsToAnalysisKind.Complete)]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [DataRow(null)]
+        [DataRow(PointsToAnalysisKind.None)]
+        [DataRow(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [DataRow(PointsToAnalysisKind.Complete)]
         public async Task DisposableAllocation_AssignedToTuple_NotDisposed_SpecialCases_DiagnosticAsync(PointsToAnalysisKind? pointsToAnalysisKind)
         {
             var source = @"
@@ -9009,10 +9009,10 @@ public class Test
                 });
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
         public async Task DisposableAllocation_EscapedTupleLiteral_SpecialCases_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -9068,11 +9068,11 @@ public class Test
 ");
         }
 
-        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        [InlineData(null)]
-        [InlineData(PointsToAnalysisKind.None)]
-        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
-        [InlineData(PointsToAnalysisKind.Complete)]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [DataRow(null)]
+        [DataRow(PointsToAnalysisKind.None)]
+        [DataRow(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [DataRow(PointsToAnalysisKind.Complete)]
         public async Task DisposableAllocation_AddedToTupleLiteral_SpecialCases_DiagnosticAsync(PointsToAnalysisKind? pointsToAnalysisKind)
         {
             var csCode = @"
@@ -9152,14 +9152,14 @@ public class Test
                 });
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        [InlineData(null)]
-        [InlineData(PointsToAnalysisKind.None)]
-        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
-        [InlineData(PointsToAnalysisKind.Complete)]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [DataRow(null)]
+        [DataRow(PointsToAnalysisKind.None)]
+        [DataRow(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [DataRow(PointsToAnalysisKind.Complete)]
         public async Task DisposableAllocation_AssignedToTuple_NotDisposed_DiagnosticAsync(PointsToAnalysisKind? pointsToAnalysisKind)
         {
             var csCode = @"
@@ -9207,7 +9207,7 @@ public class Test
                 });
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(CancellationToken.None);
 
             var vbCode = @"
 Imports System
@@ -9253,10 +9253,10 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
         public async Task DisposableAllocation_AssignedToTuple_Disposed_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -9295,7 +9295,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp7_3
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -9332,10 +9332,10 @@ End Class
                     }
                 },
                 LanguageVersion = VisualBasicLanguageVersion.VisualBasic15_3
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
         public async Task DisposableAllocation_AssignedToTuple_Item1_Disposed_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -9367,7 +9367,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp7_3
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -9398,10 +9398,10 @@ End Class
                     }
                 },
                 LanguageVersion = VisualBasicLanguageVersion.VisualBasic15_3
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
         public async Task DisposableAllocation_DeconstructionAssignmentToTuple_DeconstructMethod_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -9473,10 +9473,10 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp7_3
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [TestMethod, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
         public async Task DisposableAllocation_RefArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -9504,7 +9504,7 @@ public class Test
             GetCSharpResultAt(19, 17, "new A(1)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableAllocation_IncrementOperator_RegressionTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -9531,7 +9531,7 @@ public class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DifferentDisposePatternsInFinally_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -9992,7 +9992,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DifferentDisposePatternsInFinally_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -10297,27 +10297,27 @@ class Test
 {GetEditorConfigContent(DisposeAnalysisKind.AllPaths)}") },
                     ExpectedDiagnostics =
                     {
-                        // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(17, 15, "new A(1)"),
-                        // Test0.cs(36,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(36,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(36, 17, "new A(2)"),
-                        // Test0.cs(58,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(3)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(58,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(3)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(58, 21, "new A(3)"),
-                        // Test0.cs(83,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(83,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(83, 21, "new A(4)"),
-                        // Test0.cs(84,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(41)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(84,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(41)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(84, 21, "new A(41)"),
-                        // Test0.cs(100,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(5)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(100,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(5)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(100, 15, "new A(5)"),
-                        // Test0.cs(120,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(6)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(120,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(6)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(120, 21, "new A(6)"),
-                        // Test0.cs(184,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(9)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(184,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(9)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(184, 15, "new A(9)"),
-                        // Test0.cs(242,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(11)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.cs(242,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(11)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetCSharpMayBeNotDisposedResultAt(242, 15, "new A(11)"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -10543,30 +10543,30 @@ End Class
 {GetEditorConfigContent(DisposeAnalysisKind.AllPaths)}") },
                     ExpectedDiagnostics =
                     {
-                        // Test0.vb(16,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(16,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(16, 22, "New A(1)"),
-                        // Test0.vb(30,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(30,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(30, 17, "New A(2)"),
-                        // Test0.vb(44,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(3)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(44,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(3)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(44, 21, "New A(3)"),
-                        // Test0.vb(61,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(61,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(61, 21, "New A(4)"),
-                        // Test0.vb(62,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(41)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(62,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(41)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(62, 21, "New A(41)"),
-                        // Test0.vb(73,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(5)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(73,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(5)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(73, 22, "New A(5)"),
-                        // Test0.vb(86,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(6)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(86,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(6)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(86, 21, "New A(6)"),
-                        // Test0.vb(131,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(9)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(131,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(9)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(131, 22, "New A(9)"),
-                        // Test0.vb(174,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(11)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        // Test0.vb(174,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(11)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                         GetBasicMayBeNotDisposedResultAt(174, 22, "New A(11)"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableObjectsCopyValues_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -10610,7 +10610,7 @@ class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableObjectsCopyValues_NoDiagnostic_02Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -10682,12 +10682,12 @@ class DataflowAnalysis<TContext>
 ");
         }
 
-        [Theory]
-        [InlineData(DisposeAnalysisKind.AllPaths)]
-        [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
-        [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal async Task ExceptionFromCatch_DiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
+        [TestMethod]
+        [DataRow(DisposeAnalysisKind.AllPaths)]
+        [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
+        [DataRow(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
+        public async Task ExceptionFromCatch_DiagnosticAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -10743,15 +10743,15 @@ class MyException: Exception
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    // Test0.cs(15,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A()' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                    // Test0.cs(15,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A()' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                     GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(15, 17, "new A()")
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvocationOfLambdaCachedOntoField_InterproceduralAnalysisAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -10791,7 +10791,7 @@ class A : IDisposable
             GetCSharpResultAt(20, 17, "Create()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvocationOfLocalFunctionCachedOntoField_InterproceduralAnalysisAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -10833,7 +10833,7 @@ class A : IDisposable
             GetCSharpResultAt(22, 17, "Create()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvocationOfMethodDelegate_PriorInterproceduralCallChainAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -10869,7 +10869,7 @@ class A : IDisposable
             GetCSharpResultAt(21, 17, "new A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RecursiveInvocationWithConditionalAccess_InterproceduralAnalysisAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -10892,7 +10892,7 @@ class A : IDisposable
             GetCSharpResultAt(8, 18, "new A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StaticExtensionMethodInvokedAsDelegate_InterproceduralAnalysisAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -10932,7 +10932,7 @@ internal static class AExtensions
             GetCSharpResultAt(17, 18, "new A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InfiniteAnalysesIterationBug_InterproceduralAnalysisAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11014,7 +11014,7 @@ public class CustomType : IDisposable
 ");
         }
 
-        [Fact, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
+        [TestMethod, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
         public async Task ReturnDisposableObjectWrappenInTask_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11049,7 +11049,7 @@ Class C
 End Class");
         }
 
-        [Fact, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
+        [TestMethod, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
         public async Task AwaitedButNotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11098,7 +11098,7 @@ End Class",
             GetBasicResultAt(16, 23, "M1_Task()"));
         }
 
-        [Fact, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
+        [TestMethod, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
         public async Task AwaitedButNotDisposed_TaskWrappingField_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11146,7 +11146,7 @@ Class C
 End Class");
         }
 
-        [Fact, WorkItem(2347, "https://github.com/dotnet/roslyn-analyzers/issues/2347")]
+        [TestMethod, WorkItem(2347, "https://github.com/dotnet/roslyn-analyzers/issues/2347")]
         public async Task ReturnDisposableObjectInAsyncMethod_DisposedInCaller_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11173,7 +11173,7 @@ class C : IDisposable
 }");
         }
 
-        [Fact, WorkItem(2347, "https://github.com/dotnet/roslyn-analyzers/issues/2347")]
+        [TestMethod, WorkItem(2347, "https://github.com/dotnet/roslyn-analyzers/issues/2347")]
         public async Task ReturnDisposableObjectInAsyncMethod_NotDisposedInCaller_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11201,7 +11201,7 @@ class C : IDisposable
             GetCSharpResultAt(19, 23, "M1_Task(null)"));
         }
 
-        [Fact, WorkItem(37065, "https://github.com/dotnet/roslyn/issues/37065")]
+        [TestMethod, WorkItem(37065, "https://github.com/dotnet/roslyn/issues/37065")]
         public async Task ReturnDisposableObjectInAsyncMethod_DisposedInCallerInUsing_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11226,7 +11226,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(2361, "https://github.com/dotnet/roslyn-analyzers/issues/2361")]
+        [TestMethod, WorkItem(2361, "https://github.com/dotnet/roslyn-analyzers/issues/2361")]
         public async Task ExpressionBodiedMethod_ReturnsDisposableObject_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11238,7 +11238,7 @@ class C
 }");
         }
 
-        [Fact, WorkItem(2361, "https://github.com/dotnet/roslyn-analyzers/issues/2361")]
+        [TestMethod, WorkItem(2361, "https://github.com/dotnet/roslyn-analyzers/issues/2361")]
         public async Task ReturnsDisposableObject_NotDisposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11257,7 +11257,7 @@ class C
             GetCSharpResultAt(10, 22, "GetStream()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PointsToAnalysisAssert_UninitializedLocalPassedToInvocationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11284,7 +11284,7 @@ class C : IDisposable
             GetCSharpResultAt(10, 17, "new C()"));
         }
 
-        [Fact, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
+        [TestMethod, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
         public async Task UsingStatementInCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11309,7 +11309,7 @@ class C : IDisposable
 }");
         }
 
-        [Fact, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
+        [TestMethod, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
         public async Task TryFinallyStatementInCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11340,7 +11340,7 @@ class C : IDisposable
 }");
         }
 
-        [Fact, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
+        [TestMethod, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
         public async Task UsingStatementInFinallyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11365,7 +11365,7 @@ class C : IDisposable
 }");
         }
 
-        [Fact, WorkItem(2506, "https://github.com/dotnet/roslyn-analyzers/issues/2506")]
+        [TestMethod, WorkItem(2506, "https://github.com/dotnet/roslyn-analyzers/issues/2506")]
         public async Task ErroroneousCodeWithBrokenIfCondition_BailOut_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11383,7 +11383,7 @@ class C : IDisposable
 }");
         }
 
-        [Fact, WorkItem(2506, "https://github.com/dotnet/roslyn-analyzers/issues/2506")]
+        [TestMethod, WorkItem(2506, "https://github.com/dotnet/roslyn-analyzers/issues/2506")]
         public async Task ErroroneousCodeWithBrokenIfCondition_Interprocedural_BailOut_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11408,7 +11408,7 @@ class C : IDisposable
             GetCSharpResultAt(10, 17, "new C()"));
         }
 
-        [Fact, WorkItem(2529, "https://github.com/dotnet/roslyn-analyzers/issues/2529")]
+        [TestMethod, WorkItem(2529, "https://github.com/dotnet/roslyn-analyzers/issues/2529")]
         public async Task MultilineDisposableCreation_SingleLine_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -11436,7 +11436,7 @@ class Test
             GetCSharpResultAt(16, 17, "new A("));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposableObject_NotDisposed_DisposeOwnershipTransferAtMethodCall_NoDiagnosticAsync()
         {
             var editorConfigText = $@"dotnet_code_quality.interprocedural_analysis_kind = None
@@ -11472,10 +11472,10 @@ class C : IDisposable
 {editorConfigText}
 ") }
 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutArgument_Disposed_DisposeOwnershipTransferAtMethodCall_NoDiagnosticAsync()
         {
             var editorConfigText = $@"dotnet_code_quality.interprocedural_analysis_kind = None
@@ -11524,10 +11524,10 @@ public class C
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2637, "https://github.com/dotnet/roslyn-analyzers/issues/2637")]
         public async Task DisposableObject_NotDisposed_ReturnedObject_NoDiagnosticAsync()
         {
@@ -11562,7 +11562,7 @@ public static class CA2000Issue
 }");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2637, "https://github.com/dotnet/roslyn-analyzers/issues/2637")]
         public async Task DisposableObject_NotDisposed_ReturnedObject_NoDiagnostic_02Async()
         {
@@ -11597,7 +11597,7 @@ public static class CA2000Issue
 }");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2637, "https://github.com/dotnet/roslyn-analyzers/issues/2637")]
         public async Task DisposableObject_NotDisposed_SomePaths_DiagnosticAsync()
         {
@@ -11629,11 +11629,11 @@ public static class CA2000Issue
         return thing;
     }
 }",
-            // Test0.cs(13,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'GetThing()' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(13,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'GetThing()' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(13, 17, "GetThing()"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2637, "https://github.com/dotnet/roslyn-analyzers/issues/2637")]
         public async Task DisposableObject_NotDisposed_SomePaths_Diagnostic_02Async()
         {
@@ -11665,11 +11665,11 @@ public static class CA2000Issue
         return thing;
     }
 }",
-            // Test0.cs(13,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'GetThing()' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+            // Test0.cs(13,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'GetThing()' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(13, 17, "GetThing()"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(36643, "https://github.com/dotnet/roslyn/issues/36643")]
         public async Task DisposableObject_StoredInField_NotDisposed_NoDiagnosticAsync()
         {
@@ -11690,7 +11690,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(36643, "https://github.com/dotnet/roslyn/issues/36643")]
         public async Task DisposableObject_StoredInField_NotDisposed_NoDiagnostic_02Async()
         {
@@ -11712,7 +11712,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(36643, "https://github.com/dotnet/roslyn/issues/36643")]
         public async Task DisposableObject_StoredInLocal_NotDisposed_DiagnosticAsync()
         {
@@ -11735,12 +11735,12 @@ public class C
             GetCSharpResultAt(11, 30, "GetStreamAsync()"));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.CA2000.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.CA2000.excluded_symbol_names = M*")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.CA2000.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.CA2000.excluded_symbol_names = M*")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -11785,7 +11785,7 @@ class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -11825,13 +11825,13 @@ End Class"
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M2")]
-        [InlineData("dotnet_code_quality.interproceduraldataflow.excluded_symbol_names = M2")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = M2")]
+        [DataRow("dotnet_code_quality.interproceduraldataflow.excluded_symbol_names = M2")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption_InterproceduralDataflowAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -11879,7 +11879,7 @@ class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -11924,10 +11924,10 @@ End Class"
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2746, "https://github.com/dotnet/roslyn-analyzers/issues/2746#issuecomment-518959894")]
         public async Task DisposableObject_ReturnOperationWithInvocation_NotDisposed_DiagnosticAsync()
         {
@@ -11969,7 +11969,7 @@ public class Consumer
             GetCSharpResultAt(31, 28, "CreateMyDisposable()"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2782, "https://github.com/dotnet/roslyn-analyzers/issues/2782")]
         public async Task DisposableObject_CoalesceAssignment_NotDisposed_DiagnosticAsync()
         {
@@ -12008,10 +12008,10 @@ namespace ConsoleApp1
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2782, "https://github.com/dotnet/roslyn-analyzers/issues/2782")]
         public async Task DisposableObject_CoalesceAssignment_NotDisposed_Diagnostic_02Async()
         {
@@ -12049,10 +12049,10 @@ namespace ConsoleApp1
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2746, "https://github.com/dotnet/roslyn-analyzers/issues/2746")]
         public async Task DisposableObject_FieldAsOutArgument_NotDisposed_NoDiagnosticAsync()
         {
@@ -12100,10 +12100,10 @@ class B : IDisposable
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2746, "https://github.com/dotnet/roslyn-analyzers/issues/2746")]
         public async Task DisposableObject_FieldAsRefArgument_NotDisposed_NoDiagnosticAsync()
         {
@@ -12151,10 +12151,10 @@ class B : IDisposable
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2681, "https://github.com/dotnet/roslyn-analyzers/issues/2681")]
         public async Task DisposableObject_InterlockedAssignmentToField_NotDisposed_NoDiagnosticAsync()
         {
@@ -12203,10 +12203,10 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3082, "https://github.com/dotnet/roslyn-analyzers/issues/3082")]
         public async Task DisposableObject_DictionaryAddVariants_NotDisposed_NoDiagnosticAsync()
         {
@@ -12269,14 +12269,14 @@ class Test
 }");
         }
 
-        [Theory, WorkItem(3085, "https://github.com/dotnet/roslyn-analyzers/issues/3085")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA2000.excluded_symbol_names = T:MyNamespace.A")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = T:MyNamespace.A")]
-        [InlineData("dotnet_code_quality.CA2000.excluded_symbol_names = N:MyNamespace")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = N:MyNamespace")]
-        [InlineData("dotnet_code_quality.CA2000.excluded_type_names_with_derived_types = T:MyNamespace.A")]
-        [InlineData("dotnet_code_quality.excluded_type_names_with_derived_types = T:MyNamespace.A")]
+        [TestMethod, WorkItem(3085, "https://github.com/dotnet/roslyn-analyzers/issues/3085")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA2000.excluded_symbol_names = T:MyNamespace.A")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = T:MyNamespace.A")]
+        [DataRow("dotnet_code_quality.CA2000.excluded_symbol_names = N:MyNamespace")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = N:MyNamespace")]
+        [DataRow("dotnet_code_quality.CA2000.excluded_type_names_with_derived_types = T:MyNamespace.A")]
+        [DataRow("dotnet_code_quality.excluded_type_names_with_derived_types = T:MyNamespace.A")]
         public async Task LocalInvocationOfAnExcludedType_NoDiagnosticAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -12329,7 +12329,7 @@ namespace MyNamespace
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(22, 21, "new B()"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -12377,10 +12377,10 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(18, 22, "New B()"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3297, "https://github.com/dotnet/roslyn-analyzers/issues/3297")]
+        [TestMethod, WorkItem(3297, "https://github.com/dotnet/roslyn-analyzers/issues/3297")]
         public async Task NameOfInsideTheScope_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -12416,7 +12416,7 @@ class Test
             );
         }
 
-        [Fact, WorkItem(3212, "https://github.com/dotnet/roslyn-analyzers/issues/3212")]
+        [TestMethod, WorkItem(3212, "https://github.com/dotnet/roslyn-analyzers/issues/3212")]
         public async Task StringReader_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -12440,7 +12440,7 @@ Public Class C
 End Class");
         }
 
-        [Fact, WorkItem(3212, "https://github.com/dotnet/roslyn-analyzers/issues/3212")]
+        [TestMethod, WorkItem(3212, "https://github.com/dotnet/roslyn-analyzers/issues/3212")]
         public async Task StringReader_CustomSymbolExclusion_NoDiagnosticAsync()
         {
             string editorConfigText = $"dotnet_code_quality.{DisposeObjectsBeforeLosingScope.RuleId}.excluded_symbol_names = T:A";
@@ -12477,7 +12477,7 @@ public class C
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -12508,10 +12508,10 @@ End Class"
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact(Skip = "The throw statement prevents the analysis"), WorkItem(3356, "https://github.com/dotnet/roslyn-analyzers/issues/3356")]
+        [TestMethod, Ignore("The throw statement prevents the analysis"), WorkItem(3356, "https://github.com/dotnet/roslyn-analyzers/issues/3356")]
         public async Task Dispose_UnconditionalThrowStatement_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -12553,7 +12553,7 @@ End Class",
                 GetBasicResultAt(12, 18, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Dispose_ConditionalThrowStatement_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -12597,7 +12597,7 @@ End Class",
                 GetBasicResultAt(12, 18, "New A()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Dispose_UsingDeclaration_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -12629,10 +12629,10 @@ public class Class1
         => new A();
 }",
                 LanguageVersion = CSharpLanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3873, "https://github.com/dotnet/roslyn-analyzers/issues/3873")]
+        [TestMethod, WorkItem(3873, "https://github.com/dotnet/roslyn-analyzers/issues/3873")]
         public async Task Dispose_ConditionalControlFlow_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -12669,7 +12669,7 @@ namespace CA2000Test
 }");
         }
 
-        [Fact, WorkItem(3873, "https://github.com/dotnet/roslyn-analyzers/issues/3873")]
+        [TestMethod, WorkItem(3873, "https://github.com/dotnet/roslyn-analyzers/issues/3873")]
         public async Task Dispose_ConditionalControlFlow_NoDiagnostic_02Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -12699,7 +12699,7 @@ class Program
 }");
         }
 
-        [Fact, WorkItem(4147, "https://github.com/dotnet/roslyn-analyzers/issues/4147")]
+        [TestMethod, WorkItem(4147, "https://github.com/dotnet/roslyn-analyzers/issues/4147")]
         public async Task Dispose_ValueIsObviouslyMemoryStream_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -12717,10 +12717,10 @@ class Program
         }
 
         [WorkItem(4981, "https://github.com/dotnet/roslyn-analyzers/issues/4981")]
-        [Theory]
-        [InlineData("ms != null")]
-        [InlineData("ms is not null")]
-        [InlineData("!(ms is null)")]
+        [TestMethod]
+        [DataRow("ms != null")]
+        [DataRow("ms is not null")]
+        [DataRow("!(ms is null)")]
         public async Task TryFinallyIsNotNull_NoDiagnostic(string condition)
         {
             var code = @$"
@@ -12749,7 +12749,7 @@ class Test
                 TestCode = code,
                 FixedCode = code,
                 LanguageVersion = CSharpLanguageVersion.CSharp9,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -80,7 +80,7 @@ internal sealed class FileBasedAppSourceEditor
     public void Add(CSharpDirective directive)
     {
         var change = DetermineAddChange(directive);
-        SourceFile = SourceFile.WithText(SourceFile.Text.WithChanges([change]));
+        SourceFile = SourceFile with { Text = SourceFile.Text.WithChanges([change]) };
     }
 
     private TextChange DetermineAddChange(CSharpDirective directive)
@@ -230,27 +230,37 @@ internal sealed class FileBasedAppSourceEditor
     {
         var span = directive.Info.Span;
         var start = span.Start;
-        var length = span.Length + DetermineTrailingLengthToRemove(directive);
-        SourceFile = SourceFile.WithText(SourceFile.Text.Replace(start: start, length: length, newText: string.Empty));
+        var length = span.Length;
+
+        DetermineWhiteSpaceToRemove(directive, out int leadingLength, out int trailingLength);
+        start -= leadingLength;
+        length += trailingLength;
+
+        SourceFile = SourceFile with { Text = SourceFile.Text.Replace(start: start, length: length, newText: string.Empty) };
     }
 
-    private static int DetermineTrailingLengthToRemove(CSharpDirective directive)
+    private static void DetermineWhiteSpaceToRemove(CSharpDirective directive, out int leadingLength, out int trailingLength)
     {
-        // If there are blank lines both before and after the directive, remove the trailing white space.
-        if (directive.Info.LeadingWhiteSpace.LineBreaks > 0 && directive.Info.TrailingWhiteSpace.LineBreaks > 0)
+        // If there are blank lines both before and after the directive, remove the trailing blank lines.
+        if (directive.Info.LeadingWhiteSpace.BlankLineLength > 0 && directive.Info.TrailingWhiteSpace.BlankLineLength > 0)
         {
-            return directive.Info.TrailingWhiteSpace.TotalLength;
+            leadingLength = 0;
+            trailingLength = directive.Info.TrailingWhiteSpace.BlankLineLength;
+            return;
         }
 
         // If the directive (including leading white space) starts at the beginning of the file,
-        // remove both the leading and trailing white space.
-        var startBeforeWhiteSpace = directive.Info.Span.Start - directive.Info.LeadingWhiteSpace.TotalLength;
+        // remove both the leading and trailing blank lines.
+        var startBeforeWhiteSpace = directive.Info.Span.Start - directive.Info.LeadingWhiteSpace.BlankLineLength;
         if (startBeforeWhiteSpace == 0)
         {
-            return directive.Info.LeadingWhiteSpace.TotalLength + directive.Info.TrailingWhiteSpace.TotalLength;
+            leadingLength = directive.Info.LeadingWhiteSpace.BlankLineLength;
+            trailingLength = directive.Info.TrailingWhiteSpace.BlankLineLength;
+            return;
         }
 
         Debug.Assert(startBeforeWhiteSpace > 0);
-        return 0;
+        leadingLength = 0;
+        trailingLength = 0;
     }
 }

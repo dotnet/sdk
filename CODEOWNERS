@@ -1,4 +1,4 @@
-# This is a comment.
+﻿# This is a comment.
 # Each line is a file pattern followed by one or more owners.
 # Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax
 
@@ -63,8 +63,10 @@
 # Area-Templates
 /src/Cli/dotnet/Commands/New @dotnet/templating-engine-maintainers
 /src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
+/src/TemplateEngine @dotnet/templating-engine-maintainers
 /test/dotnet-new.IntegrationTests @dotnet/templating-engine-maintainers
 /test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
+/test/TemplateEngine @dotnet/templating-engine-maintainers
 /template_feed @dotnet/templating-engine-maintainers
 
 # ILLink and ReadyToRun targets and tasks owned by runtime team
@@ -80,9 +82,9 @@
 /test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
 /test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @dotnet/roslyn-ide
-/src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
+/src/Dotnet.Watch/ @tmat @dotnet/roslyn-ide
+/src/Dotnet.Watch/BrowserRefresh @dotnet/aspnet-blazor-eng
+/src/Dotnet.Watch/AspireService @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries
@@ -115,6 +117,13 @@
 /src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers
 
 # Area-Infrastructure
-.vsts-ci.yml @MiYanni
-.vsts-pr.yml @MiYanni
-/eng/pipelines @MiYanni
+.vsts-ci.yml @MiYanni @MichaelSimons
+.vsts-pr.yml @MiYanni @MichaelSimons
+/eng/pipelines @MiYanni @MichaelSimons
+
+# AI
+.github/ @mthalman @lbussell
+.claude/ @mthalman @lbussell
+.agents/ @mthalman @lbussell
+AGENTS.md @mthalman @lbussell
+SKILL.md @mthalman @lbussell

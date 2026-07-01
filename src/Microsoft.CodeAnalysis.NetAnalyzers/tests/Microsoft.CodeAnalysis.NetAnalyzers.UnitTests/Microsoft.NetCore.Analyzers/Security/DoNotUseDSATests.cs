@@ -3,16 +3,16 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseDSA,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseDSATests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCreateObjectOfDSADerivedClassWithoutParameterDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -38,10 +38,10 @@ class TestClass
                         GetCSharpResultAt(8, 22, "DSACng"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateObjectOfDSADerivedClassWithCngKeyParameterDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -67,10 +67,10 @@ class TestClass
                         GetCSharpResultAt(8, 22, "DSACng"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateObjectOfDSADerivedClassWithInt32ParameterAssignedKeySizeDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -96,10 +96,10 @@ class TestClass
                         GetCSharpResultAt(8, 22, "DSACng"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateObjectOfDSADerivedClassWithInt32ParameterUnassignedKeySizeDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -125,10 +125,10 @@ class TestClass
                         GetCSharpResultAt(8, 22, "DSACng"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReturnObjectOfDSADerivedClassDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -144,7 +144,7 @@ class TestClass
             GetCSharpResultAt(8, 9, "DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReturnObjectOfDSADerivedClassLocalFunctionDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -160,7 +160,7 @@ class TestClass
             GetCSharpResultAt(8, 32, "DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateWithDSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -176,7 +176,7 @@ class TestClass
             GetCSharpResultAt(8, 35, "DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCaseSensitiveDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -192,7 +192,7 @@ class TestClass
             GetCSharpResultAt(8, 35, "dSa"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateWithSystemSecurityCryptographyDSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -208,7 +208,7 @@ class TestClass
             GetCSharpResultAt(8, 35, "System.Security.Cryptography.DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateFromNameWithDSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -224,7 +224,7 @@ class TestClass
             GetCSharpResultAt(8, 28, "DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateFromNameWithSystemSecurityCryptographyDSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -240,7 +240,7 @@ class TestClass
             GetCSharpResultAt(8, 28, "System.Security.Cryptography.DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateWithECDsaArgNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -255,7 +255,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateFromNameWithECDsaArgNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -270,7 +270,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateFromNameWithECDsaAndKeySize1024ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -285,7 +285,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReturnVoidNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

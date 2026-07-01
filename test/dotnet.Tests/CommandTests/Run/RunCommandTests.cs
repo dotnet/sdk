@@ -1,13 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class RunCommandTests : SdkTest
 {
     // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).
     private static string EnvironmentVariableReference(string name)
@@ -34,7 +36,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             readCodeFromStdin: false,
             environmentVariables: new Dictionary<string, string>());
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentVariableExpansion_Project()
     {
         var testAppName = "AppThatOutputsDotnetLaunchProfile";
@@ -68,10 +70,10 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("TEST_VAR1=<<<VALUE1>>>")
             .And.HaveStdOutContaining("ARGS=arg1,arg2,arg3");
 
-        cmd.StdErr.Should().BeEmpty();
+        cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
     }
 
-    [Fact]
+    [TestMethod]
     public void Executable_DefaultWorkingDirectory()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
@@ -90,12 +92,12 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var runCommand = CreateRunCommand(projectPath);
         var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
 
-        Assert.Equal("executable", command.StartInfo.FileName);
-        Assert.Equal(dir, command.StartInfo.WorkingDirectory);
-        Assert.Equal("", command.StartInfo.Arguments);
+        Assert.AreEqual("executable", command.StartInfo.FileName);
+        Assert.AreEqual(dir, command.StartInfo.WorkingDirectory);
+        Assert.AreEqual("", command.StartInfo.Arguments);
     }
 
-    [Fact]
+    [TestMethod]
     public void Executable_NoLaunchProfileArguments()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
@@ -115,10 +117,10 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var runCommand = CreateRunCommand(projectPath, noLaunchProfileArguments: true);
         var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
 
-        Assert.Equal("", command.StartInfo.Arguments);
+        Assert.AreEqual("", command.StartInfo.Arguments);
     }
 
-    [Fact]
+    [TestMethod]
     public void Executable_ApplicationArguments()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
@@ -138,6 +140,6 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app 1", "app 2"]);
         var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
 
-        Assert.Equal("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
+        Assert.AreEqual("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
     }
 }

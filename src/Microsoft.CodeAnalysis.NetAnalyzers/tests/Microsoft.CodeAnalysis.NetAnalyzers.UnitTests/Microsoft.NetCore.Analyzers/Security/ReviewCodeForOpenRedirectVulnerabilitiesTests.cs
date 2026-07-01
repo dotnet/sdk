@@ -4,17 +4,17 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForOpenRedirectVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForOpenRedirectVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForOpenRedirectVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForOpenRedirectVulnerabilities, ReviewCodeForOpenRedirectVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForOpenRedirectVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -41,10 +41,10 @@ public partial class WebForm : System.Web.UI.Page
                         GetCSharpResultAt(9, 9, 8, 24, "void HttpResponse.Redirect(string url)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -71,10 +71,10 @@ End Class",
                         GetBasicResultAt(9, 9, 8, 31, "Sub HttpResponse.Redirect(url As String)", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, eventArgs As EventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -93,7 +93,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Solution_NoDiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -118,10 +118,10 @@ Partial Public Class WebForm
 End Class"
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpResponse_RedirectToRoutePermanent_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -139,7 +139,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(10, 9, 9, 24, "void HttpResponse.RedirectToRoutePermanent(string routeName)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpResponseBase_RedirectLocation_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

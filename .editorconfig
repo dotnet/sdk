@@ -173,6 +173,7 @@ file_header_template = Licensed to the .NET Foundation under one or more agreeme
 dotnet_code_quality.ca1802.api_surface = private, internal
 dotnet_code_quality.ca1822.api_surface = private, internal
 dotnet_code_quality.ca2208.api_surface = public
+dotnet_public_api_analyzer.require_api_files = true
 # Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 # Properties should not be write only
@@ -285,6 +286,23 @@ dotnet_diagnostic.IDE0082.severity = warning
 dotnet_diagnostic.IDE0200.severity = none
 # Remove redundant nullable directive
 dotnet_diagnostic.IDE0240.severity = warning
+# MSBuildTask0001-0005 (Microsoft.Build.TaskAuthoring.Analyzer). MSBuildTask0001 is Error severity by
+# default; the rest are warnings. All are downgraded to 'suggestion' here for report-only onboarding while
+# task migration to the multithreaded model (IMultiThreadableTask / TaskEnvironment) is pending. At
+# suggestion level they are info diagnostics, so they never fail the build (not even under Arcade's
+# MSBuild-engine warn-as-error) without needing any WarningsNotAsErrors exemptions.
+#
+# Incremental re-enablement: a follow-up PR can raise a single rule globally (edit a line below to
+# 'warning'/'error' -- a "category" at a time), or raise severity for one task class by adding an
+# .editorconfig in that task's source directory that overrides these codes.
+#
+# NOTE: src/StaticWebAssetsSdk/.editorconfig sets `root = true`, so it does not inherit these lines and
+# carries its own copy of this block. Keep the two in sync.
+dotnet_diagnostic.MSBuildTask0001.severity = suggestion
+dotnet_diagnostic.MSBuildTask0002.severity = suggestion
+dotnet_diagnostic.MSBuildTask0003.severity = suggestion
+dotnet_diagnostic.MSBuildTask0004.severity = suggestion
+dotnet_diagnostic.MSBuildTask0005.severity = suggestion
 
 # Additional rules for template engine source code
 
@@ -477,6 +495,12 @@ dotnet_diagnostic.SA1204.severity = none
 
 # Generated build output
 [artifacts/**.cs]
+dotnet_diagnostic.IDE0073.severity = none
+
+# Source brought in via NuGet contentFiles (e.g. Microsoft.Testing.Platform.Internal.DotnetTest) is
+# restored under the repo-local packages folder and compiled into the consuming assembly. We do not own
+# that source, so the file-header rule must not be enforced on it.
+[.packages/**.cs]
 dotnet_diagnostic.IDE0073.severity = none
 
 # C++ Files

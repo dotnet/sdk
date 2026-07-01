@@ -1,25 +1,112 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
-using Xunit.Sdk;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
+    [TestClass]
     public class GivenDotnetRunIsInterrupted : SdkTest
     {
         private const int WaitTimeout = 30000;
 
-        public GivenDotnetRunIsInterrupted(ITestOutputHelper log) : base(log)
+        public GivenDotnetRunIsInterrupted()
         {
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        public void ItTerminatesWinExeAppWithCloseMainWindow()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WinExeApp")
+                .WithSource();
+
+            var command = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(asset.Path);
+
+            // Launch dotnet run in a new process group so that GenerateConsoleCtrlEvent
+            // targets only the child group and does not propagate to the test host.
+            command.CreateNewProcessGroup = true;
+
+            bool signaled = false;
+            bool sawClosingGracefully = false;
+            Process child = null;
+            Process testProcess = null;
+            command.ProcessStartedHandler = p => { testProcess = p; };
+
+            command.CommandOutputHandler = line =>
+            {
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+
+                if (line.Contains("Closing gracefully:", StringComparison.Ordinal))
+                {
+                    sawClosingGracefully = true;
+                }
+
+                if (signaled)
+                {
+                    return;
+                }
+
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while getting child process Id: {e}");
+                        throw new InvalidOperationException($"Failed to get to child process Id: {line}", e);
+                    }
+                }
+                else if (line == "Started" && child != null)
+                {
+                    // Window is now visible, send Ctrl+C to dotnet run process
+                    // dotnet run should detect it's a WinExe app and call CloseMainWindow() on the child
+                    Log.WriteLine($"Sending Ctrl+C to dotnet run process {testProcess.Id}");
+                    bool sent = GenerateConsoleCtrlEvent(0, (uint)testProcess.Id);
+                    Log.WriteLine($"GenerateConsoleCtrlEvent returned: {sent}");
+                    signaled = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
+            };
+
+            var result = command.Execute();
+            signaled.Should().BeTrue("Ctrl+C should have been sent to dotnet run");
+            sawClosingGracefully.Should().BeTrue("WinExe app should report graceful close output");
+
+            // The app should exit with code 0 when closed gracefully via CloseMainWindow
+            result.ExitCode.Should().Be(0, "WinExe app should exit gracefully when dotnet run receives Ctrl+C and calls CloseMainWindow");
+
+            Assert.IsNotNull(child);
+            if (!child.WaitForExit(WaitTimeout))
+            {
+                child.Kill();
+                Assert.Fail("child process failed to terminate.");
+            }
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
         }
 
         // This test is Unix only for the same reason that CoreFX does not test Console.CancelKeyPress on Windows
         // See https://github.com/dotnet/corefx/blob/a10890f4ffe0fadf090c922578ba0e606ebdd16c/src/System.Console/tests/CancelKeyPress.Unix.cs#L63-L67
-        [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [Ignore("https://github.com/dotnet/sdk/issues/42841")]
         public void ItIgnoresSIGINT()
         {
             var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
@@ -51,15 +138,15 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     // will inherit the current process group from the `dotnet test` process that is running this test.
                     // We would need to fork(), setpgid(), and then execve() to break out of the current group and that is
                     // too complex for a simple unit test.
-                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGINT).Should().Be(0); // dotnet run
+                    testProcess.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue(); // dotnet run
                     try
                     {
-                        NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
+                        new SafeProcessHandle(Convert.ToInt32(line), true).Signal(PosixSignal.SIGINT).Should().BeTrue();   // TestAppThatWaits
                     }
                     catch (Exception e)
                     {
                         Log.WriteLine($"Error while sending SIGINT to child process: {e}");
-                        Assert.Fail($"Failed to send SIGINT to child process: {line}");
+                        throw new InvalidOperationException($"Failed to send SIGINT to child process: {line}", e);
                     }
 
                     killed = true;
@@ -80,7 +167,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             killed.Should().BeTrue();
         }
 
-        [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [Ignore("https://github.com/dotnet/sdk/issues/42841")]
         public void ItPassesSIGTERMToChild()
         {
             var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
@@ -114,9 +203,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     catch (Exception e)
                     {
                         Log.WriteLine($"Error while  getting child process Id: {e}");
-                        Assert.Fail($"Failed to get to child process Id: {line}");
+                        throw new InvalidOperationException($"Failed to get to child process Id: {line}", e);
                     }
-                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGTERM).Should().Be(0);
+                    testProcess.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
                     killed = true;
                 }
                 else
@@ -137,11 +226,13 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             if (!child.WaitForExit(WaitTimeout))
             {
                 child.Kill();
-                throw new XunitException("child process failed to terminate.");
+                Assert.Fail("child process failed to terminate.");
             }
         }
 
-        [WindowsOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/38268")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [Ignore("https://github.com/dotnet/sdk/issues/38268")]
         public void ItTerminatesTheChildWhenKilled()
         {
             var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
@@ -175,7 +266,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     catch (Exception e)
                     {
                         Log.WriteLine($"Error while  getting child process Id: {e}");
-                        Assert.Fail($"Failed to get to child process Id: {line}");
+                        throw new InvalidOperationException($"Failed to get to child process Id: {line}", e);
                     }
                     testProcess.Kill();
                     killed = true;
@@ -190,13 +281,13 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             // A timeout is required to prevent the `Process.WaitForExit` call to hang if `dotnet run` failed to terminate the child on Windows.
             // This is because `Process.WaitForExit()` hangs waiting for the process launched by `dotnet run` to close the redirected I/O pipes (which won't happen).
 
-            Task.Delay(TimeSpan.FromMilliseconds(WaitTimeout)).ContinueWith(t =>
+            Task.Delay(TimeSpan.FromMilliseconds(WaitTimeout), TestContext.CancellationToken).ContinueWith(t =>
             {
                 if (!killed)
                 {
                     testProcess.Kill();
                 }
-            });
+            }, TestContext.CancellationToken);
 
 
             command
@@ -209,7 +300,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             if (!child.WaitForExit(WaitTimeout))
             {
                 child.Kill();
-                throw new XunitException("child process failed to terminate.");
+                Assert.Fail("child process failed to terminate.");
             }
         }
     }

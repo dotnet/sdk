@@ -54,7 +54,7 @@ namespace Test.Utilities
         public static async Task RunTestAsync(Test test, params DiagnosticResult[] expected)
         {
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
+
     <!--
       Tests code used in in-proc VS and VS Code.
       Ideally, we would target $(VisualStudioServiceTargetFramework) but Microsoft.NET.TestFramework has dependencies on $(SdkTargetFramework).
@@ -12,12 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
-    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\TestLogger.cs" Link="Utilities\TestLogger.cs" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
+    <ProjectReference Include="..\Microsoft.DotNet.Test.MSTest.Utilities\Microsoft.DotNet.Test.MSTest.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -25,8 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-    <PackageReference Include="Xunit.Combinatorial" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
@@ -36,7 +35,7 @@
     </Compile>
   </ItemGroup>
 
-  <Import Project="..\..\src\BuiltInTools\HotReloadClient\Microsoft.DotNet.HotReload.Client.projitems" Label="Shared" />
-  <Import Project="..\..\src\BuiltInTools\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
-  <Import Project="..\..\src\BuiltInTools\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
+  <Import Project="..\..\src\Dotnet.Watch\HotReloadClient\Microsoft.DotNet.HotReload.Client.projitems" Label="Shared" />
+  <Import Project="..\..\src\Dotnet.Watch\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
+  <Import Project="..\..\src\Dotnet.Watch\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
 </Project>

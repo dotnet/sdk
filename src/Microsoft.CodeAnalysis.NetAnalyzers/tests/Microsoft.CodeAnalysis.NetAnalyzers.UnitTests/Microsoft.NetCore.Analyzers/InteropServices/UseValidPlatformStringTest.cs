@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.UseValidPlatformString,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,12 +13,13 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
+    [TestClass]
     public class UseValidPlatformStringTest
     {
         private const string s_msBuildPlatforms = @"is_global = true
 build_property._SupportedPlatformList=CustomPlatform";
 
-        [Fact]
+        [TestMethod]
         public async Task ValidPlatformStringUsedNotWarnAsync()
         {
             var csSource = @"
@@ -58,7 +58,7 @@ public class Test
             await VerifyAnalyzerCsAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ValidPlatformStringUsedNotWarnVBAsync()
         {
             var vbSource = @"
@@ -104,7 +104,7 @@ End Class";
             await VerifyAnalyzerAsyncVbAsync(vbSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvalidPlatformNameOrVersionWarnsAsync()
         {
             var csSource = @"
@@ -135,7 +135,7 @@ public class Test
                 VerifyCS.Diagnostic(UseValidPlatformString.NoVersion).WithLocation(4).WithArguments("1.0.", "linux"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvalidPlatformNameOrVersionWarnsVBAsync()
         {
             var vbSource = @"
@@ -165,7 +165,7 @@ End Class";
             await VerifyAnalyzerAsyncVbAsync(vbSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvalidPlatformNameOrVersionDifferentSymbolsWarnsAsync()
         {
             var csSource = @"
@@ -194,7 +194,7 @@ namespace ns
             await VerifyAnalyzerCsAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotWarnForCustomPlatformAddedToMsBuildAsync()
         {
             var csSource = @"
@@ -220,7 +220,7 @@ public class Test
             await VerifyAnalyzerCsAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotWarnForCustomPlatformAddedToMsBuildVBAsync()
         {
             var vbSource = @"
@@ -250,7 +250,7 @@ End Class";
             await VerifyAnalyzerAsyncVbAsync(vbSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IsOsPlatformWithInvalidPlatformWarnsAsync()
         {
             var csSource = @"
@@ -292,7 +292,7 @@ public class Test
             await VerifyAnalyzerCsAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IsOsPlatformWithInvalidPlatformWarnsVBAsync()
         {
             var vbSource = @"
@@ -315,7 +315,7 @@ End Class";
             await VerifyAnalyzerAsyncVbAsync(vbSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MoreInvalidPlatformStringsWarnsAsync()
         {
             var source = @"
@@ -341,7 +341,7 @@ public class Test
             await VerifyAnalyzerCsAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvalidVersionPartInPlatformStringsWarnsAsync()
         {
             var source = @"
@@ -378,7 +378,7 @@ public class Test
                 VerifyCS.Diagnostic(UseValidPlatformString.NoVersion).WithLocation(4).WithArguments("4.1", "Linux"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PlatformOSXIsAliasForMacOSAsync()
         {
             var csSource = @"
@@ -403,7 +403,7 @@ public class Test
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(1).WithArguments("1.2.3.4", "OSX", "-3"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task APIsWithMultiplePlatformSupportUnsupportAsync()
         {
             var csSource = @"
@@ -443,14 +443,14 @@ public class Test
         {
             var test = PopulateTestCs(sourceCode);
             test.ExpectedDiagnostics.AddRange(expectedDiagnostics);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyAnalyzerCsAsync(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestCs(sourceCode);
             test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", editorconfigText));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static VerifyCS.Test PopulateTestCs(string sourceCode)
@@ -466,14 +466,14 @@ public class Test
         private static async Task VerifyAnalyzerAsyncVbAsync(string sourceCode)
         {
             var task = PopulateTestVb(sourceCode);
-            await task.RunAsync();
+            await task.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyAnalyzerAsyncVbAsync(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestVb(sourceCode);
             test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", editorconfigText));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static VerifyVB.Test PopulateTestVb(string sourceCode)

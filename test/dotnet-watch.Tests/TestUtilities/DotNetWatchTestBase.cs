@@ -1,32 +1,62 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias MSTestFramework;
+
 using System.Runtime.CompilerServices;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
 /// Base class for all tests that create dotnet watch process.
 /// </summary>
-public abstract class DotNetWatchTestBase : IDisposable
+public abstract partial class DotNetWatchTestBase
 {
-    internal TestAssetsManager TestAssets { get; }
-    internal WatchableApp App { get; }
+    /// <summary>Set by the MSTest runtime before each test runs.</summary>
+    public TestContext TestContext { get; set; } = null!;
 
-    public DotNetWatchTestBase(ITestOutputHelper logger)
+    private DualOutputHelper? _logger;
+    private WatchableApp? _app;
+    private TestAssetsManager? _testAssetsManager;
+
+    internal DualOutputHelper Logger
+        => _logger ??= new DualOutputHelper(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
+
+    internal WatchableApp App
+        => _app ??= WatchableApp.CreateDotnetWatchApp(Logger);
+
+    internal TestAssetsManager TestAssets
+        => _testAssetsManager ??= new TestAssetsManager(Logger);
+
+    [TestInitialize]
+    public void InitializeTest()
     {
-        var debugLogger = new DebugTestOutputLogger(logger);
-        App = new WatchableApp(debugLogger);
-        TestAssets = new TestAssetsManager(debugLogger);
-
-        // disposes the test class if the test execution is cancelled:
-        AppDomain.CurrentDomain.ProcessExit += (_, _) => Dispose();
+        // Reset lazy state so each test gets a fresh logger/app
+        _logger = null;
+        _app = null;
+        _testAssetsManager = null;
     }
 
-    public DebugTestOutputLogger Logger => App.Logger;
+    [TestCleanup]
+    public async Task CleanupTestAsync()
+    {
+        Logger.Log("Disposing test");
+        if (_app != null)
+        {
+            await _app.DisposeAsync();
+        }
+    }
+
+    internal TestAsset CopyTestAsset(
+        string assetName,
+        object[]? testParameters = null,
+        [CallerMemberName] string callingMethod = "",
+        [CallerFilePath] string? callerFilePath = null)
+        => TestAssets.CopyTestAsset(assetName, callingMethod, callerFilePath, identifier: string.Join(";", testParameters ?? [])).WithSource();
 
     public void Log(string message, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
-        => App.Logger.Log(message, testPath, testLine);
+        => Logger.Log(message, testPath, testLine);
 
     public void UpdateSourceFile(string path, string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
     {
@@ -57,8 +87,37 @@ public abstract class DotNetWatchTestBase : IDisposable
     public void UpdateSourceFile(string path)
         => UpdateSourceFile(path, content => content);
 
-    public void Dispose()
+    internal InProcTestWatcher CreateInProcWatcher(TestAsset testAsset, string[] args, string? workingDirectory = null)
     {
-        App.Dispose();
+        var console = new TestConsole(Logger);
+        var reporter = new TestReporter(Logger);
+        var loggerFactory = new TestLoggerFactory(Logger);
+        var eventObserver = new TestEventObserver();
+        var observableLoggerFactory = new TestObservableLoggerFactory(eventObserver, loggerFactory);
+        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, testAsset);
+        var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout());
+
+        var program = Program.TryCreate(
+           TestOptions.GetCommandLineOptions(["--verbose", .. args]),
+           console,
+           environmentOptions,
+           observableLoggerFactory,
+           reporter,
+           out var errorCode);
+
+        Assert.AreEqual(0, errorCode);
+        Assert.IsNotNull(program);
+
+        var serviceHolder = new StrongBox<TestRuntimeProcessLauncher?>();
+        var factory = new TestRuntimeProcessLauncher.Factory(s =>
+        {
+            serviceHolder.Value = s;
+        });
+
+        var context = program.CreateContext(processRunner);
+        var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: factory, selectionPrompt: null);
+        var shutdownSource = new CancellationTokenSource();
+
+        return new InProcTestWatcher(Logger, watcher, context, eventObserver, reporter, console, serviceHolder, shutdownSource);
     }
 }

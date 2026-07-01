@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotSetSwitch,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotDisableSchUseStrongCryptoTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_ViolationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -33,7 +33,7 @@ public class ExampleClass
             GetCSharpResultAt(9, 9, "SetSwitch"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_ViolationAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -48,7 +48,7 @@ End Class",
             GetBasicResultAt(7, 9, "SetSwitch"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_SolutionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -63,7 +63,7 @@ public class ExampleClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_SolutionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -76,7 +76,7 @@ Public Class ExampleClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBoolDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +92,7 @@ class TestClass
             GetCSharpResultAt(8, 9, "SetSwitch"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEquationDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -108,7 +108,7 @@ class TestClass
             GetCSharpResultAt(8, 9, "SetSwitch"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConditionalOperatorDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -124,7 +124,7 @@ class TestClass
             GetCSharpResultAt(8, 9, "SetSwitch"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithConstantSwitchNameDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -141,7 +141,7 @@ class TestClass
             GetCSharpResultAt(9, 9, "SetSwitch"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBoolNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -156,7 +156,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEquationNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -171,7 +171,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConditionalOperatorNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -186,7 +186,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSwitchNameNullNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -201,8 +201,8 @@ class TestClass
 }");
         }
 
-        [Fact]
-        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [TestMethod]
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         public async Task TestSwitchNameVariableNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -220,7 +220,7 @@ class TestClass
         }
 
         //Ideally, we would generate a diagnostic in this case.
-        [Fact]
+        [TestMethod]
         public async Task TestBoolParseNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -235,12 +235,12 @@ class TestClass
 }");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality.CA5361.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality.CA5361.excluded_symbol_names = TestMet*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.CA5361.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.CA5361.excluded_symbol_names = TestMet*")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var test = new VerifyCS.Test
@@ -273,7 +273,7 @@ class TestClass
                 test.ExpectedDiagnostics.Add(GetCSharpResultAt(8, 9, "SetSwitch"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

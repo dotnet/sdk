@@ -8,20 +8,20 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Performance;
 using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
 using Test.Utilities;
-using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>;
 
+    [TestClass]
     public abstract class DoNotUseCountWhenAnyCanBeUsedTests : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
         protected DoNotUseCountWhenAnyCanBeUsedTests(TestsSourceCodeProvider sourceProvider, VerifierBase verifier)
             : base(sourceProvider, verifier) { }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task CountEqualsNonZero_NoDiagnosticAsync(bool withPredicate)
             => this.VerifyAsync(
                 testSource:
@@ -31,9 +31,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task NonZeroEqualsCount_NoDiagnosticAsync(bool withPredicate)
             => this.VerifyAsync(
                 testSource:
@@ -43,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task NotCountEqualsZero_NoDiagnosticAsync()
             => this.VerifyAsync(
                 testSource:
@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task ZeroEqualsNotCount_NoDiagnosticAsync()
             => this.VerifyAsync(
                 testSource:
@@ -63,8 +63,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(LeftCount_Diagnostic_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(LeftCount_Diagnostic_TheoryData))]
         public Task LeftNotCountComparison_NoDiagnosticAsync(BinaryOperatorKind @operator, int value)
             => this.VerifyAsync(
                 testSource:
@@ -74,8 +74,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(RightCount_Diagnostic_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(RightCount_Diagnostic_TheoryData))]
         public Task RightNotCountComparison_NoDiagnosticAsync(int value, BinaryOperatorKind @operator)
             => this.VerifyAsync(
                 testSource:
@@ -85,9 +85,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task LeftCountNotComparison_NoDiagnosticAsync(bool withPredicate)
             => this.VerifyAsync(
                 testSource:
@@ -97,9 +97,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task RightCountNotComparison_NoDiagnosticAsync(bool withPredicate)
             => this.VerifyAsync(
                 testSource:
@@ -109,8 +109,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(LeftCount_NoDiagnostic_Predicate_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(LeftCount_NoDiagnostic_Predicate_TheoryData))]
         public Task LeftCountComparison_NoDiagnosticAsync(BinaryOperatorKind @operator, int value, bool withPredicate)
             => this.VerifyAsync(
                 testSource:
@@ -120,8 +120,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(RightCount_NoDiagnostic_Predicate_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(RightCount_NoDiagnostic_Predicate_TheoryData))]
         public Task RightCountComparison_NoDiagnosticAsync(int value, BinaryOperatorKind @operator, bool withPredicate)
             => this.VerifyAsync(
                 testSource:
@@ -131,8 +131,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(LeftCount_Fixer_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(LeftCount_Fixer_TheoryData))]
         public Task LeftNotTargetCountComparison_NoDiagnosticAsync(BinaryOperatorKind @operator, int value, bool withPredicate)
             => this.VerifyAsync(
                 testSource:
@@ -142,8 +142,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.GetExtensionsCode(SourceProvider.TestNamespace, SourceProvider.TestExtensionsClass));
 
-        [Theory]
-        [MemberData(nameof(RightCount_Fixer_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(RightCount_Fixer_TheoryData))]
         public Task RightNotTargetCountComparison_NoDiagnosticAsync(int value, BinaryOperatorKind @operator, bool withPredicate)
             => this.VerifyAsync(
                 testSource:
@@ -153,8 +153,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.GetExtensionsCode(SourceProvider.TestNamespace, SourceProvider.TestExtensionsClass));
 
-        [Theory]
-        [MemberData(nameof(LeftCount_Fixer_Predicate_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(LeftCount_Fixer_Predicate_TheoryData))]
         public Task LeftTargetCountComparison_FixedAsync(BinaryOperatorKind @operator, int value, bool withPredicate, bool negate)
             => this.VerifyAsync(
                 methodName: this.SourceProvider.MemberName,
@@ -169,8 +169,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(RightCount_Fixer_Predicate_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(RightCount_Fixer_Predicate_TheoryData))]
         public Task RightTargetCountComparison_FixedAsync(int value, BinaryOperatorKind @operator, bool withPredicate, bool negate)
             => this.VerifyAsync(
                 methodName: this.SourceProvider.MemberName,
@@ -185,9 +185,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task CountEqualsZero_FixedAsync(bool withPredicate)
             => this.VerifyAsync(
                 methodName: this.SourceProvider.MemberName,
@@ -202,9 +202,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task ZeroEqualsCount_FixedAsync(bool withPredicate)
             => this.VerifyAsync(
                 methodName: this.SourceProvider.MemberName,
@@ -220,6 +220,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
     }
 
+    [TestClass]
     public class CSharpDoNotUseCountWhenAnyCanBeUsedTestsEnumerable
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -235,7 +236,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         {
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestConstIdentifiersAsync()
             => Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"using System;
@@ -322,64 +323,64 @@ class C
     }
 }
 ");
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is 0", "!enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not 0", "enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsGreaterThanZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is > 0", "enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotGreaterThanZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not > 0", "!enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsGreaterThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is >= 0");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotGreaterThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not >= 0");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsLessThanOrEqualToZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is <= 0", "!enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotLessThanOrEqualToZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not <= 0", "enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsLessThanZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is < 0");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotLessThanZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not < 0");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is 1");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not 1");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsGreaterThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is > 1");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotGreaterThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not > 1");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsGreaterThanOrEqualToOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is >= 1", "enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotGreaterThanOrEqualToOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not >= 1", "!enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsLessThanOrEqualToOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is <= 1");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotLessThanOrEqualToOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not <= 1");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsLessThanOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is < 1", "!enumerable.Any()");
 
-        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
+        [TestMethod, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotLessThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not < 1");
 
         private Task VerifyDiagnosticForPatternAsync(string pattern, string fixedPattern)
@@ -422,7 +423,7 @@ class C
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { diagnosticResult },
                 LanguageVersion = LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private Task VerifyNoDiagnosticForPatternAsync(string pattern)
@@ -446,10 +447,11 @@ class C
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 
+    [TestClass]
     public class CSharpDoNotUseLongCountWhenAnyCanBeUsedTestsEnumerable
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -465,7 +467,7 @@ class C
         {
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestConstIdentifiersAsync()
             => Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"using System;
@@ -554,6 +556,7 @@ class C
 ");
     }
 
+    [TestClass]
     public class BasicDoNotUseCountWhenAnyCanBeUsedTestsEnumerable
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -569,7 +572,7 @@ class C
         {
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestConstIdentifiersAsync()
             => Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"Imports System
@@ -702,6 +705,7 @@ End Module
 ");
     }
 
+    [TestClass]
     public class BasicDoNotUseLongCountWhenAnyCanBeUsedTestsEnumerable
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
@@ -717,7 +721,7 @@ End Module
         {
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestConstIdentifiersAsync()
             => Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"Imports System
@@ -826,6 +830,7 @@ End Module
         }
     }
 
+    [TestClass]
     public class CSharpDoNotUseLongCountWhenAnyCanBeUsedTestsQueryable
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -842,6 +847,7 @@ End Module
         }
     }
 
+    [TestClass]
     public class BasicDoNotUseCountWhenAnyCanBeUsedTestsQueryable
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -858,6 +864,7 @@ End Module
         }
     }
 
+    [TestClass]
     public class BasicDoNotUseLongCountWhenAnyCanBeUsedTestsQueryable
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -874,6 +881,7 @@ End Module
         }
     }
 
+    [TestClass]
     public class CSharpDoNotUseCountAsyncWhenAnyAsyncCanBeUsedTestsQueryableExtensions
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -889,7 +897,7 @@ End Module
         {
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestConstIdentifiersAsync()
             => Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"using System;
@@ -994,6 +1002,7 @@ namespace System.Data.Entity
 ");
     }
 
+    [TestClass]
     public class CSharpDoNotUseLongCountAsyncWhenAnyAsyncCanBeUsedTestsQueryableExtensions
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -1009,7 +1018,7 @@ namespace System.Data.Entity
         {
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestConstIdentifiersAsync()
             => Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"using System;
@@ -1114,6 +1123,7 @@ namespace System.Data.Entity
 ");
     }
 
+    [TestClass]
     public class BasicDoNotUseCountAsyncWhenAnyAsyncCanBeUsedTestsQueryableExtensions
             : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -1129,7 +1139,7 @@ namespace System.Data.Entity
         {
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestConstIdentifiersAsync()
             => Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"Imports System
@@ -1288,6 +1298,7 @@ End Namespace
 ");
     }
 
+    [TestClass]
     public class BasicDoNotUseLongCountAsyncWhenAnyAsyncCanBeUsedTestsQueryableExtensions
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -1303,7 +1314,7 @@ End Namespace
         {
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestConstIdentifiersAsync()
             => Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"Imports System
@@ -1438,6 +1449,7 @@ End Namespace
         }
     }
 
+    [TestClass]
     public class BasicDoNotUseCountAsyncWhenAnyAsyncCanBeUsedTestsEFCoreQueryableExtensions
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -1454,6 +1466,7 @@ End Namespace
         }
     }
 
+    [TestClass]
     public class BasicDoNotUseLongCountAsyncWhenAnyAsyncCanBeUsedTestsEFCoreQueryableExtensions
         : DoNotUseCountWhenAnyCanBeUsedTests
     {
@@ -1471,13 +1484,14 @@ End Namespace
 
     // Tests from DoNotUseCountWhenAnyCanBeUsedTests does not apply for concurrent/immutable collections.
     // Only test scenarios with predicate, otherwise we would get CA1836.
+    [TestClass]
     public abstract class DoNotUseCountAsyncWhenAnyCanBeUsedOverlapTests
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
         protected DoNotUseCountAsyncWhenAnyCanBeUsedOverlapTests(TestsSourceCodeProvider sourceProvider, VerifierBase verifier)
             : base(sourceProvider, verifier) { }
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-        [Fact]
+        [TestMethod]
         public Task CountEqualsNonZero_NoDiagnosticAsync()
             => this.VerifyAsync(
                 testSource:
@@ -1487,7 +1501,7 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task NonZeroEqualsCount_NoDiagnosticAsync()
             => this.VerifyAsync(
                 testSource:
@@ -1497,7 +1511,7 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task NotCountEqualsZero_NoDiagnosticAsync()
             => this.VerifyAsync(
                 testSource:
@@ -1507,7 +1521,7 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task ZeroEqualsNotCount_NoDiagnosticAsync()
             => this.VerifyAsync(
                 testSource:
@@ -1517,8 +1531,8 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(LeftCount_Diagnostic_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(LeftCount_Diagnostic_TheoryData))]
         public Task LeftNotCountComparison_NoDiagnosticAsync(BinaryOperatorKind @operator, int value)
             => this.VerifyAsync(
                 testSource:
@@ -1528,8 +1542,8 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(RightCount_Diagnostic_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(RightCount_Diagnostic_TheoryData))]
         public Task RightNotCountComparison_NoDiagnosticAsync(int value, BinaryOperatorKind @operator)
             => this.VerifyAsync(
                 testSource:
@@ -1539,7 +1553,7 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task LeftCountNotComparison_NoDiagnosticAsync()
             => this.VerifyAsync(
                 testSource:
@@ -1549,7 +1563,7 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task RightCountNotComparison_NoDiagnosticAsync()
             => this.VerifyAsync(
                 testSource:
@@ -1559,8 +1573,8 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(LeftCount_NoDiagnostic_Predicate_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(LeftCount_NoDiagnostic_Predicate_TheoryData))]
         public Task LeftCountComparison_NoDiagnosticAsync(BinaryOperatorKind @operator, int value, bool _)
             => this.VerifyAsync(
                 testSource:
@@ -1570,8 +1584,8 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(RightCount_NoDiagnostic_Predicate_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(RightCount_NoDiagnostic_Predicate_TheoryData))]
         public Task RightCountComparison_NoDiagnosticAsync(int value, BinaryOperatorKind @operator, bool _)
             => this.VerifyAsync(
                 testSource:
@@ -1581,8 +1595,8 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(LeftCount_Fixer_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(LeftCount_Fixer_TheoryData))]
         public Task LeftNotTargetCountComparison_NoDiagnosticAsync(BinaryOperatorKind @operator, int value, bool _)
             => this.VerifyAsync(
                 testSource:
@@ -1592,8 +1606,8 @@ End Namespace
                 extensionsSource:
                     SourceProvider.GetExtensionsCode(SourceProvider.TestNamespace, SourceProvider.TestExtensionsClass));
 
-        [Theory]
-        [MemberData(nameof(RightCount_Fixer_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(RightCount_Fixer_TheoryData))]
         public Task RightNotTargetCountComparison_NoDiagnosticAsync(int value, BinaryOperatorKind @operator, bool _)
             => this.VerifyAsync(
                 testSource:
@@ -1603,8 +1617,8 @@ End Namespace
                 extensionsSource:
                     SourceProvider.GetExtensionsCode(SourceProvider.TestNamespace, SourceProvider.TestExtensionsClass));
 
-        [Theory]
-        [MemberData(nameof(LeftCount_Fixer_Predicate_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(LeftCount_Fixer_Predicate_TheoryData))]
         public Task LeftTargetCountComparison_FixedAsync(BinaryOperatorKind @operator, int value, bool _, bool negate)
             => this.VerifyAsync(
                 methodName: this.SourceProvider.MemberName,
@@ -1619,8 +1633,8 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Theory]
-        [MemberData(nameof(RightCount_Fixer_Predicate_TheoryData))]
+        [TestMethod]
+        [DynamicData(nameof(RightCount_Fixer_Predicate_TheoryData))]
         public Task RightTargetCountComparison_FixedAsync(int value, BinaryOperatorKind @operator, bool _, bool negate)
             => this.VerifyAsync(
                 methodName: this.SourceProvider.MemberName,
@@ -1635,7 +1649,7 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task CountEqualsZero_FixedAsync()
             => this.VerifyAsync(
                 methodName: this.SourceProvider.MemberName,
@@ -1650,7 +1664,7 @@ End Namespace
                 extensionsSource:
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
 
-        [Fact]
+        [TestMethod]
         public Task ZeroEqualsCount_FixedAsync()
             => this.VerifyAsync(
                 methodName: this.SourceProvider.MemberName,
@@ -1666,6 +1680,7 @@ End Namespace
                     SourceProvider.IsAsync ? SourceProvider.GetExtensionsCode(SourceProvider.ExtensionsNamespace, SourceProvider.ExtensionsClass) : null);
     }
 
+    [TestClass]
     public class CSharpDoNotUseCountWhenAnyCanBeUsedOverlapTests_Concurrent
         : DoNotUseCountAsyncWhenAnyCanBeUsedOverlapTests
     {
@@ -1681,6 +1696,7 @@ End Namespace
         { }
     }
 
+    [TestClass]
     public class CSharpDoNotUseCountWhenAnyCanBeUsedOverlapTests_Immutable
         : DoNotUseCountAsyncWhenAnyCanBeUsedOverlapTests
     {
@@ -1696,6 +1712,7 @@ End Namespace
         { }
     }
 
+    [TestClass]
     public class BasicDoNotUseCountWhenAnyCanBeUsedOverlapTests_Immutable
         : DoNotUseCountAsyncWhenAnyCanBeUsedOverlapTests
     {

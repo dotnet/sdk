@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriReturnValuesShouldNotBeStringsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UriReturnValuesShouldNotBeStringsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1055NoWarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1055NoWarningWithUrlNotStringTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -42,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1055WarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -55,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1055CSharpResultAt(6, 23, "A.GetUrl()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1055NoWarningWithNoUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -68,7 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1055NoWarningNotPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -81,7 +81,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1055NoWarningWithUrlParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -94,7 +94,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1055NoWarningOverrideAsync()
         {
             // warning is from base type not overriden one
@@ -113,7 +113,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1055CSharpResultAt(6, 34, "Base.GetUrl()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1055WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
@@ -127,11 +127,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1055BasicResultAt(5, 18, "A.GetUrl()"));
         }
 
-        [Theory, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = GetUrl")]
-        [InlineData("dotnet_code_quality.CA1055.excluded_symbol_names = GetUrl")]
-        [InlineData("dotnet_code_quality.CA1055.excluded_symbol_names = GetUr*")]
+        [TestMethod, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = GetUrl")]
+        [DataRow("dotnet_code_quality.CA1055.excluded_symbol_names = GetUrl")]
+        [DataRow("dotnet_code_quality.CA1055.excluded_symbol_names = GetUr*")]
         public async Task CA1055_EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -161,7 +161,7 @@ public class A
                 csharpTest.ExpectedDiagnostics.Add(GetCA1055CSharpResultAt(6, 19, "A.GetUrl()"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var basicTest = new VerifyVB.Test
             {
@@ -190,7 +190,7 @@ End Module"
                 basicTest.ExpectedDiagnostics.Add(GetCA1055BasicResultAt(5, 14, "A.GetUrl()"));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1055CSharpResultAt(int line, int column, params string[] args)

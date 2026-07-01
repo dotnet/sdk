@@ -10,9 +10,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 /// <summary>
 /// Integration tests for device selection in dotnet run
 /// </summary>
+[TestClass]
 public class GivenDotnetRunSelectsDevice : SdkTest
 {
-    public GivenDotnetRunSelectsDevice(ITestOutputHelper log) : base(log)
+    public GivenDotnetRunSelectsDevice()
     {
     }
 
@@ -28,7 +29,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         assertion(targets);
     }
 
-    [Fact]
+    [TestMethod]
     public void ItFailsInNonInteractiveMode_WhenMultipleDevicesAvailableAndNoneSpecified()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -43,7 +44,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ItListsDevicesForSpecifiedFramework()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -59,9 +60,9 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining("Emulator");
     }
 
-    [Theory]
-    [InlineData("test-device-1")]
-    [InlineData("test-device-2")]
+    [TestMethod]
+    [DataRow("test-device-1")]
+    [DataRow("test-device-2")]
     public void ItRunsDifferentDevicesInMultiTargetedApp(string deviceId)
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -74,7 +75,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining($"Device: {deviceId}");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItShowsErrorMessageWithAvailableDevices_InNonInteractiveMode()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -91,7 +92,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining("test-device-2");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItDoesNotPromptForDeviceWhenComputeAvailableDevicesTargetDoesNotExist()
     {
         var testInstance = TestAssetsManager.CopyTestAsset(
@@ -109,7 +110,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining("This string came from the test library!");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItTreatsEmptyDeviceSpecificationAsNotSpecified()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -124,7 +125,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ItWorksWithDevicePropertySyntax()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -138,7 +139,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining($"Device: {deviceId}");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItWorksWithDeviceWithoutRuntimeIdentifier()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -153,9 +154,9 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdOutContaining("RuntimeIdentifier:");
     }
 
-    [Theory]
-    [InlineData(true)]  // interactive
-    [InlineData(false)] // non-interactive
+    [TestMethod]
+    [DataRow(true)]  // interactive
+    [DataRow(false)] // non-interactive
     public void ItAutoSelectsSingleDeviceWithoutPrompting(bool interactive)
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -185,7 +186,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             targets => targets.Should().NotBeEmpty("ComputeAvailableDevices target should run to discover available devices"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ItCreatesBinlogWhenRequestedForDeviceSelection()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -207,7 +208,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             targets => targets.Should().NotBeEmpty("ComputeAvailableDevices target should have been executed"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ItFailsWhenNoDevicesAreAvailable()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -222,9 +223,9 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable);
     }
 
-    [Theory]
-    [InlineData("--device")]
-    [InlineData("-p:Device=")]
+    [TestMethod]
+    [DataRow("--device")]
+    [DataRow("-p:Device=")]
     public void ItDoesNotRunComputeAvailableDevicesWhenDeviceIsPreSpecified(string deviceArgPrefix)
     {
         string deviceId = "test-device-2";
@@ -259,7 +260,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             targets => targets.Should().BeEmpty("ComputeAvailableDevices target should not have been executed when device is pre-specified"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ItPromptsForTargetFrameworkEvenWhenDeviceIsSpecified()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -279,7 +280,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             .And.HaveStdErrContaining("Your project targets multiple frameworks. Specify which framework to run using '--framework'");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItCallsDeployToDeviceTargetWhenDeviceIsSpecified()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -296,13 +297,20 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         result.Should().Pass()
             .And.HaveStdOutContaining($"Device: {deviceId}");
 
-        // Verify the binlog file was created and the DeployToDevice target ran
+        // Verify the binlog file was created and the DeployToDevice target ran with the correct Device property
         File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
         AssertTargetInBinlog(binlogPath, "DeployToDevice",
-            targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed"));
+            targets =>
+            {
+                targets.Should().NotBeEmpty("DeployToDevice target should have been executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var deployMessage = messages.FirstOrDefault(m => m.Text.Contains("DeployToDevice: Deployed to device"));
+                deployMessage.Should().NotBeNull("the DeployToDevice target should have logged the device");
+                deployMessage.Text.Should().Contain(deviceId, "the Device property should be passed to DeployToDevice");
+            });
     }
 
-    [Fact]
+    [TestMethod]
     public void ItCallsDeployToDeviceTargetEvenWithNoBuild()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -333,7 +341,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed even with --no-build"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ItCallsDeployToDeviceTargetWhenDeviceIsAutoSelected()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -353,12 +361,21 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         // Verify the binlog file was created
         File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
 
-        // DeployToDevice target should have been called since a device was selected
+        // DeployToDevice target should have been called with the correct Device and RuntimeIdentifier
         AssertTargetInBinlog(binlogPath, "DeployToDevice",
-            targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed when a device is selected"));
+            targets =>
+            {
+                targets.Should().NotBeEmpty("DeployToDevice target should have been executed when a device is selected");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var deployMessage = messages.FirstOrDefault(m => m.Text.Contains("DeployToDevice: Deployed to device"));
+                deployMessage.Should().NotBeNull("the DeployToDevice target should have logged the device");
+                deployMessage.Text.Should().Contain("single-device", "the auto-selected Device should be passed to DeployToDevice");
+                // The single-device has RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" which resolves to the current SDK RID
+                deployMessage.Text.Should().Contain(RuntimeInformation.RuntimeIdentifier, "the RuntimeIdentifier from the device should be passed to DeployToDevice");
+            });
     }
 
-    [Fact]
+    [TestMethod]
     public void ItPassesRuntimeIdentifierToDeployToDeviceTarget()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
@@ -375,5 +392,161 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         result.Should().Pass()
             .And.HaveStdOutContaining($"Device: {deviceId}")
             .And.HaveStdOutContaining($"RuntimeIdentifier: {rid}");
+    }
+
+    [TestMethod]
+    public void ItPassesEnvironmentVariablesToTargets()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarTargets")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+        string buildBinlogPath = Path.Combine(testInstance.Path, "msbuild.binlog");
+        string runBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId, 
+                     "-e", "FOO=BAR", "-e", "ANOTHER=VALUE",
+                     "-bl");
+
+        result.Should().Pass();
+
+        // Verify the binlog files were created
+        File.Exists(buildBinlogPath).Should().BeTrue("the build binlog file should be created");
+        File.Exists(runBinlogPath).Should().BeTrue("the run binlog file should be created");
+
+        // Verify environment variables were passed to Build target (out-of-process build)
+        AssertTargetInBinlog(buildBinlogPath, "_LogRuntimeEnvironmentVariableDuringBuild",
+            targets => 
+            {
+                targets.Should().NotBeEmpty("_LogRuntimeEnvironmentVariableDuringBuild target should have executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("Build: RuntimeEnvironmentVariable=") == true);
+                envVarMessage.Should().NotBeNull("the Build target should have logged the environment variables");
+                envVarMessage.Text.Should().Contain("FOO=BAR").And.Contain("ANOTHER=VALUE");
+            });
+
+        // Verify environment variables were passed to ComputeRunArguments target (in-process)
+        AssertTargetInBinlog(runBinlogPath, "_LogRuntimeEnvironmentVariableDuringComputeRunArguments",
+            targets => 
+            {
+                targets.Should().NotBeEmpty("_LogRuntimeEnvironmentVariableDuringComputeRunArguments target should have executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("ComputeRunArguments: RuntimeEnvironmentVariable=") == true);
+                envVarMessage.Should().NotBeNull("the ComputeRunArguments target should have logged the environment variables");
+                envVarMessage.Text.Should().Contain("FOO=BAR").And.Contain("ANOTHER=VALUE");
+            });
+
+        // Verify environment variables were passed to DeployToDevice target (in-process)
+        AssertTargetInBinlog(runBinlogPath, "DeployToDevice",
+            targets => 
+            {
+                targets.Should().NotBeEmpty("DeployToDevice target should have executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("DeployToDevice: RuntimeEnvironmentVariable=") == true);
+                envVarMessage.Should().NotBeNull("the DeployToDevice target should have logged the environment variables");
+                envVarMessage.Text.Should().Contain("FOO=BAR").And.Contain("ANOTHER=VALUE");
+            });
+
+        // Verify the props file was created in the correct IntermediateOutputPath location
+        string tempPropsFile = Path.Combine(testInstance.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "dotnet-run-env.props");
+        var build = BinaryLog.ReadBuild(buildBinlogPath);
+        var propsFile = build.SourceFiles?.FirstOrDefault(f => f.FullPath.EndsWith("dotnet-run-env.props", StringComparison.OrdinalIgnoreCase));
+        propsFile.Should().NotBeNull("dotnet-run-env.props should be embedded in the binlog");
+        propsFile.FullPath.Should().Be(tempPropsFile, "the props file should be in the IntermediateOutputPath");
+        File.Exists(tempPropsFile).Should().BeFalse("the temporary props file should be deleted after build");
+    }
+
+    [TestMethod]
+    public void ItDoesNotPassEnvironmentVariablesToTargetsWithoutOptIn()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarNoOptIn")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+        string buildBinlogPath = Path.Combine(testInstance.Path, "msbuild.binlog");
+        string runBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
+
+        // Run with EnableRuntimeEnvironmentVariableSupport=false to opt out of the capability
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId,
+                     "-e", "FOO=BAR", "-e", "ANOTHER=VALUE",
+                     "-p:EnableRuntimeEnvironmentVariableSupport=false",
+                     "-bl");
+
+        result.Should().Pass();
+
+        // Verify the binlog files were created
+        File.Exists(buildBinlogPath).Should().BeTrue("the build binlog file should be created");
+        File.Exists(runBinlogPath).Should().BeTrue("the run binlog file should be created");
+
+        // Verify _LogRuntimeEnvironmentVariableDuringBuild target did NOT execute (condition failed due to no items)
+        AssertTargetInBinlog(buildBinlogPath, "_LogRuntimeEnvironmentVariableDuringBuild",
+            targets =>
+            {
+                // The target should either not execute, or execute with no environment variable message
+                if (targets.Any())
+                {
+                    var messages = targets.First().FindChildrenRecursive<Message>();
+                    var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("Build: RuntimeEnvironmentVariable=") == true);
+                    envVarMessage.Should().BeNull("the Build target should NOT have logged the environment variables when not opted in");
+                }
+            });
+
+        // Verify _LogRuntimeEnvironmentVariableDuringComputeRunArguments target did NOT log env vars
+        AssertTargetInBinlog(runBinlogPath, "_LogRuntimeEnvironmentVariableDuringComputeRunArguments",
+            targets =>
+            {
+                if (targets.Any())
+                {
+                    var messages = targets.First().FindChildrenRecursive<Message>();
+                    var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("ComputeRunArguments: RuntimeEnvironmentVariable=") == true);
+                    envVarMessage.Should().BeNull("the ComputeRunArguments target should NOT have logged the environment variables when not opted in");
+                }
+            });
+
+        // Verify DeployToDevice target did NOT log actual env var values
+        AssertTargetInBinlog(runBinlogPath, "DeployToDevice",
+            targets =>
+            {
+                targets.Should().NotBeEmpty("DeployToDevice target should have executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                // The message may appear (target has no condition) but should NOT contain actual env var values
+                var envVarMessage = messages.FirstOrDefault(m => m.Text?.Contains("FOO=BAR") == true || m.Text?.Contains("ANOTHER=VALUE") == true);
+                envVarMessage.Should().BeNull("the DeployToDevice target should NOT have logged the actual environment variable values when not opted in");
+            });
+
+        // Verify no props file was created (since opt-in is false)
+        string tempPropsFile = Path.Combine(testInstance.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "dotnet-run-env.props");
+        var build = BinaryLog.ReadBuild(buildBinlogPath);
+        var propsFile = build.SourceFiles?.FirstOrDefault(f => f.FullPath.EndsWith("dotnet-run-env.props", StringComparison.OrdinalIgnoreCase));
+        propsFile.Should().BeNull("dotnet-run-env.props should NOT be created when not opted in");
+    }
+
+    [TestMethod]
+    public void ItHonorsRuntimeEnvironmentVariableChangesFromTargetsWhenRunningApp()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "EnvVarRunHonored")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+
+        // A target (_ModifyRuntimeEnvironmentVariable) changes RUNE_FOO and injects RUNE_INJECTED
+        // before ComputeRunArguments. The launched app should observe those changes.
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId,
+                     "-e", "RUNE_FOO=original",
+                     "-p:ModifyRuntimeEnvironmentVariable=true");
+
+        result.Should().Pass()
+            // The value changed by the target wins over the original -e value.
+            .And.HaveStdOutContaining("EnvVar: RUNE_FOO=modified-by-target")
+            // A variable added by the target is passed to the app.
+            .And.HaveStdOutContaining("EnvVar: RUNE_INJECTED=injected-by-target");
+
+        result.Should().NotHaveStdOutContaining("EnvVar: RUNE_FOO=original");
     }
 }

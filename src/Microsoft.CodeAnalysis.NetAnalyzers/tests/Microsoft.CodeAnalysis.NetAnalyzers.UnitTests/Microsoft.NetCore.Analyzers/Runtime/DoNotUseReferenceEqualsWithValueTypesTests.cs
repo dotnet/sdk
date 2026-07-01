@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotUseReferenceEqualsWithValueTypesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DoNotUseReferenceEqualsWithValueTypesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task ReferenceTypesAreOKAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -45,7 +45,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LeftArgumentFailsForValueTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -76,7 +76,7 @@ End Namespace",
                 GetVisualBasicMethodResultAt(7, 36, "System.IntPtr"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RightArgumentFailsForValueTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -107,7 +107,7 @@ End Namespace",
                 GetVisualBasicMethodResultAt(7, 49, "Integer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoErrorForUnconstrainedGenericAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -136,7 +136,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoErrorForInterfaceConstrainedGenericAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -166,7 +166,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ErrorForValueTypeConstrainedGenericAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -198,7 +198,7 @@ End Namespace",
                 GetVisualBasicMethodResultAt(7, 36, "T"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TwoValueTypesProducesTwoErrorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -235,7 +235,7 @@ End Namespace",
                 GetVisualBasicMethodResultAt(7, 42, "TRight"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LeftArgumentFailsForValueTypeWhenRightIsNullAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -266,7 +266,7 @@ End Namespace",
                 GetVisualBasicMethodResultAt(7, 36, "System.IntPtr"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RightArgumentFailsForValueTypeWhenLeftIsNullAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -297,7 +297,7 @@ End Namespace",
                 GetVisualBasicMethodResultAt(7, 52, "Integer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DoNotWarnForUserDefinedConversionsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -339,7 +339,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_ReferenceTypesAreOKAsync()
         {
             await new VerifyCS.Test
@@ -359,7 +359,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -375,10 +375,10 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_LeftArgumentFailsForValueTypeAsync()
         {
             await new VerifyCS.Test
@@ -399,7 +399,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 62, "System.IntPtr") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -416,10 +416,10 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "System.IntPtr") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_RightArgumentFailsForValueTypeAsync()
         {
             await new VerifyCS.Test
@@ -440,7 +440,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 68, "int") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -457,10 +457,10 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 68, "Integer") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_NoErrorForUnconstrainedGenericAsync()
         {
             await new VerifyCS.Test
@@ -480,7 +480,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -496,10 +496,10 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_NoErrorForInterfaceConstrainedGenericAsync()
         {
             await new VerifyCS.Test
@@ -520,7 +520,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -536,10 +536,10 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_ErrorForValueTypeConstrainedGenericAsync()
         {
             await new VerifyCS.Test
@@ -561,7 +561,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(12, 62, "T") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -578,10 +578,10 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "T") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_TwoValueTypesProducesTwoErrorsAsync()
         {
             await new VerifyCS.Test
@@ -610,7 +610,7 @@ namespace TestNamespace
                     GetCSharpComparerResultAt(14, 17, "TLeft"),
                     GetCSharpComparerResultAt(15, 17, "TRight"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -631,10 +631,10 @@ End Namespace",
                     GetVisualBasicComparerResultAt(8, 62, "TLeft"),
                     GetVisualBasicComparerResultAt(8, 68, "TRight"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_LeftArgumentFailsForValueTypeWhenRightIsNullAsync()
         {
             await new VerifyCS.Test
@@ -655,7 +655,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 62, "System.IntPtr") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -672,10 +672,10 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "System.IntPtr") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_RightArgumentFailsForValueTypeWhenLeftIsNullAsync()
         {
             await new VerifyCS.Test
@@ -696,7 +696,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 68, "int") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -713,10 +713,10 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 71, "Integer") },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Comparer_DoNotWarnForUserDefinedConversionsAsync()
         {
             await new VerifyCS.Test
@@ -744,7 +744,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -765,10 +765,10 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ComparerDoesNotTrackThroughInterfaceAsync()
         {
             await new VerifyCS.Test
@@ -792,7 +792,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -812,7 +812,7 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private DiagnosticResult GetCSharpMethodResultAt(int line, int column, string typeName)

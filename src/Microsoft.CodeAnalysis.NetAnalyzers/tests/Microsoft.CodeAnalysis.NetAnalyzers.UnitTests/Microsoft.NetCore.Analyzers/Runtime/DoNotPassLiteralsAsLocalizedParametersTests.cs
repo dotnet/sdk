@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotPassLiteralsAsLocalizedParameters,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,13 +14,14 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+    [TestClass]
     public class DoNotPassLiteralsAsLocalizedParametersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NonLocalizableParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -65,7 +65,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_NonLiteralArgument_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -103,7 +103,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_EmptyStringLiteralArgument_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -143,7 +143,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_NonEmptyStringLiteralArgument_AllControlChars_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -184,7 +184,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_MultipleLineStringLiteralArgument_Method_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -229,7 +229,7 @@ End Class
                 GetBasicResultAt(13, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a  a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_StringLiteralArgument_Method_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -273,7 +273,7 @@ End Class
             GetBasicResultAt(12, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_StringLiteralArgument_Constructor_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -317,7 +317,7 @@ End Class
             GetBasicResultAt(12, 19, "Sub Test.M1(c As C)", "param", "Sub C.New(param As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PropertyWithLocalizableAttribute_StringLiteralArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -360,7 +360,7 @@ End Class
             GetBasicResultAt(12, 9, "Sub Test.M1(c As C)", "AutoPropertyValue", "Property Set C.P(AutoPropertyValue As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PropertySetterWithLocalizableAttribute_StringLiteralArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -411,7 +411,7 @@ End Class
             GetBasicResultAt(20, 9, "Sub Test.M1(c As C)", "valueCustom", "Property Set C.P(valueCustom As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PropertySetterParameterWithLocalizableAttribute_StringLiteralArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -463,7 +463,7 @@ End Class
             GetBasicResultAt(20, 9, "Sub Test.M1(c As C)", "valueCustom", "Property Set C.P(valueCustom As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_MultipleStringLiteralArguments_Method_DiagnosticAsync()
         {
             const string editorConfigText = "dotnet_code_quality.CA1303.use_naming_heuristic = true";
@@ -508,7 +508,7 @@ public class Test
                         GetCSharpResultAt(17, 18, "void Test.M1(C c)", "message", "void C.M(string param, string message)", "m"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -546,10 +546,10 @@ End Class
                         GetBasicResultAt(13, 18, "Sub Test.M1(c As C)", "message", "Sub C.M(param As String, message As String)", "m"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableFalseAttribute_StringLiteralArgument_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -589,7 +589,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ContainingSymbolWithLocalizableTrueAttribute_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -635,7 +635,7 @@ End Class
             GetBasicResultAt(13, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableFalseAttribute_ContainingSymbolWithLocalizableTrueAttribute_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -677,7 +677,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableTrueAttribute_ContainingSymbolWithLocalizableFalseAttribute_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -723,7 +723,7 @@ End Class
             GetBasicResultAt(13, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_OverriddenMethod_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -796,7 +796,7 @@ End Class
             GetBasicResultAt(25, 29, "Sub Test.M1(c As C)", "param", "Sub C.LocalizableMethod(param As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_StringLiteralArgument_MultiplePossibleLiterals_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -840,7 +840,7 @@ End Class
             GetBasicResultAt(12, 13, "Sub Test.M1(c As C, flag As Boolean)", "param", "Sub C.M(param As String)", "a, b"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_StringLiteralArgument_MultiplePossibleLiterals_Ordering_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -884,7 +884,7 @@ End Class
             GetBasicResultAt(12, 13, "Sub Test.M1(c As C, flag As Boolean)", "param", "Sub C.M(param As String)", "a, b"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_StringLiteralArgument_DefaultValue_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -922,7 +922,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_ConstantField_StringLiteralArgument_Method_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -967,7 +967,7 @@ End Class
             GetBasicResultAt(13, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_XmlStringLiteralArgument_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1007,7 +1007,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_XmlStringLiteralArgument_Filtering_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1051,7 +1051,7 @@ End Class
             GetBasicResultAt(12, 13, "Sub Test.M1(c As C, flag As Boolean)", "param", "Sub C.M(param As String)", "b"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_SpecialCases_ConditionalMethod_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1093,7 +1093,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_SpecialCases_XmlWriterMethod_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1135,7 +1135,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_SpecialCases_SystemConsoleWriteMethods_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1185,7 +1185,7 @@ End Class
             GetBasicResultAt(10, 27, "Sub Test.M1(param As String)", "format", "Sub Console.WriteLine(format As String, arg0 As Object)", "a"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_SpecialCases_SystemWebUILiteralControl_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1244,10 +1244,10 @@ End Class
 ");
         }
 
-        [InlineData("Assert")]
-        [InlineData("CollectionAssert")]
-        [InlineData("StringAssert")]
-        [Theory]
+        [DataRow("Assert")]
+        [DataRow("CollectionAssert")]
+        [DataRow("StringAssert")]
+        [TestMethod]
         public async Task ParameterWithLocalizableAttribute_SpecialCases_UnitTestApis_NoDiagnosticAsync(string assertClassName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1293,25 +1293,25 @@ End Class
 ");
         }
 
-        [InlineData("message", false)]
-        [InlineData("message", true)]
-        [InlineData("message", null)]
-        [InlineData("text", false)]
-        [InlineData("text", true)]
-        [InlineData("text", null)]
-        [InlineData("caption", false)]
-        [InlineData("caption", true)]
-        [InlineData("caption", null)]
-        [InlineData("Message", false)]
-        [InlineData("Message", true)]
-        [InlineData("Message", null)]
-        [InlineData("Text", false)]
-        [InlineData("Text", true)]
-        [InlineData("Text", null)]
-        [InlineData("Caption", false)]
-        [InlineData("Caption", true)]
-        [InlineData("Caption", null)]
-        [Theory]
+        [DataRow("message", false)]
+        [DataRow("message", true)]
+        [DataRow("message", null)]
+        [DataRow("text", false)]
+        [DataRow("text", true)]
+        [DataRow("text", null)]
+        [DataRow("caption", false)]
+        [DataRow("caption", true)]
+        [DataRow("caption", null)]
+        [DataRow("Message", false)]
+        [DataRow("Message", true)]
+        [DataRow("Message", null)]
+        [DataRow("Text", false)]
+        [DataRow("Text", true)]
+        [DataRow("Text", null)]
+        [DataRow("Caption", false)]
+        [DataRow("Caption", true)]
+        [DataRow("Caption", null)]
+        [TestMethod]
         public async Task ParameterWithLocalizableName_StringLiteralArgument_Method_DiagnosticAsync(string parameterName, bool? useNameHeuristic)
         {
             // The null case represents the default value which is 'false'
@@ -1356,7 +1356,7 @@ public class Test
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(14, 13, "void Test.M1(C c)", parameterName, $"void C.M(string {parameterName})", "a"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1391,28 +1391,28 @@ End Class
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(10, 13, "Sub Test.M1(c As C)", parameterName, $"Sub C.M({parameterName} As String)", "a"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [InlineData("message", false)]
-        [InlineData("message", true)]
-        [InlineData("message", null)]
-        [InlineData("text", false)]
-        [InlineData("text", true)]
-        [InlineData("text", null)]
-        [InlineData("caption", false)]
-        [InlineData("caption", true)]
-        [InlineData("caption", null)]
-        [InlineData("Message", false)]
-        [InlineData("Message", true)]
-        [InlineData("Message", null)]
-        [InlineData("Text", false)]
-        [InlineData("Text", true)]
-        [InlineData("Text", null)]
-        [InlineData("Caption", false)]
-        [InlineData("Caption", true)]
-        [InlineData("Caption", null)]
-        [Theory]
+        [DataRow("message", false)]
+        [DataRow("message", true)]
+        [DataRow("message", null)]
+        [DataRow("text", false)]
+        [DataRow("text", true)]
+        [DataRow("text", null)]
+        [DataRow("caption", false)]
+        [DataRow("caption", true)]
+        [DataRow("caption", null)]
+        [DataRow("Message", false)]
+        [DataRow("Message", true)]
+        [DataRow("Message", null)]
+        [DataRow("Text", false)]
+        [DataRow("Text", true)]
+        [DataRow("Text", null)]
+        [DataRow("Caption", false)]
+        [DataRow("Caption", true)]
+        [DataRow("Caption", null)]
+        [TestMethod]
         public async Task PropertyWithLocalizableName_StringLiteralArgument_DiagnosticAsync(string propertyName, bool? useNameHeuristic)
         {
             // The null case represents the default value which is 'false'
@@ -1455,7 +1455,7 @@ public class Test
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(12, 9, "void Test.M1(C c)", "value", $"void C.{propertyName}.set", "a"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1489,10 +1489,10 @@ End Class
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(9, 9, "Sub Test.M1(c As C)", "AutoPropertyValue", $"Property Set C.{propertyName}(AutoPropertyValue As String)", "a"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1919, "https://github.com/dotnet/roslyn-analyzers/issues/1919")]
+        [TestMethod, WorkItem(1919, "https://github.com/dotnet/roslyn-analyzers/issues/1919")]
         public async Task ShouldBeLocalizedRegressionTestAsync()
         {
             await new VerifyCS.Test
@@ -1530,10 +1530,10 @@ dotnet_code_quality.CA1303.use_naming_heuristic = true"), },
                         GetCSharpResultAt(6, 45, "void Program.Main()", "text", "decimal DerivedClass.Generic<decimal>(string text)", "number")
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1919, "https://github.com/dotnet/roslyn-analyzers/issues/1919")]
+        [TestMethod, WorkItem(1919, "https://github.com/dotnet/roslyn-analyzers/issues/1919")]
         public async Task ShouldBeLocalizedRegressionTest_02Async()
         {
             await new VerifyCS.Test
@@ -1570,22 +1570,22 @@ dotnet_code_quality.CA1303.use_naming_heuristic = true"), },
                         GetCSharpResultAt(6, 45, "void Program.Main()", "text", "decimal DerivedClass.Generic<decimal>(string text)", "number")
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
+        [TestMethod, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
         // No configuration - validate diagnostics in default configuration
-        [InlineData(@"")]
+        [DataRow(@"")]
         // Match by method name
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M|M2")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = M|M2")]
         // Match by type name
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = C")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = C")]
         // Match multiple methods by method documentation ID with "M:" prefix
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M:C.M(System.String)|M:C.M2(System.String)")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = M:C.M(System.String)|M:C.M2(System.String)")]
         // Match by type documentation ID with "T:" prefix
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:C")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = T:C")]
         // Match by method name and wildcard
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M*")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = M*")]
         public async Task ShouldBeLocalized_MethodExcludedByConfiguration_NoDiagnosticAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1637,32 +1637,32 @@ public class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
+        [TestMethod, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
         // No configuration - validate diagnostics in default configuration
-        [InlineData(@"")]
+        [DataRow(@"")]
         // Match by constructor name
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
         // Match by type name
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = Exception")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = Exception")]
         // Match by namespace name
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = System")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = System")]
         // Match by constructor documentation ID with "M:" prefix
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M:System.Exception..ctor(System.String)")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = M:System.Exception..ctor(System.String)")]
         // Match by type documentation ID with "T:" prefix
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:System.Exception")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = T:System.Exception")]
         // Match by namespace documentation ID with "N:" prefix
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = N:System")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = N:System")]
         // Match by type name and wildcard
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = Except*")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = Except*")]
         // Match by constructor documentation ID with "M:" prefix and wildcard
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M:System.Exception*")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = M:System.Exception*")]
         // Match by type documentation ID with "T:" prefix and wildcard
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:System.E*")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = T:System.E*")]
         // Match by namespace documentation ID with "N:" prefix and wildcard
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = N:Sys*")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = N:Sys*")]
         public async Task ShouldBeLocalized_ConstructorExcludedByConfiguration_NoDiagnosticAsync(string editorConfigText)
         {
             var editorConfigTextWithNamingHeuristic = editorConfigText + @"
@@ -1709,22 +1709,22 @@ public class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
+        [TestMethod, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
         // No configuration - validate diagnostics in default configuration
-        [InlineData(@"")]
+        [DataRow(@"")]
         // Match by type name
-        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = Exception")]
+        [DataRow(@"dotnet_code_quality.excluded_type_names_with_derived_types = Exception")]
         // Match by type documentation ID without "T:" prefix
-        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = System.Exception")]
+        [DataRow(@"dotnet_code_quality.excluded_type_names_with_derived_types = System.Exception")]
         // Match by type documentation ID with "T:" prefix
-        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = T:System.Exception")]
+        [DataRow(@"dotnet_code_quality.excluded_type_names_with_derived_types = T:System.Exception")]
         // Match by type name and wildcard
-        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = Except*")]
+        [DataRow(@"dotnet_code_quality.excluded_type_names_with_derived_types = Except*")]
         // Match by type documentation ID with "T:" prefix and wildcard
-        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = T:System.Except*")]
+        [DataRow(@"dotnet_code_quality.excluded_type_names_with_derived_types = T:System.Except*")]
         public async Task ShouldBeLocalized_SubTypesExcludedByConfiguration_NoDiagnosticAsync(string editorConfigText)
         {
             var editorConfigTextWithNamingHeuristic = editorConfigText + @"
@@ -1777,14 +1777,14 @@ public class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.CA1303.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.CA1303.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var editorConfigTextWithNamingHeuristic = editorConfigText + @"
@@ -1836,14 +1836,14 @@ public class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(PointsToAnalysisKind.None)]
-        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
-        [InlineData(PointsToAnalysisKind.Complete)]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow(PointsToAnalysisKind.None)]
+        [DataRow(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [DataRow(PointsToAnalysisKind.Complete)]
         public async Task TestPointsToAnalysisKindAsync(PointsToAnalysisKind? pointsToAnalysisKind)
         {
             var editorConfig = pointsToAnalysisKind.HasValue ?
@@ -1886,7 +1886,7 @@ public class Test
                     GetCSharpResultAt(17, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a  a"));
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(CancellationToken.None);
 
             var vbCode = @"
 Imports Microsoft.VisualBasic
@@ -1921,7 +1921,7 @@ End Class
                     GetBasicResultAt(14, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a  a"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

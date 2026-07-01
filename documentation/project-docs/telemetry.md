@@ -42,6 +42,21 @@ The .NET SDK telemetry can be disabled using the following environment variable:
 
 - **Connection String**: Telemetry data is sent to Application Insights with instrumentation key: `74cc1c9e-3e6e-4d05-b3fc-dde9101d0254`
 
+### OpenTelemetry OTLP Exporter
+
+In addition to the default Application Insights exporter, the SDK can also export telemetry via the [OpenTelemetry Protocol (OTLP)](https://opentelemetry.io/docs/specs/otel/protocol/exporter/). The OTLP exporter is enabled when either of the following conditions is met:
+
+- The SDK-specific `DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER` environment variable is set to `1`, `true`, or `yes`, **or**
+- Any of the standard OpenTelemetry OTLP exporter environment variables are set:
+  - `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`
+  - `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_TRACES_PROTOCOL`, `OTEL_EXPORTER_OTLP_METRICS_PROTOCOL`
+  - `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, `OTEL_EXPORTER_OTLP_METRICS_HEADERS`
+  - `OTEL_EXPORTER_OTLP_TIMEOUT`, `OTEL_EXPORTER_OTLP_TRACES_TIMEOUT`, `OTEL_EXPORTER_OTLP_METRICS_TIMEOUT`
+  
+  and of course the overall OTel SDK disablement flag OTEL_SDK_DISABLED must not be `true`
+
+When the OTLP exporter is enabled, all standard OpenTelemetry OTLP environment variables (endpoint, protocol, headers, timeout, etc.) are honored by the OpenTelemetry SDK's `OtlpExporterOptions` to configure the export destination.
+
 - **First Time Use**: Telemetry is only collected after the first-time-use notice has been shown and accepted (tracked via sentinel file)
 
 - **Event Namespace**: All telemetry events are automatically prefixed with `dotnet/cli/`
@@ -61,7 +76,7 @@ Every telemetry event automatically includes these common properties:
 | **Telemetry Profile** | Custom telemetry profile (if set via env var) | Custom value or null |
 | **Docker Container** | Whether running in Docker container | `True` or `False` |
 | **CI** | Whether running in CI environment | `True` or `False` |
-| **LLM** | Detected LLM/assistant environment identifiers (comma-separated) | `claude`, `cursor`, `gemini`, `copilot`, `codex`, `aider`, `amp`, `qwen`, `droid`, `opencode`, `zed`, `kimi`, `openhands`, `goose`, `cline`, `roo`, `windsurf`, `generic_agent` |
+| **LLM** | Detected LLM/assistant environment identifiers (comma-separated) | `claude`, `cursor`, `gemini`, `copilot`, `codex`, `aider`, `plandex`, `amp`, `qwen`, `droid`, `opencode`, `zed`, `kimi`, `openhands`, `goose`, `cline`, `roo`, `windsurf`, `generic_agent` |
 | **Current Path Hash** | SHA256 hash of current directory path | Hashed value |
 | **Machine ID** | SHA256 hash of machine MAC address (or GUID if unavailable) | Hashed value |
 | **Machine ID Old** | Legacy machine ID for compatibility | Hashed value |

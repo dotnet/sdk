@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,11 +13,12 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForXmlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXmlInjectionVulnerabilities, ReviewCodeForXmlInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForXmlInjectionVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -59,10 +59,10 @@ public partial class WebForm : System.Web.UI.Page
                         GetCSharpResultAt(23, 9, 9, 24, "string XmlElement.InnerXml", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -103,10 +103,10 @@ End Class",
                         GetBasicResultAt(23, 9, 9, 31, "Property XmlElement.InnerXml As String", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -143,10 +143,10 @@ public partial class WebForm : System.Web.UI.Page
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Solution_DiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -183,10 +183,10 @@ Public Partial Class WebForm
 End Class",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlAttribute_InnerXml_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -207,7 +207,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(13, 9, 10, 24, "string XmlAttribute.InnerXml", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextWriter_WriteRaw_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -229,7 +229,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(14, 9, 12, 24, "void XmlTextWriter.WriteRaw(string data)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextWriter_WriteRaw_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -250,7 +250,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlNotation_InnerXml_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -271,7 +271,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(13, 9, 10, 24, "string XmlNotation.InnerXml", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlNotation_InnerXml_AntiXssXmlEncode_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -292,7 +292,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlNotation_InnerXml_AntiXssEncoderXmlEncode_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -313,7 +313,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AspNetCoreHttpRequest_XmlTextWriter_WriteRaw_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

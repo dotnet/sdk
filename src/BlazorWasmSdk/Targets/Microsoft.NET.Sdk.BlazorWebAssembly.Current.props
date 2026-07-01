@@ -33,6 +33,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <StaticWebAssetStandaloneHosting Condition="'$(StaticWebAssetStandaloneHosting)' == '' and '$(StaticWebAssetProjectMode)' == 'Root'">true</StaticWebAssetStandaloneHosting>
     <StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute Condition="'$(StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute)' == ''">true</StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute>
     <StaticWebAssetsGetEmbeddedPublishAssetsTargets>ComputeFilesToPublish;GetCurrentProjectEmbeddedPublishStaticWebAssetItems</StaticWebAssetsGetEmbeddedPublishAssetsTargets>
+
+    <!-- Regex route constraint support for Blazor routing -->
+    <BlazorRoutingEnableRegexConstraint Condition="'$(BlazorRoutingEnableRegexConstraint)' == ''">false</BlazorRoutingEnableRegexConstraint>
+
+    <!--
+      Enable diagnostics infrastructure (metrics, event sources, and HTTP activity propagation) by default for Blazor
+      WebAssembly apps. The low-level WASM runtime defaults these to 'false' to reduce download size via aggressive
+      trimming, but Blazor apps commonly use HttpClient with distributed tracing, structured logging, and metrics
+      (especially with .NET Aspire). Developers who want smaller binaries can opt out by setting
+      BlazorWasmDiagnosticsEnabled to 'false' or by setting the individual properties explicitly.
+    -->
+    <BlazorWebAssemblyDiagnosticsEnabled Condition="'$(BlazorWebAssemblyDiagnosticsEnabled)' == ''">true</BlazorWebAssemblyDiagnosticsEnabled>
+    <MetricsSupport Condition="'$(MetricsSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</MetricsSupport>
+    <EventSourceSupport Condition="'$(EventSourceSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</EventSourceSupport>
+    <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</HttpActivityPropagationSupport>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" />

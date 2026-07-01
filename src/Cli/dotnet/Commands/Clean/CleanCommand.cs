@@ -13,7 +13,7 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = 
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var result = Parser.Parse(["dotnet", "clean", ..args]);
+        var result = Parser.Parse(["dotnet", "clean", .. args]);
         return FromParseResult(result, msbuildPath);
     }
 
@@ -22,7 +22,7 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = 
         var definition = (CleanCommandDefinition)result.CommandResult.Command;
 
         result.ShowHelpOrErrorIfAppropriate();
-        return CommandFactory.CreateVirtualOrPhysicalCommand(
+        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
             createVirtualCommand: static (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(

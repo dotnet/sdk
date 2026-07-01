@@ -10,9 +10,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 
 internal static partial class ObjectReaders
 {
-    public static TagHelperDescriptor ReadTagHelper(JsonDataReader reader)
-        => reader.ReadNonNullObject(ReadTagHelperFromProperties);
-
     public static TagHelperDescriptor ReadTagHelperFromProperties(JsonDataReader reader)
     {
         var flags = (TagHelperFlags)reader.ReadByte(nameof(TagHelperDescriptor.Flags));

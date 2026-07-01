@@ -22,6 +22,13 @@
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
       <SharedFrameworkNameVersionPath>$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
+
+      <!-- The target OS to pass to crossgen2. Without it, crossgen2 defaults to the OS it is running
+           on, which produces images for the wrong OS when cross-compiling the SDK toolset (e.g.
+           building an OpenBSD SDK on a Linux host). crossgen2 only recognizes the base OS name, so
+           Linux flavors ('linux-musl', 'linux-bionic') must be normalized to 'linux'. -->
+      <_CrossgenTargetOS>$(TargetOS)</_CrossgenTargetOS>
+      <_CrossgenTargetOS Condition="$(TargetOS.StartsWith('linux'))">linux</_CrossgenTargetOS>
     </PropertyGroup>
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
@@ -56,9 +63,6 @@
 
       <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles);$(InstallerOutputDirectory)Roslyn\binfx\**\*" />
 
-      <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
-      <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\Microsoft.CodeAnalysis.VisualBasic.dll" />
-
       <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error, and they need to stay their original architecture. -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)TestHost*\**\*" />
       <!-- Removing Full CLR built DumpMiniTool executables from Crossgen, because they need to stay their original architecture to allow creating dumps with a given bitness. -->
@@ -66,7 +70,7 @@
       <RemainingFiles Remove="$(InstallerOutputDirectory)Sdks\**\*" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 
-      <!-- Removing Containers as containerize .DLLs and netframework components shouldn't be crossgenned. -->
+      <!-- Removing Containers as containerize .DLLs shouldn't be crossgenned. -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
@@ -83,13 +87,18 @@
       <RemainingFiles Include="$(ContainerTasks)**\*" />
 
       <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
-      <RemainingFiles Remove="$(NetSdkAnalyzers)Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
+      <RoslynFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
 
-      <!-- Don't CrossGen bundled DotnetTools -->
-      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\*" />
+      <!-- Don't CrossGen .NET Framework components of DotnetTools -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\BuildHost-net472\**\*" />
+
+      <!-- Don't CrossGen assemblies injected by dotnet-watch into user apps at runtime -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\dotnet-watch\**\Microsoft.Extensions.DotNetDeltaApplier.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\dotnet-watch\**\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" />
 
       <!-- Don't crossgen satellite assemblies -->
       <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
@@ -100,6 +109,29 @@
       <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
       <RazorToolFiles Remove="$(InstallerOutputDirectory)**\ref\*.dll" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)**\ref\*.dll" />
+
+      <!-- Don't crossgen DotnetTools assemblies that are unique to DotnetTools. Crossgen'ing these provides
+           limited value given usage/scenarios. Crossgen'ing assemblies that exist elsewhere in the layout
+           provides value because they will be deduplicated with the other copies therefore reducing the
+           overall size of the layout. -->
+      <_DotnetToolsCandidateFiles Include="$(InstallerOutputDirectory)DotnetTools\**\*" />
+      <_NonDotnetToolsReferenceFiles Include="@(RoslynFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(FSharpFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(RazorToolFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(RemainingFiles)" />
+      <_NonDotnetToolsReferenceFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\*" />
+    </ItemGroup>
+
+    <!-- Filter DotnetTools assemblies: only crossgen those that also exist elsewhere in the layout. -->
+    <FilterItemsByDuplicateHash
+        CandidateFiles="@(_DotnetToolsCandidateFiles)"
+        ReferenceFiles="@(_NonDotnetToolsReferenceFiles)">
+      <Output TaskParameter="UnmatchedFiles" ItemName="_DotnetToolsUniqueFiles" />
+    </FilterItemsByDuplicateHash>
+
+    <!-- Remove DotnetTools-unique assemblies from crossgen -->
+    <ItemGroup>
+      <RemainingFiles Remove="@(_DotnetToolsUniqueFiles)" />
     </ItemGroup>
 
     <AddMetadataIsPE Items="@(RoslynFiles)">
@@ -153,36 +185,36 @@
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
         DestinationPath="%(RoslynTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(FSharpTargets.FullPath)"
         DestinationPath="%(FSharpTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(FSharpFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(RemainingTargets.FullPath)"
         DestinationPath="%(RemainingTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(RazorToolTargets.FullPath)"
         DestinationPath="%(RazorToolTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RazorToolFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
@@ -198,6 +230,7 @@
     <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
     <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
     <Exec Command="chmod 755 $(InstallerOutputDirectory)Roslyn/bincore/%(_RoslynAppHost.Filename)" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="chmod 755 $(InstallerOutputDirectory)%(_MSBuildAppHost.Filename)" Condition="'$(OSName)' != 'win'" />
   </Target>
 
 </Project>
