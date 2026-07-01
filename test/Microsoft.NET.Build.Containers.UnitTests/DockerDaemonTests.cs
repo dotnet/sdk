@@ -4,6 +4,9 @@
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]
+// Mutates the process-global DOCKER_HOST environment variable, so it must not run
+// concurrently with other tests under method-level parallelization.
+[DoNotParallelize]
 public class DockerDaemonTests : IDisposable
 {
     private readonly TestLoggerFactory _loggerFactory;

@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsTestProject>true</IsTestProject>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
+    <!-- True unit tests with no shared/process-global state: opt back in to method-level
+         parallelization (the repo-wide default is None). Emits [assembly: Parallelize(Scope = MethodLevel)]. -->
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
