@@ -196,10 +196,10 @@
 
   <Target Name="PublishNetSdks" DependsOnTargets="PublishNETAnalyzers;PublishDotnetFormat;PublishBlazorWasmTools;PublishStaticWebAssetsTools;PublishRazorSdkTools">
     <ItemGroup>
-      <WebSdkProjectFile Include="$(RepoRoot)src\WebSdk\**\*.csproj" />
+      <_SdkProjectFile Include="$(RepoRoot)src\WebSdk\**\*.csproj;$(RepoRoot)src\WasmSdk\**\*.csproj" />
     </ItemGroup>
 
-    <MSBuild Projects="@(WebSdkProjectFile)" />
+    <MSBuild Projects="@(_SdkProjectFile)" />
 
     <PropertyGroup>
       <NETSdkSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk</NETSdkSourceRoot>
