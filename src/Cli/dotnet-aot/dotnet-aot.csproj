@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
+
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AssemblyName>dotnet-aot</AssemblyName>
@@ -42,7 +44,8 @@
       the assets file only has the TFM target and Publish fails with NETSDK1047.
       Conditioned to platforms where NativeAOT publish is supported.
     -->
-    <RuntimeIdentifier Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">$(TargetRid)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(NativeAotSupported)' == 'true'">$(TargetRid)</RuntimeIdentifier>
+    <UseCommonLocateNativeCompilerTarget Condition="'$(NativeAotSupported)' == 'true' and !$(TargetRid.StartsWith('win'))">true</UseCommonLocateNativeCompilerTarget>
   </PropertyGroup>
 
   <Import Project="AotSourceFiles.props" />
@@ -116,5 +119,8 @@
       <DirectPInvoke Remove="System.Security.Cryptography.Native.Apple" />
     </ItemGroup>
   </Target>
+
+  <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"
+      Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'" />
 
 </Project>

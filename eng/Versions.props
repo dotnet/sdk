@@ -10,7 +10,7 @@
     <VersionFeature>$([System.String]::Copy('$(VersionSDKMinorPatch)').PadLeft(2, '0'))</VersionFeature>
     <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)$(VersionFeature)</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>6</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>7</PreReleaseVersionIteration>
     <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
     <DotNetFinalVersionKind></DotNetFinalVersionKind>
 
@@ -47,10 +47,6 @@
   </PropertyGroup>
   <PropertyGroup Label="Production dependencies">
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
-    <!-- Internal, source-only package from microsoft/testfx. Darc keeps this in sync with the matching
-         dependency in eng/Version.Details.xml and moves it together (same coherent testfx build) with the
-         Microsoft.Testing.Platform / MSTest dependencies. -->
-    <MicrosoftTestingPlatformInternalDotnetTestVersion>2.3.0-preview.26330.8</MicrosoftTestingPlatformInternalDotnetTestVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
     <NewtonsoftJsonPackageVersion>13.0.4</NewtonsoftJsonPackageVersion>
@@ -123,7 +119,7 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/emsdk -->
     <!-- emscripten versions, these are are included in package IDs and need to be kept in sync with emsdk -->
-    <EmscriptenVersionCurrent>3.1.56</EmscriptenVersionCurrent>
+    <EmscriptenVersionCurrent>5.0.6</EmscriptenVersionCurrent>
     <EmscriptenVersionNet10>3.1.56</EmscriptenVersionNet10>
     <EmscriptenVersionNet9>3.1.56</EmscriptenVersionNet9>
     <EmscriptenVersionNet8>3.1.34</EmscriptenVersionNet8>
