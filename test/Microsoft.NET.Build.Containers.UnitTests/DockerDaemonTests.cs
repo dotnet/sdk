@@ -30,6 +30,7 @@ public class DockerDaemonTests : IDisposable
     public async Task Can_detect_when_no_daemon_is_running()
     {
         // mimic no daemon running by setting the DOCKER_HOST to a nonexistent socket
+        string? originalDockerHost = Environment.GetEnvironmentVariable("DOCKER_HOST");
         try
         {
             Environment.SetEnvironmentVariable("DOCKER_HOST", "tcp://123.123.123.123:12345");
@@ -38,7 +39,9 @@ public class DockerDaemonTests : IDisposable
         }
         finally
         {
-            Environment.SetEnvironmentVariable("DOCKER_HOST", null);
+            // restore the original DOCKER_HOST rather than clearing it, so a value set on
+            // the test host (CI or developer machine) doesn't leak into subsequent tests
+            Environment.SetEnvironmentVariable("DOCKER_HOST", originalDockerHost);
         }
     }
 
