@@ -21,6 +21,7 @@
 
 [CmdletBinding()]
 param(
+    [ValidateRange(1, [int]::MaxValue)]
     [int]$SearchDepth = 50
 )
 
@@ -52,11 +53,12 @@ function Format-TableCell {
 }
 
 function Get-AzDoAuthHeaders {
-    $tokenOutput = az account get-access-token --resource $AzDoResourceId --query accessToken -o tsv 2>&1
+    $tokenOutput = az account get-access-token --resource $AzDoResourceId --query accessToken -o tsv --only-show-errors
     if ($LASTEXITCODE -ne 0) {
         return $null
     }
-    return @{ Authorization = "Bearer $tokenOutput" }
+    $token = $tokenOutput.Trim()
+    return @{ Authorization = "Bearer $token" }
 }
 
 function Test-Prerequisites {
