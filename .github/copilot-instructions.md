@@ -120,10 +120,10 @@ Canonical scenarios:
 - The Skip parameter of the Fact attribute to point to the specific issue link.
 - To run tests in this repo (after a full build, invoke the repo-local bootstrap SDK directly):
   - For MSTest-style projects: `./.dotnet/dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
-  - For XUnit test assemblies: `./.dotnet/dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"`
+  - To run a built test assembly directly: `./.dotnet/dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll --filter "TestMethodName"`
   - Examples:
     - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
-    - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
+    - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll --filter "ItShowsTheAppropriateMessageToTheUser"`
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
 
 ## Investigating PR validation failures
