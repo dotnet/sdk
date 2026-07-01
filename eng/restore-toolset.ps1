@@ -38,7 +38,7 @@ function InitializeCustomSDKToolset {
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
         $fallbackArchitecture = Get-DotNetInstallFallbackArchitecture
-        $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
+        $runtimeSpecs = @("5.0", "6.0", "7.0", "8.0", "9.0", "10.0")
         if ([string]::IsNullOrEmpty($fallbackArchitecture)) {
             # Also install the exact runtime versions that arcade's toolset requires
             # (from Version.Details.props) so tests can target those specific versions.
@@ -259,6 +259,13 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$archite
 function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs, [string]$dotNetRoot, [string]$architecture = "") {
     $installScript = GetDotNetInstallScript $dotNetRoot
     foreach ($spec in $runtimeSpecs) {
+        $effectiveArchitecture = if ([string]::IsNullOrEmpty($architecture)) { Get-NativeMachineArchitecture } else { $architecture }
+        $isMacOS = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)
+        if ($isMacOS -and $effectiveArchitecture -eq 'arm64' -and $spec -eq '5.0') {
+            Write-Host "Skipping shared framework spec '$spec' on macOS arm64 because .NET 5 runtime is not supported for that architecture." -ForegroundColor DarkGray
+            continue
+        }
+
         $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
         $installVersion = ConvertTo-DotNetInstallScriptVersion $version
         $installArgs = @{

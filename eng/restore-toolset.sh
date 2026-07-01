@@ -38,7 +38,7 @@ function InitializeCustomSDKToolset {
       install_script_arch="$TARGET_ARCHITECTURE"
     fi
 
-    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
+    local runtime_specs=("5.0" "6.0" "7.0" "8.0" "9.0" "10.0")
     if [[ -z "$install_script_arch" ]]; then
       # Also install the exact runtime versions that arcade's toolset requires
       # (from Version.Details.props) so tests can target those specific versions.
@@ -181,6 +181,16 @@ function InstallDotNetSharedFrameworksWithInstallScript {
   local install_script=$_GetDotNetInstallScript
 
   for spec in "$@"; do
+    local effective_arch="$arch"
+    if [[ -z "$effective_arch" ]]; then
+      effective_arch="$(GetNativeMachineArchitecture)"
+    fi
+
+    if [[ "$(uname)" == "Darwin" && "$effective_arch" == "arm64" && "$spec" == "5.0" ]]; then
+      echo "Skipping shared framework spec '$spec' on macOS arm64 because .NET 5 runtime is not supported for that architecture."
+      continue
+    fi
+
     local component="dotnet"
     local version="$spec"
     if [[ "$spec" == *@* ]]; then
