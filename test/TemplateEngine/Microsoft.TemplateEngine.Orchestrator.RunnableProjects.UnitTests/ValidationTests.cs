@@ -9,7 +9,6 @@ using Microsoft.TemplateEngine.Tests;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class ValidationTests : TestBase
     {
         public TestContext TestContext { get; set; } = null!;

@@ -8,7 +8,6 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [DoNotParallelize]
     [TestClass]
     public class DotnetNewLocaleTests : BaseIntegrationTest
     {

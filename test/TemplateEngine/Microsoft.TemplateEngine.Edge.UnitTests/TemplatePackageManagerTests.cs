@@ -16,7 +16,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class TemplatePackageManagerTests : TestBase
     {
         public TestContext TestContext { get; set; } = null!;
