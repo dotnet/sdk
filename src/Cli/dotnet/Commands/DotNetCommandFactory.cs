@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
@@ -55,7 +56,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         IEnumerable<Option> optionsToUseWhenParsingMSBuildFlags,
         ParseResult parseResult,
         string? msbuildPath = null,
-        Func<MSBuildArgs, MSBuildArgs>? transformer = null)
+        Func<MSBuildArgs, ImmutableArray<string>, MSBuildArgs>? transformer = null)
     {
         var args = parseResult.GetValue(catchAllUserInputArgument) ?? [];
         LoggerUtility.SeparateLoggerArguments(args, out var loggerArgs, out var nonLoggerArgs);
@@ -72,7 +73,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
                     CommonOptions.CreateGetTargetResultOption(),
                     CommonOptions.CreateGetResultOutputFileOption(),
                 ]);
-                msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
+                msbuildArgs = transformer?.Invoke(msbuildArgs, nonLoggerArgs) ?? msbuildArgs;
                 return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
             }
             else
@@ -110,7 +111,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
             }
 
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
-            msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
+            msbuildArgs = transformer?.Invoke(msbuildArgs, nonLoggerArgs) ?? msbuildArgs;
             return createPhysicalCommand(msbuildArgs, msbuildPath);
         }
     }

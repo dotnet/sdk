@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.AbstractTypesShouldNotHaveConstructorsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.AbstractTypesShouldNotHaveConstructorsFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class CA1012Tests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCSPublicAbstractClassAsync()
         {
             var code = @"
@@ -37,7 +37,7 @@ public abstract class C
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVBPublicAbstractClassAsync()
         {
             var code = @"
@@ -55,7 +55,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestCSInternalAbstractClassAsync()
         {
             var code = @"
@@ -69,7 +69,7 @@ abstract class C
             await VerifyCS.VerifyCodeFixAsync(code, code);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestVBInternalAbstractClassAsync()
         {
             var code = @"
@@ -81,7 +81,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSAbstractClassWithProtectedConstructorAsync()
         {
             var code = @"
@@ -95,7 +95,7 @@ public abstract class C
             await VerifyCS.VerifyCodeFixAsync(code, code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVBAbstractClassWithProtectedConstructorAsync()
         {
             var code = @"
@@ -107,7 +107,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, code);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestCSNestedAbstractClassWithPublicConstructor1Async()
         {
             var code = @"
@@ -122,7 +122,7 @@ public struct C
             await VerifyCS.VerifyCodeFixAsync(code, code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVBNestedAbstractClassWithPublicConstructor1Async()
         {
             var code = @"
@@ -144,7 +144,7 @@ End Structure
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNestedAbstractClassWithPublicConstructor2Async()
         {
             var code = @"
@@ -168,7 +168,7 @@ public abstract class C
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVBNestedAbstractClassWithPublicConstructor2Async()
         {
             var code = @"
@@ -190,7 +190,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestNestedAbstractClassWithPublicConstructor3Async()
         {
             var code = @"
@@ -205,7 +205,7 @@ internal abstract class C
             await VerifyCS.VerifyCodeFixAsync(code, code);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestVBNestedAbstractClassWithPublicConstructor3Async()
         {
             var code = @"

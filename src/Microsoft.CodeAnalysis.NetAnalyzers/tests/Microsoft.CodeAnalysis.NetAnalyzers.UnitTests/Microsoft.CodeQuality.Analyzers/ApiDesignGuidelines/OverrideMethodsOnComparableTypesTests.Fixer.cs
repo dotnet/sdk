@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverrideMethodsOnComparableTypesAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverrideMethodsOnComparableTypesFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public partial class OverrideMethodsOnComparableTypesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassGenerateAllCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -98,7 +98,7 @@ public class A : IComparable
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructGenerateAllCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -166,7 +166,7 @@ public struct A : IComparable
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassGenerateSomeCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -259,7 +259,7 @@ public class A : IComparable
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructGenerateSomeCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -337,7 +337,7 @@ public struct A : IComparable
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassGenerateAllVisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -408,7 +408,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructGenerateAllVisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -467,7 +467,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036ClassGenerateSomeVisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -546,7 +546,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1036StructGenerateSomeVisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -613,7 +613,7 @@ End Structure
 ");
         }
 
-        [Fact, WorkItem(1395, "https://github.com/dotnet/roslyn-analyzers/issues/1395")]
+        [TestMethod, WorkItem(1395, "https://github.com/dotnet/roslyn-analyzers/issues/1395")]
         public async Task CA1036_CSharp_MultipleViolationsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -754,7 +754,7 @@ public struct SomeOtherClass : IComparable
 }");
         }
 
-        [Fact, WorkItem(1395, "https://github.com/dotnet/roslyn-analyzers/issues/1395")]
+        [TestMethod, WorkItem(1395, "https://github.com/dotnet/roslyn-analyzers/issues/1395")]
         public async Task CA1036_Basic_MultipleViolationsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

@@ -12,14 +12,6 @@
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
-  </ItemGroup>
-
   <!-- Stage the genapi CLI binary closure under tools\Microsoft.DotNet.GenAPI.Tool\ so the
        test can invoke 'dotnet exec' against it both locally and on Helix. ToolPaths reads the
        DLL relative to AppContext.BaseDirectory; the CopyToOutputDirectory/CopyToPublishDirectory
