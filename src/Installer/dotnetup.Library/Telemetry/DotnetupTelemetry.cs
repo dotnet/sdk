@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -64,7 +65,11 @@ public sealed class DotnetupTelemetry : IDisposable
 
     private readonly TracerProvider? _tracerProvider;
     private readonly ServiceProvider? _services;
+    [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed",
+        Justification = "Owned and disposed transitively by _services (resolved from that ServiceProvider). Disposed via _services.Dispose() in Dispose(); shut down non-blocking via Shutdown(0) first.")]
     private readonly LoggerProvider? _loggerProvider;
+    [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed",
+        Justification = "Owned and disposed transitively by _services (resolved from that ServiceProvider). Disposed via _services.Dispose() in Dispose().")]
     private readonly ILoggerFactory? _loggerFactory;
     private readonly ILogger? _logger;
     private readonly List<Activity> _activities = [];
@@ -741,18 +746,19 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </remarks>
     public void Dispose()
     {
-        // Shut the providers down first with a zero (non-blocking) budget so
-        // the ServiceProvider.Dispose() cascade below — which would otherwise
-        // invoke the OTel LoggerProvider's unbounded Shutdown(Timeout.Infinite)
-        // — has nothing left to drain and returns immediately.
+        // Non-blocking teardown of both export pipelines. Shutdown(0) is what
+        // makes this safe for tests: it tears the batch processors down
+        // immediately instead of the OTel providers' Dispose-time
+        // Shutdown(Timeout.Infinite), which can hang on a slow/sentinel
+        // network. After this, the ServiceProvider.Dispose() cascade below has
+        // nothing left to drain.
         try { _loggerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
         try { _tracerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
 
-        // Release owned objects so tests don't leak. _services transitively
-        // owns the ILoggerFactory and the OTel LoggerProvider; the explicit
-        // field disposes satisfy CA2213 and are idempotent.
-        try { _loggerFactory?.Dispose(); } catch { /* never crash on telemetry */ }
-        try { _loggerProvider?.Dispose(); } catch { /* never crash on telemetry */ }
+        // One release call: the ServiceProvider owns _loggerFactory and the OTel
+        // _loggerProvider (both resolved from it) and disposes them transitively,
+        // so we don't dispose those two fields explicitly (see the CA2213
+        // suppression on their declarations). _tracerProvider is standalone.
         try { _services?.Dispose(); } catch { /* never crash on telemetry */ }
         _tracerProvider?.Dispose();
     }
