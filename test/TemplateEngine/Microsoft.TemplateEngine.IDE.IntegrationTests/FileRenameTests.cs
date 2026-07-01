@@ -9,14 +9,19 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
-    public class FileRenameTests : BootstrapperTestBase, IClassFixture<PackageManager>
+    [TestClass]
+    public class FileRenameTests : BootstrapperTestBase
     {
-        private readonly PackageManager _packageManager;
+        public TestContext TestContext { get; set; } = null!;
 
-        public FileRenameTests(PackageManager packageManager)
-        {
-            _packageManager = packageManager;
-        }
+        private static PackageManager s_packageManager = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_packageManager = new PackageManager();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_packageManager?.Dispose();
 
         public static IEnumerable<object[]> Get_FileRename_TestData()
         {
@@ -190,9 +195,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
         }
 
-        [Theory]
-        [MemberData(nameof(Get_FileRename_TestData))]
-        internal async Task GetCreationEffectsTest(string templateName, string parameters, MockCreationEffects expectedResult)
+        [TestMethod]
+        [DynamicData(nameof(Get_FileRename_TestData))]
+        public async Task GetCreationEffectsTest(string templateName, string parameters, MockCreationEffects expectedResult)
         {
             using Bootstrapper bootstrapper = GetBootstrapper();
             await InstallTestTemplateAsync(bootstrapper, templateName);
@@ -201,32 +206,30 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string?> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.Current.CancellationToken);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.CancellationToken);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, cancellationToken: TestContext.Current.CancellationToken);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, cancellationToken: TestContext.CancellationToken);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects?.CreationResult.PrimaryOutputs.Count);
+            Assert.HasCount(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects!.CreationResult.PrimaryOutputs);
 
-            Assert.NotNull(result.CreationEffects);
-            Assert.NotNull(result.CreationEffects.CreationResult.PrimaryOutputs);
-            Assert.NotNull(result.CreationEffects.FileChanges);
+            Assert.IsNotNull(result.CreationEffects);
+            Assert.IsNotNull(result.CreationEffects.CreationResult.PrimaryOutputs);
+            Assert.IsNotNull(result.CreationEffects.FileChanges);
 
-            Assert.Equal(
-                expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationEffects.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                StringComparer.OrdinalIgnoreCase);
+            Assert.IsTrue(
+                expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(result.CreationEffects.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase));
 
             IFileChangeComparer comparer = new IFileChangeComparer();
-            Assert.Equal(expectedResult.FileChanges.Count, result.CreationEffects.FileChanges.Count);
-            Assert.Equal(
-                expectedResult.FileChanges.OrderBy(s => s, comparer),
-                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
-                comparer);
+            Assert.HasCount(expectedResult.FileChanges.Count, result.CreationEffects.FileChanges);
+            Assert.IsTrue(
+                expectedResult.FileChanges.OrderBy(s => s, comparer)
+                    .SequenceEqual(result.CreationEffects.FileChanges.OrderBy(s => s, comparer), comparer));
         }
 
-        [Theory]
-        [MemberData(nameof(Get_FileRename_TestData))]
-        internal async Task CreateTest(string templateName, string parameters, MockCreationEffects expectedResult)
+        [TestMethod]
+        [DynamicData(nameof(Get_FileRename_TestData))]
+        public async Task CreateTest(string templateName, string parameters, MockCreationEffects expectedResult)
         {
             using Bootstrapper bootstrapper = GetBootstrapper();
             await InstallTestTemplateAsync(bootstrapper, templateName);
@@ -235,121 +238,117 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string?> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.Current.CancellationToken);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.CancellationToken);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, cancellationToken: TestContext.CancellationToken);
 
-            Assert.NotNull(result.CreationResult);
+            Assert.IsNotNull(result.CreationResult);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
-            Assert.Equal(
-                expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                StringComparer.OrdinalIgnoreCase);
+            Assert.HasCount(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs);
+            Assert.IsTrue(
+                expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase));
 
             foreach (string file in expectedResult.FileChanges.Where(fc => fc.ChangeKind != ChangeKind.Delete).Select(fc => fc.TargetRelativePath))
             {
                 string expectedFilePath = Path.Combine(output, file);
-                Assert.True(File.Exists(expectedFilePath));
+                Assert.IsTrue(File.Exists(expectedFilePath));
             }
             foreach (string file in expectedResult.FileChanges.Where(fc => fc.ChangeKind == ChangeKind.Delete).Select(fc => fc.TargetRelativePath))
             {
                 string expectedFilePath = Path.Combine(output, file);
-                Assert.False(File.Exists(expectedFilePath));
+                Assert.IsFalse(File.Exists(expectedFilePath));
             }
 
             foreach (string file in expectedResult.AbsentFiles)
             {
                 string expectedFilePath = Path.Combine(output, file);
-                Assert.False(File.Exists(expectedFilePath));
+                Assert.IsFalse(File.Exists(expectedFilePath));
             }
 
             foreach (string dir in expectedResult.AbsentDirectories)
             {
                 string expectedPath = Path.Combine(output, dir);
-                Assert.False(Directory.Exists(expectedPath));
+                Assert.IsFalse(Directory.Exists(expectedPath));
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Get_FileRename_TestData))]
-        internal async Task GetCreationEffectsTest_Package(string templateName, string parameters, MockCreationEffects expectedResult)
+        [TestMethod]
+        [DynamicData(nameof(Get_FileRename_TestData))]
+        public async Task GetCreationEffectsTest_Package(string templateName, string parameters, MockCreationEffects expectedResult)
         {
             using Bootstrapper bootstrapper = GetBootstrapper();
-            PackTestTemplatesNuGetPackage(_packageManager);
+            PackTestTemplatesNuGetPackage(s_packageManager);
             await InstallTestTemplateAsync(bootstrapper, templateName);
 
             string name = BasicParametersParser.GetNameFromParameterString(parameters);
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string?> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.Current.CancellationToken);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.CancellationToken);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, cancellationToken: TestContext.Current.CancellationToken);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict, cancellationToken: TestContext.CancellationToken);
 
-            Assert.NotNull(result.CreationEffects);
-            Assert.NotNull(result.CreationEffects.CreationResult.PrimaryOutputs);
-            Assert.NotNull(result.CreationEffects.FileChanges);
+            Assert.IsNotNull(result.CreationEffects);
+            Assert.IsNotNull(result.CreationEffects.CreationResult.PrimaryOutputs);
+            Assert.IsNotNull(result.CreationEffects.FileChanges);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects.CreationResult.PrimaryOutputs.Count);
-            Assert.Equal(
-                expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationEffects.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                StringComparer.OrdinalIgnoreCase);
+            Assert.HasCount(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects!.CreationResult.PrimaryOutputs);
+            Assert.IsTrue(
+                expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(result.CreationEffects.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase));
 
             IFileChangeComparer comparer = new IFileChangeComparer();
-            Assert.Equal(expectedResult.FileChanges.Count, result.CreationEffects.FileChanges.Count);
-            Assert.Equal(
-                expectedResult.FileChanges.OrderBy(s => s, comparer),
-                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
-                comparer);
+            Assert.HasCount(expectedResult.FileChanges.Count, result.CreationEffects.FileChanges);
+            Assert.IsTrue(
+                expectedResult.FileChanges.OrderBy(s => s, comparer)
+                    .SequenceEqual(result.CreationEffects.FileChanges.OrderBy(s => s, comparer), comparer));
         }
 
-        [Theory]
-        [MemberData(nameof(Get_FileRename_TestData))]
-        internal async Task CreateTest_Package(string templateName, string parameters, MockCreationEffects expectedResult)
+        [TestMethod]
+        [DynamicData(nameof(Get_FileRename_TestData))]
+        public async Task CreateTest_Package(string templateName, string parameters, MockCreationEffects expectedResult)
         {
             using Bootstrapper bootstrapper = GetBootstrapper();
-            PackTestTemplatesNuGetPackage(_packageManager);
+            PackTestTemplatesNuGetPackage(s_packageManager);
             await InstallTestTemplateAsync(bootstrapper, templateName);
 
             string name = BasicParametersParser.GetNameFromParameterString(parameters);
             string output = BasicParametersParser.GetOutputFromParameterString(parameters);
             Dictionary<string, string?> parametersDict = BasicParametersParser.ParseParameterString(parameters);
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.Current.CancellationToken);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter(templateName) }, cancellationToken: TestContext.CancellationToken);
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
-            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.CreateAsync(template, name, output, parametersDict, cancellationToken: TestContext.CancellationToken);
 
-            Assert.NotNull(result.CreationResult);
+            Assert.IsNotNull(result.CreationResult);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
-            Assert.Equal(
-                expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                StringComparer.OrdinalIgnoreCase);
+            Assert.HasCount(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs);
+            Assert.IsTrue(
+                expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase));
 
             foreach (string file in expectedResult.FileChanges.Where(fc => fc.ChangeKind != ChangeKind.Delete).Select(fc => fc.TargetRelativePath))
             {
                 string expectedFilePath = Path.Combine(output, file);
-                Assert.True(File.Exists(expectedFilePath));
+                Assert.IsTrue(File.Exists(expectedFilePath));
             }
             foreach (string file in expectedResult.FileChanges.Where(fc => fc.ChangeKind == ChangeKind.Delete).Select(fc => fc.TargetRelativePath))
             {
                 string expectedFilePath = Path.Combine(output, file);
-                Assert.False(File.Exists(expectedFilePath));
+                Assert.IsFalse(File.Exists(expectedFilePath));
             }
 
             foreach (string file in expectedResult.AbsentFiles)
             {
                 string expectedFilePath = Path.Combine(output, file);
-                Assert.False(File.Exists(expectedFilePath));
+                Assert.IsFalse(File.Exists(expectedFilePath));
             }
 
             foreach (string dir in expectedResult.AbsentDirectories)
             {
                 string expectedPath = Path.Combine(output, dir);
-                Assert.False(Directory.Exists(expectedPath));
+                Assert.IsFalse(Directory.Exists(expectedPath));
             }
         }
     }

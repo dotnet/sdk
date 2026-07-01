@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandInvocation.cs" Link="CommandInvocation.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
@@ -57,13 +58,109 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TopLevelCommandNameAndOptionToLog.cs" Link="Telemetry\TopLevelCommandNameAndOptionToLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ActivityExtensions.cs" Link="ActivityExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ParseResultExtensions.cs" Link="ParseResultExtensions.cs" />
+    <!-- Shared first-run experience. The AOT path runs the same DotnetFirstTimeUseConfigurer the managed
+         CLI runs (first-time-use notice, telemetry message, NuGet state migration, global-tools PATH, and
+         the ASP.NET Core developer certificate). It defers to the managed CLI only when workload repair
+         (the NuGet engine) is still pending. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\FirstRunExperience.cs" Link="FirstRunExperience.cs" />
+    <!-- ASP.NET Core HTTPS developer-certificate generator, run in-process by the AOT first-run path.
+         The certificate code (CertificateManager) is NativeAOT-safe: no reflection/dynamic code, only
+         BCL X509/RSA APIs that resolve against the host's already-loaded crypto PAL. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\AspNetCoreCertificateGenerator.cs" Link="AspNetCoreCertificateGenerator.cs" />
+    <!-- Global-tools PATH registration used in-process by the AOT first-run path. These are AOT-safe
+         (file/registry/environment edits only); the registry editor itself lives in Cli.Utils. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\EnvironmentPathFactory.cs" Link="ShellShim\EnvironmentPathFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\WindowsEnvironmentPath.cs" Link="ShellShim\WindowsEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\DoNothingEnvironmentPath.cs" Link="ShellShim\DoNothingEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\LinuxEnvironmentPath.cs" Link="ShellShim\LinuxEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\OsxBashEnvironmentPath.cs" Link="ShellShim\OsxBashEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\OsxZshEnvironmentPathInstruction.cs" Link="ShellShim\OsxZshEnvironmentPathInstruction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\ZshDetector.cs" Link="ShellShim\ZshDetector.cs" />
+    <!-- Read-only workload install detection (no NuGet/MSBuild/crypto) used by the AOT first-run path to
+         decide whether the workload integrity repair must be deferred to the managed CLI. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInstallDetector.cs" Link="WorkloadInstallDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\IWorkloadInstallationRecordRepository.cs" Link="IWorkloadInstallationRecordRepository.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\FileBasedInstallationRecordInstaller.cs" Link="FileBasedInstallationRecordInstaller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs" Link="RegistryWorkloadInstallationRecordRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
+  </ItemGroup>
+
+  <!-- ASP.NET Core HTTPS developer-certificate package, used by the AOT first-run path's in-process
+       dev-cert generation (AspNetCoreCertificateGenerator). Mirrors the condition in dotnet.csproj:
+       when IncludeAspNetCoreRuntime is false, EXCLUDE_ASPNETCORE is defined and the generator body
+       compiles away, so the package is not needed. -->
+  <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
+    <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
   </ItemGroup>
 
   <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
+  </ItemGroup>
+
+  <!--
+    The "MSBuild version:" line of the info command: MSBuildForwardingAppWithoutLogging.MSBuildVersion
+    (in Microsoft.DotNet.Cli.Utils) reads Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion,
+    so the AOT binary needs the Microsoft.Build runtime assembly for ILC to compile that path.
+    Cli.Utils references Microsoft.Build with ExcludeAssets="runtime" / PrivateAssets="all", so it does
+    not flow transitively; reference it directly here. Microsoft.Build is only partially annotated
+    for trimming/AOT; its analysis warnings are rolled up and suppressed in dotnet-aot.csproj.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" />
+  </ItemGroup>
+
+  <!--
+    Workload reporting for the info command: WorkloadInfoHelper.GetWorkloadsVersion() and
+    ShowWorkloadsInfo(). Under CLI_AOT, WorkloadInfoHelper builds the installation-record repository
+    directly (the registry/file-based record repositories are already in the AOT source set) and does
+    not compile in the workload installer (NuGet/MSI) machinery.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInfoHelper.cs" Link="Commands\Workload\WorkloadInfoHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\InstallStateContents.cs" Link="Commands\Workload\InstallStateContents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\InstalledWorkloadsCollection.cs" Link="Commands\Workload\List\InstalledWorkloadsCollection.cs" />
+  </ItemGroup>
+
+  <!--
+    Windows-only: 'Visual Studio installed workloads' portion of the info command's workload section.
+    VisualStudioWorkloads queries the VS Setup Configuration COM API. The AOT-safe COM interop helpers
+    (ComClassFactory, ComScope, ComSafeArrayScope, BSTR, HRESULT, IComIID, CLSID) live in
+    Microsoft.DotNet.Cli.Utils and are consumed here via InternalsVisibleTo; only the VS Setup
+    interface definitions and the query itself are compiled in. Gated on TARGET_WINDOWS to match the
+    '#if TARGET_WINDOWS' guard around the call site in WorkloadInfoHelper.AddInstalledVsWorkloads.
+  -->
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\VisualStudioWorkloads.cs" Link="Commands\Workload\List\VisualStudioWorkloads.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\IEnumSetupInstances.cs" Link="VisualStudio\IEnumSetupInstances.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\InstanceState.cs" Link="VisualStudio\InstanceState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupConfiguration.cs" Link="VisualStudio\ISetupConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupConfiguration2.cs" Link="VisualStudio\ISetupConfiguration2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupErrorInfo.cs" Link="VisualStudio\ISetupErrorInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupErrorState.cs" Link="VisualStudio\ISetupErrorState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupFailedPackageReference.cs" Link="VisualStudio\ISetupFailedPackageReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupInstance.cs" Link="VisualStudio\ISetupInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupInstance2.cs" Link="VisualStudio\ISetupInstance2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupPackageReference.cs" Link="VisualStudio\ISetupPackageReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupPropertyStore.cs" Link="VisualStudio\ISetupPropertyStore.cs" />
+  </ItemGroup>
+
+  <!-- 'dotnet sdk check' command: command-specific sources and helpers. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\SdkCommandParser.cs" Link="Commands\Sdk\SdkCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\PrintableTable.cs" Link="PrintableTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\SdkCheckCommand.cs" Link="Commands\Sdk\Check\SdkCheckCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\IProductCollectionProvider.cs" Link="Commands\Sdk\Check\IProductCollectionProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\ProductCollectionProvider.cs" Link="Commands\Sdk\Check\ProductCollectionProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\BundleOutputWriter.cs" Link="Commands\Sdk\Check\BundleOutputWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\SdkOutputWriter.cs" Link="Commands\Sdk\Check\SdkOutputWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\RuntimeOutputWriter.cs" Link="Commands\Sdk\Check\RuntimeOutputWriter.cs" />
+  </ItemGroup>
+
+  <!-- 'dotnet sdk check' command: command-specific dependencies. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
 
   <!-- 'dotnet sln' command: command-specific sources and helpers. -->
@@ -165,7 +262,6 @@
     variants and install/update/restore/execute fall back to the managed CLI and are not linked.
   -->
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\PrintableTable.cs" Link="PrintableTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\ToolCommandParser.cs" Link="Commands\Tool\ToolCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Common\ToolManifestFinderExtensions.cs" Link="Commands\Tool\Common\ToolManifestFinderExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\List\ToolListLocalCommand.cs" Link="Commands\Tool\List\ToolListLocalCommand.cs" />

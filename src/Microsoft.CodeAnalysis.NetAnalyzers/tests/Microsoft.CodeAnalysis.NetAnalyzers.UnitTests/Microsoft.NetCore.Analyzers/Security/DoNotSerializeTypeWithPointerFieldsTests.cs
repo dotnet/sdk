@@ -3,16 +3,16 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotSerializeTypeWithPointerFields,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotSerializeTypeWithPointerFieldsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerToStructureDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -31,7 +31,7 @@ struct TestStructB
             GetCSharpResultAt(7, 26, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerToIntegerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -45,7 +45,7 @@ unsafe class TestClassA
             GetCSharpResultAt(7, 18, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerToBooleanDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -59,7 +59,7 @@ unsafe class TestClassA
             GetCSharpResultAt(7, 19, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerToPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -73,7 +73,7 @@ unsafe class TestClassA
             GetCSharpResultAt(7, 19, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerPropertyToPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -87,7 +87,7 @@ unsafe class TestClassA
             GetCSharpResultAt(7, 19, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerInArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -101,7 +101,7 @@ unsafe class TestClassA
             GetCSharpResultAt(7, 20, "pointers"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildArrayOfChildPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -121,7 +121,7 @@ unsafe class TestClassB
             GetCSharpResultAt(13, 18, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildListOfChildPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -142,7 +142,7 @@ unsafe class TestClassB
             GetCSharpResultAt(14, 18, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildListOfListOfChildPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -163,7 +163,7 @@ unsafe class TestClassB
             GetCSharpResultAt(14, 18, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGrandchildPointerToIntegerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -183,7 +183,7 @@ unsafe class TestClassB
             GetCSharpResultAt(13, 17, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGrandchildPointerInArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -203,7 +203,7 @@ unsafe class TestClassB
             GetCSharpResultAt(13, 20, "pointers"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerAndGrandchildPointerDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -224,7 +224,7 @@ unsafe struct TestStructB
             GetCSharpResultAt(13, 17, "pointer2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMultiChildPointersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -241,7 +241,7 @@ unsafe class TestClassA
             GetCSharpResultAt(9, 18, "pointer2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerToSelfDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -255,7 +255,7 @@ unsafe struct TestStructA
             GetCSharpResultAt(7, 26, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGrandchildPointerToSelfDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -275,7 +275,7 @@ unsafe struct TestStructB
             GetCSharpResultAt(13, 25, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSubclassWithPointerFieldsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -301,7 +301,7 @@ unsafe class TestClassC : TestClassA
             GetCSharpResultAt(18, 18, "pointer2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericTypeWithPointerFieldDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -317,7 +317,7 @@ unsafe class TestClassA<T>
             GetCSharpResultAt(9, 18, "pointer"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericTypeWithoutPointerFieldNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -330,7 +330,7 @@ class TestClassA<T>
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutPointerFieldNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -343,7 +343,7 @@ unsafe class TestClassA
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutSerializableAttributeNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -355,7 +355,7 @@ unsafe class TestClassA
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerWithNonSerializedNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -369,7 +369,7 @@ unsafe class TestClassA
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildPointerWithStaticNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

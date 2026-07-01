@@ -3,13 +3,10 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAnUnpublishableProject : SdkTest
     {
-        public GivenThatWeWantToPublishAnUnpublishableProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_does_not_publish_to_the_publish_folder()
         {
             var helloWorldAsset = TestAssetsManager

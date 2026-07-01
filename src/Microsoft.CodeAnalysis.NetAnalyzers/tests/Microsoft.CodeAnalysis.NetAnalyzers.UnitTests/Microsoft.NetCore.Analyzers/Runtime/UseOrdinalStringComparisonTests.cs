@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseOrdinalStringComparisonAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,6 +12,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseOrdinalStringComparisonTests
     {
         #region Helper methods
@@ -33,7 +33,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Diagnostic tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309CompareOverloadTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -79,7 +79,7 @@ class C
                 CSharpResult(22, 39));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309CompareOverloadTestBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -126,7 +126,7 @@ End Class
                 BasicResult(23, 39));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309EqualsOverloadTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -152,7 +152,7 @@ class C
                 CSharpResult(12, 29));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309EqualsOverloadTestBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -176,7 +176,7 @@ End Class
                 BasicResult(10, 29));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309InstanceEqualsTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -202,7 +202,7 @@ class C
                 CSharpResult(12, 21));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309InstanceEqualsTestBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -226,7 +226,7 @@ End Class
                 BasicResult(10, 21));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309OperatorOverloadTestCSharp_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -246,7 +246,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309OperatorOverloadTestBasic_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -270,7 +270,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309NotReallyCompareOrEqualsTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -300,7 +300,7 @@ static class Extensions
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309NotReallyCompareOrEqualsTestBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

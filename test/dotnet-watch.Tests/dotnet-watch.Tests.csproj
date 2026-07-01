@@ -1,10 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
+    <!-- These are heavy integration tests that build and run apps (dotnet watch, file watchers, ports).
+         Under xUnit they ran with class-level parallelism (classes in parallel, methods within a class
+         serialized). MSTest.Sdk defaults to MethodLevel (see test/Directory.Build.props), which
+         over-subscribes the machine and causes Helix work-item timeouts. Restore class-level scope. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
+  <ItemGroup>
+    <Using Include="Combinatorial.MSTest" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockTaskItem.cs" Link="TestUtilities\MockTaskItem.cs" />
@@ -20,12 +27,12 @@
     <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" ExcludeAssets="Runtime" />
     <!-- Needed for AspireLauncherIntegrationTests which exec the Aspire launcher executable. -->
     <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" Aliases="global,MSTestFramework" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Xunit.Combinatorial" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Spectre.Console.Testing" />
+    <PackageReference Include="Combinatorial.MSTest" />
   </ItemGroup>
 
   <!-- Copies test browser files to test-browser output directory -->
@@ -39,6 +46,7 @@
       <None Include="@(_FileItem)" Link="test-browser\%(_FileItem.Filename)%(_FileItem.Extension)" CopyToOutputDirectory="PreserveNewest" UseHardlinksIfPossible="true"/>
     </ItemGroup>
   </Target>
+
 
   <Import Project="..\..\src\Dotnet.Watch\Watch\RuntimeDependencies.props" />
 </Project>
