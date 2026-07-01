@@ -473,13 +473,7 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Flushes the providers against a single shared deadline. ForceFlush is
-    /// synchronous and blocking, so flushing the logger and tracer with the
-    /// full budget each would let a dead network cost up to 2× the budget.
-    /// Instead the logger goes first with the full budget — the completion
-    /// LogRecord is the data-x signal (AppInsights <c>traces</c>) — and the
-    /// tracer gets only the time left over (spans are secondary: in-process by
-    /// default, network-exported only under the perf-trace opt-in).
+    /// Flushes the providers against a single shared deadline.
     /// </summary>
     private void FlushCore(int timeoutMilliseconds)
     {
@@ -513,7 +507,6 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Writes collected activities to disk if DOTNET_CLI_TELEMETRY_LOG_PATH is set.
-    /// Same format as the SDK's TelemetryDiskLogger.
     /// </summary>
     public void WriteLogIfNecessary()
     {
@@ -602,8 +595,7 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the structured state for one <c>traces</c> row. See
-    /// <see cref="BuildCompletionState(string, Activity, double, IReadOnlyList{KeyValuePair{string, object?}})"/>.
+    /// Builds the structured state for one <c>traces</c> row based on span tags.
     /// </summary>
     private List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
@@ -612,23 +604,19 @@ public sealed class DotnetupTelemetry : IDisposable
         => BuildCompletionState(eventName, activity, elapsedMs, _commonProperties);
 
     /// <summary>
-    /// Builds the structured state for one <c>traces</c> row. Stamps the
-    /// process-level common properties first (so per-event Activity tags can
-    /// override on collision), walks ancestor activities (root first) to
-    /// inherit <c>command.*</c> tags, then overlays the current activity's
-    /// own tags. Last writer wins; computed fields
-    /// (<c>operation.name</c>, <c>operation.duration_ms</c>,
-    /// <c>operation.parent_name</c>) are added last.
+    /// Builds a structured state for one <c>traces</c> row.
+    /// Stamps the / process-level common properties first (so per-event Activity tags can override on collision)
+    /// Walks ancestor activities (root first) to inherit <c>command.*</c> tags
+    /// Overlays the current activity's own tags.
     /// </summary>
+    ///
     /// <remarks>
     /// Common properties (caller, os.type, device.id, session.id, dev.build,
     /// ...) also live on the OTel <see cref="Resource"/>, but the AzMonitor
     /// log exporter only maps a fixed subset of Resource attrs to
-    /// AppInsights envelope fields and drops the rest from
-    /// <c>customDimensions</c>. We re-stamp them on each LogRecord state so
-    /// they reach the <c>traces</c> table that data-x ingests.
-    /// Exposed as <c>internal</c> for tests so they can verify common
-    /// properties land on every event without spinning up an exporter.
+    /// AppInsights envelope fields and drops the rest from <c>customDimensions</c>
+    ///
+    /// We re-stamp them on each LogRecord state so they reach the <c>traces</c> table.
     /// </remarks>
     internal static List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
@@ -638,16 +626,12 @@ public sealed class DotnetupTelemetry : IDisposable
     {
         var state = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-        // Process-level common properties first — Activity tags below may
-        // override on key collision (currently no overlap by design).
         foreach (var kv in commonProperties)
         {
             state[kv.Key] = kv.Value;
         }
 
-        // Walk root → ... → immediate parent so the root's command.* tags
-        // are written first and survive unless an inner activity explicitly
-        // overrides them.
+        // Stamp the higher-level command onto child activities - e.g. 'extract/complete' becomes associated with 'sdk/install'
         var ancestors = new List<Activity>();
         for (var a = activity.Parent; a is not null; a = a.Parent)
         {
@@ -664,7 +648,7 @@ public sealed class DotnetupTelemetry : IDisposable
             }
         }
 
-        // Own activity tags (override ancestor inherited values).
+        // Stamp our own tags into the state
         foreach (var tag in activity.TagObjects)
         {
             state[tag.Key] = tag.Value;
@@ -672,10 +656,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
         state["operation.name"] = $"dotnetup/{eventName}";
         state["operation.duration_ms"] = elapsedMs.ToString(CultureInfo.InvariantCulture);
-        // Distinguishes library-emitted events (Microsoft.Dotnet.Installation,
-        // routed through Metrics.OnTrackEvent) from dotnetup-internal events
-        // (Microsoft.DotNet.Tools.Bootstrapper) on the AppInsights traces row.
-        state["telemetry.source"] = activity.Source.Name;
+        state["telemetry.source"] = activity.Source.Name; // Distinguishes library-emitted events from dotnetup-internal events
         if (activity.Parent is { } parent)
         {
             state["operation.parent_name"] = parent.OperationName;
@@ -686,36 +667,21 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Test-only teardown. Production never calls this — <c>Program.Main</c>
-    /// drains via <c>Flush</c> and lets process exit reclaim the
-    /// providers. It exists so unit tests that construct telemetry don't leak
-    /// background batch-export threads or the hosting <see cref="ServiceProvider"/>
-    /// between cases.
+    /// Test-only teardown.
     /// </summary>
     /// <remarks>
-    /// Mirrors Aspire's <c>TelemetryManager.Dispose</c>: shut the providers
-    /// down with a <c>0</c> (non-blocking) budget rather than relying on the
-    /// providers' own <see cref="IDisposable.Dispose"/>, whose OTel
-    /// <see cref="LoggerProvider"/> implementation calls
-    /// <c>Shutdown(Timeout.Infinite)</c> and can hang a test run on a slow or
-    /// sentinel network. <c>Shutdown(0)</c> tears down immediately without
-    /// waiting for a network drain.
+    /// Mirrors Aspire's <c>TelemetryManager.Dispose</c>
+    /// <c>Shutdown(0)</c> tears down immediately without waiting for a network drain.
     /// </remarks>
     public void Dispose()
     {
-        // Non-blocking teardown of both export pipelines. Shutdown(0) is what
-        // makes this safe for tests: it tears the batch processors down
-        // immediately instead of the OTel providers' Dispose-time
-        // Shutdown(Timeout.Infinite), which can hang on a slow/sentinel
-        // network. After this, the ServiceProvider.Dispose() cascade below has
-        // nothing left to drain.
         try { _loggerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
         try { _tracerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
 
         // One release call: the ServiceProvider owns _loggerFactory and the OTel
         // _loggerProvider (both resolved from it) and disposes them transitively,
         // so we don't dispose those two fields explicitly (see the CA2213
-        // suppression on their declarations). _tracerProvider is standalone.
+        // suppression on their declarations).
         try { _services?.Dispose(); } catch { /* never crash on telemetry */ }
         _tracerProvider?.Dispose();
     }
