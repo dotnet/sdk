@@ -1010,5 +1010,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</value>
     <comment>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</comment>
   </data>
-  <!-- The latest message added is RoslynCompilerTypeFrameworkIsDeprecated. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="NoRuntimePackAvailable_TransitiveReference" xml:space="preserve">
+    <value>NETSDK1235: There was no runtime pack for {0} available for the specified RuntimeIdentifier '{1}'. This framework reference was transitively included from a package or project dependency. Consider adding a direct FrameworkReference to '{0}' in your project to resolve this.</value>
+    <comment>{StrBegins="NETSDK1235: "}</comment>
+  </data>
+  <!-- The latest message added is NoRuntimePackAvailable_TransitiveReference. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

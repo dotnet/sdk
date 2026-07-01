@@ -1137,6 +1137,11 @@ To install these workloads, run the following command: dotnet workload restore</
 これらのワークロードをインストールするには、次のコマンドを実行します: dotnet workload restore</target>
         <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
+      <trans-unit id="NoRuntimePackAvailable_TransitiveReference">
+        <source>NETSDK1235: There was no runtime pack for {0} available for the specified RuntimeIdentifier '{1}'. This framework reference was transitively included from a package or project dependency. Consider adding a direct FrameworkReference to '{0}' in your project to resolve this.</source>
+        <target state="new">NETSDK1235: There was no runtime pack for {0} available for the specified RuntimeIdentifier '{1}'. This framework reference was transitively included from a package or project dependency. Consider adding a direct FrameworkReference to '{0}' in your project to resolve this.</target>
+        <note>{StrBegins="NETSDK1235: "}</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
