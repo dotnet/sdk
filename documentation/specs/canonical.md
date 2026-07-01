@@ -225,7 +225,7 @@ Writing tests is important, and our developer knows that. She is now writing out
 1. Create a new MSTest test project using `dotnet new`
 
 ```
-/> dotnet new mstest
+/> dotnet new mstest -o tests
 Created "tests" MSTest test project in "tests".
 
 /tests>
