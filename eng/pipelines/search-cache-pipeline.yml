@@ -13,24 +13,48 @@ schedules:
   always: true # Trigger even when there are no code changes.
 
 parameters:
-- name: publishToBlob
-  displayName: Publish to blob?
+- name: publishFiles
+  displayName: Publish files to ESRP (download.visualstudio.microsoft.com)?
+  type: boolean
+  default: true
+- name: updateAkaMsLink
+  displayName: Update the aka.ms links (searchcacheurl and nontemplatepacksurl) to the new ESRP URLs?
   type: boolean
   default: true
 
 variables:
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
+# EngKeyVault-backed group (dnceng/internal). Provides the secret $(akams-app-id) -- the onboarded
+# aka.ms client app id used to authenticate to the Redirection API. The pipeline must be granted
+# access to this variable group. Same source dotnet/arcade uses in eng/publishing/v3/publish.yml.
+- group: Publish-Build-Assets
+# Static aka.ms constants (source-of-truth in this repo; not in the Variables UI). These rarely
+# change and are derived from our own code (short URLs) or are well-known fixed values (tenants).
+# The dnceng-owned, drift-prone values (AkaMsCert*, AkaMsOwners) stay as pipeline Variables.
+- name: AkaMsTenantId                 # aka.ms redirection tenant in the /api/aka/1/{tenant} path (NOT an AAD GUID)
+  value: ncd
+- name: AkaMsAuthorityTenantId        # corp AAD tenant the app authenticates against (arcade hardcodes this too)
+  value: 72f988bf-86f1-41af-91ab-2d7cd011db47
+- name: AkaMsShortUrl                  # consumed by NuGetPackSourceCheckerFactory.cs (no 'aka.ms/' prefix)
+  value: dotnet/templating/searchcacheurl
+- name: AkaMsNonTemplatePacksShortUrl  # consumed by NuGetPackSourceCheckerFactory.cs (no 'aka.ms/' prefix)
+  value: dotnet/templating/nontemplatepacksurl
+- name: AkaMsGroupOwner               # owning security-group alias; empty unless the team has one
+  value: ''
 
 resources:
   repositories:
-  - repository: 1ESPipelineTemplates
+  # MicroBuild publish wrapper. It internally declares the 1ESPipelineTemplates
+  # repository resource and extends v1/1ES.Official.PipelineTemplate.yml, while
+  # injecting the MicroBuild publish-authorization plugin required for ESRP publishing.
+  - repository: MicroBuildTemplates
     type: git
-    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    name: 1ESPipelineTemplates/MicroBuildTemplate
     ref: refs/tags/release
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  template: azure-pipelines/1ES.Official.Publish.yml@MicroBuildTemplates
   parameters:
     sdl:
       sourceAnalysisPool:
@@ -46,6 +70,11 @@ extends:
           image: 1es-ubuntu-2204
           os: linux
         templateContext:
+          # The MicroBuild publish-authorization plugin only needs to run on the
+          # publishing job, not on this Linux build job.
+          mb:
+            publish:
+              enabled: false
           outputs:
           - output: pipelineArtifact
             targetPath: $(Build.ArtifactStagingDirectory)
@@ -57,8 +86,8 @@ extends:
         steps:
         - script: >
             $(Build.SourcesDirectory)/build.sh
-              --projects $(Build.SourcesDirectory)/src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
-              -bl
+            --projects $(Build.SourcesDirectory)/src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
+            -bl
           displayName: Build Cache Updater
 
         - task: CopyFiles@2
@@ -148,9 +177,8 @@ extends:
               nonTemplatePacks.json
             TargetFolder: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
 
-      - ${{ if eq(parameters.publishToBlob, true) }}:
-        # An entirely separate job is required to run AzureFileCopy@6, which is a Windows-only task.
-        # If the Create job was rewritten to use PowerShell instead of Bash, Create and Publish could be combined into a single Windows job.
+      - ${{ if eq(parameters.publishFiles, true) }}:
+        # An entirely separate Windows job is required for ESRP publishing.
         - job: Publish
           dependsOn: Create
           pool:
@@ -164,15 +192,248 @@ extends:
             - input: pipelineArtifact
               targetPath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
               artifactName: ArtifactsToPublish
+            mb:
+              publish:
+                feedSource: 'https://pkgs.dev.azure.com/dnceng/_packaging/MicroBuildToolset/nuget/v3/index.json'
 
           steps:
-          - task: AzureFileCopy@6
-            displayName: Upload to blob storage
-            inputs:
-              SourcePath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/*.json
-              # Service connection: https://dnceng.visualstudio.com/internal/_settings/adminservices?resourceId=010b0bdc-9487-484f-af2d-ca3ae3235b84
-              azureSubscription: DOTNET-Templating - PME
-              Destination: AzureBlob
-              # These variables are defined in the pipeline's Variables UI.
-              storage: $(CacheFileStorageAccount)
-              ContainerName: $(CacheFileStorageContainer)
+          # Publish the search cache JSON files via ESRP (Release Studio) to
+          # download.visualstudio.microsoft.com. This replaces the retired,
+          # DDFUN-managed 'dotnettemplating' blob storage account.
+          # The ESRP connected service, key vault, and signing cert are baked into the
+          # template. $(ESRPOwners)/$(ESRPApprovers) are semicolon-separated full email
+          # addresses defined in the pipeline's Variables UI; both must be PME-account holders.
+          # NOTE: no 'azure-pipelines/' path prefix here (unlike the top-level 'extends').
+          # The 1ES.Official.Publish.yml extends template lives in the MicroBuildTemplate
+          # repo's azure-pipelines/ folder and re-resolves @MicroBuildTemplates references in
+          # injected steps relative to its own directory, so a prefix would double it
+          # (azure-pipelines/azure-pipelines/...).
+          - template: MicroBuild.Publish.ReleaseStudio.yml@MicroBuildTemplates
+            parameters:
+              intent: 'filedownloadlinkgeneration'
+              contentType: 'Binaries'
+              contentSource: 'Folder'
+              folderLocation: '$(System.DefaultWorkingDirectory)/ArtifactsToPublish'
+              waitForReleaseCompletion: true
+              owners: '$(ESRPOwners)'
+              approvers: '$(ESRPApprovers)'
+
+          # Capture the per-file download URLs that ESRP generated. Each publish run produces
+          # brand-new, GUID-based URLs under download.visualstudio.microsoft.com, so the
+          # aka.ms link must be repointed every run.
+          # ESRP_RELEASE_DETAILS schema:
+          #   { "status": "pass", "files": [ { "fileDownloadDetails": [ { "downloadUrl": "..." } ] } ] }
+          - ${{ if eq(parameters.updateAkaMsLink, true) }}:
+            - pwsh: |
+                $ErrorActionPreference = 'Stop'
+                $json = $env:ESRP_RELEASE_DETAILS
+                if ([string]::IsNullOrEmpty($json)) { Write-Error 'ESRP_RELEASE_DETAILS is not set or empty.'; exit 1 }
+                $details = ConvertFrom-Json $json
+                if ($details.status -ne 'pass') { Write-Error "ESRP publishing did not pass. Status: '$($details.status)'."; exit 1 }
+
+                # The aka.ms links track the v2 search cache file and the non-template-packs file.
+                # Match on the published file name (the original name is preserved as the last URL
+                # segment) rather than on a release-details property name, which is more robust
+                # across schema revisions.
+                $searchCacheUrl = $null
+                $nonTemplatePacksUrl = $null
+                foreach ($file in $details.files) {
+                  foreach ($detail in $file.fileDownloadDetails) {
+                    $url = $detail.downloadUrl
+                    Write-Host "Published: $url"
+                    if ($url -like '*/NuGetTemplateSearchInfoVer2.json') { $searchCacheUrl = $url }
+                    if ($url -like '*/nonTemplatePacks.json') { $nonTemplatePacksUrl = $url }
+                  }
+                }
+                if ([string]::IsNullOrWhiteSpace($searchCacheUrl)) {
+                  Write-Error 'Could not find the NuGetTemplateSearchInfoVer2.json download URL in ESRP_RELEASE_DETAILS.'
+                  exit 1
+                }
+                if ([string]::IsNullOrWhiteSpace($nonTemplatePacksUrl)) {
+                  Write-Error 'Could not find the nonTemplatePacks.json download URL in ESRP_RELEASE_DETAILS.'
+                  exit 1
+                }
+                Write-Host "Search cache URL: $searchCacheUrl"
+                Write-Host "Non-template packs URL: $nonTemplatePacksUrl"
+                Write-Host "##vso[task.setvariable variable=SearchCacheDownloadUrl;isOutput=true]$searchCacheUrl"
+                Write-Host "##vso[task.setvariable variable=NonTemplatePacksDownloadUrl;isOutput=true]$nonTemplatePacksUrl"
+              name: capture
+              displayName: Capture ESRP download URLs
+              env:
+                ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
+
+            # Repoint the aka.ms links at the new ESRP URLs. We authenticate to the corp Redirection
+            # Management API the same way dotnet/arcade does: as the onboarded aka.ms client app
+            # ($(akams-app-id), from the EngKeyVault-backed Publish-Build-Assets variable group) using
+            # a client certificate pulled from EngKeyVault. The /bulk endpoint accepts an array, so
+            # both links are updated in a single PUT.
+            #
+            # Prerequisites (dnceng-owned; the pipeline must be granted access):
+            #   - The 'Publish-Build-Assets' variable group is linked (provides secret $(akams-app-id)).
+            #   - AkaMsCertServiceConnection can read the cert secret from the key vault.
+            #   - The app/cert is allowed to manage the 'dotnet/templating/*' links in the 'ncd' tenant.
+            #
+            # Pipeline Variables (set in the Variables UI; the rest are static in this YAML's
+            # 'variables:' block or come from the linked Publish-Build-Assets group):
+            #   akams-app-id                     - aka.ms client app id (secret, auto-supplied by the Publish-Build-Assets KV group)
+            #   AkaMsCertServiceConnection       - AzureRM service connection that can read the key vault (e.g. DotNet-Engineering-Services_KeyVault)
+            #   AkaMsCertVaultName               - key vault holding the cert (e.g. EngKeyVault)
+            #   AkaMsCertSecretName              - cert secret name (e.g. Redirection-UST-Client-NetCoreDeployment)
+            #   AkaMsOwners                      - semicolon-delimited owner aliases (first is used as lastModifiedBy)
+            # Static in YAML (see the 'variables:' block): AkaMsTenantId, AkaMsAuthorityTenantId,
+            # AkaMsShortUrl, AkaMsNonTemplatePacksShortUrl, AkaMsGroupOwner.
+            # Only repoint the production links from main; manual/test runs on other branches
+            # should not move them (point the short-url vars at test links to validate this step).
+            - task: AzureCLI@2
+              displayName: Fetch aka.ms client certificate
+              condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+              inputs:
+                azureSubscription: $(AkaMsCertServiceConnection)
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  $ErrorActionPreference = 'Stop'
+                  $value = az keyvault secret show --vault-name $env:AKAMS_CERT_VAULT --name $env:AKAMS_CERT_SECRET --query value -o tsv
+                  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($value)) { Write-Error 'Failed to read the aka.ms certificate secret from the key vault.'; exit 1 }
+                  $path = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.b64'
+                  Set-Content -Path $path -Value $value -NoNewline
+                  Write-Host "Wrote certificate material to $path"
+              env:
+                AKAMS_CERT_VAULT: $(AkaMsCertVaultName)
+                AKAMS_CERT_SECRET: $(AkaMsCertSecretName)
+
+            # Authenticate as the aka.ms client app with the certificate and PUT both links. The agent's
+            # key-vault certificate has a non-exportable private key, so we cannot emit a PEM for
+            # 'az login --certificate'. Instead we sign a client-assertion JWT directly with the
+            # certificate (which works with non-exportable CNG keys) and exchange it for a token, the
+            # same way MSAL/ClientCertificateCredential authenticates.
+            - pwsh: |
+                $ErrorActionPreference = 'Stop'
+                $searchCacheUrl      = $env:SEARCH_CACHE_URL
+                $nonTemplatePacksUrl = $env:NON_TEMPLATE_PACKS_URL
+                $appId               = $env:AKAMS_APP_ID
+                $authorityTenant     = $env:AKAMS_AUTHORITY_TENANT
+                $shortUrl            = $env:AKAMS_SHORT_URL
+                $nonShortUrl         = $env:AKAMS_NONTEMPLATEPACKS_SHORT_URL
+                $tenant              = $env:AKAMS_TENANT_ID
+                $owners              = $env:AKAMS_OWNERS
+                $groupOwner          = $env:AKAMS_GROUP_OWNER
+
+                foreach ($required in @{ SEARCH_CACHE_URL = $searchCacheUrl; NON_TEMPLATE_PACKS_URL = $nonTemplatePacksUrl; AKAMS_APP_ID = $appId; AKAMS_AUTHORITY_TENANT = $authorityTenant; AKAMS_SHORT_URL = $shortUrl; AKAMS_NONTEMPLATEPACKS_SHORT_URL = $nonShortUrl; AKAMS_TENANT_ID = $tenant; AKAMS_OWNERS = $owners }.GetEnumerator()) {
+                  if ([string]::IsNullOrWhiteSpace($required.Value)) { Write-Error "Required value '$($required.Key)' is empty."; exit 1 }
+                }
+
+                # The key vault certificate secret is a base64-encoded PKCS#12 (PFX). Decode it and load
+                # it so we can sign a client-assertion JWT with its private key. The key may be
+                # non-exportable, so we never try to export it - signing alone is sufficient.
+                $b64Path = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.b64'
+                if (-not (Test-Path $b64Path)) { Write-Error "Certificate material '$b64Path' is missing; the fetch step did not run."; exit 1 }
+                $raw = (Get-Content -Raw $b64Path) -replace '\s', ''
+                $storageFlags = `
+                  [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet
+                try {
+                  if ($raw -match '-----BEGIN') {
+                    Write-Error 'The certificate secret is stored as PEM, but this step expects a base64 PFX. Adjust the secret or this step.'
+                    exit 1
+                  }
+                  $pfxBytes = [Convert]::FromBase64String($raw)
+                  $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($pfxBytes, '', $storageFlags)
+                } catch {
+                  Write-Error "Could not load the certificate secret as a base64 PFX. Details: $($_.Exception.Message)"
+                  exit 1
+                }
+                if (-not $cert.HasPrivateKey) { Write-Error 'The certificate does not contain a private key.'; exit 1 }
+                $rsa = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($cert)
+                if ($null -eq $rsa) { Write-Error 'The certificate does not have an RSA private key.'; exit 1 }
+
+                function ConvertTo-Base64Url([byte[]] $bytes) {
+                  [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+                }
+
+                try {
+                  # Build and sign a client-assertion JWT (RS256) with the certificate's private key.
+                  # Subject Name + Issuer (SNI) auth: include x5t (sha1 thumbprint) and x5c (the cert)
+                  # in the header so AAD accepts the first-party app's certificate by subject/issuer.
+                  $scope         = 'https://msazurecloud.onmicrosoft.com/RedirectionMgmtApi-Prod/.default'
+                  $tokenEndpoint = "https://login.microsoftonline.com/$authorityTenant/oauth2/v2.0/token"
+                  $now = [DateTimeOffset]::UtcNow
+                  $thumbprint = [System.Security.Cryptography.SHA1]::HashData($cert.RawData)
+                  $header = [ordered]@{
+                    alg = 'RS256'
+                    typ = 'JWT'
+                    x5t = (ConvertTo-Base64Url $thumbprint)
+                    x5c = @([Convert]::ToBase64String($cert.RawData))
+                  } | ConvertTo-Json -Compress
+                  $payload = [ordered]@{
+                    aud = $tokenEndpoint
+                    iss = $appId
+                    sub = $appId
+                    jti = [Guid]::NewGuid().ToString()
+                    nbf = $now.ToUnixTimeSeconds()
+                    exp = $now.AddMinutes(10).ToUnixTimeSeconds()
+                  } | ConvertTo-Json -Compress
+                  $unsigned = (ConvertTo-Base64Url ([Text.Encoding]::UTF8.GetBytes($header))) + '.' +
+                              (ConvertTo-Base64Url ([Text.Encoding]::UTF8.GetBytes($payload)))
+                  $signature = $rsa.SignData(
+                    [Text.Encoding]::ASCII.GetBytes($unsigned),
+                    [System.Security.Cryptography.HashAlgorithmName]::SHA256,
+                    [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)
+                  $assertion = $unsigned + '.' + (ConvertTo-Base64Url $signature)
+
+                  $tokenResponse = Invoke-RestMethod -Method Post -Uri $tokenEndpoint `
+                    -ContentType 'application/x-www-form-urlencoded' -Body @{
+                      client_id             = $appId
+                      scope                 = $scope
+                      grant_type            = 'client_credentials'
+                      client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+                      client_assertion      = $assertion
+                    }
+                  $token = $tokenResponse.access_token
+                  if ([string]::IsNullOrWhiteSpace($token)) { Write-Error 'Failed to acquire the redirection API token.'; exit 1 }
+                  Write-Host "##vso[task.setsecret]$token"
+
+                  $lastModifiedBy = $owners.Split(';')[0].Trim()
+                  function New-Link($short, $target, $description) {
+                    @{
+                      shortUrl       = $short
+                      targetUrl      = $target
+                      owners         = $owners
+                      groupOwner     = $groupOwner
+                      lastModifiedBy = $lastModifiedBy
+                      description    = $description
+                      isVanity       = $true
+                      isAllowParam   = $true
+                    }
+                  }
+                  # The Redirection API /bulk endpoint expects a top-level JSON array of links. The
+                  # input is already a two-element array, so do NOT use -AsArray here (it would wrap
+                  # the collection again and produce a nested [[ ... ]], which the API rejects).
+                  $body = ConvertTo-Json -Depth 5 @(
+                    (New-Link $shortUrl    $searchCacheUrl      'dotnet templating search cache (published via ESRP)'),
+                    (New-Link $nonShortUrl $nonTemplatePacksUrl 'dotnet templating non-template packs (published via ESRP)')
+                  )
+
+                  $uri = "https://redirectionapi-ame.trafficmanager.net/api/aka/1/$tenant/bulk"
+                  Write-Host "PUT $uri"
+                  Write-Host "  $shortUrl -> $searchCacheUrl"
+                  Write-Host "  $nonShortUrl -> $nonTemplatePacksUrl"
+                  $resp = Invoke-WebRequest -Method Put -Uri $uri `
+                    -Headers @{ Authorization = "Bearer $token" } `
+                    -ContentType 'application/json' -Body $body
+                  Write-Host "Redirection API status: $($resp.StatusCode)"
+                }
+                finally {
+                  Remove-Item -Force -ErrorAction SilentlyContinue $b64Path
+                }
+              displayName: Update aka.ms search cache links
+              condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+              env:
+                SEARCH_CACHE_URL: $(capture.SearchCacheDownloadUrl)
+                NON_TEMPLATE_PACKS_URL: $(capture.NonTemplatePacksDownloadUrl)
+                AKAMS_APP_ID: $(akams-app-id)
+                AKAMS_AUTHORITY_TENANT: $(AkaMsAuthorityTenantId)
+                AKAMS_SHORT_URL: $(AkaMsShortUrl)
+                AKAMS_NONTEMPLATEPACKS_SHORT_URL: $(AkaMsNonTemplatePacksShortUrl)
+                AKAMS_TENANT_ID: $(AkaMsTenantId)
+                AKAMS_OWNERS: $(AkaMsOwners)
+                AKAMS_GROUP_OWNER: $(AkaMsGroupOwner)
