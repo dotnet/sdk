@@ -6,8 +6,6 @@
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Unset IsTestProject which gets set by xunit.props which gets imported by the xunit PackageReference below. -->
-    <IsTestProject />
   </PropertyGroup>
 
   <ItemGroup>
