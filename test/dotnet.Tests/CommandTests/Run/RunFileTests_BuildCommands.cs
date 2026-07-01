@@ -225,6 +225,112 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
     }
 
     [TestMethod]
+    public void RunCommand_Cached()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:RunArguments=arg1")
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Building because cache file does not exist")
+            .And.HaveStdOutContaining("Getting target command: from previous evaluation.")
+            .And.HaveStdOutContaining("""
+                echo args:arg1
+                Hello from Program
+                """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:RunArguments=arg1")
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("No need to build, the output is up to date.")
+            .And.HaveStdOutContaining("Getting target command: from cache.")
+            .And.HaveStdOutContaining("""
+                echo args:arg1
+                Hello from Program
+                """);
+    }
+
+    /// <seealso href="https://github.com/dotnet/sdk/issues/54551" />
+    [TestMethod]
+    public void RunCommand_NoBuild()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:RunArguments=arg1")
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Building because cache file does not exist")
+            .And.HaveStdOutContaining("Getting target command: from previous evaluation.")
+            .And.HaveStdOutContaining("""
+                echo args:arg1
+                Hello from Program
+                """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:RunArguments=arg2", "--no-build")
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""Building because previous global property "RunArguments" (arg1) does not match current (arg2)""")
+            .And.HaveStdOutContaining("Getting target command: evaluating project.")
+            .And.HaveStdOutContaining("""
+                echo args:arg2
+                Hello from Program
+                """);
+    }
+
+    [TestMethod]
+    public void RunCommand_NoBuild_NoCache()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:RunArguments=arg1")
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Building because cache file does not exist")
+            .And.HaveStdOutContaining("Getting target command: from previous evaluation.")
+            .And.HaveStdOutContaining("""
+                echo args:arg1
+                Hello from Program
+                """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:RunArguments=arg2", "--no-build", "--no-cache")
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Building because --no-cache was specified.")
+            .And.HaveStdOutContaining("Getting target command: evaluating project.")
+            .And.HaveStdOutContaining("""
+                echo args:arg2
+                Hello from Program
+                """);
+    }
+
+    [TestMethod]
     public void Build_Library()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
