@@ -142,11 +142,6 @@ public class RunCommand
 
     public int Execute()
     {
-        if (NoBuild && NoCache)
-        {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOptionName, RunCommandDefinition.NoBuildOptionName);
-        }
-
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
         FacadeLogger? logger = ProjectFileFullPath is not null 
@@ -178,6 +173,7 @@ public class RunCommand
 
             Func<ProjectCollection, ProjectInstance>? projectFactory = null;
             RunProperties? cachedRunProperties = null;
+            bool runPropertiesFromEvaluation = false;
             VirtualProjectBuildingCommand? projectBuilder = null;
             if (ShouldBuild)
             {
@@ -187,6 +183,7 @@ public class RunCommand
                 }
 
                 EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder, selector?.IntermediateOutputPath, selector?.HasRuntimeEnvironmentVariableSupport ?? false);
+                runPropertiesFromEvaluation = projectBuilder?.LastBuild.Level == BuildLevel.All;
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
             {
@@ -196,9 +193,10 @@ public class RunCommand
                 projectBuilder = CreateProjectBuilder();
                 projectBuilder.MarkArtifactsFolderUsed();
 
-                var cacheEntry = projectBuilder.GetPreviousCacheEntry();
-                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : projectBuilder.CreateProjectInstance;
-                cachedRunProperties = cacheEntry?.Run;
+                Reporter.Verbose.WriteLine("Checking changes for run properties");
+                var buildLevel = projectBuilder.GetBuildLevel(out var cache);
+                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
+                cachedRunProperties = buildLevel != BuildLevel.All ? cache?.PreviousEntry?.Run : null;
             }
 
             // Deploy step: Call DeployToDevice target if available
@@ -212,7 +210,7 @@ public class RunCommand
                 }
             }
 
-            var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, logger);
+            var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger);
 
             // Send telemetry about the run operation
             SendRunTelemetry(launchProfileParseResult.Profile, projectBuilder);
@@ -234,11 +232,11 @@ public class RunCommand
         }
     }
 
-    internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
+    internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, bool runPropertiesFromEvaluation, FacadeLogger? logger)
         => launchSettings switch
         {
-            null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties, logger),
-            ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties, logger),
+            null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger),
+            ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger),
             ExecutableLaunchProfile executableSettings => GetTargetCommandForExecutable(executableSettings),
             _ => throw new InvalidOperationException()
         };
@@ -561,14 +559,14 @@ public class RunCommand
         }
     }
 
-    private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
+    private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, bool runPropertiesFromEvaluation, FacadeLogger? logger)
     {
         ICommand command;
         if (cachedRunProperties != null)
         {
             // We can skip project evaluation if we already evaluated the project during virtual build
             // or we have cached run properties in previous run (and this is a --no-build or skip-msbuild run).
-            Reporter.Verbose.WriteLine("Getting target command: from cache.");
+            Reporter.Verbose.WriteLine($"Getting target command: from {(runPropertiesFromEvaluation ? "previous evaluation" : "cache")}.");
             command = CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
         }
         else if (projectFactory is null && ProjectFileFullPath is null)
@@ -682,11 +680,14 @@ public class RunCommand
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
 
-            List<ILogger> loggersForBuild = [
-                CommonRunHelpers.GetConsoleLogger(
+            List<ILogger> loggersForBuild = [];
+            if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
+            {
+                loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
                     buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
-                )
-            ];
+                ));
+            }
+
             if (binaryLogger is not null)
             {
                 loggersForBuild.Add(binaryLogger);
@@ -816,23 +817,22 @@ public class RunCommand
             parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
         }
 
-        // if the application arguments contain any binlog args then we need to remove them from the application arguments and apply
-        // them to the restore args.
-        // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
-        // bl information to synchronize the restore and build logger configurations
-        var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList();
+        // If the application arguments contain any logger args then we need to remove them from the application arguments and apply
+        // them to the restore args. This is because we can't model the logger command structure in MSBuild in the System.CommandLine
+        // parser, but we need logger information to synchronize the restore and build logger configurations.
+        var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList() ?? [];
 
-        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
+        SeparateApplicationLoggerArguments(parseResult, applicationArguments, out var loggerArgs, out var nonLoggerArgs);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
-        if (binLogArgs.Count > 0)
+        if (loggerArgs.Length > 0)
         {
-            msbuildProperties.AddRange(binLogArgs);
+            msbuildProperties.AddRange(loggerArgs);
         }
 
         // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
         // (otherwise it should be forwarded to the target application as its command-line argument).
-        bool readCodeFromStdin = nonBinLogArgs is ["-", ..] &&
+        bool readCodeFromStdin = nonLoggerArgs is ["-", ..] &&
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
@@ -844,7 +844,7 @@ public class RunCommand
             throw new GracefulException(CliCommandStrings.CannotCombineOptions, definition.ProjectOption.Name, definition.FileOption.Name);
         }
 
-        string[] args = [.. nonBinLogArgs];
+        string[] args = [.. nonLoggerArgs];
         string? projectFilePath = DiscoverProjectFilePath(
             filePath: fileOption,
             projectFileOrDirectoryPath: projectOption,
@@ -916,8 +916,7 @@ public class RunCommand
                 stdinStream.CopyTo(fileStream);
             }
 
-            Debug.Assert(nonBinLogArgs[0] == "-");
-            nonBinLogArgs[0] = entryPointFilePath;
+            Debug.Assert(nonLoggerArgs[0] == "-");
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
@@ -946,6 +945,61 @@ public class RunCommand
         );
 
         return command;
+
+        static void SeparateApplicationLoggerArguments(
+            ParseResult parseResult,
+            IReadOnlyList<string> applicationArguments,
+            out ImmutableArray<string> loggerArgs,
+            out ImmutableArray<string> nonLoggerArgs)
+        {
+            var applicationArgumentsAfterDoubleDash = GetApplicationArgumentsAfterDoubleDash(parseResult);
+            if (applicationArgumentsAfterDoubleDash is null)
+            {
+                LoggerUtility.SeparateLoggerArguments(applicationArguments, out loggerArgs, out nonLoggerArgs);
+                return;
+            }
+
+            if (!TryCountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash, out var countBeforeDoubleDash))
+            {
+                // This hopefully should not happen, but if it does, we don't want to break users.
+                Reporter.Error.WriteLine(CliCommandStrings.RunCommandWarningUnableToDetermineLoggerArguments.Yellow());
+                loggerArgs = [];
+                nonLoggerArgs = [.. applicationArguments];
+                return;
+            }
+
+            LoggerUtility.SeparateLoggerArguments(applicationArguments.Take(countBeforeDoubleDash), out loggerArgs, out var nonLoggerArgsBeforeDoubleDash);
+            nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
+        }
+
+        static List<string>? GetApplicationArgumentsAfterDoubleDash(ParseResult parseResult)
+        {
+            for (var i = 0; i < parseResult.Tokens.Count; i++)
+            {
+                if (parseResult.Tokens[i].Type == TokenType.DoubleDash)
+                {
+                    return parseResult.Tokens.Skip(i + 1).Select(static token => token.Value).ToList();
+                }
+            }
+
+            return null;
+        }
+
+        static bool TryCountApplicationArgumentsBeforeDoubleDash(
+            IReadOnlyList<string> applicationArguments,
+            IReadOnlyList<string> applicationArgumentsAfterDoubleDash,
+            out int countBeforeDoubleDash)
+        {
+            countBeforeDoubleDash = applicationArguments.Count - applicationArgumentsAfterDoubleDash.Count;
+
+            if (countBeforeDoubleDash < 0)
+            {
+                countBeforeDoubleDash = 0;
+                return false;
+            }
+
+            return applicationArguments.Skip(countBeforeDoubleDash).SequenceEqual(applicationArgumentsAfterDoubleDash, StringComparer.Ordinal);
+        }
 
         bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)
         {

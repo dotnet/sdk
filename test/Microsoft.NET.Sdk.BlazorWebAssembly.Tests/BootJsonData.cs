@@ -40,7 +40,7 @@ public class BootJsonData
     ///
     /// Within <see cref="ResourceHashesByNameDictionary"/>, dictionary keys are resource names,
     /// and values are SHA-256 hashes formatted in prefixed base-64 style (e.g., 'sha256-abcdefg...')
-    /// as used for subresource integrity checking.
+    /// as used for subresource hash checking.
     /// </summary>
     [JsonIgnore]
     public ResourcesData resources => (ResourcesData)resourcesRaw;
