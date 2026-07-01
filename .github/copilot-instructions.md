@@ -98,10 +98,8 @@ Canonical scenarios:
 - Run a single test project after a full build:
   `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
   See the [Testing](#testing) section for assembly filtering and more examples.
-- Dogfood the SDK you built (run/try it end-to-end): start a dogfood shell with
-  `eng\dogfood.cmd` (Windows) or `source ./eng/dogfood.sh` (Linux/macOS). It redirects SDK
-  resolution to your build so `dotnet`, `msbuild`, and Visual Studio all use it. Verify with
-  `where dotnet` / `which dotnet` (should point into `artifacts/bin/redist/<configuration>/dotnet`).
+- Validate changes locally using the SDK you built at
+  `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
 - For fast inner-loop runs of `dotnet.Tests` without a full rebuild, use the
   `incremental-test` skill.
 
