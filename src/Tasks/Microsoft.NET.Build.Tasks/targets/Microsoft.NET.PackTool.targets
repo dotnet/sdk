@@ -205,9 +205,15 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <PropertyGroup>
       <_ToolRidPath Condition="'$(RuntimeIdentifier)' == ''">any</_ToolRidPath>
       <_ToolRidPath Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</_ToolRidPath>
+      <_ToolSettingsTargetFrameworkPath>$(_ToolPackShortTargetFrameworkName)</_ToolSettingsTargetFrameworkPath>
+      <_ToolSettingsTargetFrameworkPath Condition="'$(_ToolPackageShouldIncludeImplementation)' != 'true' and '$(_UserSpecifiedToolPackageRids)' != ''">any</_ToolSettingsTargetFrameworkPath>
     </PropertyGroup>
     <ItemGroup>
-      <TfmSpecificPackageFile Include="@(_GeneratedFiles)">
+      <TfmSpecificPackageFile Include="$(_ToolsSettingsFilePath)">
+        <PackagePath>tools/$(_ToolSettingsTargetFrameworkPath)/$(_ToolRidPath)/</PackagePath>
+      </TfmSpecificPackageFile>
+
+      <TfmSpecificPackageFile Include="@(_GeneratedFiles)" Exclude="$(_ToolsSettingsFilePath)">
         <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_GeneratedFiles.RecursiveDir)</PackagePath>
       </TfmSpecificPackageFile>
 
