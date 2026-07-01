@@ -5,21 +5,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using Azure.Monitor.OpenTelemetry.Exporter;
-using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Cli.Telemetry;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using OpenTelemetry;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 /// <summary>
 /// Singleton telemetry manager for dotnetup.
-/// Uses OpenTelemetry with Azure Monitor exporter (AOT compatible).
 /// </summary>
 public sealed class DotnetupTelemetry : IDisposable
 {
@@ -73,6 +63,7 @@ public sealed class DotnetupTelemetry : IDisposable
     private readonly ILoggerFactory? _loggerFactory;
     private readonly ILogger? _logger;
     private readonly List<Activity> _activities = [];
+
     /// <summary>
     /// Snapshot of process-level common properties (os.type, device.id,
     /// session.id, dev.build, ...). These also live on the OTel
@@ -96,11 +87,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// True when this process is running in a CI environment, as detected by
-    /// <see cref="TelemetryCommonProperties.IsCIEnvironment"/>. CI runs are
-    /// one-and-done — there's no follow-up invocation to drain the
-    /// AzMonitor offline store — so callers can use this to allocate a
-    /// larger flush budget on exit. Interactive (non-CI) runs stay on the
-    /// default budget so user exit performance is unaffected.
+    /// <see cref="TelemetryCommonProperties.IsCIEnvironment"/>.
     /// </summary>
     public bool IsOneAndDoneEnvironment { get; }
 
@@ -118,9 +105,6 @@ public sealed class DotnetupTelemetry : IDisposable
         SessionId = Guid.NewGuid().ToString();
         IsOneAndDoneEnvironment = TelemetryCommonProperties.IsCIEnvironment;
 
-        // Check opt-out (same env var as SDK).
-        // Unlike the SDK, dotnetup sends telemetry from dev/test builds too —
-        // distinguished by the dev.build=true tag in common properties.
         Enabled = !IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.TelemetryOptOutEnvVar));
 
         if (!Enabled)
@@ -165,10 +149,11 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Builds the list of common process-level attributes (caller, os.type,
-    /// device.id, session.id, dev.build, ...). Used both as OTel
-    /// <see cref="Resource"/> attributes (for spans / opt-in perf trace
-    /// export) and as per-LogRecord state stamps (for the AppInsights
-    /// <c>traces</c> table that data-x ingests).
+    /// device.id, session.id, dev.build, ...).
+    ///
+    /// Used both as:
+    /// OTel Resource Attributes (for spans / opt-in perf trace export)
+    /// Per-LogRecord state stamps (for actual telemetry)
     /// </summary>
     private List<KeyValuePair<string, object>> BuildCommonAttributes()
     {
@@ -188,12 +173,6 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Builds the OTel <see cref="Resource"/> shared by tracer and logger.
-    /// Note: the AzMonitor log exporter only maps a fixed subset of Resource
-    /// attrs (<c>service.name</c>, <c>service.version</c>,
-    /// <c>service.instance.id</c>) to AppInsights envelope fields and drops
-    /// the rest — so common attrs are also stamped per-LogRecord in
-    /// <c>BuildCompletionState</c> to reach the <c>traces</c> table.
-    /// On spans (opt-in perf trace) Resource attrs auto-stamp normally.
     /// </summary>
     private static ResourceBuilder BuildResource(List<KeyValuePair<string, object>> commonAttrs)
     {
@@ -203,10 +182,8 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the <see cref="TracerProvider"/>. Spans always run in-process
-    /// (Activity.Current correlation + in-memory test seam); network export
-    /// is opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x
-    /// ingests logs, not spans.
+    /// Builds the <see cref="TracerProvider"/>.
+    /// Traces should be opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x does not ingest spans.
     /// </summary>
     private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
@@ -221,9 +198,7 @@ public sealed class DotnetupTelemetry : IDisposable
             builder.AddInMemoryExporter(_activities);
         }
 
-        // Span network export is off by default because data-x ingests logs,
-        // not spans. AzMonitor spans are gated on the perf-trace opt-in;
-        // OTLP spans additionally require the SDK-style OTLP exporter opt-in.
+        // Span network export is off by default because data-x ingests logs, not spans.
         if (enablePerfTrace && !disableExport)
         {
             if (enableOtlpExporter)
@@ -247,24 +222,9 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the <see cref="ILoggerFactory"/>. Every TrackedOperation
-    /// completion and every <see cref="RecordException"/> emits one LogRecord
-    /// through this factory; the AzMonitor log exporter routes it to the
-    /// AppInsights <c>traces</c> table — the only table data-x ingests. The
-    /// OTel logger auto-stamps Activity.Current's TraceId/SpanId so AzMonitor
-    /// can map them to operation_Id/operation_ParentId for cross-row
-    /// correlation.
-    /// </summary>
-    /// <remarks>
-    /// Built via <see cref="ServiceCollection"/> (rather than
-    /// <c>LoggerFactory.Create</c>) so the underlying
-    /// <see cref="OpenTelemetry.Logs.LoggerProvider"/> is resolvable via DI.
-    /// We need a direct handle on the provider so <see cref="Flush"/> can
-    /// call <c>ForceFlush</c> on it — without that, the
-    /// <c>BatchLogRecordExportProcessor</c> only drains on
-    /// <see cref="Dispose"/>, and CI runs (one-and-done — no follow-up
-    /// invocation to retry from the AzMonitor offline store) need a
-    /// pre-shutdown drain with an extended budget.
+    /// Builds the <see cref="ILoggerFactory"/> in a way that exposes forceFlush via a ServiceProvider.
+    ///
+    /// The AzMonitor log exporter routes data through the AppInsights <c>traces</c> table which is the only table data-x-platform ingests.
     /// </remarks>
     private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
@@ -278,9 +238,7 @@ public sealed class DotnetupTelemetry : IDisposable
                 o.ParseStateValues = true;
                 o.SetResourceBuilder(resource);
 
-                // AzMonitor is the prod sink for the AppInsights `traces`
-                // table. OTLP is only for explicitly enabled local or
-                // collector scenarios.
+                // OTLP is only for explicitly enabled local scenarios.
                 if (!disableExport)
                 {
                     o.AddAzureMonitorLogExporter(amo =>
@@ -305,14 +263,7 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Starts the per-command operation. The Activity OperationName is
-    /// <c>command/{commandName}</c> for in-process correlation; the LogRecord
-    /// Message is the stable string <c>dotnetup/command</c> with the
-    /// subcommand discriminator on the <c>command.name</c> property. A single
-    /// stable Message keeps one GDPR-catalog entry covering every (existing
-    /// and future) subcommand — per-subcommand Messages caused new
-    /// subcommands to silently fall off the classified <c>RawEventsTraces</c>
-    /// table until the catalog was hand-updated.
+    /// Starts a per-command <see cref="TrackedOperation"/> operation.
     /// </summary>
     internal TrackedOperation StartTrackedCommand(string commandName)
     {
@@ -327,15 +278,7 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Starts the root <see cref="TrackedOperation"/> for the entire
-    /// dotnetup invocation. Disposed in <c>Program.Main</c>'s
-    /// <c>finally</c>; emits the <c>dotnetup/root</c> LogRecord that
-    /// carries the wall-clock <c>operation.duration_ms</c> for the whole
-    /// process and any <c>error.*</c> tags propagated up from a failing
-    /// command (or attached directly when an exception escapes
-    /// <see cref="CommandBase"/>'s catch). Paired with the per-command
-    /// <c>dotnetup/command</c> rows: "root" = whole process, "command" =
-    /// one subcommand.
+    /// Starts the root <see cref="TrackedOperation"/> for the entire dotnetup invocation.
     /// </summary>
     internal TrackedOperation StartTrackedProcess(string name)
     {
@@ -454,42 +397,26 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Default flush budget (ms) for interactive / shell-startup exits. Enough
-    /// to hand the (possibly cold) AppInsights POST to the batch processor so it
-    /// can spill to the offline store for a later run, without noticeably
-    /// delaying exit. Matches Aspire's CLI shutdown budget
-    /// (TelemetryManager.ShutDownTimeoutMilliseconds = 200).
+    /// Default flush budget (ms) for interactive / shell-startup exits.
+    /// Goal: Should not cause perceptible delay for humans.
+    /// Matches Aspire's CLI shutdown budget (TelemetryManager.ShutDownTimeoutMilliseconds = 200).
     /// </summary>
     private const int DefaultFlushTimeoutMs = 200;
 
     /// <summary>
     /// Durable flush budget (ms) for one-and-done environments (CI / piped /
-    /// non-interactive) that have no guaranteed next run to drain the offline
-    /// store, and for the failure path. A ceiling, not a fixed wait: ForceFlush
-    /// returns as soon as the queue drains, so happy-path runs rarely pay it.
-    /// 5000 covers the high end of observed cold AppInsights POST latency.
+    /// non-interactive) that have no guaranteed next run to drain the offline store.
     /// </summary>
     private const int DurableFlushTimeoutMs = 5000;
 
     /// <summary>
-    /// True when the current invocation is the latency-critical shell-startup
-    /// command (<c>print-env-script</c>), which is sourced from the user's shell
-    /// profile on every new shell. Its output is redirected (eval/source), which
-    /// would otherwise route it to the durable budget — so it is fast-pathed to
-    /// keep shell startup snappy even on a slow network.
+    /// True when the current invocation is the latency-critical shell-startup command (<c>print-env-script</c>)
     /// </summary>
     private bool IsShellStartupCommand =>
         string.Equals(CurrentCommandName, "print-env-script", StringComparison.Ordinal);
 
     /// <summary>
-    /// Returns the on-exit flush budget (ms) for the current run. Precedence:
-    /// <list type="number">
-    /// <item>A non-negative <c>DOTNETUP_TELEMETRY_FLUSH_TIMEOUT_MS</c> override (validation knob).</item>
-    /// <item>Failure (<paramref name="exitCode"/> != 0): the durable budget, so error rows reach AppInsights even on shell-init / interactive paths (failures there should be rare).</item>
-    /// <item>Shell-startup command (print-env-script): the default budget — even though its output is redirected — so a slow network can't delay shell startup; frequent invocations drain any miss from the offline store next run.</item>
-    /// <item>Interactive foreground (not CI, not redirected): the default budget; the persistent offline store drains on the user's next command.</item>
-    /// <item>Otherwise (CI / piped / non-interactive — effectively one-and-done with no guaranteed next run): the durable budget, to deliver the row live.</item>
-    /// </list>
+    /// Returns the ideal on-exit flush budget (ms) for the current run.
     /// </summary>
     internal int GetFlushTimeoutMs(int exitCode)
     {
@@ -501,40 +428,34 @@ public sealed class DotnetupTelemetry : IDisposable
             return forced;
         }
 
-        // Failure always spends the durable budget so the error row is delivered
-        // live; ForceFlush still returns early once the queue drains.
+        // Failures are essential to record and not expected in a typical use case.
         if (exitCode != 0)
         {
             return DurableFlushTimeoutMs;
         }
 
-        // Shell-startup hot path: keep new-shell latency bounded even though the
-        // command's output is redirected.
+        // Shell-startup hot path (don't slow down users shells)
         if (IsShellStartupCommand)
         {
             return DefaultFlushTimeoutMs;
         }
 
-        // Interactive foreground use: keep exit snappy; the persistent offline
-        // store drains on the user's next command.
+        // Interactive foreground use: keep exit snappy
         if (!IsOneAndDoneEnvironment && !Console.IsOutputRedirected)
         {
             return DefaultFlushTimeoutMs;
         }
 
-        // CI / piped / non-interactive: one-and-done with no guaranteed next run
-        // to drain the offline store, so spend the durable budget.
+        // CI / piped / non-interactive: one-and-done with no guaranteed next run to drain the offline store
         return DurableFlushTimeoutMs;
     }
 
     /// <summary>
     /// Production flush entrypoint. Computes the budget from the process exit
     /// code and the current environment (see <see cref="GetFlushTimeoutMs(int)"/>),
-    /// then drains the providers. Returns as soon as the queues are empty — the
-    /// budget is just a ceiling — so a larger budget never adds latency on
-    /// happy-path runs. Whatever doesn't drain in time falls back to the
-    /// AzMonitor exporter's <c>StorageDirectory</c> retry queue. Call once, on
-    /// process exit.
+    /// then drains the providers. Returns as soon as the queues are empty.
+    ///
+    /// Whatever doesn't drain in time falls back to the AzMonitor exporter's <c>StorageDirectory</c> retry queue.
     /// </summary>
     /// <param name="exitCode">The process exit code; a non-zero value selects the durable budget.</param>
     public void Flush(int exitCode)
