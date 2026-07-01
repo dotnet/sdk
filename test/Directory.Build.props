@@ -25,4 +25,19 @@
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
+  <!-- MSTest.Sdk defaults. Applied to projects that opt in via <Project Sdk="MSTest.Sdk">,
+       which sets UsingMSTestSdk=true in its Sdk.props before this file is evaluated. -->
+  <PropertyGroup Condition="'$(UsingMSTestSdk)' == 'true'">
+    <!-- MSTest.Sdk projects run on Microsoft.Testing.Platform, not Arcade's xUnit runner. Opting out
+         of Arcade's xUnit tooling stops it from injecting the unused xunit (v2) package set
+         (xunit.core/assert/runner.console/runner.visualstudio) into every MSTest test output. -->
+    <UsingToolXUnit>false</UsingToolXUnit>
+
+    <!-- Parallelization disabled due to widespread concurrency-related intermittent test failures. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+
+    <!-- Promote info-severity MSTest analyzer rules to warnings and critical rules to errors. -->
+    <MSTestAnalysisMode>Recommended</MSTestAnalysisMode>
+  </PropertyGroup>
+
 </Project>

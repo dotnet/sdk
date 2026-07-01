@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
@@ -11,24 +11,32 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class CoalesceMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class CoalesceMacroTests
     {
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        public CoalesceMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        public CoalesceMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
-            _environmentSettingsHelper = environmentSettingsHelper;
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Theory]
-        [InlineData(null, null, null, null)]
-        [InlineData("", "", null, "")]
-        [InlineData(null, "fallback", null, "fallback")]
-        [InlineData("", "fallback", null, "fallback")]
-        [InlineData("def", "fallback", "def", "fallback")]
-        [InlineData("def", "fallback", "", "def")]
+        [TestMethod]
+        [DataRow(null, null, null, null)]
+        [DataRow("", "", null, "")]
+        [DataRow(null, "fallback", null, "fallback")]
+        [DataRow("", "fallback", null, "fallback")]
+        [DataRow("def", "fallback", "def", "fallback")]
+        [DataRow("def", "fallback", "", "def")]
         public void CoalesceMacroTest(string? sourceValue, string? fallbackValue, string? defaultValue, string? expectedResult)
         {
             CoalesceMacro macro = new();
@@ -48,21 +56,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             if (expectedResult == null)
             {
-                Assert.False(variables.ContainsKey("test"));
+                Assert.IsFalse(variables.ContainsKey("test"));
             }
             else
             {
-                Assert.Equal(expectedResult, variables["test"]);
+                Assert.AreEqual(expectedResult, variables["test"]);
             }
         }
 
-        [Theory]
-        [InlineData(null, null, null, null)]
-        [InlineData("", "", null, "")]
-        [InlineData(null, "fallback", null, "fallback")]
-        [InlineData("", "fallback", null, "fallback")]
-        [InlineData("def", "fallback", "def", "fallback")]
-        [InlineData("def", "fallback", "", "def")]
+        [TestMethod]
+        [DataRow(null, null, null, null)]
+        [DataRow("", "", null, "")]
+        [DataRow(null, "fallback", null, "fallback")]
+        [DataRow("", "fallback", null, "fallback")]
+        [DataRow("def", "fallback", "def", "fallback")]
+        [DataRow("def", "fallback", "", "def")]
         public void GeneratedSymbolTest(string? sourceValue, string? fallbackValue, string? defaultValue, string? expectedResult)
         {
             CoalesceMacro macro = new();
@@ -91,20 +99,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             if (expectedResult == null)
             {
-                Assert.False(variables.ContainsKey("test"));
+                Assert.IsFalse(variables.ContainsKey("test"));
             }
             else
             {
-                Assert.Equal(expectedResult, variables["test"]);
+                Assert.AreEqual(expectedResult, variables["test"]);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GeneratedSymbolTest_DefaultValueLeadsToFallback()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             CoalesceMacro macro = new();
 
@@ -122,16 +130,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             macro.Evaluate(environmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters));
-            Assert.Equal(10, variables["test"]);
-            Assert.Equal("[CoalesceMacro]: 'test': source value '0' is not used, because it is equal to default value '0'.", loggedMessages.First().Message);
+            Assert.AreEqual(10, variables["test"]);
+            Assert.AreEqual("[CoalesceMacro]: 'test': source value '0' is not used, because it is equal to default value '0'.", loggedMessages.First().Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void GeneratedSymbolTest_ExplicitDefaultValuesArePreserved()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             CoalesceMacro macro = new();
 
@@ -148,10 +156,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             macro.Evaluate(environmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters));
-            Assert.Equal(0, variables["test"]);
+            Assert.AreEqual(0, variables["test"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_Source()
         {
             CoalesceMacro macro = new();
@@ -161,11 +169,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 { "fallbackVariableName", JExtensions.ToJsonString("varB") }
             };
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'coalesce' should have 'sourceVariableName' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'coalesce' should have 'sourceVariableName' property defined.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_Fallback()
         {
             CoalesceMacro macro = new();
@@ -175,8 +183,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 { "sourceVariableName", JExtensions.ToJsonString("varA") }
             };
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'coalesce' should have 'fallbackVariableName' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'coalesce' should have 'fallbackVariableName' property defined.", ex.Message);
         }
     }
 }

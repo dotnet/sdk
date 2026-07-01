@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
@@ -57,39 +58,53 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         Func<MSBuildArgs, MSBuildArgs>? transformer = null)
     {
         var args = parseResult.GetValue(catchAllUserInputArgument) ?? [];
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
+        LoggerUtility.SeparateLoggerArguments(args, out var loggerArgs, out var nonLoggerArgs);
         var forwardedArgs = parseResult.OptionValuesToBeForwarded(commandDefinition);
-        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
+        if (nonLoggerArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
-            [
-                .. optionsToUseWhenParsingMSBuildFlags,
-                CommonOptions.CreateGetPropertyOption(),
-                CommonOptions.CreateGetItemOption(),
-                CommonOptions.CreateGetTargetResultOption(),
-                CommonOptions.CreateGetResultOutputFileOption(),
-            ]);
-            msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
-            return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
+            if (RuntimeFeature.IsDynamicCodeSupported)
+            {
+                var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. loggerArgs],
+                [
+                    .. optionsToUseWhenParsingMSBuildFlags,
+                    CommonOptions.CreateGetPropertyOption(),
+                    CommonOptions.CreateGetItemOption(),
+                    CommonOptions.CreateGetTargetResultOption(),
+                    CommonOptions.CreateGetResultOutputFileOption(),
+                ]);
+                msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
+                return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Dynamic code generation is not supported on this platform.");
+            }
         }
         else
         {
             // Warn if any argument looks like a file-based program entry point but we're falling back to MSBuild.
             // This can happen when extra positional arguments prevent the single-arg file-based path from being taken,
             // or when a .cs file doesn't exist (so IsValidEntryPointPath returns false).
-            foreach (var candidate in nonBinLogArgs)
+            foreach (var candidate in nonLoggerArgs)
             {
                 if (VirtualProjectBuilder.IsValidEntryPointPath(candidate))
                 {
                     Reporter.Error.WriteLine(
-                        string.Format(CliCommandStrings.WarningFileArgumentPassedToMSBuild, candidate, commandDefinition.Name).Yellow());
+                        string.Format(
+                            CliCommandStrings.WarningFileArgumentPassedToMSBuild,
+                            candidate,
+                            commandDefinition.Name,
+                            FormatUnsupportedArguments(nonLoggerArgs, candidate)).Yellow());
                     break;
                 }
 
                 if (candidate.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 {
                     Reporter.Error.WriteLine(
-                        string.Format(CliCommandStrings.WarningCsFileArgumentPassedToMSBuild, candidate).Yellow());
+                        string.Format(
+                            CliCommandStrings.WarningCsFileArgumentPassedToMSBuild,
+                            candidate,
+                            FormatUnrecognizedArguments(nonLoggerArgs)).Yellow());
                     break;
                 }
             }
@@ -97,6 +112,28 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
             msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
             return createPhysicalCommand(msbuildArgs, msbuildPath);
+        }
+    }
+
+    private static string FormatUnsupportedArguments(IEnumerable<string> args, string supportedArgument) =>
+        FormatArguments(RemoveFirst(args, supportedArgument));
+
+    private static string FormatUnrecognizedArguments(IEnumerable<string> args) => FormatArguments(args);
+
+    private static string FormatArguments(IEnumerable<string> args) => string.Join(", ", args.Select(arg => $"'{arg}'"));
+
+    private static IEnumerable<string> RemoveFirst(IEnumerable<string> args, string value)
+    {
+        var removed = false;
+        foreach (var arg in args)
+        {
+            if (!removed && string.Equals(arg, value, StringComparison.Ordinal))
+            {
+                removed = true;
+                continue;
+            }
+
+            yield return arg;
         }
     }
 }

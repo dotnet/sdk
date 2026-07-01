@@ -10,16 +10,27 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class RegexMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class RegexMacroTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public RegexMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public RegexMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Fact(DisplayName = nameof(TestRegexMacro))]
+        [TestMethod]
         public void TestRegexMacro()
         {
             string variableName = "myRegex";
@@ -43,10 +54,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             string newValue = (string)variables[variableName];
-            Assert.Equal(newValue, expectedValue);
+            Assert.AreEqual(expectedValue, newValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void GeneratedSymbolTest()
         {
             string variableName = "myRegex";
@@ -78,10 +89,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RegexMacro macro = new();
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
             string newValue = (string)variables[variableName];
-            Assert.Equal(newValue, expectedValue);
+            Assert.AreEqual(expectedValue, newValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void MissingSourceVariableTest()
         {
             string variableName = "myRegex";
@@ -108,10 +119,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RegexMacro macro = new();
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
 
-            Assert.False(variables.ContainsKey(variableName));
+            Assert.IsFalse(variables.ContainsKey(variableName));
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingSource()
         {
             RegexMacro macro = new();
@@ -128,11 +139,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             jsonParameters.Add("steps", jsonSteps);
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'regex' should have 'source' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'regex' should have 'source' property defined.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingSteps()
         {
             RegexMacro macro = new();
@@ -143,11 +154,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'regex' should have 'steps' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'regex' should have 'steps' property defined.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingRegex()
         {
             RegexMacro macro = new();
@@ -165,11 +176,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 """;
             jsonParameters.Add("steps", jsonSteps);
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
-            Assert.Equal("Generated symbol 'test': array 'steps' should contain JSON objects with property 'regex'.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test': array 'steps' should contain JSON objects with property 'regex'.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingReplacement()
         {
             RegexMacro macro = new();
@@ -188,8 +199,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             jsonParameters.Add("steps", jsonSteps);
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
-            Assert.Equal("Generated symbol 'test': array 'steps' should contain JSON objects with property 'replacement'.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test': array 'steps' should contain JSON objects with property 'replacement'.", ex.Message);
         }
     }
 }

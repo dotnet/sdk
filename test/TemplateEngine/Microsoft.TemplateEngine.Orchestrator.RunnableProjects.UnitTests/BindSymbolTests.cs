@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -15,16 +15,20 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
-    public class BindSymbolTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    [DoNotParallelize]
+    public class BindSymbolTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        public BindSymbolTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
         public async Task CreateAsyncTest_UseBindValuesWithReplace()
         {
             //
@@ -93,7 +97,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
             IEnvironment environment = new DefaultEnvironment();
 
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
@@ -118,10 +122,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_UseBindValuesWithFileRename()
         {
             //
@@ -166,7 +170,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
             IEnvironment environment = new DefaultEnvironment();
 
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
@@ -189,11 +193,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Verifying the outputs
             //
 
-            Assert.True(settings.Host.FileSystem.FileExists(Path.Combine(targetDir, "TestHost.cs")));
-            Assert.True(settings.Host.FileSystem.FileExists(Path.Combine(targetDir, "MyValue.cs")));
+            Assert.IsTrue(settings.Host.FileSystem.FileExists(Path.Combine(targetDir, "TestHost.cs")));
+            Assert.IsTrue(settings.Host.FileSystem.FileExists(Path.Combine(targetDir, "MyValue.cs")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_UseBindValuesInMacros()
         {
             //
@@ -250,7 +254,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
             // Dependencies preparation and mounting
             //
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true);
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
@@ -274,7 +278,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
-            Assert.Equal("Correct", resultContent);
+            Assert.AreEqual("Correct", resultContent);
 
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "NoTestHost";
             //
@@ -288,10 +292,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
-            Assert.Equal("Incorrect", resultContent);
+            Assert.AreEqual("Incorrect", resultContent);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_BindingConflict()
         {
             //
@@ -337,7 +341,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             List<(LogLevel, string)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, additionalComponents: additionalComponents, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, additionalComponents: additionalComponents, addLoggerProviders: new[] { loggerProvider });
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
 
@@ -356,15 +360,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
-            Assert.Equal("%VAL%", resultContent);
+            Assert.AreEqual("%VAL%", resultContent);
 
             IEnumerable<string> warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning).Select(log => log.Item2);
-            Assert.Equal(2, warningMessages.Count());
+            Assert.HasCount(2, warningMessages);
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources, "Test", "'Test', 'Test'", "'test:', 'test:'"), warningMessages);
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, "testBindConflict"), warningMessages);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_ForcedPrefixBinding()
         {
             //
@@ -410,7 +414,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             List<(LogLevel, string)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, additionalComponents: additionalComponents, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, additionalComponents: additionalComponents, addLoggerProviders: new[] { loggerProvider });
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
 
@@ -429,15 +433,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
-            Assert.Equal("%VAL%", resultContent);
+            Assert.AreEqual("%VAL%", resultContent);
 
             IEnumerable<string> warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning).Select(log => log.Item2);
-            Assert.Single(warningMessages);
+            Assert.ContainsSingle(warningMessages);
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, "notPrefixed"), warningMessages);
-            Assert.False(symbolSource.GetBoundValueAsync_WasCalled);
+            Assert.IsFalse(symbolSource.GetBoundValueAsync_WasCalled);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_CanUseDefaultValue()
         {
             //
@@ -502,7 +506,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
             IEnvironment environment = new DefaultEnvironment();
 
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
@@ -526,10 +530,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_CanConvertValueToDataType()
         {
             //
@@ -582,7 +586,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             Environment.SetEnvironmentVariable("MYENVVAR", "100");
             IEnvironment environment = new DefaultEnvironment();
 
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
 
@@ -605,10 +609,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile.cs"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_NoWarningOnUnknownBindingWithDefaultValue()
         {
             //
@@ -661,7 +665,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
@@ -685,11 +689,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
 
-            (LogLevel, string Message) warningMessage = Assert.Single(loggedMessages, lm => lm.Level == LogLevel.Warning);
-            Assert.Equal("Failed to evaluate bind symbol 'env2', it will be skipped.", warningMessage.Message);
-            Assert.Contains(loggedMessages, lm => lm.Message == "Failed to evaluate bind symbol 'env1', the returned value is null. The default value 'envDefault' is used instead.");
+            (LogLevel, string Message) warningMessage = Assert.ContainsSingle(loggedMessages.Where(lm => lm.Level == LogLevel.Warning));
+            Assert.AreEqual("Failed to evaluate bind symbol 'env2', it will be skipped.", warningMessage.Message);
+            Assert.Contains("Failed to evaluate bind symbol 'env1', the returned value is null. The default value 'envDefault' is used instead.", loggedMessages.Select(lm => lm.Message));
         }
 
         private class TestBindSymbolSource : IBindSymbolSource

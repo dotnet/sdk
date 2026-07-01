@@ -23,6 +23,7 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class RunCommand
 {
     public bool NoBuild { get; }
@@ -149,7 +150,7 @@ public class RunCommand
 
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
-        FacadeLogger? logger = ProjectFileFullPath is not null 
+        FacadeLogger? logger = ProjectFileFullPath is not null
             ? LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run")
             : null;
         try
@@ -190,7 +191,7 @@ public class RunCommand
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
             {
-                // The entry-point is not used to run the application if the launch profile specifies Executable command. 
+                // The entry-point is not used to run the application if the launch profile specifies Executable command.
 
                 Debug.Assert(!ReadCodeFromStdin);
                 projectBuilder = CreateProjectBuilder();
@@ -253,7 +254,7 @@ public class RunCommand
     private bool TrySelectTargetFrameworkAndDeviceIfNeeded(RunCommandSelector selector)
     {
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
+
         // If user specified --device on command line, add it to global properties and MSBuildArgs
         if (!string.IsNullOrWhiteSpace(Device))
         {
@@ -264,11 +265,11 @@ public class RunCommand
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
         }
 
-        // Optimization: If BOTH framework AND device are already specified (and we're not listing devices), 
+        // Optimization: If BOTH framework AND device are already specified (and we're not listing devices),
         // we can skip both framework selection and device selection entirely
         bool hasFramework = globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework);
         bool hasDevice = globalProperties.TryGetValue("Device", out var preSpecifiedDevice) && !string.IsNullOrWhiteSpace(preSpecifiedDevice);
-        
+
         if (!ListDevices && hasFramework && hasDevice)
         {
             // Both framework and device are pre-specified
@@ -284,7 +285,7 @@ public class RunCommand
         if (selectedFramework is not null)
         {
             ApplySelectedFramework(selectedFramework);
-            
+
             // Re-evaluate project with the selected framework so device selection sees the right devices
             var properties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
             selector.InvalidateGlobalProperties(properties);
@@ -343,7 +344,7 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath is not null);
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
+
         // If a framework is already specified via --framework, no need to check
         if (globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
         {
@@ -405,12 +406,12 @@ public class RunCommand
         var command = CommandFactoryUsingResolver.Create(commandSpec)
             .WorkingDirectory(workingDirectory);
 
-        SetEnvironmentVariables(command, launchSettings);
+        SetEnvironmentVariables(command, launchSettings, EnvironmentVariables);
 
         return command;
     }
 
-    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings)
+    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings, IReadOnlyDictionary<string, string> environmentVariables)
     {
         // Handle Project-specific settings
         if (launchSettings is ProjectLaunchProfile projectSettings)
@@ -431,8 +432,10 @@ public class RunCommand
             }
         }
 
-        // Env variables specified on command line override those specified in launch profile:
-        foreach (var (name, value) in EnvironmentVariables)
+        // Env variables specified on command line (or, for opted-in projects, the final
+        // @(RuntimeEnvironmentVariable) item group after ComputeRunArguments) override those
+        // specified in the launch profile:
+        foreach (var (name, value) in environmentVariables)
         {
             command.EnvironmentVariable(name, value);
         }
@@ -564,6 +567,7 @@ public class RunCommand
     private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
     {
         ICommand command;
+        IReadOnlyDictionary<string, string> runtimeEnvironmentVariables = EnvironmentVariables;
         if (cachedRunProperties != null)
         {
             // We can skip project evaluation if we already evaluated the project during virtual build
@@ -582,13 +586,14 @@ public class RunCommand
         else
         {
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
-    
+
             ProjectInstance project;
+            bool hasRuntimeEnvironmentVariableSupport;
             try
             {
                 project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
                 ValidatePreconditions(project);
-                InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
+                hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
             }
             finally
             {
@@ -596,9 +601,16 @@ public class RunCommand
 
             var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
             command = CreateCommandFromRunProperties(runProperties);
+
+            // For opted-in projects, honor any additions/changes that MSBuild targets (e.g. ComputeRunArguments)
+            // made to the @(RuntimeEnvironmentVariable) item group, rather than only the original -e values.
+            if (hasRuntimeEnvironmentVariableSupport)
+            {
+                runtimeEnvironmentVariables = EnvironmentVariablesToMSBuild.ReadFromItems(project);
+            }
         }
 
-        SetEnvironmentVariables(command, launchSettings);
+        SetEnvironmentVariables(command, launchSettings, runtimeEnvironmentVariables);
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
@@ -680,20 +692,23 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
+        static bool InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
         {
             // Only add environment variables as MSBuild items if the project has opted in via capability
-            if (project.GetItems(Constants.ProjectCapability)
-                .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase)))
+            bool hasRuntimeEnvironmentVariableSupport = EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project);
+            if (hasRuntimeEnvironmentVariableSupport)
             {
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
 
-            List<ILogger> loggersForBuild = [
-                CommonRunHelpers.GetConsoleLogger(
+            List<ILogger> loggersForBuild = [];
+            if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
+            {
+                loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
                     buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
-                )
-            ];
+                ));
+            }
+
             if (binaryLogger is not null)
             {
                 loggersForBuild.Add(binaryLogger);
@@ -703,6 +718,8 @@ public class RunCommand
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }
+
+            return hasRuntimeEnvironmentVariableSupport;
         }
     }
 
@@ -823,23 +840,22 @@ public class RunCommand
             parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
         }
 
-        // if the application arguments contain any binlog args then we need to remove them from the application arguments and apply
-        // them to the restore args.
-        // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
-        // bl information to synchronize the restore and build logger configurations
-        var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList();
+        // If the application arguments contain any logger args then we need to remove them from the application arguments and apply
+        // them to the restore args. This is because we can't model the logger command structure in MSBuild in the System.CommandLine
+        // parser, but we need logger information to synchronize the restore and build logger configurations.
+        var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList() ?? [];
 
-        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
+        SeparateApplicationLoggerArguments(parseResult, applicationArguments, out var loggerArgs, out var nonLoggerArgs);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
-        if (binLogArgs.Count > 0)
+        if (loggerArgs.Length > 0)
         {
-            msbuildProperties.AddRange(binLogArgs);
+            msbuildProperties.AddRange(loggerArgs);
         }
 
         // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
         // (otherwise it should be forwarded to the target application as its command-line argument).
-        bool readCodeFromStdin = nonBinLogArgs is ["-", ..] &&
+        bool readCodeFromStdin = nonLoggerArgs is ["-", ..] &&
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
@@ -851,7 +867,7 @@ public class RunCommand
             throw new GracefulException(CliCommandStrings.CannotCombineOptions, definition.ProjectOption.Name, definition.FileOption.Name);
         }
 
-        string[] args = [.. nonBinLogArgs];
+        string[] args = [.. nonLoggerArgs];
         string? projectFilePath = DiscoverProjectFilePath(
             filePath: fileOption,
             projectFileOrDirectoryPath: projectOption,
@@ -923,8 +939,7 @@ public class RunCommand
                 stdinStream.CopyTo(fileStream);
             }
 
-            Debug.Assert(nonBinLogArgs[0] == "-");
-            nonBinLogArgs[0] = entryPointFilePath;
+            Debug.Assert(nonLoggerArgs[0] == "-");
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
@@ -953,6 +968,61 @@ public class RunCommand
         );
 
         return command;
+
+        static void SeparateApplicationLoggerArguments(
+            ParseResult parseResult,
+            IReadOnlyList<string> applicationArguments,
+            out ImmutableArray<string> loggerArgs,
+            out ImmutableArray<string> nonLoggerArgs)
+        {
+            var applicationArgumentsAfterDoubleDash = GetApplicationArgumentsAfterDoubleDash(parseResult);
+            if (applicationArgumentsAfterDoubleDash is null)
+            {
+                LoggerUtility.SeparateLoggerArguments(applicationArguments, out loggerArgs, out nonLoggerArgs);
+                return;
+            }
+
+            if (!TryCountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash, out var countBeforeDoubleDash))
+            {
+                // This hopefully should not happen, but if it does, we don't want to break users.
+                Reporter.Error.WriteLine(CliCommandStrings.RunCommandWarningUnableToDetermineLoggerArguments.Yellow());
+                loggerArgs = [];
+                nonLoggerArgs = [.. applicationArguments];
+                return;
+            }
+
+            LoggerUtility.SeparateLoggerArguments(applicationArguments.Take(countBeforeDoubleDash), out loggerArgs, out var nonLoggerArgsBeforeDoubleDash);
+            nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
+        }
+
+        static List<string>? GetApplicationArgumentsAfterDoubleDash(ParseResult parseResult)
+        {
+            for (var i = 0; i < parseResult.Tokens.Count; i++)
+            {
+                if (parseResult.Tokens[i].Type == TokenType.DoubleDash)
+                {
+                    return parseResult.Tokens.Skip(i + 1).Select(static token => token.Value).ToList();
+                }
+            }
+
+            return null;
+        }
+
+        static bool TryCountApplicationArgumentsBeforeDoubleDash(
+            IReadOnlyList<string> applicationArguments,
+            IReadOnlyList<string> applicationArgumentsAfterDoubleDash,
+            out int countBeforeDoubleDash)
+        {
+            countBeforeDoubleDash = applicationArguments.Count - applicationArgumentsAfterDoubleDash.Count;
+
+            if (countBeforeDoubleDash < 0)
+            {
+                countBeforeDoubleDash = 0;
+                return false;
+            }
+
+            return applicationArguments.Skip(countBeforeDoubleDash).SequenceEqual(applicationArgumentsAfterDoubleDash, StringComparer.Ordinal);
+        }
 
         bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)
         {

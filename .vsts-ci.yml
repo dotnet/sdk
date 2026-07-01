@@ -255,14 +255,13 @@ extends:
             name: Azure Pipelines
             image: macOS-latest
             os: macOS
-          helixTargetQueue: osx.15.amd64
+          helixTargetQueue: osx.15.arm64
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
-            timeoutInMinutes: 90
             macOSJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
@@ -276,6 +275,29 @@ extends:
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
+      ### AOT (native arm64) ###
+      # The AoT leg builds dotnet-aot via NativeAOT, which cannot cross-compile, so it must
+      # run on native arm64 hardware (HostRid == TargetRid == osx-arm64) to produce the
+      # dotnet-aot .dylib and its mstat/dgml size-analysis output. Runs for internal PRs and
+      # test builds; official builds publish via the Official legs above and don't need it.
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: Azure Pipelines
+              vmImage: macOS-15-arm64
+              os: macOS
+            helixTargetQueue: osx.15.arm64
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            populateInternalRuntimeVariables: true
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            macOSJobParameterSets:
+            - categoryName: AoT
+              runAoTTests: true
+              targetArchitecture: arm64
+              runtimeIdentifier: osx-arm64
       ### ARM64 TESTBUILD ###
       - ${{ if and(or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')), eq(parameters.enableArm64Job, true)) }}:
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self

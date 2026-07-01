@@ -8,12 +8,13 @@ using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class TestCommandDefinitionTests
     {
-        [Theory]
-        [InlineData("")]
-        [InlineData("\"a\"")]
-        [InlineData("\"aaa\"")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("\"a\"")]
+        [DataRow("\"aaa\"")]
         public void SurroundWithDoubleQuotesWhenAlreadySurroundedDoesNothing(string input)
         {
             var escapedInput = "\"" + input + "\"";
@@ -21,41 +22,41 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.Should().Be(escapedInput);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("a")]
-        [InlineData("aaa")]
-        [InlineData("\"a")]
-        [InlineData("a\"")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("a")]
+        [DataRow("aaa")]
+        [DataRow("\"a")]
+        [DataRow("a\"")]
         public void SurroundWithDoubleQuotesWhenNotSurroundedSurrounds(string input)
         {
             var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
-        [Theory]
-        [InlineData("\\\\")]
-        [InlineData("\\\\\\\\")]
-        [InlineData("/\\\\")]
-        [InlineData("/\\/\\/\\\\")]
+        [TestMethod]
+        [DataRow("\\\\")]
+        [DataRow("\\\\\\\\")]
+        [DataRow("/\\\\")]
+        [DataRow("/\\/\\/\\\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyEvenCountOfTrailingBackslashes(string input)
         {
             var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
-        [Theory]
-        [InlineData("\\")]
-        [InlineData("\\\\\\")]
-        [InlineData("/\\")]
-        [InlineData("/\\/\\/\\")]
+        [TestMethod]
+        [DataRow("\\")]
+        [DataRow("\\\\\\")]
+        [DataRow("/\\")]
+        [DataRow("/\\/\\/\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyOddCountOfTrailingBackslashes(string input)
         {
             var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\\\"");
         }
 
-        [Fact]
+        [TestMethod]
         public void VSTestCommandIncludesPropertiesOption()
         {
             var command = TestCommandDefinition.Create();
@@ -68,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             propertyOption.Aliases.Should().Contain("/p", "CreatePropertyOption should include /p alias for MSBuild compatibility");
         }
 
-        [Fact]
+        [TestMethod]
         public void VSTestCommandIncludesNoDependenciesOption()
         {
             var command = new TestCommandDefinition.VSTest();
@@ -79,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
         }
 
-        [Fact]
+        [TestMethod]
         public void MTPCommandIncludesNoDependenciesOption()
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
@@ -90,9 +91,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
         }
 
-        [Theory]
-        [InlineData("--use-current-runtime")]
-        [InlineData("--ucr")]
+        [TestMethod]
+        [DataRow("--use-current-runtime")]
+        [DataRow("--ucr")]
         public void MTPCommandForwardsUseCurrentRuntimeOption(string optionAlias)
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
@@ -103,7 +104,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 $"{optionAlias} should be forwarded to MSBuild as UseCurrentRuntimeIdentifier=True so restore and build target the current runtime.");
         }
 
-        [Fact]
+        [TestMethod]
         public void DllDetectionShouldExcludeRunArgumentsAndGlobalProperties()
         {
             var parseResult = Parser.Parse("""test -p:"RunConfig=abd.dll" -- RunConfig=abd.dll -p:"RunConfig=abd.dll" --results-directory hey.dll""");
@@ -114,19 +115,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             settingsCount.Should().Be(4);
 
             // Our unmatched tokens for this test case are only the settings (after the `--`).
-            Assert.Equal(settingsCount, parseResult.UnmatchedTokens.Count);
+            Assert.HasCount(settingsCount, parseResult.UnmatchedTokens);
 
-            Assert.Equal("--", settings[0]);
-            Assert.Equal(settings.Length, settingsCount + 1);
+            Assert.AreEqual("--", settings[0]);
+            Assert.AreEqual(settings.Length, settingsCount + 1);
             for (int i = 1; i <= settingsCount; i++)
             {
-                Assert.Equal(settings[^i], parseResult.UnmatchedTokens[^i]);
+                Assert.AreEqual(settings[^i], parseResult.UnmatchedTokens[^i]);
             }
 
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(false);
         }
 
-        [Fact]
+        [TestMethod]
         public void DllDetectionShouldBeTrueWhenPresentAloneEvenIfDuplicatedInSettings()
         {
             var parseResult = Parser.Parse("""test abd.dll -- abd.dll""");
@@ -137,27 +138,27 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             settingsCount.Should().Be(1);
 
             // Our unmatched tokens here are all the settings, plus the abd.dll before the `--`.
-            Assert.Equal(settingsCount + 1, parseResult.UnmatchedTokens.Count);
+            Assert.HasCount(settingsCount + 1, parseResult.UnmatchedTokens);
 
-            Assert.Equal("--", settings[0]);
-            Assert.Equal(settings.Length, settingsCount + 1);
+            Assert.AreEqual("--", settings[0]);
+            Assert.AreEqual(settings.Length, settingsCount + 1);
             for (int i = 1; i <= settingsCount; i++)
             {
-                Assert.Equal(settings[^i], parseResult.UnmatchedTokens[^i]);
+                Assert.AreEqual(settings[^i], parseResult.UnmatchedTokens[^i]);
             }
 
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(true);
         }
 
-        [Theory]
-        [InlineData("abd.dll", true)]
-        [InlineData("abd.dll --", true)]
-        [InlineData("-dl:abd.dll", false)]
-        [InlineData("-dl:abd.dll --", false)]
-        [InlineData("-abcd:abd.dll", false)]
-        [InlineData("-abcd:abd.dll --", false)]
-        [InlineData("-p:abd.dll", false)]
-        [InlineData("-p:abd.dll --", false)]
+        [TestMethod]
+        [DataRow("abd.dll", true)]
+        [DataRow("abd.dll --", true)]
+        [DataRow("-dl:abd.dll", false)]
+        [DataRow("-dl:abd.dll --", false)]
+        [DataRow("-abcd:abd.dll", false)]
+        [DataRow("-abcd:abd.dll --", false)]
+        [DataRow("-p:abd.dll", false)]
+        [DataRow("-p:abd.dll --", false)]
         public void DllDetectionShouldWorkWhenNoSettings(string testArgs, bool expectedContainsBuiltTestSource)
         {
             var parseResult = Parser.Parse($"test {testArgs}");
@@ -169,7 +170,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(expectedContainsBuiltTestSource);
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_WhenGlobalJsonIsEmpty_FallsBackToVSTestInsteadOfThrowing()
         {
             using var temp = new TempDirectory();
@@ -181,7 +182,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "an empty global.json must not crash the CLI parser (regression for https://github.com/dotnet/sdk/issues/52384)");
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_WhenGlobalJsonIsMalformed_FallsBackToVSTestInsteadOfThrowing()
         {
             using var temp = new TempDirectory();
@@ -192,7 +193,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             command.Should().BeOfType<TestCommandDefinition.VSTest>();
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_WhenGlobalJsonHasMtpRunner_ReturnsMicrosoftTestingPlatform()
         {
             using var temp = new TempDirectory();
@@ -205,7 +206,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>();
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_WhenGlobalJsonHasUnknownRunner_StillThrowsInvalidOperation()
         {
             // The "unknown runner" failure is intentional user-facing feedback for a typo in a
@@ -224,7 +225,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithMessage("*definitely-not-a-real-runner*");
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_WhenEnvironmentVariableIsMtp_ReturnsMicrosoftTestingPlatform()
         {
             using var temp = new TempDirectory();
@@ -235,7 +236,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "DOTNET_TEST_RUNNER=Microsoft.Testing.Platform should select MTP without requiring a global.json (#51505).");
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_WhenEnvironmentVariableIsVSTest_ReturnsVSTest()
         {
             using var temp = new TempDirectory();
@@ -245,7 +246,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             command.Should().BeOfType<TestCommandDefinition.VSTest>();
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_EnvironmentVariableMatchIsCaseInsensitive()
         {
             using var temp = new TempDirectory();
@@ -255,9 +256,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>();
         }
 
-        [Theory]
-        [InlineData(" VSTest ")]
-        [InlineData("\tVSTest\n")]
+        [TestMethod]
+        [DataRow(" VSTest ")]
+        [DataRow("\tVSTest\n")]
         public void Create_TrimsWhitespaceAroundEnvironmentVariableValue_VSTest(string envValue)
         {
             using var temp = new TempDirectory();
@@ -268,9 +269,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "shell/editor mishaps that surround the env var with whitespace must not silently change the selected runner.");
         }
 
-        [Theory]
-        [InlineData(" Microsoft.Testing.Platform ")]
-        [InlineData("\tMicrosoft.Testing.Platform\n")]
+        [TestMethod]
+        [DataRow(" Microsoft.Testing.Platform ")]
+        [DataRow("\tMicrosoft.Testing.Platform\n")]
         public void Create_TrimsWhitespaceAroundEnvironmentVariableValue_MTP(string envValue)
         {
             using var temp = new TempDirectory();
@@ -280,7 +281,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>();
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_EnvironmentVariableTakesPrecedenceOverGlobalJson_MtpOverridesVSTest()
         {
             using var temp = new TempDirectory();
@@ -294,7 +295,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "DOTNET_TEST_RUNNER should override the runner configured in global.json (#51505).");
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_EnvironmentVariableTakesPrecedenceOverGlobalJson_VSTestOverridesMtp()
         {
             using var temp = new TempDirectory();
@@ -308,10 +309,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "DOTNET_TEST_RUNNER should override the runner configured in global.json (#51505).");
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow("   ")]
         public void Create_WhenEnvironmentVariableIsEmptyOrWhitespace_FallsBackToGlobalJson(string? envValue)
         {
             using var temp = new TempDirectory();
@@ -325,7 +326,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "an unset or whitespace-only DOTNET_TEST_RUNNER must not block the global.json runner from being honored.");
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_WhenEnvironmentVariableIsUnknown_FallsBackToGlobalJson()
         {
             // An unrecognized DOTNET_TEST_RUNNER value must NOT throw — TestCommandDefinition.Create
@@ -343,7 +344,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "an unrecognized env var value should be ignored so the global.json runner still wins.");
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_WhenEnvironmentVariableIsUnknownAndNoGlobalJson_DefaultsToVSTest()
         {
             using var temp = new TempDirectory();
@@ -354,7 +355,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "with no other configuration, an unrecognized env var value should fall back to the default runner instead of crashing the CLI.");
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_ValidEnvironmentVariableShieldsInvalidGlobalJson()
         {
             // When DOTNET_TEST_RUNNER is set to a recognized runner, it must take precedence

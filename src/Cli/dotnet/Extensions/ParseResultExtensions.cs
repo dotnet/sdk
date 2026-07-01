@@ -49,9 +49,36 @@ public static class ParseResultExtensions
     /// </remarks>
     public static Token? GetFileBasedAppEntryPointToken(this ParseResult parseResult) =>
         parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
-            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value)
+            && IsValidEntryPointPath(unmatchedCommandOrFile.Value)
             ? unmatchedCommandOrFile
             : null;
+
+    // duplicated from VirtualProjectBuilder to temporarily avoid MSBuild dlls on AOT codepath
+    private static bool IsValidEntryPointPath(string entryPointFilePath)
+    {
+        if (!File.Exists(entryPointFilePath))
+        {
+            return false;
+        }
+
+        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Check if the first two characters are #!
+        try
+        {
+            using var stream = File.OpenRead(entryPointFilePath);
+            int first = stream.ReadByte();
+            int second = stream.ReadByte();
+            return first == '#' && second == '!';
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {
@@ -106,7 +133,14 @@ public static class ParseResultExtensions
         return [.. subargsFiltered, .. runArgs];
     }
 
-#if !CLI_AOT
+    public static bool CanBeInvoked(this ParseResult parseResult) =>
+        Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
+        || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
+        || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
+
+    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
+        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
+        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
     {
@@ -156,15 +190,6 @@ public static class ParseResultExtensions
         }
     }
 
-    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
-        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
-        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
-
-    public static bool CanBeInvoked(this ParseResult parseResult) =>
-        Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
-        || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
-        || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
-
     public static int HandleMissingCommand(this ParseResult parseResult)
     {
         Reporter.Error.WriteLine(CliStrings.RequiredCommandNotPassed.Red());
@@ -206,6 +231,7 @@ public static class ParseResultExtensions
         }
     }
 
+#if !CLI_AOT
     [Conditional("DEBUG")]
     public static void HandleDebugSwitch(this ParseResult parseResult)
     {
@@ -228,15 +254,12 @@ public static class ParseResultExtensions
         }
         parentNames.Reverse();
 
-#if !CLI_AOT
         // Options that perform terminating actions are considered part of the command name as they are essentially subcommands themselves.
         // Example: dotnet --version
         if (parseResult.Action is InvocableOptionAction { Terminating: true } optionAction)
         {
             parentNames.Add(optionAction.Option.Name);
         }
-#endif
-
         return string.Join(' ', parentNames);
     }
 }

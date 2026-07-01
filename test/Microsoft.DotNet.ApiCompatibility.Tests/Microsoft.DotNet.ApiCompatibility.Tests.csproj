@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
 </Project>
