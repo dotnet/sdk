@@ -3187,11 +3187,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">.NET 프로젝트에 지정된 Test Runner를 사용하여 단위 테스트를 실행합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestDiscoveryExitCode">
-        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">성공하지 않은 종료 코드로 테스트 검색이 완료되었습니다. {0}(참조: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
-      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">{1}개의 어셈블리에서 {0}개의 테스트가 검색됨</target>
@@ -3206,11 +3201,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">테스트를 실행할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="TestRunExitCode">
-        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">성공하지 않은 종료 코드로 테스트 실행이 완료되었습니다. {0}(참조: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
