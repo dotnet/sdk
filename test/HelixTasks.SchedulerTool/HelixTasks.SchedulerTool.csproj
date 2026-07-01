@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.DotNet.SdkCustomHelix.Sdk.SchedulerTool</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HelixTasks\HelixTasks.csproj" />
+  </ItemGroup>
+
+</Project>

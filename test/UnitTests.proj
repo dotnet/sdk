@@ -80,6 +80,28 @@
     <BaseMethodLimit Condition="'$(BaseMethodLimit)' == ''">32</BaseMethodLimit>
   </PropertyGroup>
 
+  <!-- Time-based Helix scheduling (opt-in).
+       Set UseTimeBasedScheduling=true to use AzDO test history for work item sizing.
+       In AzDO pipelines, the project URI and access token are auto-derived from
+       built-in variables. Set AzdoDefinitionId to the pipeline definition ID. -->
+  <PropertyGroup>
+    <UseTimeBasedScheduling Condition="'$(UseTimeBasedScheduling)' == ''">true</UseTimeBasedScheduling>
+    <!-- Derive AzDO project URI from pipeline variables: $(System.CollectionUri)$(System.TeamProject) -->
+    <AzdoProjectUri Condition="'$(AzdoProjectUri)' == '' and '$(SYSTEM_COLLECTIONURI)' != ''">$(SYSTEM_COLLECTIONURI)$(SYSTEM_TEAMPROJECT)</AzdoProjectUri>
+    <!-- Use the pipeline access token for AzDO REST API calls -->
+    <AzdoAccessToken Condition="'$(AzdoAccessToken)' == '' and '$(SYSTEM_ACCESSTOKEN)' != ''">$(SYSTEM_ACCESSTOKEN)</AzdoAccessToken>
+    <!-- Pipeline definition ID — auto-derived from AzDO pipeline variable when in CI -->
+    <AzdoDefinitionId Condition="'$(AzdoDefinitionId)' == '' and '$(SYSTEM_DEFINITIONID)' != ''">$(SYSTEM_DEFINITIONID)</AzdoDefinitionId>
+    <AzdoDefinitionId Condition="'$(AzdoDefinitionId)' == ''">0</AzdoDefinitionId>
+    <!-- Target branch for history lookup — use the PR target branch or fall back to main -->
+    <AzdoTargetBranch Condition="'$(AzdoTargetBranch)' == '' and '$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</AzdoTargetBranch>
+    <AzdoTargetBranch Condition="'$(AzdoTargetBranch)' == ''">main</AzdoTargetBranch>
+    <!-- Phase name to filter test runs (optional) -->
+    <AzdoPhaseName Condition="'$(AzdoPhaseName)' == ''"></AzdoPhaseName>
+    <!-- Target minutes per work item for time-based scheduling -->
+    <TargetMinutesPerWorkItem Condition="'$(TargetMinutesPerWorkItem)' == ''">10</TargetMinutesPerWorkItem>
+  </PropertyGroup>
+
   <!-- Consolidate Helix shards for assemblies with very short test durations.
        MethodLimitMultiplier increases the methods-per-shard threshold, producing
        fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
