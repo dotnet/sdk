@@ -27,8 +27,11 @@ public class DotnetCommandTests
         public TestableDotnetCommand(ParseResult parseResult, IDotnetEnvironmentManager? env = null)
             : base(parseResult, env) { }
 
+        public string[]? CapturedArgs { get; private set; }
+
         protected override int RunDotnet(string dotnetExe, string dotnetRoot, string[] args)
         {
+            CapturedArgs = args;
             return 0;
         }
     }
@@ -68,6 +71,7 @@ public class DotnetCommandTests
         new[] { "dotnet", "build" },
         new[] { "dotnet", "build", "--configuration", "Release" },
         new[] { "dotnet", "test", "--filter", "Name~Foo" },
+        new[] { "dotnet", "run", "--help" },
         new[] { "dotnet", "--info" },
         new[] { "dotnet", "--version" },
     };
@@ -89,20 +93,30 @@ public class DotnetCommandTests
     };
 
     [Fact]
-    public void Parser_DotnetCommand_CapturesUnmatchedTokens()
+    public void Parser_DotnetCommand_CapturesForwardedArguments()
     {
         var parseResult = Parser.Parse(["dotnet", "build", "--configuration", "Release"]);
 
-        // Unmatched tokens should contain the forwarded args in order
-        parseResult.UnmatchedTokens.Should().Equal("build", "--configuration", "Release");
+        parseResult.GetValue(DotnetCommandParser.ForwardedArguments)
+            .Should().Equal("build", "--configuration", "Release");
     }
 
     [Fact]
-    public void Parser_DoAlias_CapturesUnmatchedTokens()
+    public void Parser_DotnetCommand_ForwardsHelpToDotnetSubcommand()
+    {
+        var parseResult = Parser.Parse(["dotnet", "run", "--help"]);
+
+        parseResult.GetValue(DotnetCommandParser.ForwardedArguments)
+            .Should().Equal("run", "--help");
+    }
+
+    [Fact]
+    public void Parser_DoAlias_CapturesForwardedArguments()
     {
         var parseResult = Parser.Parse(["do", "test", "--filter", "Name~Foo"]);
 
-        parseResult.UnmatchedTokens.Should().Equal("test", "--filter", "Name~Foo");
+        parseResult.GetValue(DotnetCommandParser.ForwardedArguments)
+            .Should().Equal("test", "--filter", "Name~Foo");
     }
 
     // ── Command execution: dotnet not found ──────────────────────────────
@@ -276,6 +290,29 @@ public class DotnetCommandTests
             var exitCode = command.Execute();
 
             exitCode.Should().Be(0);
+        }
+        finally
+        {
+            try { tempDir.Delete(recursive: true); } catch { /* cleanup best-effort */ }
+        }
+    }
+
+    [Fact]
+    public void DotnetCommand_ForwardsHelpToDotnetSubcommand()
+    {
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-help-test");
+        try
+        {
+            CreateFakeDotnetExecutable(tempDir.FullName);
+
+            var mock = new MockDotnetInstallManager(defaultInstallPath: tempDir.FullName);
+            var parseResult = Parser.Parse(["dotnet", "run", "--help"]);
+
+            var command = new TestableDotnetCommand(parseResult, mock);
+            var exitCode = command.Execute();
+
+            exitCode.Should().Be(0);
+            command.CapturedArgs.Should().Equal("run", "--help");
         }
         finally
         {
