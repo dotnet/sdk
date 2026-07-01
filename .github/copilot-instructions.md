@@ -52,8 +52,9 @@ Major source areas under `src/`:
 
 ### Key files and directories
 
-- `build.cmd` / `build.sh`, `test.cmd` / `test.sh`, `restore.cmd` / `restore.sh` — top-level
-  entry points (Arcade-based).
+- `build.cmd` / `build.sh` — primary top-level build entry point (Arcade-based).
+  `test.cmd` / `test.sh` and `restore.cmd` / `restore.sh` are thin wrappers that forward
+  to it.
 - `sdk.slnx` — the full solution. Filtered solutions exist for focused work:
   `cli.slnf`, `tasks.slnf`, `containers.slnf`, `TemplateEngine.slnf`, `source-build.slnf`.
 - `global.json` — pins the bootstrap SDK and Arcade versions used to build the repo.
