@@ -5,6 +5,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -204,7 +213,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Builds the <see cref="ILoggerFactory"/> in a way that exposes forceFlush via a ServiceProvider.
     ///
     /// The AzMonitor log exporter routes data through the AppInsights <c>traces</c> table which is the only table data-x-platform ingests.
-    /// </remarks>
+    /// </summary>
     private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
         var services = new ServiceCollection();
