@@ -84,8 +84,12 @@ Arguments not directly supported by the script are passed through to MSBuild (e.
 
 Canonical scenarios:
 
-- Build the full redist SDK: `build.cmd` (Windows) or `./build.sh` (Linux/macOS). Output is
-  `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default). First build is slow; subsequent builds are incremental.
+- Build the full redist SDK: `build.cmd` (Windows) or `./build.sh` (Linux/macOS).
+  - The script first restores a repo-local .NET SDK to `.dotnet/dotnet`, then builds the SDK.
+    Invoke that bootstrap SDK directly as `./.dotnet/dotnet <args>` when you need a `dotnet`
+    that resolves against this repo.
+  - The built SDK is output to `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
+  - The first build is slow; subsequent builds are incremental.
 - Run tests: prefer targeted runs — a single test project or test (see the
   [Testing](#testing) section) and the `incremental-test` skill. `build.cmd -test` /
   `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
