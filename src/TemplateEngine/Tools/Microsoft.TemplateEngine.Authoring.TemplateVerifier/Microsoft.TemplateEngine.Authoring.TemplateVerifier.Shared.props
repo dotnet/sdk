@@ -12,6 +12,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Verify.DiffPlex" />
+    <!-- Verify core is used directly (VerifySettings, SettingsTask, FileScrubber). Pin it to the same
+         version the Authoring.CLI tool resolves (via Verify.XunitV3) so the two projects don't contribute
+         different EmptyFiles versions to the CLI's publish output, which would fail with NETSDK1152. -->
+    <PackageReference Include="Verify" VersionOverride="28.12.0" />
   </ItemGroup>
 
   <ItemGroup>

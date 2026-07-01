@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
         internal CommandResultAssertions NotHaveStdErrContaining(string pattern)
         {
             AssertNotNull(_commandResult.StdErr);
-            AssertTrue(!_commandResult.StdErr.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard error to contain '{pattern}' but it did not."));
+            AssertTrue(!_commandResult.StdErr.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard error to not contain '{pattern}' but it did."));
             return this;
         }
 
