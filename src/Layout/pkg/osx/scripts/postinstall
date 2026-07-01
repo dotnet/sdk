@@ -13,6 +13,6 @@ first_run() {
 }
 
 INSTALL_TEMP_HOME=$(mktemp -d) # mktemp should set 700 perm automatically
-HOME=$INSTALL_TEMP_HOME first_run
+HOME=$INSTALL_TEMP_HOME first_run "$PACKAGE"
 
 exit 0
