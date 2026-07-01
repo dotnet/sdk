@@ -63,6 +63,14 @@ public class AotParserTests
     }
 
     [TestMethod]
+    public void ParseSdkCheck_HasNoErrors()
+    {
+        // `sdk check` is AOT-capable, so it parses cleanly from the shared command tree.
+        var result = Parser.Parse(["sdk", "check"]);
+        Assert.IsEmpty(result.Errors);
+    }
+
+    [TestMethod]
     public void DetectFileBasedApp_WhenFirstArgIsCSharpFile()
     {
         // `dotnet app.cs` is an implicit file-based app invocation. The AOT parser only sees the
@@ -152,6 +160,41 @@ public class AotParserTests
     }
 
     [TestMethod]
+    public void InvokeBareSdk_RendersHelpFromAot()
+    {
+        // `dotnet sdk` with no subcommand renders its missing-command error and help entirely
+        // from AOT (no managed fallback), matching the managed CLI behavior.
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["sdk"]);
+
+        Assert.AreEqual(1, exitCode);
+        stdout.Should().Contain("check");
+        stderr.Should().NotBeNullOrWhiteSpace("Expected a missing-command error on stderr");
+    }
+
+    [TestMethod]
+    public void InvokeBareSln_RendersHelpFromAot()
+    {
+        // `dotnet sln` with no subcommand renders its missing-command error and help entirely
+        // from AOT (no managed fallback). Only `sln add` falls back to the managed CLI.
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["sln"]);
+
+        Assert.AreEqual(1, exitCode);
+        stdout.Should().Contain("list");
+        stderr.Should().NotBeNullOrWhiteSpace("Expected a missing-command error on stderr");
+    }
+
+    [TestMethod]
+    public void InvokeSdkCheckHelp_RendersFromAotWithoutFallback()
+    {
+        // `sdk check` is wired to its real AOT implementation (not the managed fallback), so its
+        // help renders entirely from AOT and must not request a managed fallback.
+        var result = Parser.Parse(["sdk", "check", "--help"]);
+        var exception = RecordException(() => Parser.Invoke(result));
+
+        Assert.IsNull(exception);
+    }
+
+    [TestMethod]
     public void InvokeRootHelp_RendersUsageFromAot()
     {
         var (exitCode, stdout, _) = InvokeWithCapture(["--help"]);
@@ -237,17 +280,22 @@ public class AotParserTests
         stdout.Should().Contain(".NET SDK:");
         stdout.Should().Contain("Version:");
         stdout.Should().Contain("Commit:");
+        stdout.Should().Contain("Workload version:");
+        stdout.Should().Contain("MSBuild version:");
         stdout.Should().Contain("Runtime Environment:");
     }
 
     [TestMethod]
-    public void InvokeInfo_DoesNotContainManagedOnlySections()
+    public void InvokeInfo_ReportsMSBuildAndWorkloadVersions()
     {
-        var (_, stdout, _) = InvokeWithCapture(["--info"]);
+        var (exitCode, stdout, _) = InvokeWithCapture(["--info"]);
 
-        // Under CLI_AOT, workload and MSBuild info are excluded
-        Assert.DoesNotContain("Workload version:", stdout);
-        Assert.DoesNotContain("MSBuild version:", stdout);
+        // Workload and MSBuild reporting used to be excluded from the AOT build; the AOT --info now
+        // matches the managed CLI. Assert the MSBuild line renders a real (non-empty) version so a
+        // future trim/substitution regression that blanks it out would be caught.
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().MatchRegex(@"MSBuild version:\s+\S");
+        stdout.Should().Contain("Workload version:");
     }
 
     [TestMethod]

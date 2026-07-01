@@ -7,15 +7,15 @@ using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     [TestClass]
     public class WasmPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
-
         [TestMethod]
+
         [RequiresMSBuildVersion("17.12")]
         public void Publish_MinimalApp_Works()
         {

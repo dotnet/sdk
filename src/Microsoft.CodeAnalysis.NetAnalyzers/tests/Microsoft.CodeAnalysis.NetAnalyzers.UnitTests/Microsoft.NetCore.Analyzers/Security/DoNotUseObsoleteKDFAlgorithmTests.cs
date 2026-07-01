@@ -3,16 +3,16 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseObsoleteKDFAlgorithm,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseObsoleteKDFAlgorithmTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestNormalMethodOfPasswordDeriveBytesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -29,7 +29,7 @@ class TestClass
             GetCSharpResultAt(9, 9, "PasswordDeriveBytes", "GetBytes"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCryptDeriveKeyOfClassDerivedFromPasswordDeriveBytesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -53,7 +53,7 @@ class TestClass
             GetCSharpResultAt(16, 9, "PasswordDeriveBytes", "CryptDeriveKey"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCryptDeriveKeyOfRfc2898DeriveBytesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -70,7 +70,7 @@ class TestClass
             GetCSharpResultAt(9, 9, "Rfc2898DeriveBytes", "CryptDeriveKey"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCryptDeriveKeyOfClassDerivedFromRfc2898DeriveBytesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -94,7 +94,7 @@ class TestClass
             GetCSharpResultAt(16, 9, "Rfc2898DeriveBytes", "CryptDeriveKey"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalMethodOfRfc2898DeriveBytesNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -110,7 +110,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorOfRfc2898DeriveBytesNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -126,7 +126,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorOfPasswordDeriveBytesNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -142,7 +142,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetBytesOfClassDerivedFromPasswordDeriveBytesNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

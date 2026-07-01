@@ -4,17 +4,17 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXssVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXssVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForXssVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXssVulnerabilities, ReviewCodeForXssVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForXssVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -41,10 +41,10 @@ public partial class WebForm : System.Web.UI.Page
                         GetCSharpResultAt(9, 9, 8, 24, "void HttpResponse.Write(string s)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_CSharp_Solution_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -69,10 +69,10 @@ public partial class WebForm : System.Web.UI.Page
 }",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -100,10 +100,10 @@ End Class
                         GetBasicResultAt(9, 9, 8, 31, "Sub HttpResponse.Write(s As String)", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_VB_Solution_NoDiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -129,10 +129,10 @@ End Class
 ",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Simple_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -156,10 +156,10 @@ public partial class WebForm : System.Web.UI.Page
 }",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Int32_Parse_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -184,10 +184,10 @@ public partial class WebForm : System.Web.UI.Page
 }",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpServerUtility_HtmlEncode_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -212,10 +212,10 @@ public partial class WebForm : System.Web.UI.Page
 }",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -228,7 +228,7 @@ public partial class WebForm : System.Web.UI.Page
                         SharedCode.WrongSanitizer,
                     }
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }
