@@ -16,5 +16,4 @@ public class ProjectSystemFormatTests : FormatIntegrationTestBase
     protected override string Sha => "e660d54d6b3198751bd0502fe270e1657f32a913";
     protected override string TargetSolution => "ProjectSystem.sln";
     protected override string RepoName => "project-system";
-    protected override bool UseRepoBuildScript => false;
 }

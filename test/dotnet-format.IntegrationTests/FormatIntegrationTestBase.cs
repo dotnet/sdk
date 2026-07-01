@@ -39,16 +39,6 @@ public abstract class FormatIntegrationTestBase
     /// </summary>
     protected virtual int Priority => 1;
 
-    /// <summary>
-    /// When true (default), restore uses the repo's own build script (eng/build.sh or eng/Build.ps1)
-    /// which installs the correct SDK version and performs an Arcade-level restore, then uses the
-    /// repo-local dotnet to run "dotnet restore" on the solution.
-    /// When false, restore uses the SDK under test's "dotnet restore" directly with
-    /// the repo's nuget.config.
-    /// Override to false for repos that don't use Arcade (e.g. project-system).
-    /// </summary>
-    protected virtual bool UseRepoBuildScript => true;
-
     /// <summary>Path to the SDK under test's dotnet host.</summary>
     private string ParentDotNetPath => SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath;
 
@@ -75,10 +65,13 @@ public abstract class FormatIntegrationTestBase
             Directory.CreateDirectory(_repoPath);
 
             CloneRepo();
-            Restore();
         }
 
+        // Remove global.json so that the SDK under test is used for restore and format
+        // rather than the repo's pinned SDK version.
         RemoveGlobalJson();
+
+        Restore();
     }
 
     private bool IsAlreadyAtCorrectSha()
@@ -183,9 +176,8 @@ public abstract class FormatIntegrationTestBase
     }
 
     /// <summary>
-    /// Removes the repo's global.json so that the parent SDK (the SDK under test) is
-    /// used for "dotnet format" rather than the repo's pinned SDK version.
-    /// This must be called after restore (which needs global.json to install the right SDK).
+    /// Removes the repo's global.json so that the SDK under test is used for restore
+    /// and formatting rather than the repo's pinned SDK version.
     /// </summary>
     private void RemoveGlobalJson()
     {
@@ -201,80 +193,22 @@ public abstract class FormatIntegrationTestBase
     {
         var sw = Stopwatch.StartNew();
 
-        if (UseRepoBuildScript)
-        {
-            // For Arcade repos, the build script (eng/build.sh --restore) installs the
-            // correct SDK from global.json and performs a full Arcade-level restore of
-            // all solution projects. No additional dotnet restore is needed.
-            RunBuildScriptRestore();
-        }
-        else
-        {
-            // For non-Arcade repos (e.g. project-system), restore the solution using the
-            // parent SDK with the repo's nuget.config. This matches the original
-            // pipeline's "useParentSdk" behavior.
-            var solutionPath = FindSolution();
-            RestoreWithParentSdk(solutionPath);
-        }
+        var solutionPath = FindSolution();
+        RestoreWithParentSdk(solutionPath);
 
         sw.Stop();
         _output.WriteLine($"Restore completed in {sw.Elapsed:hh\\:mm\\:ss\\.ff}");
     }
 
     /// <summary>
-    /// Runs the repo's Arcade build script (eng/build.sh or eng/Build.ps1) with --restore.
-    /// This installs the correct SDK version from global.json and performs an Arcade-level
-    /// restore. Skipped silently if no build script is found.
-    /// The process runs with a clean SDK environment to avoid conflicts with the parent SDK.
-    /// Restore failures are logged but not fatal — FormatFolder tests don't require restore,
-    /// and FormatWorkspace will fail at format time with a clear error if restore is incomplete.
-    /// </summary>
-    private void RunBuildScriptRestore()
-    {
-        string scriptPath;
-        string fileName;
-        string arguments;
-
-        if (OperatingSystem.IsWindows())
-        {
-            var engBuild = Path.Combine(_repoPath!, "eng", "Build.ps1");
-            var commonBuild = Path.Combine(_repoPath!, "eng", "common", "Build.ps1");
-
-            scriptPath = File.Exists(engBuild) ? engBuild : commonBuild;
-            fileName = "powershell";
-            arguments = $"-ExecutionPolicy ByPass -NoProfile -File \"{scriptPath}\" -restore";
-        }
-        else
-        {
-            var engBuild = Path.Combine(_repoPath!, "eng", "build.sh");
-            var commonBuild = Path.Combine(_repoPath!, "eng", "common", "build.sh");
-
-            scriptPath = File.Exists(engBuild) ? engBuild : commonBuild;
-            fileName = "bash";
-            arguments = $"{scriptPath} --restore";
-        }
-
-        if (!File.Exists(scriptPath))
-        {
-            _output.WriteLine($"No build script found, skipping Arcade restore.");
-            return;
-        }
-
-        _output.WriteLine($"Running build script restore: {scriptPath}");
-        RunProcess(fileName, arguments, cleanSdkEnvironment: true, ignoreThrowingOnError: true);
-    }
-
-    /// <summary>
     /// Restores the solution using the SDK under test's dotnet with the repo's nuget.config.
-    /// Used for repos that don't use Arcade infrastructure (e.g. project-system).
-    /// This matches the original pipeline's "useParentSdk" behavior.
     /// Failures are logged but not fatal — some feeds may require authentication that
     /// is unavailable in public CI environments.
     /// </summary>
     private void RestoreWithParentSdk(string solutionPath)
     {
         var nugetConfig = Path.Combine(_repoPath!, "nuget.config");
-        _output.WriteLine($"Restoring {Path.GetFileName(solutionPath)} with parent SDK: {ParentDotNetPath}");
+        _output.WriteLine($"Restoring {Path.GetFileName(solutionPath)} with SDK under test: {ParentDotNetPath}");
 
         var args = File.Exists(nugetConfig)
             ? $"restore \"{solutionPath}\" --configfile \"{nugetConfig}\""
@@ -286,22 +220,8 @@ public abstract class FormatIntegrationTestBase
     /// <summary>Maximum time any single subprocess is allowed to run before being killed.</summary>
     private static readonly TimeSpan ProcessTimeout = TimeSpan.FromMinutes(30);
 
-    private (int ExitCode, string StdOut, string StdErr) RunProcess(string fileName, string arguments, bool cleanSdkEnvironment = false, bool ignoreThrowingOnError = false, bool captureOutput = false)
+    private (int ExitCode, string StdOut, string StdErr) RunProcess(string fileName, string arguments, bool ignoreThrowingOnError = false, bool captureOutput = false)
     {
-        // When isolating from the parent SDK, use 'env -i' on Unix to start with
-        // a minimal environment. This prevents any inherited DOTNET_*, MSBUILD_*, or
-        // PATH entries from causing SDK resolver conflicts between the parent SDK
-        // and the repo's own SDK.
-        if (cleanSdkEnvironment && !OperatingSystem.IsWindows())
-        {
-            var envArgs = $"-i HOME={Environment.GetEnvironmentVariable("HOME")} " +
-                          $"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin " +
-                          $"DOTNET_MULTILEVEL_LOOKUP=0 " +
-                          $"{fileName} {arguments}";
-            fileName = "env";
-            arguments = envArgs;
-        }
-
         var psi = new ProcessStartInfo
         {
             FileName = fileName,

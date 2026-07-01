@@ -242,11 +242,12 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     .ToList();
             }
 
+            string enableDiagLogging = IsPosixShell ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log" : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
+            string formattedArguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
+
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var (displayName, filterString) in partitions)
             {
-                string enableDiagLogging = IsPosixShell ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log" : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
-                arguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
 
                 var testFilter = string.IsNullOrEmpty(filterString) ? "" : $"--filter \"{filterString}\"";
 
@@ -328,7 +329,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     // collect hang dumps and write the TRX file before Helix hard-kills the process.
                     var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {arguments}";
+                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {formattedArguments}";
                 }
 
                 Log.LogMessage($"Creating work item with properties Identity: {displayName}, PayloadDirectory: {publishDirectory}, Command: {command}");
