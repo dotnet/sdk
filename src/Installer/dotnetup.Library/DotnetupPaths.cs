@@ -13,6 +13,8 @@ internal static class DotnetupPaths
     private const string ManifestFileName = "dotnetup_manifest.json";
     private const string ConfigFileName = "dotnetup.config.json";
     private const string TelemetrySentinelFileName = ".dotnetup-telemetry-notice";
+    private const string TelemetryStorageServiceFolderName = "TelemetryStorageService";
+    private const string TelemetryDiskLogFileSuffix = "-dotnetup";
 
 #pragma warning disable IDE0032 // Lazy-init cache; not convertible to auto-property
     private static string? s_dataDirectory;
@@ -116,6 +118,38 @@ internal static class DotnetupPaths
     /// Gets the path to the telemetry first-run sentinel file.
     /// </summary>
     public static string TelemetrySentinelPath => Path.Combine(DataDirectory, TelemetrySentinelFileName);
+
+    /// <summary>
+    /// Gets the path to the telemetry offline storage directory. The Azure
+    /// Monitor exporter uses this as its retry queue for telemetry that does
+    /// not drain over the network before the process exits.
+    /// </summary>
+    public static string TelemetryStorageDirectory => Path.Combine(DataDirectory, TelemetryStorageServiceFolderName);
+
+    /// <summary>
+    /// Gets the path to the dotnetup telemetry disk log, or <see langword="null"/>
+    /// when the <c>DOTNET_CLI_TELEMETRY_LOG_PATH</c> environment variable is unset.
+    /// </summary>
+    /// <remarks>
+    /// Derived from the SDK log path but with a distinct <c>-dotnetup</c> filename
+    /// suffix, to avoid read-modify-write conflicts between the dotnet CLI and dotnetup.
+    /// </remarks>
+    public static string? TelemetryDiskLogPath
+    {
+        get
+        {
+            var path = Environment.GetEnvironmentVariable(Constants.Telemetry.DiskLogPathEnvVar);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            var dir = Path.GetDirectoryName(path);
+            var name = Path.GetFileNameWithoutExtension(path);
+            var ext = Path.GetExtension(path);
+            return Path.Combine(dir ?? string.Empty, $"{name}{TelemetryDiskLogFileSuffix}{ext}");
+        }
+    }
 
     /// <summary>
     /// Gets the default dotnet install path managed by dotnetup.

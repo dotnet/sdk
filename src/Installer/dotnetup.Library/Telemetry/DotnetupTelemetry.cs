@@ -27,31 +27,10 @@ public sealed class DotnetupTelemetry : IDisposable
         Constants.Telemetry.BootstrapperSourceName,
         GetVersion());
 
-    private static readonly string s_defaultStorageDirectory =
-        Path.Combine(
-            Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData,
-                Environment.SpecialFolderOption.DoNotVerify),
-            "dotnetup",
-            "TelemetryStorageService");
-
-    private static readonly string? s_diskLogPath = GetDiskLogPath();
-
-    private static string? GetDiskLogPath()
-    {
-        var path = Environment.GetEnvironmentVariable(Constants.Telemetry.DiskLogPathEnvVar);
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-
-        // Write to the same directory as the SDK log but with a distinct filename
-        // to avoid read-modify-write conflicts between dotnet CLI and dotnetup.
-        var dir = Path.GetDirectoryName(path);
-        var name = Path.GetFileNameWithoutExtension(path);
-        var ext = Path.GetExtension(path);
-        return Path.Combine(dir ?? string.Empty, $"{name}-dotnetup{ext}");
-    }
+    // Computed once at type initialization; the disk-log path logic lives in
+    // DotnetupPaths. Caching here keeps the env-var read consistent across the
+    // (multiple) call sites and off the hot path.
+    private static readonly string? s_diskLogPath = DotnetupPaths.TelemetryDiskLogPath;
 
     private readonly TracerProvider? _tracerProvider;
     private readonly ServiceProvider? _services;
@@ -143,7 +122,7 @@ public sealed class DotnetupTelemetry : IDisposable
     {
         var environmentStoragePath = Environment.GetEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
         return string.IsNullOrWhiteSpace(environmentStoragePath)
-            ? s_defaultStorageDirectory
+            ? DotnetupPaths.TelemetryStorageDirectory
             : environmentStoragePath;
     }
 
@@ -233,9 +212,9 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             lb.AddOpenTelemetry(o =>
             {
-                o.IncludeScopes = true;
+                o.IncludeScopes = false; // Never used currently as we don't use _logger.log() with BeginScope
                 o.IncludeFormattedMessage = true;
-                o.ParseStateValues = true;
+                o.ParseStateValues = true; // On by default in OTel 1.5v, but might as well be explicit
                 o.SetResourceBuilder(resource);
 
                 // OTLP is only for explicitly enabled local scenarios.
@@ -291,30 +270,15 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Records an exception on the failing operation by classifying it and
-    /// stamping <c>error.*</c> tags onto the failing activity, then
-    /// propagating those same tags up the activity ancestor chain so each
-    /// parent's completion log carries the failure signal.
+    /// stamping <c>error.*</c> tags onto the failing activity and all of its ancestors.
     /// </summary>
+    ///
     /// <remarks>
-    /// This does NOT emit a separate LogRecord. The error metadata is folded
-    /// into the operation's single completion row, which is emitted later when
-    /// the <see cref="TrackedOperation"/> is disposed (see
-    /// <see cref="EmitCompletionLog"/>). Keeping the failure on one atomic row
-    /// — rather than a second severity=Error record — means a truncated flush
-    /// can only lose the whole row, never split a failure into a "success" row
-    /// plus a lost error row.
+    /// This does NOT emit a LogRecord.
     /// <para>
     /// Ancestor propagation is first-failure-wins: once an ancestor has
     /// <c>error.type</c> set we don't overwrite, preserving the true root
     /// cause when later siblings fail.
-    /// </para>
-    /// <para>
-    /// Wrapped in a catch-all: telemetry classification (which does stack-trace
-    /// string processing and reflection over exception types) must never be
-    /// able to throw out of the failure path and corrupt or drop the
-    /// completion row. On classification failure the row is still emitted at
-    /// dispose; <see cref="TrackedOperation.EnsureErrorTypeTagged"/> guarantees
-    /// it carries an explicit (possibly empty) <c>error.type</c>.
     /// </para>
     /// </remarks>
     /// <param name="operation">The tracked operation to tag.</param>
@@ -330,23 +294,14 @@ public sealed class DotnetupTelemetry : IDisposable
         try
         {
             var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-            // Single hand-off into the propagation/application pipeline:
-            // primary error.* tags spread up the ancestor chain (first-failure-wins
-            // per ancestor), additional failures land only on the failing activity
-            // (the command row) so the root row stays uncluttered with batch detail.
             PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
-            // Use a non-PII description (the classified error type) rather than
-            // ex.Message — the latter can leak user paths / values into exported
-            // span status when the perf-trace exporter is enabled.
+
+            // Set the status as a failure. Uses a non-PII description (the classified error type) rather than ex.Message
             operation.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
         }
         catch (Exception classificationEx)
         {
-            // Never let telemetry classification crash the app or corrupt the
-            // failure row. Fall back to a coarse, always-safe tag so the
-            // completion row still records that *a* failure occurred; the
-            // classifier's own bug becomes the error.type rather than silently
-            // dropping the failure signal.
+            // Never let telemetry classification crash the app, but try to record this crash just in case
             try
             {
                 operation.Tag(TelemetryTagNames.ErrorType, "TelemetryClassificationError");
@@ -517,8 +472,7 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Dispose callback for <see cref="TrackedOperation"/>. Emits the
-    /// completion LogRecord, then stops the activity.
+    /// Dispose callback for <see cref="TrackedOperation"/>. Emits the completion LogRecord, then stops the activity.
     /// </summary>
     /// <remarks>
     /// <strong>Critical ordering:</strong> Log() runs <em>before</em> Stop().
