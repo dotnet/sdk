@@ -73,6 +73,7 @@ $isWin = $IsWindows -or ($env:OS -eq "Windows_NT")
 $exeSuffix = if ($isWin) { ".exe" } else { "" }
 $dotnet = Join-Path $repoRoot ".dotnet" "dotnet$exeSuffix"
 $dnExeName = "dn$exeSuffix"
+$aotLibName = if ($isWin) { "dotnet-aot.dll" } elseif ($IsMacOS) { "dotnet-aot.dylib" } else { "dotnet-aot.so" }
 
 if (-not $Rid) {
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
@@ -107,19 +108,19 @@ if (-not $NoBuild) {
     if ($LASTEXITCODE -ne 0) { throw "managed dotnet build failed." }
 
     $dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/*/$Rid/publish"
-    $aotDll = Resolve-PublishPath "artifacts/bin/dotnet-aot/$Configuration/*/$Rid/publish/dotnet-aot.dll"
+    $aotDll = Resolve-PublishPath "artifacts/bin/dotnet-aot/$Configuration/*/$Rid/publish/$aotLibName"
     $managedDir = (Get-ChildItem -Directory (Join-Path $repoRoot "artifacts/bin/dotnet/$Configuration") |
         Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
 
     if (-not $dnPublishDir) { throw "Could not locate the dn publish directory after build." }
-    if (-not $aotDll) { throw "Could not locate dotnet-aot.dll after publish." }
+    if (-not $aotDll) { throw "Could not locate $aotLibName after publish." }
 
     $sdkTargetDir = $dnPublishDir
     if ($Layout -eq "Separated") {
         $sdkTargetDir = Join-Path $dnPublishDir "sdk/11.0.100"
         New-Item -ItemType Directory -Force -Path $sdkTargetDir | Out-Null
         # dotnet-aot must live only in the versioned SDK subfolder, not next to dn.
-        Remove-Item (Join-Path $dnPublishDir "dotnet-aot.dll") -Force -ErrorAction SilentlyContinue
+        Remove-Item (Join-Path $dnPublishDir $aotLibName) -Force -ErrorAction SilentlyContinue
     }
 
     Write-Host "Assembling layout into $sdkTargetDir ..." -ForegroundColor Cyan

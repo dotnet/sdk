@@ -131,9 +131,9 @@ internal static unsafe partial class SdkRootLocator
 
     private static string? GetSelfModulePathPosix()
     {
-        // Best-effort on Unix: dladdr resolves the shared object containing the given address.
-        // libdl.so.2 is the glibc runtime soname; on platforms where it is unavailable the catch in
-        // TrySelfLocateSdkDirectory falls back to the host-provided sdk_dir.
+        // Best-effort on Unix: dladdr resolves the shared object containing the given address. It is
+        // mapped to the platform C runtime (libSystem/libdl/libc) by ResolveDlImport; if none load, the
+        // catch in TrySelfLocateSdkDirectory falls back to the host-provided sdk_dir.
         nint address = (nint)(delegate* unmanaged<void>)&SelfAnchor;
         if (dladdr(address, out DlInfo info) == 0 || info.dli_fname == 0)
         {
@@ -154,7 +154,42 @@ internal static unsafe partial class SdkRootLocator
         return string.Equals(Normalize(left), Normalize(right), comparison);
     }
 
-    [LibraryImport("libdl.so.2", EntryPoint = "dladdr")]
+    // dladdr does not live in the same library across Unix flavors - libSystem on macOS, libdl on
+    // glibc, libc on musl and glibc 2.34+ - so it is imported under a sentinel name that a
+    // DllImportResolver (registered in the static constructor) maps to the first library that loads.
+    private const string DlLibrary = "dotnet-aot-dl";
+
+    static SdkRootLocator()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            NativeLibrary.SetDllImportResolver(typeof(SdkRootLocator).Assembly, ResolveDlImport);
+        }
+    }
+
+    private static nint ResolveDlImport(string libraryName, System.Reflection.Assembly assembly, DllImportSearchPath? searchPath)
+    {
+        if (libraryName != DlLibrary)
+        {
+            return 0;
+        }
+
+        string[] candidates = OperatingSystem.IsMacOS()
+            ? ["libSystem.dylib"]
+            : ["libdl.so.2", "libc.so.6", "libc.so"];
+
+        foreach (string candidate in candidates)
+        {
+            if (NativeLibrary.TryLoad(candidate, assembly, searchPath, out nint handle))
+            {
+                return handle;
+            }
+        }
+
+        return 0;
+    }
+
+    [LibraryImport(DlLibrary, EntryPoint = "dladdr")]
     private static partial int dladdr(nint addr, out DlInfo info);
 
     [StructLayout(LayoutKind.Sequential)]
