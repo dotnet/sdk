@@ -125,11 +125,6 @@ Canonical scenarios:
     - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
     - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
-- To test CLI command changes:
-  - Build the redist SDK: `./build.sh` from repo root
-  - Create a dogfood environment: `source eng/dogfood.sh`
-  - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
-  - The dogfood script sets up PATH and environment to use the newly built SDK
 
 ## Investigating PR validation failures
 
