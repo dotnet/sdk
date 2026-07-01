@@ -162,7 +162,7 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         // GetDisplayRid consults the shared framework's deps file, which isn't available in AOT.
         Reporter.Output.WriteLine($" RID:         {RuntimeInformation.RuntimeIdentifier}");
 #endif
-        Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
+        Reporter.Output.WriteLine($" Base Path:   {SdkPaths.SdkDirectory}");
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
         new WorkloadInfoHelper(isInteractive: false).ShowWorkloadsInfo(showVersion: false);

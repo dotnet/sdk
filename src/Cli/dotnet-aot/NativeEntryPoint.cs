@@ -23,6 +23,14 @@ static unsafe partial class NativeEntryPoint
     /// </summary>
     internal static string? DotnetRoot { get; set; }
 
+    /// <summary>
+    ///  The versioned SDK directory (the folder containing dotnet.dll, MSBuild.dll, Sdks\, ...),
+    ///  resolved from the host-provided sdk_dir or by self-locating the dotnet-aot module. Also
+    ///  published to the DOTNET_SDK_ROOT environment variable so compiled-in assemblies that probe
+    ///  AppContext.BaseDirectory can find the SDK. See src/Cli/dotnet-aot/SdkRootResolution.md.
+    /// </summary>
+    internal static string? SdkDirectory { get; set; }
+
     [UnmanagedCallersOnly(EntryPoint = "dotnet_execute")]
     static int Execute(
         nint hostPathPtr,      // const char_t* host_path
@@ -61,6 +69,23 @@ static unsafe partial class NativeEntryPoint
         string hostPath, string dotnetRoot, string sdkDir,
         string hostfxrPath, string[] args)
     {
+        // Resolve the versioned SDK directory: prefer the host-provided sdk_dir (the muxer resolves it
+        // to locate dotnet-aot), otherwise self-locate the dotnet-aot module. Under NativeAOT
+        // AppContext.BaseDirectory is the install root (the muxer's directory), not the SDK directory,
+        // so publish the resolved value in DOTNET_SDK_ROOT for the compiled-in assemblies (MSBuild,
+        // NuGet, the command resolvers, ...) that otherwise probe AppContext.BaseDirectory. See
+        // src/Cli/dotnet-aot/SdkRootResolution.md.
+        string sdkDirectory = SdkRootLocator.Resolve(sdkDir);
+        SdkDirectory = string.IsNullOrEmpty(sdkDirectory) ? null : sdkDirectory;
+        if (!string.IsNullOrEmpty(sdkDirectory))
+        {
+            Environment.SetEnvironmentVariable(SdkPaths.EnvironmentVariableName, sdkDirectory);
+        }
+        else
+        {
+            Console.Error.WriteLine(CliStrings.SdkDirectoryCouldNotBeDetermined);
+        }
+
         // Telemetry is best-effort and must never prevent the CLI from running. Initializing
         // it can fail on some layouts (e.g. the NativeAOT muxer cannot resolve the crypto
         // native library used to hash telemetry properties on macOS - see dotnet/sdk#54544),
@@ -183,7 +208,7 @@ static unsafe partial class NativeEntryPoint
                     // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
                     // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
                     // project tools, and anything that does not resolve to the managed CLI.
-                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, globalJsonState, out exitCode, out success))
+                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDirectory, mainActivity, globalJsonState, out exitCode, out success))
                     {
                         return exitCode;
                     }
@@ -200,8 +225,8 @@ static unsafe partial class NativeEntryPoint
                 mainActivity.SetTag("command.name", fallbackName);
             }
 
-            string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
-            string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
+            string dotnetDll = Path.Join(sdkDirectory, "dotnet.dll");
+            string runtimeConfig = Path.Join(sdkDirectory, "dotnet.runtimeconfig.json");
 
             if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
             {
@@ -215,7 +240,7 @@ static unsafe partial class NativeEntryPoint
             }
 
             // No managed fallback available
-            Console.Error.WriteLine($"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
+            Console.Error.WriteLine(string.Format(CliStrings.ManagedFallbackCouldNotBeLocated, dotnetDll, runtimeConfig));
             return exitCode;
         }
         finally
