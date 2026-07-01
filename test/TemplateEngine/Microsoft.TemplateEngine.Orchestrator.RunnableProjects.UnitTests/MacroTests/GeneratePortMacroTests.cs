@@ -11,7 +11,6 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class GeneratePortMacroTests
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;

@@ -10,7 +10,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class EvaluateMacroTests
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
