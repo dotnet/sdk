@@ -95,9 +95,8 @@ Canonical scenarios:
   `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
   avoid running the full suite for routine local or agent work.
 - Release build: `build.cmd -c Release`.
-- Run a single test project after a full build (in a build-env shell — see the
-  [Testing](#testing) section):
-  `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
+- Run a single test project after a full build:
+  `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
   See the [Testing](#testing) section for assembly filtering and more examples.
 - Dogfood the SDK you built (run/try it end-to-end): start a dogfood shell with
   `eng\dogfood.cmd` (Windows) or `source ./eng/dogfood.sh` (Linux/macOS). It redirects SDK
