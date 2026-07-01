@@ -1263,7 +1263,7 @@ class C
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_succeeds_when_xml_docs_generated_but_not_copied_to_output()
         {
             // Regression test: PublishSingleFile fails when GenerateDocumentationFile=true and
