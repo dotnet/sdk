@@ -161,6 +161,27 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             throw new GracefulException(CliCommandStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
 
+        // CS0436: WorkloadSetVersion is defined in both dotnet.csproj (linked source) and
+        // Microsoft.DotNet.Cli.Definitions (also links the same source). Both definitions are
+        // identical, so using the local one here is correct.
+#pragma warning disable CS0436
+        if (SpecifiedWorkloadSetVersionOnCommandLine)
+        {
+            foreach (var version in _workloadSetVersionFromCommandLine!)
+            {
+                if (!version.Contains('@') && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(version, out var suggestedVersion))
+                {
+                    throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, version, suggestedVersion), isUserError: true);
+                }
+            }
+        }
+
+        if (SpecifiedWorkloadSetVersionInGlobalJson && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(_workloadSetVersionFromGlobalJson!, out var suggestedGlobalJsonVersion))
+        {
+            throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormatGlobalJson, _workloadSetVersionFromGlobalJson, suggestedGlobalJsonVersion, _globalJsonPath), isUserError: true);
+        }
+#pragma warning restore CS0436
+
         //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
     }
 
