@@ -67,7 +67,7 @@ Major source areas under `src/`:
 - `template_feed/` — the in-box project/item templates.
 - `test/` — test projects and `test/TestAssets/TestProjects` test inputs.
 
-### Build, test, and dogfood
+### Build and test
 
 The top-level `build.cmd`/`build.sh` (and `test.cmd`/`test.sh`) wrap Arcade. The build
 script restores and builds the full redist SDK; pass `-test` to also run tests. Common
