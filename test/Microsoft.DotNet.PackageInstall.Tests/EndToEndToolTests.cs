@@ -565,8 +565,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         static XElement GetToolSettingsFile(string packagePath)
         {
             using var zipArchive = ZipFile.OpenRead(packagePath);
-            var nuspecEntry = GetToolSettingsFileEntry(zipArchive);
-            var stream = nuspecEntry.Open();
+            var toolSettingsEntry = GetToolSettingsFileEntry(zipArchive);
+            var stream = toolSettingsEntry.Open();
             var xml = XDocument.Load(stream, LoadOptions.None);
             return xml.Root!;
 

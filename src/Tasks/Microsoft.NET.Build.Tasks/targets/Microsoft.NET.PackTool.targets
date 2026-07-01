@@ -206,6 +206,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
       <_ToolRidPath Condition="'$(RuntimeIdentifier)' == ''">any</_ToolRidPath>
       <_ToolRidPath Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</_ToolRidPath>
       <_ToolSettingsTargetFrameworkPath>$(_ToolPackShortTargetFrameworkName)</_ToolSettingsTargetFrameworkPath>
+      <!-- RID-specific top-level packages are pointers only, so their settings file should be TFM-agnostic too. -->
       <_ToolSettingsTargetFrameworkPath Condition="'$(_ToolPackageShouldIncludeImplementation)' != 'true' and '$(_UserSpecifiedToolPackageRids)' != ''">any</_ToolSettingsTargetFrameworkPath>
     </PropertyGroup>
     <ItemGroup>
