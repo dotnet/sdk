@@ -101,20 +101,11 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     {
         CancellationToken cancellationToken = CancellationToken.None;
 
+        IEnumerable<PackageSource> allSources = LoadNuGetSources(packageId, packageSourceLocation, packageSourceMapping);
+        bool resolvedIncludeUnlisted = includeUnlisted ?? packageVersion is not null;
+
         (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
-            packageSourceLocation, includePreview, includeUnlisted ?? packageVersion is not null, packageSourceMapping).ConfigureAwait(false);
-
-        FindPackageByIdResource resource = null;
-        SourceRepository repository = GetSourceRepository(source);
-
-        resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (resource == null)
-        {
-            throw new NuGetPackageNotFoundException(
-                string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, source.Source));
-        }
+            allSources, includePreview, resolvedIncludeUnlisted).ConfigureAwait(false);
 
         var resolvedDownloadFolder = downloadFolder == null || !downloadFolder.HasValue ? _packageInstallDir.Value : downloadFolder.Value.Value;
         if (string.IsNullOrEmpty(resolvedDownloadFolder))
@@ -122,39 +113,115 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             throw new ArgumentException($"Package download folder must be specified either via {nameof(NuGetPackageDownloader)} constructor or via {nameof(downloadFolder)} method argument.");
         }
         var pathResolver = new VersionFolderPathResolver(resolvedDownloadFolder);
-
         string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
         Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
 
-        using FileStream destinationStream = File.Create(nupkgPath);
-        bool success = await ExponentialRetry.ExecuteWithRetryOnFailure(async () => await resource.CopyNupkgToStreamAsync(
-            packageId.ToString(),
-            resolvedPackageVersion,
-            destinationStream,
-            _cacheSettings,
-            _verboseLogger,
-            cancellationToken));
-        destinationStream.Close();
+        HashSet<string> failedSources = new(StringComparer.OrdinalIgnoreCase);
+        Exception firstDownloadException = null;
 
-        if (!success)
+        while (true)
         {
-            throw new NuGetPackageInstallerException(
-                string.Format("Downloading {0} version {1} failed", packageId,
-                    packageVersion.ToNormalizedString()));
+            SourceRepository repository = GetSourceRepository(source);
+            FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (resource != null)
+            {
+                try
+                {
+                    // Use a fresh file stream for each download attempt to avoid corruption from partial writes
+                    {
+                        await using FileStream destinationStream = File.Create(nupkgPath);
+                        bool success = await ExponentialRetry.ExecuteWithRetryOnFailure(async () => await resource.CopyNupkgToStreamAsync(
+                            packageId.ToString(),
+                            resolvedPackageVersion,
+                            destinationStream,
+                            _cacheSettings,
+                            _verboseLogger,
+                            cancellationToken));
+
+                        if (success)
+                        {
+                            // Signing verification failure should not trigger fallback to another source
+                            try
+                            {
+                                await VerifySigning(nupkgPath, repository);
+                            }
+                            catch (NuGetPackageInstallerException)
+                            {
+                                File.Delete(nupkgPath);
+                                throw;
+                            }
+
+                            return nupkgPath;
+                        }
+                    }
+
+                    // Download returned false — clean up partial file before trying next source
+                    TryDeleteFile(nupkgPath);
+                }
+                catch (Exception ex) when (IsDownloadFailure(ex))
+                {
+                    firstDownloadException ??= ex;
+                    _verboseLogger.LogWarning(string.Format(
+                        CliStrings.PackageDownloadFailedFromSource,
+                        packageId, source.Source, ex.Message));
+                    TryDeleteFile(nupkgPath);
+                }
+            }
+
+            // Mark this source as failed and try to find another source that has the package
+            failedSources.Add(source.Source);
+            var remainingSources = allSources.Where(s => !failedSources.Contains(s.Source));
+
+            if (!remainingSources.Any())
+            {
+                break;
+            }
+
+            try
+            {
+                // Re-resolve using only the remaining sources, pinning to the already-resolved version
+                (source, _) = await GetPackageSourceAndVersion(packageId, resolvedPackageVersion,
+                    remainingSources, includePreview, resolvedIncludeUnlisted).ConfigureAwait(false);
+            }
+            catch (NuGetPackageNotFoundException)
+            {
+                // No remaining source has this package version
+                break;
+            }
         }
 
-        // Delete file if verification fails
+        throw new NuGetPackageInstallerException(
+            string.Format("Downloading {0} version {1} failed", packageId,
+                resolvedPackageVersion.ToNormalizedString()),
+            firstDownloadException);
+    }
+
+    /// <summary>
+    /// Returns true for exceptions that indicate a download/protocol failure from a NuGet source,
+    /// where falling back to another source may succeed. Does not match cancellation, local I/O,
+    /// or signing verification failures.
+    /// </summary>
+    private static bool IsDownloadFailure(Exception ex)
+    {
+        return ex is FatalProtocolException
+            || ex is HttpRequestException;
+    }
+
+    private static void TryDeleteFile(string path)
+    {
         try
         {
-            await VerifySigning(nupkgPath, repository);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
         }
-        catch (NuGetPackageInstallerException)
+        catch
         {
-            File.Delete(nupkgPath);
-            throw;
+            // Best effort cleanup
         }
-
-        return nupkgPath;
     }
 
     private bool VerbosityGreaterThanMinimal() =>
@@ -281,11 +348,19 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
          bool includeUnlisted = false,
          PackageSourceMapping packageSourceMapping = null)
     {
+        IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation, packageSourceMapping);
+        return await GetPackageSourceAndVersion(packageId, packageVersion, packagesSources, includePreview, includeUnlisted).ConfigureAwait(false);
+    }
+
+    private async Task<(PackageSource, NuGetVersion)> GetPackageSourceAndVersion(PackageId packageId,
+         NuGetVersion packageVersion,
+         IEnumerable<PackageSource> packagesSources,
+         bool includePreview,
+         bool includeUnlisted)
+    {
         CancellationToken cancellationToken = CancellationToken.None;
 
         IPackageSearchMetadata packageMetadata;
-
-        IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation, packageSourceMapping);
         PackageSource source;
 
         if (packageVersion is null)

@@ -574,6 +574,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Jednocześnie można spakować tylko jeden plik nuspec</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDownloadFailedFromSource">
+        <source>Failed to download package {0} from source {1}: {2}. Attempting to download from another source.</source>
+        <target state="new">Failed to download package {0} from source {1}: {2}. Attempting to download from another source.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="translated">Nie można określić parametru --version, jeśli argument pakietu zawiera już wersję.</target>
