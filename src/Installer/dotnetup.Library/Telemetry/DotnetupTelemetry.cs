@@ -347,20 +347,32 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Records an exception on the failing operation, propagates the same
-    /// error.* tags up the activity ancestor chain so each parent's
-    /// completion log carries the failure signal, and emits one explicit
-    /// severity=Error LogRecord at the failure site.
+    /// Records an exception on the failing operation by classifying it and
+    /// stamping <c>error.*</c> tags onto the failing activity, then
+    /// propagating those same tags up the activity ancestor chain so each
+    /// parent's completion log carries the failure signal.
     /// </summary>
     /// <remarks>
+    /// This does NOT emit a separate LogRecord. The error metadata is folded
+    /// into the operation's single completion row, which is emitted later when
+    /// the <see cref="TrackedOperation"/> is disposed (see
+    /// <see cref="EmitCompletionLog"/>). Keeping the failure on one atomic row
+    /// — rather than a second severity=Error record — means a truncated flush
+    /// can only lose the whole row, never split a failure into a "success" row
+    /// plus a lost error row.
+    /// <para>
     /// Ancestor propagation is first-failure-wins: once an ancestor has
     /// <c>error.type</c> set we don't overwrite, preserving the true root
-    /// cause when later siblings fail. The error LogRecord is emitted with
-    /// <c>exception: null</c> on purpose — the AzMonitor log exporter routes
-    /// records with a non-null <see cref="Exception"/> into the AppInsights
-    /// <c>exceptions</c> table, which data-x doesn't ingest. Exception type
-    /// and stack trace ride as structured props so the failure is fully
-    /// described in <c>traces</c>.
+    /// cause when later siblings fail.
+    /// </para>
+    /// <para>
+    /// Wrapped in a catch-all: telemetry classification (which does stack-trace
+    /// string processing and reflection over exception types) must never be
+    /// able to throw out of the failure path and corrupt or drop the
+    /// completion row. On classification failure the row is still emitted at
+    /// dispose; <see cref="TrackedOperation.EnsureErrorTypeTagged"/> guarantees
+    /// it carries an explicit (possibly empty) <c>error.type</c>.
+    /// </para>
     /// </remarks>
     /// <param name="operation">The tracked operation to tag.</param>
     /// <param name="ex">The exception to record.</param>
@@ -372,16 +384,40 @@ public sealed class DotnetupTelemetry : IDisposable
             return;
         }
 
-        var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-        // Single hand-off into the propagation/application pipeline:
-        // primary error.* tags spread up the ancestor chain (first-failure-wins
-        // per ancestor), additional failures land only on the failing activity
-        // (the command row) so the root row stays uncluttered with batch detail.
-        PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
-        // Use a non-PII description (the classified error type) rather than
-        // ex.Message — the latter can leak user paths / values into exported
-        // span status when the perf-trace exporter is enabled.
-        operation.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
+        try
+        {
+            var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
+            // Single hand-off into the propagation/application pipeline:
+            // primary error.* tags spread up the ancestor chain (first-failure-wins
+            // per ancestor), additional failures land only on the failing activity
+            // (the command row) so the root row stays uncluttered with batch detail.
+            PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
+            // Use a non-PII description (the classified error type) rather than
+            // ex.Message — the latter can leak user paths / values into exported
+            // span status when the perf-trace exporter is enabled.
+            operation.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
+        }
+        catch (Exception classificationEx)
+        {
+            // Never let telemetry classification crash the app or corrupt the
+            // failure row. Fall back to a coarse, always-safe tag so the
+            // completion row still records that *a* failure occurred; the
+            // classifier's own bug becomes the error.type rather than silently
+            // dropping the failure signal.
+            try
+            {
+                operation.Tag(TelemetryTagNames.ErrorType, "TelemetryClassificationError");
+                operation.Tag(TelemetryTagNames.ErrorCategory, "product");
+                operation.SetStatus(ActivityStatusCode.Error, "TelemetryClassificationError");
+            }
+            catch
+            {
+                // Tagging itself failed (null activity, disposed, etc.) — nothing
+                // more we can safely do. The completion row still emits at dispose.
+            }
+
+            Debug.Fail($"RecordException classification threw: {classificationEx}");
+        }
     }
 
     /// <summary>
