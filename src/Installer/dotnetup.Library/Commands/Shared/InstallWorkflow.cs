@@ -29,7 +29,7 @@ internal class InstallWorkflow
         _command = command;
         _installPathResolver = new InstallPathResolver(command.DotnetEnvironment);
         _currentInstallRoot = new Lazy<DotnetInstallRootConfiguration?>(
-            () => command.DotnetEnvironment.GetCurrentPathConfiguration());
+            command.DotnetEnvironment.GetCurrentPathConfiguration);
     }
 
     /// <summary>
