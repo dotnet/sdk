@@ -1252,7 +1252,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.8064m7w2as.map.gz",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1352,7 +1352,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.8064m7w2as.map",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [
         {
@@ -1852,7 +1852,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.qf31mbpzsr.map.gz",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1952,7 +1952,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.qf31mbpzsr.map",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [
         {
@@ -3068,7 +3068,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.8064m7w2as.map.br",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map.br",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -3168,7 +3168,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.8064m7w2as.map",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.br",
       "Selectors": [
         {
@@ -3668,7 +3668,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.qf31mbpzsr.map.br",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map.br",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -3768,7 +3768,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.qf31mbpzsr.map",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.br",
       "Selectors": [
         {
@@ -4372,7 +4372,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.8064m7w2as.map",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map",
       "AssetFile": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\staticwebassets\\_framework\\blazor.server.js.map",
       "Selectors": [],
       "ResponseHeaders": [
@@ -4454,7 +4454,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.qf31mbpzsr.map",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map",
       "AssetFile": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\staticwebassets\\_framework\\blazor.web.js.map",
       "Selectors": [],
       "ResponseHeaders": [

@@ -20,6 +20,9 @@
       "version": "16.8"
     }
   },
+  "test": {
+    "runner": "Microsoft.Testing.Platform"
+  },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26325.102",
     "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26325.102",

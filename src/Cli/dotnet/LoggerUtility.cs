@@ -63,23 +63,6 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
-    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
-    {
-        binLogArgs = new List<string>();
-        nonBinLogArgs = new List<string>();
-        foreach (var arg in args ?? [])
-        {
-            if (IsBinLogArgument(arg))
-            {
-                binLogArgs.Add(arg);
-            }
-            else
-            {
-                nonBinLogArgs.Add(arg);
-            }
-        }
-    }
-
     internal static void SeparateLoggerArguments(IEnumerable<string>? args, out ImmutableArray<string> loggerArgs, out ImmutableArray<string> nonLoggerArgs)
     {
         var loggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
@@ -112,7 +95,7 @@ internal static class LoggerUtility
     internal static bool HasNoConsoleLoggerArgument(IEnumerable<string>? args) =>
         args?.Any(IsNoConsoleLoggerArgument) == true;
 
-    internal static bool IsNoConsoleLoggerArgument(string arg)
+    private static bool IsNoConsoleLoggerArgument(string arg)
     {
         return TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue) &&
             prefix is "-" or "/" &&
@@ -135,7 +118,8 @@ internal static class LoggerUtility
         }
 
         const StringComparison comp = StringComparison.OrdinalIgnoreCase;
-        if (switchName.Equals("tl", comp) || switchName.Equals("terminalLogger", comp))
+        if (switchName.Equals("tl", comp) || switchName.Equals("terminalLogger", comp) ||
+            switchName.Equals("ll", comp) || switchName.Equals("livelogger", comp))
         {
             if (!hasValue)
             {
@@ -199,49 +183,6 @@ internal static class LoggerUtility
         switchValue = hasValue ? value[(separatorIndex + 1)..] : null;
 
         return switchName.Length > 0;
-    }
-
-    private static readonly string[] s_terminalLoggerArgumentNames =
-    [
-        "tl",
-        "terminallogger",
-        "ll",
-        "livelogger",
-        "tlp",
-        "terminalloggerparameters",
-    ];
-
-    private static readonly string[] s_argumentPrefixes = ["--", "-", "/"];
-
-    /// <summary>
-    /// Determines whether the given argument is an MSBuild terminal logger argument
-    /// (e.g. <c>-tl[:value]</c>, <c>--terminalLogger[:value]</c>, <c>-ll[:value]</c>,
-    /// <c>--livelogger[:value]</c>, <c>-tlp:...</c>, or <c>--terminalLoggerParameters:...</c>).
-    /// </summary>
-    internal static bool IsTerminalLoggerArgument(string arg)
-    {
-        const StringComparison comp = StringComparison.OrdinalIgnoreCase;
-        foreach (var prefix in s_argumentPrefixes)
-        {
-            if (!arg.StartsWith(prefix, comp))
-            {
-                continue;
-            }
-
-            var nameAndValue = arg.AsSpan(prefix.Length);
-            int colonIndex = nameAndValue.IndexOf(':');
-            var name = colonIndex < 0 ? nameAndValue : nameAndValue[..colonIndex];
-
-            foreach (var knownName in s_terminalLoggerArgumentNames)
-            {
-                if (name.Equals(knownName.AsSpan(), comp))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 }
 
