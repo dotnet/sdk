@@ -235,13 +235,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         }
 
         /// <summary>
-        /// Determine if this type should be one of the <c>class</c> values passed to xunit.  This
+        /// Determine if this type should be one of the <c>class</c> values passed to the test runner.  This
         /// code doesn't actually resolve base types or trace through inherrited Fact attributes
         /// hence we have to error on the side of including types with no tests vs. excluding them.
         /// </summary>
         private static bool ShouldIncludeType(MetadataReader reader, TypeDefinition type, int testMethodCount)
         {
-            // xunit only handles public, non-abstract, non-generic classes
+            // the test runner only handles public, non-abstract, non-generic classes
             var isPublic =
                 TypeAttributes.Public == (type.Attributes & TypeAttributes.VisibilityMask) ||
                 TypeAttributes.NestedPublic == (type.Attributes & TypeAttributes.VisibilityMask);
@@ -267,7 +267,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             // The case we still have to consider at this point is a class with 0 defined methods, 
             // inheritting from a class with > 0 defined test methods.  That is a completely valid
-            // xunit scenario.  For now we're just going to exclude types that inherit from object
+            // scenario.  For now we're just going to exclude types that inherit from object
             // because they clearly don't fit that category.
             return !(InheritsFromObject(reader, type) ?? false);
         }
