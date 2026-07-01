@@ -10,7 +10,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class BasicTests : BootstrapperTestBase
     {
         private TestContext _testContext = null!;

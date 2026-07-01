@@ -16,7 +16,6 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class BindSymbolTests
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
