@@ -875,6 +875,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         cache.PreviousEntry = previousCacheEntry;
         var cacheEntry = cache.CurrentEntry;
 
+        if (previousCacheEntry.Run is { Command: { } previousRunCommand } &&
+            Path.IsPathFullyQualified(previousRunCommand) &&
+            !File.Exists(previousRunCommand))
+        {
+            Reporter.Verbose.WriteLine("Building because the run output is missing: " + previousRunCommand);
+            return true;
+        }
+
         // Check that versions match.
 
         if (previousCacheEntry.SdkVersion != cacheEntry.SdkVersion)

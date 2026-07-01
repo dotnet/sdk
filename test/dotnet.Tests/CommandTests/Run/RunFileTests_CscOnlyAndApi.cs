@@ -139,6 +139,52 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     }
 
     /// <summary>
+    /// See <see href="https://github.com/dotnet/sdk/issues/55056"/>.
+    /// </summary>
+    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+    public void UpToDate_ArtifactsRelocated()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var srcDir = Path.Join(testInstance.Path, "src");
+        var tmpDir1 = Path.Join(testInstance.Path, "tmp1");
+        var tmpDir2 = Path.Join(testInstance.Path, "tmp2");
+
+        Directory.CreateDirectory(srcDir);
+
+        var programFile = Path.Join(srcDir, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:property ImplicitUsings=disable
+            #:property GenerateAssemblyInfo=false
+            #:property GenerateTargetFrameworkAttribute=false
+            System.Console.WriteLine("hello");
+            """);
+
+        var expectedStdOut = "hello";
+
+        Directory.CreateDirectory(tmpDir1);
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable("TMP", tmpDir1)
+            .WithEnvironmentVariable("TMPDIR", tmpDir1)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir1)
+            .WithWorkingDirectory(srcDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedStdOut);
+
+        Directory.Move(tmpDir1, tmpDir2);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable("TMP", tmpDir2)
+            .WithEnvironmentVariable("TMPDIR", tmpDir2)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir2)
+            .WithWorkingDirectory(srcDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedStdOut);
+    }
+
+    /// <summary>
     /// <see cref="UpToDate"/> optimization should see through symlinks.
     /// See <see href="https://github.com/dotnet/sdk/issues/52063"/>.
     /// </summary>
