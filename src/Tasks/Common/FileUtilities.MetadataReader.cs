@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tasks
         private static Version? GetAssemblyVersion(string sourcePath)
         {
             // Retry file access to handle transient IOExceptions caused by concurrent
-            // MSBuild processes locking the file during parallel builds (see dotnet/sdk#54864).
+            // MSBuild processes locking the file during parallel builds.
             for (int attempt = 1; ; attempt++)
             {
                 try
