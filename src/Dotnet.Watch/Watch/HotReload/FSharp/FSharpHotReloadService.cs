@@ -1374,6 +1374,15 @@ internal sealed class FSharpHotReloadService
             startInfo.ArgumentList.Add("build");
             startInfo.ArgumentList.Add(projectInfo.ProjectPath);
             startInfo.ArgumentList.Add("-t:Compile");
+            // Pin the forced compile to the TFM the running app was launched with, the same way the
+            // watcher passes --framework to build/run elsewhere. Without this a multi-targeted project
+            // compiles every TFM (or the wrong one) instead of the single TFM the hot reload session
+            // loaded, so the refreshed obj assembly would not match the baseline the delta chains from.
+            if (!string.IsNullOrWhiteSpace(projectInfo.TargetFramework))
+            {
+                startInfo.ArgumentList.Add("--framework");
+                startInfo.ArgumentList.Add(projectInfo.TargetFramework);
+            }
             startInfo.ArgumentList.Add("-nologo");
             startInfo.ArgumentList.Add("-consoleLoggerParameters:NoSummary;Verbosity=minimal");
             startInfo.ArgumentList.Add("-p:NuGetInteractive=true");
