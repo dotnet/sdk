@@ -55,6 +55,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.PlatformNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.UninstallTargetNotFound => ErrorCategory.User,
             DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy => ErrorCategory.User,
+            DotnetInstallErrorCode.NoUserInstallableArtifact => ErrorCategory.User,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product

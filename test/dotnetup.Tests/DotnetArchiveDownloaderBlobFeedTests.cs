@@ -195,6 +195,130 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
     }
 
     /// <summary>
+    /// Regression for dotnet/sdk#54906 follow-up: some Windows Desktop Runtime releases publish
+    /// only non-installable artifacts (e.g. .exe installers) for the platform — no .tar.gz and no
+    /// .zip. dotnetup cannot perform a user-level (xcopy) install of those, so the manifest lookup
+    /// surfaces <see cref="FindReleaseFileStatus.NoUserInstallableArtifact"/>. The downloader must
+    /// turn that into the user-actionable <see cref="DotnetInstallErrorCode.NoUserInstallableArtifact"/>
+    /// error (NOT the product-category <see cref="DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform"/>).
+    /// </summary>
+    [Fact]
+    public void ResolveManifestEntry_WindowsDesktopRuntimeWithNoArchive_ThrowsUserInstallableArtifactError()
+    {
+        // A specific Windows Desktop Runtime version whose release lists only .exe installers.
+        const string version = "3.1.32";
+        var (handler, _) = BuildHandler(new());
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.NoUserInstallableArtifact);
+
+        var ex = Assert.Throws<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.WindowsDesktop), new ReleaseVersion(version)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NoUserInstallableArtifact);
+        ex.ErrorCode.Should().NotBe(DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform,
+            "a release that ships only non-installable artifacts is a user error, not a product failure");
+        ex.Message.Should().Be(ExpectedNoUserInstallableArtifactMessage(InstallComponent.WindowsDesktop, version));
+    }
+
+    [Fact]
+    public void NoUserInstallableArtifact_ClassifiedAsUserError()
+    {
+        ErrorCategoryClassifier.ClassifyInstallError(DotnetInstallErrorCode.NoUserInstallableArtifact)
+            .Should().Be(ErrorCategory.User,
+                "a release with no user-installable archive is a user/environment condition, not a product bug");
+    }
+
+    /// <summary>
+    /// End-to-end: parse a real Windows Desktop Runtime release (via the deployment library)
+    /// whose manifest lists only .exe installers — no .tar.gz and no .zip — then drive the full
+    /// download entry point <see cref="DotnetArchiveDownloader.DownloadArchiveWithVerification"/>.
+    /// The resolve-then-download path must surface the user-actionable
+    /// <see cref="DotnetInstallErrorCode.NoUserInstallableArtifact"/> error and must NOT issue any
+    /// HTTP download (it fails during manifest resolution, before touching the network).
+    /// Windows-only because the RID and .zip fallback are Windows-specific.
+    /// </summary>
+    [PlatformSpecificFact(TestPlatforms.Windows)]
+    public void DownloadArchiveWithVerification_WindowsDesktopRuntimeWithOnlyExeInstallers_FailsWithUserError_AndDoesNotDownload()
+    {
+        const string version = "3.1.32";
+
+        // A real WindowsDesktopReleaseComponent parsed from a releases.json that publishes only
+        // .exe installers for win-x64/win-x86 — exactly the shape that historically had no
+        // user-installable (xcopy) archive.
+        ReleaseComponent windowsDesktop = ParseWindowsDesktopComponentWithOnlyExeInstallers(version);
+
+        var (handler, history) = BuildHandler(new());
+        using var http = new HttpClient(handler);
+        var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
+        var downloader = new DotnetArchiveDownloader(new FixtureReleaseManifest(windowsDesktop), http, cacheDir);
+
+        string destinationBase = Path.Combine(cacheDir, "windowsdesktop-runtime");
+
+        var ex = Assert.Throws<DotnetInstallException>(() =>
+            downloader.DownloadArchiveWithVerification(
+                BuildRequest(version, InstallComponent.WindowsDesktop),
+                new ReleaseVersion(version),
+                destinationBase));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NoUserInstallableArtifact);
+        ex.Message.Should().Be(ExpectedNoUserInstallableArtifactMessage(InstallComponent.WindowsDesktop, version));
+        history.Should().BeEmpty("resolution must fail before any archive is downloaded");
+    }
+
+    /// <summary>
+    /// Writes a minimal but schema-valid releases.json containing a single Windows Desktop Runtime
+    /// release whose only files are .exe installers, parses it with the deployment library, and
+    /// returns the real <see cref="ReleaseComponent"/>.
+    /// </summary>
+    private static ReleaseComponent ParseWindowsDesktopComponentWithOnlyExeInstallers(string version)
+    {
+        string json = $$"""
+        {
+          "releases": [
+            {
+              "release-date": "2024-01-09",
+              "release-version": "{{version}}",
+              "security": false,
+              "windowsdesktop": {
+                "version": "{{version}}",
+                "version-display": "{{version}}",
+                "files": [
+                  {
+                    "name": "windowsdesktop-runtime-{{version}}-win-x64.exe",
+                    "rid": "win-x64",
+                    "url": "https://example.test/windowsdesktop-runtime-{{version}}-win-x64.exe",
+                    "hash": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                  },
+                  {
+                    "name": "windowsdesktop-runtime-{{version}}-win-x86.exe",
+                    "rid": "win-x86",
+                    "url": "https://example.test/windowsdesktop-runtime-{{version}}-win-x86.exe",
+                    "hash": "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+        """;
+
+        string path = Path.Combine(Path.GetTempPath(), "dotnetup-test-releases-" + Guid.NewGuid().ToString("N") + ".json");
+        File.WriteAllText(path, json);
+        try
+        {
+            var releases = Product.GetReleasesAsync(path).GetAwaiter().GetResult();
+            var component = releases.Single().WindowsDesktopRuntime;
+            component.Should().NotBeNull("the fixture defines a windowsdesktop component");
+            return component;
+        }
+        finally
+        {
+            try { File.Delete(path); } catch { /* best-effort cleanup */ }
+        }
+    }
+
+    /// <summary>
     /// If both feeds 404 the .sha512 file, surface a clear VersionNotFound error.
     /// On Windows, both tar.gz and zip are probed before failing.
     /// </summary>
@@ -343,6 +467,17 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
 
     // --- Test helpers ---
 
+    /// <summary>
+    /// Builds the expected user-facing message from the same resx resource the product code uses,
+    /// so the assertion can't drift from the shipped string.
+    /// </summary>
+    private static string ExpectedNoUserInstallableArtifactMessage(InstallComponent component, string version) =>
+        string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            Strings.NoUserInstallableArtifact,
+            component,
+            new ReleaseVersion(version));
+
     private static DotnetInstallRequest BuildRequest(string channel, InstallComponent component)
     {
         var root = new DotnetInstallRoot(@"C:\dotnet-test", InstallArchitecture.x64);
@@ -430,6 +565,7 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
             {
                 DotnetInstallErrorCode.VersionNotFound => FindReleaseFileResult.ProductNotFound,
                 DotnetInstallErrorCode.ReleaseNotFound => FindReleaseFileResult.ReleaseNotFound,
+                DotnetInstallErrorCode.NoUserInstallableArtifact => FindReleaseFileResult.NoUserInstallableArtifact,
                 _ => throw new DotnetInstallException(
                     _code,
                     $"Test stub: manifest failure for {resolvedVersion}",
@@ -437,5 +573,24 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
                     component: installRequest.Component.ToString()),
             };
         }
+    }
+
+    /// <summary>
+    /// A <see cref="ReleaseManifest"/> that runs the real
+    /// <see cref="ReleaseManifest.ResolveReleaseFile"/> selection/classification logic against a
+    /// real <see cref="ReleaseComponent"/> parsed from a fixture, so the download path is
+    /// exercised end-to-end without network or signing.
+    /// </summary>
+    private sealed class FixtureReleaseManifest : ReleaseManifest
+    {
+        private readonly ReleaseComponent _component;
+
+        public FixtureReleaseManifest(ReleaseComponent component)
+        {
+            _component = component;
+        }
+
+        public override FindReleaseFileResult TryFindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+            => ResolveReleaseFile(_component, installRequest);
     }
 }
