@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
@@ -260,7 +261,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             var packages = await GetAllTemplatePackagesAsync(cancellationToken).ConfigureAwait(false);
 
             //check if the package with same identifier is already installed
-            if (packages.OfType<IManagedTemplatePackage>().FirstOrDefault(s => s.Identifier == identifier && s.Installer == installer) is IManagedTemplatePackage packageToBeUpdated)
+            if (packages.OfType<IManagedTemplatePackage>().FirstOrDefault(s => string.Equals(s.Identifier, identifier, StringComparison.OrdinalIgnoreCase) && s.Installer == installer) is IManagedTemplatePackage packageToBeUpdated)
             {
                 //if same version is already installed - return
                 if (!forceUpdate && packageToBeUpdated.Version == version)
