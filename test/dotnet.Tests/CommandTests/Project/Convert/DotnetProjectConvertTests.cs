@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -14,13 +14,14 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Project.Convert.Tests;
 
-public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class DotnetProjectConvertTests : SdkTest
 {
     /// <summary>
     /// <c>dotnet project convert</c> should result in the same project file text as <c>dotnet new console</c>.
     /// If this test fails, <c>dotnet project convert</c> command implementation should be updated.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void SameAsTemplate()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -75,17 +76,17 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.StartWith("""<Project Sdk="Microsoft.NET.Sdk">""");
     }
 
-    [Theory] // https://github.com/dotnet/sdk/issues/50832
-    [InlineData("File", "File", "Lib", "../Lib", "Project", "..{/}Lib{/}lib.csproj")]
-    [InlineData(".", ".", "Lib", "./Lib", "Project", "..{/}Lib{/}lib.csproj")]
-    [InlineData(".", ".", "Lib", "Lib/../Lib", "Project", "..{/}Lib{/}lib.csproj")]
-    [InlineData("File", "File", "Lib", "../Lib", "File/Project", "..{/}..{/}Lib{/}lib.csproj")]
-    [InlineData(".", "File", "Lib", "../Lib", "File/Project", "..{/}..{/}Lib{/}lib.csproj")]
-    [InlineData("File", "File", "Lib", @"..\Lib", "File/Project", @"..{/}..\Lib{/}lib.csproj")]
-    [InlineData("File", "File", "Lib", "../$(LibProjectName)", "File/Project", "..{/}..{/}$(LibProjectName){/}lib.csproj")]
-    [InlineData(".", "File", "Lib", "../$(LibProjectName)", "File/Project", "..{/}..{/}$(LibProjectName){/}lib.csproj")]
-    [InlineData("File", "File", "Lib", @"..\$(LibProjectName)", "File/Project", @"..{/}..\$(LibProjectName){/}lib.csproj")]
-    [InlineData("File", "File", "Lib", "$(MSBuildProjectDirectory)/../$(LibProjectName)", "File/Project", "..{/}..{/}Lib{/}lib.csproj")]
+    [TestMethod] // https://github.com/dotnet/sdk/issues/50832
+    [DataRow("File", "File", "Lib", "../Lib", "Project", "..{/}Lib{/}lib.csproj")]
+    [DataRow(".", ".", "Lib", "./Lib", "Project", "..{/}Lib{/}lib.csproj")]
+    [DataRow(".", ".", "Lib", "Lib/../Lib", "Project", "..{/}Lib{/}lib.csproj")]
+    [DataRow("File", "File", "Lib", "../Lib", "File/Project", "..{/}..{/}Lib{/}lib.csproj")]
+    [DataRow(".", "File", "Lib", "../Lib", "File/Project", "..{/}..{/}Lib{/}lib.csproj")]
+    [DataRow("File", "File", "Lib", @"..\Lib", "File/Project", @"..{/}..\Lib{/}lib.csproj")]
+    [DataRow("File", "File", "Lib", "../$(LibProjectName)", "File/Project", "..{/}..{/}$(LibProjectName){/}lib.csproj")]
+    [DataRow(".", "File", "Lib", "../$(LibProjectName)", "File/Project", "..{/}..{/}$(LibProjectName){/}lib.csproj")]
+    [DataRow("File", "File", "Lib", @"..\$(LibProjectName)", "File/Project", @"..{/}..\$(LibProjectName){/}lib.csproj")]
+    [DataRow("File", "File", "Lib", "$(MSBuildProjectDirectory)/../$(LibProjectName)", "File/Project", "..{/}..{/}Lib{/}lib.csproj")]
     public void ProjectReference_RelativePaths(string workingDir, string fileDir, string libraryDir, string reference, string outputDir, string convertedReference)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -146,7 +147,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Fact] // https://github.com/dotnet/sdk/issues/50832
+    [TestMethod] // https://github.com/dotnet/sdk/issues/50832
     public void ProjectReference_FullPath()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -203,7 +204,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void RefDirective()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -226,6 +227,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet("World"));
             """);
@@ -265,7 +267,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void RefDirective_Transitive_Convert()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -288,6 +290,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #!/usr/bin/env dotnet
             #:property OutputType=Library
             #:ref lib2.cs
             namespace Lib1;
@@ -298,6 +301,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib1.cs
             Console.WriteLine(Lib1.Facade.Get());
             """);
@@ -335,7 +339,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void RefDirective_DuplicateFolderName()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -384,7 +388,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["a", "app.cs", "b", "Directory.Build.props"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void RefDirective_DuplicateFolderName_Transitive()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -439,7 +443,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.Exists(outputDirFullPath).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void RefDirective_DuplicateFolderName_ViaInclude()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -495,7 +499,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// Verifies that default items (e.g., <c>appsettings.json</c>) in a <c>#:ref</c>'d file's directory
     /// are copied to the converted project output directory.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_IncludedItemsCopied()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -545,7 +549,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// Verifies that <c>--delete-source</c> also deletes included items of <c>#:ref</c>'d files.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_IncludedItemsDeleted()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -599,7 +603,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// Converting one app that <c>#:ref</c>s a library does not affect other apps that also reference the same library.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_ConvertScope()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -653,7 +657,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.ReadAllText(Path.Join(unrelatedDir, "app3.cs")).Should().Contain("#:ref ../lib.cs");
     }
 
-    [Fact]
+    [TestMethod]
     public void ProjectReference_FullPath_WithVars()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -711,7 +715,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void DirectoryAlreadyExists()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -730,7 +734,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["MyApp", "MyApp.cs"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void OutputOption()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -754,7 +758,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["MyApp.csproj", "MyApp.cs"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void OutputOption_DirectoryAlreadyExists()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -773,7 +777,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["MyApp.cs", "SomeOutput"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void MultipleEntryPointFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -794,7 +798,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["Program1.csproj", "Program1.cs"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void NoFileArgument()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -809,7 +813,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .EnumerateFileSystemInfos().Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void NonExistentFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -824,7 +828,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .EnumerateFileSystemInfos().Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void NonCSharpFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -842,7 +846,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["Program.vb"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void ExtensionCasing()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -862,9 +866,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["Program.csproj", "Program.CS"]);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("class C;")]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("class C;")]
     public void FileContent(string content)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -890,7 +894,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().Be(content);
     }
 
-    [Fact]
+    [TestMethod]
     public void NestedDirectory()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -915,7 +919,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// Default items like <c>None</c> or <c>Content</c> are copied over if non-default SDK is used.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DefaultItems_NonDefaultSdk()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -947,7 +951,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["second.json"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void DefaultItems_MoreIncluded()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -975,7 +979,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void DefaultItems_MoreExcluded()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1004,7 +1008,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// <c>ExcludeFromFileBasedAppConversion</c> metadata can be used to exclude items from the conversion.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DefaultItems_ExcludedViaMetadata()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1041,7 +1045,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["Directory.Build.targets", "Program.csproj", "Resources.resx", "Program.cs", "my.json"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void DefaultItems_ImplicitBuildFileInDirectory()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1107,7 +1111,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void DefaultItems_ImplicitBuildFileOutsideDirectory()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1161,7 +1165,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void DefaultItems_ImplicitBuildFileAndUtilOutsideDirectory()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1219,7 +1223,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// Scripts in repo root should not include default items.
     /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
     /// </summary>
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void DefaultItems_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
     {
         bool considered = ext is "sln" or "slnx" or "csproj";
@@ -1255,7 +1259,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// When processing fails due to invalid directives, no conversion should be performed
     /// (e.g., the target directory should not be created).
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProcessingFails()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1276,7 +1280,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// Since we perform MSBuild evaluation during the conversion (to find included items to copy over),
     /// the conversion can fail when the specified SDK does not exist.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProcessingFails_Evaluation()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1297,7 +1301,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// End-to-end test of directive processing. More cases are covered by faster unit tests below.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ProcessingSucceeds()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1349,7 +1353,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void UserSecretsId_Overridden_ViaDirective(bool hasDirectiveBuildProps)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1393,7 +1397,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void UserSecretsId_Overridden_ViaDirectoryBuildProps()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1432,7 +1436,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void UserSecretsId_Overridden_SameAsImplicit(bool hasDirective, bool hasDirectiveBuildProps)
     {
         const string implicitValue = "$(AssemblyName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))";
@@ -1478,7 +1482,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void ForceOption_Off()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1501,7 +1505,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .EnumerateDirectories().Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void ForceOption_On()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1523,7 +1527,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .EnumerateDirectories().Should().NotBeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1568,7 +1572,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// There should be only one <c>PropertyGroup</c> element when the default properties are overridden.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Directives_AllDefaultOverridden()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1607,7 +1611,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Variable()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1640,7 +1644,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: "");
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_DirectoryPath()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1682,7 +1686,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: "");
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeExclude()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1726,7 +1730,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeCompile_DefaultCompileItemsDisabled()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1789,7 +1793,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeDll()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1874,7 +1878,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeDll_Wildcard()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1940,7 +1944,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// If a file is included only via MSBuild code but is not in the mapped conversion item set, conversion won't copy it to the output directory.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeDll_DirectoryBuildProps_NoMapping()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2017,7 +2021,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// If an item added by MSBuild has corresponding FileBasedProgramsItemMapping, conversion copies it but does not write it to the project file.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeDll_DirectoryBuildProps_ItemMapping()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2088,7 +2092,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOutContaining("error CS0103");
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeDll_ViaIncludedFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2154,7 +2158,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeDll_ViaRef()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2209,6 +2213,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib/lib.cs
             Console.WriteLine(MyLib.Wrapper.GetMessage());
             """);
@@ -2239,7 +2244,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_IncludeExclude_FilesCopied()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2268,7 +2273,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "Util.cs"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Separators()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2313,9 +2318,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: "");
     }
 
-    [Theory]
-    [InlineData("invalid")]
-    [InlineData("SDK")]
+    [TestMethod]
+    [DataRow("invalid")]
+    [DataRow("SDK")]
     public void Directives_Unknown(string directive)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2334,7 +2339,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Empty()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2354,7 +2359,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void Directives_EmptyName(
         [CombinatorialValues("sdk", "property", "package", "project", "include", "exclude")] string directive,
         [CombinatorialValues(" ", "")] string value)
@@ -2371,9 +2376,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
     public void Directives_EmptyValue(string value)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2421,7 +2426,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_MissingPropertyValue()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2436,7 +2441,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_InvalidPropertyName()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2453,16 +2458,16 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Theory]
-    [InlineData("sdk", "@", "/")]
-    [InlineData("sdk", "@", " ")]
-    [InlineData("sdk", "@", "=")]
-    [InlineData("package", "@", "/")]
-    [InlineData("package", "@", " ")]
-    [InlineData("package", "@", "=")]
-    [InlineData("property", "=", "/")]
-    [InlineData("property", "=", " ")]
-    [InlineData("property", "=", "@")]
+    [TestMethod]
+    [DataRow("sdk", "@", "/")]
+    [DataRow("sdk", "@", " ")]
+    [DataRow("sdk", "@", "=")]
+    [DataRow("package", "@", "/")]
+    [DataRow("package", "@", " ")]
+    [DataRow("package", "@", "=")]
+    [DataRow("property", "=", "/")]
+    [DataRow("property", "=", " ")]
+    [DataRow("property", "=", "@")]
     public void Directives_InvalidName(string directiveKind, string expectedSeparator, string actualSeparator)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2475,7 +2480,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Escaping()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2525,7 +2530,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Whitespace()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2567,7 +2572,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_BlankLines()
     {
         var expectedProject = $"""
@@ -2620,7 +2625,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// <c>#:</c> directives after C# code are ignored.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Directives_AfterToken()
     {
         string source = """
@@ -2666,7 +2671,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// <c>#:</c> directives after <c>#if</c> are ignored.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Directives_AfterIf()
     {
         string source = """
@@ -2717,7 +2722,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <summary>
     /// Comments are not currently converted.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Directives_Comments()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2764,7 +2769,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_IdenticalDuplicate()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2805,7 +2810,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             evaluateDirectives: true);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Duplicate_UsesUnevaluatedValues()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2832,7 +2837,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             evaluateDirectives: true);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Duplicate_EvaluatedProjectDirectivesAreAllowed()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2875,7 +2880,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             evaluateDirectives: true);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Duplicate()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2959,7 +2964,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    [Fact]
+    [TestMethod]
     public void Directives_Duplicate_AcrossIncludedFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2989,7 +2994,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             evaluateDirectives: true);
     }
 
-    [Fact] // https://github.com/dotnet/sdk/issues/49797
+    [TestMethod] // https://github.com/dotnet/sdk/issues/49797
     public void Directives_VersionedSdkFirst()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3117,11 +3122,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         if (actualDiagnostics is null or [])
         {
-            Assert.Null(expectedErrors);
+            Assert.IsNull(expectedErrors);
         }
         else if (expectedErrors is null)
         {
-            Assert.Null(actualDiagnostics);
+            Assert.IsNull(actualDiagnostics);
         }
         else
         {
@@ -3129,7 +3134,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithFlag()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3150,7 +3155,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithoutFlag_NonInteractive()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3172,7 +3177,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(testInstance.Path, "Program", "Program.csproj")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_DryRun()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3194,7 +3199,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.Exists(Path.Join(testInstance.Path, "Program")).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithCustomOutput()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3217,7 +3222,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(outputDir, "Program.csproj")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithDefaultFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3250,7 +3255,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithDefaultFiles_NotDeleted()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3284,7 +3289,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithIncludeDirective()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3314,7 +3319,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithIncludeDirective_NotDeleted()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3344,7 +3349,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(testInstance.Path, "Program", "Util.cs")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithIncludeDirective_MultipleFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -3381,7 +3386,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.Exists(Path.Join(testInstance.Path, "Program", "config.json")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void DeleteSource_WithIncludeDirective_Transitive()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

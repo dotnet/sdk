@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotAddArchiveItemPathToTheTargetFileSystemPathTests : TaintedDataAnalyzerTestBase<DoNotAddArchiveItemPathToTheTargetFileSystemPath, DoNotAddArchiveItemPathToTheTargetFileSystemPath>
     {
         protected override DiagnosticDescriptor Rule => DoNotAddArchiveItemPathToTheTargetFileSystemPath.Rule;
@@ -32,7 +32,7 @@ namespace System.IO.Compression
     }
 }";
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -48,7 +48,7 @@ class TestClass
             GetCSharpResultAt(8, 9, 8, 39, "void ZipFileExtensions.ExtractToFile(ZipArchiveEntry source, string destinationFileName)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_File_Open_WithStringAndFileModeParameters_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -65,7 +65,7 @@ class TestClass
             GetCSharpResultAt(9, 9, 9, 19, "FileStream File.Open(string path, FileMode mode)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessParameters_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -82,7 +82,7 @@ class TestClass
             GetCSharpResultAt(9, 9, 9, 19, "FileStream File.Open(string path, FileMode mode, FileAccess access)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessAndFileShareParamters_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -99,7 +99,7 @@ class TestClass
             GetCSharpResultAt(9, 9, 9, 19, "FileStream File.Open(string path, FileMode mode, FileAccess access, FileShare share)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access, FileShare share)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access, FileShare share)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_FileStream_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -116,7 +116,7 @@ class TestClass
             GetCSharpResultAt(9, 26, 9, 41, "FileStream.FileStream(string path, FileMode mode)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_FileInfo_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -133,7 +133,7 @@ class TestClass
             GetCSharpResultAt(9, 24, 9, 37, "FileInfo.FileInfo(string fileName)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sanitizer_String_StartsWith_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -154,7 +154,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -169,7 +169,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sanitizer_Path_GetFileName_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -186,7 +186,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sanitizer_String_Substring_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -203,12 +203,12 @@ class TestClass
 }");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality.CA5389.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality.CA5389.excluded_symbol_names = TestMet*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.CA5389.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.CA5389.excluded_symbol_names = TestMet*")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();

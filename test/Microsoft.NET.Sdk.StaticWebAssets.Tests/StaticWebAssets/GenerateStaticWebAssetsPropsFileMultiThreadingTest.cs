@@ -10,9 +10,10 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
 public class GenerateStaticWebAssetsPropsFileMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(GenerateStaticWebAssetsPropsFileMultiThreadingTest), Guid.NewGuid().ToString("N"));

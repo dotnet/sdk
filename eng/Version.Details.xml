@@ -44,6 +44,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>50e862b8da0c82ddbf3952cfe61a8681ab93f5bc</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Build.TaskAuthoring.Analyzer" Version="18.9.0-preview-26311-113">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>50e862b8da0c82ddbf3952cfe61a8681ab93f5bc</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="15.2.101-preview6.26311.113">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>50e862b8da0c82ddbf3952cfe61a8681ab93f5bc</Sha>
@@ -541,13 +545,17 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>50e862b8da0c82ddbf3952cfe61a8681ab93f5bc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.3.0-preview.26307.5">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.3.0-preview.26330.8">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>1bc655fcf8929af69d33d0d4142ccf4f019158ac</Sha>
+      <Sha>3090fe6407891d9303da20f718dc5aef1b890fe3</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.3.0-preview.26307.5">
+    <Dependency Name="Microsoft.Testing.Platform.Internal.DotnetTest" Version="2.3.0-preview.26330.8">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>1bc655fcf8929af69d33d0d4142ccf4f019158ac</Sha>
+      <Sha>3090fe6407891d9303da20f718dc5aef1b890fe3</Sha>
+    </Dependency>
+    <Dependency Name="MSTest" Version="4.3.0-preview.26330.8">
+      <Uri>https://github.com/microsoft/testfx</Uri>
+      <Sha>3090fe6407891d9303da20f718dc5aef1b890fe3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="11.0.0-preview.6.26311.113">
       <Uri>https://github.com/dotnet/dotnet</Uri>

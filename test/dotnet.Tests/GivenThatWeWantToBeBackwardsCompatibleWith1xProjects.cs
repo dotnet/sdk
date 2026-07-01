@@ -1,16 +1,18 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBeBackwardsCompatibleWith1xProjects : SdkTest
     {
-        public GivenThatWeWantToBeBackwardsCompatibleWith1xProjects(ITestOutputHelper log) : base(log)
+        public GivenThatWeWantToBeBackwardsCompatibleWith1xProjects()
         {
         }
 
-        [RequiresSpecificFrameworkTheory("netcoreapp1.1")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresSpecificFramework("netcoreapp1.1")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void ItRestoresBuildsAndRuns(string target)
         {
 
@@ -37,9 +39,9 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
-        [InlineData("netstandard1.3")]
-        [InlineData("netstandard1.6")]
+        [TestMethod]
+        [DataRow("netstandard1.3")]
+        [DataRow("netstandard1.6")]
         public void ItRestoresBuildsAndPacks(string target)
         {
 
@@ -59,7 +61,8 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .Should().Pass();
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.0")] // https://github.com/dotnet/cli/issues/6087
+        [TestMethod]
+        [RequiresSpecificFramework("netcoreapp1.0")] // https://github.com/dotnet/cli/issues/6087
         public void ItRunsABackwardsVersionedTool()
         {
             var testInstance = TestAssetsManager

@@ -2805,6 +2805,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Ostrzeżenie: ustawienia z „{0}” nie są używane, ponieważ element „{1}” ma pierwszeństwo.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
+      <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
+        <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
+        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <note>{Locked="--"}</note>
+      </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
         <target state="translated">Konfiguracja, którą należy uruchomić. W przypadku większości projektów ustawienie domyślne to „Debugowanie”.</target>
@@ -3182,11 +3187,6 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Uruchom testy jednostkowe przy użyciu modułu uruchamiającego testy określonego w projekcie platformy .NET.</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestDiscoveryExitCode">
-        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Odnajdywanie testów zostało ukończone z kodem zakończenia bez powodzenia: {0} (zobacz: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
-      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">Odnaleziono testy ({0}) w zestawach {1}.</target>
@@ -3201,11 +3201,6 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">Platforma docelowa, dla której mają być uruchamiane testy. Platforma docelowa musi być również określona w pliku projektu.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="TestRunExitCode">
-        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Przebieg testu został ukończony z kodem zakończenia bez powodzenia: {0} (zobacz: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
@@ -3779,14 +3774,14 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <note />
       </trans-unit>
       <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
-        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</target>
-        <note>{0} is the .cs file path argument.</note>
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</target>
+        <note>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</note>
       </trans-unit>
       <trans-unit id="WarningFileArgumentPassedToMSBuild">
-        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</target>
-        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
+        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</target>
+        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>

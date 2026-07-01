@@ -7,18 +7,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Utils;
-using Xunit.Sdk;
 
 namespace Microsoft.TemplateEngine.TestHelper
 {
     public class EnvironmentSettingsHelper : IDisposable
     {
         private readonly List<string> _foldersToCleanup = new List<string>();
-        private readonly SharedTestOutputHelper _testOutputHelper;
+        private readonly Action<string>? _logAction;
 
-        public EnvironmentSettingsHelper(IMessageSink messageSink)
+        public EnvironmentSettingsHelper(Action<string>? logAction = null)
         {
-            _testOutputHelper = new SharedTestOutputHelper(messageSink);
+            _logAction = logAction;
         }
 
         public IEngineEnvironmentSettings CreateEnvironment(
@@ -35,7 +34,9 @@ namespace Microsoft.TemplateEngine.TestHelper
                 locale = "en-US";
             }
 
-            IEnumerable<ILoggerProvider> loggerProviders = new[] { new XunitLoggerProvider(_testOutputHelper) };
+            IEnumerable<ILoggerProvider> loggerProviders = _logAction is not null
+                ? new[] { new TestLoggerProvider(_logAction) }
+                : [];
             if (addLoggerProviders != null)
             {
                 loggerProviders = loggerProviders.Concat(addLoggerProviders);
