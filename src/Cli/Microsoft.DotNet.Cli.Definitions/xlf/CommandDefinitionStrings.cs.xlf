@@ -2270,11 +2270,6 @@ Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řá
         <target state="translated">Vyhledávejte dostupné úlohy.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersionInPackageVersionFormat">
-        <source>'{0}' is not a valid workload set version. The workload set version should have the form 'major.0.patch' (for example, '10.0.105'). Did you mean '{1}'?</source>
-        <target state="new">'{0}' is not a valid workload set version. The workload set version should have the form 'major.0.patch' (for example, '10.0.105'). Did you mean '{1}'?</target>
-        <note>{0} is the version the user provided. {1} is the suggested corrected version.</note>
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Verze úlohy, která se má zobrazit, nebo jedna nebo více úloh a jejich verze spojené znakem @.</target>

@@ -41,25 +41,25 @@ namespace ManifestReaderTests
             parsedVersion.Should().Be(expectedParsedVersion);
         }
 
-        [Theory]
+        [TestMethod]
         //  Wrong (package version) format: detected=true, suggested corrected workload set version
-        [InlineData("10.105.0",                     true,  "10.0.105")]
-        [InlineData("11.100.0-preview.5.26309.3",   true,  "11.0.100-preview.5.26309.3")]
-        [InlineData("8.200.0",                      true,  "8.0.200")]
-        [InlineData("8.201.0",                      true,  "8.0.201")]
-        [InlineData("8.203.1",                      true,  "8.0.203.1")]
-        [InlineData("9.100.0-preview.2.3.4.5.6.7.8", true, "9.0.100-preview.2.3.4.5.6.7.8")]
-        [InlineData("8.201.1-preview",              true,  "8.0.201.1-preview")]
-        [InlineData("8.201.1-preview.2",            true,  "8.0.201.1-preview.2")]
+        [DataRow("10.105.0",                     true,  "10.0.105")]
+        [DataRow("11.100.0-preview.5.26309.3",   true,  "11.0.100-preview.5.26309.3")]
+        [DataRow("8.200.0",                      true,  "8.0.200")]
+        [DataRow("8.201.0",                      true,  "8.0.201")]
+        [DataRow("8.203.1",                      true,  "8.0.203.1")]
+        [DataRow("9.100.0-preview.2.3.4.5.6.7.8", true, "9.0.100-preview.2.3.4.5.6.7.8")]
+        [DataRow("8.201.1-preview",              true,  "8.0.201.1-preview")]
+        [DataRow("8.201.1-preview.2",            true,  "8.0.201.1-preview.2")]
         //  Correct (workload set) format: detected=false
-        [InlineData("10.0.105",                     false, null)]
-        [InlineData("11.0.100-preview.5.26309.3",   false, null)]
-        [InlineData("8.0.200",                      false, null)]
-        [InlineData("8.0.203.1",                    false, null)]
-        [InlineData("9.0.100-preview.2",            false, null)]
+        [DataRow("10.0.105",                     false, null)]
+        [DataRow("11.0.100-preview.5.26309.3",   false, null)]
+        [DataRow("8.0.200",                      false, null)]
+        [DataRow("8.0.203.1",                    false, null)]
+        [DataRow("9.0.100-preview.2",            false, null)]
         //  Not a version: detected=false
-        [InlineData("not-a-version",                false, null)]
-        [InlineData("",                             false, null)]
+        [DataRow("not-a-version",                false, null)]
+        [DataRow("",                             false, null)]
         public void ItDetectsPackageVersionFormat(string version, bool expectedIsDetected, string? expectedSuggestion)
         {
             bool isDetected = WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(version, out var suggestedVersion);

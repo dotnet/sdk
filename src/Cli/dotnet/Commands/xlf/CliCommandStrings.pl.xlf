@@ -4051,13 +4051,13 @@ Aby wyświetlić wartość, należy podać odpowiednią opcję wiersza poleceń 
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionInPackageVersionFormat">
-        <source>'{0}' is not a valid workload set version. The workload set version should have the form 'major.0.patch' (for example, '10.0.105'). Did you mean '{1}'?</source>
-        <target state="new">'{0}' is not a valid workload set version. The workload set version should have the form 'major.0.patch' (for example, '10.0.105'). Did you mean '{1}'?</target>
+        <source>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?</source>
+        <target state="new">'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?</target>
         <note>{0} is the version the user provided. {1} is the suggested corrected version.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionInPackageVersionFormatGlobalJson">
-        <source>'{0}' is not a valid workload set version. The workload set version should have the form 'major.0.patch' (for example, '10.0.105'). Did you mean '{1}'? (Specified in '{2}')</source>
-        <target state="new">'{0}' is not a valid workload set version. The workload set version should have the form 'major.0.patch' (for example, '10.0.105'). Did you mean '{1}'? (Specified in '{2}')</target>
+        <source>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'? (Specified in '{2}')</source>
+        <target state="new">'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'? (Specified in '{2}')</target>
         <note>{0} is the version the user provided. {1} is the suggested corrected version. {2} is the path to the global.json file.</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
