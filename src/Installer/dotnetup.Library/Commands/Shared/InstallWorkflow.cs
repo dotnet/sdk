@@ -121,7 +121,11 @@ internal class InstallWorkflow
     public List<ResolvedInstallRequest> GenerateInstallRequests(
         MinimalInstallSpec[] componentSpecs)
     {
-        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var globalJson = GetGlobalJsonInfoForInstall(
+            componentSpecs,
+            _command.InstallPath,
+            _command.UpdateGlobalJson,
+            Environment.CurrentDirectory);
         var currentInstallRoot = _command.DotnetEnvironment.GetCurrentPathConfiguration();
 
         var pathResolution = _installPathResolver.Resolve(
@@ -142,6 +146,24 @@ internal class InstallWorkflow
         }
 
         return requests;
+    }
+
+    internal static GlobalJsonInfo? GetGlobalJsonInfoForInstall(
+        MinimalInstallSpec[] componentSpecs,
+        string? installPath,
+        bool updateGlobalJson,
+        string initialDirectory)
+    {
+        bool needsGlobalJsonContents = installPath is null;
+        bool needsGlobalJsonPath = updateGlobalJson ||
+            componentSpecs.Any(spec => spec.Component == InstallComponent.SDK && spec.VersionOrChannel is null);
+
+        if (!needsGlobalJsonContents && !needsGlobalJsonPath)
+        {
+            return null;
+        }
+
+        return GlobalJsonModifier.GetGlobalJsonInfo(initialDirectory, parseContents: needsGlobalJsonContents);
     }
 
     internal static bool ShouldRunFirstUseOnboarding(bool interactive, string? installPath, bool migrateFromSystem = false)
