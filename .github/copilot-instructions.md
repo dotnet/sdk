@@ -118,15 +118,12 @@ Canonical scenarios:
 - Large changes should always include test changes.
 - When creating new test projects in test/TestAssets/TestProjects, always use `$(CurrentTargetFramework)` for the `<TargetFramework>` property instead of hard-coding a specific version like `net8.0`.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
-- To run tests in this repo:
-  - First build (`build.cmd` / `./build.sh`), then load the build environment so a plain `dotnet`
-    resolves correctly: dot-source `artifacts\sdk-build-env.ps1` (PowerShell), run
-    `artifacts\sdk-build-env.bat` (cmd), or `source artifacts/sdk-build-env.sh` (bash).
-  - For MSTest-style projects: `dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
-  - For XUnit test assemblies: `dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"`
+- To run tests in this repo (after a full build, invoke the repo-local bootstrap SDK directly):
+  - For MSTest-style projects: `./.dotnet/dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
+  - For XUnit test assemblies: `./.dotnet/dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"`
   - Examples:
-    - `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
-    - `dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
+    - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
+    - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
 - To test CLI command changes:
   - Build the redist SDK: `./build.sh` from repo root
