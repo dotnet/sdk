@@ -33,10 +33,13 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 <!--#endif-->
-<!--#else-->
+<!--#endif-->
+
+<!--#if (csharpFeature_ImplicitUsings)-->
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 <!--#endif-->
+
 
 </Project>
