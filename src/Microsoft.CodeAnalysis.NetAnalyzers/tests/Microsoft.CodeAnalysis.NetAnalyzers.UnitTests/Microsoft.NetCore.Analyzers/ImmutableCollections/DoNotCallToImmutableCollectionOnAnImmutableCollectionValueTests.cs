@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.ImmutableCollections.DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer,
     Microsoft.NetCore.Analyzers.ImmutableCollections.DoNotCallToImmutableCollectionOnAnImmutableCollectionValueFixer>;
@@ -15,6 +14,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
 {
+    [TestClass]
     public class DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTests
     {
         public static readonly TheoryData<string> CollectionNames_Arity1 = new()
@@ -33,8 +33,8 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
 
         #region No Diagnostic Tests
 
-        [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        [MemberData(nameof(CollectionNames_Arity1))]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [DynamicData(nameof(CollectionNames_Arity1))]
         public async Task NoDiagnosticCases_Arity1Async(string collectionName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -114,8 +114,8 @@ End Class
 ");
         }
 
-        [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        [MemberData(nameof(CollectionNames_Arity2))]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [DynamicData(nameof(CollectionNames_Arity2))]
         public async Task NoDiagnosticCases_Arity2Async(string collectionName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -195,7 +195,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticCases_ArrayToImmutableArray()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -214,8 +214,8 @@ public class C
 
         #region Diagnostic Tests
 
-        [Theory]
-        [MemberData(nameof(CollectionNames_Arity1))]
+        [TestMethod]
+        [DynamicData(nameof(CollectionNames_Arity1))]
         public async Task DiagnosticCases_Arity1Async(string collectionName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -282,8 +282,8 @@ End Class
                 GetBasicResultAt(18, 3, collectionName));
         }
 
-        [Theory]
-        [MemberData(nameof(CollectionNames_Arity2))]
+        [TestMethod]
+        [DynamicData(nameof(CollectionNames_Arity2))]
         public async Task DiagnosticCases_Arity2Async(string collectionName)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"

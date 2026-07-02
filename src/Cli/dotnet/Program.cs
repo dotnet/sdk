@@ -1,42 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !CLI_AOT
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
-using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
-using Microsoft.DotNet.Cli.Commands.Workload;
-using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Telemetry;
-#endif
-using Microsoft.DotNet.Cli.Utils;
-#if !CLI_AOT
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.DotNet.Utilities;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
-#endif
 
 namespace Microsoft.DotNet.Cli;
 
 public class Program
 {
-#if CLI_AOT
-    public static int Main(string[] args)
-    {
-        var parseResult = Parser.Parse(args);
-        return Parser.Invoke(parseResult);
-    }
-#else
-    private static readonly string s_toolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
-
     private static readonly Activity? s_mainActivity;
     private static readonly PosixSignalRegistration s_sigIntRegistration;
     private static readonly PosixSignalRegistration s_sigQuitRegistration;
@@ -150,18 +132,15 @@ public class Program
     internal static int ProcessArgsAndExecute(string[] args)
     {
         ParseResult parseResult = ParseArgs(args);
-        // Options that perform terminating actions are considered to essentially be subcommands.
-        // These are special as they should not run the first-run setup.
-        // Example: dotnet --version
-        if (!(parseResult.Action is InvocableOptionAction { Terminating: true }))
-        {
-            SetupFirstRun(parseResult);
-        }
+        // Run the cross-cutting first-run experience (first-time-use notice, telemetry message,
+        // ASP.NET dev cert, global-tools PATH, workload integrity check). Terminating options such as
+        // "dotnet --version" are skipped inside Setup.
+        FirstRunExperience.Setup(parseResult);
 
         TelemetryEventEntry.SendFiltered(new ParseResultWithGlobalJsonState(parseResult, s_globalJsonState));
         if (parseResult.CanBeInvoked())
         {
-            return ExecuteInternalCommand(parseResult);
+            return CommandInvocation.ExecuteInternalCommand(parseResult);
         }
 
         try
@@ -189,121 +168,6 @@ public class Program
             }
             s_mainActivity.SetDisplayName(parseResult);
             return parseResult;
-        }
-    }
-
-    private static void SetupFirstRun(ParseResult parseResult)
-    {
-        using var _ = Activities.Source.StartActivity("first-time-use");
-        IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
-        IAspNetCertificateSentinel aspNetCertificateSentinel = new AspNetCertificateSentinel();
-        string toolPath = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, s_toolPathSentinelFileName);
-        IFileSentinel toolPathSentinel = new FileSentinel(new FilePath(toolPath));
-
-        var environmentProvider = new EnvironmentProvider();
-        bool generateAspNetCertificate = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_GENERATE_ASPNET_CERTIFICATE, defaultValue: true);
-        bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
-        bool addGlobalToolsToPath = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_ADD_GLOBAL_TOOLS_TO_PATH, defaultValue: true);
-        bool nologo = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_NOLOGO, defaultValue: false);
-        bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
-            // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
-            defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
-
-        var isDotnetBeingInvokedFromNativeInstaller = false;
-        // Note: This should not be special cased like this. Determine if we can skip first run setup entirely for this command.
-        if (parseResult.CommandResult.Command is InternalReportInstallSuccessCommandDefinition)
-        {
-            aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();
-            firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();
-            toolPathSentinel = new NoOpFileSentinel(exists: false);
-            isDotnetBeingInvokedFromNativeInstaller = true;
-        }
-
-        var dotnetFirstRunConfiguration = new DotnetFirstRunConfiguration(
-            generateAspNetCertificate,
-            telemetryOptout,
-            addGlobalToolsToPath,
-            nologo,
-            skipWorkloadIntegrityCheck);
-
-        string[] getStarOperators = ["getProperty", "getItem", "getTargetResult"];
-        char[] switchIndicators = ['-', '/'];
-        var skipFirstTimeUseCheck = parseResult.CommandResult.Tokens.Any(t =>
-            getStarOperators.Any(o =>
-                switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
-
-        var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists() && !skipFirstTimeUseCheck;
-        var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
-        // Note: Not sure why this unused instance type is created.
-        var __ = new DotNetCommandFactory(alwaysRunOutOfProc: true);
-        var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
-        var reporter = Reporter.Error;
-        var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(
-            firstTimeUseNoticeSentinel,
-            aspNetCertificateSentinel,
-            aspnetCertificateGenerator,
-            toolPathSentinel,
-            dotnetFirstRunConfiguration,
-            reporter,
-            environmentPath,
-            skipFirstTimeUseCheck);
-
-        dotnetConfigurer.Configure();
-
-#if TARGET_WINDOWS
-        if (isDotnetBeingInvokedFromNativeInstaller && OperatingSystem.IsWindows())
-        {
-            DotDefaultPathCorrector.Correct();
-        }
-#endif
-
-        if (isFirstTimeUse && !skipWorkloadIntegrityCheck)
-        {
-            try
-            {
-                WorkloadIntegrityChecker.RunFirstUseCheck(reporter);
-            }
-            catch (Exception)
-            {
-                // If the workload check fails for any reason, we want to eat the failure and continue running the command.
-                reporter.WriteLine(CliStrings.WorkloadIntegrityCheckError.Yellow());
-            }
-        }
-    }
-
-    private static int ExecuteInternalCommand(ParseResult parseResult)
-    {
-        Debug.Assert(parseResult.CanBeInvoked());
-        int exitCode;
-        using var _ = Activities.Source.StartActivity("invocation");
-        try
-        {
-            exitCode = Parser.Invoke(parseResult);
-            if (parseResult.Errors.Any())
-            {
-                exitCode = AdjustExitCodeForNew();
-            }
-        }
-        catch (Exception exception)
-        {
-            exitCode = Parser.ExceptionHandler(exception, parseResult);
-        }
-        return exitCode;
-
-        int AdjustExitCodeForNew()
-        {
-            var commandResult = parseResult.CommandResult;
-            while (commandResult is not null)
-            {
-                if (commandResult.Command.Name == "new")
-                {
-                    // Default parse error exit code is 1.
-                    // For the "new" command and its subcommands, it needs to be 127.
-                    return 127;
-                }
-                commandResult = commandResult.Parent as CommandResult;
-            }
-            return exitCode;
         }
     }
 
@@ -346,7 +210,7 @@ public class Program
                 }
             }
             parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
-            return ExecuteInternalCommand(parseResult);
+            return CommandInvocation.ExecuteInternalCommand(parseResult);
         }
 
         return null;
@@ -361,5 +225,4 @@ public class Program
         TelemetryClient.FlushProviders();
         Activities.Source.Dispose();
     }
-#endif
 }

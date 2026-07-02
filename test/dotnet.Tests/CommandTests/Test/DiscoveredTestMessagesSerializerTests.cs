@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
-using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
@@ -11,6 +10,12 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public class DiscoveredTestMessagesSerializerTests
 {
+    // Mirror the wire field ids from Microsoft.Testing.Platform.IPC (ObjectFieldIds.cs) in the
+    // Microsoft.Testing.Platform.Internal.DotnetTest package. Those types are [Embedded] and therefore not
+    // referenceable from this (separate) test assembly, so the values are inlined here.
+    private const ushort DiscoveredTestMessageListFieldId = 3; // DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList
+    private const ushort LineNumberFieldId = 4;                // DiscoveredTestMessageFieldsId.LineNumber
+
     [TestMethod]
     public void RoundTrip_AllFieldsPopulated_PreservesValues()
     {
@@ -125,7 +130,7 @@ public class DiscoveredTestMessagesSerializerTests
         outerFieldCount.Should().Be(1, "only the DiscoveredTestMessageList field is populated");
 
         ushort outerFieldId = reader.ReadUInt16();
-        outerFieldId.Should().Be(DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList);
+        outerFieldId.Should().Be(DiscoveredTestMessageListFieldId);
         _ = reader.ReadInt32(); // payload size of the list
         int listLength = reader.ReadInt32();
         listLength.Should().Be(1);
@@ -134,7 +139,7 @@ public class DiscoveredTestMessagesSerializerTests
         innerFieldCount.Should().Be(1, "only the LineNumber field is populated on the inner test");
 
         ushort innerFieldId = reader.ReadUInt16();
-        innerFieldId.Should().Be(DiscoveredTestMessageFieldsId.LineNumber);
+        innerFieldId.Should().Be(LineNumberFieldId);
 
         int lineNumberFieldSize = reader.ReadInt32();
         lineNumberFieldSize.Should().Be(sizeof(int), "LineNumber must be serialized as 4 bytes");

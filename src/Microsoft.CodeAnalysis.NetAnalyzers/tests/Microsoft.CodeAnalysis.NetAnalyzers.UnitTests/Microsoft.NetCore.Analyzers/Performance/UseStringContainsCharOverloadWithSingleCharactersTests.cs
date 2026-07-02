@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseStringContainsCharOverloadWithSingleCharactersAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUseStringContainsCharOverloadWithSingleCharactersFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class UseStringContainsCharOverloadWithSingleCharactersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_RegularStringLiteral_FixedAsync()
         {
             var violatingSourceCode = @"using System;
@@ -38,7 +38,7 @@ public class TestClass
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(violatingSourceCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedSourceCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_RegularStringLiteralWithStringComparisonOverload_FixedAsync()
         {
             var violatingSourceCode = @"using System;
@@ -61,7 +61,7 @@ public class TestClass
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(violatingSourceCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedSourceCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_RegularStringLiteralWithStringComparisonOverloadAndReorderedNamedArguments_FixedAsync()
         {
             var violatingSourceCode = @"using System;
@@ -84,7 +84,7 @@ public class TestClass
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(violatingSourceCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedSourceCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ConstructedStringLiteral_UnchangedAsync()
         {
             var sourceCode = @"using System;
@@ -98,7 +98,7 @@ public class TestClass
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(sourceCode, ReferenceAssemblies.NetStandard.NetStandard21, sourceCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ConstructedStringLiteralWithStringComparisonOverload_UnchangedAsync()
         {
             var sourceCode = @"using System;
@@ -112,7 +112,7 @@ public class TestClass
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(sourceCode, ReferenceAssemblies.NetStandard.NetStandard21, sourceCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_SingleCharacterStringVariable_UnchangedAsync()
         {
             var sourceCode = @"using System;
@@ -127,7 +127,7 @@ public class TestClass
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(sourceCode, ReferenceAssemblies.NetStandard.NetStandard21, sourceCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_SingleCharacterStringVariableWithStringComparisonOverload_UnchangedAsync()
         {
             var sourceCode = @"using System;
@@ -142,7 +142,7 @@ public class TestClass
             await VerifyCSCodeFixWithGivenReferenceAssembliesAsync(sourceCode, ReferenceAssemblies.NetStandard.NetStandard21, sourceCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_RegularStringLiteralWithoutAvailableOverload_NoDiagnosticAsync()
         {
             var test = new VerifyVB.Test()
@@ -155,10 +155,10 @@ End Class",
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
 
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_RegularStringLiteral_FixedAsync()
         {
             var test = new VerifyVB.Test()
@@ -175,10 +175,10 @@ End Class",
     End Sub
 End Class"
             };
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_NamedStringLiteral_FixedAsync()
         {
             var test = new VerifyVB.Test()
@@ -195,7 +195,7 @@ End Class",
     End Sub
 End Class"
             };
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyCSCodeFixWithGivenReferenceAssembliesAsync(string source, ReferenceAssemblies referenceAssemblies, string fixedSource)
@@ -205,7 +205,7 @@ End Class"
                 TestCode = source,
                 ReferenceAssemblies = referenceAssemblies,
                 FixedCode = fixedSource
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

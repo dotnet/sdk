@@ -6,8 +6,8 @@ using System.CommandLine.Invocation;
 using System.Runtime.InteropServices;
 #if !CLI_AOT
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Workload;
 #endif
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
@@ -149,12 +149,8 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetSdkInfoLabel}");
         Reporter.Output.WriteLine($" Version:           {Product.Version}");
         Reporter.Output.WriteLine($" Commit:            {commitSha}");
-#if !CLI_AOT
-        // Workload and MSBuild version reporting are not AOT-compatible yet (they pull in the
-        // workload manager and MSBuild forwarding machinery), so they are omitted from the AOT build.
         Reporter.Output.WriteLine($" Workload version:  {WorkloadInfoHelper.GetWorkloadsVersion()}");
         Reporter.Output.WriteLine($" MSBuild version:   {MSBuildForwardingAppWithoutLogging.MSBuildVersion}");
-#endif
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetRuntimeInfoLabel}");
         Reporter.Output.WriteLine($" OS Name:     {RuntimeEnvironment.OperatingSystem}");
@@ -167,11 +163,9 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         Reporter.Output.WriteLine($" RID:         {RuntimeInformation.RuntimeIdentifier}");
 #endif
         Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
-#if !CLI_AOT
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
         new WorkloadInfoHelper(isInteractive: false).ShowWorkloadsInfo(showVersion: false);
-#endif
 
         return 0;
     }
