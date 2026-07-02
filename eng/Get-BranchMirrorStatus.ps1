@@ -28,6 +28,9 @@ param(
 $ErrorActionPreference = 'Continue'
 
 $AzDoOrg = "https://dev.azure.com/dnceng"
+
+# Well-known Azure DevOps token scope GUID.
+# See https://learn.microsoft.com/rest/api/azure/devops/tokens
 $AzDoResourceId = "499b84ac-1321-427f-aa17-267ca6975798"
 
 # Branch mappings for GitHub-to-Azure-DevOps mirror status checks.
@@ -69,6 +72,7 @@ function Test-Prerequisites {
         $errors += "``gh`` CLI is not installed. Install from https://cli.github.com/"
     }
     else {
+        # Check status code while suppressing all output
         $null = gh auth status 2>&1
         if ($LASTEXITCODE -ne 0) {
             $errors += "``gh`` CLI is not authenticated. Run ``gh auth login``."
@@ -136,6 +140,7 @@ function Get-AzDoCommits {
         [int]$Top
     )
 
+    # https://learn.microsoft.com/rest/api/azure/devops/git/commits/get-commits
     $url = "$AzDoOrg/$Project/_apis/git/repositories/$Repo/commits" +
         "?searchCriteria.itemVersion.version=$Branch" +
         "&searchCriteria.itemVersion.versionType=branch" +
