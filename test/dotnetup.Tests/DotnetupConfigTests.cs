@@ -3,10 +3,10 @@
 
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class DotnetupConfigTests : IDisposable
 {
     private readonly string _tempDir;
@@ -26,13 +26,13 @@ public class DotnetupConfigTests : IDisposable
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
     }
 
-    [Fact]
+    [TestMethod]
     public void Exists_ReturnsFalse_WhenNoConfigFile()
     {
         DotnetupConfig.Exists().Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void WriteAndRead_RoundTrips()
     {
         var config = new DotnetupConfigData
@@ -49,10 +49,10 @@ public class DotnetupConfigTests : IDisposable
         loaded.SchemaVersion.Should().Be("1");
     }
 
-    [Theory]
-    [InlineData(PathPreference.DotnetupDotnet)]
-    [InlineData(PathPreference.ShellProfile)]
-    [InlineData(PathPreference.FullPathReplacement)]
+    [TestMethod]
+    [DataRow(PathPreference.DotnetupDotnet)]
+    [DataRow(PathPreference.ShellProfile)]
+    [DataRow(PathPreference.FullPathReplacement)]
     internal void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
     {
         DotnetupConfig.Write(new DotnetupConfigData { PathPreference = preference });
@@ -62,7 +62,7 @@ public class DotnetupConfigTests : IDisposable
         result.Should().Be(preference);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadPathPreference_ReturnsNull_WhenNoConfig()
     {
         var result = DotnetupConfig.ReadPathPreference();
@@ -71,13 +71,13 @@ public class DotnetupConfigTests : IDisposable
     }
 
 
-    [Fact]
+    [TestMethod]
     public void Read_ReturnsNull_WhenNoConfigFile()
     {
         DotnetupConfig.Read().Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void Read_ReturnsNull_WhenConfigFileIsCorrupt()
     {
         DotnetupPaths.EnsureDataDirectoryExists();

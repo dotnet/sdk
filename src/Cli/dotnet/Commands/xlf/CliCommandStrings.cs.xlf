@@ -3187,11 +3187,6 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">Spustí testy jednotek v nástroji Test Runner zadaném v projektu .NET.</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestDiscoveryExitCode">
-        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Testovací zjišťování bylo dokončeno s neúspěšným ukončovacím kódem: {0} (viz: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
-      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">Počet zjištěných testů v(e) {1} sestaveních: {0}</target>
@@ -3206,11 +3201,6 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">Cílová architektura pro spuštění testů. Cílová architektura musí být určená také v souboru projektu.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="TestRunExitCode">
-        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Testovací běh byl dokončen s neúspěšným ukončovacím kódem: {0} (viz: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

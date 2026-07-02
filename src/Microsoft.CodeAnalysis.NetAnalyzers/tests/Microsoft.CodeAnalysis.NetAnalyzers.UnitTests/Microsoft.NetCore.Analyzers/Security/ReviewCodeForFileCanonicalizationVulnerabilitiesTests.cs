@@ -3,15 +3,15 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForFileCanonicalizationVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForFilePathInjectionVulnerabilities, ReviewCodeForFilePathInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForFilePathInjectionVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -45,7 +45,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(21, 16, 9, 28, "FileStream File.Open(string path, FileMode mode)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Params", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await VerifyVisualBasicWithDependenciesAsync(@"
@@ -78,7 +78,7 @@ End Class",
                 GetBasicResultAt(21, 15, 9, 35, "Function File.Open(path As String, mode As FileMode) As FileStream", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Params As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task File_ReadAllText_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -98,7 +98,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(12, 9, 11, 24, "string File.ReadAllText(string path)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FileInfo_Constructor_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -118,7 +118,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(12, 9, 11, 24, "FileInfo.FileInfo(string fileName)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task File_ReadAllText_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -137,7 +137,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AspNetCoreHttpRequest_FileInfo_Constructor_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

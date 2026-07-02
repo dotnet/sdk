@@ -18,7 +18,6 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class RunnableProjectConfigTests
     {
         public TestContext TestContext { get; set; } = null!;
@@ -27,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
-            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
         [ClassCleanup]
         public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();

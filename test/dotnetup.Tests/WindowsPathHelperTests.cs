@@ -2,20 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Tools.Bootstrapper;
+using System.Runtime.Versioning;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
+[SupportedOSPlatform("windows")]
 public class WindowsPathHelperTests
 {
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void RemoveProgramFilesDotnetFromPath_RemovesCorrectPath()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         string dotnetPath = Path.Combine(programFiles, "dotnet");
@@ -30,15 +28,10 @@ public class WindowsPathHelperTests
         result.Should().Contain("C:\\AnotherPath");
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void RemoveProgramFilesDotnetFromPath_HandlesEmptyPath()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         string path = string.Empty;
 
@@ -49,15 +42,10 @@ public class WindowsPathHelperTests
         result.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void AddProgramFilesDotnetToPath_AddsCorrectPath()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         string unexpandedPath = "C:\\SomeOtherPath;C:\\AnotherPath";
         string expandedPath = unexpandedPath; // No environment variables to expand in test
@@ -73,15 +61,10 @@ public class WindowsPathHelperTests
         result.Should().Contain("C:\\AnotherPath");
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void AddProgramFilesDotnetToPath_DoesNotAddDuplicatePath()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         string dotnetPath = Path.Combine(programFiles, "dotnet");
@@ -97,15 +80,10 @@ public class WindowsPathHelperTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetProgramFilesDotnetPaths_ReturnsValidPaths()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Act
         var paths = WindowsPathHelper.GetProgramFilesDotnetPaths();
 
@@ -115,15 +93,10 @@ public class WindowsPathHelperTests
         paths.Should().AllSatisfy(p => p.Should().EndWith("dotnet"));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void FindDotnetPathIndices_FindsCorrectIndices()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         var pathEntries = new List<string> { "C:\\Path1", "C:\\Program Files\\dotnet", "C:\\Path2", "C:\\Program Files (x86)\\dotnet" };
         var dotnetPaths = new List<string> { "C:\\Program Files\\dotnet", "C:\\Program Files (x86)\\dotnet" };
@@ -137,15 +110,10 @@ public class WindowsPathHelperTests
         indices.Should().Contain(3);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void RemovePathEntriesByIndices_RemovesCorrectEntries()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         string path = "C:\\Path1;C:\\Path2;C:\\Path3;C:\\Path4";
         var indicesToRemove = new List<int> { 1, 3 };
@@ -157,15 +125,10 @@ public class WindowsPathHelperTests
         result.Should().Be("C:\\Path1;C:\\Path3");
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void RemovePathEntriesByIndices_HandlesEmptyIndices()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         string path = "C:\\Path1;C:\\Path2;C:\\Path3";
         var indicesToRemove = new List<int>();
@@ -177,15 +140,10 @@ public class WindowsPathHelperTests
         result.Should().Be(path);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void PathContainsDotnet_ReturnsTrueWhenDotnetExists()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         var pathEntries = new List<string> { "C:\\Path1", "C:\\Program Files\\dotnet", "C:\\Path2" };
         var dotnetPaths = new List<string> { "C:\\Program Files\\dotnet" };
@@ -197,15 +155,10 @@ public class WindowsPathHelperTests
         result.Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void PathContainsDotnet_ReturnsFalseWhenDotnetDoesNotExist()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         var pathEntries = new List<string> { "C:\\Path1", "C:\\Path2", "C:\\Path3" };
         var dotnetPaths = new List<string> { "C:\\Program Files\\dotnet" };
@@ -217,15 +170,10 @@ public class WindowsPathHelperTests
         result.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void FindDotnetPathIndices_IsCaseInsensitive()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         var pathEntries = new List<string> { "C:\\Path1", "c:\\program files\\dotnet", "C:\\Path2" };
         var dotnetPaths = new List<string> { "C:\\Program Files\\dotnet" };
@@ -238,15 +186,10 @@ public class WindowsPathHelperTests
         indices.Should().Contain(1);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void RemovePathEntriesByIndices_PreservesUnexpandedVariables()
     {
-        // This test can only run on Windows where WindowsPathHelper is supported
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         // Arrange
         string path = "%SystemRoot%\\system32;C:\\Program Files\\dotnet;%USERPROFILE%\\bin";
         var indicesToRemove = new List<int> { 1 };

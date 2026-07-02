@@ -280,17 +280,22 @@ public class AotParserTests
         stdout.Should().Contain(".NET SDK:");
         stdout.Should().Contain("Version:");
         stdout.Should().Contain("Commit:");
+        stdout.Should().Contain("Workload version:");
+        stdout.Should().Contain("MSBuild version:");
         stdout.Should().Contain("Runtime Environment:");
     }
 
     [TestMethod]
-    public void InvokeInfo_DoesNotContainManagedOnlySections()
+    public void InvokeInfo_ReportsMSBuildAndWorkloadVersions()
     {
-        var (_, stdout, _) = InvokeWithCapture(["--info"]);
+        var (exitCode, stdout, _) = InvokeWithCapture(["--info"]);
 
-        // Under CLI_AOT, workload and MSBuild info are excluded
-        Assert.DoesNotContain("Workload version:", stdout);
-        Assert.DoesNotContain("MSBuild version:", stdout);
+        // Workload and MSBuild reporting used to be excluded from the AOT build; the AOT --info now
+        // matches the managed CLI. Assert the MSBuild line renders a real (non-empty) version so a
+        // future trim/substitution regression that blanks it out would be caught.
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().MatchRegex(@"MSBuild version:\s+\S");
+        stdout.Should().Contain("Workload version:");
     }
 
     [TestMethod]

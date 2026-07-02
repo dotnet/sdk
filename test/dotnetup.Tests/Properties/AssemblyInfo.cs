@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// Enable parallel test execution
-[assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass, DisableTestParallelization = false, MaxParallelThreads = 0)]
+// Some test methods take internal product types (e.g. PathPreference) as data-driven
+// parameters, so they must be internal. DiscoverInternals lets MSTest discover them.
+[assembly: DiscoverInternals]
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 

@@ -3,7 +3,6 @@
 
 using System.Reflection;
 using FluentAssertions;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -11,6 +10,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 // so it cannot dot-source eng/sdk-tools.ps1 at runtime and must carry its own copy
 // of the architecture-detection helpers (ConvertTo-RidArchitecture and
 // Get-NativeMachineArchitecture). These tests guard against the two copies silently diverging.
+[TestClass]
 public class ArchitectureDetectionSyncTests
 {
     private const string BeginMarker = "# BEGIN-SYNC ArchitectureDetection";
@@ -21,7 +21,7 @@ public class ArchitectureDetectionSyncTests
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .First(a => a.Key == "RepoRoot").Value!);
 
-    [Fact]
+    [TestMethod]
     public void ArchitectureDetection_IsIdentical_BetweenSdkToolsAndGetDotnetup()
     {
         var sdkToolsPath = Path.Combine(RepoRoot, "eng", "sdk-tools.ps1");

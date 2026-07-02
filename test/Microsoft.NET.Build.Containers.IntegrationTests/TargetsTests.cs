@@ -8,7 +8,6 @@ using static Microsoft.NET.Build.Containers.KnownStrings.Properties;
 namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 
 [TestClass]
-[DoNotParallelize]
 public class TargetsTests
 {
     [TestMethod]

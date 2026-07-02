@@ -557,7 +557,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Should().Contain("Test run completed with non-success exit code: 1 (see: https://aka.ms/testingplatform/exitcodes)");
+                // The test app process exits with code 0 before sending the session-end event, so the
+                // package reporter prints no per-assembly "Exit code" line for this crash scenario.
             }
         }
 
@@ -586,7 +587,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Should().Contain("Test run completed with non-success exit code: 47 (see: https://aka.ms/testingplatform/exitcodes)");
+                result.StdOut.Should().Contain("Exit code: 47");
             }
         }
 

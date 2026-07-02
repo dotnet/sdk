@@ -3187,11 +3187,6 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <target state="translated">Executar testes de unidade usando o executor de testes especificado em um projeto do .NET.</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestDiscoveryExitCode">
-        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Descoberta de testes concluída com código de saída sem sucesso: {0} (veja: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
-      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">Testes {0} descobertos nos assemblies {1}.</target>
@@ -3206,11 +3201,6 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">A estrutura de destino para a qual a execução de testes ocorrerá. A estrutura de destino também precisa ser especificada no arquivo de projeto.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="TestRunExitCode">
-        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Execução de testes concluída com código de saída sem sucesso: {0} (veja: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

@@ -9,7 +9,6 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -18,6 +17,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// Regression coverage: the --untracked flag must bypass the "untracked artifacts" check
 /// so that users can install to paths with existing .NET artifacts not in the manifest.
 /// </summary>
+[TestClass]
 public class InstallWorkflowTests : IDisposable
 {
     private readonly string _tempDir;
@@ -38,7 +38,7 @@ public class InstallWorkflowTests : IDisposable
 
     #region ValidateNoUntrackedArtifacts
 
-    [Fact]
+    [TestMethod]
     public void ValidateNoUntrackedArtifacts_ThrowsWhenPathHasArtifactsNotInManifest()
     {
         using var testEnv = new TestEnvironment();
@@ -50,7 +50,7 @@ public class InstallWorkflowTests : IDisposable
             .WithMessage("*already contains a .NET installation that is not tracked*");
     }
 
-    [Fact]
+    [TestMethod]
     public void ValidateNoUntrackedArtifacts_DoesNotThrowWhenPathIsEmpty()
     {
         using var testEnv = new TestEnvironment();
@@ -60,7 +60,7 @@ public class InstallWorkflowTests : IDisposable
         act.Should().NotThrow();
     }
 
-    [Fact]
+    [TestMethod]
     public void ValidateNoUntrackedArtifacts_DoesNotThrowWhenPathDoesNotExist()
     {
         using var testEnv = new TestEnvironment();
@@ -75,14 +75,14 @@ public class InstallWorkflowTests : IDisposable
 
     #region First-use onboarding
 
-    [Fact]
+    [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsTrue_ForInteractiveInstallWithoutConfig()
     {
         InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: null)
             .Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_WhenConfigAlreadyExists()
     {
         DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.ShellProfile });
@@ -91,28 +91,28 @@ public class InstallWorkflowTests : IDisposable
             .Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_ForExplicitInstallPath()
     {
         InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: @"C:\custom\dotnet")
             .Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_ForNonInteractiveInstall()
     {
         InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: false, installPath: null)
             .Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_WhenMigrateFromSystemWasRequested()
     {
         InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: null, migrateFromSystem: true)
             .Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldPromptForStarterChannel_ReturnsTrue_ForFirstUseSdkInstallWithoutChannel()
     {
         InstallWorkflow.ShouldPromptForStarterChannel(
@@ -121,7 +121,7 @@ public class InstallWorkflowTests : IDisposable
             .Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldPromptForStarterChannel_ReturnsFalse_ForFirstUseRuntimeInstallWithoutComponent()
     {
         // First-run `dotnetup runtime install` (no version/channel) should NOT trigger the
@@ -133,7 +133,7 @@ public class InstallWorkflowTests : IDisposable
             .Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldPromptForStarterChannel_ReturnsFalse_ForExplicitRuntimeInstall()
     {
         InstallWorkflow.ShouldPromptForStarterChannel(

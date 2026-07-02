@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumWithFlagsAttributeAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumWithFlagsAttributeFixer>;
@@ -15,6 +14,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumWithFlagsAttributeTests
     {
         private static string GetCSharpCode_EnumWithFlagsAttributes(string code, bool hasFlags)
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             return string.Format(CultureInfo.CurrentCulture, code, stringToReplace);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_SimpleCaseAsync()
         {
             var code = @"{0}
@@ -61,7 +61,7 @@ public enum HexFlagsEnumClass
             await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_EnumWithFlagsAttributes_SimpleCase_InternalAsync()
         {
             var code = @"{0}
@@ -94,7 +94,7 @@ internal class OuterClass
             await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_SimpleCaseWithScopeAsync()
         {
             var code = @"{0}
@@ -121,7 +121,7 @@ public enum HexFlagsEnumClass
                 GetCA1027CSharpResultAt(11, 13, "HexFlagsEnumClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCaseAsync()
         {
             var code = @"{0}
@@ -151,7 +151,7 @@ End Enum";
             await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCase_InternalAsync()
         {
             var code = @"{0}
@@ -181,7 +181,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCaseWithScopeAsync()
         {
             var code = @"{0}
@@ -206,7 +206,7 @@ End Enum";
                 GetCA1027BasicResultAt(10, 13, "HexFlagsEnumClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_DuplicateValuesAsync()
         {
             string code = @"{0}
@@ -231,7 +231,7 @@ public enum DuplicateValuesEnumClass
             await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_DuplicateValuesAsync()
         {
             string code = @"{0}
@@ -255,7 +255,7 @@ End Enum
             await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_MissingPowerOfTwoAsync()
         {
             string code = @"
@@ -290,7 +290,7 @@ public enum MultipleMissingPowerOfTwoEnumClass
             await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_IncorrectNumbersAsync()
         {
             string code = @"
@@ -313,7 +313,7 @@ public enum AnotherTestValue
                 GetCA2217CSharpResultAt(3, 13, "AnotherTestValue", "2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_MissingPowerOfTwoAsync()
         {
             string code = @"
@@ -347,7 +347,7 @@ End Enum
             await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_IncorrectNumbersAsync()
         {
             string code = @"
@@ -370,7 +370,7 @@ End Enum
                 GetCA2217BasicResultAt(3, 13, "AnotherTestValue", "2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_ContiguousValuesAsync()
         {
             var code = @"
@@ -424,7 +424,7 @@ public enum ShortUnderlyingType: short
             await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_ContiguousValuesAsync()
         {
             var code = @"
@@ -475,7 +475,7 @@ End Enum
             await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_NonSimpleFlagsAsync()
         {
             var code = @"
@@ -522,7 +522,7 @@ public enum LabelsClass
                 GetCA2217CSharpResultAt(24, 13, "LabelsClass", "2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_NonSimpleFlagsAsync()
         {
             var code = @"
@@ -567,7 +567,7 @@ End Enum
                 GetCA2217BasicResultAt(22, 13, "LabelsClass", "2"));
         }
 
-        [Fact, WorkItem(6982, "https://github.com/dotnet/roslyn-analyzers/issues/6982")]
+        [TestMethod, WorkItem(6982, "https://github.com/dotnet/roslyn-analyzers/issues/6982")]
         public async Task CSharp_EnumWithFlagsAttributes_MembersShareValueAsync()
         {
             var code = @"{0}
@@ -588,7 +588,7 @@ public enum MembersShareValueEnumClass
             await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
-        [Fact, WorkItem(6982, "https://github.com/dotnet/roslyn-analyzers/issues/6982")]
+        [TestMethod, WorkItem(6982, "https://github.com/dotnet/roslyn-analyzers/issues/6982")]
         public async Task VisualBasic_EnumWithFlagsAttributes_MembersShareValueAsync()
         {
             string code = @"{0}

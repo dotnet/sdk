@@ -11,7 +11,6 @@ using Microsoft.TemplateEngine.Tests;
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class SnapshotTests : TestBase
     {
         private TestContext _testContext = null!;
