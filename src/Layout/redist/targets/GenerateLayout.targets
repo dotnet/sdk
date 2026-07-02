@@ -588,8 +588,9 @@
          not carry the Unix execute bit, and the blanket 'chmod 644' above clears it,
          so re-add execute permission; the SDK execs these tools directly. -->
     <ItemGroup>
-      <_BundledAotToolExecutable Include="$(OutputPath)DotnetTools/aspnetcoretools/**/dotnet-*"
-                                 Exclude="$(OutputPath)DotnetTools/aspnetcoretools/**/*.*" />
+      <_BundledAotToolExecutable Include="$(OutputPath)DotnetTools/aspnetcoretools/**/dotnet-*" />
+      <_BundledAotToolExecutable Remove="@(_BundledAotToolExecutable)"
+                                 Condition="'%(Extension)' != ''" />
     </ItemGroup>
     <Exec Command="chmod 755 '%(_BundledAotToolExecutable.FullPath)'"
           Condition="'@(_BundledAotToolExecutable)' != ''" />
