@@ -1,0 +1,36 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Testing.targets
+
+  PROTOTYPE — Microsoft.NET.Sdk.Testing core targets.
+
+  Validation that needs to happen after evaluation. Per-framework / per-platform
+  targets are imported here in the same dispatch shape as the .props file.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\MSTest.targets"   Condition="'$(TestFramework)' == 'MSTest'" />
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\NUnit.targets"    Condition="'$(TestFramework)' == 'NUnit'" />
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\XUnit.targets"    Condition="'$(TestFramework)' == 'XUnit'" />
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\TUnit.targets"    Condition="'$(TestFramework)' == 'TUnit'" />
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\Expecto.targets"  Condition="'$(TestFramework)' == 'Expecto'" />
+
+  <Import Project="$(MSBuildThisFileDirectory)Platforms\MicrosoftTestingPlatform.targets"
+          Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform'" />
+  <Import Project="$(MSBuildThisFileDirectory)Platforms\VSTest.targets"
+          Condition="'$(TestPlatform)' == 'VSTest'" />
+
+  <!-- Hard validation: TestFramework is required. -->
+  <Target Name="_ValidateMicrosoftNETSdkTesting" BeforeTargets="CollectPackageReferences;BeforeBuild">
+    <Error Condition="'$(TestFramework)' == ''"
+           Text="The 'TestFramework' MSBuild property is required when using Microsoft.NET.Sdk.Testing. Valid values: MSTest, NUnit, XUnit, TUnit, Expecto." />
+    <Error Condition="'$(TestFramework)' != 'MSTest' and '$(TestFramework)' != 'NUnit' and '$(TestFramework)' != 'XUnit' and '$(TestFramework)' != 'TUnit' and '$(TestFramework)' != 'Expecto'"
+           Text="Unknown 'TestFramework' value '$(TestFramework)'. Valid values: MSTest, NUnit, XUnit, TUnit, Expecto." />
+    <Error Condition="'$(TestPlatform)' != 'MicrosoftTestingPlatform' and '$(TestPlatform)' != 'VSTest'"
+           Text="Unknown 'TestPlatform' value '$(TestPlatform)'. Valid values: MicrosoftTestingPlatform (or alias 'MTP'), VSTest." />
+  </Target>
+
+</Project>

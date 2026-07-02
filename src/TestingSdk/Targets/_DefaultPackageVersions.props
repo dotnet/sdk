@@ -1,0 +1,54 @@
+<!--
+***********************************************************************************************
+_DefaultPackageVersions.props
+
+  PROTOTYPE — Default package versions for Microsoft.NET.Sdk.Testing.
+
+  Users can override any of these to:
+    - Pin to a different fixed version (recommended for reproducible builds).
+    - Float by setting `*` (or `*-*` to include prerelease).
+
+  In the real SDK these values would be sourced from eng/Versions.props (or an
+  equivalent version-synced file generated at SDK build time) so they advance
+  with each .NET SDK release rather than being hand-edited here.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="MTP platform + extensions">
+    <MicrosoftTestingPlatformVersion Condition="'$(MicrosoftTestingPlatformVersion)' == ''">1.5.0</MicrosoftTestingPlatformVersion>
+    <!-- Per-extension <Name>Version properties fall back to this in MicrosoftTestingPlatform.targets. -->
+    <MicrosoftTestingExtensionsCommonVersion Condition="'$(MicrosoftTestingExtensionsCommonVersion)' == ''">$(MicrosoftTestingPlatformVersion)</MicrosoftTestingExtensionsCommonVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="VSTest platform">
+    <MicrosoftNETTestSdkVersion Condition="'$(MicrosoftNETTestSdkVersion)' == ''">17.12.0</MicrosoftNETTestSdkVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="MSTest">
+    <MSTestVersion Condition="'$(MSTestVersion)' == ''">3.7.0</MSTestVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="NUnit">
+    <NUnitVersion Condition="'$(NUnitVersion)' == ''">4.2.2</NUnitVersion>
+    <NUnitAnalyzersVersion Condition="'$(NUnitAnalyzersVersion)' == ''">4.3.0</NUnitAnalyzersVersion>
+    <NUnit3TestAdapterVersion Condition="'$(NUnit3TestAdapterVersion)' == ''">4.6.0</NUnit3TestAdapterVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="xUnit (always v3 in this SDK)">
+    <XUnitVersion Condition="'$(XUnitVersion)' == ''">1.0.1</XUnitVersion>
+    <XUnitRunnerVisualStudioVersion Condition="'$(XUnitRunnerVisualStudioVersion)' == ''">3.0.0</XUnitRunnerVisualStudioVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="TUnit">
+    <TUnitVersion Condition="'$(TUnitVersion)' == ''">0.6.157</TUnitVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Expecto">
+    <ExpectoVersion Condition="'$(ExpectoVersion)' == ''">10.2.3</ExpectoVersion>
+    <YoloDevExpectoTestSdkVersion Condition="'$(YoloDevExpectoTestSdkVersion)' == ''">0.15.0</YoloDevExpectoTestSdkVersion>
+  </PropertyGroup>
+
+</Project>

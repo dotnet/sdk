@@ -1,0 +1,17 @@
+<!--
+***********************************************************************************************
+Sdk.targets
+
+  PROTOTYPE — Microsoft.NET.Sdk.Testing
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+
+  <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.Testing.targets"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.Testing.targets')" />
+
+</Project>

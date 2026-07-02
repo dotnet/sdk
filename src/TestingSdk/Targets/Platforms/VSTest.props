@@ -1,0 +1,17 @@
+<!--
+  PROTOTYPE: VSTest platform wiring.
+
+  Brings in Microsoft.NET.Test.Sdk so that VSTest (`dotnet test`'s legacy path,
+  vstest.console.exe, VS Test Explorer) can discover and run tests.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(MicrosoftNETTestSdkVersion)' != ''">
+    <PackageReference Include="Microsoft.NET.Test.Sdk">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(MicrosoftNETTestSdkVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+  </ItemGroup>
+
+</Project>

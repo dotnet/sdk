@@ -1,0 +1,38 @@
+<!--
+  PROTOTYPE: NUnit framework wiring for Microsoft.NET.Sdk.Testing.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TestingPlatformDotnetTestSupport Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform' and '$(TestingPlatformDotnetTestSupport)' == ''">true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(NUnitVersion)' != ''">
+    <PackageReference Include="NUnit">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(NUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="NUnit" Version="$(NUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+
+    <PackageReference Include="NUnit.Analyzers" Condition="'$(NUnitAnalyzersVersion)' != ''">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(NUnitAnalyzersVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="NUnit.Analyzers" Version="$(NUnitAnalyzersVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(NUnitAnalyzersVersion)' != '' " />
+
+    <PackageReference Include="NUnit3TestAdapter" Condition="'$(NUnit3TestAdapterVersion)' != ''">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(NUnit3TestAdapterVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="NUnit3TestAdapter" Version="$(NUnit3TestAdapterVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(NUnit3TestAdapterVersion)' != '' " />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(NUnitVersion)' != ''">
+    <PackageReference Include="NUnit">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(NUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="NUnit" Version="$(NUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+  </ItemGroup>
+
+</Project>
