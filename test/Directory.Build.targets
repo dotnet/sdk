@@ -4,17 +4,8 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND '$(UsingMSTestSdk)' != 'true'">
-    <TestRunnerName>XUnitV3</TestRunnerName>
-    <OutputType>Exe</OutputType>
-    <!-- Set this to true for test project only because test assets contains .editorconfig file -->
-    <NoDefaultExcludes>true</NoDefaultExcludes>
-  </PropertyGroup>
-
   <!-- FluentAssertions namespace is provided by the AwesomeAssertions package (kept by name
-       for backward compat). For xUnit test projects it comes transitively through the
-       Microsoft.NET.TestFramework project reference; for MSTest.Sdk projects we add the
-       PackageReference below. The global using is therefore shared by both. -->
+       for backward compat) added below for MSTest.Sdk projects. -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true' OR '$(UsingMSTestSdk)' == 'true'">
     <Using Include="FluentAssertions" />
   </ItemGroup>
@@ -33,17 +24,8 @@
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
-  <!-- xUnit-based test projects (non-MSTest, e.g. the vendored NetAnalyzers tests which import this
-       file) rely on a global Xunit using for [Fact]/[Theory]/Assert. MSTest.Sdk projects must not get
-       it (it would clash with MSTest's Assert), so it stays keyed off UsingMSTestSdk rather than the
-       framework ProjectReference above. -->
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(UsingMSTestSdk)' != 'true'">
-    <Using Include="Xunit" />
-  </ItemGroup>
-
-  <!-- AwesomeAssertions package reference for MSTest.Sdk projects. xUnit projects pick it up
-       transitively from the Microsoft.NET.TestFramework project reference and so do not need
-       it here. -->
+  <!-- AwesomeAssertions package reference for MSTest.Sdk projects (provides the FluentAssertions
+       namespace used above). -->
   <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true'">
     <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>

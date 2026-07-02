@@ -78,6 +78,21 @@
   </ItemGroup>
 
   <!--
+    Select the System.Text.Json source-generated deserialization path in the NuGet client
+    libraries (NuGet.Packaging, NuGet.ProjectModel, NuGet.Configuration, etc.) instead of the
+    reflection-based Newtonsoft.Json path, which is not trim- or AOT-safe.
+
+    NuGet defines this as a [FeatureSwitchDefinition], so Trim="true" tells the trimmer/ILC the
+    value is a compile-time constant. That lets it dead-code-eliminate the Newtonsoft.Json branch
+    and avoid IL2026/IL2104/IL3050/IL3053 warnings when publishing this AOT binary.
+  -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="NuGet.UseSystemTextJsonDeserialization"
+                                    Value="true"
+                                    Trim="true" />
+  </ItemGroup>
+
+  <!--
     On Apple platforms, NativeAOT unconditionally statically links libSystem.Security.Cryptography.Native.Apple.a
     into every output, including NativeLib=Shared (dylib). This static archive contains Swift binding classes
     (HashBox, X25519KeyBox) that register with the ObjC runtime. When the host process also has these classes

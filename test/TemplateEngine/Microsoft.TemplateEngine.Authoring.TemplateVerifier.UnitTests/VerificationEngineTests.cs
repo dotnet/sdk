@@ -13,7 +13,6 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
 {
     [TestClass]
     [UsesVerify]
-    [DoNotParallelize]
     public partial class VerificationEngineTests
     {
         private ILogger Log => new TestContextLogger(TestContext);

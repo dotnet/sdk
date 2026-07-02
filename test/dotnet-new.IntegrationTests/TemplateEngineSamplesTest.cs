@@ -7,7 +7,6 @@ using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [DoNotParallelize]
     [TestClass]
     public class TemplateEngineSamplesTest : BaseIntegrationTest
     {

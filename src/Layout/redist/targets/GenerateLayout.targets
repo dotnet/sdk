@@ -234,6 +234,18 @@
                       DeploymentSubPath="Sdks\Microsoft.NET.Sdk.StaticWebAssets"/>
     </ItemGroup>
 
+    <!-- Fail loudly if an in-repo SDK's content has not been produced into its source root (for example because the
+         SDK's outer build ran after this copy). Otherwise the Copy below silently ships an SDK layout missing
+         Sdk.props, causing intermittent "Could not resolve SDK" failures downstream (https://github.com/dotnet/sdk/issues/51530). -->
+    <Error Condition="!Exists('$(NETSdkRazorSourceRoot)\Sdk\Sdk.props')"
+           Text="Razor SDK content is missing: '$(NETSdkRazorSourceRoot)\Sdk\Sdk.props' was not found. The Microsoft.NET.Sdk.Razor.Tasks outer build must complete before PublishNetSdks." />
+    <Error Condition="!Exists('$(NETSdkStaticWebAssetsSourceRoot)\Sdk\Sdk.props')"
+           Text="StaticWebAssets SDK content is missing: '$(NETSdkStaticWebAssetsSourceRoot)\Sdk\Sdk.props' was not found. The Microsoft.NET.Sdk.StaticWebAssets.Tasks outer build must complete before PublishNetSdks." />
+    <Error Condition="!Exists('$(NETSdkBlazorWasmSourceRoot)\Sdk\Sdk.props')"
+           Text="BlazorWebAssembly SDK content is missing: '$(NETSdkBlazorWasmSourceRoot)\Sdk\Sdk.props' was not found. The Microsoft.NET.Sdk.BlazorWebAssembly.Tasks outer build must complete before PublishNetSdks." />
+    <Error Condition="!Exists('$(NETSdkWasmSourceRoot)\Sdk\Sdk.props')"
+           Text="WebAssembly SDK content is missing: '$(NETSdkWasmSourceRoot)\Sdk\Sdk.props' was not found. The Microsoft.NET.Sdk.WebAssembly.Tasks outer build must complete before PublishNetSdks." />
+
     <Copy SourceFiles="@(NETSdksContent)"
           DestinationFiles="@(NETSdksContent->'$(OutputPath)%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>

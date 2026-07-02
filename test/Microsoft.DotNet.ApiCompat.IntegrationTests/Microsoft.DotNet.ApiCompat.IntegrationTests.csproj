@@ -9,9 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Build-ordering dependencies on the tools and tasks under test. ReferenceOutputAssembly="false" so we don't take a compile-time dependency on netcore-only types; SetTargetFramework pins both inner builds to consume the netcore TFM since these projects are netcore-only. -->
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=$(NetMinimum)" />
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Tool\Microsoft.DotNet.ApiCompat.Tool.csproj" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=$(NetMinimum)" />
+    <!-- Build-ordering dependencies on the tools and tasks under test. ReferenceOutputAssembly="false" so we don't take a compile-time dependency. -->
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Tool\Microsoft.DotNet.ApiCompat.Tool.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
