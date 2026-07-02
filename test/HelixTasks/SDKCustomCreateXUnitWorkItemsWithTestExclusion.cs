@@ -51,6 +51,47 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         public int BaseMethodLimit { get; set; } = 32;
 
         /// <summary>
+        /// When true, uses time-based scheduling with AzDO historical data
+        /// instead of count-based partitioning.
+        /// </summary>
+        public bool UseTimeBasedScheduling { get; set; }
+
+        /// <summary>
+        /// AzDO project URI for test history queries (e.g. "https://dev.azure.com/dnceng/public").
+        /// Required when UseTimeBasedScheduling is true.
+        /// </summary>
+        public string? AzdoProjectUri { get; set; }
+
+        /// <summary>
+        /// Access token for AzDO REST API. Typically $(System.AccessToken) in pipelines.
+        /// Required when UseTimeBasedScheduling is true.
+        /// </summary>
+        public string? AzdoAccessToken { get; set; }
+
+        /// <summary>
+        /// AzDO pipeline definition ID to query for historical test data.
+        /// Required when UseTimeBasedScheduling is true.
+        /// </summary>
+        public int AzdoDefinitionId { get; set; }
+
+        /// <summary>
+        /// Target branch for finding the last successful build (without refs/heads/ prefix).
+        /// Defaults to "main".
+        /// </summary>
+        public string AzdoTargetBranch { get; set; } = "main";
+
+        /// <summary>
+        /// Optional phase/stage name to filter test runs in the historical build.
+        /// </summary>
+        public string? AzdoPhaseName { get; set; }
+
+        /// <summary>
+        /// Target time per work item in minutes for time-based scheduling.
+        /// Defaults to 10.
+        /// </summary>
+        public int TargetMinutesPerWorkItem { get; set; } = 10;
+
+        /// <summary>
         /// Optional timeout for all created workitems
         /// Defaults to 300s
         /// </summary>
@@ -90,11 +131,346 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 return;
             }
 
-            XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
-                .SelectMany(i => i ?? new())
-                .Where(wi => wi != null)
-                .ToArray();
-            return;
+            if (UseTimeBasedScheduling)
+            {
+                XUnitWorkItems = await PrepareWorkItemsWithTimeBasedScheduling();
+            }
+            else
+            {
+                XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
+                    .SelectMany(i => i ?? new())
+                    .Where(wi => wi != null)
+                    .ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Prepares Helix work items using time-based scheduling with AzDO test history.
+        /// Falls back to per-project count-based scheduling if history is unavailable.
+        /// </summary>
+        private async Task<ITaskItem[]> PrepareWorkItemsWithTimeBasedScheduling()
+        {
+            // Fetch test history from AzDO
+            Dictionary<string, TestExecutionInfo>? history = null;
+            if (!string.IsNullOrEmpty(AzdoProjectUri) && !string.IsNullOrEmpty(AzdoAccessToken) && AzdoDefinitionId > 0)
+            {
+                try
+                {
+                    var historyManager = new TestHistoryManager(
+                        AzdoProjectUri!,
+                        AzdoAccessToken!,
+                        AzdoDefinitionId,
+                        AzdoTargetBranch,
+                        AzdoPhaseName,
+                        Log);
+
+                    history = await historyManager.GetTestHistoryAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log.LogWarning("Failed to retrieve test history (will fall back to count-based scheduling): {0}", ex.Message);
+                }
+            }
+            else
+            {
+                Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                    "Time-based scheduling requested but AzDO parameters are incomplete; falling back to count-based.");
+            }
+
+            // If we couldn't get history, fall back to per-project count-based scheduling
+            if (history is null)
+            {
+                Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                    "No test history available; falling back to count-based partitioning.");
+                var fallbackItems = await Task.WhenAll(XUnitProjects!.Select(PrepareWorkItem));
+                return fallbackItems.SelectMany(i => i ?? new()).Where(wi => wi != null).ToArray();
+            }
+
+            // Discover test methods from all assemblies
+            var allTestMethods = new List<TestMethodDiscovery.TestMethodInfo>();
+            var projectMetadata = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var project in XUnitProjects!)
+            {
+                if (!project.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
+                    continue;
+
+                projectMetadata[targetPath] = project;
+
+                try
+                {
+                    var methods = TestMethodDiscovery.DiscoverTestMethods(targetPath);
+                    allTestMethods.AddRange(methods);
+                    Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                        "Discovered {0} test methods in {1}.", methods.Count, Path.GetFileName(targetPath));
+                }
+                catch (Exception ex)
+                {
+                    Log.LogWarning("Failed to discover test methods in {0}: {1}", targetPath, ex.Message);
+                }
+            }
+
+            if (allTestMethods.Count == 0)
+            {
+                Log.LogWarning("No test methods discovered; falling back to count-based partitioning.");
+                var fallbackItems = await Task.WhenAll(XUnitProjects!.Select(PrepareWorkItem));
+                return fallbackItems.SelectMany(i => i ?? new()).Where(wi => wi != null).ToArray();
+            }
+
+            // Schedule using time-based bin-packing
+            var targetTime = TimeSpan.FromMinutes(TargetMinutesPerWorkItem);
+            var scheduler = new TimeBasedScheduler(targetTime);
+            var workItems = scheduler.Schedule(allTestMethods, history);
+
+            Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                "Time-based scheduler produced {0} work items for {1} test methods.", workItems.Count, allTestMethods.Count);
+
+            // Convert scheduled work items to MSBuild task items
+            var taskItems = new List<ITaskItem>();
+            var timeout = targetTime * 3; // 3× target for timeout
+
+            if (!string.IsNullOrEmpty(XUnitWorkItemTimeout) && TimeSpan.TryParse(XUnitWorkItemTimeout, out var parsedTimeout))
+            {
+                timeout = parsedTimeout;
+            }
+
+            foreach (var workItem in workItems)
+            {
+                // Each work item only contains methods from a single assembly (enforced by scheduler)
+                var primaryAssembly = workItem.GetAssemblyPaths().First();
+                if (!projectMetadata.TryGetValue(primaryAssembly, out var xunitProject))
+                    continue;
+
+                if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
+                    continue;
+
+                if (!xunitProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
+                    continue;
+
+                xunitProject.TryGetMetadata("IsMTPProject", out string isMTPProjectMetadata);
+                bool isMTPProject = string.Equals(isMTPProjectMetadata, "true", StringComparison.OrdinalIgnoreCase);
+
+                string assemblyName = Path.GetFileName(targetPath);
+
+                // MTP projects use dotnet exec directly — they already handle arguments without
+                // spawning a child process, so no CreateProcess limit issue.
+                if (isMTPProject)
+                {
+                    string? mtpRspFileName = null;
+                    string filterString = workItem.GetFilterString();
+                    if (!string.IsNullOrEmpty(filterString))
+                    {
+                        mtpRspFileName = $"{workItem.DisplayName}.filter.rsp";
+                        var rspPath = Path.Combine(publishDirectory, mtpRspFileName);
+                        File.WriteAllText(rspPath, $"--filter\n\"{filterString}\"");
+                    }
+
+                    var command = BuildMtpCommand(xunitProject, workItem, timeout, mtpRspFileName);
+                    if (command is null)
+                        continue;
+
+                    taskItems.Add(new Microsoft.Build.Utilities.TaskItem(workItem.DisplayName, new Dictionary<string, string>()
+                    {
+                        { "Identity", workItem.DisplayName },
+                        { "PayloadDirectory", publishDirectory },
+                        { "Command", command },
+                        { "Timeout", timeout.ToString() },
+                    }));
+                }
+                else
+                {
+                    // xUnit/MSTest projects: write a vstest.console.dll RSP file containing ALL
+                    // arguments (assembly, loggers, blame, filter). This completely avoids both
+                    // cmd.exe's 8191-char limit and the CreateProcess 32K-char limit because
+                    // vstest.console.dll reads the RSP natively.
+                    string rspFileName = $"{workItem.DisplayName}.rsp";
+                    var rspPath = Path.Combine(publishDirectory, rspFileName);
+                    var rspContent = BuildVsTestRspContent(assemblyName, workItem, timeout);
+                    File.WriteAllText(rspPath, rspContent);
+
+                    var command = BuildVsTestCommand(xunitProject, workItem, timeout, rspFileName);
+                    if (command is null)
+                        continue;
+
+                    taskItems.Add(new Microsoft.Build.Utilities.TaskItem(workItem.DisplayName, new Dictionary<string, string>()
+                    {
+                        { "Identity", workItem.DisplayName },
+                        { "PayloadDirectory", publishDirectory },
+                        { "Command", command },
+                        { "Timeout", timeout.ToString() },
+                    }));
+                }
+            }
+
+            return taskItems.ToArray();
+        }
+
+        /// <summary>
+        /// Builds the vstest.console.dll RSP file content with all test arguments.
+        /// This is read natively by vstest.console.dll — no command-line length limits apply.
+        /// </summary>
+        private string BuildVsTestRspContent(string assemblyName, ScheduledWorkItem workItem, TimeSpan timeout)
+        {
+            var builder = new StringBuilder();
+
+            // Assembly to test
+            builder.AppendLine($"\"{assemblyName}\"");
+
+            // Loggers
+            builder.AppendLine("/Logger:trx");
+            builder.AppendLine("/Logger:\"console;verbosity=detailed\"");
+
+            // Results directory
+            builder.AppendLine("/ResultsDirectory:.");
+
+            // Blame with hang detection (80% of timeout for hang, matching existing behavior)
+            var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
+            builder.AppendLine($"/Blame:\"CollectHangDump;TestTimeout={((int)blameHangTimeout.TotalMinutes)}minutes\"");
+
+            // Test case filter
+            string filterString = workItem.GetFilterString();
+            if (!string.IsNullOrEmpty(filterString))
+            {
+                builder.Append("/TestCaseFilter:\"");
+                builder.Append(filterString);
+                builder.AppendLine("\"");
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Builds the shell command for vstest.console.dll invocation.
+        /// On Windows, writes a .cmd batch script to the payload directory because cmd.exe
+        /// expands %variables% at parse time — `set /p` followed by `%var%` in a single
+        /// compound command doesn't work. The batch file ensures each line is parsed independently.
+        /// On POSIX, inline commands work fine with $() subshell expansion.
+        /// </summary>
+        private string? BuildVsTestCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout, string rspFileName)
+        {
+            if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
+                return null;
+            if (!xunitProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
+                return null;
+
+            xunitProject.TryGetMetadata("ExcludeAdditionalParameters", out string excludeAdditionalParameters);
+
+            string assemblyName = Path.GetFileName(targetPath);
+            string exeName = Path.GetFileNameWithoutExtension(assemblyName);
+
+            if (IsPosixShell)
+            {
+                // POSIX: inline command works because $() is evaluated at execution time
+                var command = new StringBuilder();
+
+                command.Append($"chmod +x {exeName} && ");
+                if (TargetRid.StartsWith("osx"))
+                {
+                    command.Append($"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && ");
+                }
+
+                command.Append($"export HELIX_WORK_ITEM_TIMEOUT={timeout} && ");
+                if (!string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    command.Append("export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory && ");
+                }
+
+                // Search the correlation payload dotnet (not DOTNET_ROOT which may be system-installed)
+                command.Append("vstestConsolePath=$(find $HELIX_CORRELATION_PAYLOAD/d -name \"vstest.console.dll\") && ");
+                command.Append($"dotnet exec \"${{vstestConsolePath}}\" @{rspFileName}");
+
+                // Copy TRX/result files and hang dumps to Helix upload root for AzDO publishing.
+                // Use ; (not &&) so post-commands run even if the test command had failures.
+                command.Append("; _commandExitCode=$?");
+                command.Append("; find . -maxdepth 5 \\( -iname '*.trx' -o -iname 'testResults.xml' -o -iname 'test-results.xml' \\) -exec cp {} $HELIX_WORKITEM_UPLOAD_ROOT/ \\;");
+                command.Append("; find . -name '*hangdump.dmp' -exec cp {} $HELIX_WORKITEM_UPLOAD_ROOT/ \\;");
+                command.Append("; exit $_commandExitCode");
+
+                return command.ToString();
+            }
+            else
+            {
+                // Windows: write a .cmd batch script because cmd.exe expands %var% at parse time.
+                // Each line in the batch file is parsed independently, so set/use works correctly.
+                // The script also copies TRX results and hang dumps to the Helix upload root so
+                // they are published to Azure DevOps (the Helix SDK post-commands don't run when
+                // the work item command is a .cmd script).
+                string scriptName = $"{workItem.DisplayName}.cmd";
+                var script = new StringBuilder();
+                script.AppendLine("@echo off");
+                script.AppendLine($"set HELIX_WORK_ITEM_TIMEOUT={timeout}");
+                if (!string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    script.AppendLine("set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%");
+                    script.AppendLine("set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r");
+                }
+                script.AppendLine("where /r %HELIX_CORRELATION_PAYLOAD%\\d vstest.console.dll > __vstest_path.txt");
+                script.AppendLine("set /p vstestConsolePath=<__vstest_path.txt");
+                script.AppendLine($"dotnet exec \"%vstestConsolePath%\" @{rspFileName}");
+                // Preserve the test exit code before running post-test commands
+                script.AppendLine("set _commandExitCode=%ERRORLEVEL%");
+                // Copy hang dumps to Helix upload root for diagnostics
+                script.AppendLine("for /r %%f in (*hangdump.dmp) do copy \"%%f\" \"%HELIX_WORKITEM_UPLOAD_ROOT%\\\" >nul 2>&1");
+                // Copy TRX result files to Helix upload root for AzDO test result publishing
+                script.AppendLine("for /r %%f in (*.trx) do copy \"%%f\" \"%HELIX_WORKITEM_UPLOAD_ROOT%\\\" >nul 2>&1");
+                // Exit with the original test exit code
+                script.AppendLine("EXIT /b %_commandExitCode%");
+
+                var scriptPath = Path.Combine(publishDirectory, scriptName);
+                File.WriteAllText(scriptPath, script.ToString());
+
+                return scriptName;
+            }
+        }
+
+        /// <summary>
+        /// Builds the execution command for an MTP (Microsoft.Testing.Platform) project.
+        /// MTP uses dotnet exec directly and handles the filter without spawning child processes.
+        /// </summary>
+        private string? BuildMtpCommand(ITaskItem xunitProject, ScheduledWorkItem workItem, TimeSpan timeout, string? rspFileName)
+        {
+            if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
+                return null;
+            if (!xunitProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
+                return null;
+
+            xunitProject.TryGetMetadata("EnableTrxReport", out string enableTrxReportMetadata);
+            bool enableTrxReport = string.Equals(enableTrxReportMetadata, "true", StringComparison.OrdinalIgnoreCase);
+
+            xunitProject.TryGetMetadata("ExcludeAdditionalParameters", out string excludeAdditionalParameters);
+
+            string assemblyName = Path.GetFileName(targetPath);
+            string exeName = Path.GetFileNameWithoutExtension(assemblyName);
+            string chmodPrefix = IsPosixShell ? $"chmod +x {exeName} && " : "";
+            string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx")
+                ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && "
+                : "";
+
+            string envPrefix;
+            if (IsPosixShell)
+            {
+                string testExecEnv = string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase)
+                    ? "" : "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory ";
+                envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecEnv}";
+            }
+            else
+            {
+                string testExecEnv = string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase)
+                    ? "" : "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ";
+                string msbuildEnv = string.Equals(excludeAdditionalParameters, "true", StringComparison.OrdinalIgnoreCase)
+                    ? "" : "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ";
+                envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& {testExecEnv}{msbuildEnv}";
+            }
+
+            string diagArg = IsPosixShell
+                ? "--diagnostic --diagnostic-output-directory $HELIX_WORKITEM_UPLOAD_ROOT"
+                : "--diagnostic --diagnostic-output-directory %HELIX_WORKITEM_UPLOAD_ROOT%";
+
+            string trxArg = enableTrxReport ? "--report-trx " : "";
+            string testFilter = rspFileName is not null ? $"@{rspFileName}" : "";
+
+            return $"{chmodPrefix}{codesignPrefix}{envPrefix}{PathToDotnet} exec {assemblyName} " +
+                   $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg}";
         }
 
         /// <summary>
