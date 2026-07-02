@@ -10,8 +10,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void It_supports_copylocal_false_references(bool withoutCopyingRefs)
         {
             var testProject = new TestProject()

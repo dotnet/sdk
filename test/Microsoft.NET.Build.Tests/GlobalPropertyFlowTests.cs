@@ -66,10 +66,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.4.0.41702")]
-        [DataRow(true, true)]
-        [DataRow(true, false)]
-        [DataRow(false, true)]
-        [DataRow(false, false)]
+        [CombinatorialData]
         public void TestGlobalPropertyFlowToLibrary(bool passSelfContained, bool passRuntimeIdentifier)
         {
             var testAsset = Build(passSelfContained, passRuntimeIdentifier, identifier: passSelfContained.ToString() + "_" + passRuntimeIdentifier);
@@ -82,10 +79,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.4.0.41702")]
-        [DataRow(true, true)]
-        [DataRow(true, false)]
-        [DataRow(false, true)]
-        [DataRow(false, false)]
+        [CombinatorialData]
         public void TestGlobalPropertyFlowToExe(bool passSelfContained, bool passRuntimeIdentifier)
         {
             _referencedProject.IsExe = true;
@@ -101,10 +95,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.4.0.41702")]
-        [DataRow(true, true)]
-        [DataRow(true, false)]
-        [DataRow(false, true)]
-        [DataRow(false, false)]
+        [CombinatorialData]
         public void TestGlobalPropertyFlowToExeWithSelfContainedFalse(bool passSelfContained, bool passRuntimeIdentifier)
         {
             _referencedProject.IsExe = true;
@@ -123,10 +114,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.4.0.41702")]
-        [DataRow(true, true)]
-        [DataRow(true, false)]
-        [DataRow(false, true)]
-        [DataRow(false, false)]
+        [CombinatorialData]
         public void TestGlobalPropertyFlowToLibraryWithRuntimeIdentifier(bool passSelfContained, bool passRuntimeIdentifier)
         {
             //  Set a RuntimeIdentifier in the referenced project that is different from what is passed in on the command line
@@ -144,10 +132,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.4.0.41702")]
-        [DataRow(true, true)]
-        [DataRow(true, false)]
-        [DataRow(false, true)]
-        [DataRow(false, false)]
+        [CombinatorialData]
         public void TestGlobalPropertyFlowToMultitargetedProject(bool passSelfContained, bool passRuntimeIdentifier)
         {
             _testProject.TargetFrameworks = $"net6.0;{ToolsetInfo.CurrentTargetFramework}";
@@ -179,10 +164,7 @@ namespace Microsoft.NET.Build.Tests
         [TestMethod]
         [Ignore("https://github.com/dotnet/msbuild/issues/8154")]
         [RequiresMSBuildVersion("17.4.0.41702")]
-        [DataRow(true, true)]
-        [DataRow(true, false)]
-        [DataRow(false, true)]
-        [DataRow(false, false)]
+        [CombinatorialData]
         public void TestGlobalPropertyFlowInSolution(bool passSelfContained, bool passRuntimeIdentifier)
         {
             var identifier = passSelfContained.ToString() + "_" + passRuntimeIdentifier;

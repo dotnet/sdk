@@ -12,10 +12,7 @@ namespace Microsoft.NET.ToolPack.Tests
     {
 
         [TestMethod]
-        [DataRow(false, false)]
-        [DataRow(false, true)]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
+        [CombinatorialData]
         public void It_builds_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             TestAsset testAsset = TestAssetsManager

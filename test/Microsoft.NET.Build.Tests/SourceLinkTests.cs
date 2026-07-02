@@ -218,8 +218,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void SuppressImplicitGitSourceLink_SetExplicitly(bool multitarget)
         {
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
@@ -252,8 +251,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void SuppressImplicitGitSourceLink_ExplicitPackage(bool multitarget)
         {
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
