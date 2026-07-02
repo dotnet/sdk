@@ -4,16 +4,16 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableHTTPHeaderChecking,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotDisableHTTPHeaderCheckingTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -31,7 +31,7 @@ class TestClass
             GetCSharpResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstantDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -50,7 +50,7 @@ class TestClass
             GetCSharpResultAt(11, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPropertyInitializerDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -71,7 +71,7 @@ class TestClass
         }
 
         //Ideally, we would generate a diagnostic in this case.
-        [Fact]
+        [TestMethod]
         public async Task TestVariableNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -89,7 +89,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -106,7 +106,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstantNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -124,7 +124,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPropertyInitializerNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -156,7 +156,7 @@ class TestClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

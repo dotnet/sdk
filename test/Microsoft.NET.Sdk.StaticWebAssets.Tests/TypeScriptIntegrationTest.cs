@@ -4,11 +4,11 @@
 #nullable disable
 
 using System.Reflection;
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;

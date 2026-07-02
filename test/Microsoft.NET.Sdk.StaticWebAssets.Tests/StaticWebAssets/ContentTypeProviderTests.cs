@@ -11,11 +11,9 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
 [TestClass]
-
 public class ContentTypeProviderTests
 {
     private readonly TaskLoggingHelper _log = new TestTaskLoggingHelper();

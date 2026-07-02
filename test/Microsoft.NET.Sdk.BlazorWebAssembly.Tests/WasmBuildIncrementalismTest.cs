@@ -5,8 +5,8 @@
 
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     [TestClass]

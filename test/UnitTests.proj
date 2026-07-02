@@ -115,6 +115,14 @@
     <SDKCustomXUnitProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;**\Microsoft.DotNet.GenAPI.Tests.csproj">
       <MethodLimitMultiplier>10</MethodLimitMultiplier>
     </SDKCustomXUnitProject>
+    <!-- dotnet-aot.Tests compiles the entire shared CLI parser (Parser, CliSchema, all command
+         parsers via AotSourceFiles.props) into its test assembly, so the method-based scheduler
+         counts hundreds of non-test types and over-shards the assembly. Some shards then contain
+         only non-test types (e.g. CliSchema's nested records), which run zero tests and fail under
+         MTP (exit code 8). Consolidate into a single work item; the real test count is small. -->
+    <SDKCustomXUnitProject Update="**\dotnet-aot.Tests.csproj">
+      <MethodLimitMultiplier>20</MethodLimitMultiplier>
+    </SDKCustomXUnitProject>
     <!-- EndToEnd.Tests needs installer archives which are excluded from the shared
          correlation payload to reduce download/unpack overhead for all other work items.
          AdditionalPayloadDir: directory whose files are included in the per-item payload.
