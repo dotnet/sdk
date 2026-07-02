@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <!-- Build-ordering dependencies on the tool and task under test. ReferenceOutputAssembly="false" so we don't take a compile-time dependency. -->
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Task\Microsoft.DotNet.GenAPI.Task.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Tool\Microsoft.DotNet.GenAPI.Tool.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Task\Microsoft.DotNet.GenAPI.Task.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Tool\Microsoft.DotNet.GenAPI.Tool.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
