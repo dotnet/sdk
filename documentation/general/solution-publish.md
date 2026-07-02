@@ -11,7 +11,7 @@
 When you run `dotnet publish` with CLI arguments on a solution, those arguments are not correctly forwarded to the individual projects inside the solution. Common examples include:
 
 - **`-r` / `--runtime` (RuntimeIdentifier)** – most library projects don't declare any RIDs, so when a RID flows down to them it changes their build behavior. Those projects will look for restore assets that were produced for that specific RID, but restore was most likely run without a RID, so the assets aren't there. Running `dotnet publish --no-restore` with a RID makes the situation worse: it disables the implicit restore that could otherwise recover from the missing assets.
-- **`-f` / `--framework` (TargetFramework)** – when a solution passes a target framework to its projects it bypasses the normal project-to-project target framework negotiation. As a result, library projects that are referenced by multiple app projects may be scheduled for build multiple times with the same TF, potentially running concurrently and writing to the same intermediate output directory at the same time.
+- **`-f` / `--framework` (TargetFramework)** – when a solution passes a target framework to its projects it bypasses the normal project-to-project target framework negotiation. As a result, library projects that are referenced by multiple app projects may be scheduled for build multiple times, potentially running concurrently and writing to the same intermediate output directory at the same time.
 
 As a result, the published output may be built with the wrong runtime or framework settings, leading to subtle or hard-to-diagnose issues at runtime.
 
@@ -68,4 +68,4 @@ This approach avoids the argument-forwarding and output-path problems described 
 | Publish a specific project for a specific runtime | `dotnet publish src/MyApp/MyApp.csproj -r <rid> -f <tfm>` |
 | Publish with custom output directory | `dotnet publish src/MyApp/MyApp.csproj -o out/myapp` |
 
-Avoid `dotnet publish MySolution.sln -r <rid>`, `dotnet publish MySolution.sln -f <tf>`, and `dotnet publish MySolution.sln -o <dir>`.
+Avoid `dotnet publish MySolution.sln -r <rid>`, `dotnet publish MySolution.sln -f <tfm>`, and `dotnet publish MySolution.sln -o <dir>`.
