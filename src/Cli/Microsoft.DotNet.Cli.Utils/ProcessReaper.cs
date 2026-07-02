@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Win32.SafeHandles;
+#if NET
+using System.ComponentModel;
+#endif
 #if TARGET_WINDOWS
 using Windows.Win32.System.JobObjects;
 #endif
@@ -127,11 +130,22 @@ internal class ProcessReaper : IDisposable
 #if !TARGET_WINDOWS
     private sealed class UnixProcessReaper : ProcessReaper
     {
-        private readonly Mutex _shutdownMutex;
+        // Coordinates Dispose (typically the main thread) with HandleProcessExit,
+        // which is raised on the AppDomain.ProcessExit thread when the CLI itself is
+        // shutting down (for example when a SIGTERM handler calls Environment.Exit).
+        //
+        // A plain monitor lock is used here rather than a Mutex on purpose. The prior
+        // Mutex based design disposed the mutex in Dispose while a concurrent
+        // ProcessExit callback could still call WaitOne on it, throwing
+        // "Cannot access a disposed object" during shutdown (dotnet/sdk#55096). A
+        // monitor has no disposable wait handle to race on, and the _shuttingDown flag
+        // closes the window so a ProcessExit callback that starts after Dispose has run
+        // simply becomes a no-op.
+        private readonly object _shutdownLock = new();
+        private bool _shuttingDown;
 
         public UnixProcessReaper(Process process) : base(process)
         {
-            _shutdownMutex = new Mutex();
             AppDomain.CurrentDomain.ProcessExit += HandleProcessExit;
         }
 
@@ -139,45 +153,60 @@ internal class ProcessReaper : IDisposable
         {
             AppDomain.CurrentDomain.ProcessExit -= HandleProcessExit;
 
-            // If there's been a shutdown via the process exit handler,
-            // this will block the current thread so we don't race with the CLR shutdown
-            // from the signal handler.
-            _shutdownMutex.WaitOne();
-            _shutdownMutex.ReleaseMutex();
-            _shutdownMutex.Dispose();
+            // If a ProcessExit driven shutdown is already running on another thread,
+            // block here until it finishes so we don't race with the CLR shutdown from
+            // the signal handler. Setting _shuttingDown also makes any ProcessExit
+            // callback that starts after this point a no-op.
+            lock (_shutdownLock)
+            {
+                _shuttingDown = true;
+            }
 
             base.Dispose();
         }
 
         private void HandleProcessExit(object? sender, EventArgs args)
         {
-            int processId;
-            try
+            lock (_shutdownLock)
             {
-                processId = _process.Id;
-            }
-            catch (InvalidOperationException)
-            {
-                // The process hasn't started yet; nothing to signal
-                return;
-            }
+                if (_shuttingDown)
+                {
+                    // Dispose has already run (or is running on another thread); there
+                    // is nothing to do and the process state may already be torn down.
+                    return;
+                }
 
-            // Take ownership of the shutdown mutex; this will ensure that the other
-            // thread also waiting on the process to exit won't complete CLR shutdown before
-            // this one does.
-            _shutdownMutex?.WaitOne();
+                _shuttingDown = true;
 
+                try
+                {
 #if NET
-            if (!_process.WaitForExit(0) && _process.SafeHandle.Signal(PosixSignal.SIGTERM))
-            {
-                // Couldn't send the signal, don't wait
-                return;
-            }
+                    // If the target is still running, forward SIGTERM so it can shut
+                    // down as well. Signal returns false if the process already exited,
+                    // and throws Win32Exception if the signal could not be delivered.
+                    if (!_process.WaitForExit(0))
+                    {
+                        _process.SafeHandle.Signal(PosixSignal.SIGTERM);
+                    }
 #endif
-            // If SIGTERM was ignored by the target, then we'll still wait
-            _process.WaitForExit();
+                    // If SIGTERM was ignored by the target, then we'll still wait.
+                    _process.WaitForExit();
 
-            Environment.ExitCode = _process.ExitCode;
+                    Environment.ExitCode = _process.ExitCode;
+                }
+                catch (InvalidOperationException)
+                {
+                    // The process hasn't started yet, or no exit code is available;
+                    // nothing to signal or wait for.
+                }
+#if NET
+                catch (Win32Exception)
+                {
+                    // The signal could not be delivered (for example, insufficient
+                    // permissions). Don't wait on a process we couldn't signal.
+                }
+#endif
+            }
         }
     }
 #endif
