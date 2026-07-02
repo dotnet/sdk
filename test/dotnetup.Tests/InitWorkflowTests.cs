@@ -10,10 +10,10 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class InitWorkflowTests : IDisposable
 {
     private readonly string _tempDir;
@@ -35,31 +35,31 @@ public class InitWorkflowTests : IDisposable
 
     // ── ShouldPromptToConvertSystemInstalls ──
 
-    [Fact]
+    [TestMethod]
     public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForDotnetupDotnet()
     {
         PathPreferencePolicy.ShouldReplaceSystemConfiguration(PathPreference.DotnetupDotnet)
             .Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData(PathPreference.FullPathReplacement)]
+    [TestMethod]
+    [DataRow(PathPreference.FullPathReplacement)]
     internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(PathPreference preference)
     {
         PathPreferencePolicy.ShouldReplaceSystemConfiguration(preference)
             .Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForDotnetupDotnet()
     {
         PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)
             .Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData(PathPreference.ShellProfile)]
-    [InlineData(PathPreference.FullPathReplacement)]
+    [TestMethod]
+    [DataRow(PathPreference.ShellProfile)]
+    [DataRow(PathPreference.FullPathReplacement)]
     internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(PathPreference preference)
     {
         PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(preference)
@@ -68,7 +68,7 @@ public class InitWorkflowTests : IDisposable
 
     // ── PromptInstallsToMigrateIfDesired — early-exit paths ──
 
-    [Fact]
+    [TestMethod]
     public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenPreferenceIsDotnetupDotnet()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -88,7 +88,7 @@ public class InitWorkflowTests : IDisposable
         mock.GetExistingSystemInstallsCallCount.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenNoSystemInstallsExist()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -105,7 +105,7 @@ public class InitWorkflowTests : IDisposable
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenInteractiveIsFalse()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -129,7 +129,7 @@ public class InitWorkflowTests : IDisposable
 
     // ── GetExistingSystemInstalls — architecture filtering ──
 
-    [Fact]
+    [TestMethod]
     public void GetExistingSystemInstalls_FiltersToNativeArchOnly()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -157,7 +157,7 @@ public class InitWorkflowTests : IDisposable
         result[0].Version.CompareTo(result[1].Version).Should().BeGreaterThanOrEqualTo(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetExistingSystemInstalls_DeduplicatesSameComponentVersionAndArch()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -180,7 +180,7 @@ public class InitWorkflowTests : IDisposable
         result.Should().ContainSingle(i => i.Component == InstallComponent.Runtime && i.Version.ToString() == "8.0.22");
     }
 
-    [Fact]
+    [TestMethod]
     public void FormatMigrationDisplayItems_IncludesArchitecture_WhenMultipleArchitecturesArePresent()
     {
         List<MigrationWorkflow.MigrationSelection> migrationSelections =
@@ -197,7 +197,7 @@ public class InitWorkflowTests : IDisposable
 
     // ── GetDefaultPathPreference ──
 
-    [Fact]
+    [TestMethod]
     public void GetDefaultPathPreference_ReturnsShellProfile_WhenShellProviderIsAvailable()
     {
         InitWorkflowDefaults.GetDefaultPathPreference(new BashEnvShellProvider())
@@ -210,7 +210,7 @@ public class InitWorkflowTests : IDisposable
 
     // ── ResolveDefaultMigrations ──
 
-    [Fact]
+    [TestMethod]
     public void ResolveDefaultMigrations_ReturnsEmpty_ForIsolationMode()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -229,7 +229,7 @@ public class InitWorkflowTests : IDisposable
         mock.GetExistingSystemInstallsCallCount.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDefaultMigrations_ReturnsCandidates_ForShellProfile()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();

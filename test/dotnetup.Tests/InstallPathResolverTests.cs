@@ -6,15 +6,22 @@ using FluentAssertions;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
 /// Unit tests for InstallPathResolver.
 /// </summary>
-public class InstallPathResolverTests(ITestOutputHelper output)
+[TestClass]
+public class InstallPathResolverTests
 {
+    private readonly ITestOutputHelper output;
+
+    public InstallPathResolverTests(TestContext testContext)
+    {
+        output = new TestContextOutputHelper(testContext);
+    }
+
     private readonly InstallPathResolver _resolver = new(new DotnetEnvironmentManager());
 
     // Use platform-appropriate temp paths for test data
@@ -27,7 +34,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     /// Tests that explicit --install-path takes precedence over global.json's sdk-path,
     /// even when they differ. This is the key behavior change being tested.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Resolve_ExplicitPathOverridesGlobalJson()
     {
         var globalJsonInfo = CreateGlobalJsonInfo(GlobalJsonPath);
@@ -43,7 +50,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         result.PathSource.Should().Be(PathSource.Explicit);
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_UsesGlobalJsonPath_WhenNoExplicitPath()
     {
         var globalJsonInfo = CreateGlobalJsonInfo(GlobalJsonPath);
@@ -57,7 +64,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         result.PathSource.Should().Be(PathSource.GlobalJson);
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_MatchingPathsSucceed()
     {
         var globalJsonInfo = CreateGlobalJsonInfo(SamePath);
@@ -70,7 +77,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         result.PathSource.Should().Be(PathSource.Explicit);
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_UsesExplicitPath_WhenNoGlobalJson()
     {
         var result = _resolver.Resolve(
@@ -82,7 +89,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         result.PathSource.Should().Be(PathSource.Explicit);
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_UsesDefaultPath_WhenNothingSpecified()
     {
         var installManager = new DotnetEnvironmentManager();
@@ -99,7 +106,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     /// Regression: before the refactor, passing an explicit path without a global.json
     /// caused the method to return null because all logic was gated behind the global.json check.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Resolve_ExplicitPath_WithoutGlobalJson_ReturnsNonNull()
     {
         var result = _resolver.Resolve(
@@ -119,7 +126,7 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     /// <summary>
     /// Regression: without global.json, the default fallback must not return null.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Resolve_NoInputs_ReturnsDefaultPath_NotNull()
     {
         var result = _resolver.Resolve(
@@ -131,14 +138,10 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         result.PathSource.Should().Be(PathSource.Default);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void ResolveCurrentInstallRootPath_UsesSymlinkTargetDirectory()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         using var testEnvironment = new TestEnvironment();
         string actualRoot = Path.Combine(testEnvironment.TempRoot, "usr", "lib", "dotnet");
         string binDir = Path.Combine(testEnvironment.TempRoot, "usr", "bin");
@@ -156,14 +159,10 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         resolvedRoot.Should().Be(actualRoot);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void ResolveCurrentInstallRootPath_UsesRealDirectoryWhenParentDirectoryIsSymlinked()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         using var testEnvironment = new TestEnvironment();
         string actualRoot = Path.Combine(testEnvironment.TempRoot, "usr", "lib", "dotnet");
         Directory.CreateDirectory(actualRoot);

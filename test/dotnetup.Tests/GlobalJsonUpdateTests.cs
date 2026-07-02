@@ -8,6 +8,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class GlobalJsonUpdateTests : IDisposable
 {
     private readonly string _testDir;
@@ -30,7 +31,7 @@ public class GlobalJsonUpdateTests : IDisposable
     //  ReplaceGlobalJsonSdkVersion (pure string→string transform)
     // ──────────────────────────────────────────────────────────────
 
-    [Fact]
+    [TestMethod]
     public void ReplaceGlobalJsonSdkVersion_ReplacesVersionInSdkSection()
     {
         var json = """
@@ -48,7 +49,7 @@ public class GlobalJsonUpdateTests : IDisposable
         result.Should().NotContain("\"8.0.100\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceGlobalJsonSdkVersion_PreservesFormatting()
     {
         // Intentionally irregular whitespace
@@ -62,7 +63,7 @@ public class GlobalJsonUpdateTests : IDisposable
         result.Should().Contain("\"10.0.100\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceGlobalJsonSdkVersion_PreservesOtherProperties()
     {
         var json = """
@@ -88,7 +89,7 @@ public class GlobalJsonUpdateTests : IDisposable
         result.Should().Contain("\"dotnet\": \"8.0.100\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceGlobalJsonSdkVersion_ReturnsNull_WhenNoSdkSection()
     {
         var json = """
@@ -104,7 +105,7 @@ public class GlobalJsonUpdateTests : IDisposable
         result.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceGlobalJsonSdkVersion_ReturnsNull_WhenNoVersionInSdk()
     {
         var json = """
@@ -120,7 +121,7 @@ public class GlobalJsonUpdateTests : IDisposable
         result.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceGlobalJsonSdkVersion_HandlesVersionPropertyOutsideSdk()
     {
         // A "version" property at the root level should NOT be replaced
@@ -138,7 +139,7 @@ public class GlobalJsonUpdateTests : IDisposable
         result.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceGlobalJsonSdkVersion_ReplacesLongerVersion()
     {
         var json = """
@@ -155,7 +156,7 @@ public class GlobalJsonUpdateTests : IDisposable
         result.Should().Contain("\"10.0.100-preview.1\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceGlobalJsonSdkVersion_ReplacesShorterVersion()
     {
         var json = """
@@ -177,7 +178,7 @@ public class GlobalJsonUpdateTests : IDisposable
     //  UpdateGlobalJson (file I/O layer)
     // ──────────────────────────────────────────────────────────────
 
-    [Fact]
+    [TestMethod]
     public void UpdateGlobalJson_DoesNothing_WhenSdkVersionIsNull()
     {
         var path = Path.Combine(_testDir, "global.json");
@@ -189,7 +190,7 @@ public class GlobalJsonUpdateTests : IDisposable
         File.ReadAllText(path).Should().Be(original);
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateGlobalJson_DoesNothing_WhenFileDoesNotExist()
     {
         var path = Path.Combine(_testDir, "nonexistent", "global.json");
@@ -199,7 +200,7 @@ public class GlobalJsonUpdateTests : IDisposable
         ex.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateGlobalJson_UpdatesVersionInFile()
     {
         var path = Path.Combine(_testDir, "global.json");
@@ -212,7 +213,7 @@ public class GlobalJsonUpdateTests : IDisposable
         updated.Should().NotContain("\"8.0.100\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateGlobalJson_DoesNotWriteFile_WhenNoSdkVersionToReplace()
     {
         var path = Path.Combine(_testDir, "global.json");
@@ -233,7 +234,7 @@ public class GlobalJsonUpdateTests : IDisposable
     //  Default behavior: --update-global-json is NOT on by default
     // ──────────────────────────────────────────────────────────────
 
-    [Fact]
+    [TestMethod]
     public void UpdateGlobalJsonOption_DefaultIsNull()
     {
         // The option default must be null (tri-state: null = not specified,
@@ -249,7 +250,7 @@ public class GlobalJsonUpdateTests : IDisposable
         value.Should().BeNull("--update-global-json should not be set by default");
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateGlobalJsonOption_TrueWhenExplicitlyPassed()
     {
         var parseResult = Parser.Parse(["sdk", "install", "10.0", "--update-global-json"]);
@@ -265,10 +266,10 @@ public class GlobalJsonUpdateTests : IDisposable
     //  UTF-16 BOM support
     // ──────────────────────────────────────────────────────────────
 
-    [Theory]
-    [InlineData("utf-8")]
-    [InlineData("utf-16")]    // UTF-16 LE with BOM
-    [InlineData("utf-16BE")]  // UTF-16 BE with BOM
+    [TestMethod]
+    [DataRow("utf-8")]
+    [DataRow("utf-16")]    // UTF-16 LE with BOM
+    [DataRow("utf-16BE")]  // UTF-16 BE with BOM
     public void GetGlobalJsonInfo_ReadsCorrectVersion_WithEncoding(string encodingName)
     {
         var encoding = Encoding.GetEncoding(encodingName);
@@ -289,9 +290,9 @@ public class GlobalJsonUpdateTests : IDisposable
         info.GlobalJsonContents.Sdk!.Version.Should().Be("9.0.200");
     }
 
-    [Theory]
-    [InlineData("utf-16")]    // UTF-16 LE with BOM
-    [InlineData("utf-16BE")]  // UTF-16 BE with BOM
+    [TestMethod]
+    [DataRow("utf-16")]    // UTF-16 LE with BOM
+    [DataRow("utf-16BE")]  // UTF-16 BE with BOM
     public void UpdateGlobalJson_PreservesEncoding_WithUtf16Bom(string encodingName)
     {
         var encoding = Encoding.GetEncoding(encodingName);
@@ -315,9 +316,9 @@ public class GlobalJsonUpdateTests : IDisposable
             $"file should still be encoded as {encodingName}");
     }
 
-    [Theory]
-    [InlineData("utf-16")]
-    [InlineData("utf-16BE")]
+    [TestMethod]
+    [DataRow("utf-16")]
+    [DataRow("utf-16BE")]
     public void GlobalJsonFileHelper_OpenAsUtf8Stream_TranscodesUtf16(string encodingName)
     {
         var encoding = Encoding.GetEncoding(encodingName);

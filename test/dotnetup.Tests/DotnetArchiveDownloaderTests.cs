@@ -12,20 +12,20 @@ using FluentAssertions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
 /// Tests for DotnetArchiveDownloader, focusing on hash verification and HTTP client configuration.
 /// </summary>
+[TestClass]
 public class DotnetArchiveDownloaderTests
 {
     private readonly ITestOutputHelper _log;
 
-    public DotnetArchiveDownloaderTests(ITestOutputHelper log)
+    public DotnetArchiveDownloaderTests(TestContext testContext)
     {
-        _log = log;
+        _log = new TestContextOutputHelper(testContext);
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public class DotnetArchiveDownloaderTests
     /// This causes .tar.gz files to be saved as raw .tar, producing a hash that does not
     /// match the manifest's expected hash for the .tar.gz file.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DefaultHttpClient_DoesNotSetAutomaticDecompression()
     {
         // The default constructor creates its own HttpClient via CreateDefaultHttpClient().
@@ -89,7 +89,7 @@ public class DotnetArchiveDownloaderTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ComputeFileHash_ProducesCorrectSha512()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -115,7 +115,7 @@ public class DotnetArchiveDownloaderTests
     /// Regression test: the hash must be computed on the .tar.gz bytes (the file on disk),
     /// not on decompressed content. This verifies ComputeFileHash reads raw file bytes.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ComputeFileHash_HashesRawGzipBytes_NotDecompressedContent()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -151,7 +151,7 @@ public class DotnetArchiveDownloaderTests
             "hash should NOT match decompressed content hash");
     }
 
-    [Fact]
+    [TestMethod]
     public void VerifyFileHash_ThrowsOnMismatch()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -161,12 +161,12 @@ public class DotnetArchiveDownloaderTests
         var wrongHash = "0000000000000000000000000000000000000000000000000000000000000000" +
                         "0000000000000000000000000000000000000000000000000000000000000000";
 
-        var ex = Assert.Throws<DotnetInstallException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, wrongHash));
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, wrongHash));
         ex.Message.Should().Contain("File hash mismatch");
         _log.WriteLine($"Exception: {ex.Message}");
     }
 
-    [Fact]
+    [TestMethod]
     public void VerifyFileHash_PassesOnCorrectHash()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -180,14 +180,14 @@ public class DotnetArchiveDownloaderTests
         DotnetArchiveDownloader.VerifyFileHash(filePath, correctHash);
     }
 
-    [Fact]
+    [TestMethod]
     public void VerifyFileHash_ThrowsOnEmptyExpectedHash()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var filePath = Path.Combine(testEnv.TempRoot, "test.bin");
         File.WriteAllBytes(filePath, new byte[] { 1 });
 
-        Assert.Throws<ArgumentException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, ""));
-        Assert.Throws<ArgumentException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, null!));
+        Assert.ThrowsExactly<ArgumentException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, ""));
+        Assert.ThrowsExactly<ArgumentException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, null!));
     }
 }

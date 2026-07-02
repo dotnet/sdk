@@ -5,6 +5,7 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public sealed class DefaultInstallCommandTests : IDisposable
 {
     private readonly string _tempHome;
@@ -29,14 +30,10 @@ public sealed class DefaultInstallCommandTests : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void DefaultInstallUser_DoesNotPassDefaultInstallPathToPwshProfileOnUnix()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
             ["defaultinstall", "user", "--shell", "pwsh"],
             captureOutput: true,
