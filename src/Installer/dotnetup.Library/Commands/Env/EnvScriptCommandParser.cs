@@ -40,7 +40,7 @@ internal static class EnvScriptCommandParser
     /// <summary>
     /// Constructs a new command instance that emits the env script. Used by both the
     /// primary <c>env script</c> subcommand and the hidden top-level
-    /// <c>print-env-script</c> alias (kept for one release for backwards compatibility).
+    /// <c>print-env-script</c> alias (kept for backwards compatibility).
     /// Each invocation returns a fresh <see cref="Command"/> because System.CommandLine
     /// does not allow the same instance to be attached to multiple parent commands.
     /// </summary>

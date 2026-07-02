@@ -1,10 +1,5 @@
 # `dotnetup env` command design (replaces `dotnetup defaultinstall`)
 
-Tracks: [#53742](https://github.com/dotnet/sdk/issues/53742) (primary).
-Adjacent / forward-compatible with: [#53838](https://github.com/dotnet/sdk/issues/53838) (init walkthrough → two y/n prompts), [#53837](https://github.com/dotnet/sdk/issues/53837) (init walkthrough → summary-first).
-
----
-
 ## Problem
 
 `dotnetup defaultinstall <user|system>` is misnamed and under-specified:
@@ -32,22 +27,15 @@ Adjacent / forward-compatible with: [#53838](https://github.com/dotnet/sdk/issue
    shown by `env show`, so the user doesn't need to remember it.
 4. Make the command idempotent: running it again with the same mode is a no-op,
    switching modes correctly undoes the previously applied changes.
-5. Stay forward-compatible with the planned walkthrough refactors (#53838, #53837):
-   those redesigns end up calling the same shared apply helper that this command uses,
-   so they don't need to duplicate logic.
-6. Manage **whether `dotnetup` itself is on `PATH`** as a first-class, persisted setting
+5. Manage **whether `dotnetup` itself is on `PATH`** as a first-class, persisted setting
    that is orthogonal to the dotnet-access mode — so the install script only has to
    download `dotnetup`, and running `dotnetup` manages its own `PATH` entry. See
    [`dotnetup` on PATH: an orthogonal setting](#dotnetup-on-path-an-orthogonal-setting).
 
 ## Non-goals
 
-- Implementing #53838 (two y/n prompts) or #53837 (summary-first) directly. We'll just
-  factor the apply logic into a shared helper that both `init` and the new command call.
 - Adding a way to inspect / change which *shell* the profile gets written to beyond the
   existing `--shell` option.
-- Cross-machine "machine-wide" mode that affects other users (`AllUsersAllHosts`
-  profile, machine-level `HKLM` PATH) — out of scope; requires admin and broader policy.
 - Backwards-compat alias for `defaultinstall`. Clean rename.
 
 ## Proposal
@@ -63,6 +51,7 @@ dotnetup env show                   # display current mode; if applied state has
 dotnetup env script                 # print a shell-specific script that exports
                                     # PATH/DOTNET_ROOT for the current dotnet
                                     # install (formerly `dotnetup print-env-script`)
+dotnetup env clear                  # remove all dotnetup environment wiring
 ```
 
 `env set` is idempotent — running it again with the same mode is a no-op (and is also
@@ -92,59 +81,41 @@ layer.
 The existing top-level `dotnetup print-env-script` command moves under the `env`
 family as `dotnetup env script` (it generates env-var wiring — same domain). To
 avoid breaking managed profile blocks written by previous dotnetup versions, the
-old `print-env-script` name is kept as a hidden top-level alias for one release,
-then removed.
+old `print-env-script` name is kept as a hidden top-level alias.
 
 The rest of this document explains the reasoning behind each choice and the
 alternatives considered.
 
 ## Key scenario: re-sync after a system .NET update overwrites the system PATH
 
-> A user has chosen `Shell` mode. In `Shell` mode dotnetup writes the user dotnet path
-> only to the user's shell profile. That means **only PowerShell** sees the user
-> dotnet on PATH — the profile prepends the user dotnet path to `$env:PATH`. `cmd.exe`
-> reads no profile, so from cmd `dotnet` still resolves to whatever the Windows
-> system/user env-var `PATH` says, which on a typical box is the admin-installed
-> `C:\Program Files\dotnet\`.
->
-> To make `cmd.exe` (and GUI apps, IDE shortcuts launched from Start menu, etc.) see
-> the user dotnet, the user picks `Full` mode. That mode prepends the user dotnet path
-> to the Windows env-var `PATH` (registry-level, user scope) and removes the Program
-> Files dotnet path from the system PATH, **in addition to** writing the shell profile.
->
-> Later, a system .NET SDK or runtime installer runs (for example, via a Visual Studio
-> update). Its installer adds the Program Files dotnet path back to the system PATH,
-> which means the effective PATH will list the Program Files dotnet path, and it will
-> take precedence over the user dotnet install.
->
-> The fix: rerun `dotnetup env set full`.  This will once again remove the Program Files
-> dotnet path from the system PATH. Because `env set` is idempotent, this works whether
-> the mode was already applied or not.
+A user has chosen `Shell` mode. In `Shell` mode dotnetup writes the user dotnet path
+only to the user's shell profile. That means **only PowerShell** sees the user
+dotnet on PATH — the profile prepends the user dotnet path to `$env:PATH`. `cmd.exe`
+reads no profile, so from cmd `dotnet` still resolves to whatever the Windows
+system/user env-var `PATH` says, which on a typical box is the admin-installed
+`C:\Program Files\dotnet\`.
+
+To make `cmd.exe` (and GUI apps, IDE shortcuts launched from Start menu, etc.) see
+the user dotnet, the user picks `Full` mode. That mode prepends the user dotnet path
+to the Windows env-var `PATH` (registry-level, user scope) and removes the Program
+Files dotnet path from the system PATH, **in addition to** writing the shell profile.
+
+Later, a system .NET SDK or runtime installer runs (for example, via a Visual Studio
+update). Its installer adds the Program Files dotnet path back to the system PATH,
+which means the effective PATH will list the Program Files dotnet path, and it will
+take precedence over the user dotnet install.
+
+The fix: rerun `dotnetup env set full`.  This will once again remove the Program Files
+dotnet path from the system PATH. Because `env set` is idempotent, this works whether
+the mode was already applied or not.
 
 The mode the user picked is stored in `dotnetup.config.json` and is shown by
 `dotnetup env show`, so the user doesn't need to remember it.
 
-## Naming the noun: `env`, not `path`
+## Naming the noun
 
-The command doesn't only manage `PATH` — it also writes `DOTNET_ROOT` and (in the
-"full" mode) edits the Windows env-var registry. Even the "shell profile" mode is
-fundamentally a script that exports env vars at shell startup. **Everything we touch
-is environment-variable wiring.**
-
-CLI prior art reads `env` unambiguously as "environment variables": `printenv`, `env`,
-`Get-ChildItem env:`, `setx`, `direnv`. The "deployment environment" sense doesn't
-show up at this layer.
-
-```
-dotnetup env set <mode>
-dotnetup env show
-```
-
-Reads naturally: "configure how dotnetup wires up the environment". Covers PATH,
-DOTNET_ROOT, and the profile script in one word.
-
-Rejected nouns: `path` (too narrow), `vars` (too generic), `integration`/`shell`
-(narrower than what we do), `setup` (sounds like an installer).
+We use `env` as the command noun.  It doesn't just manage manage `PATH` — it also
+writes `DOTNET_ROOT` and (in the "full" mode) edits the Windows env-var registry.
 
 ## Naming the modes: `None / Shell / Full`
 
@@ -186,37 +157,32 @@ write the new names.
 
 ## `dotnetup` on PATH: an orthogonal setting
 
-> **Status: design settled.** This section was added after the rest of the document; its
-> open questions (below) have all been resolved and it's ready to implement alongside the
-> `env` command.
-
 ### The problem this solves
 
 The `env` mode above governs how the **managed dotnet** is surfaced. But there is a
 second, separate concern tangled into the same mechanism today: whether **`dotnetup`
 itself** is on `PATH`.
 
-In `Shell` / `Full` mode the managed profile block happens to prepend the dotnetup
-directory to `PATH` as a side effect (the `includeDotnet=true` path also adds
-`dotnetupDir`). In `None` mode the block is removed entirely — which also drops
+Previously, in `Shell` / `Full` mode the managed profile block prepended the dotnetup
+directory to `PATH`. In `None` mode the block was removed entirely — which also dropped
 `dotnetup` from `PATH`. That is incoherent precisely for `None`, whose whole point is
 "invoke .NET via `dotnetup dotnet`": that workflow is impossible unless `dotnetup` is
 discoverable on `PATH`.
 
-Today `dotnetup`-on-`PATH` is also partly the responsibility of the standalone install
-script (it prints/sets a `PATH` entry for the dotnetup dir). We don't want to rely on
-the install script for this. **The install script should only download `dotnetup`;
-running `dotnetup` should manage its own `PATH` entry.** That makes dotnetup-on-PATH a
-first-class, consistently-managed setting rather than an install-time side effect.
+The get-dotnetup install script also has some logic for the PATH: it prints/sets a `PATH`
+entry for the dotnetup dir. However, we don't want to rely on the install script for this.
+**The install script should only download `dotnetup`; running `dotnetup` should manage its
+own `PATH` entry.** That makes `dotnetupOnPath` a first-class, consistently-managed setting
+rather than an install-time side effect.
 
 ### The model: two orthogonal settings, one derived mechanism
 
 | Setting | Values | Meaning |
 | --- | --- | --- |
 | **`accessMode`** (dotnet access) | `none` / `shell` / `full` | How the managed **dotnet** is surfaced (the modes above). |
-| **`dotnetupOnPath`** (dotnetup discoverability) | `true` / `false` | Whether the **dotnetup** directory is on `PATH` so `dotnetup` can be invoked. |
+| **`dotnetupOnPath`** (dotnetup discoverability) | `true` / `false` | Whether the **dotnetup** executable directory is on `PATH` so `dotnetup` can be invoked. |
 
-The two are independent axes. dotnetup-on-PATH sits underneath all three `accessMode` values
+`dotnetupOnPath` is orthogonal to all three `accessMode` values
 and, while installed, is normally on.
 
 **Whether the profile contains a dotnetup-managed section at all is *derived*, not a
@@ -240,7 +206,7 @@ The applier bakes the explicit flags into the profile block at apply time, so th
 persisted block is deterministic and never depends on the command's default.
 
 Exposing "touch the profile at all" as a separate setting would add a knob that is only
-meaningful on Windows (where dotnetup-on-PATH uses the user `PATH` env var and needs no
+meaningful on Windows (where `dotnetupOnPath` uses the user `PATH` env var and needs no
 profile), so we keep it derived to avoid complexity.
 
 ### Mechanism per OS
@@ -248,7 +214,7 @@ profile), so we keep it derived to avoid complexity.
 - **Unix:** the managed block is one `env script` call whose arguments select whether it
   wires dotnet and whether it adds the dotnetup directory. `dotnetupOnPath = false` drops
   the dotnetup-dir argument; the block is removed only when the script would wire nothing.
-- **Windows:** dotnetup-on-PATH is written to the **user `PATH` env var** (so cmd,
+- **Windows:** `dotnetupOnPath` is written to the **user `PATH` env var** (so cmd,
   PowerShell, and GUI-launched apps all see it — not only PowerShell). For simplicity
   the PowerShell profile block **also** includes the dotnetup directory (driven by the
   same `env script` arguments as Unix), even though that is redundant with the user
@@ -256,7 +222,7 @@ profile), so we keep it derived to avoid complexity.
   same directory — and it keeps profile generation identical across operating systems.
   Consequences: clearing `dotnetupOnPath` must remove it from **both** places on Windows
   (the profile's `env script` arguments and the user `PATH` entry), and `env show` drift
-  detection treats the **user `PATH` env var as authoritative** for dotnetup-on-PATH on
+  detection treats the **user `PATH` env var as authoritative** for `dotnetupOnPath` on
   Windows (the profile copy is just a convenience).
 
 Because dotnetup has no `uninstall` command, **`dotnetupOnPath = false` is the way to
@@ -293,12 +259,12 @@ only be warranted if we chose explicit versioned migration instead.
 ### Command UI (recommended)
 
 Keep everything under the `env` noun. Dotnet access stays the positional argument (the
-primary axis); dotnetup-on-PATH is an option. A bare `env set` re-syncs the stored
+primary axis); `dotnetupOnPath` is an option. A bare `env set` re-syncs the stored
 config.
 
 ```
-dotnetup env set <none|shell|full>                     # set dotnet access, leave dotnetup-on-PATH as-is
-dotnetup env set --dotnetup-on-path <true|false>      # change only dotnetup-on-PATH
+dotnetup env set <none|shell|full>                     # set dotnet access, leave dotnetupOnPath as-is
+dotnetup env set --dotnetup-on-path <true|false>      # change only dotnetupOnPath
 dotnetup env set <mode> --dotnetup-on-path <true|false> # set both at once
 dotnetup env set                                      # no args: re-apply stored config (fix drift)
 dotnetup env clear                                    # fully unwire: == env set none --dotnetup-on-path false
@@ -399,19 +365,10 @@ The Unix and Windows profile columns are driven by the same `env script` argumen
 user `PATH` column is the extra Windows-only piece (and, for `full`, is also where the
 dotnet env-var wiring lives).
 
-### Init walkthrough
-
-- The existing None/Shell/Full prompt sets `env`.
-- `dotnetupOnPath` defaults to `true` with **no separate prompt** — you just ran
-  `dotnetup`, so keeping it runnable is the obvious default and a prompt adds friction.
-- Post-init guidance mentions it (e.g. "`dotnetup` has been added to your PATH; change
-  this later with `dotnetup env set --dotnetup-on-path false`").
-- Everything stays adjustable afterward via the commands above.
-
 ### Open questions
 
 1. **UI shape** *(resolved)*: a flag on `env set` (single-verb model), not a separate
-   `env dotnetup-path` verb. dotnet access stays the positional; dotnetup-on-PATH is the
+   `env dotnetup-path` verb. dotnet access stays the positional; `dotnetupOnPath` is the
    `--dotnetup-on-path` option.
 2. **Option spelling** *(resolved)*: value form `--dotnetup-on-path <true|false>` (explicit,
    script-friendly, and absent = leave unchanged), not a `--no-` flag pair. Accepted as
@@ -421,7 +378,7 @@ dotnet env-var wiring lives).
    jargon-y.)
 3. **Config rename** *(resolved)*: rename `pathPreference` → `accessMode`, with the
    read-compatibility shim above to preserve internal users' configs. The legacy shim is
-   kept **permanently for now** (not time-boxed to one release); we can revisit removing
+   kept **permanently for now**; we can revisit removing
    it later if it ever becomes a maintenance burden.
 4. **Init prompt** *(resolved)*: keep the silent default `dotnetupOnPath = true`. We are
    **not** touching the init walkthrough UI in this PR; a dedicated prompt can be added
@@ -454,76 +411,3 @@ Alternative command shapes considered and rejected:
 | `dotnetup enable <mode>` / `disable` / `refresh` / `status`     | `enable`/`disable` overload heavily with channel install verbs.    |
 | `dotnetup path set <mode>` / `path show`                        | `path` is narrower than what we do (DOTNET_ROOT, profile script).  |
 
-## How this interacts with #53838 and #53837
-
-- #53838 turns the init walkthrough into:
-  - Q1 ("modify shell profile?") → answer Yes/No
-  - Q2 ("replace the env-var PATH?") → only shown on Windows if Q1=Yes, only if a
-    system .NET install exists
-  - Mapping: (No, _) → `None`. (Yes, No) → `Shell`. (Yes, Yes) → `Full`.
-- #53837 turns the init walkthrough into a summary-first flow. The "PATH Usage"
-  line in the summary reflects the same `DotnetAccessMode`. The customization path
-  drops into the same prompts as #53838.
-
-In both cases the underlying "given a `DotnetAccessMode`, apply it" logic is the
-shared helper this command uses (`DotnetAccessModeApplier.Apply`). Init and `env set`
-both go through it. The walkthrough refactors then become mechanical edits to the
-question-asking layer, not the apply layer.
-
-## Implementation outline
-
-1. **Rename `DotnetAccessMode` enum** to `None / Shell / Full`. Update all callsites +
-   JSON serialization. Single commit.
-2. **Add `DotnetAccessModeApplier`** in `dotnetup.Library` — single static `Apply` entry
-   point that takes a `DotnetAccessMode` and the necessary inputs, performs the
-   unwind + apply + config write, and emits user-facing messages via `Spectre.Console`.
-   - Unwinding `Full` reuses existing `InstallRootManager.GetAdminInstallRootChanges`
-     + `ApplyAdminInstallRoot`, which performs the exact inverse of
-     `GetUserInstallRootChanges` + `ApplyUserInstallRoot` (re-adds Program Files
-     dotnet to system PATH via elevation, removes user dotnet from user PATH,
-     unsets user-scope `DOTNET_ROOT`). No "original PATH" snapshot required —
-     each `NeedsX` flag guards against no-op cases.
-   - `Full → Shell` leaves the profile script in place, which still exports the
-     user dotnet PATH entry and `DOTNET_ROOT` at shell startup. Only the duplicate
-     registry copy gets removed.
-   - Edge case: if no admin install exists (`GetProgramFilesDotnetPaths()` empty),
-     the unwind has nothing to add back to system PATH and cmd.exe is left with
-     no dotnet at all. Surface a warning on the mode switch.
-3. **Add new `env` parent command** with `set` / `show` / `script` subcommands under
-   `src/Installer/dotnetup.Library/Commands/Env/`. Wire into `Parser.cs`.
-   - `env show` displays the current mode and, if applied state has drifted from
-     the configured mode, reports the drift. For `Full`, drift = user dotnet not at
-     the front of user PATH, OR Program Files dotnet present in system PATH, OR
-     user-scope `DOTNET_ROOT` ≠ user dotnet path. For `Shell`, drift = managed
-     block missing from the configured shell's profile file. All checks are
-     read-only (no elevation needed).
-   - `env script` is the existing `EnvScriptCommand` (renamed from `PrintEnvScriptCommand`). The
-     top-level `dotnetup print-env-script` stays as a hidden alias that delegates
-     to `env script`, so managed profile blocks written by earlier dotnetup
-     versions keep working. Remove the alias one release later. Newly-written
-     managed blocks invoke `env script`.
-4. **Delete `DefaultInstallCommand`** + parser + tests; remove from `Parser.cs`. No
-   alias.
-5. **Refactor `InitWorkflows`** finalize step to call `DotnetAccessModeApplier.Apply`
-   instead of its own inline logic.
-6. **Tests**:
-   - `DotnetAccessModeApplier` per-mode + mode-switch unwind (`Full → Shell` correctly
-     clears env vars; `Shell → None` removes the managed profile block) + idempotency
-     + re-sync.
-   - Parser tests for each subcommand.
-   - `env show` drift detection: pre-modify the env-var PATH out-of-band, confirm
-     `env show` reports the drift.
-   - Integration: `env set shell` then `env set none` leaves no managed block in
-     any profile file.
-7. **Docs**: update `--help` text. Add release-notes entry for the rename. No
-   manpage changes (those are generated from docs).
-
-## Risks
-
-- Walkthrough refactor (#53838 / #53837) may want to call the applier with
-  `DotnetAccessMode` *plus* "and also do the channel install in the same flow". Make
-  sure the applier doesn't try to do install work — keep it strictly about env-mode
-  application.
-- Renaming the enum touches every callsite. Mechanical and easy with rename refactor,
-  but the JSON property name change means any config files in the wild become
-  unreadable. Currently zero have shipped, so OK.

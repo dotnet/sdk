@@ -59,7 +59,7 @@ internal class Parser
         rootCommand.Subcommands.Add(SdkUninstallCommandParser.GetRootUninstallCommand());
         rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());
         rootCommand.Subcommands.Add(EnvCommandParser.GetCommand());
-        // Hidden top-level alias for `env script`. Kept for one release for backwards
+        // Hidden top-level alias for `env script`. Kept for backwards
         // compatibility with anything that scripted against `dotnetup print-env-script`.
         rootCommand.Subcommands.Add(EnvScriptCommandParser.ConstructCommand(name: "print-env-script", hidden: true));
         rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
