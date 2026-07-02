@@ -134,14 +134,20 @@ internal class ProcessReaper : IDisposable
         // which is raised on the AppDomain.ProcessExit thread when the CLI itself is
         // shutting down (for example when a SIGTERM handler calls Environment.Exit).
         //
-        // A managed System.Threading.Lock is used here rather than a Mutex on purpose.
-        // The prior Mutex based design disposed the mutex in Dispose while a concurrent
-        // ProcessExit callback could still call WaitOne on it, throwing
-        // "Cannot access a disposed object" during shutdown (dotnet/sdk#55096). A
-        // managed lock has no disposable wait handle to race on, and the _shuttingDown
-        // flag closes the window so a ProcessExit callback that starts after Dispose has
-        // run simply becomes a no-op.
+        // A managed lock is used here rather than a Mutex on purpose. The prior Mutex
+        // based design disposed the mutex in Dispose while a concurrent ProcessExit
+        // callback could still call WaitOne on it, throwing "Cannot access a disposed
+        // object" during shutdown (dotnet/sdk#55096). A managed lock has no disposable
+        // wait handle to race on, and the _shuttingDown flag closes the window so a
+        // ProcessExit callback that starts after Dispose has run simply becomes a no-op.
+        //
+        // System.Threading.Lock is used on modern .NET; net472 (cross-compiled on
+        // non-Windows, where TARGET_WINDOWS is not defined) falls back to a plain object.
+#if NET9_0_OR_GREATER
         private readonly Lock _shutdownLock = new();
+#else
+        private readonly object _shutdownLock = new();
+#endif
         private bool _shuttingDown;
 
         public UnixProcessReaper(Process process) : base(process)
