@@ -15,13 +15,13 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdSettingsDescription,
             HelpName = CommandDefinitionStrings.CmdSettingsFile
-        }.ForwardAsSingle(o => $"-property:VSTestSetting={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsSingle(o => $"--property:VSTestSetting={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public readonly Option<bool> ListTestsOption = new Option<bool>("--list-tests", "-t")
         {
             Description = CommandDefinitionStrings.CmdListTestsDescription,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestListTests=true");
+        }.ForwardAs("--property:VSTestListTests=true");
 
         public readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CommonOptions.CreateEnvOption(CommandDefinitionStrings.CmdTestEnvironmentVariableDescription);
 
@@ -29,13 +29,13 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdTestCaseFilterDescription,
             HelpName = CommandDefinitionStrings.CmdTestCaseFilterExpression
-        }.ForwardAsSingle(o => $"-property:VSTestTestCaseFilter={MSBuildPropertyParser.SurroundWithDoubleQuotes(o!)}");
+        }.ForwardAsSingle(o => $"--property:VSTestTestCaseFilter={MSBuildPropertyParser.SurroundWithDoubleQuotes(o!)}");
 
         public readonly Option<IEnumerable<string>> AdapterOption = new Option<IEnumerable<string>>("--test-adapter-path")
         {
             Description = CommandDefinitionStrings.CmdTestAdapterPathDescription,
             HelpName = CommandDefinitionStrings.CmdTestAdapterPath
-        }.ForwardAsSingle(o => $"-property:VSTestTestAdapterPath={MSBuildPropertyParser.SurroundWithDoubleQuotes(string.Join(";", o!.Select(CommandDirectoryContext.GetFullPath)))}")
+        }.ForwardAsSingle(o => $"--property:VSTestTestAdapterPath={MSBuildPropertyParser.SurroundWithDoubleQuotes(string.Join(";", o!.Select(CommandDirectoryContext.GetFullPath)))}")
         .AllowSingleArgPerToken();
 
         public readonly Option<IEnumerable<string>> LoggerOption = new Option<IEnumerable<string>>("--logger", "-l")
@@ -45,7 +45,7 @@ internal abstract partial class TestCommandDefinition
         }.ForwardAsSingle(o =>
         {
             var loggersString = string.Join(";", GetSemiColonEscapedArgs(o!));
-            return $"-property:VSTestLogger={MSBuildPropertyParser.SurroundWithDoubleQuotes(loggersString)}";
+            return $"--property:VSTestLogger={MSBuildPropertyParser.SurroundWithDoubleQuotes(loggersString)}";
         })
         .AllowSingleArgPerToken();
 
@@ -63,44 +63,44 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CmdPathTologFileDescription,
             HelpName = CommandDefinitionStrings.CmdPathToLogFile
         }
-        .ForwardAsSingle(o => $"-property:VSTestDiag={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        .ForwardAsSingle(o => $"--property:VSTestDiag={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
         {
             Description = CommandDefinitionStrings.CmdNoBuildDescription,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestNoBuild=true");
+        }.ForwardAs("--property:VSTestNoBuild=true");
 
         public readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
         {
             Description = CommandDefinitionStrings.NoDependenciesOptionDescription,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:BuildProjectReferences=false");
+        }.ForwardAs("--property:BuildProjectReferences=false");
 
         public readonly Option<string> ResultsOption = new Option<string>("--results-directory")
         {
             Description = CommandDefinitionStrings.CmdResultsDirectoryDescription,
             HelpName = CommandDefinitionStrings.CmdPathToResultsDirectory
-        }.ForwardAsSingle(o => $"-property:VSTestResultsDirectory={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsSingle(o => $"--property:VSTestResultsDirectory={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public readonly Option<IEnumerable<string>> CollectOption = new Option<IEnumerable<string>>("--collect")
         {
             Description = CommandDefinitionStrings.cmdCollectDescription,
             HelpName = CommandDefinitionStrings.cmdCollectFriendlyName
-        }.ForwardAsSingle(o => $"-property:VSTestCollect=\"{string.Join(";", GetSemiColonEscapedArgs(o!))}\"")
+        }.ForwardAsSingle(o => $"--property:VSTestCollect=\"{string.Join(";", GetSemiColonEscapedArgs(o!))}\"")
         .AllowSingleArgPerToken();
 
         public readonly Option<bool> BlameOption = new Option<bool>("--blame")
         {
             Description = CommandDefinitionStrings.CmdBlameDescription,
             Arity = ArgumentArity.Zero
-        }.ForwardIfEnabled("-property:VSTestBlame=true");
+        }.ForwardIfEnabled("--property:VSTestBlame=true");
 
         public readonly Option<bool> BlameCrashOption = new Option<bool>("--blame-crash")
         {
             Description = CommandDefinitionStrings.CmdBlameCrashDescription,
             Arity = ArgumentArity.Zero
-        }.ForwardIfEnabled("-property:VSTestBlameCrash=true");
+        }.ForwardIfEnabled("--property:VSTestBlameCrash=true");
 
         public readonly Option<string> BlameCrashDumpOption = CreateBlameCrashDumpOption();
 
@@ -108,13 +108,13 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdBlameCrashCollectAlwaysDescription,
             Arity = ArgumentArity.Zero
-        }.ForwardIfEnabled(["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
+        }.ForwardIfEnabled(["--property:VSTestBlameCrash=true", "--property:VSTestBlameCrashCollectAlways=true"]);
 
         public readonly Option<bool> BlameHangOption = new Option<bool>("--blame-hang")
         {
             Description = CommandDefinitionStrings.CmdBlameHangDescription,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestBlameHang=true");
+        }.ForwardAs("--property:VSTestBlameHang=true");
 
         public readonly Option<string> BlameHangDumpOption = CreateBlameHangDumpOption();
 
@@ -122,7 +122,7 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdBlameHangTimeoutDescription,
             HelpName = CommandDefinitionStrings.HangTimeoutArgumentName
-        }.ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}"]);
+        }.ForwardAsMany(o => ["--property:VSTestBlameHang=true", $"--property:VSTestBlameHangTimeout={o}"]);
 
         public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(forwardAs: "--property:VSTestNoLogo=true", description: CommandDefinitionStrings.TestCmdNoLogo);
 
@@ -143,7 +143,7 @@ internal abstract partial class TestCommandDefinition
                 Description = CommandDefinitionStrings.CmdBlameCrashDumpTypeDescription,
                 HelpName = CommandDefinitionStrings.CrashDumpTypeArgumentName,
             }
-            .ForwardAsMany(o => ["-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}"]);
+            .ForwardAsMany(o => ["--property:VSTestBlameCrash=true", $"--property:VSTestBlameCrashDumpType={o}"]);
             result.AcceptOnlyFromAmong(["full", "mini"]);
             return result;
         }
@@ -155,7 +155,7 @@ internal abstract partial class TestCommandDefinition
                 Description = CommandDefinitionStrings.CmdBlameHangDumpTypeDescription,
                 HelpName = CommandDefinitionStrings.HangDumpTypeArgumentName
             }
-            .ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}"]);
+            .ForwardAsMany(o => ["--property:VSTestBlameHang=true", $"--property:VSTestBlameHangDumpType={o}"]);
             result.AcceptOnlyFromAmong(["full", "mini", "none"]);
             return result;
         }

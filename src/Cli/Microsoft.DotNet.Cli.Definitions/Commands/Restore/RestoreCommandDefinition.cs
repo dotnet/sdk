@@ -35,25 +35,25 @@ internal sealed class RestoreCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.CmdUseLockFileOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:RestorePackagesWithLockFile=true");
+    }.ForwardAs("--property:RestorePackagesWithLockFile=true");
 
     public readonly Option<bool> LockedModeOption = new Option<bool>("--locked-mode")
     {
         Description = CommandDefinitionStrings.CmdLockedModeOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:RestoreLockedMode=true");
+    }.ForwardAs("--property:RestoreLockedMode=true");
 
     public readonly Option<string> LockFilePathOption = new Option<string>("--lock-file-path")
     {
         Description = CommandDefinitionStrings.CmdLockFilePathOptionDescription,
         HelpName = CommandDefinitionStrings.CmdLockFilePathOption
-    }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}");
+    }.ForwardAsSingle(o => $"--property:NuGetLockFilePath={o}");
 
     public readonly Option<bool> ForceEvaluateOption = new Option<bool>("--force-evaluate")
     {
         Description = CommandDefinitionStrings.CmdReevaluateOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:RestoreForceEvaluate=true");
+    }.ForwardAs("--property:RestoreForceEvaluate=true");
 
     public readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
     public readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
@@ -109,7 +109,7 @@ internal sealed class RestoreCommandDefinition : Command
                 convertedRids.Add($"{rid}");
             }
         }
-        return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
+        return $"--property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
     }
 
     private static Option<IEnumerable<string>> CreateRuntimeOption() => new Option<IEnumerable<string>>("--runtime", "-r")
@@ -126,7 +126,7 @@ internal sealed class RestoreCommandDefinition : Command
             Description = CommandDefinitionStrings.CmdNoDependenciesOptionDescription,
             Arity = ArgumentArity.Zero,
             Hidden = !showHelp
-        }.ForwardAs("-property:RestoreRecursive=false");
+        }.ForwardAs("--property:RestoreRecursive=false");
 
     public static Option<string[]> CreateTargetOption() => CommonOptions.CreateRequiredMSBuildTargetOption("Restore");
 

@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var parseResult = command.Parse(["--no-dependencies"]);
             var forwarded = parseResult.OptionValuesToBeForwarded(command);
 
-            forwarded.Should().Contain("-property:BuildProjectReferences=false",
+            forwarded.Should().Contain("--property:BuildProjectReferences=false",
                 "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
         }
 

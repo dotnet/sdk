@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [ClassInitialize]
         public static void ClassInit(TestContext context) => TelemetryClient.DisabledForTests = true;
 
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "-restore", "-target:VSTest", "-property:NuGetInteractive=false"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "-restore", "-target:VSTest", "--property:NuGetInteractive=false"];
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetTestInvocation));

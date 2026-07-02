@@ -29,14 +29,14 @@ internal sealed class PublishCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.ManifestOptionDescription,
         HelpName = CommandDefinitionStrings.ManifestOption
-    }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
+    }.ForwardAsSingle(o => $"--property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
     .AllowSingleArgPerToken();
 
     public readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
         Description = CommandDefinitionStrings.NoBuildOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:NoBuild=true");
+    }.ForwardAs("--property:NoBuild=true");
 
     public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 

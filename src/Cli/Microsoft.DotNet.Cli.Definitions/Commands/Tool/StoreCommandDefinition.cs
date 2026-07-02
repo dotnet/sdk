@@ -32,7 +32,7 @@ internal sealed class StoreCommandDefinition : Command
         }
         else
         {
-            return [materializedString, $"-property:AdditionalProjects={string.Join("%3B", o!.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"];
+            return [materializedString, $"--property:AdditionalProjects={string.Join("%3B", o!.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"];
         }
     }).AllowSingleArgPerToken();
 
@@ -40,7 +40,7 @@ internal sealed class StoreCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.FrameworkVersionOptionDescription,
         HelpName = CommandDefinitionStrings.FrameworkVersionOption
-    }.ForwardAsSingle(o => $"-property:RuntimeFrameworkVersion={o}");
+    }.ForwardAsSingle(o => $"--property:RuntimeFrameworkVersion={o}");
 
     public readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
@@ -52,19 +52,19 @@ internal sealed class StoreCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.IntermediateWorkingDirOptionDescription,
         HelpName = CommandDefinitionStrings.IntermediateWorkingDirOption
-    }.ForwardAsSingle(o => $"-property:ComposeWorkingDir={CommandDirectoryContext.GetFullPath(o)}");
+    }.ForwardAsSingle(o => $"--property:ComposeWorkingDir={CommandDirectoryContext.GetFullPath(o)}");
 
     public readonly Option<bool> SkipOptimizationOption = new Option<bool>("--skip-optimization")
     {
         Description = CommandDefinitionStrings.SkipOptimizationOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:SkipOptimization=true");
+    }.ForwardAs("--property:SkipOptimization=true");
 
     public readonly Option<bool> SkipSymbolsOption = new Option<bool>("--skip-symbols")
     {
         Description = CommandDefinitionStrings.SkipSymbolsOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:CreateProfilingSymbols=false");
+    }.ForwardAs("--property:CreateProfilingSymbols=false");
 
     public readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CommandDefinitionStrings.StoreFrameworkOptionDescription);
     public readonly Option<string> RuntimeOption = TargetPlatformOptions.CreateRuntimeOption(CommandDefinitionStrings.StoreRuntimeOptionDescription);

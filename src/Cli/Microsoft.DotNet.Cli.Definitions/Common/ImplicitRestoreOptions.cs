@@ -30,7 +30,7 @@ internal sealed class ImplicitRestoreOptions
             Description = showHelp ? CommandDefinitionStrings.CmdPackagesOptionDescription : string.Empty,
             HelpName = CommandDefinitionStrings.CmdPackagesOption,
             Hidden = !showHelp
-        }.ForwardAsSingle(o => $"-property:RestorePackagesPath={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsSingle(o => $"--property:RestorePackagesPath={CommandDirectoryContext.GetFullPath(o)}");
 
         CurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
 
@@ -39,42 +39,42 @@ internal sealed class ImplicitRestoreOptions
             Description = showHelp ? CommandDefinitionStrings.CmdDisableParallelOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:RestoreDisableParallel=true");
+        }.ForwardAs("--property:RestoreDisableParallel=true");
 
         ConfigFileOption = new Option<string>("--configfile")
         {
             Description = showHelp ? CommandDefinitionStrings.CmdConfigFileOptionDescription : string.Empty,
             HelpName = CommandDefinitionStrings.CmdConfigFileOption,
             Hidden = !showHelp
-        }.ForwardAsSingle(o => $"-property:RestoreConfigFile={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsSingle(o => $"--property:RestoreConfigFile={CommandDirectoryContext.GetFullPath(o)}");
 
         NoCacheOption = new Option<bool>("--no-cache")
         {
             Description = string.Empty,
             Hidden = true,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:RestoreNoCache=true");
+        }.ForwardAs("--property:RestoreNoCache=true");
 
         NoHttpCacheOption = new Option<bool>("--no-http-cache")
         {
             Description = showHelp ? CommandDefinitionStrings.CmdNoHttpCacheOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:RestoreNoHttpCache=true");
+        }.ForwardAs("--property:RestoreNoHttpCache=true");
 
         IgnoreFailedSourcesOption = new Option<bool>("--ignore-failed-sources")
         {
             Description = showHelp ? CommandDefinitionStrings.CmdIgnoreFailedSourcesOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:RestoreIgnoreFailedSources=true");
+        }.ForwardAs("--property:RestoreIgnoreFailedSources=true");
 
         ForceOption = new Option<bool>("--force")
         {
             Description = CommandDefinitionStrings.CmdForceRestoreOptionDescription,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:RestoreForce=true");
+        }.ForwardAs("--property:RestoreForce=true");
         if (useShortOptions)
         {
             ForceOption.Aliases.Add("-f");
@@ -91,7 +91,7 @@ internal sealed class ImplicitRestoreOptions
             Description = showHelp ? CommandDefinitionStrings.CmdSourceOptionDescription : string.Empty,
             HelpName = CommandDefinitionStrings.CmdSourceOption,
             Hidden = !showHelp
-        }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
+        }.ForwardAsSingle(o => $"--property:RestoreSources={string.Join("%3B", o)}")
          .AllowSingleArgPerToken();
 
         if (useShortOptions)

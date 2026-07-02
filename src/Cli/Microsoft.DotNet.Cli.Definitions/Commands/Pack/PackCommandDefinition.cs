@@ -25,31 +25,31 @@ internal sealed class PackCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.PackCmdOutputDirDescription,
         HelpName = CommandDefinitionStrings.PackCmdOutputDir
-    }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
+    }.ForwardAsSingle(o => $"--property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
     public readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
         Description = CommandDefinitionStrings.CmdNoBuildOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:NoBuild=true");
+    }.ForwardAs("--property:NoBuild=true");
 
     public readonly Option<bool> IncludeSymbolsOption = new Option<bool>("--include-symbols")
     {
         Description = CommandDefinitionStrings.CmdIncludeSymbolsDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:IncludeSymbols=true");
+    }.ForwardAs("--property:IncludeSymbols=true");
 
     public readonly Option<bool> IncludeSourceOption = new Option<bool>("--include-source")
     {
         Description = CommandDefinitionStrings.CmdIncludeSourceDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:IncludeSource=true");
+    }.ForwardAs("--property:IncludeSource=true");
 
     public readonly Option<bool> ServiceableOption = new Option<bool>("--serviceable", "-s")
     {
         Description = CommandDefinitionStrings.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:Serviceable=true");
+    }.ForwardAs("--property:Serviceable=true");
 
     public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
