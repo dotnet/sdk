@@ -223,6 +223,39 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
+    [WindowsOnlyFact]
+    public void NormalizeContentRootPath_WithWhitespacePath_ThrowsOnWindows()
+    {
+        // Pre-migration the raw path went straight into Path.GetFullPath, which trims trailing
+        // whitespace to an empty path and throws. Guarding on IsNullOrWhiteSpace preserves that
+        // instead of silently resolving the invalid path to the project directory.
+        WithDecoyCwdAndProjectDirectory((projectDir, _) =>
+        {
+            var env = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir);
+
+            Action act = () => StaticWebAsset.NormalizeContentRootPath("   ", env);
+
+            act.Should().Throw<ArgumentException>();
+        });
+    }
+
+    [LinuxOnlyFact]
+    public void NormalizeContentRootPath_WithWhitespacePath_ResolvesAgainstCurrentDirectory_NotProjectDirectory()
+    {
+        // On Unix whitespace is a legal path segment, so it must keep resolving against the legacy
+        // base (the process CWD) like the parameterless overload, not be re-rooted to the project dir.
+        WithDecoyCwdAndProjectDirectory((projectDir, spawnDir) =>
+        {
+            var env = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir);
+
+            var result = StaticWebAsset.NormalizeContentRootPath("   ", env);
+
+            result.Should().Be(StaticWebAsset.NormalizeContentRootPath("   "));
+            result.Should().StartWith(spawnDir);
+            result.Should().NotStartWith(projectDir);
+        });
+    }
+
     private static ITaskItem MakeDiscoveredItem(string projectDir, string contentRoot, string relativePath)
     {
         return new TaskItem(Path.Combine(projectDir, "site.css"), new Dictionary<string, string>
