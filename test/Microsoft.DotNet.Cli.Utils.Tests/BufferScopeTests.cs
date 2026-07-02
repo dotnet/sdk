@@ -206,10 +206,15 @@ public class BufferScopeTests
         buffer[0].Should().Be(1);
         buffer[1].Should().Be(2);
 
+        // Write to the top of the grown buffer so the second grow's copy is verified at
+        // both the lower and upper bounds of the used range, not just the first elements.
+        buffer[9] = 10;
+
         buffer.EnsureCapacity(50, copy: true);
         buffer.Length.Should().BeGreaterThanOrEqualTo(50);
         buffer[0].Should().Be(1);
         buffer[1].Should().Be(2);
+        buffer[9].Should().Be(10);
     }
 
     [TestMethod]
