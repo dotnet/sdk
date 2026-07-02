@@ -61,11 +61,8 @@
     <PackageReference Include="NuGet.Commands" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     <PackageReference Include="NuGet.Build.Tasks.Pack" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types.
-         GlobalPropertiesToRemove prevents passing this project's TargetFramework to ApiCompat.Task (which is
-         single-TFM), avoiding a duplicate build with different global properties that races on the same
-         intermediate output path. -->
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" GlobalPropertiesToRemove="TargetFramework" />
+    <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
