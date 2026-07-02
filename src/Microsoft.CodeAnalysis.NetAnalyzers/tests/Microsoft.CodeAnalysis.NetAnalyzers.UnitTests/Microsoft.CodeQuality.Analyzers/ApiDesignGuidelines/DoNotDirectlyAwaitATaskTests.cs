@@ -4,8 +4,6 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
-using Microsoft.CodeAnalysis.CSharp;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
@@ -824,7 +822,7 @@ public class C
             }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
         public Task CSharpNoDiagnosticForPatternBasedAwaitUsing_UsingStatement()
         {
             return new VerifyCS.Test
@@ -849,10 +847,10 @@ public class C
                     }
                     """,
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
         public Task CSharpNoDiagnosticForPatternBasedAwaitUsing_UsingDeclaration()
         {
             return new VerifyCS.Test
@@ -875,10 +873,10 @@ public class C
                     }
                     """,
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
         public Task CSharpNoDiagnosticForPatternBasedAwaitForEach()
         {
             return new VerifyCS.Test
@@ -903,7 +901,7 @@ public class C
                     }
                     """,
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }
