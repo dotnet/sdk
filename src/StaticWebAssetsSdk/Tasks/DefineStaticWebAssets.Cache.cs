@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
@@ -14,7 +15,12 @@ public partial class DefineStaticWebAssets : Task
 {
     private DefineStaticWebAssetsCache GetOrCreateAssetsCache()
     {
-        var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, CacheManifestPath);
+        // Absolutize the cache manifest path relative to the project directory so file I/O in the cache
+        // does not depend on the process working directory (required for multithreaded task execution).
+        var cacheManifestPath = string.IsNullOrEmpty(CacheManifestPath)
+            ? CacheManifestPath
+            : TaskEnvironment.GetAbsolutePath(CacheManifestPath).Value;
+        var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, cacheManifestPath);
         if (CacheManifestPath == null)
         {
             assetsCache.NoCache(CandidateAssets);
@@ -48,7 +54,7 @@ public partial class DefineStaticWebAssets : Task
 #else
         var candidateAssetMetadata = new[] {
 #endif
-            "FullPath", "RelativePath", "TargetPath", "Link", "ModifiedTime", nameof(StaticWebAsset.SourceId),
+            "RelativePath", "TargetPath", "Link", nameof(StaticWebAsset.SourceId),
             nameof(StaticWebAsset.SourceType), nameof(StaticWebAsset.BasePath), nameof(StaticWebAsset.ContentRoot),
             nameof(StaticWebAsset.AssetKind), nameof(StaticWebAsset.AssetMode), nameof(StaticWebAsset.AssetRole),
             nameof(StaticWebAsset.AssetMergeBehavior), nameof(StaticWebAsset.AssetMergeSource), nameof(StaticWebAsset.RelatedAsset),
@@ -60,11 +66,54 @@ public partial class DefineStaticWebAssets : Task
 #else
         };
 #endif
-        var inputHashes = HashingUtils.ComputeHashLookup(memoryStream, CandidateAssets ?? [], candidateAssetMetadata);
+        var inputHashes = ComputeInputHashes(memoryStream, candidateAssetMetadata);
 
         assetsCache.Update(propertiesHash, fingerprintPatternsHash, propertyOverridesHash, inputHashes);
 
         return assetsCache;
+    }
+
+    private Dictionary<string, ITaskItem> ComputeInputHashes(
+        MemoryStream memoryStream,
+#if NET9_0_OR_GREATER
+        Span<string> candidateAssetMetadata)
+#else
+        string[] candidateAssetMetadata)
+#endif
+    {
+        var candidateAssets = CandidateAssets ?? [];
+        var inputHashes = new Dictionary<string, ITaskItem>(candidateAssets.Length);
+        for (var i = 0; i < candidateAssets.Length; i++)
+        {
+            var candidate = candidateAssets[i];
+            var candidateFullPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(candidate.ItemSpec));
+            var file = new FileInfo(candidateFullPath);
+            var originalItemSpecFullPath = "";
+            if (!file.Exists)
+            {
+                var originalItemSpec = candidate.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec));
+                if (!string.IsNullOrEmpty(originalItemSpec))
+                {
+                    originalItemSpecFullPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(originalItemSpec));
+                    file = new FileInfo(originalItemSpecFullPath);
+                }
+            }
+
+            var values = new string[candidateAssetMetadata.Length + 5];
+            values[0] = candidate.ItemSpec;
+            values[1] = candidateFullPath;
+            values[2] = originalItemSpecFullPath;
+            values[3] = file.Exists ? file.Length.ToString(CultureInfo.InvariantCulture) : "";
+            values[4] = file.Exists ? file.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) : "";
+            for (var j = 0; j < candidateAssetMetadata.Length; j++)
+            {
+                values[j + 5] = candidate.GetMetadata(candidateAssetMetadata[j]);
+            }
+
+            inputHashes.Add(Convert.ToBase64String(HashingUtils.ComputeHash(memoryStream, values)), candidate);
+        }
+
+        return inputHashes;
     }
 
     internal class DefineStaticWebAssetsCache
