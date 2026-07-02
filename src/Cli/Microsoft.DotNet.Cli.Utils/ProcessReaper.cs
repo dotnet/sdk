@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Win32.SafeHandles;
-#if NET
+#if !TARGET_WINDOWS && NET
 using System.ComponentModel;
 #endif
 #if TARGET_WINDOWS
@@ -127,27 +127,25 @@ internal class ProcessReaper : IDisposable
     }
 #endif
 
-#if !TARGET_WINDOWS
+    // The Unix reaper is only relevant to a Unix runtime, which is always a modern .NET
+    // (NET) target. .NET Framework (net472) runs only on Windows and must not compile this
+    // code. TARGET_WINDOWS reflects the build's TargetOS, not the runtime, and is not
+    // defined when net472 is cross-compiled on a non-Windows build - hence "&& NET" here
+    // rather than relying on TARGET_WINDOWS alone.
+#if !TARGET_WINDOWS && NET
     private sealed class UnixProcessReaper : ProcessReaper
     {
         // Coordinates Dispose (typically the main thread) with HandleProcessExit,
         // which is raised on the AppDomain.ProcessExit thread when the CLI itself is
         // shutting down (for example when a SIGTERM handler calls Environment.Exit).
         //
-        // A managed lock is used here rather than a Mutex on purpose. The prior Mutex
-        // based design disposed the mutex in Dispose while a concurrent ProcessExit
+        // A System.Threading.Lock is used here rather than a Mutex on purpose. The prior
+        // Mutex based design disposed the mutex in Dispose while a concurrent ProcessExit
         // callback could still call WaitOne on it, throwing "Cannot access a disposed
         // object" during shutdown (dotnet/sdk#55096). A managed lock has no disposable
         // wait handle to race on, and the _shuttingDown flag closes the window so a
         // ProcessExit callback that starts after Dispose has run simply becomes a no-op.
-        //
-        // System.Threading.Lock is used on modern .NET; net472 (cross-compiled on
-        // non-Windows, where TARGET_WINDOWS is not defined) falls back to a plain object.
-#if NET9_0_OR_GREATER
         private readonly Lock _shutdownLock = new();
-#else
-        private readonly object _shutdownLock = new();
-#endif
         private bool _shuttingDown;
 
         public UnixProcessReaper(Process process) : base(process)
@@ -186,7 +184,6 @@ internal class ProcessReaper : IDisposable
 
                 try
                 {
-#if NET
                     // If the target is still running, forward SIGTERM so it can shut
                     // down as well. Signal returns false if the process already exited,
                     // and throws Win32Exception if the signal could not be delivered.
@@ -194,7 +191,7 @@ internal class ProcessReaper : IDisposable
                     {
                         _process.SafeHandle.Signal(PosixSignal.SIGTERM);
                     }
-#endif
+
                     // If SIGTERM was ignored by the target, then we'll still wait.
                     _process.WaitForExit();
 
@@ -205,13 +202,11 @@ internal class ProcessReaper : IDisposable
                     // The process hasn't started yet, or no exit code is available;
                     // nothing to signal or wait for.
                 }
-#if NET
                 catch (Win32Exception)
                 {
                     // The signal could not be delivered (for example, insufficient
                     // permissions). Don't wait on a process we couldn't signal.
                 }
-#endif
             }
         }
     }
@@ -221,9 +216,16 @@ internal class ProcessReaper : IDisposable
     public static ProcessReaper Create(Process process)
     {
 #if TARGET_WINDOWS
-            return new WindowsProcessReaper(process);
+        return new WindowsProcessReaper(process);
+#elif NET
+        return new UnixProcessReaper(process);
 #else
-            return new UnixProcessReaper(process);
+        // .NET Framework only runs on Windows, so the Unix reaper is never relevant and
+        // the CsWin32 based Windows reaper is only compiled for Windows TargetOS builds.
+        // This branch is reached only when the net472 target is cross-compiled on a
+        // non-Windows build (not a shipping configuration); fall back to the base reaper,
+        // which still suppresses Ctrl+C so the target process can handle it.
+        return new ProcessReaper(process);
 #endif
     }
 
