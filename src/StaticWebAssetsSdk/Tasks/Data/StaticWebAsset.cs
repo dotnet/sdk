@@ -620,6 +620,12 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // than one type of asset we will just return all of them.
     // One exception to this is the `All` kind of assets, where we will just return the first two we find. The reason for it is
     // to avoid having to allocate a buffer to collect all the `All` assets.
+    // IMPORTANT: When this method yields more than one asset, the input is malformed: more than one asset resolved to the same
+    // target path for the requested kind. This is almost always a producer-side problem (the SDK, a referenced project, or a
+    // NuGet package emitting colliding assets), NOT a problem to be solved here. Callers are responsible for detecting the
+    // >1 case and reporting a precise diagnostic (BLAZOR107) that names the colliding assets and their provenance. Do NOT
+    // "fix" a duplicate-asset crash by silently collapsing the duplicates inside this method -- that hides the upstream
+    // authoring bug instead of surfacing where the duplicate asset is actually produced.
     internal static IEnumerable<StaticWebAsset> ChooseNearestAssetKind(IEnumerable<StaticWebAsset> group, string assetKind)
     {
         StaticWebAsset allKindAssetCandidate = null;
