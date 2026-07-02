@@ -53,14 +53,17 @@ the module self-locates.
   finds the `dotnet-aot` module from its own code address: Windows
   `GetModuleHandleEx(FROM_ADDRESS | UNCHANGED_REFCOUNT, &export)` +
   `GetModuleFileName`; Unix `dladdr`.
-- **Publish once.** `NativeEntryPoint.ExecuteCore` writes the resolved directory to
-  the `DOTNET_SDK_ROOT` environment variable so the compiled-in assemblies find it
-  without threading a parameter through every call.
+- **Publish once.** `NativeEntryPoint.ExecuteCore` publishes the resolved directory as
+  the `Microsoft.DotNet.Sdk.Root` AppContext value so the compiled-in assemblies find
+  it without threading a parameter through every call. An AppContext value is
+  process-local - unlike an environment variable it is not inherited by child
+  processes. A caller-provided value (e.g. a `runtimeconfig.json` `configProperties`
+  entry) is honored, but must point to an existing directory or the bridge errors out.
 - **Read.** In-repo code reads `SdkPaths.SdkDirectory` (in
-  `Microsoft.DotNet.Cli.Utils`), which resolves `DOTNET_SDK_ROOT` -> the SDK
-  assembly directory -> `AppContext.BaseDirectory` (once, cached). Out-of-repo code
-  (MSBuild tasks, NuGet, the runtime) reads `DOTNET_SDK_ROOT` first, else its
-  existing BCL logic.
+  `Microsoft.DotNet.Cli.Utils`), which resolves the `Microsoft.DotNet.Sdk.Root`
+  AppContext value -> the SDK assembly directory -> `AppContext.BaseDirectory` (once,
+  cached). Out-of-repo code (MSBuild tasks, NuGet, the runtime) reads the
+  `Microsoft.DotNet.Sdk.Root` AppContext value first, else its existing BCL logic.
 
 The managed CLI keeps using `AppContext.BaseDirectory`, where it is correct.
 

@@ -65,17 +65,18 @@ but inside that process the BCL "where am I" APIs do **not** point there:
 So deriving an SDK-relative path (`MSBuild.dll`, `Sdks/`, `DotnetTools/`, targets) from
 `AppContext.BaseDirectory` or a dll path is **wrong** in the AOT bubble. Instead:
 
-- **In-repo:** read `SdkPaths.SdkDirectory` (in `Microsoft.DotNet.Cli.Utils`), which resolves
-  `DOTNET_SDK_ROOT` env var -> SDK assembly directory -> `AppContext.BaseDirectory` (once, cached).
+- **In-repo:** read `SdkPaths.SdkDirectory` (in `Microsoft.DotNet.Cli.Utils`), which resolves the
+  `Microsoft.DotNet.Sdk.Root` AppContext value -> SDK assembly directory -> `AppContext.BaseDirectory`
+  (once, cached).
 - `NativeEntryPoint.ExecuteCore` resolves the SDK directory once (host `sdk_dir`, else self-locating the
-  `dotnet-aot` module via `SdkRootLocator`) and **publishes it in `DOTNET_SDK_ROOT`** for the compiled-in
-  assemblies.
+  `dotnet-aot` module via `SdkRootLocator`) and **publishes it as the `Microsoft.DotNet.Sdk.Root`
+  AppContext value** for the compiled-in assemblies.
 - **Out-of-repo code** (MSBuild tasks, NuGet, runtime - no `Cli.Utils` reference) replicates the contract
-  inline: read `DOTNET_SDK_ROOT` first, else the existing BCL logic.
+  inline: read the `Microsoft.DotNet.Sdk.Root` AppContext value first, else the existing BCL logic.
 
   ```csharp
   string sdkDirectory =
-      Environment.GetEnvironmentVariable("DOTNET_SDK_ROOT") is { Length: > 0 } sdkRoot
+      AppContext.GetData("Microsoft.DotNet.Sdk.Root") is string sdkRoot && sdkRoot.Length > 0
           ? sdkRoot
           : /* existing logic, e.g. AppContext.BaseDirectory */;
   ```

@@ -660,4 +660,7 @@ setx PATH "%PATH%;{0}"
   <data name="ManagedFallbackCouldNotBeLocated" xml:space="preserve">
     <value>The managed fallback could not be located. Expected '{0}' and '{1}'.</value>
   </data>
+  <data name="SdkRootDirectoryDoesNotExist" xml:space="preserve">
+    <value>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</value>
+  </data>
 </root>

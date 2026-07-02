@@ -26,8 +26,9 @@ static unsafe partial class NativeEntryPoint
     /// <summary>
     ///  The versioned SDK directory (the folder containing dotnet.dll, MSBuild.dll, Sdks\, ...),
     ///  resolved from the host-provided sdk_dir or by self-locating the dotnet-aot module. Also
-    ///  published to the DOTNET_SDK_ROOT environment variable so compiled-in assemblies that probe
-    ///  AppContext.BaseDirectory can find the SDK. See src/Cli/dotnet-aot/SdkRootResolution.md.
+    ///  published as the "Microsoft.DotNet.Sdk.Root" AppContext value (SdkPaths.DataName) so
+    ///  compiled-in assemblies that probe AppContext.BaseDirectory can find the SDK. See
+    ///  src/Cli/dotnet-aot/SdkRootResolution.md.
     /// </summary>
     internal static string? SdkDirectory { get; set; }
 
@@ -69,22 +70,40 @@ static unsafe partial class NativeEntryPoint
         string hostPath, string dotnetRoot, string sdkDir,
         string hostfxrPath, string[] args)
     {
-        // Resolve the versioned SDK directory: prefer the host-provided sdk_dir (the muxer resolves it
-        // to locate dotnet-aot), otherwise self-locate the dotnet-aot module. Under NativeAOT
-        // AppContext.BaseDirectory is the install root (the muxer's directory), not the SDK directory,
-        // so publish the resolved value in DOTNET_SDK_ROOT for the compiled-in assemblies (MSBuild,
-        // NuGet, the command resolvers, ...) that otherwise probe AppContext.BaseDirectory. See
+        // Publish the versioned SDK directory as the "Microsoft.DotNet.Sdk.Root" AppContext value
+        // (SdkPaths.DataName) for the assemblies compiled into the AOT host (MSBuild, NuGet, the command
+        // resolvers, ...) that otherwise probe AppContext.BaseDirectory - which under the NativeAOT muxer
+        // is the install root, not the versioned SDK directory. Unlike an environment variable an
+        // AppContext value is process-local and is not inherited by child processes. See
         // src/Cli/dotnet-aot/SdkRootResolution.md.
-        string sdkDirectory = SdkRootLocator.Resolve(sdkDir);
-        SdkDirectory = string.IsNullOrEmpty(sdkDirectory) ? null : sdkDirectory;
+        //
+        // Honor a value a caller already provided (e.g. a runtimeconfig configProperties entry): it is
+        // authoritative, but it must point to a real directory - fail fast rather than handing the
+        // compiled-in assemblies a bogus SDK root. Otherwise resolve it from the host-provided sdk_dir
+        // (the muxer already resolved it to locate dotnet-aot), else self-locate the dotnet-aot module.
+        string? sdkDirectory = AppContext.GetData(SdkPaths.DataName) as string;
         if (!string.IsNullOrEmpty(sdkDirectory))
         {
-            Environment.SetEnvironmentVariable(SdkPaths.EnvironmentVariableName, sdkDirectory);
+            if (!Directory.Exists(sdkDirectory))
+            {
+                Console.Error.WriteLine(string.Format(CliStrings.SdkRootDirectoryDoesNotExist, sdkDirectory, SdkPaths.DataName));
+                return 1;
+            }
         }
         else
         {
-            Console.Error.WriteLine(CliStrings.SdkDirectoryCouldNotBeDetermined);
+            sdkDirectory = SdkRootLocator.Resolve(sdkDir);
+            if (!string.IsNullOrEmpty(sdkDirectory))
+            {
+                AppContext.SetData(SdkPaths.DataName, sdkDirectory);
+            }
+            else
+            {
+                Console.Error.WriteLine(CliStrings.SdkDirectoryCouldNotBeDetermined);
+            }
         }
+
+        SdkDirectory = string.IsNullOrEmpty(sdkDirectory) ? null : sdkDirectory;
 
         // Telemetry is best-effort and must never prevent the CLI from running. Initializing
         // it can fail on some layouts (e.g. the NativeAOT muxer cannot resolve the crypto

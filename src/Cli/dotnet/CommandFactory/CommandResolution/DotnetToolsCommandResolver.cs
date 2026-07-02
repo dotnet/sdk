@@ -19,8 +19,8 @@ public class DotnetToolsCommandResolver : ICommandResolver
     public DotnetToolsCommandResolver(string? dotnetToolPath = null)
     {
         // AppContext.BaseDirectory for the NAOT app is the install root, not the per-SDK version path,
-        // so fall back to SdkPaths.SdkDirectory (DOTNET_SDK_ROOT when set) instead. See
-        // src/Cli/dotnet-aot/SdkRootResolution.md.
+        // so fall back to SdkPaths.SdkDirectory (the Microsoft.DotNet.Sdk.Root AppContext value when set)
+        // instead. See src/Cli/dotnet-aot/SdkRootResolution.md.
         _dotnetToolPath = dotnetToolPath ?? Path.Combine(SdkPaths.SdkDirectory, "DotnetTools");
     }
 
