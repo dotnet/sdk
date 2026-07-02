@@ -496,8 +496,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void WriteAndCopyToStream(bool clearContent)
     {
         System.Buffers.ArrayBufferWriter<byte> output = new();
@@ -544,8 +543,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task WriteAndCopyToStreamAsync(bool clearContent)
     {
         System.Buffers.ArrayBufferWriter<byte> output = new();
