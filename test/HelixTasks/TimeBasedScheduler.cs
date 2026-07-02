@@ -104,6 +104,8 @@ internal sealed class TimeBasedScheduler
 
     /// <summary>
     /// Time-based scheduling using greedy first-fit bin-packing.
+    /// Methods are grouped per-assembly to ensure each work item only targets one assembly,
+    /// since the command generator can only execute against a single assembly per work item.
     /// </summary>
     private List<ScheduledWorkItem> ScheduleByTime(
         List<TestMethodDiscovery.TestMethodInfo> testMethods,
@@ -116,70 +118,85 @@ internal sealed class TimeBasedScheduler
             : TimeSpan.FromSeconds(5); // conservative default
 
         var workItems = new List<ScheduledWorkItem>();
-        var currentItem = new ScheduledWorkItem();
 
-        foreach (var method in testMethods)
+        // Group by assembly so each work item only contains methods from one assembly
+        var methodsByAssembly = testMethods.GroupBy(m => m.AssemblyPath, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var assemblyGroup in methodsByAssembly)
         {
-            // Look up historical duration, fall back to average
-            var duration = history.TryGetValue(method.FullyQualifiedName, out var info) && info.Duration > TimeSpan.Zero
-                ? info.Duration
-                : averageDuration;
+            var currentItem = new ScheduledWorkItem();
 
-            // Check if adding this test would exceed the time budget
-            bool exceedsTime = currentItem.TestMethods.Count > 0 &&
-                               currentItem.EstimatedDuration + duration > _targetTime;
-
-            if (exceedsTime)
+            foreach (var method in assemblyGroup)
             {
-                FinalizeWorkItem(workItems, currentItem);
-                currentItem = new ScheduledWorkItem();
+                // Look up historical duration, fall back to average
+                var duration = history.TryGetValue(method.FullyQualifiedName, out var info) && info.Duration > TimeSpan.Zero
+                    ? info.Duration
+                    : averageDuration;
+
+                // Check if adding this test would exceed the time budget
+                bool exceedsTime = currentItem.TestMethods.Count > 0 &&
+                                   currentItem.EstimatedDuration + duration > _targetTime;
+
+                if (exceedsTime)
+                {
+                    FinalizeWorkItem(workItems, currentItem);
+                    currentItem = new ScheduledWorkItem();
+                }
+
+                currentItem.AddTest(method, duration);
+
+                // Special case: single test exceeds target time — give it a dedicated work item
+                if (currentItem.TestMethods.Count == 1 && duration > _targetTime)
+                {
+                    FinalizeWorkItem(workItems, currentItem);
+                    currentItem = new ScheduledWorkItem();
+                }
             }
 
-            currentItem.AddTest(method, duration);
-
-            // Special case: single test exceeds target time — give it a dedicated work item
-            if (currentItem.TestMethods.Count == 1 && duration > _targetTime)
+            // Flush remaining for this assembly
+            if (currentItem.TestMethods.Count > 0)
             {
                 FinalizeWorkItem(workItems, currentItem);
-                currentItem = new ScheduledWorkItem();
             }
-        }
-
-        // Flush remaining
-        if (currentItem.TestMethods.Count > 0)
-        {
-            FinalizeWorkItem(workItems, currentItem);
         }
 
         return workItems;
     }
 
     /// <summary>
-    /// Count-based fallback: distributes tests evenly across N work items.
+    /// Count-based fallback: distributes tests evenly across N work items per assembly.
     /// </summary>
     private List<ScheduledWorkItem> ScheduleByCount(List<TestMethodDiscovery.TestMethodInfo> testMethods)
     {
-        var workItemCount = Math.Min(_fallbackWorkItemCount, testMethods.Count);
-        var testsPerItem = (int)Math.Ceiling((double)testMethods.Count / workItemCount);
-
         var workItems = new List<ScheduledWorkItem>();
-        var currentItem = new ScheduledWorkItem();
         var defaultDuration = TimeSpan.FromSeconds(5);
 
-        foreach (var method in testMethods)
+        // Group by assembly so each work item only contains methods from one assembly
+        var methodsByAssembly = testMethods.GroupBy(m => m.AssemblyPath, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var assemblyGroup in methodsByAssembly)
         {
-            if (currentItem.TestMethods.Count >= testsPerItem)
+            var assemblyMethods = assemblyGroup.ToList();
+            var workItemCount = Math.Min(_fallbackWorkItemCount, assemblyMethods.Count);
+            var testsPerItem = (int)Math.Ceiling((double)assemblyMethods.Count / workItemCount);
+
+            var currentItem = new ScheduledWorkItem();
+
+            foreach (var method in assemblyMethods)
             {
-                FinalizeWorkItem(workItems, currentItem);
-                currentItem = new ScheduledWorkItem();
+                if (currentItem.TestMethods.Count >= testsPerItem)
+                {
+                    FinalizeWorkItem(workItems, currentItem);
+                    currentItem = new ScheduledWorkItem();
+                }
+
+                currentItem.AddTest(method, defaultDuration);
             }
 
-            currentItem.AddTest(method, defaultDuration);
-        }
-
-        if (currentItem.TestMethods.Count > 0)
-        {
-            FinalizeWorkItem(workItems, currentItem);
+            if (currentItem.TestMethods.Count > 0)
+            {
+                FinalizeWorkItem(workItems, currentItem);
+            }
         }
 
         return workItems;

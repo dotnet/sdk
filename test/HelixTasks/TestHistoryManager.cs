@@ -58,11 +58,13 @@ internal sealed class TestHistoryManager
             var build = await client.GetLastSuccessfulBuildAsync(_definitionId, _targetBranch, ct);
             if (build is null)
             {
-                _log?.LogMessage("TestHistoryManager: No successful build found for branch '{0}' or 'main'.", _targetBranch);
+                _log?.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                    "TestHistoryManager: No successful build found for branch '{0}' or 'main'.", _targetBranch);
                 return null;
             }
 
-            _log?.LogMessage("TestHistoryManager: Using build {0} (#{1}) from {2}.",
+            _log?.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                "TestHistoryManager: Using build {0} (#{1}) from {2}.",
                 build.Id, build.BuildNumber, build.SourceBranch);
 
             // 2. Get test runs for that build
@@ -114,7 +116,8 @@ internal sealed class TestHistoryManager
                 }
             }
 
-            _log?.LogMessage("TestHistoryManager: Retrieved duration data for {0} test methods.", history.Count);
+            _log?.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                "TestHistoryManager: Retrieved duration data for {0} test methods.", history.Count);
             return history.Count > 0 ? history : null;
         }
         catch (Exception ex)

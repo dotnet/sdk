@@ -173,13 +173,15 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
             else
             {
-                Log.LogMessage("Time-based scheduling requested but AzDO parameters are incomplete; falling back to count-based.");
+                Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                    "Time-based scheduling requested but AzDO parameters are incomplete; falling back to count-based.");
             }
 
             // If we couldn't get history, fall back to per-project count-based scheduling
             if (history is null)
             {
-                Log.LogMessage("No test history available; falling back to count-based partitioning.");
+                Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                    "No test history available; falling back to count-based partitioning.");
                 var fallbackItems = await Task.WhenAll(XUnitProjects!.Select(PrepareWorkItem));
                 return fallbackItems.SelectMany(i => i ?? new()).Where(wi => wi != null).ToArray();
             }
@@ -199,7 +201,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 {
                     var methods = TestMethodDiscovery.DiscoverTestMethods(targetPath);
                     allTestMethods.AddRange(methods);
-                    Log.LogMessage("Discovered {0} test methods in {1}.", methods.Count, Path.GetFileName(targetPath));
+                    Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                        "Discovered {0} test methods in {1}.", methods.Count, Path.GetFileName(targetPath));
                 }
                 catch (Exception ex)
                 {
@@ -219,7 +222,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             var scheduler = new TimeBasedScheduler(targetTime);
             var workItems = scheduler.Schedule(allTestMethods, history);
 
-            Log.LogMessage("Time-based scheduler produced {0} work items for {1} test methods.", workItems.Count, allTestMethods.Count);
+            Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High,
+                "Time-based scheduler produced {0} work items for {1} test methods.", workItems.Count, allTestMethods.Count);
 
             // Convert scheduled work items to MSBuild task items
             var taskItems = new List<ITaskItem>();
@@ -232,7 +236,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             foreach (var workItem in workItems)
             {
-                // For now, use the first assembly's project metadata for command generation
+                // Each work item only contains methods from a single assembly (enforced by scheduler)
                 var primaryAssembly = workItem.GetAssemblyPaths().First();
                 if (!projectMetadata.TryGetValue(primaryAssembly, out var xunitProject))
                     continue;
