@@ -3,12 +3,17 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Runtime.InteropServices;
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.CommandLine;
+#endif
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
+#if !CLI_AOT
 using Microsoft.DotNet.Configurer;
+#endif
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli;
@@ -25,6 +30,7 @@ internal abstract class InvocableOptionAction(Option option) : SynchronousComman
     public Option Option { get; } = option;
 }
 
+#if !CLI_AOT
 internal class HandleDiagnosticAction(Option<bool> option) : InvocableOptionAction(option)
 {
     public override bool Terminating => false;
@@ -84,6 +90,7 @@ internal class HandleDiagnosticAction(Option<bool> option) : InvocableOptionActi
         return false;
     }
 }
+#endif
 
 internal class PrintHelpAction(Option option, HelpBuilder builder) : InvocableOptionAction(option)
 {
@@ -109,7 +116,9 @@ internal class PrintVersionAction(Option<bool> option) : InvocableOptionAction(o
 
     public override int Invoke(ParseResult parseResult)
     {
-        if (!parseResult.HasOption(Option) || !parseResult.GetValue(option)
+        // GetResult(Option) is { Implicit: false } is the AOT-friendly equivalent of parseResult.HasOption(Option);
+        // the HasOption extension lives in Microsoft.DotNet.Cli.CommandLine, which the AOT build doesn't reference.
+        if (parseResult.GetResult(Option) is not { Implicit: false } || !parseResult.GetValue(option)
             // Only print for top-level commands.
             || !parseResult.IsTopLevelDotnetCommand())
         {
@@ -128,7 +137,7 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
 
     public override int Invoke(ParseResult parseResult)
     {
-        if (!parseResult.HasOption(Option) || !parseResult.GetValue(option)
+        if (parseResult.GetResult(Option) is not { Implicit: false } || !parseResult.GetValue(option)
             // Only print for top-level commands.
             || !parseResult.IsTopLevelDotnetCommand())
         {
@@ -147,7 +156,12 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         Reporter.Output.WriteLine($" OS Name:     {RuntimeEnvironment.OperatingSystem}");
         Reporter.Output.WriteLine($" OS Version:  {RuntimeEnvironment.OperatingSystemVersion}");
         Reporter.Output.WriteLine($" OS Platform: {RuntimeEnvironment.OperatingSystemPlatform}");
+#if !CLI_AOT
         Reporter.Output.WriteLine($" RID:         {GetDisplayRid(versionFile)}");
+#else
+        // GetDisplayRid consults the shared framework's deps file, which isn't available in AOT.
+        Reporter.Output.WriteLine($" RID:         {RuntimeInformation.RuntimeIdentifier}");
+#endif
         Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
@@ -156,6 +170,7 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         return 0;
     }
 
+#if !CLI_AOT
     private static string? GetDisplayRid(DotnetVersionFile versionFile)
     {
         FrameworkDependencyFile fxDepsFile = new();
@@ -164,6 +179,7 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         // so the user knows which RID they should put in their "runtimes" section.
         return fxDepsFile.IsRuntimeSupported(currentRid) ? currentRid : versionFile.BuildRid;
     }
+#endif
 }
 
 internal class PrintCliSchemaAction(Option<bool> option) : InvocableOptionAction(option)
@@ -172,12 +188,20 @@ internal class PrintCliSchemaAction(Option<bool> option) : InvocableOptionAction
 
     public override int Invoke(ParseResult parseResult)
     {
-        if (!parseResult.HasOption(Option) || !parseResult.GetValue(option))
+        if (parseResult.GetResult(Option) is not { Implicit: false } || !parseResult.GetValue(option))
         {
             return 0;
         }
 
-        CliSchema.PrintCliSchema(parseResult, parseResult.InvocationConfiguration.Output, Program.TelemetryInstance);
+        CliSchema.PrintCliSchema(
+            parseResult,
+            parseResult.InvocationConfiguration.Output,
+#if CLI_AOT
+            telemetryClient: NativeEntryPoint.TelemetryClient
+#else
+            telemetryClient: Program.TelemetryInstance
+#endif
+        );
 
         return 0;
     }

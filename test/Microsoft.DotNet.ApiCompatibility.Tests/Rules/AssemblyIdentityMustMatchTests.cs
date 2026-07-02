@@ -11,6 +11,7 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class AssemblyIdentityMustMatchTests
     {
         private static readonly SuppressibleTestLog s_log = new();
@@ -30,8 +31,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             122, 189, 56, 195, 25, 62, 141, 151, 88, 234, 231, 156
         };
 
-        [Fact]
-        public static void AssemblyNamesDoNotMatch()
+        [TestMethod]
+        public void AssemblyNamesDoNotMatch()
         {
             IAssemblySymbol left = CSharpCompilation.Create("AssemblyA").Assembly;
             IAssemblySymbol right = CSharpCompilation.Create("AssemblyB").Assembly;
@@ -39,12 +40,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Single(differences);
+            Assert.ContainsSingle(differences);
             CompatDifference expected = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, "AssemblyB, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
-            Assert.Equal(expected, differences.First());
+            Assert.AreEqual(expected, differences.First());
         }
 
-        [Fact]
+        [TestMethod]
         public void AssemblyCultureMustBeCompatible()
         {
             string leftSyntax = "";
@@ -53,18 +54,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
 
-            Assert.Equal(string.Empty, leftSymbol.Identity.CultureName);
-            Assert.Equal("de", rightSymbol.Identity.CultureName);
+            Assert.AreEqual(string.Empty, leftSymbol.Identity.CultureName);
+            Assert.AreEqual("de", rightSymbol.Identity.CultureName);
 
             ApiComparer differ = new(s_ruleFactory);
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
 
-            Assert.Single(differences);
+            Assert.ContainsSingle(differences);
             CompatDifference expected = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{leftSymbol.Name}, Version=0.0.0.0, Culture=de, PublicKeyToken=null");
-            Assert.Equal(expected, differences.First());
+            Assert.AreEqual(expected, differences.First());
         }
 
-        [Fact]
+        [TestMethod]
         public void AssemblyVersionMustBeCompatible()
         {
             string leftSyntax = "[assembly: System.Reflection.AssemblyVersionAttribute(\"2.0.0.0\")]";
@@ -73,19 +74,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
 
-            Assert.Equal(new Version(2, 0, 0, 0), leftSymbol.Identity.Version);
-            Assert.Equal(new Version(0, 0, 0, 0), rightSymbol.Identity.Version);
+            Assert.AreEqual(new Version(2, 0, 0, 0), leftSymbol.Identity.Version);
+            Assert.AreEqual(new Version(0, 0, 0, 0), rightSymbol.Identity.Version);
 
             ApiComparer differ = new(s_ruleFactory);
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
 
             // right assembly should have same or higher version than left
-            Assert.Single(differences);
+            Assert.ContainsSingle(differences);
             CompatDifference expected = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{rightSymbol.Name}, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
-            Assert.Equal(expected, differences.First());
+            Assert.AreEqual(expected, differences.First());
         }
 
-        [Fact]
+        [TestMethod]
         public void AssemblyVersionMustBeStrictlyCompatible()
         {
             string leftSyntax = "[assembly: System.Reflection.AssemblyVersionAttribute(\"1.0.0.0\")]";
@@ -94,27 +95,27 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
 
-            Assert.Equal(new Version(1, 0, 0, 0), leftSymbol.Identity.Version);
-            Assert.Equal(new Version(2, 0, 0, 0), rightSymbol.Identity.Version);
+            Assert.AreEqual(new Version(1, 0, 0, 0), leftSymbol.Identity.Version);
+            Assert.AreEqual(new Version(2, 0, 0, 0), rightSymbol.Identity.Version);
 
             // Compatible assembly versions
             ApiComparer differ = new(s_ruleFactory);
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
 
             differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: true));
 
             // Not strictly compatible
             differences = differ.GetDifferences(leftSymbol, rightSymbol);
-            Assert.Single(differences);
+            Assert.ContainsSingle(differences);
 
             CompatDifference expected = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{leftSymbol.Name}, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
-            Assert.Equal(expected, differences.First());
+            Assert.AreEqual(expected, differences.First());
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void AssemblyKeyTokenMustBeCompatible(bool strictMode)
         {
             string syntax = "namespace EmptyNs { }";
@@ -122,19 +123,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax, publicKey: _publicKey);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax, publicKey: _publicKey);
 
-            Assert.Equal(_publicKey, leftSymbol.Identity.PublicKey);
-            Assert.Equal(_publicKey, rightSymbol.Identity.PublicKey);
+            Assert.AreSequenceEqual(_publicKey, leftSymbol.Identity.PublicKey);
+            Assert.AreSequenceEqual(_publicKey, rightSymbol.Identity.PublicKey);
 
             // public key tokens must match
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: strictMode));
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void LeftAssemblyKeyTokenNull(bool strictMode)
         {
             string syntax = "namespace EmptyNs { }";
@@ -142,27 +143,27 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax, publicKey: _publicKey);
 
-            Assert.False(leftSymbol.Identity.HasPublicKey);
-            Assert.Equal(_publicKey, rightSymbol.Identity.PublicKey);
+            Assert.IsFalse(leftSymbol.Identity.HasPublicKey);
+            Assert.AreSequenceEqual(_publicKey, rightSymbol.Identity.PublicKey);
 
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: strictMode));
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
 
             if (strictMode)
             {
-                Assert.Single(differences);
+                Assert.ContainsSingle(differences);
                 CompatDifference expected = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{rightSymbol.Name}, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
-                Assert.Equal(expected, differences.First());
+                Assert.AreEqual(expected, differences.First());
             }
             else
             {
-                Assert.Empty(differences);
+                Assert.IsEmpty(differences);
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void RightAssemblyKeyTokenNull(bool strictMode)
         {
             string syntax = "namespace EmptyNs { }";
@@ -170,20 +171,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             IAssemblySymbol leftSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax, publicKey: _publicKey);
             IAssemblySymbol rightSymbol = SymbolFactory.GetAssemblyFromSyntax(syntax);
 
-            Assert.Equal(_publicKey, leftSymbol.Identity.PublicKey);
-            Assert.False(rightSymbol.Identity.HasPublicKey);
+            Assert.AreSequenceEqual(_publicKey, leftSymbol.Identity.PublicKey);
+            Assert.IsFalse(rightSymbol.Identity.HasPublicKey);
 
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: strictMode));
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftSymbol, rightSymbol);
 
-            Assert.Single(differences);
+            Assert.ContainsSingle(differences);
             CompatDifference expected = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.AssemblyIdentityMustMatch, string.Empty, DifferenceType.Changed, $"{leftSymbol.Name}, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
-            Assert.Equal(expected, differences.First());
+            Assert.AreEqual(expected, differences.First());
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void RetargetableFlagSet(bool strictMode)
         {
             string syntax = @"
@@ -200,14 +201,14 @@ using System.Reflection;
             IAssemblySymbol leftSymbol = new AssemblySymbolLoader(s_log).LoadAssembly(leftAssembly);
             IAssemblySymbol rightSymbol = new AssemblySymbolLoader(s_log).LoadAssembly(rightAssembly);
 
-            Assert.True(leftSymbol.Identity.IsRetargetable);
-            Assert.True(rightSymbol.Identity.IsRetargetable);
-            Assert.False(rightSymbol.Identity.HasPublicKey);
-            Assert.Equal(_publicKey, leftSymbol.Identity.PublicKey);
+            Assert.IsTrue(leftSymbol.Identity.IsRetargetable);
+            Assert.IsTrue(rightSymbol.Identity.IsRetargetable);
+            Assert.IsFalse(rightSymbol.Identity.HasPublicKey);
+            Assert.AreSequenceEqual(_publicKey, leftSymbol.Identity.PublicKey);
 
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: strictMode));
 
-            Assert.Empty(differ.GetDifferences(leftSymbol, rightSymbol));
+            Assert.IsEmpty(differ.GetDifferences(leftSymbol, rightSymbol));
         }
     }
 }

@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.CodeMetricsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,14 +14,15 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.UnitTests
 {
+    [TestClass]
     public class CodeMetricsAnalyzerTests
     {
         #region CA1501: Avoid excessive inheritance
 
-        [Theory]
-        [InlineData("\r\n")]
-        [InlineData("\r")]
-        [InlineData("\n")]
+        [TestMethod]
+        [DataRow("\r\n")]
+        [DataRow("\r")]
+        [DataRow("\n")]
         public async Task CA1501_CSharp_VerifyDiagnosticAsync(string lineEndings)
         {
             var source = @"
@@ -41,7 +41,7 @@ class SixthDerivedClass : FifthDerivedClass { }
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1501_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -77,7 +77,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1501_Configuration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -95,7 +95,7 @@ CA1501: 0
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1501_Configuration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -117,12 +117,12 @@ CA1501: 0
             await VerifyBasicAsync(source, additionalText, expected);
         }
 
-        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass")]
+        [TestMethod, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass")]
         // The following entries are invalid but won't remove the default filter
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = *Contro*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = User*ontrol")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = *Contro*")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = User*ontrol")]
         public async Task CA1501_AlwaysExcludesTypesInSystemNamespaceAsync(string editorConfigText)
         {
             // This test assumes that WinForms UserControl is over the default threshold.
@@ -138,7 +138,7 @@ CA1501: 0
 ") },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -158,10 +158,10 @@ End Class",
 ") },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1501_AlwaysExcludesErrorTypesAsync()
         {
             await new VerifyCS.Test
@@ -175,7 +175,7 @@ End Class",
                         DiagnosticResult.CompilerError("CS0234").WithLocation(0).WithArguments("NonExistentType", "System"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -194,12 +194,12 @@ End Class",
                         DiagnosticResult.CompilerError("BC30002").WithLocation(0).WithArguments("System.NonExistentType"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:MyCompany.MyProduct.MyFunction.SomeClass*")]
+        [TestMethod, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass*")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:MyCompany.MyProduct.MyFunction.SomeClass*")]
         public async Task CA1501_WildcardTypePrefixNoNamespaceAsync(string editorConfigText)
         {
             var codeMetricsConfigText = @"
@@ -267,7 +267,7 @@ public class C2 : SomeClass2 {}"
                 });
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbnetTest = new VerifyVB.Test
             {
@@ -348,16 +348,16 @@ End Class"
                 });
             }
 
-            await vbnetTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbnetTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunction*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunct*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProd*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyComp*")]
+        [TestMethod, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunction*")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunct*")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct*")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProd*")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany*")]
+        [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyComp*")]
         public async Task CA1501_WildcardNamespacePrefixAsync(string editorConfigText)
         {
             var codeMetricsConfigText = @"
@@ -415,7 +415,7 @@ public class C1 : SomeClass {}
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 1, 1, "SomeClass"));
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbnetTest = new VerifyVB.Test
             {
@@ -474,10 +474,10 @@ End Class"
                 vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 1, 1, "SomeClass"));
             }
 
-            await vbnetTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbnetTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [TestMethod, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
         public async Task CA1501_WildcardNoPrefixAsync()
         {
             var editorConfigText = "dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = Some*";
@@ -535,7 +535,7 @@ public class C1 : SomeClass {}
 "),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -593,14 +593,14 @@ End Class"
 "),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region CA1502: Avoid excessive complexity
 
-        [Fact]
+        [TestMethod]
         public async Task CA1502_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -622,7 +622,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1502_CSharp_VerifyDiagnosticInPropertyAsync()
         {
             var source = @"
@@ -662,7 +662,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1502_CSharp_VerifyDiagnosticInEventAsync()
         {
             var source = @"
@@ -701,7 +701,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1502_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -720,7 +720,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1502_Configuration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -750,7 +750,7 @@ CA1502: 2
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1502_Configuration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -776,7 +776,7 @@ CA1502: 2
             await VerifyBasicAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1502_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -809,7 +809,7 @@ CA1502(Method): 2
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1502_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -842,7 +842,7 @@ CA1502(Method): 2
 
         #region CA1505: Avoid unmaintainable code
 
-        [Fact]
+        [TestMethod]
         public async Task CA1505_Configuration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -869,7 +869,7 @@ CA1505: 95
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1505_Configuration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -894,7 +894,7 @@ CA1505: 95
             await VerifyBasicAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1505_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -919,7 +919,7 @@ CA1505(Type): 95
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1505_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -946,7 +946,7 @@ CA1505(Type): 95
 
         #region CA1506: Avoid excessive class coupling
 
-        [Fact]
+        [TestMethod]
         public async Task CA1506_Configuration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -976,7 +976,7 @@ CA1506: 2
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public async Task CA1506_Configuration_CSharp_LinqAsync()
         {
             var source = @"
@@ -1021,7 +1021,7 @@ CA1506: 2
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1506_Configuration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -1058,7 +1058,7 @@ CA1506: 2
             await VerifyBasicAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1506_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -1087,7 +1087,7 @@ CA1506(Type): 10
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1506_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
@@ -1123,7 +1123,7 @@ CA1506(Type): 10
             await VerifyBasicAsync(source, additionalText, expected);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public async Task CA1506_CountCorrectlyGenericTypesAsync()
         {
             await VerifyCSharpAsync(@"
@@ -1167,7 +1167,7 @@ CA1506: 2
     GetCSharpCA1506ExpectedDiagnostic(10, 14, "C", 3, 2, 3));
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public async Task CA1506_LinqAnonymousTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1200,7 +1200,7 @@ public static class Ca1506Tester
 }");
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public async Task CA1506_ExcludeCompilerGeneratedTypesAsync()
         {
             await VerifyCSharpAsync(@"
@@ -1249,7 +1249,7 @@ CA1506: 1
 
         #region CA1509: Invalid entry in code metrics rule specification file
 
-        [Fact]
+        [TestMethod]
         public async Task CA1509_VerifyDiagnosticsAsync()
         {
             var source = @"";
@@ -1307,7 +1307,7 @@ CA1501
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1509_NoDiagnosticsAsync()
         {
             var source = @"";
@@ -1342,7 +1342,7 @@ CA1501    :    1
             await VerifyCSharpAsync(source, additionalText);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1509_VerifyNoMetricDiagnosticsAsync()
         {
             // Ensure we don't report any code metric diagnostics when we have invalid entries in code metrics configuration file.
@@ -1449,7 +1449,7 @@ CA 1501: 10
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyBasicAsync(string source, string codeMetricsConfigSource, params DiagnosticResult[] expected)
@@ -1465,7 +1465,7 @@ CA 1501: 10
 
             vbTest.ExpectedDiagnostics.AddRange(expected);
 
-            await vbTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         #endregion

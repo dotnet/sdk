@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Tasks;
+using Microsoft.NET.Build.Tasks.ConflictResolution;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
 
@@ -16,15 +17,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 /// These tests create files in a "project" directory, then verify task behavior by
 /// passing RELATIVE paths and expecting tasks to resolve them via TaskEnvironment.
 /// </summary>
+[TestClass]
 public class GivenTasksUseAbsolutePaths : IDisposable
 {
     private readonly TaskTestEnvironment _env;
-    private readonly ITestOutputHelper _output;
+    public TestContext TestContext { get; set; } = null!;
 
-    public GivenTasksUseAbsolutePaths(ITestOutputHelper output)
+    public GivenTasksUseAbsolutePaths()
     {
         _env = new TaskTestEnvironment();
-        _output = output;
     }
 
     public void Dispose()
@@ -34,18 +35,18 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region Infrastructure Verification Tests
 
-    [Fact]
+    [TestMethod]
     public void TestEnvironment_ProjectAndSpawnDirectories_AreDifferent()
     {
         _env.ProjectDirectory.Should().NotBe(_env.SpawnDirectory);
         Directory.Exists(_env.ProjectDirectory).Should().BeTrue();
         Directory.Exists(_env.SpawnDirectory).Should().BeTrue();
 
-        _output.WriteLine($"Project directory: {_env.ProjectDirectory}");
-        _output.WriteLine($"Spawn directory: {_env.SpawnDirectory}");
+        TestContext.WriteLine($"Project directory: {_env.ProjectDirectory}");
+        TestContext.WriteLine($"Spawn directory: {_env.SpawnDirectory}");
     }
 
-    [Fact]
+    [TestMethod]
     public void TestEnvironment_DemonstratesPathDifference()
     {
         var projectFile = _env.CreateProjectFile("test.txt", "content");
@@ -57,15 +58,15 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         File.Exists(correctPath).Should().BeTrue("file was created in project directory");
         File.Exists(incorrectPath).Should().BeFalse("file should not exist in spawn directory");
 
-        _output.WriteLine($"Correct path (in project): {correctPath}");
-        _output.WriteLine($"Incorrect path (in spawn): {incorrectPath}");
+        TestContext.WriteLine($"Correct path (in project): {correctPath}");
+        TestContext.WriteLine($"Incorrect path (in spawn): {incorrectPath}");
     }
 
     #endregion
 
     #region AllowEmptyTelemetry - No File I/O
 
-    [Fact]
+    [TestMethod]
     public void AllowEmptyTelemetry_NoFileIO_ShouldSucceed()
     {
         var task = new AllowEmptyTelemetry
@@ -81,7 +82,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region CheckForTargetInAssetsFile
 
-    [Fact]
+    [TestMethod]
     public void CheckForTargetInAssetsFile_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         var assetsContent = @"{
@@ -115,7 +116,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region GenerateRuntimeConfigurationFiles
 
-    [Fact]
+    [TestMethod]
     public void GenerateRuntimeConfigurationFiles_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         _env.CreateProjectDirectory("obj");
@@ -151,7 +152,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region GenerateToolsSettingsFile
 
-    [Fact]
+    [TestMethod]
     public void GenerateToolsSettingsFile_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         _env.CreateProjectDirectory("obj");
@@ -179,7 +180,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region GetAssemblyAttributes
 
-    [Fact]
+    [TestMethod]
     public void GetAssemblyAttributes_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         _env.CreateProjectDirectory("obj");
@@ -204,7 +205,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region ResolvePackageAssets
 
-    [Fact]
+    [TestMethod]
     public void ResolvePackageAssets_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         var assetsContent = @"{
@@ -237,8 +238,8 @@ public class GivenTasksUseAbsolutePaths : IDisposable
             DefaultImplicitPackages = ""
         };
 
-        _output.WriteLine($"Current directory: {Environment.CurrentDirectory}");
-        _output.WriteLine($"Project directory: {_env.ProjectDirectory}");
+        TestContext.WriteLine($"Current directory: {Environment.CurrentDirectory}");
+        TestContext.WriteLine($"Project directory: {_env.ProjectDirectory}");
 
         var result = task.Execute();
 
@@ -249,7 +250,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region ResolvePackageDependencies
 
-    [Fact]
+    [TestMethod]
     public void ResolvePackageDependencies_WithRelativePaths_ShouldResolveFromProjectDirectory()
     {
         var assetsContent = @"{
@@ -281,9 +282,273 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #endregion
 
+    #region SelectRuntimeIdentifierSpecificItems
+
+    [TestMethod]
+    public void SelectRuntimeIdentifierSpecificItems_WithRelativePaths_ShouldResolveFromProjectDirectory()
+    {
+        var runtimeGraphContent = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": { ""#import"": [""linux""] }
+            }
+        }";
+        _env.CreateProjectDirectory("obj");
+        _env.CreateProjectFile("obj/runtime.json", runtimeGraphContent);
+
+        File.Exists(_env.GetProjectPath("obj/runtime.json")).Should().BeTrue("file should exist in project directory");
+        File.Exists("obj/runtime.json").Should().BeFalse("file should NOT exist relative to CWD");
+
+        var item = new MockTaskItem { ItemSpec = "Item1" };
+        item.SetMetadata("RuntimeIdentifier", "linux-x64");
+
+        var task = new SelectRuntimeIdentifierSpecificItems
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            TargetRuntimeIdentifier = "linux-x64",
+            Items = new ITaskItem[] { item },
+            RuntimeIdentifierGraphPath = "obj/runtime.json"
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue("task should resolve relative paths via TaskEnvironment");
+        task.SelectedItems.Should().HaveCount(1);
+        task.SelectedItems[0].ItemSpec.Should().Be("Item1");
+    }
+
+    [TestMethod]
+    public void SelectRuntimeIdentifierSpecificItems_IgnoresDecoyRuntimeGraphInCwd()
+    {
+        // Correct graph (project dir): linux-x64 imports linux, so an item with RID "linux" is compatible.
+        var projectGraph = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": { ""#import"": [""linux""] }
+            }
+        }";
+        // Decoy graph (process CWD): no import, so "linux" is NOT compatible with linux-x64.
+        var decoyGraph = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": {}
+            }
+        }";
+        _env.CreateProjectFile("obj/runtime.json", projectGraph);
+
+        // Place a valid-but-wrong graph at the process CWD. A task that resolved the relative
+        // path against the CWD would read this and select nothing.
+        var decoyPath = _env.GetIncorrectPath("obj/runtime.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(decoyPath)!);
+        File.WriteAllText(decoyPath, decoyGraph);
+
+        var item = new MockTaskItem { ItemSpec = "Item1" };
+        item.SetMetadata("RuntimeIdentifier", "linux");
+
+        var task = new SelectRuntimeIdentifierSpecificItems
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            TargetRuntimeIdentifier = "linux-x64",
+            Items = new ITaskItem[] { item },
+            RuntimeIdentifierGraphPath = "obj/runtime.json"
+        };
+
+        task.Execute().Should().BeTrue();
+
+        // The item is selected only if the project-directory graph (with the import) was used,
+        // not the decoy graph at the CWD.
+        task.SelectedItems.Should().ContainSingle()
+            .Which.ItemSpec.Should().Be("Item1");
+    }
+
+    #endregion
+
+    #region ResolveOverlappingItemGroupConflicts
+
+    [TestMethod]
+    public void ResolveOverlappingItemGroupConflicts_WithRelativeHintPaths_ShouldResolveFromProjectDirectory()
+    {
+        const string winnerPath = "libs/winner.dll";
+        const string loserPath = "libs/loser.dll";
+
+        _env.CreateProjectFile(winnerPath, string.Empty);
+        _env.CreateProjectFile(loserPath, string.Empty);
+
+        File.Exists(winnerPath).Should().BeFalse("file should NOT exist relative to CWD");
+        File.Exists(loserPath).Should().BeFalse("file should NOT exist relative to CWD");
+
+        var winner = CreateCopyLocalConflictItem(winnerPath, "2.0.0.0");
+        var loser = CreateCopyLocalConflictItem(loserPath, "1.0.0.0");
+
+        var task = new ResolveOverlappingItemGroupConflicts
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            ItemGroup1 = new ITaskItem[] { winner },
+            ItemGroup2 = new ITaskItem[] { loser }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue("task should resolve relative HintPath metadata via TaskEnvironment");
+        task.RemovedItemGroup1.Should().BeEmpty();
+        task.RemovedItemGroup2.Should().ContainSingle().Which.Should().BeSameAs(loser);
+        task.RemovedItemGroup2[0]!.ItemSpec.Should().Be(loserPath, "outputs should preserve original item specs");
+        task.RemovedItemGroup2[0]!.GetMetadata("HintPath").Should().Be(loserPath, "outputs should preserve original metadata");
+    }
+
+    [TestMethod]
+    public void AbsoluteHintPaths_AreLeftUnchanged()
+    {
+        var winnerPath = _env.CreateProjectFile("libs/winner.dll", string.Empty);
+        var loserPath = _env.CreateProjectFile("libs/loser.dll", string.Empty);
+
+        Path.IsPathRooted(winnerPath).Should().BeTrue();
+        Path.IsPathRooted(loserPath).Should().BeTrue();
+
+        var winner = CreateCopyLocalConflictItem(winnerPath, "2.0.0.0");
+        var loser = CreateCopyLocalConflictItem(loserPath, "1.0.0.0");
+
+        var task = new ResolveOverlappingItemGroupConflicts
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            ItemGroup1 = new ITaskItem[] { winner },
+            ItemGroup2 = new ITaskItem[] { loser }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue("absolutization should be a no-op when HintPaths are already rooted");
+        task.RemovedItemGroup1.Should().BeEmpty();
+        task.RemovedItemGroup2.Should().ContainSingle().Which.Should().BeSameAs(loser);
+        task.RemovedItemGroup2[0]!.ItemSpec.Should().Be(loserPath, "outputs should preserve original (absolute) item specs");
+        task.RemovedItemGroup2[0]!.GetMetadata("HintPath").Should().Be(loserPath, "outputs should preserve original (absolute) metadata");
+    }
+
+    [TestMethod]
+    public void ConflictItem_WithoutTaskEnvironment_ShouldKeepExistingRelativePathBehavior()
+    {
+        const string existingPath = "libs/existing.dll";
+
+        _env.CreateProjectFile(existingPath, string.Empty);
+
+        File.Exists(existingPath).Should().BeFalse("file should NOT exist relative to CWD");
+
+        var item = CreateCopyLocalConflictItem(existingPath, "1.0.0.0");
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal);
+
+        conflictItem.Exists.Should().BeFalse("existing callers that do not opt into TaskEnvironment should keep previous relative path behavior");
+        conflictItem.SourcePath.Should().Be(existingPath, "SourcePath should remain the original value");
+        conflictItem.DisplayName.Should().Be($"CopyLocal:{existingPath}", "display strings should not be absolutized");
+    }
+
+    [TestMethod]
+    public void ConflictItem_WithTaskEnvironment_ExistsResolvesRelativePathToProjectDirectory()
+    {
+        const string relativePath = "libs/existing.dll";
+
+        _env.CreateProjectFile(relativePath, string.Empty);
+
+        File.Exists(relativePath).Should().BeFalse("file should NOT be findable relative to the spawn CWD");
+
+        var item = CreateCopyLocalConflictItem(relativePath, assemblyVersion: string.Empty);
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal, _env.TaskEnvironment);
+
+        conflictItem.Exists.Should().BeTrue(
+            "Exists must resolve the relative HintPath against the TaskEnvironment's project directory, not the process CWD");
+    }
+
+    [TestMethod]
+    public void ConflictItem_WithTaskEnvironment_FileVersionReadsFileViaProjectDirectory()
+    {
+        // Copy a real managed assembly (this test assembly) into the project directory so
+        // FileUtilities.GetFileVersion has something to read. If path resolution were CWD-based,
+        // the file would not be found and FileVersion would be null.
+        var sourceAssemblyPath = typeof(GivenTasksUseAbsolutePaths).Assembly.Location;
+        const string relativePath = "libs/sample.dll";
+        var targetPath = _env.GetProjectPath(relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+        File.Copy(sourceAssemblyPath, targetPath, overwrite: true);
+
+        File.Exists(relativePath).Should().BeFalse("file should NOT be findable relative to the spawn CWD");
+
+        // No AssemblyVersion/FileVersion metadata -> ConflictItem must fall back to reading the file.
+        var item = new MockTaskItem(relativePath, new Dictionary<string, string>
+        {
+            ["HintPath"] = relativePath,
+        });
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal, _env.TaskEnvironment);
+
+        conflictItem.FileVersion.Should().NotBeNull(
+            "FileVersion must be obtainable via TaskEnvironment-resolved path even when the process CWD is wrong");
+    }
+
+    [TestMethod]
+    public void ConflictItem_WithTaskEnvironment_SourcePathAndDisplayNamePreserveOriginalRelativePath()
+    {
+        const string relativePath = "libs/existing.dll";
+
+        _env.CreateProjectFile(relativePath, string.Empty);
+
+        var item = CreateCopyLocalConflictItem(relativePath, "1.0.0.0");
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal, _env.TaskEnvironment);
+
+        // Trigger file access first so the lazy absolutized path is computed; it must still not
+        // leak into the user-visible string properties.
+        _ = conflictItem.Exists;
+
+        conflictItem.SourcePath.Should().Be(relativePath,
+            "SourcePath is surfaced to users and must preserve the original relative value, not the absolutized form");
+        conflictItem.FileName.Should().Be(Path.GetFileName(relativePath),
+            "FileName is derived from the original ItemSpec and must not include directory parts from absolutization");
+        conflictItem.DisplayName.Should().Be($"CopyLocal:{relativePath}",
+            "DisplayName is used in diagnostics and must not leak the absolutized path");
+    }
+
+    [TestMethod]
+    public void ConflictItem_WithTaskEnvironment_HonorsMetadataAndDoesNotAccessFile()
+    {
+        // Point at a file that does NOT exist anywhere; if anything other than Exists touches the
+        // file system, AssemblyVersion/FileVersion would be null. They must come from metadata.
+        const string nonexistentRelativePath = "does/not/exist.dll";
+
+        File.Exists(_env.GetProjectPath(nonexistentRelativePath)).Should().BeFalse();
+
+        var item = new MockTaskItem(nonexistentRelativePath, new Dictionary<string, string>
+        {
+            ["HintPath"] = nonexistentRelativePath,
+            ["AssemblyVersion"] = "2.5.0.0",
+            ["FileVersion"] = "3.4.2.1",
+        });
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal, _env.TaskEnvironment);
+
+        conflictItem.AssemblyVersion.Should().Be(new Version(2, 5, 0, 0),
+            "metadata-supplied AssemblyVersion must be honored without triggering file I/O");
+        conflictItem.FileVersion.Should().Be(new Version(3, 4, 2, 1),
+            "metadata-supplied FileVersion must be honored without triggering file I/O");
+        conflictItem.Exists.Should().BeFalse(
+            "Exists should still report the actual on-disk state via the TaskEnvironment-resolved path");
+    }
+
+    private static ITaskItem CreateCopyLocalConflictItem(string relativeHintPath, string assemblyVersion)
+    {
+        return new MockTaskItem(relativeHintPath, new Dictionary<string, string>
+        {
+            ["HintPath"] = relativeHintPath,
+            ["TargetPath"] = "shared.dll",
+            ["AssemblyVersion"] = assemblyVersion,
+            ["NuGetPackageId"] = Path.GetFileNameWithoutExtension(relativeHintPath) ?? string.Empty,
+        });
+    }
+
+    #endregion
+
     #region Demonstration: Absolute vs Relative Paths
 
-    [Fact]
+    [TestMethod]
     public void AbsolutePath_AlwaysPointsToCorrectFile()
     {
         var content = "test content";
@@ -294,11 +559,11 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         var readContent = File.ReadAllText(absolutePath);
         readContent.Should().Be(content);
 
-        _output.WriteLine($"Absolute path: {absolutePath}");
-        _output.WriteLine($"Successfully read file content: {readContent}");
+        TestContext.WriteLine($"Absolute path: {absolutePath}");
+        TestContext.WriteLine($"Successfully read file content: {readContent}");
     }
 
-    [Fact]
+    [TestMethod]
     public void MockTaskEnvironment_ResolvesRelativeToProjectDirectory()
     {
         var content = "test content";
@@ -312,7 +577,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
         File.Exists(resolvedPath).Should().BeTrue();
 
-        _output.WriteLine($"TaskEnvironment resolved: {resolvedPath}");
+        TestContext.WriteLine($"TaskEnvironment resolved: {resolvedPath}");
     }
 
     #endregion

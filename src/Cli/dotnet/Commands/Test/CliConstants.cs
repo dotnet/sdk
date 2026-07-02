@@ -27,44 +27,6 @@ internal static class CliConstants
     public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
 }
 
-internal static class TestStates
-{
-    internal const byte Discovered = 0;
-    internal const byte Passed = 1;
-    internal const byte Skipped = 2;
-    internal const byte Failed = 3;
-    internal const byte Error = 4;
-    internal const byte Timeout = 5;
-    internal const byte Cancelled = 6;
-}
-
-internal static class SessionEventTypes
-{
-    internal const byte TestSessionStart = 0;
-    internal const byte TestSessionEnd = 1;
-}
-
-internal static class HandshakeMessagePropertyNames
-{
-    internal const byte PID = 0;
-    internal const byte Architecture = 1;
-    internal const byte Framework = 2;
-    internal const byte OS = 3;
-    internal const byte SupportedProtocolVersions = 4;
-    internal const byte HostType = 5;
-    internal const byte ModulePath = 6;
-    internal const byte ExecutionId = 7;
-    internal const byte InstanceId = 8;
-}
-
-internal static class ProtocolConstants
-{
-    /// <summary>
-    /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
-    /// </summary>
-    internal const string SupportedVersions = "1.0.0";
-}
-
 internal static class ProjectProperties
 {
     internal const string IsTestingPlatformApplication = "IsTestingPlatformApplication";
