@@ -37,8 +37,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void DependsOnNETStandard_IsConsistent_RegardlessOfCwd(bool useDifferentCwd)
         {
             // Use the test assembly itself as input — it references System.Runtime.
