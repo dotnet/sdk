@@ -428,11 +428,53 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         invocation.TargetMethod.IsOverrideOrImplementationOfInterfaceMember(_isEnabledMethod);
                 }
 
-                static bool AreInvocationsOnSameInstance(IInvocationOperation invocation1, IInvocationOperation invocation2)
+                bool AreInvocationsOnSameInstance(IInvocationOperation invocation1, IInvocationOperation invocation2)
                 {
-                    return SymbolEqualityComparer.Default.Equals(
-                        GetInstanceResolvingConditionalAccess(invocation1).GetReferencedMemberOrLocalOrParameter(),
-                        GetInstanceResolvingConditionalAccess(invocation2).GetReferencedMemberOrLocalOrParameter());
+                    var instance1 = GetInstanceResolvingConditionalAccess(invocation1).GetReferencedMemberOrLocalOrParameter();
+                    var instance2 = GetInstanceResolvingConditionalAccess(invocation2).GetReferencedMemberOrLocalOrParameter();
+
+                    if (SymbolEqualityComparer.Default.Equals(instance1, instance2))
+                    {
+                        return true;
+                    }
+
+                    if (invocation1.TargetMethod.GetAttribute(_loggerMessageAttributeType) is null)
+                    {
+                        return false;
+                    }
+
+                    var method = invocation1.TargetMethod;
+                    var loggerParameter = method.Parameters.FirstOrDefault(p =>
+                        SymbolEqualityComparer.Default.Equals(p.Type, _logMethod.ContainingType) ||
+                        p.Type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, _logMethod.ContainingType)));
+
+                    if (loggerParameter is not null)
+                    {
+                        if (invocation1.Arguments.TryGetArgumentForParameterAtIndex(loggerParameter.Ordinal, out var argument) &&
+                            SymbolEqualityComparer.Default.Equals(argument.Value.GetReferencedMemberOrLocalOrParameter(), instance2))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (!method.IsStatic)
+                    {
+                        if (!SymbolEqualityComparer.Default.Equals(instance2?.ContainingType, method.ContainingType))
+                        {
+                            return false;
+                        }
+
+                        // This is a heuristic, if a call to LoggerMessage is guarded by an IsEnabled check in
+                        // the same class, it is assumed they use the same logger instance. This would lead to
+                        // false negatives if this isn't the case.
+                        switch (instance2)
+                        {
+                            case IFieldSymbol or IPropertySymbol:
+                            case IParameterSymbol { ContainingSymbol: IMethodSymbol { MethodKind: MethodKind.Constructor } }:
+                                return true;
+                        }
+                    }
+
+                    return false;
                 }
 
                 static IOperation? GetInstanceResolvingConditionalAccess(IInvocationOperation invocation)
