@@ -1343,9 +1343,29 @@ internal sealed class FSharpHotReloadService
                string.Equals(value, "false", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// FSHARP_HOTRELOAD_INPROCESS_COMPILE=1 (or true) opts into the experimental FCS in-process
+    /// compile: the hot reload session refreshes the obj assembly itself during EmitDelta, so the
+    /// external per-edit "dotnet build -t:Compile" is skipped. The same variable gates the FCS side,
+    /// so one setting flips the whole chain. Unset or any other value keeps the external build.
+    /// </summary>
+    private static bool IsInProcessCompileEnabled()
+    {
+        var value = Environment.GetEnvironmentVariable("FSHARP_HOTRELOAD_INPROCESS_COMPILE");
+        return string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
     private bool TryCompileProjectOutput(FSharpProjectInfo projectInfo, out string? message)
     {
         message = null;
+
+        if (IsInProcessCompileEnabled())
+        {
+            // The FCS session compiles in-process during EmitDelta (same flag); running the
+            // external build too would pay the redundant MSBuild+fsc the flag exists to remove.
+            return true;
+        }
 
         try
         {
