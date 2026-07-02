@@ -22,27 +22,7 @@ namespace Microsoft.NET.Build.Tasks
     {
         private static readonly ConcurrentDictionary<string, (DateTime LastKnownWriteTimeUtc, Version? Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
 
-        private const int MaxFileAccessAttempts = 3;
-        private const int RetryDelayMilliseconds = 100;
-
         private static Version? GetAssemblyVersion(string sourcePath)
-        {
-            // Retry file access to handle transient IOExceptions caused by concurrent
-            // MSBuild processes locking the file during parallel builds (see dotnet/sdk#54864).
-            for (int attempt = 1; ; attempt++)
-            {
-                try
-                {
-                    return GetAssemblyVersionCore(sourcePath);
-                }
-                catch (IOException) when (attempt < MaxFileAccessAttempts)
-                {
-                    Thread.Sleep(RetryDelayMilliseconds * attempt);
-                }
-            }
-        }
-
-        private static Version? GetAssemblyVersionCore(string sourcePath)
         {
             DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
 
