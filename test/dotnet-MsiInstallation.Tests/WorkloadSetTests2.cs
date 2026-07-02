@@ -160,8 +160,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void UpdateDoesNotTryToInstallOlderWorkloadSet(bool usePreview)
         {
             if (NeedsIncludePreviews && usePreview)
