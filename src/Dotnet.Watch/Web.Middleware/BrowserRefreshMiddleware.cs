@@ -173,15 +173,17 @@ public sealed class BrowserRefreshMiddleware
             return false;
         }
 
-        if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
-            !StringValues.IsNullOrEmpty(values) &&
-            !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase) &&
-            !IsProgressivelyEnhancedNavigation(context.Request))
-        {
-            // See https://github.com/dotnet/aspnetcore/issues/37326.
-            // Only inject scripts that are destined for a browser page.
-            return false;
-        }
+            if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
+                !StringValues.IsNullOrEmpty(values) &&
+                !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(values[0], "frame", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(values[0], "iframe", StringComparison.OrdinalIgnoreCase) &&
+                !IsProgressivelyEnhancedNavigation(context.Request))
+            {
+                // See https://github.com/dotnet/aspnetcore/issues/37326.
+                // Only inject scripts that are destined for a browser page.
+                return false;
+            }
 
         var typedHeaders = request.GetTypedHeaders();
         if (typedHeaders.Accept is not IList<MediaTypeHeaderValue> acceptHeaders)
