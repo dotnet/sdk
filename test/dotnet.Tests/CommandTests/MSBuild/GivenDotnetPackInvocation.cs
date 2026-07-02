@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [DataRow(new string[] { }, new string[] { })]
         [DataRow(new string[] { "-o", "<packageoutputpath>" }, new string[] { "--property:PackageOutputPath=<cwd><packageoutputpath>" })]
         [DataRow(new string[] { "--output", "<packageoutputpath>" }, new string[] { "--property:PackageOutputPath=<cwd><packageoutputpath>" })]
+        [DataRow(new string[] { "-o", "/tmp/dotnet" }, new string[] { "--property:PackageOutputPath=/tmp/dotnet" })]
         [DataRow(new string[] { "--artifacts-path", "foo" }, new string[] { "--property:ArtifactsPath=<cwd>foo" })]
         [DataRow(new string[] { "--no-build" }, new string[] { "--property:NoBuild=true" })]
         [DataRow(new string[] { "--include-symbols" }, new string[] { "--property:IncludeSymbols=true" })]
