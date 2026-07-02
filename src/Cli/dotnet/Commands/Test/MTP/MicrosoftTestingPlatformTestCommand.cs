@@ -3,15 +3,17 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.Runtime.CompilerServices;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Testing.Platform.Helpers;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -33,7 +35,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         ITestHandler testHandler = buildOptions.PathOptions.TestModules is { } testModules
             ? new TestModulesFilterHandler(testModules, parseResult)
-            : new MSBuildHandler(buildOptions);
+            : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions)
+                : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
 
         if (!testHandler.Initialize())
         {
@@ -48,10 +51,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
         int? exitCode = null;
         try
         {
-            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested);
+            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested, ctrlC);
             exitCode = testHandler.RunTestApplications(actionQueue);
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
@@ -104,8 +108,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
         {
-            ShowPassedTests = showPassedTests,
-            ShowProgress = !noProgress,
+            ShowPassedTests = () => showPassedTests,
+            ShowProgress = () => !noProgress,
             ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
             AnsiMode = ansiMode,
             ShowAssembly = true,
@@ -113,10 +117,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
         });
 
-        Console.CancelKeyPress += (s, e) =>
-        {
-            output.StartCancelling();
-        };
+        // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
+        // a second press can force-kill running test app child processes and exit with
+        // ExitCode.TestSessionAborted (see issue https://github.com/dotnet/sdk/issues/50732).
 
         // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
         var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");

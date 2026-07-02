@@ -2,15 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
-using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class DiscoveredTestMessagesSerializerTests
 {
-    [Fact]
+    // Mirror the wire field ids from Microsoft.Testing.Platform.IPC (ObjectFieldIds.cs) in the
+    // Microsoft.Testing.Platform.Internal.DotnetTest package. Those types are [Embedded] and therefore not
+    // referenceable from this (separate) test assembly, so the values are inlined here.
+    private const ushort DiscoveredTestMessageListFieldId = 3; // DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList
+    private const ushort LineNumberFieldId = 4;                // DiscoveredTestMessageFieldsId.LineNumber
+
+    [TestMethod]
     public void RoundTrip_AllFieldsPopulated_PreservesValues()
     {
         var original = new DiscoveredTestMessages(
@@ -51,7 +57,7 @@ public class DiscoveredTestMessagesSerializerTests
         test.Traits[1].Value.Should().Be("team-x");
     }
 
-    [Fact]
+    [TestMethod]
     public void RoundTrip_OnlyUidAndDisplayName_BackwardCompatibility()
     {
         // Mimics a legacy MTP producing only Uid/DisplayName: optional fields are absent on the wire,
@@ -90,7 +96,7 @@ public class DiscoveredTestMessagesSerializerTests
         test.Traits.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Serialize_LineNumber_UsesFourBytes()
     {
         // The wire format for LineNumber is a 4-byte signed integer. This protects against
@@ -124,7 +130,7 @@ public class DiscoveredTestMessagesSerializerTests
         outerFieldCount.Should().Be(1, "only the DiscoveredTestMessageList field is populated");
 
         ushort outerFieldId = reader.ReadUInt16();
-        outerFieldId.Should().Be(DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList);
+        outerFieldId.Should().Be(DiscoveredTestMessageListFieldId);
         _ = reader.ReadInt32(); // payload size of the list
         int listLength = reader.ReadInt32();
         listLength.Should().Be(1);
@@ -133,7 +139,7 @@ public class DiscoveredTestMessagesSerializerTests
         innerFieldCount.Should().Be(1, "only the LineNumber field is populated on the inner test");
 
         ushort innerFieldId = reader.ReadUInt16();
-        innerFieldId.Should().Be(DiscoveredTestMessageFieldsId.LineNumber);
+        innerFieldId.Should().Be(LineNumberFieldId);
 
         int lineNumberFieldSize = reader.ReadInt32();
         lineNumberFieldSize.Should().Be(sizeof(int), "LineNumber must be serialized as 4 bytes");
@@ -142,7 +148,7 @@ public class DiscoveredTestMessagesSerializerTests
         lineNumberValue.Should().Be(7);
     }
 
-    [Fact]
+    [TestMethod]
     public void Serialize_EmptyArrays_AreOmittedFromWire()
     {
         // Empty Traits and empty ParameterTypeFullNames should be omitted entirely (no field id, no size).

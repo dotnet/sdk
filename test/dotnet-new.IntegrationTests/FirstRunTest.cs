@@ -3,16 +3,16 @@
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public class FirstRunTest : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
 
-        public FirstRunTest(ITestOutputHelper log) : base(log)
+        public FirstRunTest()
         {
-            _log = log;
         }
 
-        [Fact]
+        [TestMethod]
         public void FirstRunSuccess()
         {
             string home = CreateTemporaryFolder(folderName: "Home");

@@ -132,6 +132,11 @@
         <target state="new">Handshake failures:</target>
         <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
       </trans-unit>
+      <trans-unit id="MismatchingHandshakeExecutionMode">
+        <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
+        <target state="new">The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</target>
+        <note>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</note>
+      </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Zeigt kein Startbanner und keine Copyrightmeldung an.</target>
@@ -2240,6 +2245,11 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
         <target state="translated">Die Optionen „--prerelease“ und „--version“ werden im gleichen Befehl nicht unterstützt.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PressCtrlCAgainToForceExit">
+        <source>Press Ctrl+C again to force exit.</source>
+        <target state="new">Press Ctrl+C again to force exit.</target>
+        <note>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</note>
+      </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
         <source>Only print the list of links to download without downloading.</source>
         <target state="translated">Drucken Sie nur die Liste der Links zum Herunterladen, ohne sie herunterzuladen.</target>
@@ -2795,6 +2805,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">Warnung: Einstellungen von „{0}“ werden nicht verwendet, weil „{1}“ Vorrang hat.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
+      <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
+        <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
+        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <note>{Locked="--"}</note>
+      </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
         <target state="translated">Die Konfiguration für die Ausführung. Der Standardwert für die meisten Projekte ist "Debug".</target>
@@ -3172,11 +3187,6 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">Hiermit werden mithilfe des im .NET-Projekt angegebenen Test Runners Komponententests ausgeführt.</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestDiscoveryExitCode">
-        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Die Testermittlung wurde mit einem nicht erfolgreichen Exitcode abgeschlossen: {0} (siehe: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
-      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">Ermittelte {0} Tests in {1} Assemblys.</target>
@@ -3191,11 +3201,6 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">Das Zielframework für den Testlauf. Das Zielframework muss auch in der Projektdatei angegeben werden.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="TestRunExitCode">
-        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="translated">Der Testlauf wurde mit einem nicht erfolgreichen Exitcode abgeschlossen: {0} (siehe: https://aka.ms/testingplatform/exitcodes)</target>
-        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
@@ -3769,14 +3774,14 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
         <note />
       </trans-unit>
       <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
-        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</target>
-        <note>{0} is the .cs file path argument.</note>
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</target>
+        <note>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</note>
       </trans-unit>
       <trans-unit id="WarningFileArgumentPassedToMSBuild">
-        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</target>
-        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
+        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</target>
+        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>

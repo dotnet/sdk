@@ -1,42 +1,5 @@
-# Detect native OS architecture, which may differ from the process architecture
-# (e.g., x64 process running on ARM64 Windows via emulation).
-function Get-NativeMachineArchitecture {
-    try {
-        $osArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
-            return "arm64"
-        }
-        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
-            return "x86"
-        }
-        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
-            return "arm"
-        }
-    }
-    catch {
-        # Fallback for environments where RuntimeInformation is unavailable
-    }
-    return "x64"
-}
-
-function Get-ProcessMachineArchitecture {
-    try {
-        $processArch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
-        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
-            return "arm64"
-        }
-        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
-            return "x86"
-        }
-        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
-            return "arm"
-        }
-    }
-    catch {
-        # Fallback for environments where RuntimeInformation is unavailable
-    }
-    return "x64"
-}
+# Shared dotnetup acquisition helpers (architecture detection, cache freshness, download).
+. (Join-Path $PSScriptRoot 'dotnetup-shared.ps1')
 
 function Get-DotNetInstallFallbackArchitecture {
     if (-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) {
@@ -212,6 +175,37 @@ function Get-CurrentRuntimeToolsetSpecs() {
     return $specs
 }
 
+# Maps a dotnetup component (e.g. 'aspnetcore', 'windowsdesktop' or 'dotnet')
+# to the name of its shared-framework folder under <dotnet root>\shared.
+function Get-SharedFrameworkName([string]$component) {
+    switch ($component) {
+        'aspnetcore' { return 'Microsoft.AspNetCore.App' }
+        'windowsdesktop' { return 'Microsoft.WindowsDesktop.App' }
+        default { return 'Microsoft.NETCore.App' }
+    }
+}
+
+# Returns the shared-framework directory for a component
+# (e.g. <dotnet root>\shared\Microsoft.AspNetCore.App).
+function Get-SharedFrameworkPath([string]$dotNetRoot, [string]$component) {
+    return Join-Path $dotNetRoot "shared\$(Get-SharedFrameworkName $component)"
+}
+
+# Tests whether a shared framework matching $version (a major.minor channel
+# such as 6.0 or an exact version) is already present on disk for $component.
+function Test-SharedFrameworkInstalled([string]$dotNetRoot, [string]$component, [string]$version) {
+    $fxRoot = Get-SharedFrameworkPath $dotNetRoot $component
+
+    # Only a major.minor channel (e.g. 6.0) should match any patch via a wildcard.
+    # An exact version must match an exact folder so that, for example, 8.0.1 does
+    # not spuriously match an installed 8.0.10.
+    if ($version -match '^\d+\.\d+$') {
+        return [bool](Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
+    }
+
+    return [bool](Test-Path -PathType Container (Join-Path $fxRoot $version))
+}
+
 function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$architecture = "") {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
 
@@ -221,9 +215,7 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$archite
     # matching patch (e.g. 6.0.36) exists.
     $runtimeSpecsToInstall = @($runtimeSpecs | Where-Object {
             $component, $version = if ($_ -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $_ }
-            $sharedFrameworkName = if ($component -eq 'aspnetcore') { 'Microsoft.AspNetCore.App' } elseif ($component -eq 'windowsdesktop') { 'Microsoft.WindowsDesktop.App' } else { 'Microsoft.NETCore.App' }
-            $fxRoot = Join-Path $dotnetRoot "shared\$sharedFrameworkName"
-            -not (Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
+            -not (Test-SharedFrameworkInstalled $dotnetRoot $component $version)
         })
     if ($runtimeSpecsToInstall.Count -eq 0) {
         return
@@ -244,29 +236,12 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$archite
     $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
     $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName "dotnetup")
 
-    # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
-    $skipDownload = $false
-    if (Test-Path $dotnetupExe) {
-        $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
-        if ($age.TotalHours -lt 24) {
-            Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
-            $skipDownload = $true
+    if (-not (Test-ShouldUseCachedDotnetup $dotnetupExe)) {
+        try {
+            Install-DotnetupFromAkaMs $dotnetupDir
         }
-    }
-
-    if ($skipDownload -and ((Get-NativeMachineArchitecture) -ne (Get-ProcessMachineArchitecture))) {
-        Write-Host "Native architecture differs from process architecture; re-downloading dotnetup for the native architecture." -ForegroundColor DarkGray
-        $skipDownload = $false
-    }
-
-    if (-not $skipDownload) {
-        # Acquire the latest dotnetup daily build using the in-repo install script.
-        # get-dotnetup.ps1 may short-circuit without invoking a native process,
-        # leaving $LASTEXITCODE unset; seed it so strict mode can read it.
-        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-        & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
-        if ($lastExitCode -ne 0) {
-            Write-Host "Failed to acquire dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
+        catch {
+            Write-Host "Failed to acquire dotnetup ($($_.Exception.Message)); falling back to dotnet install script." -ForegroundColor Yellow
             InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
             return
         }
@@ -296,11 +271,15 @@ function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs,
             $installArgs.Architecture = $architecture
         }
 
-        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+        $global:LASTEXITCODE = 0
         & $installScript @installArgs
+        $installScriptExitCode = $LASTEXITCODE
 
-        if ($lastExitCode -ne 0) {
-            throw "Failed to install shared framework $version to '$dotNetRoot' using dotnet install script for architecture '$architecture' (exit code '$lastExitCode')."
+        $frameworkInstalled = Test-SharedFrameworkInstalled $dotNetRoot $component $version
+
+        if ($installScriptExitCode -ne 0 -or -not $frameworkInstalled) {
+            $architectureMessage = if ([string]::IsNullOrEmpty($architecture)) { "" } else { " for architecture '$architecture'" }
+            throw "Failed to install shared framework $version to '$dotNetRoot' using dotnet install script$architectureMessage (exit code '$installScriptExitCode', installed '$frameworkInstalled')."
         }
     }
 }
@@ -311,11 +290,11 @@ function CleanOutStage0ToolsetsAndRuntimes {
     $dotnetSdkVersion = $GlobalJson.tools.dotnet
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
     $versionPath = Join-Path $dotnetRoot '.version'
-    $aspnetRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared' , 'Microsoft.AspNetCore.App')
-    $coreRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared' , 'Microsoft.NETCore.App')
-    $wdRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared', 'Microsoft.WindowsDesktop.App')
+    $aspnetRuntimePath = Get-SharedFrameworkPath $dotnetRoot 'aspnetcore'
+    $coreRuntimePath = Get-SharedFrameworkPath $dotnetRoot 'dotnet'
+    $wdRuntimePath = Get-SharedFrameworkPath $dotnetRoot 'windowsdesktop'
     $sdkPath = Join-Path $dotnetRoot 'sdk'
-    $majorVersion = $dotnetSdkVersion.Substring(0, 1)
+    $majorVersion = $dotnetSdkVersion.Split('.')[0]
 
     if (Test-Path($versionPath)) {
         $lastInstalledSDK = Get-Content -Raw -Path ($versionPath)

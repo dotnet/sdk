@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -10,9 +10,10 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTestBase(log)
+[TestClass]
+public sealed class RunFileTests_Directives : RunFileTestBase
 {
-    [Fact]
+    [TestMethod]
     public void Define_01()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -29,7 +30,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut("Test output");
     }
 
-    [Fact]
+    [TestMethod]
     public void Define_02()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -46,7 +47,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
     }
 
-    [Fact]
+    [TestMethod]
     public void PackageReference()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -68,7 +69,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void PackageReference_CentralVersion()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -101,7 +102,9 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     }
 
     //  https://github.com/dotnet/sdk/issues/49665
-    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/48990
+    [TestMethod]
+
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/48990
     public void SdkReference()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -120,7 +123,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .Should().Pass();
     }
 
-    [Fact] // https://github.com/dotnet/sdk/issues/49797
+    [TestMethod] // https://github.com/dotnet/sdk/issues/49797
     public void SdkReference_VersionedSdkFirst()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -135,13 +138,13 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .Should().Pass();
     }
 
-    [Theory]
-    [InlineData("../Lib/Lib.csproj")]
-    [InlineData("../Lib")]
-    [InlineData(@"..\Lib\Lib.csproj")]
-    [InlineData(@"..\Lib")]
-    [InlineData("$(MSBuildProjectDirectory)/../$(LibProjectName)")]
-    [InlineData(@"$(MSBuildProjectDirectory)/../Lib\$(LibProjectName).csproj")]
+    [TestMethod]
+    [DataRow("../Lib/Lib.csproj")]
+    [DataRow("../Lib")]
+    [DataRow(@"..\Lib\Lib.csproj")]
+    [DataRow(@"..\Lib")]
+    [DataRow("$(MSBuildProjectDirectory)/../$(LibProjectName)")]
+    [DataRow(@"$(MSBuildProjectDirectory)/../Lib\$(LibProjectName).csproj")]
     public void ProjectReference(string arg)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -190,9 +193,9 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("app")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("app")]
     public void ProjectReference_Errors(string? subdir)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -257,9 +260,9 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
                 string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "$(Test"))));
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("app")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("app")]
     public void ProjectReference_Duplicate(string? subdir)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -313,7 +316,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut("Hello");
     }
 
-    [Fact]
+    [TestMethod]
     public void RefDirective()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -329,6 +332,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet("World"));
             """);
@@ -340,7 +344,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut("Hello, World!");
     }
 
-    [Fact]
+    [TestMethod]
     public void RefDirective_Subdirectory()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -359,6 +363,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib/mylib.cs
             Console.WriteLine(MyLib.Greeter.Greet("World"));
             """);
@@ -373,9 +378,9 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Analogous to <see cref="ProjectReference_Errors"/> but for <c>#:ref</c>.
     /// </summary>
-    [Theory]
-    [InlineData(null)]
-    [InlineData("app")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("app")]
     public void RefDirective_Errors(string? subdir)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -412,7 +417,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// Verifies that <c>#:ref</c> produces a metadata (assembly) reference,
     /// meaning internal members are not accessible unless <c>InternalsVisibleTo</c> is used.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_InternalsNotAccessible()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -434,6 +439,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         // Accessing internal member should fail.
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.PublicClass.InternalMethod());
             """);
@@ -446,6 +452,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         // Accessing public member should succeed.
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.PublicClass.PublicMethod());
             """);
@@ -460,7 +467,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Verifies transitive <c>#:ref</c> references work: app.cs → lib1.cs → lib2.cs.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_Transitive()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -476,6 +483,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #!/usr/bin/env dotnet
             #:property OutputType=Library
             #:ref lib2.cs
             namespace Lib1;
@@ -486,6 +494,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib1.cs
             Console.WriteLine(Lib1.Middle.Value());
             """);
@@ -501,11 +510,11 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <c>#:ref</c> with various path formats (forward slashes, backslashes, MSBuild properties, parent dirs).
     /// Analogous to <see cref="ProjectReference"/>.
     /// </summary>
-    [Theory]
-    [InlineData("../Lib/lib.cs")]
-    [InlineData(@"..\Lib\lib.cs")]
-    [InlineData("$(MSBuildProjectDirectory)/../$(LibDirName)/lib.cs")]
-    [InlineData(@"$(MSBuildProjectDirectory)\..\Lib\lib.cs")]
+    [TestMethod]
+    [DataRow("../Lib/lib.cs")]
+    [DataRow(@"..\Lib\lib.cs")]
+    [DataRow("$(MSBuildProjectDirectory)/../$(LibDirName)/lib.cs")]
+    [DataRow(@"$(MSBuildProjectDirectory)\..\Lib\lib.cs")]
     public void RefDirective_PathFormats(string arg)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -527,6 +536,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
         Directory.CreateDirectory(appDir);
 
         File.WriteAllText(Path.Join(appDir, "app.cs"), $"""
+            #!/usr/bin/env dotnet
             #:ref {arg}
             #:property LibDirName=Lib
             Console.WriteLine(MyLib.Greeter.Greet("World"));
@@ -552,9 +562,9 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <c>#:ref</c> duplicate detection.
     /// Analogous to <see cref="ProjectReference_Duplicate"/>.
     /// </summary>
-    [Theory]
-    [InlineData(null)]
-    [InlineData("app")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("app")]
     public void RefDirective_Duplicate(string? subdir)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -574,6 +584,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         // Duplicate #:ref directives are allowed (MSBuild can handle that).
         File.WriteAllText(filePath, """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
@@ -586,6 +597,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut("Hello!");
 
         File.WriteAllText(filePath, """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #:ref ./lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
@@ -598,6 +610,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut("Hello!");
 
         File.WriteAllText(filePath, """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #:ref $(MSBuildProjectDirectory)/lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
@@ -614,7 +627,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <c>#:ref</c> is an experimental feature that must be opted into.
     /// Analogous to <see cref="IncludeDirective_FeatureFlags"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_FeatureFlag()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -631,6 +644,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
             """);
@@ -640,7 +654,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
+                {DirectiveError(programPath, 2, Resources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
@@ -656,7 +670,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Combining <c>#:ref</c> and <c>#:include</c> in the same file-based app.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_WithInclude()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -722,7 +736,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// A <c>#:ref</c> library can target a different framework (e.g., <c>netstandard2.0</c>)
     /// than the referencing app (<c>net10.0</c>).
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_DifferentTargetFramework()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -746,6 +760,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #if NET10_0_OR_GREATER
             Console.WriteLine("App is net10.0+: " + MyLib.Greeter.Greet());
@@ -764,7 +779,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// <c>#:ref *.cs</c> does not expand globs — it looks for a literal file named <c>*.cs</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_Glob()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -796,7 +811,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Verifies that cyclic <c>#:ref</c> references (lib1 → lib2 → lib1) do not cause an infinite loop.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_Cycle()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -835,7 +850,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// Two <c>#:include</c>'d files each have <c>#:ref</c> to the same library.
     /// The deduplication via <c>processedFiles</c> should ensure the library is only processed once.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_DuplicateRefFromIncludedFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -892,7 +907,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// using different relative paths. Deduplication via <c>processedFiles</c> uses the resolved (absolute) path,
     /// so the library is only processed once.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_DuplicateRefFromIncludedFiles_Subdirectories()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -956,7 +971,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// The file ends up both compiled into the current assembly and referenced as a separate assembly.
     /// This is expected to produce a compilation error (duplicate type definitions).
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RefDirective_IncludeAndRefSameFile()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -993,7 +1008,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOutContaining("error CS8805");
     }
 
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void IncludeDirective(
         [CombinatorialValues("Util.cs", "**/*.cs", "**/*.$(MyProp1)")] string includePattern,
         [CombinatorialValues("", "#:exclude Program.$(MyProp1)")] string additionalDirectives)
@@ -1017,7 +1032,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut("Hello, String from Util");
     }
 
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_WorkingDirectory()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1092,7 +1107,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_Transitive()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1204,7 +1219,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_FileNotFound()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1226,10 +1241,10 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Combination of <see cref="UpToDate"/> optimization and <c>#:include</c> directive.
     /// </summary>
-    [Theory]
-    [InlineData("*")]
-    [InlineData("$(_Star)")]
-    [InlineData("Util?")]
+    [TestMethod]
+    [DataRow("*")]
+    [DataRow("$(_Star)")]
+    [DataRow("Util?")]
     public void IncludeDirective_UpToDate_Glob(string glob)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1288,7 +1303,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Combination of <see cref="UpToDate"/> optimization and <c>#:include</c> directive.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_UpToDate_NoGlob()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1345,7 +1360,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Combination of <see cref="UpToDate_ProjectReferences"/> test and <c>#:include</c> directive.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_UpToDate_ProjectReference()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1409,7 +1424,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
         Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, workDir: appDir);
     }
 
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_CustomMapping()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1463,7 +1478,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut("Hello, String from Util");
     }
 
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_CustomMapping_ParseErrors()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1544,7 +1559,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Demonstrates that consumers (e.g., IDE) can use the API to create an approximate virtual project without needing to know the full mapping.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_CustomMapping_Api()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1586,7 +1601,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         var evaluatedDirectives = evaluatedBuilder.DrainToImmutable();
 
-        var projectWriter = new System.IO.StringWriter();
+        using var projectWriter = new StringWriter();
         VirtualProjectBuilder.WriteProjectFile(
             projectWriter,
             evaluatedDirectives,
@@ -1604,7 +1619,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
         actualProject.Should().NotContain(".proto");
     }
 
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_DefaultMapping_InSync()
     {
         var parsed = CSharpDirective.IncludeOrExclude.ParseMapping(CSharpDirective.IncludeOrExclude.DefaultMappingString,
@@ -1613,11 +1628,11 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
         parsed.Should().BeEquivalentTo(CSharpDirective.IncludeOrExclude.DefaultMapping);
     }
 
-    [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
-    [InlineData(true, null)]
-    [InlineData(false, null)]
-    [InlineData(true, "test-id")]
-    [InlineData(false, "test-id")]
+    [TestMethod] // https://github.com/dotnet/aspnetcore/issues/63440
+    [DataRow(true, null)]
+    [DataRow(false, null)]
+    [DataRow(true, "test-id")]
+    [DataRow(false, "test-id")]
     public void UserSecrets(bool useIdArg, string? userSecretsId)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1684,11 +1699,11 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// <summary>
     /// Identical duplicate directives across <c>#:include</c>'d files should be allowed.
     /// </summary>
-    [Theory]
-    [InlineData("package")]
-    [InlineData("property")]
-    [InlineData("sdk")]
-    [InlineData("exclude")]
+    [TestMethod]
+    [DataRow("package")]
+    [DataRow("property")]
+    [DataRow("sdk")]
+    [DataRow("exclude")]
     public void IncludeDirective_IdenticalDuplicateDirectives(string directiveKind)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1740,7 +1755,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOut("Hello");
     }
 
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_IdenticalDuplicateIncludeDirectivesAreAllowed()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1779,10 +1794,10 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     /// Conflicting duplicate directives across <c>#:include</c>'d files should be reported as errors.
     /// Note: <c>#:project</c>, <c>#:ref</c>, <c>#:include</c>, and <c>#:exclude</c> duplicates are allowed.
     /// </summary>
-    [Theory]
-    [InlineData("package")]
-    [InlineData("property")]
-    [InlineData("sdk")]
+    [TestMethod]
+    [DataRow("package")]
+    [DataRow("property")]
+    [DataRow("sdk")]
     public void IncludeDirective_ConflictingDuplicateDirectives(string directiveKind)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1834,7 +1849,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdErrContaining(DirectiveError(utilPath, 1, FileBasedProgramsResources.DuplicateDirective, duplicateTypeAndName));
     }
 
-    [Fact]
+    [TestMethod]
     public void IncludeDirective_IncludeAndExcludeSamePathAreAllowed()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

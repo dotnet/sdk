@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -8,9 +8,10 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public class DotnetNewTestTemplatesTests : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
 
         private static readonly ImmutableArray<string> SupportedTargetFrameworks =
         [
@@ -32,9 +33,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private static readonly string PackagesJsonPath = Path.Combine(SdkTestContext.Current.TestPackages, "cgmanifest.json");
 
-        public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
+        public DotnetNewTestTemplatesTests()
         {
-            _log = log;
         }
 
         public static class Languages
@@ -84,8 +84,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Pass();
         }
 
-        [Theory]
-        [MemberData(nameof(GetTemplateItemsToTest))]
+        [TestMethod]
+        [DynamicData(nameof(GetTemplateItemsToTest))]
         public void ItemTemplate_CanBeInstalledAndTestArePassing(string targetFramework, string projectTemplate, string itemTemplate, string language)
         {
             string testProjectName = GenerateTestProjectName();
@@ -138,8 +138,55 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         }
 
-        [Theory]
-        [MemberData(nameof(GetTemplateProjectsToTest))]
+        [TestMethod]
+        [DynamicData(nameof(GetTemplateItemsToTest))]
+        public void ItemTemplate_WithNameAndNoOutput_DoesNotCreateUnwantedFolder(string targetFramework, string projectTemplate, string itemTemplate, string language)
+        {
+            // Regression test for https://github.com/dotnet/sdk/issues/49760:
+            // `dotnet new <item-template> -n <name>` from within a project directory
+            // must create `<name>.<ext>` in that directory, not `<name>/<name>.<ext>`.
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+
+            // Create a test project so the item template's project-capability constraints are satisfied.
+            string projectArgs = $"{projectTemplate} -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory}";
+            new DotnetNewCommand(_log, projectArgs)
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            const string itemName = "MyItem";
+
+            // Run the item template with `-n` but *without* `-o`, with the working directory set to the project directory.
+            // This is the exact scenario described in the linked issue.
+            new DotnetNewCommand(_log, $"{itemTemplate} -n {itemName} -lang {language}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(outputDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string extension = language switch
+            {
+                Languages.FSharp => "fs",
+                Languages.VisualBasic => "vb",
+                _ => "cs",
+            };
+
+            File.Exists(Path.Combine(outputDirectory, $"{itemName}.{extension}")).Should().BeTrue(
+                $"item template '{itemTemplate}' should create '{itemName}.{extension}' in the working directory");
+            Directory.Exists(Path.Combine(outputDirectory, itemName)).Should().BeFalse(
+                $"item template '{itemTemplate}' should not create an unwanted '{itemName}' folder");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(GetTemplateProjectsToTest))]
         public void ProjectTemplate_CanBeInstalledAndTestsArePassing(string targetFramework, string projectTemplate, string language, bool runDotnetTest)
         {
             string testProjectName = GenerateTestProjectName();
@@ -174,8 +221,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
-        [Theory]
-        [MemberData(nameof(GetMSTestAndPlaywrightCoverageAndRunnerCombinations))]
+        [TestMethod]
+        [DynamicData(nameof(GetMSTestAndPlaywrightCoverageAndRunnerCombinations))]
         public void MSTestAndPlaywrightProjectTemplate_WithCoverageToolAndTestRunner_CanBeInstalledAndTestsArePassing(
             string projectTemplate,
             string targetFramework,
@@ -220,6 +267,113 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(isMTP ? "succeeded: 1" : @"Passed:\s*1");
             }
+
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(GetXUnitV3TestRunnerCombinations))]
+        public void XUnitV3ProjectTemplate_WithTestRunner_CanBeInstalledAndTestsArePassing(
+            string targetFramework,
+            string language,
+            string testRunner)
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents up to our own solution root, which would affect other tests.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            // Create new test project: dotnet new xunit -n <testProjectName> -f <targetFramework> -lang <language> --xunit-version v3 --test-runner <testRunner>
+            string args = $"xunit -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory} --xunit-version v3 --test-runner {testRunner}";
+            new DotnetNewCommand(_log, args)
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var isMTP = testRunner == "Microsoft.Testing.Platform";
+            if (isMTP)
+            {
+                File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeTrue();
+            }
+            else
+            {
+                File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeFalse();
+            }
+
+            var result = new DotnetTestCommand(_log, false)
+                .WithWorkingDirectory(outputDirectory)
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
+                .Execute(isMTP ? ["--project", outputDirectory] : [outputDirectory]);
+#pragma warning restore SA1010 // Opening square brackets should be spaced correctly
+
+            result.Should().Pass();
+
+            if (isMTP)
+            {
+                result.StdOut.Should().MatchRegex("succeeded: 1");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("Passed!");
+                result.StdOut.Should().MatchRegex(@"Passed:\s*1");
+            }
+
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(GetNUnitTestRunnerCombinations))]
+        public void NUnitProjectTemplate_WithTestRunner_CanBeInstalledAndTestsArePassing(
+            string targetFramework,
+            string language,
+            string testRunner)
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents up to our own solution root, which would affect other tests.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            // Create new test project: dotnet new nunit -n <testProjectName> -f <targetFramework> -lang <language> --test-runner <testRunner>
+            string args = $"nunit -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory} --test-runner {testRunner}";
+            new DotnetNewCommand(_log, args)
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var isMTP = testRunner == "Microsoft.Testing.Platform";
+            if (isMTP)
+            {
+                File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeTrue();
+            }
+
+            var result = new DotnetTestCommand(_log, false)
+                .WithWorkingDirectory(outputDirectory)
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
+                .Execute(isMTP ? ["--project", outputDirectory] : [outputDirectory]);
+#pragma warning restore SA1010 // Opening square brackets should be spaced correctly
+
+            result.Should().Pass();
+
+            result.StdOut.Should().Contain("Passed!");
+            result.StdOut.Should().MatchRegex(isMTP ? "succeeded: 1" : @"Passed:\s*1");
 
             // After executing dotnet new and before cleaning up
             RecordPackages(outputDirectory);
@@ -475,6 +629,36 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     foreach (var testRunner in testRunners)
                     {
                         yield return new object[] { "mstest-playwright", targetFramework, Languages.CSharp, coverageTool, testRunner, false };
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> GetXUnitV3TestRunnerCombinations()
+        {
+            var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
+            foreach (var targetFramework in SupportedTargetFrameworks)
+            {
+                foreach (var language in Languages.All)
+                {
+                    foreach (var testRunner in testRunners)
+                    {
+                        yield return new object[] { targetFramework, language, testRunner };
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> GetNUnitTestRunnerCombinations()
+        {
+            var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
+            foreach (var targetFramework in SupportedTargetFrameworks)
+            {
+                foreach (var language in Languages.All)
+                {
+                    foreach (var testRunner in testRunners)
+                    {
+                        yield return new object[] { targetFramework, language, testRunner };
                     }
                 }
             }

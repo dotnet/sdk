@@ -3,7 +3,6 @@
 
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -13,6 +12,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  process path walk-up, and hostfxr discovery.
 ///  Path construction uses Path.Combine for cross-platform compatibility.
 /// </summary>
+[TestClass]
 public class DotnetRootResolverTests
 {
     // Helper to build platform-appropriate paths for test inputs/outputs.
@@ -23,7 +23,7 @@ public class DotnetRootResolverTests
         return segments.Length == 0 ? root : Path.Combine(root, Path.Combine(segments));
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_WithDotnetRootEnvVar_ReturnsThatPath()
     {
         string dotnetDir = BuildPath(true, "dotnet");
@@ -38,10 +38,10 @@ public class DotnetRootResolverTests
             fileExists: _ => false,
             baseDirectory: fallback);
 
-        Assert.Equal(dotnetDir, result);
+        Assert.AreEqual(dotnetDir, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_WithArchSpecificEnvVar_OnWindows_ReturnsThatPath()
     {
         string dotnetX64 = BuildPath(true, "dotnet-x64");
@@ -56,10 +56,10 @@ public class DotnetRootResolverTests
             fileExists: _ => false,
             baseDirectory: fallback);
 
-        Assert.Equal(dotnetX64, result);
+        Assert.AreEqual(dotnetX64, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_ArchSpecificEnvVar_IgnoredOnNonWindows()
     {
         string baseDir = BuildPath(false, "usr", "lib", "dotnet") + Path.DirectorySeparatorChar;
@@ -76,10 +76,10 @@ public class DotnetRootResolverTests
             baseDirectory: baseDir);
 
         // On non-Windows, arch-specific env vars are ignored; falls to baseDirectory parent
-        Assert.Equal(expected, result);
+        Assert.AreEqual(expected, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_WithDotnetRootNotExisting_SkipsIt()
     {
         string nonexistent = BuildPath(true, "nonexistent");
@@ -96,10 +96,10 @@ public class DotnetRootResolverTests
             baseDirectory: baseDir);
 
         // Non-existent DOTNET_ROOT is skipped; falls to baseDirectory parent
-        Assert.Equal(expected, result);
+        Assert.AreEqual(expected, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_WalksUpFromProcessPath()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -116,10 +116,10 @@ public class DotnetRootResolverTests
             fileExists: path => path == dotnetExe,
             baseDirectory: fallback);
 
-        Assert.Equal(dotnetRoot, result);
+        Assert.AreEqual(dotnetRoot, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_NoDotnetAncestor_FallsBackToBaseDirectory()
     {
         string processPath = BuildPath(true, "app", "bin", "myapp.exe");
@@ -136,10 +136,10 @@ public class DotnetRootResolverTests
             baseDirectory: baseDir);
 
         // Last resort: parent of baseDirectory
-        Assert.Equal(expected, result);
+        Assert.AreEqual(expected, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_WithValidFxrDir_ReturnsPath()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -155,10 +155,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { fxrVersion },
             fileExists: path => path == expectedPath);
 
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_PicksHighestVersion()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -176,10 +176,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { v800, v901, v900 },
             fileExists: _ => true);
 
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_SkipsPrereleaseDirectories()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -198,10 +198,10 @@ public class DotnetRootResolverTests
             fileExists: _ => true);
 
         // Should pick 9.0.0 since the preview dir is skipped
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_MissingFxrDirectory_ReturnsEmpty()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -214,10 +214,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => Array.Empty<string>(),
             fileExists: _ => false);
 
-        Assert.Equal(string.Empty, result);
+        Assert.AreEqual(string.Empty, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_FxrDirExistsButNoHostfxrFile_ReturnsEmpty()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -232,10 +232,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { fxrVersion },
             fileExists: _ => false);
 
-        Assert.Equal(string.Empty, result);
+        Assert.AreEqual(string.Empty, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_OnMacOS_LooksForDylib()
     {
         string dotnetRoot = Path.Combine("/", "usr", "local", "share", "dotnet");
@@ -251,10 +251,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { fxrVersion },
             fileExists: path => path == expectedPath);
 
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_OnLinux_LooksForSo()
     {
         string dotnetRoot = Path.Combine("/", "usr", "share", "dotnet");
@@ -270,6 +270,6 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { fxrVersion },
             fileExists: path => path == expectedPath);
 
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 }

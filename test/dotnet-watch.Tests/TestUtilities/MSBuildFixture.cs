@@ -2,27 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
-
-[assembly: AssemblyFixture(typeof(Microsoft.DotNet.Watch.UnitTests.MSBuildFixture))]
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
-/// Assembly fixture that registers MSBuild and sets up assembly resolution for dotnet-watch tests.
-/// A fixture is preferred over a [ModuleInitializer] because it doesn't get invoked for test discovery.
+/// Registers MSBuild and sets up assembly resolution for dotnet-watch tests when MSTest/MTP loads the test module.
 /// </summary>
-public class MSBuildFixture
+public static class MSBuildFixture
 {
-    public MSBuildFixture()
+    [ModuleInitializer]
+    public static void Initialize()
     {
         // Ensure that we load the msbuild binaries from redist deployment. Otherwise, msbuild might use target files
         // that do not match the implementations of the core tasks.
 
         // If this throws make sure the test assembly, or any of its dependencies copied to this project's output directory,
-        // does not have any public type that has a dependency on msbuild.
-        // xUnit loads all public types and any reference to msbuild assembly will trigger its load.
+        // does not load MSBuild assemblies before MSBuildLocator.RegisterMSBuildPath is called by this module initializer.
 
         var toolset = SdkTestContext.Current.ToolsetUnderTest;
         var sdkDir = toolset.SdkFolderUnderTest;

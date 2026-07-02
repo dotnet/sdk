@@ -1,23 +1,21 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
+using VerifyMSTest;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 {
-    public class VerificationEngineTests
+    [TestClass]
+    [UsesVerify]
+    public partial class VerificationEngineTests
     {
-        private readonly ILogger _log;
+        private ILogger Log => new TestContextLogger(TestContext);
 
-        public VerificationEngineTests(ITestOutputHelper log)
-        {
-            _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task VerificationEngineFullDevLoop()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -34,8 +32,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                 UniqueFor = UniqueForOption.OsPlatform | UniqueForOption.OsPlatform,
             };
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            Func<Task> executeTask = () => engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            Func<Task> executeTask = () => engine.Execute(options, TestContext.CancellationToken);
             await executeTask
                 .Should()
                 .ThrowAsync<TemplateVerificationException>()
@@ -83,7 +81,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                 UniqueFor = UniqueForOption.OsPlatform | UniqueForOption.OsPlatform,
             };
 
-            Func<Task> executeTask2 = () => engine.Execute(options2);
+            Func<Task> executeTask2 = () => engine.Execute(options2, TestContext.CancellationToken);
             await executeTask2
                 .Should()
                 .NotThrowAsync();
@@ -93,7 +91,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             Directory.Delete(snapshotsDir, true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VerificationEngineCustomVerifier()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -136,8 +134,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                         }
                     });
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            Func<Task> executeTask = () => engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            Func<Task> executeTask = () => engine.Execute(options, TestContext.CancellationToken);
             await executeTask
                 .Should()
                 .NotThrowAsync();
@@ -145,7 +143,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             Directory.Delete(workingDir, true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VerificationEngine_DotFile_EditorConfigTests()
         {
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
@@ -155,12 +153,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                 VerifyCommandOutput = true,
             };
 
-            VerificationEngine engine = new VerificationEngine(_log);
+            VerificationEngine engine = new VerificationEngine(Log);
             // Demonstrate well handling of dot files - workarounding Verify bug https://github.com/VerifyTests/Verify/issues/699
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            await engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VerificationEngine_InstallsToCustomLocation_WithSettingsDirectorySpecified()
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
@@ -172,13 +170,13 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                 SettingsDirectory = settingsPath
             };
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            Func<Task> executeTask = () => engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            Func<Task> executeTask = () => engine.Execute(options, TestContext.CancellationToken);
             await executeTask
                 .Should()
                 .NotThrowAsync();
 
-            Assert.True(Directory.GetFileSystemEntries(settingsPath).Length != 0);
+            Assert.IsNotEmpty(Directory.GetFileSystemEntries(settingsPath));
         }
     }
 }

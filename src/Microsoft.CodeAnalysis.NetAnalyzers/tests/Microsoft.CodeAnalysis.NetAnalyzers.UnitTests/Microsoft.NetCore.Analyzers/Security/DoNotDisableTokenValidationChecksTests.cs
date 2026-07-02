@@ -4,16 +4,16 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableTokenValidationChecks,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotDisableTokenValidationChecksTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -38,7 +38,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RegressionTestForPreventingNullRefDuringParsing()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -56,7 +56,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstantDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -82,7 +82,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPropertyInitializerDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -110,7 +110,7 @@ class TestClass
         }
 
         //Ideally, we would generate a diagnostic in this case.
-        [Fact]
+        [TestMethod]
         public async Task TestVariableNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -136,7 +136,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -161,7 +161,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstantNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -187,7 +187,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPropertyInitializerNoDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -227,7 +227,7 @@ class TestClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
     }
 }

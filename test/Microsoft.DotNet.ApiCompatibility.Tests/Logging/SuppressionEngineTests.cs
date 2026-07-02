@@ -7,9 +7,10 @@ using System.Xml.Serialization;
 
 namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
 {
+    [TestClass]
     public class SuppressionEngineTests
     {
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_AddSuppression_AddingTwiceDoesntThrow()
         {
             SuppressionEngine suppressionEngine = new();
@@ -18,38 +19,38 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             suppressionEngine.AddSuppression(suppression);
             suppressionEngine.AddSuppression(suppression);
 
-            Assert.Single(suppressionEngine.Suppressions);
+            Assert.ContainsSingle(suppressionEngine.Suppressions);
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_IsErrorSuppressed_CanParseInputSuppressionFile()
         {
             TestSuppressionEngine suppressionEngine = new();
             suppressionEngine.LoadSuppressions("NonExistentFile.xml");
 
             // Parsed the right amount of suppressions
-            Assert.Equal(9, suppressionEngine.BaselineSuppressions.Count);
+            Assert.HasCount(9, suppressionEngine.BaselineSuppressions);
 
-            Assert.True(suppressionEngine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/netstandard2.0/tempValidation.dll", "lib/net6.0/tempValidation.dll")));
-            Assert.False(suppressionEngine.IsErrorSuppressed(new Suppression("CP0001", "T:A.C", "ref/netstandard2.0/tempValidation.dll", "lib/net6.0/tempValidation.dll")));
-            Assert.False(suppressionEngine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "lib/netstandard2.0/tempValidation.dll", "lib/net6.0/tempValidation.dll")));
-            Assert.True(suppressionEngine.IsErrorSuppressed(new Suppression("PKV004", ".netframework,Version=v4.8")));
-            Assert.False(suppressionEngine.IsErrorSuppressed(new Suppression(string.Empty, string.Empty)));
-            Assert.False(suppressionEngine.IsErrorSuppressed(new Suppression("PKV004", ".netframework,Version=v4.8", "lib/net6.0/mylib.dll")));
-            Assert.False(suppressionEngine.IsErrorSuppressed(new Suppression("PKV004", ".NETStandard,Version=v2.0")));
-            Assert.True(suppressionEngine.IsErrorSuppressed(new Suppression("CP123", "T:myValidation.Class1", isBaselineSuppression: true)));
-            Assert.False(suppressionEngine.IsErrorSuppressed(new Suppression("CP123", "T:myValidation.Class1", isBaselineSuppression: false)));
-            Assert.True(suppressionEngine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/netstandard2.0/tempValidation.dll", "lib/net6.0/tempValidation.dll")));
+            Assert.IsTrue(suppressionEngine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/netstandard2.0/tempValidation.dll", "lib/net6.0/tempValidation.dll")));
+            Assert.IsFalse(suppressionEngine.IsErrorSuppressed(new Suppression("CP0001", "T:A.C", "ref/netstandard2.0/tempValidation.dll", "lib/net6.0/tempValidation.dll")));
+            Assert.IsFalse(suppressionEngine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "lib/netstandard2.0/tempValidation.dll", "lib/net6.0/tempValidation.dll")));
+            Assert.IsTrue(suppressionEngine.IsErrorSuppressed(new Suppression("PKV004", ".netframework,Version=v4.8")));
+            Assert.IsFalse(suppressionEngine.IsErrorSuppressed(new Suppression(string.Empty, string.Empty)));
+            Assert.IsFalse(suppressionEngine.IsErrorSuppressed(new Suppression("PKV004", ".netframework,Version=v4.8", "lib/net6.0/mylib.dll")));
+            Assert.IsFalse(suppressionEngine.IsErrorSuppressed(new Suppression("PKV004", ".NETStandard,Version=v2.0")));
+            Assert.IsTrue(suppressionEngine.IsErrorSuppressed(new Suppression("CP123", "T:myValidation.Class1", isBaselineSuppression: true)));
+            Assert.IsFalse(suppressionEngine.IsErrorSuppressed(new Suppression("CP123", "T:myValidation.Class1", isBaselineSuppression: false)));
+            Assert.IsTrue(suppressionEngine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/netstandard2.0/tempValidation.dll", "lib/net6.0/tempValidation.dll")));
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_LoadFiles_ThrowsIfFileDoesNotExist()
         {
             SuppressionEngine suppressionEngine = new();
-            Assert.Throws<FileNotFoundException>(() => suppressionEngine.LoadSuppressions("AFileThatDoesNotExist.xml"));
+            Assert.ThrowsExactly<FileNotFoundException>(() => suppressionEngine.LoadSuppressions("AFileThatDoesNotExist.xml"));
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_WriteSuppressionsToFile_SuppressionsRoundTrip()
         {
             string output = string.Empty;
@@ -64,15 +65,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
             var (suppressionFileUpdated, writtenSuppressions) = suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true);
 
-            Assert.True(suppressionFileUpdated);
-            Assert.NotEmpty(writtenSuppressions);
+            Assert.IsTrue(suppressionFileUpdated);
+            Assert.IsNotEmpty(writtenSuppressions);
 
             // Trimming away the comment as the serializer doesn't preserve them.
             string expectedSuppressionFile = TestSuppressionEngine.DefaultSuppressionFile.Replace(TestSuppressionEngine.SuppressionFileComment, string.Empty);
-            Assert.Equal(expectedSuppressionFile.Trim(), output.Trim(), ignoreCase: true);
+            Assert.AreEqual(expectedSuppressionFile.Trim(), output.Trim(), ignoreCase: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_GetUnnecessarySuppressions_NotEmptyWithUnnecessarySuppressions()
         {
             TestSuppressionEngine suppressionEngine = new();
@@ -80,20 +81,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
 
             IReadOnlyCollection<Suppression> unnecessarySuppressions = suppressionEngine.GetUnnecessarySuppressions();
 
-            Assert.NotEmpty(unnecessarySuppressions);
+            Assert.IsNotEmpty(unnecessarySuppressions);
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_BaselineSuppressions_NotEmptyWithUnnecessarySuppressions()
         {
             TestSuppressionEngine suppressionEngine = new();
             suppressionEngine.LoadSuppressions("NonExistentFile.xml");
 
-            Assert.Empty(suppressionEngine.Suppressions);
-            Assert.NotEmpty(suppressionEngine.BaselineSuppressions);
+            Assert.IsEmpty(suppressionEngine.Suppressions);
+            Assert.IsNotEmpty(suppressionEngine.BaselineSuppressions);
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_WriteSuppressionsToFile_ReturnsEmptyWithAllUnnecessarySuppressions()
         {
             TestSuppressionEngine suppressionEngine = new();
@@ -103,11 +104,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
 
             var (suppressionFileUpdated, updatedSuppressions) = suppressionEngine.WriteSuppressionsToFile(filePath);
 
-            Assert.True(suppressionFileUpdated);
-            Assert.Empty(updatedSuppressions);
+            Assert.IsTrue(suppressionFileUpdated);
+            Assert.IsEmpty(updatedSuppressions);
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_WriteSuppressionsToFile_UnnecessarySuppressionsOmitted()
         {
             Suppression usedSuppression = new("CP0001", "T:A", "lib/netstandard1.3/tempValidation.dll", "lib/netstandard1.3/tempValidation.dll");
@@ -135,22 +136,22 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName(), "DummyFile.xml");
             var (suppressionFileUpdated, updatedSuppressions) = suppressionEngine.WriteSuppressionsToFile(filePath);
 
-            Assert.True(suppressionFileUpdated);
-            Assert.Equal([usedSuppression], updatedSuppressions);
+            Assert.IsTrue(suppressionFileUpdated);
+            Assert.AreSequenceEqual([usedSuppression], updatedSuppressions);
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_WriteSuppressionsToFile_ReturnsEmptyWithEmptyFilePath()
         {
             EmptyTestSuppressionEngine suppressionEngine = new();
-            Assert.Empty(suppressionEngine.Suppressions);
+            Assert.IsEmpty(suppressionEngine.Suppressions);
 
             var (suppressionFileUpdated, updatedSuppressions) = suppressionEngine.WriteSuppressionsToFile(string.Empty, preserveUnnecessarySuppressions: true);
-            Assert.False(suppressionFileUpdated);
-            Assert.Empty(updatedSuppressions);
+            Assert.IsFalse(suppressionFileUpdated);
+            Assert.IsEmpty(updatedSuppressions);
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_IsErrorSuppressed_SupportsGlobalSuppressions()
         {
             SuppressionEngine engine = new();
@@ -159,29 +160,29 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             engine.AddSuppression(new Suppression("CP0001", "T:A.B", isBaselineSuppression: true));
             engine.AddSuppression(new Suppression("CP0001", "T:A.C"));
 
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true)));
-            Assert.False(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false)));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true)));
+            Assert.IsFalse(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false)));
 
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false)));
-            Assert.False(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true)));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false)));
+            Assert.IsFalse(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true)));
 
             // Engine has a suppression with no target. Should be treated globally for any target with that left and right.
             engine.AddSuppression(new Suppression("CP0003", null, "ref/net6.0/myleft.dll", "lib/net6.0/myright.dll", isBaselineSuppression: false));
 
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.B", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.C", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
-            Assert.False(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll", isBaselineSuppression: true)));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.B", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.C", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
+            Assert.IsFalse(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll", isBaselineSuppression: true)));
 
             // Engine has a suppression with no diagnostic id and target. Should be treated globally for any diagnostic id and target with that left and right.
             engine.AddSuppression(new Suppression(string.Empty, null, "ref/net8.0/left.dll", "lib/net8.0/left.dll", isBaselineSuppression: false));
             engine.AddSuppression(new Suppression(string.Empty, null, "ref/net8.0/left.dll", "lib/net8.0/left.dll", isBaselineSuppression: true));
 
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0009", "T:A.B.C.D.E", "ref/net8.0/left.dll", "lib/net8.0/left.dll", isBaselineSuppression: false)));
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0009", "T:A.B.C.D.E", "ref/net8.0/left.dll", "lib/net8.0/left.dll", isBaselineSuppression: true)));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0009", "T:A.B.C.D.E", "ref/net8.0/left.dll", "lib/net8.0/left.dll", isBaselineSuppression: false)));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0009", "T:A.B.C.D.E", "ref/net8.0/left.dll", "lib/net8.0/left.dll", isBaselineSuppression: true)));
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_BaseliningNewErrorsDoesNotOverrideSuppressions()
         {
             using Stream stream = new MemoryStream();
@@ -193,7 +194,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             });
             suppressionEngine.LoadSuppressions("NonExistentFile.xml");
 
-            Assert.Equal(9, suppressionEngine.BaselineSuppressions.Count);
+            Assert.HasCount(9, suppressionEngine.BaselineSuppressions);
 
             Suppression newSuppression = new("CP0002", "F:MyNs.Class1.Field");
             suppressionEngine.AddSuppression(newSuppression);
@@ -202,38 +203,38 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
 
             var (suppressionFileUpdated, updatedSuppressions) = suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true);
 
-            Assert.True(suppressionFileUpdated);
-            Assert.NotEmpty(updatedSuppressions);
+            Assert.IsTrue(suppressionFileUpdated);
+            Assert.IsNotEmpty(updatedSuppressions);
 
             XmlSerializer xmlSerializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
             Suppression[] deserializedSuppressions = xmlSerializer.Deserialize(stream) as Suppression[];
-            Assert.Equal(10, deserializedSuppressions.Length);
+            Assert.HasCount(10, deserializedSuppressions);
 
-            Assert.Equal(new Suppression("CP0001")
+            Assert.AreEqual(new Suppression("CP0001")
             {
                 Target = "T:A",
                 Left = "lib/netstandard1.3/tempValidation.dll",
                 Right = "lib/netstandard1.3/tempValidation.dll"
             }, deserializedSuppressions[0]);
 
-            Assert.Equal(newSuppression, deserializedSuppressions[4]);
+            Assert.AreEqual(newSuppression, deserializedSuppressions[4]);
         }
 
-        [Fact]
+        [TestMethod]
         public void SuppressionEngine_IsErrorSuppressed_NoWarnIsHonored()
         {
             SuppressionEngine engine = new(noWarn: "CP0001;CP0003;CP1111");
 
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true)));
-            Assert.False(engine.IsErrorSuppressed(new Suppression("CP1110", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false)));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true)));
+            Assert.IsFalse(engine.IsErrorSuppressed(new Suppression("CP1110", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false)));
 
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false)));
-            Assert.False(engine.IsErrorSuppressed(new Suppression("CP1000", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true)));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0001", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false)));
+            Assert.IsFalse(engine.IsErrorSuppressed(new Suppression("CP1000", "T:A.C", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true)));
 
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.B", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.C", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
-            Assert.True(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
-            Assert.False(engine.IsErrorSuppressed(new Suppression("CP1232", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll", isBaselineSuppression: true)));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.B", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.C", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
+            Assert.IsTrue(engine.IsErrorSuppressed(new Suppression("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll")));
+            Assert.IsFalse(engine.IsErrorSuppressed(new Suppression("CP1232", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll", isBaselineSuppression: true)));
         }
     }
 }
