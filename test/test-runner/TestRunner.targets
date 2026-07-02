@@ -22,7 +22,7 @@
     <SDKHelixCustomSdkTaskDll>$(ArtifactsBinDir)HelixTasks\$(Configuration)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
   </PropertyGroup>
 
-  <UsingTask TaskName="SDKCustomCreateTestWorkItemsWithTestExclusion" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="CreateHelixTestWorkItems" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="CreateLocalHelixTestLayout" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
 
@@ -108,7 +108,7 @@
           Condition="'@(SDKCustomTestProject)' != ''"
           BeforeTargets="CoreTest">
 
-    <SDKCustomCreateTestWorkItemsWithTestExclusion
+    <CreateHelixTestWorkItems
         TestProjects="@(SDKCustomTestProject)"
         IsPosixShell="$(IsPosixShell)"
         TargetRid="$(TargetRid)"
@@ -116,7 +116,7 @@
         TestArguments="$(SDKCustomTestArgument)"
         TestWorkItemTimeout="$(TestWorkItemTimeout)">
       <Output TaskParameter="TestWorkItems" ItemName="HelixWorkItem"/>
-    </SDKCustomCreateTestWorkItemsWithTestExclusion>
+    </CreateHelixTestWorkItems>
   </Target>
 
 </Project>

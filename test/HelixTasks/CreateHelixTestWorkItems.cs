@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     /// <summary>
     /// MSBuild custom task to create HelixWorkItems given test project publish information
     /// </summary>
-    public class SDKCustomCreateTestWorkItemsWithTestExclusion : Build.Utilities.Task
+    public class CreateHelixTestWorkItems : Build.Utilities.Task
     {
         /// <summary>
         /// An array of test project workitems containing the following metadata:
