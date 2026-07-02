@@ -351,6 +351,7 @@ internal sealed class CompilationHandler : IDisposable
     public async ValueTask GetManagedCodeUpdatesAsync(
         HotReloadProjectUpdatesBuilder builder,
         IReadOnlyList<ChangedFile> changedFiles,
+        LoadedProjectGraph projectGraph,
         Func<IEnumerable<string>, CancellationToken, Task<bool>> restartPrompt,
         bool autoRestart,
         CancellationToken cancellationToken)
@@ -452,14 +453,23 @@ internal sealed class CompilationHandler : IDisposable
         if (fsharpResult.Status == FSharpManagedUpdateStatus.RestartRequired && fsharpResult.ProjectPath != null)
         {
             // F# rude edits (changes the compiler service can't apply as a delta) fall back to rebuild + restart.
+            var fsharpRestartProjectPaths = GetFSharpRestartProjectPaths(fsharpResult.ProjectPath, projectGraph);
+            Logger.LogTrace(
+                "F# restart-required project '{ProjectPath}' maps to restart project path(s): {RestartProjectPaths}",
+                fsharpResult.ProjectPath,
+                string.Join(", ", fsharpRestartProjectPaths));
+
             if (!projectsToRebuild.Contains(fsharpResult.ProjectPath, PathUtilities.OSSpecificPathComparer))
             {
                 projectsToRebuild = projectsToRebuild.Add(fsharpResult.ProjectPath);
             }
 
-            if (!restartProjectPaths.Contains(fsharpResult.ProjectPath, PathUtilities.OSSpecificPathComparer))
+            foreach (var restartProjectPath in fsharpRestartProjectPaths)
             {
-                restartProjectPaths = restartProjectPaths.Add(fsharpResult.ProjectPath);
+                if (!restartProjectPaths.Contains(restartProjectPath, PathUtilities.OSSpecificPathComparer))
+                {
+                    restartProjectPaths = restartProjectPaths.Add(restartProjectPath);
+                }
             }
 
             if (updates.ProjectsToRestart.IsEmpty)
@@ -488,6 +498,28 @@ internal sealed class CompilationHandler : IDisposable
         {
             builder.ProjectsToRestart.AddRange(await TerminatePeripheralProcessesAsync(restartProjectPaths, cancellationToken));
         }
+    }
+
+    private static ImmutableArray<string> GetFSharpRestartProjectPaths(string projectPath, LoadedProjectGraph projectGraph)
+    {
+        var affectedProjectNodes = projectGraph.Graph.ProjectNodes
+            .Where(node =>
+                node.ProjectInstance.GetTargetFramework() != "" &&
+                PathUtilities.OSSpecificPathComparer.Equals(node.ProjectInstance.FullPath, projectPath))
+            .ToImmutableArray();
+
+        if (affectedProjectNodes.IsEmpty)
+        {
+            return [projectPath];
+        }
+
+        return
+        [
+            .. affectedProjectNodes
+                .SelectMany(static node => node.GetAncestorsAndSelf())
+                .Select(static node => node.ProjectInstance.FullPath)
+                .Distinct(PathUtilities.OSSpecificPathComparer)
+        ];
     }
 
     public async ValueTask ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(

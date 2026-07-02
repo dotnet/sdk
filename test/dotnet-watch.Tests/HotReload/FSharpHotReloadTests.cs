@@ -410,6 +410,33 @@ public class FSharpHotReloadTests : DotNetWatchTestBase
     }
 
     [TestMethod]
+    public async Task ChangeFileInReferencedFSharpProject_WebAppRudeEditRestartsRoot()
+    {
+        var testAsset = TestAssets.CopyTestAsset("FSharpWebAppWithLib")
+            .WithSource();
+
+        var libPath = Path.Combine(testAsset.Path, "Lib", "Lib.fs");
+        var projectDisplay = $"App ({ToolsetInfo.CurrentTargetFramework})";
+        var url = $"http://localhost:{TestOptions.GetTestPort()}";
+
+        App.Start(testAsset, ["--non-interactive", "--urls", url], "App");
+
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        App.Process.ClearOutput();
+
+        // Rude edit in a referenced F# project: the running project is the Web SDK root app,
+        // not the changed library path returned by the F# compiler-service result.
+        UpdateSourceFile(libPath, content => content
+            .Replace("let core () = \"LibWaiting\"", "let coreRenamed () = \"LibAfterRestart\"")
+            .Replace("core ()", "coreRenamed ()"));
+
+        await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
+        await App.WaitUntilOutputContains(MessageDescriptor.Exited, projectDisplay);
+        await App.WaitUntilOutputContains(MessageDescriptor.LaunchedProcess, projectDisplay);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+    }
+
+    [TestMethod]
     public async Task ChangeFileInFSharpProject_RudeEditTriggersRestart()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")

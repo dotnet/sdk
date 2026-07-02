@@ -256,6 +256,7 @@ internal sealed class HotReloadDotNetWatcher
                     await compilationHandler.GetManagedCodeUpdatesAsync(
                         updates,
                         changedFiles,
+                        evaluationResult.ProjectGraph,
                         restartPrompt: async (projectNames, cancellationToken) =>
                         {
                             // stop before waiting for user input:
