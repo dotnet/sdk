@@ -620,6 +620,16 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // than one type of asset we will just return all of them.
     // One exception to this is the `All` kind of assets, where we will just return the first two we find. The reason for it is
     // to avoid having to allocate a buffer to collect all the `All` assets.
+    // CONTRACT: callers must treat "more than one asset returned" as malformed input for this pipeline — a
+    // violation of the target-path uniqueness invariant (at most one asset per AssetKind slot per target
+    // path). Surface the error; do NOT silently collapse the duplicates here. The cause is upstream: either
+    // a genuine producer duplicate, or (commonly) a package fallback that was emitted even though the consumer
+    // already supplied its own asset for the same path. The durable fix removes the surplus asset at its
+    // source — make the package's fallback conditional so exactly one asset is ever produced
+    // (dotnet/aspnetcore#67375, the fix that landed for dotnet/sdk#54779). An SDK-side carry-forward that
+    // re-applies the build-time group resolution at publish (dotnet/sdk#54941) also works but compensates
+    // downstream and was superseded. Either way, do NOT soften this call. See
+    // StaticWebAssetsSdk/AGENTS.md "Triage Heuristic".
     internal static IEnumerable<StaticWebAsset> ChooseNearestAssetKind(IEnumerable<StaticWebAsset> group, string assetKind)
     {
         StaticWebAsset allKindAssetCandidate = null;

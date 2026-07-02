@@ -226,6 +226,16 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
         foreach (var group in assetsByTargetPath)
         {
+            // ChooseNearestAssetKind assumes the manifest is correct and yields more than one asset only
+            // when the input is malformed (two assets share a target path + kind slot). SingleOrDefault()
+            // therefore throws "Sequence contains more than one element" on a real upstream defect. The most
+            // common cause is a package fallback (e.g. blazor.modules.json) that was emitted even though the
+            // consumer already supplied its own asset for the same path. The durable fix removes the surplus
+            // asset at its source — make the package's fallback conditional so only one asset is produced
+            // (dotnet/aspnetcore#67375, the fix that landed for dotnet/sdk#54779). An SDK-side carry-forward
+            // that re-applies the build-time group resolution at publish (dotnet/sdk#54941) also works but
+            // compensates downstream and was superseded. Either way, do NOT soften this call. See
+            // StaticWebAssetsSdk/AGENTS.md "Triage Heuristic" and dotnet/sdk#54779.
             var asset = StaticWebAsset.ChooseNearestAssetKind(group, kind).SingleOrDefault();
 
             if (asset == null)
