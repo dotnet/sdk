@@ -3,6 +3,7 @@
 
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using FluentAssertions;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -188,7 +189,7 @@ public class ReleaseManifestFilterTests
         Assert.IsFalse(ReleaseManifest.IsCompositeArchive(fileName));
     }
 
-    // ---- FindMatchingFile would select the right file when composites are present ----
+    // ---- Archive selection prefers the regular archive when composites are present ----
 
     [TestMethod]
     public void CompositeFilter_SelectsRegularOverComposite_WhenBothShareRidAndExtension()
@@ -261,5 +262,34 @@ public class ReleaseManifestFilterTests
         {
             Assert.Contains("dotnet-runtime", f);
         }
+    }
+
+    // ---- ClassifyArchiveMiss tests (no user-installable archive) ----
+
+    [TestMethod]
+    public void ClassifyArchiveMiss_WindowsDesktopRuntimeWithOnlyExeInstallers_IsUserInstallableArtifactMiss()
+    {
+        // A specific Windows Desktop Runtime release that ships only .exe installers for the
+        // platform (no .tar.gz, no .zip). dotnetup cannot xcopy-install these, so this must be
+        // classified as a user-actionable miss, not the platform-has-no-files miss.
+        var ridFileNames = new[]
+        {
+            "windowsdesktop-runtime-3.1.32-win-x64.exe",
+            "windowsdesktop-runtime-3.1.32-win-x86.exe",
+        };
+
+        var result = ReleaseManifest.ClassifyArchiveMiss(ridFileNames);
+
+        result.Status.Should().Be(FindReleaseFileStatus.NoUserInstallableArtifact);
+    }
+
+    [TestMethod]
+    public void ClassifyArchiveMiss_NoFilesForPlatform_IsNoMatchingFile()
+    {
+        // When the release lists no files at all for the RID, the platform is genuinely
+        // unsupported — this stays the product-category NoMatchingFile miss.
+        var result = ReleaseManifest.ClassifyArchiveMiss(Array.Empty<string>());
+
+        result.Status.Should().Be(FindReleaseFileStatus.NoMatchingFile);
     }
 }
