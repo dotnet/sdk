@@ -28,8 +28,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         //  * The materialized framework asset is a current-project asset of the library, so the app (which
         //    does not enable the group) does not include it at the root.
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void Build_PackageToLibraryToApp_GroupedFrameworkAsset_IsConditionalAndMaterializedIntoLibrary(bool includeGroupedFrameworkAssets)
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("GroupedFrameworkAssetsSample", identifier: includeGroupedFrameworkAssets.ToString())
