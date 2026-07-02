@@ -15,8 +15,7 @@ namespace Microsoft.DotNet.Restore.Test
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItRestoresAppToSpecificDirectory(bool useStaticGraphEvaluation)
         {
             var rootPath = TestAssetsManager.CreateTestDirectory(identifier: useStaticGraphEvaluation.ToString()).Path;
@@ -97,8 +96,7 @@ namespace Microsoft.DotNet.Restore.Test
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItRestoresTestAppToSpecificDirectory(bool useStaticGraphEvaluation)
         {
             var rootPath = TestAssetsManager.CopyTestAsset("VSTestCore", identifier: useStaticGraphEvaluation.ToString())
@@ -123,8 +121,7 @@ namespace Microsoft.DotNet.Restore.Test
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItRestoresWithTheSpecifiedVerbosity(bool useStaticGraphEvaluation)
         {
             var rootPath = TestAssetsManager.CreateTestDirectory(identifier: useStaticGraphEvaluation.ToString()).Path;

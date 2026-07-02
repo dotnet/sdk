@@ -23,8 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ArtifactPostProcessing_SolutionProjects(bool merge)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
@@ -47,8 +46,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ArtifactPostProcessing_TestContainers(bool merge)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
@@ -76,8 +74,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ArtifactPostProcessing_VSTest_TestContainers(bool merge)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())

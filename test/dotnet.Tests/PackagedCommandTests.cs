@@ -43,8 +43,7 @@ namespace Microsoft.DotNet.Tests
 
         [TestMethod]
         [RequiresSpecificFramework("netcoreapp1.1")]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void IfPreviousVersionOfSharedFrameworkIsInstalled_ToolsTargetingItRun(bool toolPrefersCLIRuntime)
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithToolDependency", identifier: toolPrefersCLIRuntime ? "preferCLIRuntime" : "")
