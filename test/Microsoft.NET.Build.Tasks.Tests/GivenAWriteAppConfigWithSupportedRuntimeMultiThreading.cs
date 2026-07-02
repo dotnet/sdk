@@ -6,21 +6,15 @@
 using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.Build.Framework;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    [CollectionDefinition("CwdSensitive", DisableParallelization = true)]
-    public sealed class CwdSensitiveCollection
-    {
-    }
-
-    [Collection("CwdSensitive")]
+    [TestClass]
     public class GivenAWriteAppConfigWithSupportedRuntimeMultiThreading : IDisposable
     {
         private readonly List<string> _tempDirs = new();
 
-        [Fact]
+        [TestMethod]
         public void DecoyCwdPathResolutionUsesTaskEnvironment()
         {
             string realWorkDir = CreateTempDirectory();
