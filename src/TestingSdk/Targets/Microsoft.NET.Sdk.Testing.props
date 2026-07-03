@@ -1,0 +1,82 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Testing.props
+
+  PROTOTYPE — Microsoft.NET.Sdk.Testing core props.
+
+  Validates the user-supplied TestFramework/TestPlatform pair, defaults the
+  platform per-framework, and dispatches to a per-framework props file that
+  adds the appropriate PackageReference(s) and runner wiring.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!-- Default: a project using this SDK is a test application (Exe) unless explicitly a test utility library. -->
+    <IsTestUtilityProject Condition="'$(IsTestUtilityProject)' == ''">false</IsTestUtilityProject>
+
+    <!-- Normalize TestFramework for case-insensitive comparison downstream. -->
+    <_TestFramework>$(TestFramework)</_TestFramework>
+  </PropertyGroup>
+
+  <!--
+    Default TestPlatform per framework when the user did not specify one.
+    Matrix:
+      MSTest  -> MTP (also supports VSTest)
+      NUnit   -> MTP (also supports VSTest)
+      XUnit   -> MTP (also supports VSTest); always means xUnit v3 in this SDK
+      TUnit   -> MTP only
+      Expecto -> MTP (also supports VSTest via YoloDev.Expecto.TestSdk)
+  -->
+  <PropertyGroup Condition="'$(TestPlatform)' == ''">
+    <TestPlatform Condition="'$(_TestFramework)' == 'MSTest'">MicrosoftTestingPlatform</TestPlatform>
+    <TestPlatform Condition="'$(_TestFramework)' == 'NUnit'">MicrosoftTestingPlatform</TestPlatform>
+    <TestPlatform Condition="'$(_TestFramework)' == 'XUnit'">MicrosoftTestingPlatform</TestPlatform>
+    <TestPlatform Condition="'$(_TestFramework)' == 'TUnit'">MicrosoftTestingPlatform</TestPlatform>
+    <TestPlatform Condition="'$(_TestFramework)' == 'Expecto'">MicrosoftTestingPlatform</TestPlatform>
+  </PropertyGroup>
+
+  <!-- Accept 'MTP' as a short alias for 'MicrosoftTestingPlatform'. -->
+  <PropertyGroup>
+    <TestPlatform Condition="'$(TestPlatform)' == 'MTP'">MicrosoftTestingPlatform</TestPlatform>
+  </PropertyGroup>
+
+  <!--
+    Centralized default package versions. Imported BEFORE the per-framework dispatch
+    so that framework props see populated <Framework>Version properties. Users can
+    override any of these in their csproj, including with floating values like '*'.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)_DefaultPackageVersions.props" />
+
+  <!--
+    Dispatch to the per-framework props file. Each framework file is responsible for:
+      - Validating that TestPlatform is supported by that framework.
+      - Emitting the PackageReference(s) (metapackage for tests, lower-level packages for utilities).
+      - Setting framework-specific MSBuild properties (EnableMSTestRunner, UseMicrosoftTestingPlatformRunner, etc.).
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\MSTest.props"   Condition="'$(_TestFramework)' == 'MSTest'" />
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\NUnit.props"    Condition="'$(_TestFramework)' == 'NUnit'" />
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\XUnit.props"    Condition="'$(_TestFramework)' == 'XUnit'" />
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\TUnit.props"    Condition="'$(_TestFramework)' == 'TUnit'" />
+  <Import Project="$(MSBuildThisFileDirectory)Frameworks\Expecto.props"  Condition="'$(_TestFramework)' == 'Expecto'" />
+
+  <!-- Platform-level props (currently MTP only; VSTest path adds Microsoft.NET.Test.Sdk reference). -->
+  <Import Project="$(MSBuildThisFileDirectory)Platforms\MicrosoftTestingPlatform.props"
+          Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform'" />
+  <Import Project="$(MSBuildThisFileDirectory)Platforms\VSTest.props"
+          Condition="'$(TestPlatform)' == 'VSTest'" />
+
+  <!-- OutputType: test applications are executables; test utility libraries are libraries. -->
+  <PropertyGroup Condition="'$(IsTestUtilityProject)' != 'true'">
+    <OutputType Condition="'$(UseWinUI)' == 'true' or '$(UseUwpTools)' == 'true'">WinExe</OutputType>
+    <OutputType Condition="'$(OutputType)' == '' or '$(OutputType)' == 'Library'">Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Test projects rarely participate in pack; defer to NuGet's own default but make it explicit. -->
+    <IsPackable Condition="'$(IsPackable)' == ''">false</IsPackable>
+  </PropertyGroup>
+
+</Project>

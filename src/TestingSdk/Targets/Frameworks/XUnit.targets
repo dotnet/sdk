@@ -1,0 +1,7 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    No mandatory-version validation: XUnitVersion and XUnitRunnerVisualStudioVersion
+    have pinned defaults in _DefaultPackageVersions.props. Override with a fixed
+    version or '*'.
+  -->
+</Project>

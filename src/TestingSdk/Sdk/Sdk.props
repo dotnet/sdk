@@ -1,0 +1,26 @@
+<!--
+***********************************************************************************************
+Sdk.props
+
+  PROTOTYPE — Microsoft.NET.Sdk.Testing
+
+  Draft prototype for https://github.com/dotnet/sdk/issues/49294. Layout mirrors
+  Microsoft.NET.Sdk.Worker. Loaded by MSBuild when a project sets
+  Sdk="Microsoft.NET.Sdk.Testing".
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!-- Marker that downstream tooling (Arcade SDK, analyzers, etc.) can detect. -->
+    <UsingMicrosoftNETSdkTesting>true</UsingMicrosoftNETSdkTesting>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+
+  <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.Testing.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.Testing.props')" />
+
+</Project>

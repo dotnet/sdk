@@ -62,6 +62,7 @@
       "src\\WebSdk\\Publish\\Tasks\\Microsoft.NET.Sdk.Publish.Tasks.csproj",
       "src\\WebSdk\\Web\\Tasks\\Microsoft.NET.Sdk.Web.Tasks.csproj",
       "src\\WebSdk\\Worker\\Tasks\\Microsoft.NET.Sdk.Worker.Tasks.csproj",
+      "src\\TestingSdk\\Tasks\\Microsoft.NET.Sdk.Testing.Tasks.csproj",
       "template_feed\\Microsoft.DotNet.Common.ItemTemplates\\Microsoft.DotNet.Common.ItemTemplates.csproj",
       "template_feed\\Microsoft.DotNet.Common.ProjectTemplates.11.0\\Microsoft.DotNet.Common.ProjectTemplates.11.0.csproj",
       "template_feed\\Microsoft.TemplateEngine.Authoring.Templates\\Microsoft.TemplateEngine.Authoring.Templates.csproj"
