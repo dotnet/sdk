@@ -497,12 +497,6 @@ dotnet_diagnostic.SA1204.severity = none
 [artifacts/**.cs]
 dotnet_diagnostic.IDE0073.severity = none
 
-# Source brought in via NuGet contentFiles (e.g. Microsoft.Testing.Platform.Internal.DotnetTest) is
-# restored under the repo-local packages folder and compiled into the consuming assembly. We do not own
-# that source, so the file-header rule must not be enforced on it.
-[.packages/**.cs]
-dotnet_diagnostic.IDE0073.severity = none
-
 # C++ Files
 [*.{cpp,h,in}]
 curly_bracket_next_line = true
