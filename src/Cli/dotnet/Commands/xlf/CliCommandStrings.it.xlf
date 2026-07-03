@@ -3187,6 +3187,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Esegue gli unit test con l'istanza di Test Runner specificata in un progetto .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Individuazione dei test completata con codice di uscita non riuscito: {0} (vedi: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">{0} individuati in {1} assembly.</target>
@@ -3201,6 +3206,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">Framework di destinazione per cui eseguire i test. Il framework di destinazione deve essere specificato anche nel file di progetto.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Esecuzione del test completata con codice di uscita non riuscito: {0} (vedi: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
