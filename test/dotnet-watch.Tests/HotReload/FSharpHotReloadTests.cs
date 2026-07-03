@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -60,6 +62,33 @@ public class FSharpHotReloadTests : DotNetWatchTestBase
         return fsharpCompilerServicePath;
     }
 
+    /// <summary>
+    /// In-place apply needs the hot reload session API in the FSharp.Compiler.Service that
+    /// ships inside the SDK under test. Against a stock FCS the watch bridge falls back to
+    /// restart, so tests asserting in-place semantics would wait forever; skip them instead.
+    /// The probe reads metadata only, without loading the assembly.
+    /// </summary>
+    private string GetHotReloadCapableFSharpCompilerServicePath()
+    {
+        var fsharpCompilerServicePath = GetFSharpCompilerServicePath();
+
+        using var stream = File.OpenRead(fsharpCompilerServicePath);
+        using var peReader = new PEReader(stream);
+        var metadataReader = peReader.GetMetadataReader();
+
+        foreach (var handle in metadataReader.MethodDefinitions)
+        {
+            var name = metadataReader.GetMethodDefinition(handle).Name;
+            if (metadataReader.StringComparer.Equals(name, "CreateHotReloadSession"))
+            {
+                return fsharpCompilerServicePath;
+            }
+        }
+
+        Assert.Inconclusive($"FSharp.Compiler.Service at '{fsharpCompilerServicePath}' does not expose the hot reload session API; in-place apply cannot be exercised.");
+        return fsharpCompilerServicePath;
+    }
+
     [TestMethod]
     public async Task ChangeFileInFSharpProjectWithLoop_AppliesOrRestarts()
     {
@@ -111,7 +140,7 @@ public class FSharpHotReloadTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
             .WithSource();
 
-        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetFSharpCompilerServicePath();
+        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetHotReloadCapableFSharpCompilerServicePath();
         App.EnvironmentVariables["DOTNET_WATCH_FSHARP_USE_WORKSPACE_SNAPSHOTS"] = "1";
 
         var source = """
@@ -152,7 +181,7 @@ public class FSharpHotReloadTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
             .WithSource();
 
-        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetFSharpCompilerServicePath();
+        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetHotReloadCapableFSharpCompilerServicePath();
         App.EnvironmentVariables["DOTNET_WATCH_FSHARP_USE_WORKSPACE_SNAPSHOTS"] = "1";
 
         var source = """
@@ -209,7 +238,7 @@ public class FSharpHotReloadTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
             .WithSource();
 
-        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetFSharpCompilerServicePath();
+        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetHotReloadCapableFSharpCompilerServicePath();
         App.EnvironmentVariables["DOTNET_WATCH_FSHARP_USE_WORKSPACE_SNAPSHOTS"] = "1";
 
         var source = """
@@ -264,7 +293,7 @@ public class FSharpHotReloadTests : DotNetWatchTestBase
                         new XElement(ns + "Watch", new XAttribute("Include", "payload.txt"))));
             });
 
-        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetFSharpCompilerServicePath();
+        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetHotReloadCapableFSharpCompilerServicePath();
         App.EnvironmentVariables["DOTNET_WATCH_FSHARP_USE_WORKSPACE_SNAPSHOTS"] = "1";
         App.EnvironmentVariables["DOTNET_WATCH_TRACE_FSHARP_HOTRELOAD"] = "1";
 
@@ -321,7 +350,7 @@ public class FSharpHotReloadTests : DotNetWatchTestBase
                         new XElement(ns + "Watch", new XAttribute("Include", "MainPage.xaml"))));
             });
 
-        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetFSharpCompilerServicePath();
+        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetHotReloadCapableFSharpCompilerServicePath();
         App.EnvironmentVariables["DOTNET_WATCH_FSHARP_USE_WORKSPACE_SNAPSHOTS"] = "1";
 
         var source = """
@@ -370,7 +399,7 @@ public class FSharpHotReloadTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("FSharpAppWithLib")
             .WithSource();
 
-        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetFSharpCompilerServicePath();
+        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetHotReloadCapableFSharpCompilerServicePath();
         App.EnvironmentVariables["DOTNET_WATCH_FSHARP_USE_WORKSPACE_SNAPSHOTS"] = "1";
 
         var libPath = Path.Combine(testAsset.Path, "Lib", "Lib.fs");
