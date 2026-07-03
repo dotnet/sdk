@@ -5,7 +5,9 @@
        must be invoked via 'dotnet exec' rather than 'dotnet test'. In this repo,
        MSTest.Sdk-based projects ship as MTP self-contained executables and set
        UsingMSTestSdk=true; non-MSTest projects (e.g. xUnit v3) keep using the VSTest path. -->
-  <Target Name="GetIsMTPProject" Returns="$(IsTestingPlatformApplication)" />
+  <Target Name="GetIsMTPProject" Returns="$(IsTestingPlatformApplication)">
+    <Error Condition="'$(IsTestingPlatformApplication)' != 'true' AND '$(IsTestProject)' == 'true'" Text="Only MTP test projects are supported in the repo infrastructure." />
+  </Target>
 
   <!-- Returns 'true' when the Microsoft.Testing.Extensions.TrxReport extension is
        enabled on the project. MSTest.Sdk defaults this to 'true' for the Default and
