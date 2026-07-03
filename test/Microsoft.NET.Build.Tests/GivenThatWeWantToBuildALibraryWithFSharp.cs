@@ -224,7 +224,7 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
         }
 
-        [Fact]
+        [TestMethod]
         public void It_sets_SupportsHotReload_capability_for_net6_or_newer_under_dotnet_watch()
         {
             var projectCapabilities = GetValuesFromTestLibrary(
@@ -243,7 +243,7 @@ namespace Microsoft.NET.Build.Tests
             projectCapabilities.Should().Contain("SupportsHotReload");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_set_SupportsHotReload_capability_outside_dotnet_watch()
         {
             // ProjectCapabilities are read by other hosts such as Visual Studio, which has no
@@ -264,7 +264,7 @@ namespace Microsoft.NET.Build.Tests
             projectCapabilities.Should().NotContain("SupportsHotReload");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_sets_SupportsHotReload_capability_when_explicitly_opted_in()
         {
             var projectCapabilities = GetValuesFromTestLibrary(
@@ -283,7 +283,7 @@ namespace Microsoft.NET.Build.Tests
             projectCapabilities.Should().Contain("SupportsHotReload");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_set_SupportsHotReload_capability_for_pre_net6()
         {
             var projectCapabilities = GetValuesFromTestLibrary(
@@ -302,7 +302,7 @@ namespace Microsoft.NET.Build.Tests
             projectCapabilities.Should().NotContain("SupportsHotReload");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_respects_SupportsHotReload_false_override()
         {
             var projectCapabilities = GetValuesFromTestLibrary(
