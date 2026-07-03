@@ -82,7 +82,7 @@
          set UsingMSTestSdk=true and ship as MTP self-contained executables (no testhost.dll),
          so the standard 'dotnet test <dll>' VSTest invocation does not work for them. -->
     <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetIsMTPProject" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
-      <Output TaskParameter="TargetOutputs" PropertyName="_UsingMSTestSdk" />
+      <Output TaskParameter="TargetOutputs" PropertyName="_IsMTP" />
     </MSBuild>
 
     <!-- Detect whether the project has the Microsoft.Testing.Extensions.TrxReport extension
@@ -98,7 +98,7 @@
         <TargetPath>$(_TargetPath)</TargetPath>
         <PublishTargetFramework>$(_CurrentPublishTargetFramework)</PublishTargetFramework>
         <RuntimeTargetFramework>$(_CurrentRuntimeTargetFramework)</RuntimeTargetFramework>
-        <IsMTPProject>$(_UsingMSTestSdk)</IsMTPProject>
+        <IsMTPProject>$(_IsMTP)</IsMTPProject>
         <EnableTrxReport>$(_EnableTrxReport)</EnableTrxReport>
       </SDKCustomTestProject>
     </ItemGroup>
