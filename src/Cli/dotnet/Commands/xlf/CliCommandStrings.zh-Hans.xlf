@@ -3187,6 +3187,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">使用 .NET 项目中指定的测试运行程序运行单元测试。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">已完成测试发现，但显示非成功退出代码: {0} (请参阅: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">在 {1} 个程序集中发现了 {0} 个测试。</target>
@@ -3201,6 +3206,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">运行测试的目标框架。必须在项目文件中指定目标框架。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">已完成测试运行，但显示非成功退出代码: {0} (请参阅: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

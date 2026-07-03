@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Build-ordering dependencies on the tool and task under test. ReferenceOutputAssembly="false" so we don't take a compile-time dependency on netcore-only types; SetTargetFramework pins both inner builds to consume the netcore TFM since these projects are netcore-only. -->
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Task\Microsoft.DotNet.GenAPI.Task.csproj" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=$(NetMinimum)" />
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Tool\Microsoft.DotNet.GenAPI.Tool.csproj" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=$(NetMinimum)" />
+    <!-- Build-ordering dependencies on the tool and task under test. ReferenceOutputAssembly="false" so we don't take a compile-time dependency. -->
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Task\Microsoft.DotNet.GenAPI.Task.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Tool\Microsoft.DotNet.GenAPI.Tool.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 

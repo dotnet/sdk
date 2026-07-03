@@ -9,11 +9,10 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Testing.Platform.Helpers;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -108,8 +107,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
         {
-            ShowPassedTests = () => showPassedTests,
-            ShowProgress = () => !noProgress,
+            ShowPassedTests = showPassedTests,
+            ShowProgress = !noProgress,
             ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
             AnsiMode = ansiMode,
             ShowAssembly = true,

@@ -3187,6 +3187,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Uruchom testy jednostkowe przy użyciu modułu uruchamiającego testy określonego w projekcie platformy .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Odnajdywanie testów zostało ukończone z kodem zakończenia bez powodzenia: {0} (zobacz: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">Odnaleziono testy ({0}) w zestawach {1}.</target>
@@ -3201,6 +3206,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">Platforma docelowa, dla której mają być uruchamiane testy. Platforma docelowa musi być również określona w pliku projektu.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Przebieg testu został ukończony z kodem zakończenia bez powodzenia: {0} (zobacz: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

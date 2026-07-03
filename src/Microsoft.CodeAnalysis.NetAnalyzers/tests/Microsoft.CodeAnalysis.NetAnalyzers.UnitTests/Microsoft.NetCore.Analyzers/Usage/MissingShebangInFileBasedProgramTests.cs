@@ -16,7 +16,9 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         private const string GlobalConfig = "is_global = true\r\nbuild_property.EntryPointFilePath = Test0.cs";
 
         [TestMethod]
-        public async Task EntryPointWithoutShebang_MultipleFiles_WarningAsync()
+        [DataRow("include")]
+        [DataRow("ref")]
+        public async Task EntryPointWithoutShebang_MultipleFiles_WarningAsync(string directiveName)
         {
             // Entry point file without shebang and a #:include file - warning expected.
             await new VerifyCS.Test
@@ -25,8 +27,8 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 {
                     Sources =
                     {
-                        ("Test0.cs", """
-                            #:include Util.cs
+                        ("Test0.cs", $$"""
+                            #:{{directiveName}} Util.cs
                             class Program { static void Main() { } }
                             """),
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
@@ -89,7 +91,9 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
-        public async Task EntryPointWithoutShebang_CodeFixAddsShebangAsync()
+        [DataRow("include")]
+        [DataRow("ref")]
+        public async Task EntryPointWithoutShebang_CodeFixAddsShebangAsync(string directiveName)
         {
             // Verify that the code fix prepends a shebang line.
             await new VerifyCS.Test
@@ -98,8 +102,8 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 {
                     Sources =
                     {
-                        ("Test0.cs", """
-                            #:include Util.cs
+                        ("Test0.cs", $$"""
+                            #:{{directiveName}} Util.cs
                             class Program { static void Main() { } }
                             """),
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
@@ -114,9 +118,9 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 {
                     Sources =
                     {
-                        ("Test0.cs", """
+                        ("Test0.cs", $$"""
                             #!/usr/bin/env dotnet
-                            #:include Util.cs
+                            #:{{directiveName}} Util.cs
                             class Program { static void Main() { } }
                             """),
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
@@ -128,7 +132,9 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
-        public async Task EntryPointWithShebang_MultipleFiles_NoDiagnosticAsync()
+        [DataRow("package")]
+        [DataRow("project")]
+        public async Task EntryPointWithoutShebang_MultipleFiles_NoDiagnosticAsync(string directiveName)
         {
             // Entry point already has shebang, multiple files - no diagnostic.
             await new VerifyCS.Test
@@ -137,9 +143,34 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 {
                     Sources =
                     {
-                        ("Test0.cs", """
+                        ("Test0.cs", $$"""
+                            #:{{directiveName}} Util.cs
+                            class Program { static void Main() { } }
+                            """),
+                        ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
+                    },
+                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                },
+                SolutionTransforms = { EnableFileBasedProgramFeature },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [DataRow("include")]
+        [DataRow("project")]
+        [DataRow("ref")]
+        public async Task EntryPointWithShebang_MultipleFiles_NoDiagnosticAsync(string directiveName)
+        {
+            // Entry point already has shebang, multiple files - no diagnostic.
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", $$"""
                             #!/usr/bin/env dotnet
-                            #:include Util.cs
+                            #:{{directiveName}} Util.cs
                             class Program { static void Main() { } }
                             """),
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
