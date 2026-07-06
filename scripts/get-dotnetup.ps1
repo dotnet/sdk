@@ -140,23 +140,19 @@ function Get-RuntimeId {
 
 # --- Main ---
 
-# The $BaseUrl points at a mutable 'quality' shortlink (e.g. .../daily/...), so the
-# binary and its .sha512 are two independent requests against a moving target. If a
-# new build publishes between them we download the binary from one build and the
-# checksum from another, producing a spurious checksum mismatch. Resolve the
-# shortlink to its concrete, versioned URL ONCE and derive both URLs from it so they
-# always share the same build.
+# $BaseUrl is a mutable 'quality' shortlink, so fetching the binary and its .sha512
+# separately can straddle two builds and cause a spurious checksum mismatch. Resolve
+# the shortlink to its concrete build URL once and derive both URLs from it.
 function Resolve-FinalUrl([string]$Url) {
-    # Prefer curl to stay consistent with get-dotnetup.sh. On Windows PowerShell 5.1
-    # 'curl' is an ALIAS for Invoke-WebRequest, so require an actual executable via
-    # -CommandType Application (this also resolves 'curl' on Linux/macOS).
+    # Require an actual curl executable; on Windows PowerShell 5.1 'curl' is an alias
+    # for Invoke-WebRequest, so -CommandType Application excludes it.
     $curl = Get-Command curl.exe -CommandType Application -ErrorAction SilentlyContinue
     if (-not $curl) { $curl = Get-Command curl -CommandType Application -ErrorAction SilentlyContinue }
     if ($curl) {
         $sink = [System.IO.Path]::GetTempFileName()
         try {
-            # --head follows redirects issuing HEAD requests; --write-out reports the
-            # final resolved URL without downloading the (large) body.
+            # --head resolves redirects without downloading the body; --write-out
+            # reports the final URL.
             $final = & $curl.Source --silent --show-error --location --head `
                 --output $sink --write-out '%{url_effective}' $Url 2>$null
             if ($LASTEXITCODE -eq 0 -and $final) { return "$final".Trim() }
@@ -165,9 +161,8 @@ function Resolve-FinalUrl([string]$Url) {
         finally { Remove-Item $sink -Force -ErrorAction SilentlyContinue }
     }
 
-    # Safe backup for hosts without a curl executable (e.g. stock Windows
-    # PowerShell 5.1): resolve redirects with .NET WebRequest, which is available on
-    # both Windows PowerShell and PowerShell Core across all platforms.
+    # Fallback for hosts without a curl executable (e.g. Windows PowerShell 5.1):
+    # resolve redirects with .NET WebRequest.
     try {
         $req = [System.Net.WebRequest]::Create($Url)
         $req.Method = "HEAD"
