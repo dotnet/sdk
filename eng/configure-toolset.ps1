@@ -44,13 +44,15 @@ function InstallBootstrapSdkWithDotnetup() {
     $env:DOTNET_DOTNETUP_DATA_DIR = Join-Path $ArtifactsDir '.dotnetup'
 
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & $dotnetupExe sdk install @sdkVersions `
-        --install-path $dotnetRoot `
-        --untracked `
-        --set-default-install false `
-        --interactive false
-    if ($LASTEXITCODE -ne 0) {
-        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install .NET SDK(s) '$($sdkVersions -join ', ')' to '$dotnetRoot' using dotnetup (exit code '$LASTEXITCODE'). Will fall back to standard dotnet-install script."
+    $installExitCode = Invoke-DotnetupNativeCommand {
+        & $dotnetupExe sdk install @sdkVersions `
+            --install-path $dotnetRoot `
+            --untracked `
+            --set-default-install false `
+            --interactive false
+    }
+    if ($installExitCode -ne 0) {
+        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install .NET SDK(s) '$($sdkVersions -join ', ')' to '$dotnetRoot' using dotnetup (exit code '$installExitCode'). Will fall back to standard dotnet-install script."
         return
     }
 
