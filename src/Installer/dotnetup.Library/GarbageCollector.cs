@@ -136,7 +136,7 @@ internal class GarbageCollector
             .Where(x => x.Version is not null)
             .OrderByDescending(x => x.Version)
             .Select(x => x.Installation)
-            .First();
+            .FirstOrDefault();
     }
 
     /// <summary>

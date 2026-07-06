@@ -61,8 +61,12 @@ internal class InstallRootManager
         }
 
         var programFilesDotnetPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
-        bool needToModifyAdminPath = !WindowsPathHelper.SplitPath(WindowsPathHelper.ReadAdminPath(expand: true))
-            .Contains(programFilesDotnetPaths.First(), StringComparer.OrdinalIgnoreCase);
+
+        // When no dotnet is installed in Program Files, there is no admin path to reference or modify.
+        string primaryProgramFilesDotnetPath = programFilesDotnetPaths.FirstOrDefault() ?? string.Empty;
+        bool needToModifyAdminPath = !string.IsNullOrEmpty(primaryProgramFilesDotnetPath)
+            && !WindowsPathHelper.SplitPath(WindowsPathHelper.ReadAdminPath(expand: true))
+                .Contains(primaryProgramFilesDotnetPath, StringComparer.OrdinalIgnoreCase);
 
         // Get the user dotnet installation path
         string userDotnetPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
@@ -78,7 +82,7 @@ internal class InstallRootManager
         bool needToUnsetDotnetRoot = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_ROOT", EnvironmentVariableTarget.User));
 
         return new AdminInstallRootChanges(
-            programFilesDotnetPaths.First(),
+            primaryProgramFilesDotnetPath,
             needToModifyAdminPath,
             needToModifyUserPath,
             needToUnsetDotnetRoot,
