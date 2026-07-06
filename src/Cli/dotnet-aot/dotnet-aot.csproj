@@ -52,6 +52,7 @@
 
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
+    <Compile Include="SdkRootLocator.cs" />
     <Compile Include="ManagedHost.cs" />
   </ItemGroup>
 
