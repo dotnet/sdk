@@ -60,19 +60,9 @@ function Invoke-GetDotnetupScript([string]$ScriptPath, [string]$InstallDir, [str
     if ($LASTEXITCODE -ne 0) { throw "$ErrorLabel exited with code $LASTEXITCODE." }
 }
 
-# Invokes a native command (e.g. the dotnetup executable) and returns its process
-# exit code WITHOUT letting a non-zero exit become a terminating error that would
-# bypass the caller's graceful-fallback logic.
-#
-# Two mechanisms can otherwise turn a non-zero native exit into a throw:
-#   * $ErrorActionPreference — the build host sets this to 'Stop'
-#     (eng/common/tools.ps1), and
-#   * $PSNativeCommandUseErrorActionPreference — defaults to $true on
-#     PowerShell 7.4+ (the variable does not exist on Windows PowerShell 5.1,
-#     where assigning it is harmless and has no effect).
-# Both are neutralized locally here. If the command still throws (for example the
-# executable cannot be found), it is caught and surfaced as a non-zero exit code so
-# callers can fall back instead of crashing. Returns the process exit code.
+# Invokes a native command (e.g. the dotnetup executable)
+# Returns that process exit code WITHOUT letting a non-zero exit become a terminating error.
+# (This covers against $ErrorActionPreference and $PSNativeCommandUseErrorActionPreference)
 function Invoke-DotnetupNativeCommand([scriptblock]$Command) {
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
     $ErrorActionPreference = 'Continue'
