@@ -263,6 +263,29 @@
         "colorRulesDisabled": false,
         "colorRules": [
           {
+            "id": "6df4e06f-76df-42b7-aee0-796252db3b24",
+            "ruleType": "colorByCondition",
+            "ruleName": "RootCommandHighlight",
+            "applyTo": "cells",
+            "visualType": "table",
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "applyToColumn": "Command",
+            "conditions": [
+              {
+                "column": "Command",
+                "operator": "==",
+                "values": [
+                  "dotnetup"
+                ]
+              }
+            ],
+            "color": "yellow",
+            "tag": "",
+            "icon": null,
+            "hideText": false
+          },
+          {
             "id": "171829aa-f0cb-4fda-a77f-9900ebd1ac04",
             "ruleType": "colorByValue",
             "ruleName": "SuccessRateGradient",
@@ -1263,7 +1286,7 @@
     {
       "id": "f1a2b3c4-d5e6-4f78-8901-23456789abcd",
       "title": "Process Health (Whole Invocation)",
-      "description": "_dotnetupRoot is one whole-process completion row per dotnetup invocation after the shared _dotnetupEvents filters are applied. It carries wall-clock duration for parser bootstrap, FirstRunNotice, command, and telemetry flush, plus error.* tags from failures that escaped CommandBase or non-zero parser exits tagged ParseError. Outside-command failures are root errors with no command.name rolled up.",
+      "description": "_dotnetupRoot is one whole-process completion row per dotnetup invocation after the shared _dotnetupEvents filters are applied. It carries wall-clock duration for parser bootstrap, FirstRunNotice, command, and telemetry flush, plus error.* tags from failures that escaped CommandBase or non-zero parser exits tagged ParseError. Outside-command failures are root errors whose error.first_failure_stage does not start with 'command/' (command.name never lands on the root row, so the failure stage is the reliable discriminator).",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1340,7 +1363,7 @@
     {
       "id": "f4a5b6c7-d8e9-4f01-a234-56789abcdef0",
       "title": "Failures Outside Any Command",
-      "description": "Root rows with an error but no command.name. Includes true outside-command failures, plus command failures whose error.* tags propagated to root without command.name.",
+      "description": "Root failures whose error.first_failure_stage does NOT start with 'command/' — the failure originated before or outside any subcommand: non-zero parser exits (ParseError, shown as '(parser/pre-command)'), pre-command bootstrap exceptions, and background operations such as gc.delete-orphaned-subcomponents. In-command failures are excluded here (they are owned by the per-command success tiles) even though their error.* tags also propagate onto the root row. command.name never lands on the root row, so the failure stage is the reliable discriminator.",
       "visualType": "table",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1428,7 +1451,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupRoot\n| where is_outside_command_failure\n| summarize Count = count(), LastSeen = max(TimeGenerated) by version, error_type, error_category\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, Count desc\n| project Version = iif(isempty(version), \"(unknown)\", version), ErrorType = error_type, ErrorCategory = error_category, Count, LastSeen",
+      "text": "_dotnetupRoot\n| where is_outside_command_failure\n| extend stage = iif(isempty(first_failure_stage), \"(parser/pre-command)\", first_failure_stage)\n| summarize Count = count(), LastSeen = max(TimeGenerated) by version, stage, error_type, error_category\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, Count desc\n| project Version = iif(isempty(version), \"(unknown)\", version), Stage = stage, ErrorType = error_type, ErrorCategory = error_category, Count, LastSeen",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1489,7 +1512,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupEvents\n| where Message == \"dotnetup/root\"\n| extend device_id = tostring(Properties[\"device.id\"])\n| extend session_id = tostring(Properties[\"session.id\"])\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)",
+      "text": "_dotnetupEvents\n| where Message == \"dotnetup/root\"\n| extend device_id = tostring(Properties[\"device.id\"])\n| extend session_id = tostring(Properties[\"session.id\"])\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend first_failure_stage = tostring(Properties[\"error.first_failure_stage\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and not(first_failure_stage startswith \"command/\")",
       "usedVariables": [
         "_dotnetupEvents"
       ]
@@ -1500,7 +1523,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "let filteredData = _dotnetupCommands;\nlet versions = filteredData\n| where isnotempty(version)\n| distinct version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc\n| extend rank = row_number();\nfilteredData\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by version\n| join kind=inner versions on version\n| extend\n    Relevant = Total - UserErrors,\n    SuccessRate = iif(Total - UserErrors > 0, round(100.0 * Successful / (Total - UserErrors), 1), real(null)),\n    Label = case(rank == 1, \"Latest\", rank == 2, \"Prior\", \"\")\n| project Label, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors, version_sort\n| order by version_sort desc, Version desc\n| project-away version_sort",
+      "text": "let filteredData = _dotnetupCommands;\nlet versions = filteredData\n| where isnotempty(version)\n| distinct version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc\n| extend rank = row_number();\nfilteredData\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by version\n| join kind=inner versions on version\n| extend\n    Relevant = Total - UserErrors,\n    SuccessRate = iif(Total - UserErrors > 0, round(100.0 * Successful / (Total - UserErrors), 1), real(0)),\n    Label = case(rank == 1, \"Latest\", rank == 2, \"Prior\", \"\")\n| project Label, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors, version_sort\n| order by version_sort desc, Version desc\n| project-away version_sort",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1511,7 +1534,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "let commandData = _dotnetupCommands\n| where isnotempty(command)\n| project TimeGenerated, command, version, is_success, error_category\n| union (_dotnetupRoot\n    | extend command = \"dotnetup\"\n    | project TimeGenerated, command, version, is_success, error_category);\ncommandData\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by command, version\n| where version != \"unknown\" or Total >= 25\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, SuccessRate desc, Total desc\n| project Command = command, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors",
+      "text": "let commandData = _dotnetupCommands\n| where isnotempty(command)\n| project TimeGenerated, command, version, is_success, error_category\n| union (_dotnetupRoot\n    | extend command = \"dotnetup\"\n    | project TimeGenerated, command, version, is_success, error_category);\ncommandData\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by command, version\n| where version != \"unknown\" or Total >= 25\n| extend Relevant = Total - UserErrors\n| extend SuccessRate = iif(Relevant > 0, round(100.0 * Successful / Relevant, 1), real(0))\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, SuccessRate desc, Total desc\n| project Command = command, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors",
       "usedVariables": [
         "_dotnetupCommands",
         "_dotnetupRoot"
@@ -1623,7 +1646,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where isnotempty(os_type)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by os = os_type, version\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, SuccessRate, Relevant, Successful, UserErrors",
+      "text": "_dotnetupCommands\n| where isnotempty(os_type)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by os = os_type, version\n| extend Relevant = Total - UserErrors\n| extend SuccessRate = iif(Relevant > 0, round(100.0 * Successful / Relevant, 1), real(0))\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, SuccessRate, Relevant, Successful, UserErrors",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1634,7 +1657,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where isnotempty(os_platform)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by os = os_platform, version\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, SuccessRate, Relevant, Successful, UserErrors",
+      "text": "_dotnetupCommands\n| where isnotempty(os_platform)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by os = os_platform, version\n| extend Relevant = Total - UserErrors\n| extend SuccessRate = iif(Relevant > 0, round(100.0 * Successful / Relevant, 1), real(0))\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, SuccessRate, Relevant, Successful, UserErrors",
       "usedVariables": [
         "_dotnetupCommands"
       ]
