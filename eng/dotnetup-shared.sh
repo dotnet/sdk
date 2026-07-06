@@ -48,7 +48,7 @@ function ShouldUseCachedDotnetup {
 }
 
 # Downloads the public dotnetup installer from aka.ms
-# (https://aka.ms/dotnetup/get-dotnetup.sh) and runs it to install dotnetup into
+# (https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.sh) and runs it to install dotnetup into
 # the directory given by $1. Returns non-zero on failure. Callers run under
 # `set -e`, so invoke via `if ! AcquireDotnetup ...; then` to handle failure.
 #
@@ -71,7 +71,7 @@ function AcquireDotnetup {
     return $?
   fi
 
-  local getter_url="https://aka.ms/dotnetup/get-dotnetup.sh"
+  local getter_url="https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.sh"
   local getter_script
   # Use an explicit template: bare `mktemp` is not portable because BSD/macOS
   # mktemp requires a template (or -t prefix) and errors without one.
