@@ -25,10 +25,6 @@ public abstract class CommandBase
     protected CommandBase(ParseResult parseResult, string commandName)
     {
         ParseResult = parseResult;
-        // Start per-command telemetry up front. The command name is supplied by
-        // each derived class as a constructor argument (rather than a virtual
-        // method call here, which MA0056 forbids), letting _operation stay
-        // non-null for the life of the command.
         _operation = DotnetupTelemetry.Instance.StartTrackedCommand(commandName);
     }
 
@@ -68,9 +64,6 @@ public abstract class CommandBase
             // _exitCode = 0 on success (set in try), 1 on exception (reset
             // in catch), or whatever ExecuteCore passed to SetExitCode().
             _operation.Tag(TelemetryTagNames.ExitCode, _exitCode);
-            // Always stamp error.type so success rows carry it as an explicit
-            // empty string; the catch above already set a real value on failure.
-            _operation.EnsureErrorTypeTagged();
             _operation.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             _operation.Dispose();
         }

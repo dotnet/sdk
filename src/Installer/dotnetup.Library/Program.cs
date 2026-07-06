@@ -96,11 +96,6 @@ public class DotnetupProgram
             rootOp.Tag("error.category", "user");
         }
 
-        // Always stamp error.type so success rows (and any zero-exit path that
-        // set nothing above) carry it as an explicit empty string rather than
-        // omitting the property.
-        rootOp.EnsureErrorTypeTagged();
-
         rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
         rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
     }
@@ -115,10 +110,8 @@ public class DotnetupProgram
         try
         {
             DotnetupTelemetry.Instance.WriteLogIfNecessary();
-            // Always flush; never Shutdown/Dispose in production. The flush
-            // budget is chosen from the exit code + environment, and process
-            // exit reclaims the providers. Disposing here would invoke the OTel
-            // LoggerProvider's unbounded Shutdown(Timeout.Infinite) drain.
+            // Flush, never Dispose: process exit reclaims the providers, and Dispose
+            // would trigger the OTel LoggerProvider's unbounded Shutdown drain.
             DotnetupTelemetry.Instance.Flush(exitCode);
         }
         catch

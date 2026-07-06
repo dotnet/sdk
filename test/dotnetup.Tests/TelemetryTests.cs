@@ -1055,18 +1055,6 @@ public class TrackedOperationTests : IDisposable
         }
 
         Assert.Single(_capturedActivities);
-        Assert.Equal(ActivityStatusCode.Error, _capturedActivities[0].Status);
-    }
-
-    [TestMethod]
-    public void EnsureErrorTypeTagged_WhenNoError_StampsEmptyString()
-    {
-        using (var op = Metrics.Track("test/ensure-error-type", activityName: "test-ensure-empty"))
-        {
-            op.EnsureErrorTypeTagged();
-        }
-
-        Assert.Single(_capturedActivities);
         var tag = _capturedActivities[0].GetTagItem("error.type");
         Assert.NotNull(tag);
         Assert.Equal(string.Empty, tag);

@@ -35,15 +35,13 @@ internal sealed class TrackedOperation : IDisposable
     {
         Activity?.SetStatus(code, description);
         Tag("command.status", code == ActivityStatusCode.Ok ? "ok" : "error");
+        // Every top-level operation ends by setting status, so guarantee
+        // error.type is present here instead of relying on callers to do it.
+        EnsureErrorTypeTagged();
     }
 
     /// <summary>
     /// Guarantees the completion row carries an explicit <c>error.type</c>.
-    /// On the failure path a real value was already stamped by the error
-    /// classifier, so this is a no-op; on the success path it stamps an empty
-    /// string so every emitted row has the property present rather than
-    /// missing — keeping the schema uniform with failure rows for downstream
-    /// queries. No-op when telemetry is disabled (null activity).
     /// </summary>
     public void EnsureErrorTypeTagged()
     {
