@@ -59,20 +59,12 @@ function InstallBootstrapSdkWithDotnetup {
   # Keep dotnetup's manifest under artifacts instead of the user's home dir.
   export DOTNET_DOTNETUP_DATA_DIR="$artifacts_dir/.dotnetup"
 
-  local restore_errexit=false
-  if [[ $- == *e* ]]; then
-    restore_errexit=true
-    set +e
-  fi
-  "$dotnetup_exe" sdk install "${sdk_versions[@]}" \
+  RunWithoutErrexit "$dotnetup_exe" sdk install "${sdk_versions[@]}" \
     --install-path "$dotnet_root" \
     --untracked \
     --set-default-install false \
     --interactive false
-  local lastexitcode=$?
-  if [[ "$restore_errexit" == true ]]; then
-    set -e
-  fi
+  local lastexitcode=$_RunWithoutErrexit
 
   if [[ $lastexitcode != 0 ]]; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install .NET SDK(s) '${sdk_versions[*]}' to '$dotnet_root' using dotnetup (exit code '$lastexitcode'). Will fall back to standard dotnet-install script."

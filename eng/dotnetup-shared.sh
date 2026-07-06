@@ -94,3 +94,25 @@ function AcquireDotnetup {
   rm -f "$getter_script"
   return $result
 }
+
+# Runs a command with bash 'errexit' (set -e) temporarily disabled so that a
+# non-zero exit code does not abort the calling script before it can run its own
+# exit-code handling (e.g. the graceful fallback to the dotnet-install script).
+# The command's exit code is returned via the global _RunWithoutErrexit, following
+# the _<FunctionName> return-value convention used elsewhere in these scripts (see
+# _GetDotNetInstallScript). This helper itself always returns 0 so callers can
+# invoke it as a plain command under `set -e` and then inspect $_RunWithoutErrexit.
+# It is the shell counterpart to Invoke-DotnetupNativeCommand in dotnetup-shared.ps1.
+function RunWithoutErrexit {
+  local restore_errexit=false
+  if [[ $- == *e* ]]; then
+    restore_errexit=true
+    set +e
+  fi
+  "$@"
+  _RunWithoutErrexit=$?
+  if [[ "$restore_errexit" == true ]]; then
+    set -e
+  fi
+  return 0
+}
