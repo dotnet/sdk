@@ -140,20 +140,15 @@ function Get-RuntimeId {
 
 # --- Main ---
 
-# $BaseUrl is a mutable 'quality' shortlink, so fetching the binary and its .sha512
-# separately can straddle two builds and cause a spurious checksum mismatch. Resolve
-# the shortlink to its concrete build URL once and derive both URLs from it.
+# Map a 'channel' such as 'daily' to specific version url for the binary and its .sha512 to prevent release race condition mismatches
 function Resolve-FinalUrl([string]$Url) {
-    # Require an actual curl executable; on Windows PowerShell 5.1 'curl' is an alias
-    # for Invoke-WebRequest, so -CommandType Application excludes it.
+    # Require an actual curl executable; on Windows PowerShell 5.1 'curl' is an alias for Invoke-WebRequest, so -CommandType Application excludes it.
     $curl = Get-Command curl.exe -CommandType Application -ErrorAction SilentlyContinue
     if (-not $curl) { $curl = Get-Command curl -CommandType Application -ErrorAction SilentlyContinue }
     if ($curl) {
         $sink = [System.IO.Path]::GetTempFileName()
         try {
-            # --head resolves redirects without downloading the body; --write-out
-            # reports the final URL.
-            $final = & $curl.Source --silent --show-error --location --head `
+            $final = & $curl.Source --silent --show-error --location --head `   # --head resolves redirects without downloading the body
                 --output $sink --write-out '%{url_effective}' $Url 2>$null
             if ($LASTEXITCODE -eq 0 -and $final) { return "$final".Trim() }
         }
@@ -162,7 +157,6 @@ function Resolve-FinalUrl([string]$Url) {
     }
 
     # Fallback for hosts without a curl executable (e.g. Windows PowerShell 5.1):
-    # resolve redirects with .NET WebRequest.
     try {
         $req = [System.Net.WebRequest]::Create($Url)
         $req.Method = "HEAD"

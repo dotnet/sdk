@@ -169,19 +169,15 @@ FILE_NAME="dotnetup-${RID}"
 DOWNLOAD_URL="${BASE_URL}/${FILE_NAME}"
 CHECKSUM_URL="${DOWNLOAD_URL}.sha512"
 
-# BASE_URL is a mutable 'quality' shortlink, so fetching the binary and its .sha512
-# separately can straddle two builds and cause a spurious checksum mismatch. Resolve
-# the shortlink to its concrete build URL once and derive both URLs from it.
+# Map a 'channel' such as 'daily' to specific version url for the binary and its .sha512 to prevent release race condition mismatches
 resolve_final_url() {
     local url="$1"
     if [ "$DOWNLOADER" = "curl" ]; then
-        # --head resolves redirects without downloading the body; --write-out reports
-        # the final URL.
+        # --head resolves redirects without downloading the body.
         curl --silent --show-error --location --head --output /dev/null \
-             --write-out '%{url_effective}' "$url" 2>/dev/null
+            --write-out '%{url_effective}' "$url" 2>/dev/null
     elif [ "$DOWNLOADER" = "wget" ]; then
-        # wget lacks --write-out; --spider -S prints the redirect headers, whose final
-        # 'Location:' is the concrete build URL. tolower() keeps awk portable.
+        # wget lacks --write-out; --spider -S prints the redirect headers, whose final 'Location:' is the concrete build URL. tolower() keeps awk portable.
         wget --spider -S "$url" 2>&1 \
             | awk 'tolower($1) == "location:" { u = $2 } END { if (u != "") print u }'
     fi
