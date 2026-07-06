@@ -86,12 +86,13 @@ namespace Microsoft.DotNet.Tests
         }
     }
 
+    [TestClass]
     public class GivenADotnetToolsCommandResolverAggregateTools
     {
-        [Theory]
-        [InlineData("dotnet-dev-certs")]
-        [InlineData("dotnet-user-jwts")]
-        [InlineData("dotnet-user-secrets")]
+        [TestMethod]
+        [DataRow("dotnet-dev-certs")]
+        [DataRow("dotnet-user-jwts")]
+        [DataRow("dotnet-user-secrets")]
         public void ItReturnsAnExecutableCommandSpecFromAggregateToolPackage(string commandName)
         {
             var dotnetToolPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
