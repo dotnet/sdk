@@ -47,7 +47,6 @@ function Format-TableCell {
     param([string]$Text, [int]$MaxLength = 80)
 
     if ([string]::IsNullOrEmpty($Text)) { return '' }
-    $Text = $Text -replace '\|', '\\|'
     $Text = $Text -replace '\r?\n', ' '
     if ($Text.Length -gt $MaxLength) {
         $Text = $Text.Substring(0, $MaxLength - 3) + '...'
