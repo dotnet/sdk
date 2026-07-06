@@ -138,17 +138,50 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         Build(testInstance, BuildLevel.Csc);
     }
 
-    [TestMethod]
-    public void UpToDate_InvalidOptions()
+    /// <summary>
+    /// See <see href="https://github.com/dotnet/sdk/issues/55056"/>.
+    /// </summary>
+    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+    public void UpToDate_ArtifactsRelocated()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
-        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-build")
-            .WithWorkingDirectory(testInstance.Path)
+        var srcDir = Path.Join(testInstance.Path, "src");
+        var tmpDir1 = Path.Join(testInstance.Path, "tmp1");
+        var tmpDir2 = Path.Join(testInstance.Path, "tmp2");
+
+        Directory.CreateDirectory(srcDir);
+
+        var programFile = Path.Join(srcDir, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:property ImplicitUsings=disable
+            #:property GenerateAssemblyInfo=false
+            #:property GenerateTargetFrameworkAttribute=false
+            System.Console.WriteLine("hello");
+            """);
+
+        var expectedStdOut = "hello";
+
+        Directory.CreateDirectory(tmpDir1);
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable("TMP", tmpDir1)
+            .WithEnvironmentVariable("TMPDIR", tmpDir1)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir1)
+            .WithWorkingDirectory(srcDir)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--no-cache", "--no-build"));
+            .Should().Pass()
+            .And.HaveStdOut(expectedStdOut);
+
+        Directory.Move(tmpDir1, tmpDir2);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable("TMP", tmpDir2)
+            .WithEnvironmentVariable("TMPDIR", tmpDir2)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir2)
+            .WithWorkingDirectory(srcDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedStdOut);
     }
 
     /// <summary>
@@ -307,6 +340,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         File.WriteAllText(libPath, libCode);
 
         var programCode = """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine("Hello " + MyLib.Greeter.Greet());
             """;
@@ -1059,6 +1093,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         File.WriteAllText(libPath, libCode);
 
         var programCode = """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine("Hello " + MyLib.Greeter.Greet());
             """;
@@ -2036,6 +2071,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:ref Lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
             """);

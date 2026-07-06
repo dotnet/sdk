@@ -9,22 +9,22 @@ using NuGet.Frameworks;
 namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 {
     /// <summary>
-    /// MSBuild custom task to create HelixWorkItems given xUnit project publish information
+    /// MSBuild custom task to create HelixWorkItems given test project publish information
     /// </summary>
-    public class SDKCustomCreateXUnitWorkItemsWithTestExclusion : Build.Utilities.Task
+    public class SDKCustomCreateTestWorkItemsWithTestExclusion : Build.Utilities.Task
     {
         /// <summary>
-        /// An array of XUnit project workitems containing the following metadata:
-        /// - [Required] PublishDirectory: the publish output directory of the XUnit project
+        /// An array of test project workitems containing the following metadata:
+        /// - [Required] PublishDirectory: the publish output directory of the test project
         /// - [Required] TargetPath: the output dll path
         /// - [Required] RuntimeTargetFramework: the target framework to run tests on
-        /// - [Optional] Arguments: a string of arguments to be passed to the XUnit console runner
+        /// - [Optional] Arguments: a string of arguments to be passed to the test runner
         /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to BaseMethodLimit
         ///   used for partitioning tests into Helix shards
-        /// The two required parameters will be automatically created if XUnitProject.Identity is set to the path of the XUnit csproj file
+        /// The two required parameters will be automatically created if TestProject.Identity is set to the path of the test csproj file
         /// </summary>
         [Required]
-        public ITaskItem[]? XUnitProjects { get; set; }
+        public ITaskItem[]? TestProjects { get; set; }
 
         /// <summary>
         /// The path to the dotnet executable on the Helix agent. Defaults to "dotnet"
@@ -54,22 +54,22 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// Optional timeout for all created workitems
         /// Defaults to 300s
         /// </summary>
-        public string? XUnitWorkItemTimeout { get; set; }
+        public string? TestWorkItemTimeout { get; set; }
 
-        public string? XUnitArguments { get; set; }
+        public string? TestArguments { get; set; }
 
         /// <summary>
         /// An array of ITaskItems of type HelixWorkItem
         /// </summary>
         [Output]
-        public ITaskItem[]? XUnitWorkItems { get; set; }
+        public ITaskItem[]? TestWorkItems { get; set; }
 
         /// <summary>
         /// The main method of this MSBuild task which calls the asynchronous execution method and
         /// collates logged errors in order to determine the success of HelixWorkItem creation per
-        /// provided xUnit project data.
+        /// provided test project data.
         /// </summary>
-        /// <returns>A boolean value indicating the success of HelixWorkItem creation per provided xUnit project data.</returns>
+        /// <returns>A boolean value indicating the success of HelixWorkItem creation per provided test project data.</returns>
         public override bool Execute()
         {
             ExecuteAsync().GetAwaiter().GetResult();
@@ -78,19 +78,19 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
         /// <summary>
         /// The asynchronous execution method for this MSBuild task which verifies the integrity of required properties
-        /// and validates their formatting, specifically determining whether the provided xUnit project data have a
+        /// and validates their formatting, specifically determining whether the provided test project data have a
         /// one-to-one mapping. It then creates this mapping before asynchronously preparing the HelixWorkItem TaskItem
         /// objects via the PrepareWorkItem method.
         /// </summary>
         /// <returns></returns>
         private async Task ExecuteAsync()
         {
-            if(XUnitProjects is null)
+            if(TestProjects is null)
             {
                 return;
             }
 
-            XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
+            TestWorkItems = (await Task.WhenAll(TestProjects.Select(PrepareWorkItem)))
                 .SelectMany(i => i ?? new())
                 .Where(wi => wi != null)
                 .ToArray();
@@ -98,37 +98,37 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         }
 
         /// <summary>
-        /// Prepares HelixWorkItem given xUnit project information.
+        /// Prepares HelixWorkItem given test project information.
         /// </summary>
         /// <param name="publishPath">The non-relative path to the publish directory.</param>
         /// <returns>An ITaskItem instance representing the prepared HelixWorkItem.</returns>
-        private async Task<List<ITaskItem>?> PrepareWorkItem(ITaskItem xunitProject)
+        private async Task<List<ITaskItem>?> PrepareWorkItem(ITaskItem testProject)
         {
             // Forces this task to run asynchronously
             await Task.Yield();
 
-            if (!xunitProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
+            if (!testProject.GetRequiredMetadata(Log, "PublishDirectory", out string publishDirectory))
             {
                 return null;
             }
-            if (!xunitProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
+            if (!testProject.GetRequiredMetadata(Log, "TargetPath", out string targetPath))
             {
                 return null;
             }
-            if (!xunitProject.GetRequiredMetadata(Log, "RuntimeTargetFramework", out string runtimeTargetFramework))
+            if (!testProject.GetRequiredMetadata(Log, "RuntimeTargetFramework", out string runtimeTargetFramework))
             {
                 return null;
             }
 
-            xunitProject.TryGetMetadata("ExcludeAdditionalParameters", out string ExcludeAdditionalParameters);
+            testProject.TryGetMetadata("ExcludeAdditionalParameters", out string ExcludeAdditionalParameters);
 
-            xunitProject.TryGetMetadata("Arguments", out string arguments);
+            testProject.TryGetMetadata("Arguments", out string arguments);
             TimeSpan timeout = TimeSpan.FromMinutes(5);
-            if (!string.IsNullOrEmpty(XUnitWorkItemTimeout))
+            if (!string.IsNullOrEmpty(TestWorkItemTimeout))
             {
-                if (!TimeSpan.TryParse(XUnitWorkItemTimeout, out timeout))
+                if (!TimeSpan.TryParse(TestWorkItemTimeout, out timeout))
                 {
-                    Log.LogWarning($"Invalid value \"{XUnitWorkItemTimeout}\" provided for XUnitWorkItemTimeout; falling back to default value of \"00:05:00\" (5 minutes)");
+                    Log.LogWarning($"Invalid value \"{TestWorkItemTimeout}\" provided for TestWorkItemTimeout; falling back to default value of \"00:05:00\" (5 minutes)");
                 }
             }
 
@@ -136,8 +136,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             // Files are copied into the publish directory and a pre-command copies them to the
             // correlation payload destination at runtime.
             string additionalPayloadPreCommand = "";
-            xunitProject.TryGetMetadata("AdditionalPayloadDir", out string additionalPayloadDir);
-            xunitProject.TryGetMetadata("AdditionalPayloadDestination", out string additionalPayloadDestination);
+            testProject.TryGetMetadata("AdditionalPayloadDir", out string additionalPayloadDir);
+            testProject.TryGetMetadata("AdditionalPayloadDestination", out string additionalPayloadDestination);
 
             if (!string.IsNullOrEmpty(additionalPayloadDir) && Directory.Exists(additionalPayloadDir))
             {
@@ -173,14 +173,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             // True when the test project is a Microsoft.Testing.Platform (MTP) project that
             // must be invoked via 'dotnet exec <dll>' with MTP-native CLI rather than the
             // VSTest-style 'dotnet test <dll>' command.
-            xunitProject.TryGetMetadata("IsMTPProject", out string isMTPProjectMetadata);
+            testProject.TryGetMetadata("IsMTPProject", out string isMTPProjectMetadata);
             bool isMTPProject = string.Equals(isMTPProjectMetadata, "true", StringComparison.OrdinalIgnoreCase);
 
             // True when the Microsoft.Testing.Extensions.TrxReport extension is loaded on the
-            // project. MSTest.Sdk enables it by default; xUnit v3 MTP projects do not bundle
-            // it unless added explicitly. Passing '--report-trx' to an MTP host without the
-            // extension fails with an 'unknown argument' error, so only emit it when known safe.
-            xunitProject.TryGetMetadata("EnableTrxReport", out string enableTrxReportMetadata);
+            // project. MSTest.Sdk enables it by default. Passing '--report-trx' to an MTP host
+            // without the extension fails with an 'unknown argument' error, so only emit it when
+            // known safe.
+            testProject.TryGetMetadata("EnableTrxReport", out string enableTrxReportMetadata);
             bool enableTrxReport = string.Equals(enableTrxReportMetadata, "true", StringComparison.OrdinalIgnoreCase);
 
             // netfx tests should only run on Windows full framework for testing VS scenarios
@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             var methodLimit = BaseMethodLimit;
-            if (xunitProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
+            if (testProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
             {
                 if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
                 {
@@ -232,13 +232,18 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                 var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
 
-                // xUnit v3 tests run out-of-process: the VSTest adapter launches the AppHost executable.
-                // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive,
-                // so we need to restore it before running.
+                // Test executables run out-of-process (MTP hosts are launched directly; the legacy
+                // VSTest path launches the AppHost executable). On POSIX, the execute bit is lost
+                // when the Helix SDK packages the payload as a zip archive, so restore it before running.
                 string exeName = Path.GetFileNameWithoutExtension(assemblyName);
                 string chmodPrefix = IsPosixShell ? $"chmod +x {exeName} && " : "";
                 // On macOS, ad-hoc sign the test exe with get-task-allow entitlement so createdump can attach via task_for_pid for crash dumps.
                 string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && " : "";
+
+                // blame-hang-timeout / hangdump-timeout is set to a % of the Helix work item timeout so
+                // that a hang dump can be captured and the results written before Helix hard-kills the
+                // process. Shared by both the MTP (--hangdump) and legacy VSTest (--blame-hang) branches.
+                var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
 
                 string command;
                 if (isMTPProject)
@@ -254,12 +259,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     //   --results-directory     same as VSTest
                     //   --report-trx            replaces '--logger trx' -- only emitted when the
                     //                           Microsoft.Testing.Extensions.TrxReport extension is
-                    //                           loaded (always true for MSTest.Sdk default profile;
-                    //                           not bundled with xUnit v3 MTP)
+                    //                           loaded (always true for MSTest.Sdk default profile)
                     //   --diagnostic            replaces VSTest '-d <log>'
-                    // Note: --logger "console;verbosity=detailed" and --blame-hang* have no direct MTP
-                    // equivalent in the MSTest.Sdk default extension set; the Helix work-item timeout
-                    // (XUnitWorkItemTimeout / HELIX_WORK_ITEM_TIMEOUT) still terminates runaway runs.
+                    //   --crashdump             captures a dump if the test host crashes
+                    //   --hangdump              captures a dump if the run stops making progress
+                    // Note: --logger "console;verbosity=detailed" has no direct MTP equivalent in the
+                    // MSTest.Sdk default extension set; the Helix work-item timeout (TestWorkItemTimeout
+                    // / HELIX_WORK_ITEM_TIMEOUT) still terminates runaway runs.
                     // Carry over the same execution-directory / MSBuild SDK resolver environment
                     // variables that the 'dotnet test' path sets via '-e'. They are required for
                     // macOS workitem-directory execution (DOTNET_SDK_TEST_EXECUTION_DIRECTORY) and
@@ -295,6 +301,15 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     // See https://github.com/dotnet/sdk/issues/54963.
                     string ignoreZeroTestsArg = "--ignore-exit-code 8";
 
+                    // Capture a crash dump on test-host crash and a hang dump when the run stops making
+                    // progress. --hangdump-timeout is a % of the work item timeout (see blameHangTimeout
+                    // above) so the dump is written before Helix hard-kills the work item. The dump files
+                    // land in the results directory and are copied to HELIX_WORKITEM_UPLOAD_ROOT by the
+                    // HelixPostCommands *.dmp glob in UnitTests.proj. Enabled repo-wide via
+                    // EnableMicrosoftTestingExtensions{Crash,Hang}Dump in test/Directory.Build.props.
+                    // --crashdump is recognized (and silently no-ops) on the .NET Framework MTP hosts.
+                    string dumpArgs = $"--crashdump --hangdump --hangdump-timeout {blameHangTimeout.TotalMinutes:0}m";
+
                     // .NET Framework apphosts (TargetPath is the '.exe') run directly; .NET (Core)
                     // assemblies (TargetPath is the '.dll') run via 'dotnet exec'.
                     string mtpLauncher = runtimeTargetFrameworkParsed.Framework == ".NETFramework"
@@ -302,15 +317,12 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                         : $"{driver} exec {assemblyName}";
 
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{envPrefix}{mtpLauncher} " +
-                              $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg} {ignoreZeroTestsArg}";
+                              $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg} {dumpArgs} {ignoreZeroTestsArg}";
                 }
                 else
                 {
-                    // blame-hang-timeout is set to a % of the Helix work item timeout so that blame can
-                    // collect hang dumps and write the TRX file before Helix hard-kills the process.
-                    var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {arguments}";
+                              $"{(TestArguments != null ? " " + TestArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {arguments}";
                 }
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
