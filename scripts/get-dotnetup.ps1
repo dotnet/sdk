@@ -148,7 +148,8 @@ function Resolve-FinalUrl([string]$Url) {
     if ($curl) {
         $sink = [System.IO.Path]::GetTempFileName()
         try {
-            $final = & $curl.Source --silent --show-error --location --head `   # --head resolves redirects without downloading the body
+            # --head resolves redirects without downloading the body.
+            $final = & $curl.Source --silent --show-error --location --head `
                 --output $sink --write-out '%{url_effective}' $Url 2>$null
             if ($LASTEXITCODE -eq 0 -and $final) { return "$final".Trim() }
         }
