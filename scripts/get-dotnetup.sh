@@ -182,9 +182,15 @@ resolve_final_url() {
         # final resolved URL without downloading the (large) body.
         curl --silent --show-error --location --head --output /dev/null \
              --write-out '%{url_effective}' "$url" 2>/dev/null
+    elif [ "$DOWNLOADER" = "wget" ]; then
+        # wget has no --write-out equivalent, but --spider -S prints the redirect
+        # chain's response headers; the final 'Location:' is the concrete build URL.
+        # tolower() (POSIX) keeps this portable across gawk/mawk/busybox awk.
+        wget --spider -S "$url" 2>&1 \
+            | awk 'tolower($1) == "location:" { u = $2 } END { if (u != "") print u }'
     fi
-    # wget has no simple equivalent; leaving the result empty falls back to the
-    # shortlink URLs below (i.e. the previous, unpinned behavior).
+    # If neither downloader can resolve (or the request fails), the empty result
+    # falls back to the shortlink URLs below (i.e. the previous, unpinned behavior).
 }
 
 RESOLVED_URL="$(resolve_final_url "$DOWNLOAD_URL" || true)"
