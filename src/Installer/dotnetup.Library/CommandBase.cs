@@ -45,9 +45,6 @@ public abstract class CommandBase
             // exit code) or throw to signal failure (which leaves _exitCode
             // at its outer initialization of 1).
             _exitCode = 0;
-            // TEMPORARY telemetry-delivery validation harness (revert before
-            // merge): no-op unless DOTNETUP_TELEMETRY_SIMULATE_ERROR is set.
-            TelemetryValidationHarness.ThrowIfRequested();
             ExecuteCore();
             return _exitCode;
         }
