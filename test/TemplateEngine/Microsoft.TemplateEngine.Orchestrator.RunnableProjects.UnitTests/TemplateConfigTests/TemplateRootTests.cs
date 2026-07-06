@@ -11,7 +11,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class TemplateRootTests
     {
         public TestContext TestContext { get; set; } = null!;

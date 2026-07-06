@@ -139,7 +139,6 @@ This file should be imported by eng/Versions.props
     <!-- microsoft-testfx dependencies -->
     <MicrosoftTestingPlatformPackageVersion>2.3.0-preview.26330.8</MicrosoftTestingPlatformPackageVersion>
     <MicrosoftTestingPlatformInternalDotnetTestPackageVersion>2.3.0-preview.26330.8</MicrosoftTestingPlatformInternalDotnetTestPackageVersion>
-    <MicrosoftTestingPlatformInternalDotnetTestVersion>$(MicrosoftTestingPlatformInternalDotnetTestPackageVersion)</MicrosoftTestingPlatformInternalDotnetTestVersion>
     <MSTestPackageVersion>4.3.0-preview.26330.8</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
@@ -277,6 +276,7 @@ This file should be imported by eng/Versions.props
     <SystemWindowsExtensionsVersion>$(SystemWindowsExtensionsPackageVersion)</SystemWindowsExtensionsVersion>
     <!-- microsoft-testfx dependencies -->
     <MicrosoftTestingPlatformVersion>$(MicrosoftTestingPlatformPackageVersion)</MicrosoftTestingPlatformVersion>
+    <MicrosoftTestingPlatformInternalDotnetTestVersion>$(MicrosoftTestingPlatformInternalDotnetTestPackageVersion)</MicrosoftTestingPlatformInternalDotnetTestVersion>
     <MSTestVersion>$(MSTestPackageVersion)</MSTestVersion>
   </PropertyGroup>
 </Project>

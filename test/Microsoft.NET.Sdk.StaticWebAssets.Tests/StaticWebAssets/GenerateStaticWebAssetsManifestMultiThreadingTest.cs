@@ -10,7 +10,6 @@ using Moq;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 [TestClass]
-[DoNotParallelize]
 public class GenerateStaticWebAssetsManifestMultiThreadingTest
 {
     [TestMethod]

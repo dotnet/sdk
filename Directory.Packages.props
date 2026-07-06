@@ -83,13 +83,6 @@
     <PackageVersion Include="Microsoft.Signed.Wix" Version="$(MicrosoftSignedWixVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
-    <!--
-      Internal, preview, source-only package from microsoft/testfx that ships the 'dotnet test' <->
-      Microsoft.Testing.Platform wire contract and terminal reporter as compiled source (single source of
-      truth, instead of the hand-copied files under src/Cli/dotnet/Commands/Test/MTP/). Version is darc-tracked
-      via eng/Version.Details.xml -> $(MicrosoftTestingPlatformInternalDotnetTestVersion) and moves with the
-      other microsoft/testfx dependencies. -->
-    <PackageVersion Include="Microsoft.Testing.Platform.Internal.DotnetTest" Version="$(MicrosoftTestingPlatformInternalDotnetTestVersion)" />
     <!-- VSTestBridge requests an older TestPlatform.ObjectModel. Test projects build into the test SDK
          layout, so that older copy would overwrite the in-box vstest assemblies from TestPlatform.CLI and
          break 'dotnet test'. Pin it to the in-box vstest version to keep them in sync. -->

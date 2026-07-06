@@ -3,7 +3,7 @@
 
 using System.Threading.Channels;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;

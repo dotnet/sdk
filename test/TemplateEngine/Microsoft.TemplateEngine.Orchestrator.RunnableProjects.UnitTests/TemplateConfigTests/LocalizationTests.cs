@@ -13,7 +13,6 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class LocalizationTests
     {
         public TestContext TestContext { get; set; } = null!;

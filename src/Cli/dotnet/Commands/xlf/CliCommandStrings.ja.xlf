@@ -3187,6 +3187,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">.NET プロジェクトに指定されているテスト ランナーを使用して、単体テストを実行します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">テスト検出が異常終了コードで完了しました: {0} (参照: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">{1} アセンブリで {0} つのテストを検出しました。</target>
@@ -3201,6 +3206,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">テストを実行する対象のターゲット フレームワーク。ターゲット フレームワークはプロジェクト ファイルでも指定する必要があります。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">テスト実行が非成功終了コードで完了しました: {0} (参照: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
