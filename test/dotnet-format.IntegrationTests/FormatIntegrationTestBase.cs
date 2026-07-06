@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
@@ -66,11 +68,18 @@ public abstract class FormatIntegrationTestBase
             Directory.CreateDirectory(_repoPath);
 
             CloneRepo();
+
+            // Run the repo's Arcade build script restore while global.json is still present.
+            // This installs the Arcade SDK tooling that project files import (e.g.,
+            // $(ArcadeSdkBuildTasksAssembly)). Without this, repos like Roslyn fail to restore
+            // because their project files have hard imports of Arcade targets.
+            RunArcadeBuildScriptRestore();
         }
 
-        // Remove global.json so that the SDK under test is used for restore and format
-        // rather than the repo's pinned SDK version.
-        RemoveGlobalJson();
+        // Strip the "sdk" section from global.json so that the SDK under test is used
+        // for solution restore and formatting. The "msbuild-sdks" section is preserved
+        // so that NuGet SDK resolver can still find Arcade and other MSBuild SDKs.
+        RemoveGlobalJsonSdkSection();
 
         Restore();
     }
@@ -183,16 +192,90 @@ public abstract class FormatIntegrationTestBase
     }
 
     /// <summary>
-    /// Removes the repo's global.json so that the SDK under test is used for restore
-    /// and formatting rather than the repo's pinned SDK version.
+    /// Runs the repo's Arcade build script with -restore to install Arcade SDK tooling.
+    /// This must run while global.json is still present so that Arcade's install scripts
+    /// can acquire the correct SDK version. The installed tooling (targets, tasks) is then
+    /// available for the subsequent solution-level restore.
+    /// Failures are non-fatal — repos without Arcade (or with inaccessible feeds) still
+    /// proceed to the direct solution restore.
     /// </summary>
-    private void RemoveGlobalJson()
+    private void RunArcadeBuildScriptRestore()
     {
-        var globalJson = Path.Combine(_repoPath!, "global.json");
-        if (File.Exists(globalJson))
+        string scriptPath;
+        string arguments;
+
+        if (OperatingSystem.IsWindows())
         {
-            File.Delete(globalJson);
-            _output.WriteLine("Removed global.json to use parent SDK for formatting.");
+            var engBuild = Path.Combine(_repoPath!, "eng", "Build.ps1");
+            var engCommonBuild = Path.Combine(_repoPath!, "eng", "common", "Build.ps1");
+
+            if (File.Exists(engBuild))
+            {
+                scriptPath = "powershell";
+                arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{engBuild}\" -restore";
+            }
+            else if (File.Exists(engCommonBuild))
+            {
+                scriptPath = "powershell";
+                arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{engCommonBuild}\" -restore";
+            }
+            else
+            {
+                _output.WriteLine("No Arcade build script found; skipping Arcade restore.");
+                return;
+            }
+        }
+        else
+        {
+            var engBuildSh = Path.Combine(_repoPath!, "eng", "build.sh");
+            var engCommonBuildSh = Path.Combine(_repoPath!, "eng", "common", "build.sh");
+
+            if (File.Exists(engBuildSh))
+            {
+                scriptPath = "bash";
+                arguments = $"\"{engBuildSh}\" --restore";
+            }
+            else if (File.Exists(engCommonBuildSh))
+            {
+                scriptPath = "bash";
+                arguments = $"\"{engCommonBuildSh}\" --restore";
+            }
+            else
+            {
+                _output.WriteLine("No Arcade build script found; skipping Arcade restore.");
+                return;
+            }
+        }
+
+        _output.WriteLine($"Running Arcade build script restore: {scriptPath} {arguments}");
+        var sw = Stopwatch.StartNew();
+
+        RunProcess(scriptPath, arguments, ignoreThrowingOnError: true);
+
+        sw.Stop();
+        _output.WriteLine($"Arcade restore completed in {sw.Elapsed:hh\\:mm\\:ss\\.ff}");
+    }
+
+    /// <summary>
+    /// Strips the "sdk" section from the repo's global.json so that the SDK under test
+    /// is used for restore and formatting, while preserving the "msbuild-sdks" section
+    /// that tells the NuGet SDK resolver which versions of MSBuild SDKs
+    /// (e.g., Microsoft.DotNet.Arcade.Sdk) to use.
+    /// </summary>
+    private void RemoveGlobalJsonSdkSection()
+    {
+        var globalJsonPath = Path.Combine(_repoPath!, "global.json");
+        if (!File.Exists(globalJsonPath))
+        {
+            return;
+        }
+
+        var json = JsonNode.Parse(File.ReadAllText(globalJsonPath));
+        if (json is JsonObject obj && obj.ContainsKey("sdk"))
+        {
+            obj.Remove("sdk");
+            File.WriteAllText(globalJsonPath, obj.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            _output.WriteLine("Removed 'sdk' section from global.json to use parent SDK.");
         }
     }
 
