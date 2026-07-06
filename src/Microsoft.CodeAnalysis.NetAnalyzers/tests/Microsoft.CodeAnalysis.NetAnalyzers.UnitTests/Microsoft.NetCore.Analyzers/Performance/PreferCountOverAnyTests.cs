@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferLengthCountIsEmptyOverAnyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferLengthCountIsEmptyOverAnyFixer>;
@@ -13,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class PreferCountOverAnyTests
     {
         private static readonly DiagnosticResult ExpectedDiagnostic = new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.CountDescriptor).WithLocation(0);
 
-        [Fact]
+        [TestMethod]
         public Task TestLocalDeclarationAsync()
         {
             const string code = @"
@@ -44,7 +44,7 @@ public class Tests {
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbTestLocalDeclarationAsync()
         {
             const string code = @"
@@ -72,7 +72,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestParameterDeclarationAsync()
         {
             const string code = @"
@@ -97,7 +97,7 @@ public class Tests {
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbTestParameterDeclarationAsync()
         {
             const string code = @"
@@ -123,7 +123,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestNegatedAnyAsync()
         {
             const string code = @"
@@ -148,7 +148,7 @@ public class Tests {
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbTestNegatedAnyAsync()
         {
             const string code = @"
@@ -174,7 +174,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task DontWarnOnChainedLinqWithAnyAsync()
         {
             const string code = @"
@@ -190,7 +190,7 @@ public class Tests {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbDontWarnOnChainedLinqWithAnyAsync()
         {
             const string code = @"
@@ -206,7 +206,7 @@ End Class";
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task DontWarnOnAnyWithPredicateAsync()
         {
             const string code = @"
@@ -222,7 +222,7 @@ public class Tests {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbDontWarnOnAnyWithPredicateAsync()
         {
             const string code = @"
@@ -238,7 +238,7 @@ End Class";
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task DontWarnOnInvalidCallAsync()
         {
             const string code = @"
@@ -255,7 +255,7 @@ public class Tests {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbDontWarnOnInvalidCallAsync()
         {
             const string code = @"
@@ -271,7 +271,7 @@ End Class";
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestQualifiedCallAsync()
         {
             const string code = @"
@@ -296,7 +296,7 @@ public class Tests {
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbTestQualifiedCallAsync()
         {
             const string code = @"
@@ -322,7 +322,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestFullyQualifiedCallAsync()
         {
             const string code = @"
@@ -347,7 +347,7 @@ public class Tests {
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbTestFullyQualifiedCallAsync()
         {
             const string code = @"
@@ -373,7 +373,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbTestWithoutParenthesesAsync()
         {
             const string code = @"
@@ -399,7 +399,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VbTestNegatedWithoutParenthesesAsync()
         {
             const string code = @"
@@ -425,7 +425,7 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task DontWarnOnCustomType()
         {
             const string code = @"

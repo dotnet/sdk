@@ -9,13 +9,14 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class ListCommandTests
 {
-    [Theory]
-    [InlineData(new[] { "list" }, OutputFormat.Text, false)]
-    [InlineData(new[] { "list", "--format", "json" }, OutputFormat.Json, false)]
-    [InlineData(new[] { "list", "--no-verify" }, OutputFormat.Text, true)]
-    [InlineData(new[] { "list", "--format", "json", "--no-verify" }, OutputFormat.Json, true)]
+    [TestMethod]
+    [DataRow(new[] { "list" }, OutputFormat.Text, false)]
+    [DataRow(new[] { "list", "--format", "json" }, OutputFormat.Json, false)]
+    [DataRow(new[] { "list", "--no-verify" }, OutputFormat.Text, true)]
+    [DataRow(new[] { "list", "--format", "json", "--no-verify" }, OutputFormat.Json, true)]
     public void Parser_ShouldParseListCommand(string[] args, OutputFormat expectedFormat, bool expectedNoVerify)
     {
         // Act
@@ -28,7 +29,7 @@ public class ListCommandTests
         parseResult.GetValue(ListCommandParser.NoVerifyOption).Should().Be(expectedNoVerify);
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallationLister_GetInstallations_ShouldReturnList()
     {
         // Use an isolated temp manifest to avoid reading a stale/legacy manifest on CI
@@ -50,7 +51,7 @@ public class ListCommandTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallationLister_WriteHumanReadable_ShouldOutputHeader()
     {
         // Arrange
@@ -67,7 +68,7 @@ public class ListCommandTests
         output.Should().Contain("Total: 0");
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallationLister_WriteHumanReadable_WithInstallations_ShouldShowDetails()
     {
         // Arrange - use secure temp subdirectory
@@ -103,7 +104,7 @@ public class ListCommandTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallationLister_WriteJson_ShouldOutputValidJson()
     {
         // Arrange
@@ -119,7 +120,7 @@ public class ListCommandTests
         jsonAction.Should().NotThrow();
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallationLister_WriteJson_ShouldContainExpectedStructure()
     {
         // Arrange - use secure temp subdirectory
@@ -159,7 +160,7 @@ public class ListCommandTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallationLister_WriteJson_EmptyList_ShouldHaveEmptyInstallations()
     {
         // Arrange

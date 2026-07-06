@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpImplementStandardExceptionConstructorsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ImplementStandardExceptionConstructorsFixer>;
@@ -13,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class ImplementStandardExceptionConstructorsTests
     {
         #region CSharp Unit Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_NoDiagnostic_NotDerivingFromExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -29,7 +29,7 @@ public class NotDerivingFromException
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_NoDiagnostic_GoodException1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -51,7 +51,7 @@ public class GoodException1 : Exception
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_NoDiagnostic_GoodException2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -76,7 +76,7 @@ public class GoodException2 : Exception
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_Diagnostic_MissingAllConstructorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -90,7 +90,7 @@ public class BadException1 : Exception
             GetCA1032CSharpMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException1", constructor: "public BadException1(string message, Exception innerException)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_Diagnostic_MissingTwoConstructorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -107,7 +107,7 @@ public class BadException2 : Exception
             GetCA1032CSharpMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException2", constructor: "public BadException2(string message, Exception innerException)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_Diagnostic_MissingDefaultConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -126,7 +126,7 @@ public class BadException3 : Exception
             GetCA1032CSharpMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException3", constructor: "public BadException3()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_Diagnostic_MissingConstructor2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -145,7 +145,7 @@ public class BadException4 : Exception
             GetCA1032CSharpMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException4", constructor: "public BadException4(string message)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_Diagnostic_MissingConstructor3Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -164,7 +164,7 @@ public class BadException5 : Exception
             GetCA1032CSharpMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException5", constructor: "public BadException5(string message, Exception innerException)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1032_Diagnostic_SurplusButMissingConstructor3Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -190,7 +190,7 @@ public class BadException6 : Exception
 
         #region VB Unit Test
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_NoDiagnostic_NotDerivingFromExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -201,7 +201,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_NoDiagnostic_GoodException1Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -219,7 +219,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_NoDiagnostic_GoodException2Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -239,7 +239,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_Diagnostic_MissingAllConstructorsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -252,7 +252,7 @@ End Class
             GetCA1032BasicMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException1", constructor: "Public Sub New(message As String, innerException As Exception)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_Diagnostic_MissingTwoConstructorsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -267,7 +267,7 @@ End Class
             GetCA1032BasicMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException2", constructor: "Public Sub New(message As String, innerException As Exception)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_Diagnostic_MissingDefaultConstructorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -283,7 +283,7 @@ End Class
             GetCA1032BasicMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException3", constructor: "Public Sub New()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_Diagnostic_MissingConstructor2Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -299,7 +299,7 @@ End Class
             GetCA1032BasicMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException4", constructor: "Public Sub New(message As String)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_Diagnostic_MissingConstructor3Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -315,7 +315,7 @@ End Class
             GetCA1032BasicMissingConstructorResultAt(line: 4, column: 14, typeName: "BadException5", constructor: "Public Sub New(message As String, innerException As Exception)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1032_Diagnostic_SurplusButMissingConstructor3Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

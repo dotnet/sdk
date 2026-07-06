@@ -8,10 +8,10 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Spectre.Console;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class UninstallWorkflowTests
 {
     private const string DefaultUserPath = "/home/user/.dotnet";
@@ -24,7 +24,7 @@ public class UninstallWorkflowTests
     /// Regression test: previously, GetConfiguredInstallType().Path was used unconditionally,
     /// causing uninstall to target "C:\Program Files\dotnet" when the user meant their user install.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ResolveInstallPath_AdminInstall_FallsBackToDefault()
     {
         var mock = new MockDotnetInstallManager(
@@ -39,7 +39,7 @@ public class UninstallWorkflowTests
     /// <summary>
     /// When dotnet on PATH resolves to a user install, the uninstall should use that path.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ResolveInstallPath_UserInstall_UsesConfiguredPath()
     {
         string userPath = "/home/user/custom-dotnet";
@@ -55,7 +55,7 @@ public class UninstallWorkflowTests
     /// <summary>
     /// Explicit --install-path always takes priority.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ResolveInstallPath_ExplicitPath_TakesPrecedence()
     {
         var mock = new MockDotnetInstallManager(
@@ -70,7 +70,7 @@ public class UninstallWorkflowTests
     /// <summary>
     /// When no dotnet is on PATH and no explicit path is given, the default user path is used.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ResolveInstallPath_NoConfiguredInstall_UsesDefault()
     {
         var mock = new MockDotnetInstallManager(

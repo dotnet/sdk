@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorOverloadsHaveNamedAlternatesAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorOverloadsHaveNamedAlternatesFixer>;
@@ -12,11 +11,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OperatorOverloadsHaveNamedAlternatesFixerTests
     {
         #region C# tests
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateMethod_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -39,7 +39,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateOfMultiples_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -62,7 +62,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateProperty_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -90,7 +90,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateForConversion_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -113,7 +113,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateForCompare_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -141,7 +141,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateForStructCompare_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -164,7 +164,7 @@ public struct C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateForIncrement_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -187,7 +187,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixImproperMethodVisibility_CSharpAsync()
         {
             await new VerifyCS.Test
@@ -210,10 +210,10 @@ public class C
     public static C Add(C left, C right) { return new C(); }
 }
 ",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixImproperPropertyVisibility_CSharpAsync()
         {
             await new VerifyCS.Test
@@ -238,14 +238,14 @@ public class C
     public bool IsTrue => true;
 }
 ",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region VB tests
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateMethod_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -269,7 +269,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateOfMultiples_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -293,7 +293,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateProperty_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -325,7 +325,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateForConversion_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -349,7 +349,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateForCompare_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -377,7 +377,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AddAlternateForStructCompare_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -401,7 +401,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixImproperMethodVisibility_BasicAsync()
         {
             await new VerifyVB.Test
@@ -432,10 +432,10 @@ Public Class C
     End Function
 End Class
 ",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixImproperPropertyVisibility_BasicAsync()
         {
             await new VerifyVB.Test
@@ -476,7 +476,7 @@ Public Class C
     End Property
 End Class
 ",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion

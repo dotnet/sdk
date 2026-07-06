@@ -66,7 +66,7 @@ jobs:
       - powershell: |
           $testAssembly = Get-ChildItem -Path "artifacts\bin\dotnetup.Tests\Release" -Recurse -Filter "dotnetup.Tests.dll" | Select-Object -First 1 -ExpandProperty FullName
           if (-not $testAssembly) { throw "Unable to find dotnetup.Tests.dll" }
-          & .\.dotnet\dotnet $testAssembly -noLogo -result-trx "$(Build.SourcesDirectory)\artifacts\dotnetupTestResults\dotnetup-tests.trx"
+          & .\.dotnet\dotnet $testAssembly --report-trx --report-trx-filename "dotnetup-tests.trx" --results-directory "$(Build.SourcesDirectory)\artifacts\dotnetupTestResults"
         displayName: 🔍 Test Windows
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
@@ -91,7 +91,7 @@ jobs:
             echo "Unable to find dotnetup.Tests.dll"
             exit 1
           fi
-          ./.dotnet/dotnet "$test_assembly" -noLogo -result-trx "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults/dotnetup-tests.trx"
+          ./.dotnet/dotnet "$test_assembly" --report-trx --report-trx-filename "dotnetup-tests.trx" --results-directory "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults"
         displayName: 🔎 Test (Unix)
     - task: PublishTestResults@2
       displayName: 🚀 Publish test results

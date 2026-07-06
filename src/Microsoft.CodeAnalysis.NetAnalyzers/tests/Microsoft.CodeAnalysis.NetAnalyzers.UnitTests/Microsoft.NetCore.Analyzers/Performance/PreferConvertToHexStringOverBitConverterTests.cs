@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferConvertToHexStringOverBitConverterAnalyzer,
@@ -15,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class PreferConvertToHexStringOverBitConverterTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DataOnly_OffersFixer_CS()
         {
             string source = """
@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DataOnlyReplaceWithStringComparison_OffersFixer_CS(StringComparison stringComparison)
         {
@@ -86,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataOnlyReplaceWithBoolAndCultureInfo_OffersFixer_CS()
         {
             string source = """
@@ -126,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStart_OffersFixer_CS()
         {
             string source = """
@@ -160,7 +160,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStartNoSystemImport_OffersFixer_CS()
         {
             string source = """
@@ -188,7 +188,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DataWithStartReplaceWithStringComparison_OffersFixer_CS(StringComparison stringComparison)
         {
@@ -223,7 +223,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStartReplaceWithBoolAndCultureInfo_OffersFixer_CS()
         {
             string source = """
@@ -263,7 +263,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStartAndLength_OffersFixer_CS()
         {
             string source = """
@@ -297,7 +297,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DataWithStartAndLengthReplaceWithStringComparison_OffersFixer_CS(StringComparison stringComparison)
         {
@@ -332,7 +332,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStartAndLengthReplaceWithBoolAndCultureInfo_OffersFixer_CS()
         {
             string source = """
@@ -372,7 +372,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ToLowerAfterReplaceIsPreservedWhenToHexStringLowerIsNotAvailable_OffersFixer_CS()
         {
             string source = """
@@ -406,7 +406,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ToLowerBeforeReplaceIsPreservedWhenToHexStringLowerIsNotAvailable_OffersFixer_CS()
         {
             string source = """
@@ -440,7 +440,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ToLowerAfterReplaceIsReplacedWithToHexStringLower_OffersFixer_CS()
         {
             string source = """
@@ -486,7 +486,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource, ReferenceAssemblies.Net.Net90);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ToLowerBeforeReplaceIsReplacedWithToHexStringLower_OffersFixer_CS()
         {
             string source = """
@@ -532,7 +532,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource, ReferenceAssemblies.Net.Net90);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArguments_OffersFixer_CS()
         {
             string source = """
@@ -566,7 +566,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArgumentsSwapped_OffersFixer_CS()
         {
             string source = """
@@ -606,7 +606,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TriviaIsPreserved_OffersFixer_CS()
         {
             string source = """
@@ -638,7 +638,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotAStringReplaceMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -664,7 +664,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringReplaceCharMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -682,7 +682,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InstanceIsNoInvocation_NoDiagnostic_CS()
         {
             string source = """
@@ -701,7 +701,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotASystemBitConverterToStringMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -725,7 +725,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReplaceOldValueIsNoSingleHyphenStringConstant_NoDiagnostic_CS()
         {
             string source = """
@@ -743,7 +743,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReplaceNewValueIsNoEmptyOrNullStringConstant_NoDiagnostic_CS()
         {
             string source = """
@@ -761,7 +761,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MissingConvertToHexStringSymbol_NoDiagnostic_CS()
         {
             string source = """
@@ -780,7 +780,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCSharpCodeFixAsync(source, source, ReferenceAssemblies.NetCore.NetCoreApp31);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataOnly_OffersFixer_VB()
         {
             string source = """
@@ -810,7 +810,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DataOnlyReplaceWithStringComparison_OffersFixer_VB(StringComparison stringComparison)
         {
@@ -841,7 +841,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataOnlyReplaceWithBoolAndCultureInfo_OffersFixer_VB()
         {
             string source = """
@@ -877,7 +877,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStart_OffersFixer_VB()
         {
             string source = """
@@ -907,7 +907,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStartNoSystemImport_OffersFixer_VB()
         {
             string source = """
@@ -931,7 +931,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DataWithStartReplaceWithStringComparison_OffersFixer_VB(StringComparison stringComparison)
         {
@@ -962,7 +962,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStartReplaceWithBoolAndCultureInfo_OffersFixer_VB()
         {
             string source = """
@@ -998,7 +998,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStartAndLength_OffersFixer_VB()
         {
             string source = """
@@ -1028,7 +1028,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task DataWithStartAndLengthReplaceWithStringComparison_OffersFixer_VB(StringComparison stringComparison)
         {
@@ -1059,7 +1059,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataWithStartAndLengthReplaceWithBoolAndCultureInfo_OffersFixer_VB()
         {
             string source = """
@@ -1095,7 +1095,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ToLowerAfterReplaceIsPreservedWhenToHexStringLowerIsNotAvailable_OffersFixer_VB()
         {
             string source = """
@@ -1125,7 +1125,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ToLowerBeforeReplaceIsPreservedWhenToHexStringLowerIsNotAvailable_OffersFixer_VB()
         {
             string source = """
@@ -1155,7 +1155,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ToLowerAfterReplaceIsReplacedWithToHexStringLower_OffersFixer_VB()
         {
             string source = """
@@ -1197,7 +1197,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource, ReferenceAssemblies.Net.Net90);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ToLowerBeforeReplaceIsReplacedWithToHexStringLower_OffersFixer_VB()
         {
             string source = """
@@ -1239,7 +1239,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource, ReferenceAssemblies.Net.Net90);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArguments_OffersFixer_VB()
         {
             string source = """
@@ -1269,7 +1269,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArgumentsSwapped_OffersFixer_VB()
         {
             string source = """
@@ -1305,7 +1305,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TriviaIsPreserved_OffersFixer_VB()
         {
             string source = """
@@ -1333,7 +1333,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotAStringReplaceMethod_NoDiagnostic_VB()
         {
             string source = """
@@ -1357,7 +1357,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringReplaceCharMethod_NoDiagnostic_VB()
         {
             string source = """
@@ -1373,7 +1373,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InstanceIsNoInvocation_NoDiagnostic_VB()
         {
             string source = """
@@ -1390,7 +1390,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotASystemBitConverterToStringMethod_NoDiagnostic_VB()
         {
             string source = """
@@ -1410,7 +1410,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReplaceOldValueIsNoSingleHyphenStringConstant_NoDiagnostic_VB()
         {
             string source = """
@@ -1426,7 +1426,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReplaceNewValueIsNoEmptyOrNullStringConstant_NoDiagnostic_VB()
         {
             string source = """
@@ -1442,7 +1442,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyBasicCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MissingConvertToHexStringSymbol_NoDiagnostic_VB()
         {
             string source = """
@@ -1466,7 +1466,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net50
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyBasicCodeFixAsync(string source, string fixedSource, ReferenceAssemblies referenceAssemblies = null)
@@ -1476,7 +1476,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net50
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

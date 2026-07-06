@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
     NativeAOT entry-point Exe for dotnetup. We want to compile dotnetup into a NativeAOT
@@ -6,7 +6,7 @@
     dotnetup.Library project, which is what tests reference.  This project is published
     as a NativeAOT executable and simply has an entry point that forwards to the one in
     the library.
-    
+
     We set _IsPublishing=true and have a PublishOnBuild target so that the AOT publish
     runs as part of the normal build.
 
@@ -66,8 +66,8 @@
   </ItemGroup>
 
     <!-- We want to always create a NativeAOT executable when this project is built or published.
-    
-        So we set _IsPublishing=true and add a target to run Publish after Build.  But in order to 
+
+        So we set _IsPublishing=true and add a target to run Publish after Build.  But in order to
         avoid a target cycle error when publish is invoked directly, we first check whether
         _IsPublishing was already set, and if so let the normal publish flow run instead. -->
   <PropertyGroup>
@@ -108,6 +108,24 @@
           Outputs="$(PublishDir)dotnetup-$(RuntimeIdentifier)$(_DotnetupNativeBinaryExt)">
     <Copy SourceFiles="$(PublishDir)$(TargetName)$(_DotnetupNativeBinaryExt)"
           DestinationFiles="$(PublishDir)dotnetup-$(RuntimeIdentifier)$(_DotnetupNativeBinaryExt)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!--
+    Stage the get-dotnetup scripts for signing and publishing, only on one target CI machine and scripts are rid-agnostic.
+    The matching aka.ms link patterns live in dotnet/arcade's DotnetupAkaMSCreateLinkPatterns.
+  -->
+  <ItemGroup>
+    <_GetDotnetupScript Include="$(RepoRoot)scripts\get-dotnetup.ps1" />
+    <_GetDotnetupScript Include="$(RepoRoot)scripts\get-dotnetup.sh" />
+  </ItemGroup>
+  <Target Name="StageGetDotnetupScripts"
+          AfterTargets="Build"
+          Condition="'$(TargetRid)' == 'win-x64'"
+          Inputs="@(_GetDotnetupScript)"
+          Outputs="@(_GetDotnetupScript->'$(ArtifactsBinDir)dotnetup-scripts\%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(_GetDotnetupScript)"
+          DestinationFolder="$(ArtifactsBinDir)dotnetup-scripts"
           SkipUnchangedFiles="true" />
   </Target>
 

@@ -8,7 +8,7 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
-[Collection("DotnetupInstallCollection")]
+[TestClass]
 public class InfoCommandTests : IDisposable
 {
     //  Create a test environment, which will set up a temp directory for the manifest and
@@ -17,7 +17,7 @@ public class InfoCommandTests : IDisposable
     private readonly TestEnvironment _testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
     public void Dispose() => _testEnv.Dispose();
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseInfoCommand()
     {
         // Arrange - dotnetup --info (like dotnet --info)
@@ -31,7 +31,7 @@ public class InfoCommandTests : IDisposable
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseInfoCommandWithJsonOption()
     {
         // Arrange - dotnetup --info --format json
@@ -46,7 +46,7 @@ public class InfoCommandTests : IDisposable
         parseResult.GetValue(InfoCommandParser.FormatOption).Should().Be(OutputFormat.Json);
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseInfoCommandWithNoListOption()
     {
         // Arrange - dotnetup --info --no-list
@@ -61,10 +61,10 @@ public class InfoCommandTests : IDisposable
         parseResult.GetValue(InfoCommandParser.NoListOption).Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData("--format", "json")]
-    [InlineData("--format", "text")]
-    [InlineData("--no-list", null)]
+    [TestMethod]
+    [DataRow("--format", "json")]
+    [DataRow("--format", "text")]
+    [DataRow("--no-list", null)]
     public void Parser_InfoOptionsNotAvailableAtRootLevel(string option, string? value)
     {
         // Arrange - try to use --info options without --info (e.g., dotnetup --format json)
@@ -78,9 +78,9 @@ public class InfoCommandTests : IDisposable
         parseResult.Errors.Should().NotBeEmpty();
     }
 
-    [Theory]
-    [InlineData(OutputFormat.Text)]
-    [InlineData(OutputFormat.Json)]
+    [TestMethod]
+    [DataRow(OutputFormat.Text)]
+    [DataRow(OutputFormat.Json)]
     public void InfoCommand_ShouldReturnZeroExitCode(OutputFormat format)
     {
         // Arrange
@@ -93,7 +93,7 @@ public class InfoCommandTests : IDisposable
         exitCode.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void InfoCommand_HumanReadable_ShouldOutputExpectedFormat()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class InfoCommandTests : IDisposable
         output.Should().Contain("RID:");
     }
 
-    [Fact]
+    [TestMethod]
     public void InfoCommand_HumanReadable_WithList_ShouldIncludeListOutput()
     {
         // Arrange
@@ -128,7 +128,7 @@ public class InfoCommandTests : IDisposable
         output.Should().Contain("Total:");
     }
 
-    [Fact]
+    [TestMethod]
     public void InfoCommand_Json_ShouldOutputValidJson()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class InfoCommandTests : IDisposable
         jsonAction.Should().NotThrow();
     }
 
-    [Fact]
+    [TestMethod]
     public void InfoCommand_Json_ShouldContainExpectedProperties()
     {
         // Arrange
@@ -163,7 +163,7 @@ public class InfoCommandTests : IDisposable
         root.TryGetProperty("rid", out _).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void InfoCommand_Json_WithList_ShouldContainInstallationsProperty()
     {
         // Arrange

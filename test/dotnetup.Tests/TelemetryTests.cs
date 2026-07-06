@@ -5,76 +5,77 @@ using System.Diagnostics;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
-using Xunit;
+using Microsoft.DotNet.Tools.Dotnetup.Tests;
 using UrlSanitizer = Microsoft.Dotnet.Installation.Internal.UrlSanitizer;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
 
+[TestClass]
 public class TelemetryCommonPropertiesTests
 {
-    [Fact]
+    [TestMethod]
     public void Hash_SameInput_ProducesSameOutput()
     {
         var input = "test-string";
         var hash1 = TelemetryCommonProperties.Hash(input);
         var hash2 = TelemetryCommonProperties.Hash(input);
 
-        Assert.Equal(hash1, hash2);
+        Assert.AreEqual(hash1, hash2);
     }
 
-    [Fact]
+    [TestMethod]
     public void Hash_DifferentInputs_ProduceDifferentOutputs()
     {
         var hash1 = TelemetryCommonProperties.Hash("input1");
         var hash2 = TelemetryCommonProperties.Hash("input2");
 
-        Assert.NotEqual(hash1, hash2);
+        Assert.AreNotEqual(hash1, hash2);
     }
 
-    [Fact]
+    [TestMethod]
     public void Hash_ReturnsValidSha256_64CharHex()
     {
         var hash = TelemetryCommonProperties.Hash("test");
 
         // SHA256 produces 32 bytes = 64 hex characters
-        Assert.Equal(64, hash.Length);
-        Assert.Matches("^[a-f0-9]+$", hash);
+        Assert.AreEqual(64, hash.Length);
+        Assert.MatchesRegex("^[a-f0-9]+$", hash);
     }
 
-    [Fact]
+    [TestMethod]
     public void Hash_IsLowercase()
     {
         var hash = TelemetryCommonProperties.Hash("TEST");
 
-        Assert.Equal(hash.ToLowerInvariant(), hash);
+        Assert.AreEqual(hash.ToLowerInvariant(), hash);
     }
 
-    [Fact]
+    [TestMethod]
     public void HashPath_NullPath_ReturnsEmpty()
     {
         var result = TelemetryCommonProperties.HashPath(null);
 
-        Assert.Equal(string.Empty, result);
+        Assert.AreEqual(string.Empty, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void HashPath_EmptyPath_ReturnsEmpty()
     {
         var result = TelemetryCommonProperties.HashPath(string.Empty);
 
-        Assert.Equal(string.Empty, result);
+        Assert.AreEqual(string.Empty, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void HashPath_ValidPath_ReturnsHash()
     {
         var result = TelemetryCommonProperties.HashPath(@"C:\Users\test\path");
 
-        Assert.NotEmpty(result);
-        Assert.Equal(64, result.Length);
+        Assert.IsNotEmpty(result);
+        Assert.AreEqual(64, result.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetCommonAttributes_ContainsRequiredKeys()
     {
         var sessionId = Guid.NewGuid().ToString();
@@ -97,17 +98,17 @@ public class TelemetryCommonPropertiesTests
         Assert.Contains("dev.build", attributes.Keys);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetCommonAttributes_SessionIdMatchesInput()
     {
         var sessionId = Guid.NewGuid().ToString();
         var attributes = TelemetryCommonProperties.GetCommonAttributes(sessionId)
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
-        Assert.Equal(sessionId, attributes["session.id"]);
+        Assert.AreEqual(sessionId, attributes["session.id"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetCommonAttributes_OsPlatformIsValid()
     {
         var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
@@ -115,10 +116,10 @@ public class TelemetryCommonPropertiesTests
 
         var osPlatform = attributes["os.platform"] as string;
         // OSDescription returns the full OS description (e.g., "Microsoft Windows 10.0.26200")
-        Assert.False(string.IsNullOrEmpty(osPlatform));
+        Assert.IsFalse(string.IsNullOrEmpty(osPlatform));
     }
 
-    [Fact]
+    [TestMethod]
     public void GetCommonAttributes_ProcessArchIsValid()
     {
         var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
@@ -128,138 +129,140 @@ public class TelemetryCommonPropertiesTests
         Assert.Contains(arch, new[] { "X86", "X64", "Arm", "Arm64", "Wasm", "S390x", "LoongArch64", "Armv6", "Ppc64le", "RiscV64" });
     }
 
-    [Fact]
+    [TestMethod]
     public void GetCommonAttributes_DeviceIdIsNotEmpty()
     {
         var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         var deviceId = attributes["device.id"] as string;
-        Assert.False(string.IsNullOrEmpty(deviceId));
+        Assert.IsFalse(string.IsNullOrEmpty(deviceId));
     }
 
-    [Fact]
+    [TestMethod]
     public void GetCommonAttributes_VersionIsNotEmpty()
     {
         var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         var version = attributes["dotnetup.version"] as string;
-        Assert.False(string.IsNullOrEmpty(version));
+        Assert.IsFalse(string.IsNullOrEmpty(version));
     }
 }
 
+[TestClass]
 public class VersionSanitizerTelemetryTests
 {
-    [Theory]
-    [InlineData("9.0", "9.0")]
-    [InlineData("9.0.100", "9.0.100")]
-    [InlineData("10.0.1xx", "10.0.1xx")]
-    [InlineData("latest", "latest")]
-    [InlineData("preview", "preview")]
-    [InlineData("lts", "lts")]
+    [TestMethod]
+    [DataRow("9.0", "9.0")]
+    [DataRow("9.0.100", "9.0.100")]
+    [DataRow("10.0.1xx", "10.0.1xx")]
+    [DataRow("latest", "latest")]
+    [DataRow("preview", "preview")]
+    [DataRow("lts", "lts")]
     public void Sanitize_ValidVersions_PassThrough(string input, string expected)
     {
         var result = VersionSanitizer.Sanitize(input);
 
-        Assert.Equal(expected, result);
+        Assert.AreEqual(expected, result);
     }
 
-    [Theory]
-    [InlineData("my-custom-path")]
-    [InlineData("/home/user/sdk")]
-    [InlineData("C:\\Users\\secret\\path")]
-    [InlineData("some random text")]
+    [TestMethod]
+    [DataRow("my-custom-path")]
+    [DataRow("/home/user/sdk")]
+    [DataRow("C:\\Users\\secret\\path")]
+    [DataRow("some random text")]
     public void Sanitize_InvalidInput_ReturnsInvalid(string input)
     {
         var result = VersionSanitizer.Sanitize(input);
 
-        Assert.Equal("invalid", result);
+        Assert.AreEqual("invalid", result);
     }
 
-    [Theory]
-    [InlineData("9.0.100-preview.1")]
-    [InlineData("9.0.100-rc.2")]
-    [InlineData("10.0.100-preview.3.25678.9")]
+    [TestMethod]
+    [DataRow("9.0.100-preview.1")]
+    [DataRow("9.0.100-rc.2")]
+    [DataRow("10.0.100-preview.3.25678.9")]
     public void Sanitize_PreReleaseVersions_PassThrough(string input)
     {
         var result = VersionSanitizer.Sanitize(input);
 
-        Assert.Equal(input, result);
+        Assert.AreEqual(input, result);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
     public void Sanitize_NullOrEmpty_ReturnsUnspecified(string? input)
     {
         var result = VersionSanitizer.Sanitize(input);
 
-        Assert.Equal("unspecified", result);
+        Assert.AreEqual("unspecified", result);
     }
 
-    [Theory]
-    [InlineData("10.0.10xx")]  // Two digits before xx not allowed
-    [InlineData("10.0.100x")] // Three digits before x not allowed
-    [InlineData("10.0.xxxx")] // Too many x's
+    [TestMethod]
+    [DataRow("10.0.10xx")]  // Two digits before xx not allowed
+    [DataRow("10.0.100x")] // Three digits before x not allowed
+    [DataRow("10.0.xxxx")] // Too many x's
     public void Sanitize_InvalidWildcards_ReturnsInvalid(string input)
     {
         var result = VersionSanitizer.Sanitize(input);
 
-        Assert.Equal("invalid", result);
+        Assert.AreEqual("invalid", result);
     }
 
-    [Theory]
-    [InlineData("10.0.1xx")]  // Feature band wildcard
-    [InlineData("10.0.20x")] // Single digit wildcard
+    [TestMethod]
+    [DataRow("10.0.1xx")]  // Feature band wildcard
+    [DataRow("10.0.20x")] // Single digit wildcard
     public void Sanitize_ValidWildcards_PassThrough(string input)
     {
         var result = VersionSanitizer.Sanitize(input);
 
-        Assert.Equal(input, result);
+        Assert.AreEqual(input, result);
     }
 }
 
+[TestClass]
 public class UrlSanitizerTests
 {
-    [Theory]
-    [InlineData("https://download.visualstudio.microsoft.com/download/pr/123/file.zip", "download.visualstudio.microsoft.com")]
-    [InlineData("https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "builds.dotnet.microsoft.com")]
-    [InlineData("https://ci.dot.net/job/123/artifact.zip", "ci.dot.net")]
-    [InlineData("https://dotnetcli.blob.core.windows.net/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "dotnetcli.blob.core.windows.net")]
-    [InlineData("https://dotnetcli.azureedge.net/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "dotnetcli.azureedge.net")]
+    [TestMethod]
+    [DataRow("https://download.visualstudio.microsoft.com/download/pr/123/file.zip", "download.visualstudio.microsoft.com")]
+    [DataRow("https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "builds.dotnet.microsoft.com")]
+    [DataRow("https://ci.dot.net/job/123/artifact.zip", "ci.dot.net")]
+    [DataRow("https://dotnetcli.blob.core.windows.net/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "dotnetcli.blob.core.windows.net")]
+    [DataRow("https://dotnetcli.azureedge.net/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "dotnetcli.azureedge.net")]
     public void SanitizeDomain_KnownDomains_ReturnsDomain(string url, string expectedDomain)
     {
         var result = UrlSanitizer.SanitizeDomain(url);
 
-        Assert.Equal(expectedDomain, result);
+        Assert.AreEqual(expectedDomain, result);
     }
 
-    [Theory]
-    [InlineData("https://my-private-mirror.company.com/dotnet/sdk.zip")]
-    [InlineData("https://internal.corp.net/artifacts/dotnet-sdk.zip")]
-    [InlineData("https://192.168.1.100/dotnet/sdk.zip")]
-    [InlineData("file:///C:/Users/someone/Downloads/sdk.zip")]
+    [TestMethod]
+    [DataRow("https://my-private-mirror.company.com/dotnet/sdk.zip")]
+    [DataRow("https://internal.corp.net/artifacts/dotnet-sdk.zip")]
+    [DataRow("https://192.168.1.100/dotnet/sdk.zip")]
+    [DataRow("file:///C:/Users/someone/Downloads/sdk.zip")]
     public void SanitizeDomain_UnknownDomains_ReturnsUnknown(string url)
     {
         var result = UrlSanitizer.SanitizeDomain(url);
 
-        Assert.Equal("unknown", result);
+        Assert.AreEqual("unknown", result);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("not-a-url")]
-    [InlineData("ftp://")]
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("not-a-url")]
+    [DataRow("ftp://")]
     public void SanitizeDomain_InvalidUrls_ReturnsUnknown(string? url)
     {
         var result = UrlSanitizer.SanitizeDomain(url);
 
-        Assert.Equal("unknown", result);
+        Assert.AreEqual("unknown", result);
     }
 
-    [Fact]
+    [TestMethod]
     public void KnownDownloadDomains_ContainsExpectedDomains()
     {
         Assert.Contains("download.visualstudio.microsoft.com", UrlSanitizer.KnownDownloadDomains);
@@ -268,6 +271,7 @@ public class UrlSanitizerTests
     }
 }
 
+[TestClass]
 public class DotnetupTelemetryTests : IDisposable
 {
     private readonly ActivityListener _listener;
@@ -287,63 +291,63 @@ public class DotnetupTelemetryTests : IDisposable
         _listener.Dispose();
     }
 
-    [Fact]
+    [TestMethod]
     public void Instance_ReturnsSameInstance()
     {
         var instance1 = DotnetupTelemetry.Instance;
         var instance2 = DotnetupTelemetry.Instance;
 
-        Assert.Same(instance1, instance2);
+        Assert.AreSame(instance1, instance2);
     }
 
-    [Fact]
+    [TestMethod]
     public void SessionId_IsValidGuid()
     {
         var sessionId = DotnetupTelemetry.Instance.SessionId;
 
-        Assert.True(Guid.TryParse(sessionId, out _));
+        Assert.IsTrue(Guid.TryParse(sessionId, out _));
     }
 
-    [Fact]
+    [TestMethod]
     public void CommandSource_IsNotNull()
     {
-        Assert.NotNull(DotnetupTelemetry.CommandSource);
+        Assert.IsNotNull(DotnetupTelemetry.CommandSource);
     }
 
-    [Fact]
+    [TestMethod]
     public void CommandSource_HasCorrectName()
     {
-        Assert.Equal("Microsoft.Dotnet.Bootstrapper", DotnetupTelemetry.CommandSource.Name);
+        Assert.AreEqual("Microsoft.Dotnet.Bootstrapper", DotnetupTelemetry.CommandSource.Name);
     }
 
-    [Fact]
+    [TestMethod]
     public void Flush_DoesNotThrow()
     {
         // Even if telemetry is disabled, Flush should not throw
         var exception = Record.Exception(() => DotnetupTelemetry.Instance.Flush(0));
 
-        Assert.Null(exception);
+        Assert.IsNull(exception);
     }
 
-    [Fact]
+    [TestMethod]
     public void Flush_WithTimeout_DoesNotThrow()
     {
         var exception = Record.Exception(() => DotnetupTelemetry.Instance.FlushWithTimeout(1000));
 
-        Assert.Null(exception);
+        Assert.IsNull(exception);
     }
 
-    [Fact]
+    [TestMethod]
     public void RecordException_WithNullActivity_DoesNotThrow()
     {
         var operation = DotnetupTelemetry.Instance.StartTrackedCommand("test");
         var exception = Record.Exception(() =>
             DotnetupTelemetry.Instance.RecordException(operation, new Exception("test")));
 
-        Assert.Null(exception);
+        Assert.IsNull(exception);
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyLastErrorToActivity_WithNullActivity_DoesNotThrow()
     {
         // RecordException with a disabled-telemetry operation should not throw
@@ -351,7 +355,7 @@ public class DotnetupTelemetryTests : IDisposable
         var exception = Record.Exception(() =>
             DotnetupTelemetry.Instance.RecordException(operation, new Exception("test")));
 
-        Assert.Null(exception);
+        Assert.IsNull(exception);
     }
 
     /// <summary>
@@ -378,54 +382,54 @@ public class DotnetupTelemetryTests : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void RecordException_PropagatesTagsToRootActivity()
     {
         // Root activity → child activity records exception → root should also get tags
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-root", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
 
         using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-command", ActivityKind.Internal);
-        Assert.NotNull(commandActivity);
+        Assert.IsNotNull(commandActivity);
 
         SimulateRecordException(commandActivity,
             new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, "resolution failed"));
 
         // Both command and root should have error tags
-        Assert.Equal("ContextResolutionFailed", commandActivity.GetTagItem("error.type"));
-        Assert.Equal("user", commandActivity.GetTagItem("error.category"));
-        Assert.Equal("ContextResolutionFailed", rootActivity.GetTagItem("error.type"));
-        Assert.Equal("user", rootActivity.GetTagItem("error.category"));
+        Assert.AreEqual("ContextResolutionFailed", commandActivity.GetTagItem("error.type"));
+        Assert.AreEqual("user", commandActivity.GetTagItem("error.category"));
+        Assert.AreEqual("ContextResolutionFailed", rootActivity.GetTagItem("error.type"));
+        Assert.AreEqual("user", rootActivity.GetTagItem("error.category"));
     }
 
-    [Fact]
+    [TestMethod]
     public void RecordException_OnRootActivity_DoesNotDoubleTag()
     {
         // When exception is recorded directly on the root (no parent), it should still work
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-root-only", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
 
         SimulateRecordException(rootActivity,
             new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, "install failed"));
 
-        Assert.Equal("InstallFailed", rootActivity.GetTagItem("error.type"));
-        Assert.Equal("product", rootActivity.GetTagItem("error.category"));
+        Assert.AreEqual("InstallFailed", rootActivity.GetTagItem("error.type"));
+        Assert.AreEqual("product", rootActivity.GetTagItem("error.category"));
     }
 
-    [Fact]
+    [TestMethod]
     public void RecordException_SecondExceptionOverwritesFirstOnRoot()
     {
         // Two exceptions on the same trace — last one wins on the root span
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-overwrite-root", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
 
         using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-overwrite-cmd", ActivityKind.Internal);
-        Assert.NotNull(commandActivity);
+        Assert.IsNotNull(commandActivity);
 
         SimulateRecordException(commandActivity,
             new DotnetInstallException(DotnetInstallErrorCode.AdminPathBlocked, "blocked"));
@@ -433,34 +437,34 @@ public class DotnetupTelemetryTests : IDisposable
             new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, "failed"));
 
         // Root should have the last error (SetTag overwrites)
-        Assert.Equal("InstallFailed", rootActivity.GetTagItem("error.type"));
-        Assert.Equal("product", rootActivity.GetTagItem("error.category"));
+        Assert.AreEqual("InstallFailed", rootActivity.GetTagItem("error.type"));
+        Assert.AreEqual("product", rootActivity.GetTagItem("error.category"));
     }
 
-    [Fact]
+    [TestMethod]
     public void RecordException_DeeplyNestedActivity_PropagatesTagsToRoot()
     {
         // Root → child → grandchild: exception on grandchild should reach root
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-deep-root", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
 
         using var childActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-deep-child", ActivityKind.Internal);
-        Assert.NotNull(childActivity);
+        Assert.IsNotNull(childActivity);
 
         using var grandchildActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-deep-grandchild", ActivityKind.Internal);
-        Assert.NotNull(grandchildActivity);
+        Assert.IsNotNull(grandchildActivity);
 
         SimulateRecordException(grandchildActivity,
             new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, "install failed"));
 
-        Assert.Equal("InstallFailed", grandchildActivity.GetTagItem("error.type"));
-        Assert.Equal("InstallFailed", rootActivity.GetTagItem("error.type"));
+        Assert.AreEqual("InstallFailed", grandchildActivity.GetTagItem("error.type"));
+        Assert.AreEqual("InstallFailed", rootActivity.GetTagItem("error.type"));
     }
 
-    [Fact]
+    [TestMethod]
     public void InnerRecordException_ThenOuterRecordException_LastWinsOnRoot()
     {
         // Simulates: InstallWorkflow throws DotnetInstallException(InstallFailed),
@@ -469,18 +473,18 @@ public class DotnetupTelemetryTests : IDisposable
         // The root span should end up with the outermost exception's error type.
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-stack-root", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
 
         using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-stack-command", ActivityKind.Internal);
-        Assert.NotNull(commandActivity);
+        Assert.IsNotNull(commandActivity);
 
         // Step 1: CommandBase catches the install exception
         SimulateRecordException(commandActivity,
             new DotnetInstallException(DotnetInstallErrorCode.InstallFailed, "install failed"));
 
         // Root should now have "InstallFailed" via parent walk
-        Assert.Equal("InstallFailed", rootActivity.GetTagItem("error.type"));
+        Assert.AreEqual("InstallFailed", rootActivity.GetTagItem("error.type"));
 
         commandActivity.Stop();
 
@@ -489,41 +493,41 @@ public class DotnetupTelemetryTests : IDisposable
             new InvalidOperationException("Something broke"));
 
         // Root should now show the outer exception-level error
-        Assert.Equal("InvalidOperation", rootActivity.GetTagItem("error.type"));
-        Assert.Equal("product", rootActivity.GetTagItem("error.category"));
+        Assert.AreEqual("InvalidOperation", rootActivity.GetTagItem("error.type"));
+        Assert.AreEqual("product", rootActivity.GetTagItem("error.category"));
 
         // Command span should still have its original error
-        Assert.Equal("InstallFailed", commandActivity.GetTagItem("error.type"));
+        Assert.AreEqual("InstallFailed", commandActivity.GetTagItem("error.type"));
     }
 
-    [Theory]
-    [InlineData(DotnetInstallErrorCode.AdminPathBlocked, "user")]
-    [InlineData(DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts, "user")]
-    [InlineData(DotnetInstallErrorCode.ProcessStartFailed, "product")]
-    [InlineData(DotnetInstallErrorCode.ReleaseLookupFailed, "product")]
+    [TestMethod]
+    [DataRow(DotnetInstallErrorCode.AdminPathBlocked, "user")]
+    [DataRow(DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts, "user")]
+    [DataRow(DotnetInstallErrorCode.ProcessStartFailed, "product")]
+    [DataRow(DotnetInstallErrorCode.ReleaseLookupFailed, "product")]
     public void RecordException_ClassifiesByErrorCode(DotnetInstallErrorCode errorCode, string expectedCategory)
     {
         using var activity = DotnetupTelemetry.CommandSource.StartActivity(
             $"test-classifier-{errorCode}", ActivityKind.Internal);
-        Assert.NotNull(activity);
+        Assert.IsNotNull(activity);
 
         SimulateRecordException(activity,
             new DotnetInstallException(errorCode, "test"));
 
-        Assert.Equal(expectedCategory, activity.GetTagItem("error.category"));
+        Assert.AreEqual(expectedCategory, activity.GetTagItem("error.category"));
     }
 
-    [Fact]
+    [TestMethod]
     public void RecordException_UnknownException_DefaultsToProduct()
     {
         using var activity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-classifier-unknown", ActivityKind.Internal);
-        Assert.NotNull(activity);
+        Assert.IsNotNull(activity);
 
         // Unknown exception types should default to product
         SimulateRecordException(activity, new Exception("something unexpected"));
 
-        Assert.Equal("product", activity.GetTagItem("error.category"));
+        Assert.AreEqual("product", activity.GetTagItem("error.category"));
     }
 
     /// <summary>
@@ -545,7 +549,7 @@ public class DotnetupTelemetryTests : IDisposable
         return list;
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildCompletionState_RootEvent_StampsCommonProperties()
     {
         // Root event = a top-level Activity with no parent (e.g., the
@@ -554,7 +558,7 @@ public class DotnetupTelemetryTests : IDisposable
         // each row independently.
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "dotnetup", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
 
         var common = BuildSyntheticCommonProperties();
         var state = DotnetupTelemetry.BuildCompletionState(
@@ -566,7 +570,7 @@ public class DotnetupTelemetryTests : IDisposable
         var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
 
         // All common properties should be present on the root event.
-        Assert.Equal("dotnetup", asDict["caller"]);
+        Assert.AreEqual("dotnetup", asDict["caller"]);
         Assert.Contains("session.id", asDict.Keys);
         Assert.Contains("device.id", asDict.Keys);
         Assert.Contains("os.type", asDict.Keys);
@@ -583,14 +587,14 @@ public class DotnetupTelemetryTests : IDisposable
         Assert.Contains("dev.build", asDict.Keys);
 
         // Computed fields must also be stamped.
-        Assert.Equal("dotnetup/root", asDict["operation.name"]);
-        Assert.Equal("12.34", asDict["operation.duration_ms"]);
+        Assert.AreEqual("dotnetup/root", asDict["operation.name"]);
+        Assert.AreEqual("12.34", asDict["operation.duration_ms"]);
 
         // Root has no parent — operation.parent_name must be absent.
         Assert.DoesNotContain("operation.parent_name", asDict.Keys);
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildCompletionState_CommandEvent_StampsCommonPropertiesAndParent()
     {
         // command/{name} runs as a child of the root "dotnetup" span. Its
@@ -598,11 +602,11 @@ public class DotnetupTelemetryTests : IDisposable
         // operation.parent_name pointing at its parent.
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "dotnetup", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
 
         using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "command/runtime/install", ActivityKind.Internal);
-        Assert.NotNull(commandActivity);
+        Assert.IsNotNull(commandActivity);
         commandActivity.SetTag("command.name", "runtime/install");
         commandActivity.SetTag("command.status", "ok");
 
@@ -616,8 +620,8 @@ public class DotnetupTelemetryTests : IDisposable
         var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
 
         // Common properties present on the command row too.
-        Assert.Equal("dotnetup", asDict["caller"]);
-        Assert.Equal("session-abc", asDict["session.id"]);
+        Assert.AreEqual("dotnetup", asDict["caller"]);
+        Assert.AreEqual("session-abc", asDict["session.id"]);
         Assert.Contains("os.type", asDict.Keys);
         Assert.Contains("device.id", asDict.Keys);
         Assert.Contains("kernel.version", asDict.Keys);
@@ -626,16 +630,16 @@ public class DotnetupTelemetryTests : IDisposable
         Assert.Contains("dev.build", asDict.Keys);
 
         // Activity tags surface in the row.
-        Assert.Equal("runtime/install", asDict["command.name"]);
-        Assert.Equal("ok", asDict["command.status"]);
+        Assert.AreEqual("runtime/install", asDict["command.name"]);
+        Assert.AreEqual("ok", asDict["command.status"]);
 
         // Computed fields.
-        Assert.Equal("dotnetup/command", asDict["operation.name"]);
-        Assert.Equal("1050.5", asDict["operation.duration_ms"]);
-        Assert.Equal("dotnetup", asDict["operation.parent_name"]);
+        Assert.AreEqual("dotnetup/command", asDict["operation.name"]);
+        Assert.AreEqual("1050.5", asDict["operation.duration_ms"]);
+        Assert.AreEqual("dotnetup", asDict["operation.parent_name"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildCompletionState_ActivityTags_OverrideCommonProperties()
     {
         // If a per-event tag collides with a common property, the per-event
@@ -644,7 +648,7 @@ public class DotnetupTelemetryTests : IDisposable
         // a default safely.
         using var activity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-override", ActivityKind.Internal);
-        Assert.NotNull(activity);
+        Assert.IsNotNull(activity);
         activity.SetTag("os.type", "Linux");
 
         var common = new List<KeyValuePair<string, object?>>
@@ -661,11 +665,11 @@ public class DotnetupTelemetryTests : IDisposable
 
         var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
 
-        Assert.Equal("Linux", asDict["os.type"]);
-        Assert.Equal("dotnetup", asDict["caller"]);
+        Assert.AreEqual("Linux", asDict["os.type"]);
+        Assert.AreEqual("dotnetup", asDict["caller"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildCompletionState_ChildInheritsCommandTagsFromAncestor()
     {
         // A child activity (e.g., a single download) emits its own row, and
@@ -673,16 +677,16 @@ public class DotnetupTelemetryTests : IDisposable
         // span so data-x can attribute the work without joining traces.
         using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "dotnetup", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
 
         using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "command/runtime/install", ActivityKind.Internal);
-        Assert.NotNull(commandActivity);
+        Assert.IsNotNull(commandActivity);
         commandActivity.SetTag("command.name", "runtime/install");
 
         using var childActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "download", ActivityKind.Internal);
-        Assert.NotNull(childActivity);
+        Assert.IsNotNull(childActivity);
 
         var state = DotnetupTelemetry.BuildCompletionState(
             "root",
@@ -692,14 +696,14 @@ public class DotnetupTelemetryTests : IDisposable
 
         var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
 
-        Assert.Equal("runtime/install", asDict["command.name"]);
-        Assert.Equal("command/runtime/install", asDict["operation.parent_name"]);
+        Assert.AreEqual("runtime/install", asDict["command.name"]);
+        Assert.AreEqual("command/runtime/install", asDict["operation.parent_name"]);
         // Common props still land.
         Assert.Contains("os.type", asDict.Keys);
         Assert.Contains("session.id", asDict.Keys);
     }
 
-    [Fact]
+    [TestMethod]
     public void EmitCompletionLog_EventId_DerivedFromSpanId_IsNonZeroAndUnique()
     {
         // Regression: EmitCompletionLog must derive EventId from the Activity's
@@ -707,24 +711,24 @@ public class DotnetupTelemetryTests : IDisposable
         // causes the router lens service to deduplicate and drop telemetry rows.
         using var activity1 = DotnetupTelemetry.CommandSource.StartActivity(
             "eventid-test-1", ActivityKind.Internal);
-        Assert.NotNull(activity1);
+        Assert.IsNotNull(activity1);
 
         using var activity2 = DotnetupTelemetry.CommandSource.StartActivity(
             "eventid-test-2", ActivityKind.Internal);
-        Assert.NotNull(activity2);
+        Assert.IsNotNull(activity2);
 
         var eventId1 = DotnetupTelemetry.DeriveEventIdFromSpanId(activity1);
         var eventId2 = DotnetupTelemetry.DeriveEventIdFromSpanId(activity2);
 
         // Each activity gets a random SpanId; the derived EventId must not be
         // the old constant zero and must differ between activities.
-        Assert.NotEqual(0, eventId1);
-        Assert.NotEqual(0, eventId2);
-        Assert.NotEqual(eventId1, eventId2);
+        Assert.AreNotEqual(0, eventId1);
+        Assert.AreNotEqual(0, eventId2);
+        Assert.AreNotEqual(eventId1, eventId2);
     }
 }
 
-[Collection("DotnetupEnvironmentMutationTests")]
+[TestClass]
 public class FirstRunNoticeTests : IDisposable
 {
     private const string NoLogoEnvVar = "DOTNET_NOLOGO";
@@ -748,13 +752,13 @@ public class FirstRunNoticeTests : IDisposable
         catch { /* best-effort cleanup */ }
     }
 
-    [Fact]
+    [TestMethod]
     public void IsFirstRun_ReturnsTrueWhenSentinelDoesNotExist()
     {
-        Assert.True(FirstRunNotice.IsFirstRun());
+        Assert.IsTrue(FirstRunNotice.IsFirstRun());
     }
 
-    [Fact]
+    [TestMethod]
     public void ShowIfFirstRun_CreatesSentinelFile()
     {
         // Save and clear DOTNET_NOLOGO to ensure test runs the full path
@@ -764,16 +768,16 @@ public class FirstRunNoticeTests : IDisposable
         try
         {
             var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
-            Assert.NotNull(sentinelPath);
+            Assert.IsNotNull(sentinelPath);
 
             // Simulate first run with telemetry enabled
             FirstRunNotice.ShowIfFirstRun(telemetryEnabled: true);
 
             // Sentinel should now exist
-            Assert.True(File.Exists(sentinelPath));
+            Assert.IsTrue(File.Exists(sentinelPath));
 
             // Subsequent calls should not be "first run"
-            Assert.False(FirstRunNotice.IsFirstRun());
+            Assert.IsFalse(FirstRunNotice.IsFirstRun());
         }
         finally
         {
@@ -781,7 +785,7 @@ public class FirstRunNoticeTests : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ShowIfFirstRun_DoesNotCreateSentinel_WhenTelemetryDisabled()
     {
         // Simulate first run with telemetry disabled
@@ -789,8 +793,8 @@ public class FirstRunNoticeTests : IDisposable
 
         // Sentinel should NOT be created (user has opted out)
         var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
-        Assert.NotNull(sentinelPath);
-        Assert.False(File.Exists(sentinelPath));
+        Assert.IsNotNull(sentinelPath);
+        Assert.IsFalse(File.Exists(sentinelPath));
     }
 }
 
@@ -798,12 +802,12 @@ public class FirstRunNoticeTests : IDisposable
 /// Tests for ActivitySource integration - verifies that library consumers can hook into telemetry
 /// using the pattern demonstrated in TelemetryIntegrationDemo.
 /// </summary>
-[Collection("ActivitySourceTests")]
+[TestClass]
 public class ActivitySourceIntegrationTests
 {
     private const string InstallationActivitySourceName = "Microsoft.Dotnet.Installation";
 
-    [Fact]
+    [TestMethod]
     public void ActivityListener_CanCaptureActivities_FromInstallationActivitySource()
     {
         // Arrange - set up listener like the demo shows
@@ -823,13 +827,13 @@ public class ActivitySourceIntegrationTests
         }
 
         // Assert
-        Assert.Single(capturedActivities);
-        Assert.Equal("test-activity", capturedActivities[0].DisplayName);
-        Assert.Contains(capturedActivities[0].Tags, t => t.Key == "test.key" && t.Value == "test-value");
+        Assert.ContainsSingle(capturedActivities);
+        Assert.AreEqual("test-activity", capturedActivities[0].DisplayName);
+        Assert.Contains(t => t.Key == "test.key" && t.Value == "test-value", capturedActivities[0].Tags);
     }
 }
 
-[Collection("DotnetupTelemetryStateMutationTests")]
+[TestClass]
 public sealed class OtlpExporterGateTests : IDisposable
 {
     private readonly string? _previousValue;
@@ -845,45 +849,45 @@ public sealed class OtlpExporterGateTests : IDisposable
         Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, _previousValue);
     }
 
-    [Fact]
+    [TestMethod]
     public void IsOtlpExporterEnabled_NoOptIn_ReturnsFalse()
     {
-        Assert.False(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
+        Assert.IsFalse(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
     }
 
-    [Theory]
-    [InlineData("1")]
-    [InlineData("true")]
-    [InlineData("TRUE")]
+    [TestMethod]
+    [DataRow("1")]
+    [DataRow("true")]
+    [DataRow("TRUE")]
     public void IsOtlpExporterEnabled_DotnetCliExporterOptIn_ReturnsTrue(string value)
     {
         Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, value);
 
-        Assert.True(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
+        Assert.IsTrue(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
     }
 
-    [Fact]
+    [TestMethod]
     public void IsOtlpExporterEnabled_DisableExportWinsOverDotnetCliExporterOptIn_ReturnsFalse()
     {
         Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, "1");
 
-        Assert.False(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: true));
+        Assert.IsFalse(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: true));
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("0")]
-    [InlineData("false")]
-    [InlineData("yes")]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("0")]
+    [DataRow("false")]
+    [DataRow("yes")]
     public void IsOtlpExporterEnabled_NonTruthyDotnetCliExporterValue_ReturnsFalse(string value)
     {
         Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, value);
 
-        Assert.False(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
+        Assert.IsFalse(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
     }
 }
 
-[Collection("DotnetupTelemetryStateMutationTests")]
+[TestClass]
 public class TrackedOperationTests : IDisposable
 {
     private const string TestSessionId = "test-session-id";
@@ -940,8 +944,8 @@ public class TrackedOperationTests : IDisposable
         string expectedEventName,
         IDictionary<string, string?>? expectedTags = null)
     {
-        Assert.Equal(expectedEventName, captured.EventName);
-        Assert.NotNull(captured.Activity);
+        Assert.AreEqual(expectedEventName, captured.EventName);
+        Assert.IsNotNull(captured.Activity);
 
         // Verify expected tags landed on the activity
         if (expectedTags is not null)
@@ -950,18 +954,19 @@ public class TrackedOperationTests : IDisposable
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString());
             foreach (var (key, value) in expectedTags)
             {
-                Assert.True(activityTags.ContainsKey(key), $"Activity should contain tag '{key}'");
-                Assert.Equal(value, activityTags[key]);
+                Assert.IsTrue(activityTags.ContainsKey(key), $"Activity should contain tag '{key}'");
+                Assert.AreEqual(value, activityTags[key]);
             }
         }
 
         // Verify the activity was stopped (duration captured by TrackedOperation.Dispose)
-        Assert.True(
-            captured.Activity!.Duration > TimeSpan.Zero,
+        Assert.IsGreaterThan(
+            TimeSpan.Zero,
+            captured.Activity!.Duration,
             "Activity should have been stopped by TrackEvent");
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_EmitsEventOnDispose()
     {
         using (var op = Metrics.Track("test/complete", activityName: "test-op"))
@@ -969,14 +974,14 @@ public class TrackedOperationTests : IDisposable
             op.Tag("key1", "value1");
         }
 
-        Assert.Single(_capturedEvents);
+        Assert.ContainsSingle(_capturedEvents);
         AssertTrackedEvent(
             _capturedEvents[0],
             "test/complete",
             new Dictionary<string, string?> { ["key1"] = "value1" });
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_IncludesDuration()
     {
         using (var op = Metrics.Track("test/duration", activityName: "test-duration"))
@@ -984,11 +989,11 @@ public class TrackedOperationTests : IDisposable
             op.Tag("foo", "bar");
         }
 
-        Assert.Single(_capturedEvents);
+        Assert.ContainsSingle(_capturedEvents);
         AssertTrackedEvent(_capturedEvents[0], "test/duration");
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_CapturesTagsSetViaActivityCurrent()
     {
         using (var op = Metrics.Track("test/current", activityName: "test-current"))
@@ -998,7 +1003,7 @@ public class TrackedOperationTests : IDisposable
             op.Tag("outer.tag", "outer-value");
         }
 
-        Assert.Single(_capturedEvents);
+        Assert.ContainsSingle(_capturedEvents);
         AssertTrackedEvent(
             _capturedEvents[0],
             "test/current",
@@ -1009,7 +1014,7 @@ public class TrackedOperationTests : IDisposable
             });
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_SetsTagOnUnderlyingActivity()
     {
         using (var op = Metrics.Track("test/span", activityName: "test-span-tags"))
@@ -1018,18 +1023,18 @@ public class TrackedOperationTests : IDisposable
         }
 
         // Verify via stopped activities (ActivityListener callback)
-        Assert.Single(_capturedActivities);
-        Assert.Contains(_capturedActivities[0].Tags, t => t.Key == "span.key" && t.Value == "span-value");
+        Assert.ContainsSingle(_capturedActivities);
+        Assert.Contains(t => t.Key == "span.key" && t.Value == "span-value", _capturedActivities[0].Tags);
 
         // Also verify via dual assertion
-        Assert.Single(_capturedEvents);
+        Assert.ContainsSingle(_capturedEvents);
         AssertTrackedEvent(
             _capturedEvents[0],
             "test/span",
             new Dictionary<string, string?> { ["span.key"] = "span-value" });
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_SetStatus_SetsOnActivity()
     {
         using (var op = Metrics.Track("test/status", activityName: "test-status"))
@@ -1037,11 +1042,23 @@ public class TrackedOperationTests : IDisposable
             op.SetStatus(ActivityStatusCode.Error, "test failure");
         }
 
+        Assert.ContainsSingle(_capturedActivities);
+        Assert.AreEqual(ActivityStatusCode.Error, _capturedActivities[0].Status);
+    }
+
+    [TestMethod]
+    public void EnsureErrorTypeTagged_WhenNoError_StampsEmptyString()
+    {
+        using (var op = Metrics.Track("test/ensure-error-type", activityName: "test-ensure-empty"))
+        {
+            op.EnsureErrorTypeTagged();
+        }
+
         Assert.Single(_capturedActivities);
         Assert.Equal(ActivityStatusCode.Error, _capturedActivities[0].Status);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnsureErrorTypeTagged_WhenNoError_StampsEmptyString()
     {
         using (var op = Metrics.Track("test/ensure-error-type", activityName: "test-ensure-empty"))
@@ -1055,7 +1072,7 @@ public class TrackedOperationTests : IDisposable
         Assert.Equal(string.Empty, tag);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnsureErrorTypeTagged_WhenErrorAlreadySet_DoesNotOverwrite()
     {
         using (var op = Metrics.Track("test/ensure-error-type-keep", activityName: "test-ensure-keep"))
@@ -1068,7 +1085,7 @@ public class TrackedOperationTests : IDisposable
         Assert.Equal("InstallFailed", _capturedActivities[0].GetTagItem("error.type"));
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_NoEventWhenCallbackNotRegistered()
     {
         Metrics.OnTrackEvent = null;
@@ -1078,10 +1095,10 @@ public class TrackedOperationTests : IDisposable
             op.Tag("key", "value");
         }
 
-        Assert.Empty(_capturedEvents);
+        Assert.IsEmpty(_capturedEvents);
         // Activity should still be stopped even without a callback
-        Assert.Single(_capturedActivities);
-        Assert.True(_capturedActivities[0].Duration >= TimeSpan.Zero);
+        Assert.ContainsSingle(_capturedActivities);
+        Assert.IsGreaterThanOrEqualTo(TimeSpan.Zero, _capturedActivities[0].Duration);
     }
 
     /// <summary>
@@ -1089,7 +1106,7 @@ public class TrackedOperationTests : IDisposable
     /// properly emitted. Previously, root activities had events silently dropped
     /// because <c>Activity.Current</c> was <c>null</c> after <c>Stop()</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_RootActivity_EmitsActivityEvent()
     {
         // Use the library ActivitySource (no parent activity exists)
@@ -1098,7 +1115,7 @@ public class TrackedOperationTests : IDisposable
             op.Tag("root.key", "root-value");
         }
 
-        Assert.Single(_capturedEvents);
+        Assert.ContainsSingle(_capturedEvents);
         AssertTrackedEvent(
             _capturedEvents[0],
             "test/root-event",
@@ -1110,7 +1127,7 @@ public class TrackedOperationTests : IDisposable
     /// This mirrors the production flow where <c>StartTrackedCommand</c> creates a
     /// root span via <c>CommandSource</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_CommandSourceRootActivity_EmitsActivityEvent()
     {
         // Create a root command activity directly (simulates StartTrackedCommand).
@@ -1118,13 +1135,13 @@ public class TrackedOperationTests : IDisposable
         // the emitted event name is the stable "command" so a single GDPR-catalog
         // entry covers every subcommand.
         var activity = DotnetupTelemetry.CommandSource.StartActivity("command/test-cmd", ActivityKind.Internal);
-        Assert.NotNull(activity);
+        Assert.IsNotNull(activity);
 
         var op = new TrackedOperation(activity, "command", TestTrackEvent);
         op.Tag("command.name", "test-cmd");
         op.Dispose();
 
-        Assert.Single(_capturedEvents);
+        Assert.ContainsSingle(_capturedEvents);
         AssertTrackedEvent(
             _capturedEvents[0],
             "command",
@@ -1135,13 +1152,13 @@ public class TrackedOperationTests : IDisposable
     /// Tests that a child library activity emits its event correctly when nested
     /// under a parent command activity.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_NestedActivity_EmitsActivityEvent()
     {
         // Create parent command activity (stays alive during child)
         using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "command/test-parent", ActivityKind.Internal);
-        Assert.NotNull(commandActivity);
+        Assert.IsNotNull(commandActivity);
 
         // Create child library activity within the command scope
         using (var childOp = Metrics.Track("download/complete"))
@@ -1150,7 +1167,7 @@ public class TrackedOperationTests : IDisposable
         }
 
         // Child should have emitted its event
-        Assert.Single(_capturedEvents);
+        Assert.ContainsSingle(_capturedEvents);
         AssertTrackedEvent(
             _capturedEvents[0],
             "download/complete",
@@ -1163,27 +1180,27 @@ public class TrackedOperationTests : IDisposable
     /// NOT stop the activity. The owning <c>TrackedOperation</c> is still alive
     /// and will dispose later with the final completion log.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RecordException_DoesNotStopActivity()
     {
         var activity = DotnetupTelemetry.CommandSource.StartActivity(
             "command/test-midflight", ActivityKind.Internal);
-        Assert.NotNull(activity);
+        Assert.IsNotNull(activity);
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(new InvalidOperationException("boom"));
         ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
 
         // Activity must still be alive — not stopped
-        Assert.Equal(TimeSpan.Zero, activity.Duration);
-        Assert.NotNull(Activity.Current);
+        Assert.AreEqual(TimeSpan.Zero, activity.Duration);
+        Assert.IsNotNull(Activity.Current);
 
         // Error tags should be on the activity itself
         var tags = activity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
-        Assert.True(tags.ContainsKey("error.type"), "error.type tag should be set on activity");
+        Assert.IsTrue(tags.ContainsKey("error.type"), "error.type tag should be set on activity");
 
         // Now stop it (simulates TrackedOperation.Dispose)
         activity.Stop();
-        Assert.True(activity.Duration > TimeSpan.Zero);
+        Assert.IsGreaterThan(TimeSpan.Zero, activity.Duration);
     }
 
     /// <summary>
@@ -1193,19 +1210,19 @@ public class TrackedOperationTests : IDisposable
     /// both activities, the command must dispose first, and no activity may be
     /// stopped prematurely.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void TrackedOperation_FullLifecycle_RootPersistsThroughErrorAndCommandDispose()
     {
         // Step 1: Start root process activity (Program.Main)
         var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "dotnetup", ActivityKind.Internal);
-        Assert.NotNull(rootActivity);
+        Assert.IsNotNull(rootActivity);
         var rootOp = new TrackedOperation(rootActivity, "process/complete", TestTrackEvent);
 
         // Step 2: Start command activity (CommandBase.Execute)
         var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "command/sdk/install", ActivityKind.Internal);
-        Assert.NotNull(commandActivity);
+        Assert.IsNotNull(commandActivity);
         var commandOp = new TrackedOperation(commandActivity, "command", TestTrackEvent);
         commandOp.Tag("command.name", "sdk/install");
 
@@ -1215,34 +1232,34 @@ public class TrackedOperationTests : IDisposable
         ErrorCodeMapper.ApplyErrorTags(commandActivity, errorInfo);
         ErrorCodeMapper.ApplyErrorTags(rootActivity, errorInfo);
 
-        Assert.Equal(TimeSpan.Zero, commandActivity.Duration);
+        Assert.AreEqual(TimeSpan.Zero, commandActivity.Duration);
         var commandTags = commandActivity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
-        Assert.True(commandTags.ContainsKey("error.type"));
+        Assert.IsTrue(commandTags.ContainsKey("error.type"));
         var rootTags = rootActivity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
-        Assert.True(rootTags.ContainsKey("error.type"), "error.type should propagate to root activity");
+        Assert.IsTrue(rootTags.ContainsKey("error.type"), "error.type should propagate to root activity");
 
         // Step 4: CommandBase.finally disposes command operation
         commandOp.Tag("exit.code", 1);
         commandOp.SetStatus(ActivityStatusCode.Error);
         commandOp.Dispose();
 
-        Assert.Single(_capturedEvents);
-        Assert.Equal("command", _capturedEvents[0].EventName);
+        Assert.ContainsSingle(_capturedEvents);
+        Assert.AreEqual("command", _capturedEvents[0].EventName);
         var commandActivityTags = _capturedEvents[0].Activity!.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
-        Assert.Equal("sdk/install", commandActivityTags["command.name"]);
-        Assert.True(_capturedEvents[0].Activity!.Duration > TimeSpan.Zero);
+        Assert.AreEqual("sdk/install", commandActivityTags["command.name"]);
+        Assert.IsGreaterThan(TimeSpan.Zero, _capturedEvents[0].Activity!.Duration);
 
         // Step 5: Program.finally disposes root operation
         rootOp.Tag("exit.code", 1);
         rootOp.SetStatus(ActivityStatusCode.Error);
         rootOp.Dispose();
 
-        Assert.Equal(2, _capturedEvents.Count);
-        Assert.Equal("process/complete", _capturedEvents[1].EventName);
-        Assert.True(_capturedEvents[1].Activity!.Duration > TimeSpan.Zero);
+        Assert.HasCount(2, _capturedEvents);
+        Assert.AreEqual("process/complete", _capturedEvents[1].EventName);
+        Assert.IsGreaterThan(TimeSpan.Zero, _capturedEvents[1].Activity!.Duration);
 
         // Verify parent-child: command's parent should be the root
-        Assert.Equal(rootActivity.Id, commandActivity.ParentId);
+        Assert.AreEqual(rootActivity.Id, commandActivity.ParentId);
     }
 }
 
@@ -1252,6 +1269,7 @@ public class TrackedOperationTests : IDisposable
 /// Only the telemetry infrastructure files that wrap the raw API are
 /// allowed to call <c>.SetTag()</c> directly.
 /// </summary>
+[TestClass]
 public class TelemetryDualWriteEnforcementTests
 {
     /// <summary>
@@ -1267,7 +1285,7 @@ public class TelemetryDualWriteEnforcementTests
         "TrackedOperation.cs",            // Tag() instance method wraps _activity
     };
 
-    [Fact]
+    [TestMethod]
     public void DotnetupSource_ShouldNotCallSetTagDirectly()
     {
         var installerDir = FindInstallerSourceDirectory();
@@ -1310,8 +1328,8 @@ public class TelemetryDualWriteEnforcementTests
             }
         }
 
-        Assert.True(
-            violations.Count == 0,
+        Assert.IsEmpty(
+            violations,
             $"Found {violations.Count} direct .SetTag() call(s) outside infrastructure files. " +
             "Use TrackedOperation.Tag() or Metrics.Tag() instead.\n\n" +
             string.Join("\n", violations));

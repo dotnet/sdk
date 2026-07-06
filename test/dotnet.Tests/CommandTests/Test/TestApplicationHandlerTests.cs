@@ -12,7 +12,7 @@ namespace dotnet.Tests.CommandTests.Test;
 public class TestApplicationHandlerTests : IDisposable
 {
     // TerminalTestReporter is IDisposable and starts progress tracking via TestExecutionStarted
-    // inside CreateHandler. xUnit instantiates the test class per test, so disposing this list in
+    // inside CreateHandler. MSTest instantiates the test class per test, so disposing this list in
     // Dispose() releases every reporter built for the current test.
     private readonly List<IDisposable> _disposables = new();
 

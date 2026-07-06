@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -8,9 +8,10 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public class DotnetNewTestTemplatesTests : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
 
         private static readonly ImmutableArray<string> SupportedTargetFrameworks =
         [
@@ -32,9 +33,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private static readonly string PackagesJsonPath = Path.Combine(SdkTestContext.Current.TestPackages, "cgmanifest.json");
 
-        public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
+        public DotnetNewTestTemplatesTests()
         {
-            _log = log;
         }
 
         public static class Languages
@@ -84,8 +84,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Pass();
         }
 
-        [Theory]
-        [MemberData(nameof(GetTemplateItemsToTest))]
+        [TestMethod]
+        [DynamicData(nameof(GetTemplateItemsToTest))]
         public void ItemTemplate_CanBeInstalledAndTestArePassing(string targetFramework, string projectTemplate, string itemTemplate, string language)
         {
             string testProjectName = GenerateTestProjectName();
@@ -138,8 +138,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         }
 
-        [Theory]
-        [MemberData(nameof(GetTemplateItemsToTest))]
+        [TestMethod]
+        [DynamicData(nameof(GetTemplateItemsToTest))]
         public void ItemTemplate_WithNameAndNoOutput_DoesNotCreateUnwantedFolder(string targetFramework, string projectTemplate, string itemTemplate, string language)
         {
             // Regression test for https://github.com/dotnet/sdk/issues/49760:
@@ -185,8 +185,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
-        [Theory]
-        [MemberData(nameof(GetTemplateProjectsToTest))]
+        [TestMethod]
+        [DynamicData(nameof(GetTemplateProjectsToTest))]
         public void ProjectTemplate_CanBeInstalledAndTestsArePassing(string targetFramework, string projectTemplate, string language, bool runDotnetTest)
         {
             string testProjectName = GenerateTestProjectName();
@@ -221,8 +221,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
-        [Theory]
-        [MemberData(nameof(GetMSTestAndPlaywrightCoverageAndRunnerCombinations))]
+        [TestMethod]
+        [DynamicData(nameof(GetMSTestAndPlaywrightCoverageAndRunnerCombinations))]
         public void MSTestAndPlaywrightProjectTemplate_WithCoverageToolAndTestRunner_CanBeInstalledAndTestsArePassing(
             string projectTemplate,
             string targetFramework,
@@ -275,8 +275,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
-        [Theory]
-        [MemberData(nameof(GetXUnitV3TestRunnerCombinations))]
+        [TestMethod]
+        [DynamicData(nameof(GetXUnitV3TestRunnerCombinations))]
         public void XUnitV3ProjectTemplate_WithTestRunner_CanBeInstalledAndTestsArePassing(
             string targetFramework,
             string language,
@@ -334,8 +334,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
-        [Theory]
-        [MemberData(nameof(GetNUnitTestRunnerCombinations))]
+        [TestMethod]
+        [DynamicData(nameof(GetNUnitTestRunnerCombinations))]
         public void NUnitProjectTemplate_WithTestRunner_CanBeInstalledAndTestsArePassing(
             string targetFramework,
             string language,
