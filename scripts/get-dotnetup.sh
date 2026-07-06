@@ -169,6 +169,34 @@ FILE_NAME="dotnetup-${RID}"
 DOWNLOAD_URL="${BASE_URL}/${FILE_NAME}"
 CHECKSUM_URL="${DOWNLOAD_URL}.sha512"
 
+# BASE_URL points at a mutable 'quality' shortlink (e.g. .../daily/...), so the
+# binary and its .sha512 are two independent requests against a moving target. If a
+# new build publishes between them we download the binary from one build and the
+# checksum from another, producing a spurious checksum mismatch. Resolve the
+# shortlink to its concrete, versioned URL ONCE and derive both the binary and
+# checksum URLs from that single resolved URL so they always share the same build.
+resolve_final_url() {
+    local url="$1"
+    if [ "$DOWNLOADER" = "curl" ]; then
+        # --head follows redirects issuing HEAD requests; --write-out reports the
+        # final resolved URL without downloading the (large) body.
+        curl --silent --show-error --location --head --output /dev/null \
+             --write-out '%{url_effective}' "$url" 2>/dev/null
+    fi
+    # wget has no simple equivalent; leaving the result empty falls back to the
+    # shortlink URLs below (i.e. the previous, unpinned behavior).
+}
+
+RESOLVED_URL="$(resolve_final_url "$DOWNLOAD_URL" || true)"
+if [ -n "$RESOLVED_URL" ] && [[ "$RESOLVED_URL" == *"/public/"* ]]; then
+    info "Resolved '${QUALITY}' to concrete build: $RESOLVED_URL"
+    DOWNLOAD_URL="$RESOLVED_URL"
+    # Checksums live under the sibling 'public-checksums' path with a .sha512 suffix.
+    CHECKSUM_URL="${RESOLVED_URL/\/public\//\/public-checksums\/}.sha512"
+else
+    gray "Could not resolve '${QUALITY}' shortlink to a concrete build; using shortlink URLs directly."
+fi
+
 INSTALLED_BINARY="${INSTALL_DIR}/dotnetup"
 
 TEMP_DIR=$(mktemp -d)
