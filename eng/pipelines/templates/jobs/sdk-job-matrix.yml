@@ -20,6 +20,12 @@ parameters:
     osProperties: $(linuxOsglibcProperties)
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
+  # The AoT leg builds dotnet-aot via NativeAOT, which cannot cross-compile, so it must run on
+  # native x64 hardware (HostRid == TargetRid == linux-x64) to produce the dotnet-aot .so and its
+  # mstat/dgml size-analysis output, and to run the *.AoT.Tests.csproj test projects.
+  - categoryName: AoT
+    runAoTTests: true
+    osProperties: $(linuxOsglibcProperties)
   - categoryName: ContainerBased
     container: azureLinux30Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64

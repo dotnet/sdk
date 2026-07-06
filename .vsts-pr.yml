@@ -66,6 +66,28 @@ stages:
         os: linux
       helixTargetQueue: ubuntu.2204.amd64.open
 
+  ### AoT (native arm64) ###
+  # The AoT leg builds dotnet-aot via NativeAOT, which cannot cross-compile, so it must run on
+  # native arm64 hardware (HostRid == TargetRid == linux-arm64) to produce the dotnet-aot .so and
+  # its mstat/dgml size-analysis output. Consistent with the other linux-arm64 legs, this only
+  # performs the build (the x64 AoT leg provides the running test coverage).
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: Docker-Linux-Arm-Public
+        demands: ImageOverride -equals build.azurelinux.3.arm64.open
+        hostArchitecture: Arm64
+        os: linux
+      helixTargetQueue: Ubuntu.2204.ArmArch.Open
+      timeoutInMinutes: 90
+      linuxJobParameterSets:
+      - categoryName: AoT
+        runAoTTests: true
+        targetArchitecture: arm64
+        runtimeIdentifier: linux-arm64
+        osProperties: $(linuxOsglibcProperties)
+        runTests: false
+
   ############### MACOS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
