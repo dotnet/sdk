@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 
@@ -97,7 +98,7 @@ public abstract class FormatIntegrationTestBase
         // Capture a binlog for diagnostic purposes.
         var binlogPath = GetBinlogPath();
 
-        var result = new DotnetCommand(_output, "format", solutionPath, "--no-restore", "--verify-no-changes", "--binarylog", binlogPath)
+        var result = new DotnetCommand(_output, "format", solutionPath, "--no-restore", "--verify-no-changes", "--verbosity", "detailed", "--binarylog", binlogPath)
             .WithWorkingDirectory(_repoPath!)
             .Execute();
 
@@ -105,6 +106,12 @@ public abstract class FormatIntegrationTestBase
         // Any other exit code is an actual failure.
         Assert.IsTrue(result.ExitCode == 0 || result.ExitCode == 2,
             $"dotnet format exited with unexpected code {result.ExitCode}. See {binlogPath} for details.\n{result.StdErr}");
+
+        // Validate that dotnet format actually processed files. Without this check, a broken
+        // restore can cause format to silently exit 0 having loaded zero projects.
+        var match = Regex.Match(result.StdOut ?? "", @"Formatted \d+ of (\d+) files");
+        Assert.IsTrue(match.Success && int.Parse(match.Groups[1].Value) > 0,
+            $"dotnet format did not report processing any files. Restore may have failed.\nStdOut: {result.StdOut}");
     }
 
     [TestMethod]
