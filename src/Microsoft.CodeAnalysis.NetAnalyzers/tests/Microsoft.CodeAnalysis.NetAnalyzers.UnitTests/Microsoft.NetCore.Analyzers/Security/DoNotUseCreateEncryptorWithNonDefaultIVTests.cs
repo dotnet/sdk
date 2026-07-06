@@ -5,17 +5,17 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseCreateEncryptorWithNonDefaultIV,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotUseCreateEncryptorWithNonDefaultIVTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithoutParameter_NonDefaultIV_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -43,10 +43,10 @@ class TestClass
                         GetCSharpResultAt(10, 9, DoNotUseCreateEncryptorWithNonDefaultIV.DefinitelyUseCreateEncryptorWithNonDefaultIVRule, "CreateEncryptor"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithoutParameter_NonDefaultIV_DefinitelyNotNull_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -76,10 +76,10 @@ class TestClass
                         GetCSharpResultAt(11, 9, DoNotUseCreateEncryptorWithNonDefaultIV.DefinitelyUseCreateEncryptorWithNonDefaultIVRule, "CreateEncryptor"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithoutParameter_MaybeNonDefaultIV_MaybeDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -115,10 +115,10 @@ class TestClass
                         GetCSharpResultAt(17, 9, DoNotUseCreateEncryptorWithNonDefaultIV.MaybeUseCreateEncryptorWithNonDefaultIVRule, "CreateEncryptor"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithByteArrayAndByteArrayParameters_DefinitelyDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -145,9 +145,9 @@ class TestClass
                         GetCSharpResultAt(9, 9, DoNotUseCreateEncryptorWithNonDefaultIV.DefinitelyUseCreateEncryptorWithNonDefaultIVRule, "CreateEncryptor"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
-        [Fact]
+        [TestMethod]
         public async Task Test_CreateEncryptorWithoutParameter_DefaultIV_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -170,7 +170,7 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

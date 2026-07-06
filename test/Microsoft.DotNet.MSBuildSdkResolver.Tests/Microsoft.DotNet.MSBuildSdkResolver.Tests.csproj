@@ -37,10 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" />
   </ItemGroup>
 

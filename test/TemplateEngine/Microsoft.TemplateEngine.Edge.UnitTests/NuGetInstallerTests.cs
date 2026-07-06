@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public static void ClassInitialize(TestContext _)
         {
             s_packageManager = new PackageManager();
-            s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+            s_environmentSettingsHelper = new EnvironmentSettingsHelper();
         }
 
         [ClassCleanup]

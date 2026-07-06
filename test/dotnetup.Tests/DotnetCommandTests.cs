@@ -15,6 +15,7 @@ using DotnetForwardCommand = Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class DotnetCommandTests
 {
     /// <summary>
@@ -35,7 +36,7 @@ public class DotnetCommandTests
 
     // ── Parser tests ─────────────────────────────────────────────────────
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseDotnetCommand()
     {
         var parseResult = Parser.Parse(["dotnet"]);
@@ -44,7 +45,7 @@ public class DotnetCommandTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseDoAliasCommand()
     {
         var parseResult = Parser.Parse(["do"]);
@@ -53,8 +54,8 @@ public class DotnetCommandTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [MemberData(nameof(DotnetForwardedArgsCases))]
+    [TestMethod]
+    [DynamicData(nameof(DotnetForwardedArgsCases))]
     public void Parser_ShouldAcceptForwardedArguments(string[] args)
     {
         var parseResult = Parser.Parse(args);
@@ -63,17 +64,17 @@ public class DotnetCommandTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    public static TheoryData<string[]> DotnetForwardedArgsCases => new()
+    public static IEnumerable<object[]> DotnetForwardedArgsCases => new List<object[]>
     {
-        new[] { "dotnet", "build" },
-        new[] { "dotnet", "build", "--configuration", "Release" },
-        new[] { "dotnet", "test", "--filter", "Name~Foo" },
-        new[] { "dotnet", "--info" },
-        new[] { "dotnet", "--version" },
+        new object[] { new[] { "dotnet", "build" } },
+        new object[] { new[] { "dotnet", "build", "--configuration", "Release" } },
+        new object[] { new[] { "dotnet", "test", "--filter", "Name~Foo" } },
+        new object[] { new[] { "dotnet", "--info" } },
+        new object[] { new[] { "dotnet", "--version" } },
     };
 
-    [Theory]
-    [MemberData(nameof(DoForwardedArgsCases))]
+    [TestMethod]
+    [DynamicData(nameof(DoForwardedArgsCases))]
     public void Parser_DoAlias_ShouldAcceptForwardedArguments(string[] args)
     {
         var parseResult = Parser.Parse(args);
@@ -82,13 +83,13 @@ public class DotnetCommandTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    public static TheoryData<string[]> DoForwardedArgsCases => new()
+    public static IEnumerable<object[]> DoForwardedArgsCases => new List<object[]>
     {
-        new[] { "do", "build" },
-        new[] { "do", "run", "--project", "MyApp" },
+        new object[] { new[] { "do", "build" } },
+        new object[] { new[] { "do", "run", "--project", "MyApp" } },
     };
 
-    [Fact]
+    [TestMethod]
     public void Parser_DotnetCommand_CapturesUnmatchedTokens()
     {
         var parseResult = Parser.Parse(["dotnet", "build", "--configuration", "Release"]);
@@ -97,7 +98,7 @@ public class DotnetCommandTests
         parseResult.UnmatchedTokens.Should().Equal("build", "--configuration", "Release");
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_DoAlias_CapturesUnmatchedTokens()
     {
         var parseResult = Parser.Parse(["do", "test", "--filter", "Name~Foo"]);
@@ -107,7 +108,7 @@ public class DotnetCommandTests
 
     // ── Command execution: dotnet not found ──────────────────────────────
 
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_WhenDotnetNotFound_ReturnsExitCode1()
     {
         // Arrange - point to a non-existent directory so dotnet.exe won't be found
@@ -124,7 +125,7 @@ public class DotnetCommandTests
 
     // ── Command execution: dotnet found ──────────────────────────────────
 
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_WhenDotnetFound_RunsProcess()
     {
         // Arrange - create a temp dir with a fake dotnet script/exe
@@ -148,7 +149,7 @@ public class DotnetCommandTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_UsesConfiguredInstallType_WhenUserInstall()
     {
         // Arrange - two paths: a configured user install path and a default path
@@ -180,7 +181,7 @@ public class DotnetCommandTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_FallsBackToDefault_WhenNoConfiguredInstall()
     {
         // Arrange - no configured install type; default path has dotnet
@@ -205,7 +206,7 @@ public class DotnetCommandTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_FallsBackToDefault_WhenAdminInstall()
     {
         // Arrange - configured install is Admin, not User; should fall back to default
@@ -237,7 +238,7 @@ public class DotnetCommandTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_DoAlias_WorksIdentically()
     {
         // Arrange - verify "do" alias behaves the same as "dotnet"
@@ -260,7 +261,7 @@ public class DotnetCommandTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_WithNoArguments_RunsDotnetWithNoArgs()
     {
         // Arrange

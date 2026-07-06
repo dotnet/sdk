@@ -45,7 +45,7 @@ public class TestProgressStateTests
     /// Tests that reporting a skipped test with a previously seen instance after retry throws.
     /// </summary>
     [TestMethod]
-    public void ReportSkippedTest_RepeatedInstanceAfterRetry_ThrowsInvalidOperationException()
+    public void ReportSkippedTest_RepeatedInstanceAfterRetry_ThrowsUnreachableException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
@@ -108,10 +108,10 @@ public class TestProgressStateTests
     }
 
     /// <summary>
-    /// Tests that reusing an old instance ID after a retry throws an InvalidOperationException.
+    /// Tests that reusing an old instance ID after a retry throws an UnreachableException.
     /// </summary>
     [TestMethod]
-    public void ReportFailedTest_ReusingOldInstanceId_ThrowsInvalidOperationException()
+    public void ReportFailedTest_ReusingOldInstanceId_ThrowsUnreachableException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);

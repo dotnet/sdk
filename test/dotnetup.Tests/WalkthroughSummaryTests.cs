@@ -3,14 +3,14 @@
 
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class WalkthroughSummaryTests
 {
-    [Fact]
-    internal void BuildSummaryChoices_OrdersProceedCustomizeExit()
+    [TestMethod]
+    public void BuildSummaryChoices_OrdersProceedCustomizeExit()
     {
         var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: false);
 
@@ -20,24 +20,24 @@ public class WalkthroughSummaryTests
         choices[2].Decision.Should().Be(WalkthroughDecision.Exit);
     }
 
-    [Fact]
-    internal void BuildSummaryChoices_Unconfigured_FirstChoiceProceeds()
+    [TestMethod]
+    public void BuildSummaryChoices_Unconfigured_FirstChoiceProceeds()
     {
         var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: false);
 
         choices[0].Option.Title.Should().Contain("proceed");
     }
 
-    [Fact]
-    internal void BuildSummaryChoices_Configured_FirstChoiceOffersOverride()
+    [TestMethod]
+    public void BuildSummaryChoices_Configured_FirstChoiceOffersOverride()
     {
         var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: true);
 
         choices[0].Option.Title.Should().Contain("override");
     }
 
-    [Fact]
-    internal void GetDefaultChoiceIndex_Unconfigured_DefaultsToProceed()
+    [TestMethod]
+    public void GetDefaultChoiceIndex_Unconfigured_DefaultsToProceed()
     {
         var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: false);
 
@@ -46,8 +46,8 @@ public class WalkthroughSummaryTests
         choices[index].Decision.Should().Be(WalkthroughDecision.Proceed);
     }
 
-    [Fact]
-    internal void GetDefaultChoiceIndex_Configured_DefaultsToCustomize()
+    [TestMethod]
+    public void GetDefaultChoiceIndex_Configured_DefaultsToCustomize()
     {
         var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: true);
 

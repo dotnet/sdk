@@ -11,7 +11,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using FluentAssertions;
 using Microsoft.Dotnet.Installation.Internal.Signing;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -34,6 +33,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 ///         signer, used to drive the negative subject/issuer DN paths.</item>
 /// </list>
 /// </summary>
+[TestClass]
 public class SignatureVerifierTests
 {
     private static readonly string s_signingAssetsDir = Path.Combine(
@@ -72,7 +72,7 @@ public class SignatureVerifierTests
 
     // ---------------- Trusted-roots policy ----------------
 
-    [Fact]
+    [TestMethod]
     public void Verify_EmptyTrustedRoots_FlagsTrustedRootsEmpty()
     {
         // Use the real fixture but with empty root collections — the verifier must report
@@ -91,7 +91,7 @@ public class SignatureVerifierTests
 
     // ---------------- CMS shape and crypto ----------------
 
-    [Fact]
+    [TestMethod]
     public void Verify_GarbageSignature_FlagsSigDecodeFailed()
     {
         var result = SignatureVerifier.Verify(
@@ -104,7 +104,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_TamperedContent_FlagsSigCryptoInvalid()
     {
         // Flip a single byte in the middle of the JSON — the embedded message digest no
@@ -123,7 +123,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_AuthenticReleasesManifest_PassesAllSignerDNAndAlgorithmChecks()
     {
         // The fixture is real and the bundled CTL chains it cleanly. With production options
@@ -171,7 +171,7 @@ public class SignatureVerifierTests
         codes.Should().NotContain(FailureCode.ExpiredNow);
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_AuthenticManifest_AfterExpiration_FlagsExpiredNow()
     {
         // signature.expiration in the v3 fixture is 2026-08-03. Pin "now" past that.
@@ -185,7 +185,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_NonObjectJsonContent_FlagsExpirationMissing()
     {
         // The verifier requires an object root; a JSON array trips ExpirationMissing
@@ -205,7 +205,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_RequireExpirationFalse_SkipsJsonPolicyEntirely()
     {
         // Same garbage content as above, but turn RequireJsonExpirationField off — none
@@ -236,7 +236,7 @@ public class SignatureVerifierTests
 
     // ---------------- Foreign signer (negative DN/issuer/EKU paths) ----------------
 
-    [Fact]
+    [TestMethod]
     public void Verify_ForeignSigner_FlagsSubjectMismatch()
     {
         // The vscode-dotnet-runtime CMS signature is signed by a different Microsoft entity
@@ -261,7 +261,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_NuGetPackageSignature_FromOlderIntermediate_FlagsIssuerMismatch()
     {
         // Microsoft.AspNetCore.App.Runtime 3.1.32's NuGet .signature.p7s is signed by
@@ -287,7 +287,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_NuGetPackageSignature_FromOlderTsa_FlagsTimestampIssuerMismatch()
     {
         // The Microsoft.AspNetCore.App.Runtime 3.1.32 NuGet signature carries an RFC 3161 timestamp from a TSA leaf issued by:
@@ -311,7 +311,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_NuGetPackageSignature_PassesAlgorithmAndEkuChecks()
     {
         // Confirms the algorithm + EKU checks DON'T over-fire on a legitimate Microsoft NuGet
@@ -360,7 +360,7 @@ public class SignatureVerifierTests
     //     SignerInfo uses SHA-256 instead of v3's SHA-384. Confirms the verifier accepts
     //     both digest algorithms (both are in the allow-list).
 
-    [Fact]
+    [TestMethod]
     public void Verify_V1Signature_FlagsTimestampMissing_AndCascadingSkips()
     {
         // The v1 fixture (May 2026 draft) has no RFC 3161 timestamp attribute at all.
@@ -397,7 +397,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_V2Signature_AcceptsSha256Digest_AndFlagsTimestampBindingInvalid()
     {
         // v2 fixture (April 2026 draft) was signed with SHA-256 instead of v3's SHA-384.
@@ -436,7 +436,7 @@ public class SignatureVerifierTests
 
     // ---------------- Collect-all behavior ----------------
 
-    [Fact]
+    [TestMethod]
     public void Verify_CollectsAllFailures_DoesNotShortCircuit()
     {
         // Garbage signature + missing roots + non-JSON content. With CollectAll mode the
@@ -453,7 +453,7 @@ public class SignatureVerifierTests
         result.IsValid.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_DefaultMode_ShortCircuitsOnFirstFailure()
     {
         // Same inputs as the CollectAll test above, but with the default ShortCircuit mode.
@@ -485,7 +485,7 @@ public class SignatureVerifierTests
     // today. Those are captured below as Skip-reason tests so they appear as TODOs in
     // test output rather than getting forgotten.
 
-    [Fact]
+    [TestMethod]
     public void Verify_RepeatedCalls_DoNotLeakOsHandles()
     {
         // dotnetup mirrors NuGet's X509ChainHolder.Dispose by disposing every
@@ -566,7 +566,7 @@ public class SignatureVerifierTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_IntermediateConstrainedAwayFromCodeSigning_FailsChainBuild()
     {
         // Defense-in-depth: chain.ChainPolicy.ApplicationPolicy enforces the codeSigning EKU
@@ -597,7 +597,7 @@ public class SignatureVerifierTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_ExpiredSignerCert_FailsAsChainBuildFailed_NotIgnored()
     {
         // Spec §6: NotTimeValid is fatal. The verifier deliberately does NOT set
@@ -626,7 +626,7 @@ public class SignatureVerifierTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Verify_LeafEkuIncludesCabForumPermittedExtras_IsAccepted()
     {
         // CA/Browser Forum BR §7.1.2.3(f) permits id-kp-codeSigning leaves to ALSO carry
@@ -656,7 +656,7 @@ public class SignatureVerifierTests
             codes.Should().NotContain(FailureCode.EkuMultipleExtensions);
         }
     }
-    [Fact]
+    [TestMethod]
     public void Verify_LeafEkuContainsServerAuth_FlagsEkuNotExclusiveCodeSign()
     {
         // CAB-Forum BR §7.1.2.3(f) explicitly forbids id-kp-serverAuth on a code-signing
@@ -682,7 +682,7 @@ public class SignatureVerifierTests
 
     // ---------------- BCL drift detector for the PQC OID allow-list ----------------
 
-    [Fact]
+    [TestMethod]
     public void PqcOidList_StaysInSyncWithBcl()
     {
         // The SDK does NOT expose a public way to enumerate the OIDs each PQC algorithm
@@ -703,7 +703,7 @@ public class SignatureVerifierTests
         var bclOids = TryLoadBclPqcKnownOids(out string? loadFailureReason);
         if (bclOids is null)
         {
-            Assert.Skip($"Could not reflect BCL PQC KnownOids for drift check: {loadFailureReason}. " +
+            Assert.Inconclusive($"Could not reflect BCL PQC KnownOids for drift check: {loadFailureReason}. " +
                         "This usually means the BCL refactored its internal field layout; please " +
                         "update PqcOidList_StaysInSyncWithBcl to match the new layout.");
             return;
@@ -721,7 +721,7 @@ public class SignatureVerifierTests
 
         if (missingFromOurs.Count > 0)
         {
-            Assert.Skip(
+            Assert.Inconclusive(
                 $"BCL has {missingFromOurs.Count} PQC OID(s) not in SignatureVerifier.s_pqcSignatureOids: " +
                 $"[{string.Join(", ", missingFromOurs)}]. " +
                 "Please mirror these into SignatureVerifier.cs to extend the algorithm allow-list. " +
@@ -753,7 +753,7 @@ public class SignatureVerifierTests
         ["DigiCert Trusted G4 TimeStamping RSA4096 SHA256 2025 CA1"] = new(2038, 1, 14, 0, 0, 0, TimeSpan.Zero),
     };
 
-    [Fact]
+    [TestMethod]
     public void PinnedIssuerCertificates_HaveAtLeast90DaysUntilExpiration()
     {
         // Warn ≥90d before a pinned intermediate expires, so the DN pin, PEM, and digest

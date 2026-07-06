@@ -8,10 +8,10 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class MigrationWorkflowTests : IDisposable
 {
     private readonly string _tempDir;
@@ -31,7 +31,7 @@ public class MigrationWorkflowTests : IDisposable
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
     }
 
-    [Fact]
+    [TestMethod]
     public void GetMigrationCandidates_CanFilterToRequestedComponents()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -49,7 +49,7 @@ public class MigrationWorkflowTests : IDisposable
         result.Should().Equal([sdkInstall]);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetMigrationCandidates_CanFilterToRuntimeFamily()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -71,7 +71,7 @@ public class MigrationWorkflowTests : IDisposable
         result.Should().Contain(i => i.Component == InstallComponent.ASPNETCore);
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildMigrationSelections_DeduplicatesChannelsAndSkipsExistingSpecs()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -104,7 +104,7 @@ public class MigrationWorkflowTests : IDisposable
         result.Should().ContainSingle(r => r.Component == InstallComponent.ASPNETCore && r.Channel.Name == "9.0");
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildMigrationSelections_UsesInstallSpecChannelsForExistingRequests()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -134,7 +134,7 @@ public class MigrationWorkflowTests : IDisposable
         result.Should().ContainSingle(r => r.Component == InstallComponent.SDK && r.Channel.Name == "9.0.3xx");
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildMigrationSelections_ExcludesChannelsAlreadyTrackedInManifest()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -176,7 +176,7 @@ public class MigrationWorkflowTests : IDisposable
         result[0].Channel.Name.Should().Be("9.0");
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildMigrationSelections_TreatsRuntimeChannels9And90AsEquivalent()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -213,7 +213,7 @@ public class MigrationWorkflowTests : IDisposable
         result.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void BuildMigrationSelections_DoesNotUseTrackedInstallationsForChannelExclusion()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
@@ -252,7 +252,7 @@ public class MigrationWorkflowTests : IDisposable
         result[0].Channel.Name.Should().Be("10.0");
     }
 
-    [Fact]
+    [TestMethod]
     public void MergeInstallRequests_AddsMigrationRequestsWithoutDuplicatingExistingChannels()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();

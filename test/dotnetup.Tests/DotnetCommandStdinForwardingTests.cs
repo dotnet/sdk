@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// caused intermittent timeouts on this pipeline before. Serialization removes the
 /// contention; runtime cost is negligible (one test).
 /// </summary>
-[Collection("DotnetupProcessLaunchTests")]
+[TestClass]
 public class DotnetCommandStdinForwardingTests
 {
     /// <summary>
@@ -29,7 +29,7 @@ public class DotnetCommandStdinForwardingTests
     /// writes test data, and verifies the child process echoes it back
     /// through stdout — proving the full stdin forwarding pipeline works.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_ForwardsStdinToChildProcess()
     {
         var tempDir = Directory.CreateTempSubdirectory("dotnetup-stdin-test");

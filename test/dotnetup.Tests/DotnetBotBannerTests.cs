@@ -6,6 +6,7 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class DotnetBotBannerTests
 {
     /// <summary>
@@ -24,7 +25,7 @@ public class DotnetBotBannerTests
         return writer.ToString();
     }
 
-    [Fact]
+    [TestMethod]
     public void Panel_ShowsTextContent()
     {
         var panel = DotnetBotBanner.BuildPanel();

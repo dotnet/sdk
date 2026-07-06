@@ -332,6 +332,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet("World"));
             """);
@@ -362,6 +363,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib/mylib.cs
             Console.WriteLine(MyLib.Greeter.Greet("World"));
             """);
@@ -437,6 +439,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
 
         // Accessing internal member should fail.
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.PublicClass.InternalMethod());
             """);
@@ -449,6 +452,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
 
         // Accessing public member should succeed.
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.PublicClass.PublicMethod());
             """);
@@ -479,6 +483,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #!/usr/bin/env dotnet
             #:property OutputType=Library
             #:ref lib2.cs
             namespace Lib1;
@@ -489,6 +494,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib1.cs
             Console.WriteLine(Lib1.Middle.Value());
             """);
@@ -530,6 +536,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
         Directory.CreateDirectory(appDir);
 
         File.WriteAllText(Path.Join(appDir, "app.cs"), $"""
+            #!/usr/bin/env dotnet
             #:ref {arg}
             #:property LibDirName=Lib
             Console.WriteLine(MyLib.Greeter.Greet("World"));
@@ -577,6 +584,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
 
         // Duplicate #:ref directives are allowed (MSBuild can handle that).
         File.WriteAllText(filePath, """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
@@ -589,6 +597,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             .And.HaveStdOut("Hello!");
 
         File.WriteAllText(filePath, """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #:ref ./lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
@@ -601,6 +610,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             .And.HaveStdOut("Hello!");
 
         File.WriteAllText(filePath, """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #:ref $(MSBuildProjectDirectory)/lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
@@ -634,6 +644,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
             """);
@@ -643,7 +654,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
+                {DirectiveError(programPath, 2, Resources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
@@ -749,6 +760,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             #if NET10_0_OR_GREATER
             Console.WriteLine("App is net10.0+: " + MyLib.Greeter.Greet());

@@ -10,7 +10,6 @@ using TaskItem = Microsoft.Build.Utilities.TaskItem;
 
 namespace Microsoft.NET.Sdk.Razor.Test
 {
-    [DoNotParallelize]
     [TestClass]
     public class FindAssembliesWithReferencesToMultiThreadingTest
     {

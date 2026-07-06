@@ -99,6 +99,53 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
   </ItemGroup>
 
+  <!--
+    The "MSBuild version:" line of the info command: MSBuildForwardingAppWithoutLogging.MSBuildVersion
+    (in Microsoft.DotNet.Cli.Utils) reads Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion,
+    so the AOT binary needs the Microsoft.Build runtime assembly for ILC to compile that path.
+    Cli.Utils references Microsoft.Build with ExcludeAssets="runtime" / PrivateAssets="all", so it does
+    not flow transitively; reference it directly here. Microsoft.Build is only partially annotated
+    for trimming/AOT; its analysis warnings are rolled up and suppressed in dotnet-aot.csproj.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" />
+  </ItemGroup>
+
+  <!--
+    Workload reporting for the info command: WorkloadInfoHelper.GetWorkloadsVersion() and
+    ShowWorkloadsInfo(). Under CLI_AOT, WorkloadInfoHelper builds the installation-record repository
+    directly (the registry/file-based record repositories are already in the AOT source set) and does
+    not compile in the workload installer (NuGet/MSI) machinery.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInfoHelper.cs" Link="Commands\Workload\WorkloadInfoHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\InstallStateContents.cs" Link="Commands\Workload\InstallStateContents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\InstalledWorkloadsCollection.cs" Link="Commands\Workload\List\InstalledWorkloadsCollection.cs" />
+  </ItemGroup>
+
+  <!--
+    Windows-only: 'Visual Studio installed workloads' portion of the info command's workload section.
+    VisualStudioWorkloads queries the VS Setup Configuration COM API. The AOT-safe COM interop helpers
+    (ComClassFactory, ComScope, ComSafeArrayScope, BSTR, HRESULT, IComIID, CLSID) live in
+    Microsoft.DotNet.Cli.Utils and are consumed here via InternalsVisibleTo; only the VS Setup
+    interface definitions and the query itself are compiled in. Gated on TARGET_WINDOWS to match the
+    '#if TARGET_WINDOWS' guard around the call site in WorkloadInfoHelper.AddInstalledVsWorkloads.
+  -->
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\VisualStudioWorkloads.cs" Link="Commands\Workload\List\VisualStudioWorkloads.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\IEnumSetupInstances.cs" Link="VisualStudio\IEnumSetupInstances.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\InstanceState.cs" Link="VisualStudio\InstanceState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupConfiguration.cs" Link="VisualStudio\ISetupConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupConfiguration2.cs" Link="VisualStudio\ISetupConfiguration2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupErrorInfo.cs" Link="VisualStudio\ISetupErrorInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupErrorState.cs" Link="VisualStudio\ISetupErrorState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupFailedPackageReference.cs" Link="VisualStudio\ISetupFailedPackageReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupInstance.cs" Link="VisualStudio\ISetupInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupInstance2.cs" Link="VisualStudio\ISetupInstance2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupPackageReference.cs" Link="VisualStudio\ISetupPackageReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupPropertyStore.cs" Link="VisualStudio\ISetupPropertyStore.cs" />
+  </ItemGroup>
+
   <!-- 'dotnet sdk check' command: command-specific sources and helpers. -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\SdkCommandParser.cs" Link="Commands\Sdk\SdkCommandParser.cs" />

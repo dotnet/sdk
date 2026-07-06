@@ -1,63 +1,63 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.TestHelper
 {
     /// <summary>
-    /// Microsoft.Extensions.Logging <see cref="ILoggerProvider"/> which logs to XUnit test output.
+    /// Microsoft.Extensions.Logging <see cref="ILoggerProvider"/> which routes log
+    /// messages to a write callback (typically the test runner's diagnostic output).
     /// </summary>
     /// <remarks>
     /// See https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Logging/tests/DI.Common/Common/src/XunitLoggerProvider.cs for more details.
     /// </remarks>
-    public class XunitLoggerProvider : ILoggerProvider
+    public class TestLoggerProvider : ILoggerProvider
     {
-        private readonly ITestOutputHelper _output;
+        private readonly Action<string> _writeLine;
         private readonly LogLevel _minLevel;
         private readonly DateTimeOffset? _logStart;
 
-        public XunitLoggerProvider(ITestOutputHelper output)
-            : this(output, LogLevel.Trace)
+        public TestLoggerProvider(Action<string> writeLine)
+            : this(writeLine, LogLevel.Trace)
         {
         }
 
-        public XunitLoggerProvider(ITestOutputHelper output, LogLevel minLevel)
-            : this(output, minLevel, null)
+        public TestLoggerProvider(Action<string> writeLine, LogLevel minLevel)
+            : this(writeLine, minLevel, null)
         {
         }
 
-        public XunitLoggerProvider(ITestOutputHelper output, LogLevel minLevel, DateTimeOffset? logStart)
+        public TestLoggerProvider(Action<string> writeLine, LogLevel minLevel, DateTimeOffset? logStart)
         {
-            _output = output;
+            _writeLine = writeLine;
             _minLevel = minLevel;
             _logStart = logStart;
         }
 
         public ILogger CreateLogger(string categoryName)
         {
-            return new XunitLogger(_output, categoryName, _minLevel, _logStart);
+            return new TestLogger(_writeLine, categoryName, _minLevel, _logStart);
         }
 
         public void Dispose()
         {
         }
 
-        private class XunitLogger : ILogger
+        private class TestLogger : ILogger
         {
             private static readonly string[] NewLineChars = new[] { Environment.NewLine };
             private readonly string _category;
             private readonly LogLevel _minLogLevel;
-            private readonly ITestOutputHelper _output;
+            private readonly Action<string> _writeLine;
             private readonly DateTimeOffset? _logStart;
 
-            public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel, DateTimeOffset? logStart)
+            public TestLogger(Action<string> writeLine, string category, LogLevel minLogLevel, DateTimeOffset? logStart)
             {
                 _minLogLevel = minLogLevel;
                 _category = category;
-                _output = output;
+                _writeLine = writeLine;
                 _logStart = logStart;
             }
 
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                     }
                 }
 
-                // Remove the last line-break, because ITestOutputHelper only has WriteLine.
+                // Remove the last line-break, because the write callback only has a line-oriented API.
                 var message = messageBuilder.ToString();
                 if (message.EndsWith(Environment.NewLine))
                 {
@@ -103,11 +103,11 @@ namespace Microsoft.TemplateEngine.TestHelper
 
                 try
                 {
-                    _output.WriteLine(message);
+                    _writeLine(message);
                 }
                 catch (Exception)
                 {
-                    // We could fail because we're on a background thread and our captured ITestOutputHelper is
+                    // We could fail because we're on a background thread and our captured callback is
                     // busted (if the test "completed" before the background thread fired).
                     // So, ignore this. There isn't really anything we can do but hope the
                     // caller has additional loggers registered

@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
         // mirrors the per-class lifetime that xUnit's IClassFixture provides.
         private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
-            new(() => new EnvironmentSettingsHelper(NullMessageSink.Instance));
+            new(() => new EnvironmentSettingsHelper());
 
         private EnvironmentSettingsHelper _environmentSettingsHelper = null!;
 
