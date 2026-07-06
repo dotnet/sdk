@@ -198,7 +198,9 @@ if [ -n "$RESOLVED_URL" ] && [[ "$RESOLVED_URL" == *"/public/"* ]]; then
     info "Resolved '${QUALITY}' to concrete build: $RESOLVED_URL"
     DOWNLOAD_URL="$RESOLVED_URL"
     # Checksums live under the sibling 'public-checksums' path with a .sha512 suffix.
-    CHECKSUM_URL="${RESOLVED_URL/\/public\//\/public-checksums\/}.sha512"
+    # Use sed (not bash ${var/p/r}) because bash 3.2 (macOS) keeps the backslashes
+    # from an escaped replacement literally, producing a malformed URL.
+    CHECKSUM_URL="$(printf '%s' "$RESOLVED_URL" | sed 's#/public/#/public-checksums/#').sha512"
 else
     gray "Could not resolve '${QUALITY}' shortlink to a concrete build; using shortlink URLs directly."
 fi
