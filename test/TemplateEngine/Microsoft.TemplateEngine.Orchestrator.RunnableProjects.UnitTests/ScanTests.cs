@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -8,16 +8,21 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
-    public class ScanTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class ScanTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        public TestContext TestContext { get; set; } = null!;
 
-        public ScanTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        [Fact]
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
         public async Task CanReadPostActions()
         {
             var jsonToBe = new
@@ -37,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     },
                 }
             };
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
 
             string templateConfigDir = Path.Combine(sourceBasePath, RunnableProjectGenerator.TemplateConfigDirectoryName);
@@ -47,11 +52,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
-            IReadOnlyList<IScanTemplateInfo>? templates = await (generator as IGenerator).GetTemplatesFromMountPointAsync(mountPoint, TestContext.Current.CancellationToken);
+            IReadOnlyList<IScanTemplateInfo>? templates = await (generator as IGenerator).GetTemplatesFromMountPointAsync(mountPoint, TestContext.CancellationToken);
 
-            Assert.Single(templates);
+            Assert.ContainsSingle(templates);
             var template = templates[0];
-            Assert.Equal(new[] { jsonToBe.postActions[0].actionId, jsonToBe.postActions[1].actionId }, template.PostActions);
+            Assert.AreSequenceEqual(new[] { jsonToBe.postActions[0].actionId, jsonToBe.postActions[1].actionId }, template.PostActions);
         }
     }
 }

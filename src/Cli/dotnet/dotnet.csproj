@@ -88,11 +88,7 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(TargetOS)' == 'windows'">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBA. -->
-    <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" PrivateAssets="all" Condition="'$(TargetOS)' == 'windows'" />
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
 
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />

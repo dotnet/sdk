@@ -8,6 +8,7 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class AttributesMustMatchTests
     {
         /*
@@ -1318,9 +1319,9 @@ new CompatDifference[] {
             }
         };
 
-        [Theory]
-        [MemberData(nameof(TypesCases))]
-        [MemberData(nameof(MembersCases))]
+        [TestMethod]
+        [DynamicData(nameof(TypesCases))]
+        [DynamicData(nameof(MembersCases))]
         public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
             using TempDirectory root = new();
@@ -1333,11 +1334,11 @@ new CompatDifference[] {
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Equal(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
 
-        [Theory]
-        [MemberData(nameof(StrictMode))]
+        [TestMethod]
+        [DynamicData(nameof(StrictMode))]
         public void EnsureStrictModeReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
             using TempDirectory root = new();
@@ -1350,10 +1351,10 @@ new CompatDifference[] {
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Equal(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExclusionsFilteredOut()
         {
             using TempDirectory root = new();
@@ -1399,10 +1400,10 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Empty(actual);
+            Assert.IsEmpty(actual);
         }
 
-        [Fact]
+        [TestMethod]
         public void AttributesExcludedButMembersValidated()
         {
             using TempDirectory root = new();
@@ -1449,7 +1450,7 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right).ToArray();
 
-            Assert.Equal(new[]
+            Assert.AreSequenceEqual(new[]
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Added, "F:CompatTests.FooAttribute.X"),
             }, actual);

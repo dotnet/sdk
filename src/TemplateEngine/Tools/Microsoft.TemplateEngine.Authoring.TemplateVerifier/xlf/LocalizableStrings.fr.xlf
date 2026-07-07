@@ -7,6 +7,11 @@
         <target state="translated">L’installation du modèle devait réussir, mais le code de sortie était '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerificationEngine_Error_NoDirectoryVerifier">
+        <source>No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</source>
+        <target state="new">No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerificationEngine_Error_ScrubberExtension">
         <source>File extension passed to scrubber should not start with dot.</source>
         <target state="translated">L’extension de fichier passée au programme de nettoyage ne doit pas commencer par un point.</target>

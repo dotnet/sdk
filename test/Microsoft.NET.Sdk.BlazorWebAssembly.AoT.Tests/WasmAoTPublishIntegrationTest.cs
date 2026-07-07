@@ -5,15 +5,15 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 {
+    [TestClass]
     public class WasmAoTPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
-        public WasmAoTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
-
-        [Fact]
+        [TestMethod]
         public void AoT_Publish_InRelease_Works()
         {
             // Arrange
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
         }
 
-        [Fact]
+        [TestMethod]
         public void AoT_Publish_WithExistingWebConfig_Works()
         {
             // Arrange
@@ -84,7 +84,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             webConfig.Should().Contain(webConfigContents);
         }
 
-        [Fact]
+        [TestMethod]
         public void AoT_Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.

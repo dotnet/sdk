@@ -11,6 +11,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests;
 [TestClass]
 public class GivenDotnetTestSelectsDevice : SdkTest
 {
+    public GivenDotnetTestSelectsDevice()
+    {
+    }
+
     [TestMethod]
     public void ItFailsInNonInteractiveMode_WhenMultipleDevicesAvailableAndNoneSpecified()
     {

@@ -958,6 +958,11 @@ The following are names of parameters or literal values and should not be transl
 {1}</target>
         <note>{StrBegins="NETSDK1197: "}</note>
       </trans-unit>
+      <trans-unit id="TargetFrameworkEmpty">
+        <source>NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</source>
+        <target state="new">NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</target>
+        <note>{StrBegins="NETSDK1241: "}</note>
+      </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
         <source>NETSDK1138: The target framework '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
         <target state="translated">NETSDK1138: '{0}' hedef çerçevesi destek kapsamı dışında ve gelecekte güvenlik güncelleştirmeleri almayacak. Lütfen destek ilkesi hakkında daha fazla bilgi için şuraya bakın: {1}.</target>
@@ -1171,6 +1176,11 @@ To install these workloads, run the following command: dotnet workload restore</
         <target state="translated">NETSDK1147: Bu projeyi oluşturmak için şu iş yüklerinin yüklenmesi gerekiyor: {0}
 Bu iş yüklerini yüklemek için şu komutu çalıştırın: dotnet workload restore</target>
         <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="MonoRuntimeNotSupportedForPlatform">
+        <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</source>
+        <target state="new">NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</target>
+        <note>{StrBegins="NETSDK1242: "}</note>
       </trans-unit>
     </body>
   </file>

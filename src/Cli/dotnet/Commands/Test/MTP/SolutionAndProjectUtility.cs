@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
@@ -232,6 +233,7 @@ internal static class SolutionAndProjectUtility
         });
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(
         string projectFilePath,
         ProjectCollection projectCollection,
@@ -440,6 +442,7 @@ internal static class SolutionAndProjectUtility
         }
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static TestModule? GetModuleFromProject(ProjectInstance project, BuildOptions buildOptions)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
@@ -498,6 +501,7 @@ internal static class SolutionAndProjectUtility
 
         return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
 
+        [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         static RunProperties GetRunProperties(ProjectInstance project)
         {
             // Build API cannot be called in parallel, even if the projects are different.

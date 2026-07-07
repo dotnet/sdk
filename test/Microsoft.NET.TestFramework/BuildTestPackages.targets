@@ -159,21 +159,13 @@
         <ProjectName>Microsoft.Net.Sdk.Compilers.Toolset.csproj</ProjectName>
         <Version>$(Version)</Version>
       </BaseTestPackageProject>
-      <!-- Microsoft.TemplateEngine.Authoring.Tasks and Microsoft.TemplateSearch.TemplateDiscovery
-           are excluded here because they are already packed elsewhere. Packing them again with
-           different global properties (PackageOutputPath, Version) causes a parallel-build
-           race condition on referenced projects' obj/ output DLLs (e.g. RunnableProjects.dll).
-           Both projects copy their nupkg to TestPackagesDir themselves. -->
-      <BaseTestPackageProject Include="src/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompat.Task">
-        <Name>Microsoft.DotNet.ApiCompat.Task</Name>
-        <ProjectName>Microsoft.DotNet.ApiCompat.Task.csproj</ProjectName>
-        <Version>$(Version)</Version>
-      </BaseTestPackageProject>
-      <BaseTestPackageProject Include="src/Compatibility/GenAPI/Microsoft.DotNet.GenAPI.Task">
-        <Name>Microsoft.DotNet.GenAPI.Task</Name>
-        <ProjectName>Microsoft.DotNet.GenAPI.Task.csproj</ProjectName>
-        <Version>$(Version)</Version>
-      </BaseTestPackageProject>
+      <!-- Microsoft.TemplateEngine.Authoring.Tasks, Microsoft.TemplateSearch.TemplateDiscovery,
+           Microsoft.DotNet.ApiCompat.Task, and Microsoft.DotNet.GenAPI.Task are excluded here
+           because they are already packed elsewhere. Packing them again with different global
+           properties (PackageOutputPath, Version) causes a parallel-build race condition on
+           referenced projects' obj/ output DLLs (e.g. RunnableProjects.dll,
+           Microsoft.DotNet.ApiCompatibility.resources.dll). Each project copies its own nupkg to
+           TestPackagesDir via a CopyPackageToTestPackagesDir target (AfterTargets=Pack). -->
 
       <BaseTestPackageProject>
         <NuPkgName Condition=" '%(NuPkgName)' == '' ">%(Name)</NuPkgName>
