@@ -43,7 +43,8 @@ public class AotIntegrationTests
     private (int exitCode, string stdout, string stderr) RunDn(
         string[] args,
         bool enableAot = true,
-        int timeoutMs = 30_000)
+        int timeoutMs = 30_000,
+        Dictionary<string, string>? extraEnv = null)
     {
         string? dnPath = FindDnPath();
         if (dnPath is null)
@@ -72,6 +73,14 @@ public class AotIntegrationTests
         else
         {
             psi.Environment.Remove("DOTNET_CLI_ENABLEAOT");
+        }
+
+        if (extraEnv is not null)
+        {
+            foreach (KeyValuePair<string, string> entry in extraEnv)
+            {
+                psi.Environment[entry.Key] = entry.Value;
+            }
         }
 
         _log.WriteLine($"Running: {dnPath} {string.Join(" ", args)}");
@@ -117,6 +126,72 @@ public class AotIntegrationTests
 
         Assert.AreEqual(0, exitCode);
         Assert.IsFalse(string.IsNullOrWhiteSpace(stdout), "Expected version output");
+    }
+
+    [TestMethod]
+    public void AotInfo_SeparatedLayout_BasePathIsResolvedSdkDirectory()
+    {
+        SkipIfDnUnavailable();
+        RunSeparatedLayoutBasePathTest(selfLocate: false);
+    }
+
+    [TestMethod]
+    public void AotInfo_SeparatedLayout_SelfLocate_BasePathIsResolvedSdkDirectory()
+    {
+        SkipIfDnUnavailable();
+        RunSeparatedLayoutBasePathTest(selfLocate: true);
+    }
+
+    // Emulates the deployed muxer layout: dotnet-aot lives in a directory other than dn's own, so
+    // AppContext.BaseDirectory is no longer the SDK directory. Verifies that --info's Base Path still
+    // reports the resolved SDK directory - whether it was passed in as sdk_dir (selfLocate: false) or
+    // self-located from the loaded module (selfLocate: true).
+    private void RunSeparatedLayoutBasePathTest(bool selfLocate)
+    {
+        string dnPath = FindDnPath()!;
+        string sdkLayoutDir = Path.GetDirectoryName(dnPath)!;
+        string aotLib = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
+            : OperatingSystem.IsMacOS() ? "dotnet-aot.dylib"
+            : "dotnet-aot.so";
+        string aotSource = Path.Combine(sdkLayoutDir, aotLib);
+        if (!File.Exists(aotSource))
+        {
+            Assert.Inconclusive($"{aotLib} not found next to dn; build with NativeAOT to enable this test.");
+        }
+
+        string sdkSubDir = Path.Combine(Path.GetTempPath(), "aot-sep-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(sdkSubDir);
+        try
+        {
+            File.Copy(aotSource, Path.Combine(sdkSubDir, aotLib));
+
+            var env = new Dictionary<string, string> { ["DOTNET_AOT_SDK_DIR"] = sdkSubDir };
+            if (selfLocate)
+            {
+                env["DOTNET_AOT_BLANK_SDKDIR"] = "1";
+            }
+
+            var (exitCode, stdout, _) = RunDn(["--info"], enableAot: true, extraEnv: env);
+
+            Assert.AreEqual(0, exitCode);
+
+            bool basePathReferencesSdkDir = false;
+            foreach (string line in stdout.Split('\n'))
+            {
+                if (line.Contains("Base Path:") && line.Contains(sdkSubDir))
+                {
+                    basePathReferencesSdkDir = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(basePathReferencesSdkDir,
+                $"--info Base Path did not reference the resolved SDK directory '{sdkSubDir}'. Output:\n{stdout}");
+        }
+        finally
+        {
+            Directory.Delete(sdkSubDir, recursive: true);
+        }
     }
 
     [TestMethod]
