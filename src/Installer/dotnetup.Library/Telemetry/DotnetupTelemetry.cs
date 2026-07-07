@@ -36,9 +36,6 @@ public sealed class DotnetupTelemetry : IDisposable
         Constants.Telemetry.BootstrapperSourceName,
         GetVersion());
 
-    // Computed once at type initialization; the disk-log path logic lives in
-    // DotnetupPaths. Caching here keeps the env-var read consistent across the
-    // (multiple) call sites and off the hot path.
     private static readonly string? s_diskLogPath = DotnetupPaths.TelemetryDiskLogPath;
 
     private readonly TracerProvider? _tracerProvider;
@@ -57,7 +54,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// session.id, dev.build, ...). These also live on the OTel
     /// <see cref="Resource"/>, but the AzMonitor log exporter only maps a
     /// fixed subset of Resource attrs to AppInsights envelope fields and
-    /// drops the rest — so we re-stamp them on every LogRecord state in
+    /// drops the rest, so we re-stamp them on every LogRecord state in
     /// <c>BuildCompletionState</c> to ensure they reach the
     /// <c>traces</c> table (the data-x signal).
     /// </summary>
@@ -80,11 +77,8 @@ public sealed class DotnetupTelemetry : IDisposable
     public bool IsOneAndDoneEnvironment { get; }
 
     /// <summary>
-    /// The telemetry name of the subcommand the current invocation is running
-    /// (e.g. <c>sdk/install</c>, <c>print-env-script</c>), captured when
-    /// <see cref="StartTrackedCommand"/> is called. Null until a command starts
-    /// (parse-only / root-only invocations). Used to fast-path the flush budget
-    /// for latency-critical shell-startup commands.
+    /// The telemetry name of the subcommand the current invocation is running.
+    /// Assumption: Commands may have concurrency but distinct commands are not constructed concurrently.
     /// </summary>
     internal string? CurrentCommandName { get; private set; }
 
@@ -310,12 +304,17 @@ public sealed class DotnetupTelemetry : IDisposable
         }
         catch (Exception classificationEx)
         {
-            // Never let telemetry classification crash the app, but try to record this crash just in case
+            // Never let a telemetry bug crash the app, but stamp a synthetic error.type so the
+            // failed span stays identifiable in the backend (SetStatus would otherwise leave it
+            // empty). A classification failure is our own bug, so the Product category is correct
+            // here — sourced from the ErrorCategory enum rather than a hand-typed literal to stay
+            // consistent with ErrorCodeMapper.ApplyErrorTags.
+            const string classificationErrorType = "TelemetryClassificationError";
             try
             {
-                operation.Tag(TelemetryTagNames.ErrorType, "TelemetryClassificationError");
-                operation.Tag(TelemetryTagNames.ErrorCategory, "product");
-                operation.SetStatus(ActivityStatusCode.Error, "TelemetryClassificationError");
+                operation.Tag(TelemetryTagNames.ErrorType, classificationErrorType);
+                operation.Tag(TelemetryTagNames.ErrorCategory, ErrorCategory.Product.ToString().ToLowerInvariant());
+                operation.SetStatus(ActivityStatusCode.Error, classificationErrorType);
             }
             catch
             {
@@ -568,8 +567,8 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Builds a structured state for one <c>traces</c> row.
-    /// Stamps the / process-level common properties first (so per-event Activity tags can override on collision)
-    /// Walks ancestor activities (root first) to inherit <c>command.*</c> tags
+    /// Stamps the process-level common properties first (so per-event Activity tags can override on collision).
+    /// Walks ancestor activities (root first) to inherit <c>command.*</c> tags.
     /// Overlays the current activity's own tags.
     /// </summary>
     ///
@@ -646,7 +645,7 @@ public sealed class DotnetupTelemetry : IDisposable
         // so we don't dispose those two fields explicitly (see the CA2213
         // suppression on their declarations).
         try { _services?.Dispose(); } catch { /* never crash on telemetry */ }
-        _tracerProvider?.Dispose();
+        try { _tracerProvider?.Dispose(); } catch { /* never crash on telemetry */ }
     }
 
     private static string GetVersion()
