@@ -9,6 +9,13 @@ namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 public class DotnetToolsCommandResolver : ICommandResolver
 {
+    private static readonly IReadOnlyDictionary<string, string> AggregateToolPackages = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["dotnet-dev-certs"] = "aspnetcoretools",
+        ["dotnet-user-jwts"] = "aspnetcoretools",
+        ["dotnet-user-secrets"] = "aspnetcoretools",
+    };
+    
     public static DotnetToolsCommandResolver ForSdkRoot(string sdkRoot)
     {
         return new DotnetToolsCommandResolver(Path.Combine(sdkRoot, "DotnetTools"));
@@ -35,6 +42,12 @@ public class DotnetToolsCommandResolver : ICommandResolver
         }
 
         var packageId = new DirectoryInfo(Path.Combine(_dotnetToolPath, arguments.CommandName));
+        if (!packageId.Exists &&
+            AggregateToolPackages.TryGetValue(arguments.CommandName, out var aggregatePackageId))
+        {
+            packageId = new DirectoryInfo(Path.Combine(_dotnetToolPath, aggregatePackageId));
+        }
+
         if (!packageId.Exists)
         {
             return null;
