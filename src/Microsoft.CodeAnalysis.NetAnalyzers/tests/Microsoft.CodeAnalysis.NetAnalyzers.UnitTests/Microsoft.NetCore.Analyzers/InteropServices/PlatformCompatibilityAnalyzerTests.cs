@@ -4158,7 +4158,7 @@ class TestType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact, WorkItem(50337, "https://github.com/dotnet/sdk/issues/50337")]
+        [TestMethod, WorkItem(50337, "https://github.com/dotnet/sdk/issues/50337")]
         public async Task SuppressedMacCatalystWithinChildAttributesShouldAlsoAppliedToParentAttributesOnMerge()
         {
             var source = @"
@@ -4186,7 +4186,7 @@ partial class TestType {
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SuppressedMacCatalystWithinChildAttributesShouldAlsoAppliedToParentAttributesOnMergeRegression()
         {
             var source = @"
@@ -4226,7 +4226,7 @@ using System.Runtime.Versioning;
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChildMethodNarrowedPlatformSupportCalledShouldWarn()
         {
             var source = @"
