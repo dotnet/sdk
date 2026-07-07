@@ -340,11 +340,28 @@ public class DotnetupTelemetryTests : IDisposable
     [TestMethod]
     public void RecordException_AfterStartTrackedCommand_DoesNotThrow()
     {
-        var operation = DotnetupTelemetry.Instance.StartTrackedCommand("test");
-        var exception = Record.Exception(() =>
-            DotnetupTelemetry.Instance.RecordException(operation, new Exception("test")));
+        var telemetry = DotnetupTelemetry.Instance;
+        var operation = telemetry.StartTrackedCommand("test");
 
-        Assert.IsNull(exception);
+        Assert.AreEqual(telemetry.Enabled, operation.Activity is not null,
+            "an activity should be started exactly when telemetry is enabled");
+
+        telemetry.RecordException(operation, new Exception("test"));
+    }
+
+    [TestMethod]
+    public void RecordException_WhenTelemetryDisabled_IsNoOp()
+    {
+        using var telemetry = new DotnetupTelemetry(name =>
+            name == Constants.Telemetry.TelemetryOptOutEnvVar ? "1" : null);
+
+        Assert.IsFalse(telemetry.Enabled, "opt-out=1 must disable telemetry");
+
+        // Disabled telemetry starts no activity, so the op carries a null Activity...
+        var operation = telemetry.StartTrackedCommand("test");
+        Assert.IsNull(operation.Activity, "disabled telemetry must not start an activity");
+
+        telemetry.RecordException(operation, new Exception("test"));
     }
 
     /// <summary>

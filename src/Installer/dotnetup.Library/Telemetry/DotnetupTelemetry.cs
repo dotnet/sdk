@@ -83,11 +83,20 @@ public sealed class DotnetupTelemetry : IDisposable
     internal string? CurrentCommandName { get; private set; }
 
     private DotnetupTelemetry()
+        : this(Environment.GetEnvironmentVariable)
+    {
+    }
+
+    // Internal seam: tests pass a fake env-var lookup to force the
+    // telemetry-disabled (opt-out) path deterministically, without mutating
+    // process-wide environment variables or depending on the Lazy singleton's
+    // one-shot, construction-time env read.
+    internal DotnetupTelemetry(Func<string, string?> getEnvironmentVariable)
     {
         SessionId = Guid.NewGuid().ToString();
         IsOneAndDoneEnvironment = TelemetryCommonProperties.IsCIEnvironment;
 
-        Enabled = !IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.TelemetryOptOutEnvVar));
+        Enabled = !IsTruthy(getEnvironmentVariable(Constants.Telemetry.TelemetryOptOutEnvVar));
 
         if (!Enabled)
         {
@@ -99,11 +108,11 @@ public sealed class DotnetupTelemetry : IDisposable
 
         try
         {
-            var disableExport = IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.DisableTraceExportEnvVar));
-            var enablePerfTrace = IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.EnablePerfTraceEnvVar));
-            var enableOtlpExporter = IsOtlpExporterEnabled(disableExport);
-            var debugConsole = Environment.GetEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
-            var storageDirectory = ResolveStorageDirectory();
+            var disableExport = IsTruthy(getEnvironmentVariable(Constants.Telemetry.DisableTraceExportEnvVar));
+            var enablePerfTrace = IsTruthy(getEnvironmentVariable(Constants.Telemetry.EnablePerfTraceEnvVar));
+            var enableOtlpExporter = IsOtlpExporterEnabled(disableExport, getEnvironmentVariable);
+            var debugConsole = getEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
+            var storageDirectory = ResolveStorageDirectory(getEnvironmentVariable);
             var commonAttrs = BuildCommonAttributes();
             _commonProperties = ToLogStateProperties(commonAttrs);
             var resource = BuildResource(commonAttrs);
@@ -121,9 +130,9 @@ public sealed class DotnetupTelemetry : IDisposable
         }
     }
 
-    private static string ResolveStorageDirectory()
+    private static string ResolveStorageDirectory(Func<string, string?> getEnvironmentVariable)
     {
-        var environmentStoragePath = Environment.GetEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
+        var environmentStoragePath = getEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
         return string.IsNullOrWhiteSpace(environmentStoragePath)
             ? DotnetupPaths.TelemetryStorageDirectory
             : environmentStoragePath;
@@ -660,5 +669,8 @@ public sealed class DotnetupTelemetry : IDisposable
         string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
 
     internal static bool IsOtlpExporterEnabled(bool disableExport) =>
-        !disableExport && IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar));
+        IsOtlpExporterEnabled(disableExport, Environment.GetEnvironmentVariable);
+
+    internal static bool IsOtlpExporterEnabled(bool disableExport, Func<string, string?> getEnvironmentVariable) =>
+        !disableExport && IsTruthy(getEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar));
 }
