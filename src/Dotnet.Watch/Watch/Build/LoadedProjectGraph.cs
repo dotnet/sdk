@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;

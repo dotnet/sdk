@@ -49,12 +49,30 @@ internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string
     /// <summary>
     /// Maps relative URLs to file system paths.
     /// </summary>
-    public ImmutableDictionary<string, string> UrlToPathMap { get; } = urlToPathMap;
+    public ImmutableDictionary<string, string> UrlToPathMap => urlToPathMap;
 
     /// <summary>
     /// List of directory and search pattern pairs for discovering static web assets.
     /// </summary>
-    public ImmutableArray<StaticWebAssetPattern> DiscoveryPatterns { get; } = discoveryPatterns;
+    public ImmutableArray<StaticWebAssetPattern> DiscoveryPatterns => discoveryPatterns;
+
+    /// <summary>
+    /// Enumerates all the static web assets in the manifest to be watched for changes.
+    /// </summary>
+    public IEnumerable<(string filePath, string relativeUrl)> GetFilesToWatch()
+    {
+        foreach (var entry in urlToPathMap)
+        {
+            var url = entry.Key;
+            var filePath = entry.Value;
+
+            // watch asset files, but not bundle files as they are regenarated when scoped CSS files are updated:
+            if (!StaticWebAsset.IsCompressedAssetFile(filePath) && !StaticWebAsset.IsScopedCssBundleFile(filePath))
+            {
+                yield return (filePath, url);
+            }
+        }
+    }
 
     public bool TryGetBundleFilePath(string bundleFileName, [NotNullWhen(true)] out string? filePath)
     {

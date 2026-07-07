@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.ExternalAccess.HotReload.Api;
@@ -13,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class ProjectUpdatesBuilder
+internal sealed partial class ProjectUpdatesBuilder
 {
     public required ILogger Logger { get; init; }
     public required HotReloadService HotReloadService { get; init; }
@@ -184,203 +183,6 @@ internal sealed class ProjectUpdatesBuilder
         }
     }
 
-    private static readonly ImmutableArray<string> s_targets = [TargetNames.GenerateComputedBuildStaticWebAssets, TargetNames.ResolveReferencedProjectsStaticWebAssets];
-
-    private static bool HasScopedCssTargets(ProjectInstance projectInstance)
-        => s_targets.All(projectInstance.Targets.ContainsKey);
-
-    private readonly struct StaticWebAssetProjectInstanceInfo
-    {
-        public required ProjectInstanceId Id { get; init; }
-        public required bool HasScopedCssTargets { get; init; }
-        public required string AssemblyName { get; init; }
-    }
-
-    private static void AddAssetsToUpdate(
-        FileItem file,
-        IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests,
-        Dictionary<ProjectInstanceId, Dictionary<string, StaticWebAsset>> assets,
-        HashSet<ProjectInstanceId> projectInstancesToRegenerate,
-        Func<string, IEnumerable<StaticWebAssetProjectInstanceInfo>> getProjectInstances,
-        Func<ProjectInstanceId, IEnumerable<(StaticWebAssetProjectInstanceInfo info, ILogger logger)>> getApplicationProjectAncestors)
-    {
-        var isScopedCss = StaticWebAsset.IsScopedCssFile(file.FilePath);
-
-        if (!isScopedCss && file.StaticWebAssetRelativeUrl is null)
-        {
-            return;
-        }
-
-        foreach (var containingProjectPath in file.ContainingProjectPaths)
-        {
-            foreach (var containingProjectInstanceInfo in getProjectInstances(containingProjectPath))
-            {
-                if (isScopedCss)
-                {
-                    if (!containingProjectInstanceInfo.HasScopedCssTargets)
-                    {
-                        continue;
-                    }
-
-                    projectInstancesToRegenerate.Add(containingProjectInstanceInfo.Id);
-                }
-
-                foreach (var (applicationProjectInstanceInfo, applicationProjectLogger) in getApplicationProjectAncestors(containingProjectInstanceInfo.Id))
-                {
-                    string filePath;
-                    string relativeUrl;
-
-                    if (isScopedCss)
-                    {
-                        // Razor class library may be referenced by application that does not have static assets:
-                        if (!applicationProjectInstanceInfo.HasScopedCssTargets)
-                        {
-                            continue;
-                        }
-
-                        projectInstancesToRegenerate.Add(applicationProjectInstanceInfo.Id);
-
-                        var bundleFileName = StaticWebAsset.GetScopedCssBundleFileName(
-                            applicationProjectFilePath: applicationProjectInstanceInfo.Id.ProjectPath,
-                            containingProjectFilePath: containingProjectInstanceInfo.Id.ProjectPath);
-
-                        if (!staticWebAssetsManifests.TryGetValue(applicationProjectInstanceInfo.Id, out var manifest))
-                        {
-                            // Shouldn't happen.
-                            applicationProjectLogger.Log(MessageDescriptor.StaticWebAssetManifestNotFound);
-                            continue;
-                        }
-
-                        if (!manifest.TryGetBundleFilePath(bundleFileName, out var bundleFilePath))
-                        {
-                            // Shouldn't happen.
-                            applicationProjectLogger.Log(MessageDescriptor.ScopedCssBundleFileNotFound, bundleFileName);
-                            continue;
-                        }
-
-                        filePath = bundleFilePath;
-                        relativeUrl = bundleFileName;
-                    }
-                    else
-                    {
-                        Debug.Assert(file.StaticWebAssetRelativeUrl != null);
-                        filePath = file.FilePath;
-                        relativeUrl = file.StaticWebAssetRelativeUrl;
-                    }
-
-                    if (!assets.TryGetValue(applicationProjectInstanceInfo.Id, out var applicationAssets))
-                    {
-                        applicationAssets = [];
-                        assets.Add(applicationProjectInstanceInfo.Id, applicationAssets);
-                    }
-                    else if (applicationAssets.ContainsKey(filePath))
-                    {
-                        // asset already being updated in this application project:
-                        continue;
-                    }
-
-                    applicationAssets.Add(filePath, new StaticWebAsset(
-                        filePath,
-                        StaticWebAsset.WebRoot + "/" + relativeUrl,
-                        containingProjectInstanceInfo.AssemblyName,
-                        isApplicationProject: containingProjectInstanceInfo.Id == applicationProjectInstanceInfo.Id));
-                }
-            }
-        }
-    }
-
-    private static StaticWebAssetProjectInstanceInfo GetInfo(ProjectGraphNode projectNode)
-        => new()
-        {
-            Id = projectNode.ProjectInstance.GetId(),
-            AssemblyName = projectNode.ProjectInstance.GetAssemblyName(),
-            HasScopedCssTargets = HasScopedCssTargets(projectNode.ProjectInstance),
-        };
-
-    public async ValueTask AddStaticAssetUpdatesAsync(
-        IReadOnlyList<ChangedFile> files,
-        EvaluationResult evaluationResult,
-        Stopwatch stopwatch,
-        CancellationToken cancellationToken)
-    {
-        var assets = new Dictionary<ProjectInstanceId, Dictionary<string, StaticWebAsset>>();
-        var projectInstancesToRegenerate = new HashSet<ProjectInstanceId>();
-
-        foreach (var file in files)
-        {
-            AddAssetsToUpdate(
-                file.Item,
-                evaluationResult.StaticWebAssetsManifests,
-                assets,
-                projectInstancesToRegenerate,
-                getProjectInstances: projectPath => evaluationResult.ProjectGraph.GetProjectNodes(projectPath).Select(GetInfo),
-                getApplicationProjectAncestors: id =>
-                    from node in evaluationResult.ProjectGraph.GetProjectNode(id).GetAncestorsAndSelf()
-                    // use any of the running projects associated with the ancestor:
-                    let runningProject = GetCorrespondingRunningProjects(node.ProjectInstance.GetId()).FirstOrDefault()
-                    where runningProject != null
-                    select (GetInfo(node), runningProject.ClientLogger));
-        }
-
-        if (assets.Count == 0)
-        {
-            return;
-        }
-
-        HashSet<ProjectInstanceId>? failedApplicationProjectInstances = null;
-        if (projectInstancesToRegenerate.Count > 0)
-        {
-            Logger.LogDebug("Regenerating scoped CSS bundles.");
-
-            // Deep copy instances so that we don't pollute the project graph:
-            var buildRequests = projectInstancesToRegenerate
-                .Select(instanceId => BuildRequest.Create(evaluationResult.RestoredProjectInstances[instanceId].DeepCopy(), s_targets))
-                .ToArray();
-
-            _ = await evaluationResult.BuildManager.BuildAsync(
-                buildRequests,
-                onFailure: failedInstance =>
-                {
-                    Logger.LogWarning("[{ProjectName}] Failed to regenerate scoped CSS bundle.", failedInstance.GetDisplayName());
-
-                    failedApplicationProjectInstances ??= [];
-                    failedApplicationProjectInstances.Add(failedInstance.GetId());
-
-                    // continue build
-                    return true;
-                },
-                operationName: "ScopedCss",
-                cancellationToken);
-        }
-
-        foreach (var (applicationProjectInstance, instanceAssets) in assets)
-        {
-            if (failedApplicationProjectInstances?.Contains(applicationProjectInstance) == true)
-            {
-                continue;
-            }
-
-            foreach (var runningProject in GetCorrespondingRunningProjects(applicationProjectInstance))
-            {
-                if (!_staticAssetUpdates.TryGetValue(runningProject, out var updatesPerRunningProject))
-                {
-                    _staticAssetUpdates.Add(runningProject, updatesPerRunningProject = []);
-                }
-
-                if (!runningProject.Clients.UseRefreshServerToApplyStaticAssets && !runningProject.Clients.IsManagedAgentSupported)
-                {
-                    // Static assets are applied via managed Hot Reload agent (e.g. in MAUI Blazor app), but managed Hot Reload is not supported (e.g. startup hooks are disabled).
-                    _projectsToRebuild.Add(runningProject.ProjectNode.ProjectInstance.FullPath);
-                    _projectsToRestart.Add(runningProject);
-                }
-                else
-                {
-                    updatesPerRunningProject.AddRange(instanceAssets.Values);
-                }
-            }
-        }
-    }
-
     private IEnumerable<RunningProject> GetCorrespondingRunningProjects(Project project)
     {
         if (project.FilePath == null || !RunningProjects.TryGetValue(project.FilePath, out var projectsWithPath))
@@ -397,16 +199,6 @@ internal sealed class ProjectUpdatesBuilder
         }
 
         return projectsWithPath.Where(p => string.Equals(p.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private IEnumerable<RunningProject> GetCorrespondingRunningProjects(ProjectInstanceId project)
-    {
-        if (!RunningProjects.TryGetValue(project.ProjectPath, out var projectsWithPath))
-        {
-            return [];
-        }
-
-        return projectsWithPath.Where(p => string.Equals(p.GetTargetFramework(), project.TargetFramework, StringComparison.OrdinalIgnoreCase));
     }
 
     private ProjectInstance GetProjectInstance(Project project)
