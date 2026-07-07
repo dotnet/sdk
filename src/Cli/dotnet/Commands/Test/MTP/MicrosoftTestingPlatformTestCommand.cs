@@ -99,6 +99,18 @@ internal partial class MicrosoftTestingPlatformTestCommand
             {
                 exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
             }
+            else if (exitCode == ExitCode.Success &&
+                !parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
+                output.TotalTests == 0)
+            {
+                // Whole-run "zero tests ran" verdict. Individual modules that matched no tests return exit
+                // code 8, but TestApplicationActionQueue normalizes that to success so a single empty module
+                // does not fail the whole run (e.g. with --test-modules or a global --filter). The aggregate
+                // zero-tests case is decided here so it surfaces once at the run level instead of once per
+                // module. A stricter per-module minimum via -- --minimum-expected-tests N still fails that
+                // module with exit code 9. See https://github.com/microsoft/testfx/issues/7457.
+                exitCode = ExitCode.ZeroTests;
+            }
 
             return exitCode.Value;
         }
