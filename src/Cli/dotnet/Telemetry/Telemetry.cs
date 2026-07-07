@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
         private Dictionary<string, double> _commonMeasurements = null;
         private Task _trackEventTask = null;
 
-        private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
+        private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254;IngestionEndpoint=https://southcentralus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/;ApplicationId=c5108c2c-b0c5-43c6-a703-424eae223a75";
 
         public bool Enabled { get; }
 
