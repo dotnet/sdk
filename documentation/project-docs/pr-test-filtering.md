@@ -79,7 +79,11 @@ projects they control.
    - `Mechanism`: how tests are excluded (currently only `project` is supported)
    - `TestProjects`: the test `.csproj` file(s) controlled by this scope
    - `TriggerPaths`: glob patterns for source/test paths that activate this scope
-   - `RunAlways`: conditions under which the scope always runs (currently `CI`)
+   - `RunAlways`: conditions under which the scope always runs (currently `CI`).
+     A future enhancement could add dependency flow PRs as a condition — for example,
+     `RunAlways=DependencyFlow` to always run on any dependency flow PR, or a more
+     targeted `RunAlways=DependencyFlow:dotnet/dotnet` to only force-run when the flow
+     originates from a specific repository.
 
 2. **`scripts/EvaluateConditionalTestScopes.cs`** — C# script that runs before test
    submission. It reads `ConditionalTests.props`, computes the git diff against the
@@ -128,6 +132,24 @@ Example:
   <RunAlways>CI</RunAlways>
 </ConditionalTestScope>
 ```
+
+### Choosing trigger paths
+
+Trigger paths are not simply "the folder containing the feature's source code." When
+defining a scope, consider whether changes to **dependencies** of that feature should
+also trigger its tests. For example:
+
+- If `dotnet-watch` has a `ProjectReference` to `Microsoft.DotNet.Cli.Definitions`, a
+  change to that project could break watch behavior — so the watch scope's trigger paths
+  should include both `src/Dotnet.Watch/**` and
+  `src/Cli/Microsoft.DotNet.Cli.Definitions/**`.
+- Shared infrastructure or utility projects that multiple features depend on may need to
+  appear in multiple scopes' trigger paths.
+
+Use judgment here. If a feature has complex or far-reaching dependencies that make it
+difficult to define a reliable set of trigger paths, it may not be a good candidate for
+conditional filtering — it is better to run tests unconditionally than to skip them when
+a dependency change would have caused a failure.
 
 ## Design principles
 
