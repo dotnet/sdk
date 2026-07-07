@@ -390,7 +390,8 @@ internal sealed class CompilationHandler : IDisposable
             updates.ProjectsToRestart.SelectMany(e => runningProjects.TryGetValue(GetRequiredProjectFilePath(e.Key), out var array) ? array : []));
 
         string GetRequiredProjectFilePath(ProjectId projectId)
-            => (currentSolution.GetProject(projectId) ?? throw new InvalidOperationException()).FilePath ?? throw new InvalidOperationException();
+            => (currentSolution.GetProject(projectId) ?? throw new InvalidOperationException($"Project {projectId} doesn't exist"))
+                .FilePath ?? throw new InvalidOperationException($"Project {projectId} does not have a file path.");
     }
 
     public async ValueTask ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(
@@ -843,14 +844,8 @@ internal sealed class CompilationHandler : IDisposable
     }
 
     /// <summary>
-    /// Terminates all processes launched for peripheral projects with <paramref name="projectPaths"/>,
-    /// or all running peripheral project processes if <paramref name="projectPaths"/> is null.
-    /// 
-    /// Removes corresponding entries from <see cref="_runningProjects"/>.
-    /// 
-    /// Does not terminate the main project.
+    /// Terminates processes of given <paramref name="projectsToRestart"/> except for the main project's process.
     /// </summary>
-    /// <returns>All processes (including main) to be restarted.</returns>
     internal async ValueTask TerminatePeripheralProcessesAsync(
         IEnumerable<RunningProject> projectsToRestart, CancellationToken cancellationToken)
     {
