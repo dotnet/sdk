@@ -670,7 +670,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       WriteOnlyWhenDifferent="true" />
     
     <!--
-      Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0+
+      Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0
     -->
     <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100Exactly)' == 'true'">
       <Compile Include="$(_EmbeddedAttributeFile)" />
