@@ -46,7 +46,8 @@
   <!-- Update KnownFrameworkReferences to target the right version of the runtime -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                           and $(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))
-                          and '$(MSBuildProjectName)' != 'toolset-tasks'">
+                          and '$(MSBuildProjectName)' != 'toolset-tasks'
+                          and '$(MSBuildProjectName)' != 'core-sdk-tasks'">
     <FrameworkReference
         Update="Microsoft.NETCore.App"
         TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"

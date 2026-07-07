@@ -32,6 +32,11 @@
         <target state="translated">As atualizações estão disponíveis para as seguintes cargas de trabalho(s): {0}. Execute `dotnet workload update` para obter o mais recente.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(não instalado)</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

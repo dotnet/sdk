@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
-        public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new CliArgument<IEnumerable<string>>(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+        public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
         {
             Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
             Arity = ArgumentArity.ZeroOrMore
@@ -149,9 +149,15 @@ namespace Microsoft.DotNet.Cli
 
             yield return new ForwardedOption<bool>("--no-cache")
             {
-                Description = showHelp ? LocalizableStrings.CmdNoCacheOptionDescription : string.Empty,
-                Hidden = !showHelp
+                Description = string.Empty,
+                Hidden = true
             }.ForwardAs("-property:RestoreNoCache=true");
+
+            yield return new ForwardedOption<bool>("--no-http-cache")
+            {
+                Description = showHelp ? LocalizableStrings.CmdNoHttpCacheOptionDescription : string.Empty,
+                Hidden = !showHelp
+            }.ForwardAs("-property:RestoreNoHttpCache=true");
 
             yield return new ForwardedOption<bool>("--ignore-failed-sources")
             {

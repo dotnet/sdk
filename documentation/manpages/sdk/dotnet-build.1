@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-build" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-build" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet build
 .PP
@@ -27,6 +27,7 @@ dotnet-build - Builds a project and all of its dependencies.
 .nf
 \f[C]
 dotnet build [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
+    [--artifacts-path <ARTIFACTS_DIR>]
     [-c|--configuration <CONFIGURATION>] [-f|--framework <FRAMEWORK>]
     [--disable-build-servers]
     [--force] [--interactive] [--no-dependencies] [--no-incremental]
@@ -35,7 +36,7 @@ dotnet build [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
     [-p|--property:<PROPERTYNAME>=<VALUE>]
     [-r|--runtime <RUNTIME_IDENTIFIER>]
     [--self-contained [true|false]] [--source <SOURCE>]
-    [--tl [auto|on|off]] [--use-current-runtime, --ucr [true|false]]
+    [--tl:[auto|on|off]] [--use-current-runtime, --ucr [true|false]]
     [-v|--verbosity <LEVEL>] [--version-suffix <VERSION_SUFFIX>]
 
 dotnet build -h|--help
@@ -130,6 +131,14 @@ This is a shorthand syntax for setting the Runtime Identifier (RID), where the p
 For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--arch x86\f[R] sets the RID to \f[V]win-x86\f[R].
 If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6 Preview 7.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
+.RS 2
+.PP
+All build output files from the executed command will go in subfolders under the specified path, separated by project.
+For more information see Artifacts Output Layout.
+Available since .NET 8 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
@@ -273,7 +282,7 @@ Available since .NET 6.
 The URI of the NuGet package source to use during the restore operation.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--tl [auto|on|off]\f[B]\f[R]
+\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
 .RS 2
 .PP
 Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
@@ -286,17 +295,17 @@ The terminal logger shows you the restore phase followed by the build phase.
 During each phase, the currently building projects appear at the bottom of the terminal.
 Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
 You can search this information to learn more about the build.
-When a project is finished building, a single \[lq]build completed\[rq] section is written for that captures:
+When a project is finished building, a single \[lq]build completed\[rq] section is written that captures:
 .IP \[bu] 2
-The name of the built project
+The name of the built project.
 .IP \[bu] 2
-The target framework (if multi-targeted)
+The target framework (if multi-targeted).
 .IP \[bu] 2
-The status of that build
+The status of that build.
 .IP \[bu] 2
-The primary output of that build (which is hyperlinked)
+The primary output of that build (which is hyperlinked).
 .IP \[bu] 2
-Any diagnostics generated for that project
+Any diagnostics generated for that project.
 .PP
 This option is available starting in .NET 8.
 .RE
@@ -349,12 +358,12 @@ dotnet build --configuration Release
 .fi
 .RE
 .IP \[bu] 2
-Build a project and its dependencies for a specific runtime (in this example, Ubuntu 18.04):
+Build a project and its dependencies for a specific runtime (in this example, Linux):
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet build --runtime ubuntu.18.04-x64
+dotnet build --runtime linux-x64
 \f[R]
 .fi
 .RE

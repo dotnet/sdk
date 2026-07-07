@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-restore" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-restore" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet restore
 .PP
@@ -32,8 +32,8 @@ dotnet restore [<ROOT>] [--configfile <FILE>] [--disable-build-servers]
     [--interactive] [--lock-file-path <LOCK_FILE_PATH>] [--locked-mode]
     [--no-cache] [--no-dependencies] [--packages <PACKAGES_DIRECTORY>]
     [-r|--runtime <RUNTIME_IDENTIFIER>] [-s|--source <SOURCE>]
-    [--use-current-runtime, --ucr [true|false]] [--use-lock-file]
-    [-v|--verbosity <LEVEL>]
+    [--tl:[auto|on|off]] [--use-current-runtime, --ucr [true|false]]
+    [--use-lock-file] [-v|--verbosity <LEVEL>]
 
 dotnet restore -h|--help
 \f[R]
@@ -133,6 +133,16 @@ For more information, see Advertising manifests.
 Optional path to the project file to restore.
 .RE
 .SH OPTIONS
+.IP \[bu] 2
+\f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the target architecture.
+This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
+For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--arch x86\f[R] sets the RID to \f[V]win-x86\f[R].
+If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
+Available since .NET 6 Preview 7.
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]--configfile <FILE>\f[B]\f[R]
 .RS 2
@@ -237,6 +247,34 @@ This setting overrides all of the sources specified in the \f[I]nuget.config\f[R
 Multiple sources can be provided by specifying this option multiple times.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
+.RS 2
+.PP
+Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
+The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
+\f[V]on\f[R] skips the environment check and enables terminal logging.
+\f[V]off\f[R] skips the environment check and uses the default console logger.
+.PP
+The terminal logger shows you the restore phase followed by the build phase.
+During each phase, the currently building projects appear at the bottom of the terminal.
+Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
+You can search this information to learn more about the build.
+When a project is finished building, a single \[lq]build completed\[rq] section is written that captures:
+.IP \[bu] 2
+The name of the built project.
+.IP \[bu] 2
+The target framework (if multi-targeted).
+.IP \[bu] 2
+The status of that build.
+.IP \[bu] 2
+The primary output of that build (which is hyperlinked).
+.IP \[bu] 2
+Any diagnostics generated for that project.
+.PP
+This option is available starting in .NET 8.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]--use-current-runtime, --ucr [true|false]\f[B]\f[R]
 .RS 2
 .PP
@@ -312,11 +350,12 @@ dotnet restore --verbosity detailed
 .RE
 .SS Audit for security vulnerabilities
 .PP
-Starting in .NET 8, you can opt into NuGet security auditing for \f[V]dotnet restore\f[R].
+Starting in .NET 8, \f[V]dotnet restore\f[R] includes NuGet security auditing.
 This auditing produces a report of security vulnerabilities with the affected package name, the severity of the vulnerability, and a link to the advisory for more details.
 .PP
-To opt into security auditing, set the \f[V]<NuGetAudit>\f[R] MSBuild property to \f[V]true\f[R] in your project file.
-Additionally, to retrieve the known vulnerability dataset, ensure that you have the NuGet.org central registry defined as one of your package sources:
+To opt out of the security auditing, set the \f[V]<NuGetAudit>\f[R] MSBuild property to \f[V]false\f[R] in your project file.
+.PP
+To retrieve the known vulnerability dataset, ensure that you have the NuGet.org central registry defined as one of your package sources:
 .IP
 .nf
 \f[C]
@@ -329,3 +368,9 @@ Additionally, to retrieve the known vulnerability dataset, ensure that you have 
 You can configure the level at which auditing will fail by setting the \f[V]<NuGetAuditLevel>\f[R] MSBuild property.
 Possible values are \f[V]low\f[R], \f[V]moderate\f[R], \f[V]high\f[R], and \f[V]critical\f[R].
 For example if you only want to see moderate, high, and critical advisories, you can set the property to \f[V]moderate\f[R].
+.PP
+Starting in .NET 9, NuGet audits both \f[I]direct\f[R] and \f[I]transitive\f[R] package references, by default.
+In .NET 8, only \f[I]direct\f[R] package references are audited.
+You can change the mode by setting the \f[V]<NuGetAuditMode>\f[R] MSBuild property to \f[V]direct\f[R] or \f[V]all\f[R].
+.PP
+For more information, see Auditing package dependencies for security vulnerabilities.

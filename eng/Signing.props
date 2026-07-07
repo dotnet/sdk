@@ -1,4 +1,24 @@
 <Project>
+
+  <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
+    <ItemsToSign Remove="@(ItemsToSign)" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
+    <InternalCertificateId Condition="'$(InternalCertificateId)' == ''">MicrosoftDotNet500</InternalCertificateId>
+
+    <!-- Signing of shipping artifacts (layout, msi, bundle) are handled separately. It is therefore expected that <ItemsToSign> could be an empty set. -->
+    <AllowEmptySignList>true</AllowEmptySignList>
+    <AllowEmptySignPostBuildList>true</AllowEmptySignPostBuildList>
+
+    <UseDotNetCertificate>true</UseDotNetCertificate>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Dlls from packages created for tests to consume -->
     <FileSignInfo Include="dotnet-dependency-context-test.dll" CertificateName="None" />
@@ -15,12 +35,14 @@
     <!-- Third party DLLs used by tests -->
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
     <FileSignInfo Include="Moq.dll" CertificateName="None" />
-    
+
     <!-- Binary test asset -->
     <FileSignInfo Include="testwpf.dll" CertificateName="None" />
 
     <!-- Files in the layout that should not be signed -->
     <FileSignInfo Include="apphost.exe" CertificateName="None" />
+    <FileSignInfo Include="comhost.dll" CertificateName="None" />
+    <FileSignInfo Include="singlefilehost.exe" CertificateName="None" />
 
     <!-- .ttf and .js files come in from some older aspnetcore packages (e.g. 2.1).
           These files in the 5.0 packages are NOT signed. When doing postbuild signing,
@@ -28,8 +50,13 @@
           pulled in from aspnetcore, and aspnetcore said not to sign them. This info is not
           available for the 2.1 packages, so we need to avoid signing these in this repo. -->
     <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
+    <FileExtensionSignInfo Include=".otf" CertificateName="None" />
     <FileExtensionSignInfo Remove=".js" />
     <FileExtensionSignInfo Include=".js" CertificateName="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FileExtensionSignInfo Include=".msi" CertificateName="$(InternalCertificateId)" />
   </ItemGroup>
 
   <!--
@@ -37,21 +64,21 @@
     are already signed. However, they must be signed with a 3rd party certificate.
   -->
   <ItemGroup>
-    <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="MessagePack.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="CommandLine.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="FluentAssertions.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="FluentAssertions.Core.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="FluentAssertions.Json.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Microsoft.3rdpartytools.MarkdownLog.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="xunit.performance.api.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="xunit.performance.core.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="xunit.performance.execution.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="CommandLine.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="FluentAssertions.Core.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="FluentAssertions.Json.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Microsoft.3rdpartytools.MarkdownLog.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="xunit.performance.api.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="xunit.performance.core.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="xunit.performance.execution.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
 
   <!-- Filter out any test packages from ItemsToSign -->
@@ -60,7 +87,4 @@
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <UseDotNetCertificate>true</UseDotNetCertificate>
-  </PropertyGroup>
 </Project>

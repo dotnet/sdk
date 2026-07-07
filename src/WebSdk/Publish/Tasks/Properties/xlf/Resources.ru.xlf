@@ -224,6 +224,26 @@ FWLink: http://go.microsoft.com/fwlink/?LinkId=246068</source>
 FWLink: http://go.microsoft.com/fwlink/?LinkId=246068.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeploymentStatus">
+        <source>Deployment status is '{0}'.</source>
+        <target state="translated">Состояние развертывания: {0}.</target>
+        <note>{0} - deployment status name</note>
+      </trans-unit>
+      <trans-unit id="DeploymentStatusWithText">
+        <source>Deployment status is '{0}': {1}</source>
+        <target state="translated">Состояние развертывания: {0}: {1}</target>
+        <note>{0} - deployment status name, {1} - deployment status text</note>
+      </trans-unit>
+      <trans-unit id="DeploymentStatus_InvalidPollingUrl">
+        <source>Deployment status URL '{0}' is missing or invalid</source>
+        <target state="translated">URL-адрес состояния развертывания '{0}' отсутствует или недопустим</target>
+        <note>{0} - deployment polling URL</note>
+      </trans-unit>
+      <trans-unit id="DeploymentStatus_Polling">
+        <source>Polling for deployment status...</source>
+        <target state="translated">Опрос состояния развертывания…</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EFSCRIPT_Generating">
         <source>Generating Entity Framework SQL Scripts...</source>
         <target state="translated">Создание сценариев SQL для Entity Framework…</target>
@@ -333,6 +353,51 @@ FWLink: http://go.microsoft.com/fwlink/?LinkId=246068.</target>
         <source>Invalid verb({0}) for supplied source ({1}) and destination ({2}).</source>
         <target state="translated">Недопустимая команда ({0}) для указанных источника ({1}) и назначения ({2}).</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FailedDeployRequest">
+        <source>OneDeploy attempt to publish file through '{0}' failed with HTTP status code '{1}'.</source>
+        <target state="translated">Попытка OneDeploy опубликовать файл с помощью '{0}' не удалась, код состояния HTTP '{1}':</target>
+        <note>{0} - publish URL, {1} - HTTP response status code</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FailedDeployRequest_With_ResponseText">
+        <source>OneDeploy attempt to publish file through '{0}' failed with HTTP status code '{1}': {2}.</source>
+        <target state="translated">Попытка OneDeploy опубликовать файл с помощью '{0}' не удалась, код состояния HTTP '{1}': {2}.</target>
+        <note>{0} - publish URL, {1} - HTTP response status code, {2} - response body as text</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FailedToRetrieveCredentials">
+        <source>Failed to retrieve publish credentials.</source>
+        <target state="translated">Не удалось получить учетные данные публикации.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FailedWithLogs">
+        <source>OneDeploy attempt to publish file '{0}' through '{1}' failed with status code '{2}'. See the logs at '{3}'.</source>
+        <target state="translated">Попытка OneDeploy опубликовать файл с помощью '{0}' не удалась, код состояния '{1}': {2}. Просмотреть журналы в '{3}'.</target>
+        <note>{0} - file to publish, {1} - publish URL, {2} - deployment response status code, {3} -  deployment logs URL</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FileToPublish_NotFound">
+        <source>File to publish '{0}' was not found or is not accessible.</source>
+        <target state="translated">Файл для публикации {0} не найден или недоступен.</target>
+        <note>{0} - file to publish</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_InvalidPublishUrl">
+        <source>PublishUrl '{0}' is missing or has an invalid value.</source>
+        <target state="translated">PublishUrl {0} отсутствует или имеет недопустимое значение.</target>
+        <note>{0} - publish URL</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_PublishingOneDeploy">
+        <source>Publishing '{0}' to '{1}'...</source>
+        <target state="translated">Публикация ZIP-файла {0} в {1}…</target>
+        <note>{0} - file to publish, {1} - publish URL</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_Success">
+        <source>OneDeploy deployment succeeded.</source>
+        <target state="translated">Развертывание OneDeploy выполнено успешно.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_Uploaded">
+        <source>File '{0}' uploaded to target instance.</source>
+        <target state="translated">Файл '{0}' отправлен в целевой экземпляр.</target>
+        <note>{0} - file to publish.</note>
       </trans-unit>
       <trans-unit id="POWERSHELL_PublishProfileParsingError">
         <source>Unable to parse the pubxml file {0}.</source>

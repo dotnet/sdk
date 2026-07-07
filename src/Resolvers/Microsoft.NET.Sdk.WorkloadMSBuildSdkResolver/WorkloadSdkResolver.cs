@@ -11,8 +11,6 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.DotNetSdkResolver;
 #endif
 
-#nullable disable
-
 namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 {
 
@@ -43,7 +41,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                 cachedState = resolverContextState;
             }
 
-            
+
             if (cachedState == null)
             {
                 var dotnetRootPath = GetDotNetRoot(resolverContext);

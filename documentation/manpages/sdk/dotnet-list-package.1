@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-list-package" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-list-package" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet list package
 .PP
@@ -28,7 +28,7 @@ dotnet-list-package - Lists the package references for a project or solution.
 \f[C]
 dotnet list [<PROJECT>|<SOLUTION>] package [--config <SOURCE>]
     [--deprecated]
-    [--framework <FRAMEWORK>] [--highest-minor] [--highest-patch]
+    [-f|--framework <FRAMEWORK>] [--highest-minor] [--highest-patch]
     [--include-prerelease] [--include-transitive] [--interactive]
     [--outdated] [--source <SOURCE>] [-v|--verbosity <LEVEL>]
     [--vulnerable]
@@ -114,12 +114,13 @@ Requires the \f[V]--outdated\f[R] option.
 Displays packages that have been deprecated.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--framework <FRAMEWORK>\f[B]\f[R]
+\f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2
 .PP
 Displays only the packages applicable for the specified target framework.
 To specify multiple frameworks, repeat the option multiple times.
 For example: \f[V]--framework net6.0 --framework netstandard2.0\f[R].
+The short form of the option (\f[V]-f\f[R]) is available starting in .NET 9 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]

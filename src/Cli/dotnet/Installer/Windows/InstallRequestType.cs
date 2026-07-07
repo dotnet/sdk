@@ -56,12 +56,12 @@ namespace Microsoft.DotNet.Installer.Windows
         DeleteWorkloadInstallationRecord,
 
         /// <summary>
-        /// Creates an install state file.
+        /// Adds manifests to the install state file.
         /// </summary>
         SaveInstallStateManifestVersions,
 
         /// <summary>
-        /// Removes an install state file.
+        /// Removes manifests from an install state file.
         /// </summary>
         RemoveManifestsFromInstallStateFile,
 
@@ -74,5 +74,15 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Changes the workload set version
         /// </summary>
         AdjustWorkloadSetVersion,
+
+        /// <summary>
+        /// Record a workload set referenced by global.json in workload roots file
+        /// </summary>
+        RecordWorkloadSetInGlobalJson,
+
+        /// <summary>
+        /// Remove outdated entries from the global.json workload roots file and then return its contents
+        /// </summary>
+        GetGlobalJsonWorkloadSetVersions,
     }
 }

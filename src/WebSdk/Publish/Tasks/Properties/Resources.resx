@@ -1203,4 +1203,53 @@ For more information on this deploy script visit:	https://go.microsoft.com/fwlin
     <value>The attempt to publish the ZIP file through '{0}' failed with HTTP status code '{1}'.</value>
     <comment>{0} - URL to deploy zip, {1} - HTTP response code</comment>
   </data>
+  <data name="ONEDEPLOY_FailedToRetrieveCredentials" xml:space="preserve">
+    <value>Failed to retrieve publish credentials.</value>
+  </data>
+  <data name="ONEDEPLOY_FileToPublish_NotFound" xml:space="preserve">
+    <value>File to publish &apos;{0}&apos; was not found or is not accessible.</value>
+    <comment>{0} - file to publish</comment>
+  </data>
+  <data name="ONEDEPLOY_InvalidPublishUrl" xml:space="preserve">
+    <value>PublishUrl &apos;{0}&apos; is missing or has an invalid value.</value>
+    <comment>{0} - publish URL</comment>
+  </data>
+  <data name="ONEDEPLOY_PublishingOneDeploy" xml:space="preserve">
+    <value>Publishing &apos;{0}&apos; to &apos;{1}&apos;...</value>
+    <comment>{0} - file to publish, {1} - publish URL</comment>
+  </data>
+  <data name="ONEDEPLOY_FailedDeployRequest" xml:space="preserve">
+    <value>OneDeploy attempt to publish file through &apos;{0}&apos; failed with HTTP status code &apos;{1}&apos;.</value>
+    <comment>{0} - publish URL, {1} - HTTP response status code</comment>
+  </data>
+  <data name="ONEDEPLOY_FailedDeployRequest_With_ResponseText" xml:space="preserve">
+    <value>OneDeploy attempt to publish file through &apos;{0}&apos; failed with HTTP status code &apos;{1}&apos;: {2}.</value>
+    <comment>{0} - publish URL, {1} - HTTP response status code, {2} - response body as text</comment>
+  </data>
+  <data name="ONEDEPLOY_Uploaded" xml:space="preserve">
+    <value>File &apos;{0}&apos; uploaded to target instance.</value>
+    <comment>{0} - file to publish.</comment>
+  </data>
+  <data name="ONEDEPLOY_Success" xml:space="preserve">
+    <value>OneDeploy deployment succeeded.</value>
+  </data>
+  <data name="ONEDEPLOY_FailedWithLogs" xml:space="preserve"> 
+    <value>OneDeploy attempt to publish file &apos;{0}&apos; through &apos;{1}&apos; failed with status code &apos;{2}&apos;. See the logs at &apos;{3}&apos;.</value>
+    <comment>{0} - file to publish, {1} - publish URL, {2} - deployment response status code, {3} -  deployment logs URL</comment>
+  </data>
+  <data name="DeploymentStatus_Polling" xml:space="preserve">
+    <value>Polling for deployment status...</value>
+  </data>
+  <data name="DeploymentStatus_InvalidPollingUrl" xml:space="preserve">
+    <value>Deployment status URL &apos;{0}&apos; is missing or invalid</value>
+    <comment>{0} - deployment polling URL</comment>
+  </data>
+  <data name="DeploymentStatus" xml:space="preserve">
+    <value>Deployment status is &apos;{0}&apos;.</value>
+    <comment>{0} - deployment status name</comment>
+  </data>
+  <data name="DeploymentStatusWithText" xml:space="preserve">
+  <value>Deployment status is &apos;{0}&apos;: {1}</value>
+  <comment>{0} - deployment status name, {1} - deployment status text</comment>
+  </data>
 </root>

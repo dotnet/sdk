@@ -1,0 +1,14 @@
+variables:
+  ############### BUILD ###############
+  buildConfiguration: Release
+  linuxOsPortableProperties: /p:OSName=linux /p:IsLinuxPortable=true
+  helixTargetContainerPrefix: '@mcr.microsoft.com/dotnet-buildtools/prereqs:'
+
+  ############### ARCADE ###############
+  # "Post-build signing" means that this build will NOT sign itself.
+  PostBuildSign: true
+  # Both this (used in Arcade for the MicroBuildSigningPlugin) and DotNetSignType (used in Arcade in Sign.proj) are necessary to set the sign type.
+  _SignType: test
+  _TeamName: DotNetCore
+  # This ends up being set by the DotNet-HelixApi-Access variable group when running internally.
+  HelixApiAccessToken: ''

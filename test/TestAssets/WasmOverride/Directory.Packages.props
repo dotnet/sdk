@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <AspNetTestPackageSource>$(MSBuildThisFileDirectory)TestPackages\</AspNetTestPackageSource>
+    <RestoreAdditionalProjectSources Condition="Exists('$(AspNetTestPackageSource)')">$(RestoreAdditionalProjectSources);$(AspNetTestPackageSource)</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+</Project>

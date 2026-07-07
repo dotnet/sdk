@@ -14,12 +14,12 @@ Main `muscles` of `dotnet new` are implemented in [`Microsoft.TemplateEngine.Cli
 
 Consider adding unit tests and/or integration tests when contributing.
 The unit tests are located in:
-- [`dotnet` unit tests](https://github.com/dotnet/sdk/tree/main/src/Tests/dotnet.Tests/dotnet-new)
-- [`Microsoft.TemplateEngine.Cli`](https://github.com/dotnet/sdk/tree/main/src/Tests/Microsoft.TemplateEngine.Cli.UnitTests)
+- [`dotnet` unit tests](https://github.com/dotnet/sdk/tree/main/test/dotnet.Tests/dotnet-new)
+- [`Microsoft.TemplateEngine.Cli`](https://github.com/dotnet/sdk/tree/main/test/Microsoft.TemplateEngine.Cli.UnitTests)
 
-The integration tests are located [here](https://github.com/dotnet/sdk/tree/main/src/Tests/dotnet-new.Tests).
+The integration tests are located [here](https://github.com/dotnet/sdk/tree/main/test/dotnet-new.Tests).
 Please follow existing tests to see how to run `dotnet new` under different conditions.
 
-Assets for unit and integration tests are defined [here](https://github.com/dotnet/sdk/tree/main/src/Assets/TestPackages/dotnet-new).
+Assets for unit and integration tests are defined [here](https://github.com/dotnet/sdk/tree/main/test/TestAssets/TestPackages/dotnet-new).
 
 To work with `dotnet new`, you may also use [solution filter](https://github.com/dotnet/sdk/blob/main/TemplateEngine.slnf).

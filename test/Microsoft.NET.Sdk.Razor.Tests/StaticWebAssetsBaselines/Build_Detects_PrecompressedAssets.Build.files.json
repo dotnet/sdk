@@ -1,0 +1,4 @@
+[
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithP2PReference\\AppWithP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithP2PReference.styles.css"
+]

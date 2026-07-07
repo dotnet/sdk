@@ -12,6 +12,11 @@
         <target state="translated">Testtreiber für die .NET-Plattform</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="translated">Die zusätzlichen MSBuild-Parameter, die weitergegeben werden sollen.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Aktiviert die Erfassung von Absturzabbildern bei einer erwarteten und einer unerwarteten Beendigung des Testhosts.</target>
@@ -96,6 +101,11 @@ Beispiele:
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">NAME="WERT"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="translated">Die maximale Anzahl von Testmodulen, die parallel ausgeführt werden können.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -223,6 +233,16 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
       <trans-unit id="IgnoredArgumentsMessage">
         <source>The following arguments have been ignored : "{0}"</source>
         <target state="translated">Die folgenden Argumente wurden ignoriert: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="translated">Es ist kein Serialisierungsmodul mit der ID "{0}" registriert</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="translated">Es ist kein Serialisierungsmodul mit dem Typ "{0}" registriert</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

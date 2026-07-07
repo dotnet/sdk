@@ -1,0 +1,17 @@
+﻿<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>VS.Redist.Common.NetCore.Templates.$ARCH$.$MAJOR_MINOR$</id>
+        <version>1.0.0</version>
+        <title>VS.Redist.Common.NetCore.Templates.$ARCH$.$MAJOR_MINOR$</title>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>https://www.microsoft.com/net/dotnet_library_license.htm</licenseUrl>
+        <projectUrl>https://github.com/dotnet/core-sdk</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>.NET Core $MAJOR_MINOR$ Templates Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</description>
+        <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    </metadata>
+    <files>
+        <file src="$PAYLOAD_FILES$" />
+    </files>
+</package>
