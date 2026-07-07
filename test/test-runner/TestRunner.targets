@@ -10,7 +10,7 @@
 
     <SDKCustomTestArguments Condition="'$(SDKCustomTestArguments)' == ''">-nocolor</SDKCustomTestArguments>
 
-    <!-- xUnit v3 runs tests out-of-process via a native AppHost.  When cross-compiling
+    <!-- Tests run out-of-process via a native AppHost.  When cross-compiling
          (e.g. building on arm64 for x64 Helix queues), set RuntimeIdentifier so the
          AppHost matches the target architecture.  SelfContained=false keeps the publish
          framework-dependent.  ErrorOnDuplicatePublishOutputFiles=false suppresses
@@ -86,8 +86,8 @@
     </MSBuild>
 
     <!-- Detect whether the project has the Microsoft.Testing.Extensions.TrxReport extension
-         loaded. MSTest.Sdk enables it by default; other MTP runners (e.g. xUnit v3 MTP) do
-         not, so passing the report-trx switch to those hosts would fail with 'unknown argument'. -->
+         loaded. MSTest.Sdk enables it by default; MTP hosts without the extension reject the
+         report-trx switch with an 'unknown argument' error. -->
     <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetTrxReportEnabled" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
       <Output TaskParameter="TargetOutputs" PropertyName="_EnableTrxReport" />
     </MSBuild>
