@@ -25,7 +25,7 @@ This has real consequences:
 Conditionally running tests based on what changed in a PR is an effective mechanism to
 reduce compute consumption. However, there is no single "smoking gun" test suite whose
 removal would drastically change the picture. Instead, the gains come from collectively
-applying conditional filtering across many areas. For example:
+applying conditional filtering across many areas. Some of the initial candidates include:
 
 - Filtering **TemplateEngine** tests saves on the order of **40 minutes** per PR.
 - Filtering **NetAnalyzers** tests saves on the order of **160 minutes** per PR.
@@ -37,6 +37,12 @@ Even these five scopes together represent only ~22% of the total 2,000-minute bu
 Meaningful overall reduction requires applying this pattern broadly across many test
 areas — but each scope added compounds the savings and frees capacity for the rest of
 the organization.
+
+The goal is to define scopes covering a minimum of one-third tp one-half of total PR test time.
+Beyond that, additional scopes are a return-on-investment decision — if a scope is
+straightforward to define with reliable trigger paths, it should be added; if it
+requires complex dependency analysis or invasive refactoring, the effort may not be
+justified.
 
 ## Filtering mechanisms
 
