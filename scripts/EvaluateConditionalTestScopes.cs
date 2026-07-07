@@ -8,7 +8,7 @@
 // Reads test/ConditionalTests.props and outputs a semicolon-separated list of active scope names.
 //
 // Usage:
-//   dotnet run EvaluateConditionalTestScopes.cs -- [--target-branch <branch>] [--build-reason <reason>]
+//   dotnet run EvaluateConditionalTestScopes.cs -- --props-file <path> [--target-branch <branch>] [--build-reason <reason>]
 //
 // When --target-branch is not provided, all scopes are active (safe default for local dev).
 // Changed files are determined via `git diff --name-only origin/<target-branch>...HEAD`.
@@ -19,14 +19,14 @@ using System.Xml.Linq;
 
 var targetBranch = GetArg("--target-branch");
 var buildReason = GetArg("--build-reason") ?? "";
+var propsFile = GetArg("--props-file");
 
-// Locate repo root by finding test/ConditionalTests.props relative to the script or cwd.
-var propsFile = FindPropsFile();
-if (propsFile is null)
+if (string.IsNullOrEmpty(propsFile) || !File.Exists(propsFile))
 {
-    Console.Error.WriteLine("Error: Cannot find test/ConditionalTests.props from script location or working directory.");
+    Console.Error.WriteLine("Error: --props-file is required and must point to an existing ConditionalTests.props.");
     return 1;
 }
+propsFile = Path.GetFullPath(propsFile);
 var repoRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(propsFile)!, ".."));
 
 // Parse ConditionalTests.props
@@ -119,13 +119,6 @@ static List<string> GetChangedFiles(string? targetBranch, string repoRoot)
     {
         return [];
     }
-}
-
-static string? FindPropsFile()
-{
-    var fromCwd = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "test", "ConditionalTests.props"));
-    if (File.Exists(fromCwd)) return fromCwd;
-    return null;
 }
 
 static bool GlobMatches(string path, string pattern)
