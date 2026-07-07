@@ -29,6 +29,7 @@ public class NativeEntryPointTests
         string? originalTraceParent = Environment.GetEnvironmentVariable(Activities.TRACEPARENT);
         string? originalTraceState = Environment.GetEnvironmentVariable(Activities.TRACESTATE);
         string? originalTelemetryOptout = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT");
+        object? originalSdkRoot = AppContext.GetData(SdkPaths.DataName);
         try
         {
             action();
@@ -40,6 +41,7 @@ public class NativeEntryPointTests
             Environment.SetEnvironmentVariable(Activities.TRACEPARENT, originalTraceParent);
             Environment.SetEnvironmentVariable(Activities.TRACESTATE, originalTraceState);
             Environment.SetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", originalTelemetryOptout);
+            AppContext.SetData(SdkPaths.DataName, originalSdkRoot);
         }
     }
 
@@ -106,6 +108,97 @@ public class NativeEntryPointTests
                 args: ["--info"]);
 
             Assert.AreEqual(0, exitCode);
+        });
+    }
+
+    [TestMethod]
+    public void ExecuteCore_PublishesResolvedSdkDirectory()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+            string sdk = Path.Combine(Path.GetTempPath(), "aot-sdkroot-" + Guid.NewGuid().ToString("N"));
+
+            NativeEntryPoint.ExecuteCore(
+                hostPath: "test-host",
+                dotnetRoot: "test-root",
+                sdkDir: sdk,
+                hostfxrPath: "",
+                args: ["--version"]);
+
+            // The host-provided sdk_dir is authoritative and is published for compiled-in assemblies
+            // via the Microsoft.DotNet.Sdk.Root AppContext value, the NativeEntryPoint.SdkDirectory
+            // property, and the shared SdkPaths reader (read uncached; SdkDirectory caches process-wide).
+            Assert.AreEqual(sdk, AppContext.GetData(SdkPaths.DataName));
+            Assert.AreEqual(sdk, NativeEntryPoint.SdkDirectory);
+            Assert.AreEqual(sdk, SdkPaths.ResolveSdkDirectory());
+        });
+    }
+
+    [TestMethod]
+    public void ExecuteCore_PresetSdkRootMissingDirectory_ErrorsOut()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            // A caller-provided SDK root (e.g. via runtimeconfig) that does not exist is a
+            // misconfiguration - the bridge must fail fast rather than publish a bogus SDK root.
+            string missing = Path.Combine(Path.GetTempPath(), "aot-sdkroot-missing-" + Guid.NewGuid().ToString("N"));
+            AppContext.SetData(SdkPaths.DataName, missing);
+
+            int exitCode = NativeEntryPoint.ExecuteCore(
+                hostPath: "test-host",
+                dotnetRoot: "test-root",
+                sdkDir: "",
+                hostfxrPath: "",
+                args: ["--version"]);
+
+            Assert.AreNotEqual(0, exitCode);
+        });
+    }
+
+    [TestMethod]
+    public void ExecuteCore_PresetSdkRootExistingDirectory_IsHonored()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            // An existing caller-provided SDK root is authoritative and is not overwritten by the
+            // host-provided sdk_dir argument.
+            string preset = Directory.CreateTempSubdirectory("aot-sdkroot-preset-").FullName;
+            AppContext.SetData(SdkPaths.DataName, preset);
+
+            NativeEntryPoint.ExecuteCore(
+                hostPath: "test-host",
+                dotnetRoot: "test-root",
+                sdkDir: "some-other-dir",
+                hostfxrPath: "",
+                args: ["--version"]);
+
+            Assert.AreEqual(preset, AppContext.GetData(SdkPaths.DataName));
+            Assert.AreEqual(preset, NativeEntryPoint.SdkDirectory);
+        });
+    }
+
+    [TestMethod]
+    public void SdkPaths_PrefersSdkRootAppContextValue_ThenFallsBackToAResolvedDirectory()
+    {
+        WithEnvRestore(() =>
+        {
+            string sdk = Path.Combine(Path.GetTempPath(), "sdkpaths-" + Guid.NewGuid().ToString("N"));
+            AppContext.SetData(SdkPaths.DataName, sdk);
+            // SdkDirectory caches its result process-wide, so exercise the heuristic through the uncached
+            // resolver to observe both the AppContext-value and fallback branches in one test.
+            Assert.AreEqual(sdk, SdkPaths.ResolveSdkDirectory());
+
+            // With the AppContext value unset, the heuristic falls back to the SDK assembly directory
+            // (the test output directory under the JIT) or AppContext.BaseDirectory - either way a real dir.
+            AppContext.SetData(SdkPaths.DataName, null);
+            string fallback = SdkPaths.ResolveSdkDirectory();
+            Assert.IsFalse(string.IsNullOrEmpty(fallback), "Fallback SDK directory should not be empty.");
+            Assert.IsTrue(Directory.Exists(fallback), $"Fallback SDK directory '{fallback}' should exist.");
         });
     }
 
