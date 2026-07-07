@@ -4,8 +4,6 @@
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
-using Microsoft.Testing.Platform.IPC;
-
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 /*

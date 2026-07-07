@@ -36,6 +36,14 @@
 
     <!-- Promote info-severity MSTest analyzer rules to warnings and critical rules to errors. -->
     <MSTestAnalysisMode>Recommended</MSTestAnalysisMode>
+
+    <!-- Collect a crash dump if the test host crashes, and a hang dump when a run stops making
+         progress, so intermittent hangs/crashes on CI (especially on Helix) are diagnosable.
+         MSTest.Sdk pulls in the Microsoft.Testing.Extensions.CrashDump / .HangDump packages
+         automatically when these are set, so no explicit PackageReference or version pin is
+         required. The Helix dispatcher passes the crashdump / hangdump switches to activate them. -->
+    <EnableMicrosoftTestingExtensionsCrashDump>true</EnableMicrosoftTestingExtensionsCrashDump>
+    <EnableMicrosoftTestingExtensionsHangDump>true</EnableMicrosoftTestingExtensionsHangDump>
   </PropertyGroup>
 
 </Project>
