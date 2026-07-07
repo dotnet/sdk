@@ -23,7 +23,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string tempDirPath = null,
             PackageSourceLocation packageSourceLocation = null,
             RestoreActionConfig restoreActionConfig = null,
-            bool elevationRequired = true)
+            bool elevationRequired = true,
+            bool shouldLog = true)
         {
             dotnetDir = string.IsNullOrWhiteSpace(dotnetDir) ? Path.GetDirectoryName(Environment.ProcessPath) : dotnetDir;
             var installType = WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetDir);
@@ -34,9 +35,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     throw new InvalidOperationException(LocalizableStrings.OSDoesNotSupportMsi);
                 }
-
+                // TODO: should restoreActionConfig be flowed through to the client here as well like it is for the FileBasedInstaller below?
                 return NetSdkMsiInstallerClient.Create(verifySignatures, sdkFeatureBand, workloadResolver,
-                    nugetPackageDownloader, verbosity, packageSourceLocation, reporter, tempDirPath);
+                    nugetPackageDownloader, verbosity, packageSourceLocation, reporter, tempDirPath, shouldLog: shouldLog);
             }
 
             if (elevationRequired && !WorkloadFileBasedInstall.IsUserLocal(dotnetDir, sdkFeatureBand.ToString()) && !CanWriteToDotnetRoot(dotnetDir))
