@@ -44,6 +44,13 @@ straightforward to define with reliable trigger paths, it should be added; if it
 requires complex dependency analysis or invasive refactoring, the effort may not be
 justified.
 
+Longer-term, better solutions may emerge — for example, AI-based test selection
+(as offered by CloudTest), or improved incremental build support that avoids rebuilding
+and rerunning test assemblies whose inputs have not changed. These would provide a
+better experience but are aspirational today. PR velocity is the primary driver to
+address this now, and this manual, declarative approach is the pragmatic solution
+available to do so.
+
 ## Filtering mechanisms
 
 There are several levels at which tests can be conditionally excluded:
