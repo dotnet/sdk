@@ -19,6 +19,7 @@ pr:
     - src
     - template_feed
     - test
+    - .config
     - '*.yml'
     - '*.props'
     - '*.targets'
@@ -79,6 +80,19 @@ stages:
         vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.15.arm64.open
+  ### AoT (native arm64) ###
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-15-arm64
+        os: macOS
+      helixTargetQueue: osx.15.arm64.open
+      macOSJobParameterSets:
+      - categoryName: AoT
+        runAoTTests: true
+        targetArchitecture: arm64
+        runtimeIdentifier: osx-arm64
   ### x64 (CI only) ###
   - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml

@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffEventTests : DiffBaseTests
 {
-    [Fact]
+    [TestMethod]
     public Task EventAdd() => RunTestAsync(
         beforeCode: """
         using System;
@@ -38,7 +39,7 @@ public class DiffEventTests : DiffBaseTests
           }
         """);
 
-    [Fact]
+    [TestMethod]
     public Task EventChange() => RunTestAsync(
         beforeCode: """
         using System;
@@ -73,7 +74,7 @@ public class DiffEventTests : DiffBaseTests
           }
         """);
 
-    [Fact]
+    [TestMethod]
     public Task EventRemove() => RunTestAsync(
         beforeCode: """
         using System;
@@ -106,7 +107,7 @@ public class DiffEventTests : DiffBaseTests
           }
         """);
 
-    [Fact]
+    [TestMethod]
     public Task AbstractEvent() => RunTestAsync(
         beforeCode: """
         using System;
@@ -139,7 +140,7 @@ public class DiffEventTests : DiffBaseTests
           }
         """);
 
-    [Fact]
+    [TestMethod]
     public Task ExplicitInterfaceEventAdd() => RunTestAsync(
         beforeCode: """
         using System;

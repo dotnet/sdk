@@ -30,6 +30,7 @@ internal static class Constants
         public const string DownArrow = "\u2193"; // ↓
         public const string UpTriangle = "\u25B2"; // ▲
         public const string DownTriangle = "\u25BC"; // ▼
+        public const string Bullet = "\u2022"; // •
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ internal static class Constants
         /// <summary>
         /// Connection string for Application Insights.
         /// </summary>
-        public const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
+        public const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254;IngestionEndpoint=https://southcentralus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/;ApplicationId=c5108c2c-b0c5-43c6-a703-424eae223a75";
 
         public const string TelemetryOptOutEnvVar = "DOTNET_CLI_TELEMETRY_OPTOUT";
         public const string StoragePathEnvVar = "DOTNET_CLI_TELEMETRY_STORAGE_PATH";

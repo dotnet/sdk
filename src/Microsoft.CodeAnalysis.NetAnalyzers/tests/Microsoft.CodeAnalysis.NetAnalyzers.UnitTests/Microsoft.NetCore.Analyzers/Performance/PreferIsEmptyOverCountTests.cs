@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.CSharp.Analyzers.Performance;
 using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferIsEmptyOverCountFixer>;
@@ -19,6 +18,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class PreferIsEmptyOverCountTests
     {
         private const string Count = nameof(Count);
@@ -43,7 +43,7 @@ Public Class Test
 End Class
 ";
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpSimpleCaseAsync()
         {
             string csInput = @"
@@ -95,7 +95,7 @@ public class Test
                 csFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicSimpleCaseAsync()
         {
             string vbInput = @"
@@ -149,11 +149,11 @@ End Class
                 vbFix);
         }
 
-        [Theory]
-        [InlineData("(_concurrent.Count) > 0", "!_concurrent.IsEmpty")]
-        [InlineData("_concurrent.Count > (0)", "!_concurrent.IsEmpty")]
-        [InlineData("(_concurrent.Count) > (0)", "!_concurrent.IsEmpty")]
-        [InlineData("((_concurrent).Count) > (0)", "!(_concurrent).IsEmpty")]
+        [TestMethod]
+        [DataRow("(_concurrent.Count) > 0", "!_concurrent.IsEmpty")]
+        [DataRow("_concurrent.Count > (0)", "!_concurrent.IsEmpty")]
+        [DataRow("(_concurrent.Count) > (0)", "!_concurrent.IsEmpty")]
+        [DataRow("((_concurrent).Count) > (0)", "!(_concurrent).IsEmpty")]
         public Task CSharpTestFixOnParenthesesAsync(string condition, string expectedFix)
         {
             string input = string.Format(CultureInfo.InvariantCulture, csSnippet, condition);
@@ -165,12 +165,12 @@ End Class
                  fix);
         }
 
-        [Theory]
-        [InlineData("(_concurrent.Count) > 0", "Not _concurrent.IsEmpty")]
-        [InlineData("_concurrent.Count > (0)", "Not _concurrent.IsEmpty")]
-        [InlineData("(_concurrent.Count) > (0)", "Not _concurrent.IsEmpty")]
+        [TestMethod]
+        [DataRow("(_concurrent.Count) > 0", "Not _concurrent.IsEmpty")]
+        [DataRow("_concurrent.Count > (0)", "Not _concurrent.IsEmpty")]
+        [DataRow("(_concurrent.Count) > (0)", "Not _concurrent.IsEmpty")]
         // TODO: Reduce suggested fix to avoid special casing here.
-        [InlineData("((_concurrent).Count) > (0)", "Not (_concurrent).IsEmpty")]
+        [DataRow("((_concurrent).Count) > (0)", "Not (_concurrent).IsEmpty")]
         public Task BasicTestFixOnParenthesesAsync(string condition, string expectedFix)
         {
             string input = string.Format(CultureInfo.InvariantCulture, vbSnippet, condition);
@@ -182,17 +182,17 @@ End Class
                  fix);
         }
 
-        [Theory]
-        [InlineData("queue.Count > 0", true)]
-        [InlineData("(queue.Count) > 0", true)]
-        [InlineData("queue.Count > (0)", true)]
-        [InlineData("queue.Count() == 0", false)]
-        [InlineData("(queue.Count()) == 0", false)]
-        [InlineData("queue.Count() == (0)", false)]
-        [InlineData("queue.Count.Equals(0)", false)]
-        [InlineData("0.Equals(queue.Count)", false)]
-        [InlineData("queue.Count().Equals(0)", false)]
-        [InlineData("0.Equals(queue.Count())", false)]
+        [TestMethod]
+        [DataRow("queue.Count > 0", true)]
+        [DataRow("(queue.Count) > 0", true)]
+        [DataRow("queue.Count > (0)", true)]
+        [DataRow("queue.Count() == 0", false)]
+        [DataRow("(queue.Count()) == 0", false)]
+        [DataRow("queue.Count() == (0)", false)]
+        [DataRow("queue.Count.Equals(0)", false)]
+        [DataRow("0.Equals(queue.Count)", false)]
+        [DataRow("queue.Count().Equals(0)", false)]
+        [DataRow("0.Equals(queue.Count())", false)]
         public Task CSharpTestExpressionAsArgumentAsync(string expression, bool negate)
             => VerifyCS.VerifyCodeFixAsync(
     $@"using System;
@@ -215,11 +215,11 @@ public class Test
     public static void M(System.Collections.Concurrent.ConcurrentQueue<int> queue) => TakeBool({(negate ? "!" : "")}queue.IsEmpty);
 }}");
 
-        [Theory]
-        [InlineData("(uint)_concurrent.Count > 0", true)]
-        [InlineData("(uint)_concurrent.Count == 0", false)]
-        [InlineData("((uint)_concurrent.Count).Equals(0)", false)]
-        [InlineData("0.Equals((uint)_concurrent.Count)", false)]
+        [TestMethod]
+        [DataRow("(uint)_concurrent.Count > 0", true)]
+        [DataRow("(uint)_concurrent.Count == 0", false)]
+        [DataRow("((uint)_concurrent.Count).Equals(0)", false)]
+        [DataRow("0.Equals((uint)_concurrent.Count)", false)]
         public Task CSharpTestCastExpressionAsync(string expression, bool negate)
             => VerifyCS.VerifyCodeFixAsync(
                 string.Format(CultureInfo.InvariantCulture, csSnippet, expression),
@@ -228,11 +228,11 @@ public class Test
 #pragma warning restore RS0030 // Do not use banned APIs
                 string.Format(CultureInfo.InvariantCulture, csSnippet, $"{(negate ? "!" : "")}_concurrent.IsEmpty"));
 
-        [Theory]
-        [InlineData("CType(_concurrent.Count, UInteger) > 0", true)]
-        [InlineData("CType(_concurrent.Count, UInteger) = 0", false)]
-        [InlineData("CType(_concurrent.Count, UInteger).Equals(0)", false)]
-        [InlineData("0.Equals(CType(_concurrent.Count, UInteger))", false)]
+        [TestMethod]
+        [DataRow("CType(_concurrent.Count, UInteger) > 0", true)]
+        [DataRow("CType(_concurrent.Count, UInteger) = 0", false)]
+        [DataRow("CType(_concurrent.Count, UInteger).Equals(0)", false)]
+        [DataRow("0.Equals(CType(_concurrent.Count, UInteger))", false)]
         public Task BasicTestCastExpressionAsync(string expression, bool negate)
             => VerifyVB.VerifyCodeFixAsync(
                 string.Format(CultureInfo.InvariantCulture, vbSnippet, expression),
@@ -241,17 +241,17 @@ public class Test
 #pragma warning restore RS0030 // Do not use banned APIs
                 string.Format(CultureInfo.InvariantCulture, vbSnippet, $"{(negate ? "Not " : "")}_concurrent.IsEmpty"));
 
-        [Theory]
-        [InlineData("queue.Count > 0", true)]
-        [InlineData("(queue.Count) > 0", true)]
-        [InlineData("queue.Count > (0)", true)]
-        [InlineData("queue.Count() = 0", false)]
-        [InlineData("(queue.Count()) = 0", false)]
-        [InlineData("queue.Count() = (0)", false)]
-        [InlineData("queue.Count.Equals(0)", false)]
-        [InlineData("0.Equals(queue.Count)", false)]
-        [InlineData("queue.Count().Equals(0)", false)]
-        [InlineData("0.Equals(queue.Count())", false)]
+        [TestMethod]
+        [DataRow("queue.Count > 0", true)]
+        [DataRow("(queue.Count) > 0", true)]
+        [DataRow("queue.Count > (0)", true)]
+        [DataRow("queue.Count() = 0", false)]
+        [DataRow("(queue.Count()) = 0", false)]
+        [DataRow("queue.Count() = (0)", false)]
+        [DataRow("queue.Count.Equals(0)", false)]
+        [DataRow("0.Equals(queue.Count)", false)]
+        [DataRow("queue.Count().Equals(0)", false)]
+        [DataRow("0.Equals(queue.Count())", false)]
         public Task BasicTestExpressionAsArgumentAsync(string expression, bool negate)
             => VerifyVB.VerifyCodeFixAsync(
     $@"Imports System
@@ -280,9 +280,9 @@ Public Class Test
     End Sub
 End Class");
 
-        [Theory(Skip = "Removed default support for all types but this scenario can be useful for .editorconfig")]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod, Ignore("Removed default support for all types but this scenario can be useful for .editorconfig")]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task CSharpTestIsEmptyGetter_NoDiagnosisAsync(bool useThis)
             => VerifyCS.VerifyAnalyzerAsync(
 $@"class MyIntList
@@ -297,9 +297,9 @@ $@"class MyIntList
     public int Count => _list.Count;
 }}");
 
-        [Theory(Skip = "Removed default support for all types but this scenario can be useful for .editorconfig")]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod, Ignore("Removed default support for all types but this scenario can be useful for .editorconfig")]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task BasicTestIsEmptyGetter_NoDiagnosisAsync(bool useMe)
             => VerifyVB.VerifyAnalyzerAsync(
 $@"Class MyIntList
@@ -316,7 +316,7 @@ $@"Class MyIntList
     End Property
 End Class");
 
-        [Fact]
+        [TestMethod]
         public Task CSharpTestIsEmptyGetter_AsLambda_NoDiagnosisAsync()
             => VerifyCS.VerifyAnalyzerAsync(
 @"class MyIntList
@@ -327,7 +327,7 @@ End Class");
     public int Count => _list.Count;
 }");
 
-        [Fact]
+        [TestMethod]
         public Task CSharpTestIsEmptyGetter_WithLinq_NoDiagnosisAsync()
             => VerifyCS.VerifyAnalyzerAsync(
 @"using System.Collections;
@@ -346,9 +346,9 @@ class MyIntList : IEnumerable<int>
 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827).WithLocation(7, 28).WithArguments("Count"));
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public Task BasicTestIsEmptyGetter_WithLinq_NoDiagnosisAsync(bool useMe)
             => VerifyVB.VerifyAnalyzerAsync(
 $@"Imports System.Collections
@@ -376,7 +376,7 @@ End Class",
 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827).WithLocation(9, 20).WithArguments("Count"));
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public Task CSharpTestIsEmptyGetter_NoThis_FixedAsync()
             => VerifyCS.VerifyCodeFixAsync(
 @"class MyStringIntDictionary
@@ -395,7 +395,7 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 28),
     public bool IsEmpty => _dictionary.IsEmpty;
 }");
 
-        [Fact]
+        [TestMethod]
         public Task BasicTestIsEmptyGetter_NoThis_FixedAsync()
             => VerifyVB.VerifyCodeFixAsync(
 @"Class MyStringIntDictionary
@@ -418,7 +418,7 @@ VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 20),
     End Property
 End Class");
 
-        [Fact]
+        [TestMethod]
         public Task CSharpTestWhitespaceTriviaAsync()
             => VerifyCS.VerifyCodeFixAsync(
 $@"class C
@@ -439,11 +439,11 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(4, 31),
         _dictionary.Count;
 }");
 
-        [Theory]
-        [InlineData("System.ReadOnlyMemory")]
-        [InlineData("System.ReadOnlySpan")]
-        [InlineData("System.Memory")]
-        [InlineData("System.Span")]
+        [TestMethod]
+        [DataRow("System.ReadOnlyMemory")]
+        [DataRow("System.ReadOnlySpan")]
+        [DataRow("System.Memory")]
+        [DataRow("System.Span")]
         public Task CSharpTest_DisallowedTypesForCA1836_NoDiagnosisAsync(string type)
             => VerifyCS.VerifyAnalyzerAsync(
 $@"class C
@@ -456,14 +456,17 @@ $@"class C
 }}");
     }
 
+    [TestClass]
     public abstract class PreferIsEmptyOverCountTestsBase
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
         protected PreferIsEmptyOverCountTestsBase(TestsSourceCodeProvider sourceProvider, VerifierBase verifier)
             : base(sourceProvider, verifier) { }
 
-        [Theory]
-        [ClassData(typeof(BinaryExpressionTestData))]
+        public static IEnumerable<object[]> BinaryExpressionTestDataSource => new BinaryExpressionTestData();
+
+        [TestMethod]
+        [DynamicData(nameof(BinaryExpressionTestDataSource))]
         public Task PropertyOnBinaryOperationAsync(bool noDiagnosis, int literal, BinaryOperatorKind @operator, bool isRightSideExpression, bool shouldNegate)
         {
             string testSource = isRightSideExpression ?
@@ -483,7 +486,7 @@ $@"class C
             }
         }
 
-        [Fact]
+        [TestMethod]
         public Task PropertyEqualsZero_FixedAsync()
             => VerifyAsync(
                 methodName: null,
@@ -493,7 +496,7 @@ $@"class C
                     SourceProvider.GetFixedIsEmptyPropertyCode(negate: false)),
                 extensionsSource: null);
 
-        [Fact]
+        [TestMethod]
         public Task ZeroEqualsProperty_FixedAsync()
             => VerifyAsync(
                 methodName: null,
@@ -504,6 +507,7 @@ $@"class C
                 extensionsSource: null);
     }
 
+    [TestClass]
     public abstract class PreferIsEmptyOverCountLinqTestsBase
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
@@ -518,8 +522,8 @@ $@"class C
         /// Scenarios that are not diagnosed with CA1836 should fallback in CA1829 and those are covered in 
         /// <see cref="UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests.PropertyOnBinaryOperationAsync(int, BinaryOperatorKind, bool)"/>
         /// </summary>
-        [Theory]
-        [MemberData(nameof(DiagnosisOnlyTestData))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosisOnlyTestData))]
         public Task LinqMethodOnBinaryOperationAsync(int literal, BinaryOperatorKind @operator, bool isRightSideExpression, bool shouldNegate)
         {
             string testSource = SourceProvider.GetCodeWithExpression(
@@ -535,7 +539,7 @@ $@"class C
             return VerifyAsync(methodName: null, testSource, fixedSource, extensionsSource: null);
         }
 
-        [Fact]
+        [TestMethod]
         public Task LinqCountEqualsZero_FixedAsync()
             => VerifyAsync(
                 methodName: null,
@@ -547,7 +551,7 @@ $@"class C
                     additionalNamspaces: SourceProvider.ExtensionsNamespace),
                 extensionsSource: null);
 
-        [Fact]
+        [TestMethod]
         public Task ZeroEqualsLinqCount_FixedAsync()
             => VerifyAsync(
                 methodName: null,
@@ -561,6 +565,7 @@ $@"class C
 
     }
 
+    [TestClass]
     public class CSharpPreferIsEmptyOverCountTests_Concurrent
         : PreferIsEmptyOverCountTestsBase
     {
@@ -574,6 +579,7 @@ $@"class C
         { }
     }
 
+    [TestClass]
     public class BasicPreferIsEmptyOverCountTests_Concurrent
         : PreferIsEmptyOverCountTestsBase
     {
@@ -587,6 +593,7 @@ $@"class C
         { }
     }
 
+    [TestClass]
     public class CSharpPreferIsEmptyOverCountLinqTests_Concurrent
         : PreferIsEmptyOverCountLinqTestsBase
     {

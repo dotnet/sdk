@@ -6,9 +6,10 @@ using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Tests.ParserTests;
 
+[TestClass]
 public class CommonOptionsTests
 {
-    [Fact]
+    [TestMethod]
     public void Duplicates()
     {
         var command = new RootCommand();
@@ -25,7 +26,7 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Duplicates_CasingDifference()
     {
         var command = new RootCommand();
@@ -53,7 +54,7 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void MultiplePerToken()
     {
         var command = new RootCommand();
@@ -74,7 +75,7 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void NoValue()
     {
         var command = new RootCommand();
@@ -90,7 +91,7 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void WhitespaceTrimming()
     {
         var command = new RootCommand();
@@ -106,11 +107,11 @@ public class CommonOptionsTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("=")]
-    [InlineData("= X")]
-    [InlineData("  \u2002 = X")]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("=")]
+    [DataRow("= X")]
+    [DataRow("  \u2002 = X")]
     public void Errors(string token)
     {
         var command = new RootCommand();

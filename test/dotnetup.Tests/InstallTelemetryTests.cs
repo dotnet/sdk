@@ -4,13 +4,14 @@
 using System.Diagnostics;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
-using Xunit;
+using Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
 
+[TestClass]
 public class ClassifyInstallPathTests
 {
-    [Fact]
+    [TestMethod]
     public void ClassifyInstallPath_DefaultInstallPath_ReturnsLocalAppData()
     {
         // The default install path is LocalApplicationData\dotnet
@@ -26,18 +27,14 @@ public class ClassifyInstallPathTests
 
         if (OperatingSystem.IsWindows())
         {
-            Assert.Equal("local_appdata", result);
+            Assert.AreEqual("local_appdata", result);
         }
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void ClassifyInstallPath_UserProfilePath_ReturnsUserProfile()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrEmpty(userProfile))
         {
@@ -49,17 +46,13 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path);
 
-        Assert.Equal("user_profile", result);
+        Assert.AreEqual("user_profile", result);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void ClassifyInstallPath_LocalAppData_IsMoreSpecificThanUserProfile()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
@@ -75,17 +68,13 @@ public class ClassifyInstallPathTests
         var result = InstallPathClassifier.ClassifyInstallPath(path);
 
         // Should be local_appdata, not user_profile
-        Assert.Equal("local_appdata", result);
+        Assert.AreEqual("local_appdata", result);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void ClassifyInstallPath_ProgramFilesDotnet_ReturnsSystem()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         if (string.IsNullOrEmpty(programFiles))
         {
@@ -96,17 +85,13 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path);
 
-        Assert.Equal("system", result);
+        Assert.AreEqual("system", result);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void ClassifyInstallPath_ProgramFilesNonDotnet_ReturnsSystemProgramfiles()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         if (string.IsNullOrEmpty(programFiles))
         {
@@ -118,10 +103,10 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path);
 
-        Assert.Equal("system_programfiles", result);
+        Assert.AreEqual("system_programfiles", result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ClassifyInstallPath_UnknownPath_ReturnsOther()
     {
         // A path that doesn't match any known category
@@ -131,10 +116,10 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path);
 
-        Assert.Equal("other", result);
+        Assert.AreEqual("other", result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ClassifyInstallPath_GlobalJsonSource_UnknownPath_ReturnsGlobalJson()
     {
         // When pathSource is global_json and the path doesn't match a known location,
@@ -145,10 +130,10 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path, pathSource: PathSource.GlobalJson);
 
-        Assert.Equal("global_json", result);
+        Assert.AreEqual("global_json", result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ClassifyInstallPath_GlobalJsonSource_KnownPath_ReturnsKnownType()
     {
         // When pathSource is global_json but the path is a well-known location,
@@ -165,16 +150,16 @@ public class ClassifyInstallPathTests
 
         if (OperatingSystem.IsWindows())
         {
-            Assert.Equal("local_appdata", result);
+            Assert.AreEqual("local_appdata", result);
         }
         else
         {
             // On non-Windows, LocalApplicationData may match user_home
-            Assert.NotEqual("other", result);
+            Assert.AreNotEqual("other", result);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ClassifyInstallPath_ExplicitSource_UnknownPath_ReturnsOther()
     {
         // Non-global_json source should still return "other" for unknown paths
@@ -184,10 +169,10 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path, pathSource: PathSource.Explicit);
 
-        Assert.Equal("other", result);
+        Assert.AreEqual("other", result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ClassifyInstallPath_NullPathSource_UnknownPath_ReturnsOther()
     {
         var path = OperatingSystem.IsWindows()
@@ -196,45 +181,41 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path, pathSource: null);
 
-        Assert.Equal("other", result);
+        Assert.AreEqual("other", result);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void ClassifyInstallPath_UsrShareDotnet_ReturnsSystem()
     {
-        if (OperatingSystem.IsWindows()) return;
-
         var result = InstallPathClassifier.ClassifyInstallPath("/usr/share/dotnet");
 
-        Assert.Equal("system", result);
+        Assert.AreEqual("system", result);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void ClassifyInstallPath_UsrLocalBin_ReturnsSystemPath()
     {
-        if (OperatingSystem.IsWindows()) return;
-
         // /usr/local/bin is a system path but NOT an admin dotnet location
         var result = InstallPathClassifier.ClassifyInstallPath("/usr/local/bin/something");
 
-        Assert.Equal("system_path", result);
+        Assert.AreEqual("system_path", result);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void ClassifyInstallPath_OptPath_ReturnsSystemPath()
     {
-        if (OperatingSystem.IsWindows()) return;
-
         var result = InstallPathClassifier.ClassifyInstallPath("/opt/dotnet");
 
-        Assert.Equal("system_path", result);
+        Assert.AreEqual("system_path", result);
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void ClassifyInstallPath_HomePath_ReturnsUserHome()
     {
-        if (OperatingSystem.IsWindows()) return;
-
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrEmpty(home))
         {
@@ -245,13 +226,14 @@ public class ClassifyInstallPathTests
 
         var result = InstallPathClassifier.ClassifyInstallPath(path);
 
-        Assert.Equal("user_home", result);
+        Assert.AreEqual("user_home", result);
     }
 }
 
+[TestClass]
 public class ApplyErrorTagsTests
 {
-    [Fact]
+    [TestMethod]
     public void ApplyErrorTags_SetsAllRequiredTags()
     {
         using var listener = CreateTestListener(out var captured, "ApplyErrorTags.Test.1");
@@ -259,7 +241,7 @@ public class ApplyErrorTagsTests
         using var source = new ActivitySource("ApplyErrorTags.Test.1");
         using (var activity = source.StartActivity("test"))
         {
-            Assert.NotNull(activity);
+            Assert.IsNotNull(activity);
 
             var errorInfo = new ExceptionErrorInfo(
                 ErrorType: "DiskFull",
@@ -272,15 +254,15 @@ public class ApplyErrorTagsTests
             ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
         }
 
-        var a = Assert.Single(captured);
-        Assert.Equal("DiskFull", a.GetTagItem("error.type"));
-        Assert.Equal("user", a.GetTagItem("error.category"));
-        Assert.Equal(unchecked((int)0x80070070), a.GetTagItem("error.hresult"));
-        Assert.Equal("ERROR_DISK_FULL", a.GetTagItem("error.details"));
-        Assert.Equal("at SomeMethod() in InstallExecutor.cs:line 42", a.GetTagItem("error.stack_trace"));
+        var a = Assert.ContainsSingle(captured);
+        Assert.AreEqual("DiskFull", a.GetTagItem("error.type"));
+        Assert.AreEqual("user", a.GetTagItem("error.category"));
+        Assert.AreEqual(unchecked((int)0x80070070), a.GetTagItem("error.hresult"));
+        Assert.AreEqual("ERROR_DISK_FULL", a.GetTagItem("error.details"));
+        Assert.AreEqual("at SomeMethod() in InstallExecutor.cs:line 42", a.GetTagItem("error.stack_trace"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyErrorTags_WithErrorCode_SetsErrorCodeTag()
     {
         using var listener = CreateTestListener(out var captured, "ApplyErrorTags.Test.2");
@@ -288,7 +270,7 @@ public class ApplyErrorTagsTests
         using var source = new ActivitySource("ApplyErrorTags.Test.2");
         using (var activity = source.StartActivity("test"))
         {
-            Assert.NotNull(activity);
+            Assert.IsNotNull(activity);
 
             var errorInfo = new ExceptionErrorInfo(
                 ErrorType: "HttpError",
@@ -301,16 +283,16 @@ public class ApplyErrorTagsTests
             ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode: "Http404");
         }
 
-        var a = Assert.Single(captured);
-        Assert.Equal("HttpError", a.GetTagItem("error.type"));
-        Assert.Equal("Http404", a.GetTagItem("error.code"));
-        Assert.Equal("product", a.GetTagItem("error.category"));
-        Assert.Equal(404, a.GetTagItem("error.http_status"));
-        Assert.Null(a.GetTagItem("error.hresult"));
-        Assert.Null(a.GetTagItem("error.details"));
+        var a = Assert.ContainsSingle(captured);
+        Assert.AreEqual("HttpError", a.GetTagItem("error.type"));
+        Assert.AreEqual("Http404", a.GetTagItem("error.code"));
+        Assert.AreEqual("product", a.GetTagItem("error.category"));
+        Assert.AreEqual(404, a.GetTagItem("error.http_status"));
+        Assert.IsNull(a.GetTagItem("error.hresult"));
+        Assert.IsNull(a.GetTagItem("error.details"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyErrorTags_WithNullActivity_DoesNotThrow()
     {
         var errorInfo = new ExceptionErrorInfo(
@@ -323,10 +305,10 @@ public class ApplyErrorTagsTests
 
         var ex = Record.Exception(() => ErrorCodeMapper.ApplyErrorTags(null, errorInfo));
 
-        Assert.Null(ex);
+        Assert.IsNull(ex);
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyErrorTags_NullOptionalFields_DoesNotSetOptionalTags()
     {
         using var listener = CreateTestListener(out var captured, "ApplyErrorTags.Test.3");
@@ -334,7 +316,7 @@ public class ApplyErrorTagsTests
         using var source = new ActivitySource("ApplyErrorTags.Test.3");
         using (var activity = source.StartActivity("test"))
         {
-            Assert.NotNull(activity);
+            Assert.IsNotNull(activity);
 
             var errorInfo = new ExceptionErrorInfo(
                 ErrorType: "GenericError",
@@ -347,18 +329,18 @@ public class ApplyErrorTagsTests
             ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
         }
 
-        var a = Assert.Single(captured);
-        Assert.Equal("GenericError", a.GetTagItem("error.type"));
-        Assert.Equal("product", a.GetTagItem("error.category"));
+        var a = Assert.ContainsSingle(captured);
+        Assert.AreEqual("GenericError", a.GetTagItem("error.type"));
+        Assert.AreEqual("product", a.GetTagItem("error.category"));
         // Optional tags should not be set
-        Assert.Null(a.GetTagItem("error.hresult"));
-        Assert.Null(a.GetTagItem("error.http_status"));
-        Assert.Null(a.GetTagItem("error.details"));
-        Assert.Null(a.GetTagItem("error.stack_trace"));
-        Assert.Null(a.GetTagItem("error.code"));
+        Assert.IsNull(a.GetTagItem("error.hresult"));
+        Assert.IsNull(a.GetTagItem("error.http_status"));
+        Assert.IsNull(a.GetTagItem("error.details"));
+        Assert.IsNull(a.GetTagItem("error.stack_trace"));
+        Assert.IsNull(a.GetTagItem("error.code"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyErrorTags_SetsActivityStatusToError()
     {
         using var listener = CreateTestListener(out var captured, "ApplyErrorTags.Test.4");
@@ -366,7 +348,7 @@ public class ApplyErrorTagsTests
         using var source = new ActivitySource("ApplyErrorTags.Test.4");
         using (var activity = source.StartActivity("test"))
         {
-            Assert.NotNull(activity);
+            Assert.IsNotNull(activity);
 
             var errorInfo = new ExceptionErrorInfo(
                 ErrorType: "TestError",
@@ -379,9 +361,9 @@ public class ApplyErrorTagsTests
             ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
         }
 
-        var a = Assert.Single(captured);
-        Assert.Equal(ActivityStatusCode.Error, a.Status);
-        Assert.Equal("TestError", a.StatusDescription);
+        var a = Assert.ContainsSingle(captured);
+        Assert.AreEqual(ActivityStatusCode.Error, a.Status);
+        Assert.AreEqual("TestError", a.StatusDescription);
     }
 
     private static ActivityListener CreateTestListener(out List<Activity> captured, string? sourceName = null)
@@ -399,129 +381,122 @@ public class ApplyErrorTagsTests
     }
 }
 
+[TestClass]
 public class IsAdminInstallPathTests
 {
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void IsAdminInstallPath_ProgramFilesDotnet_ReturnsTrue()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         if (string.IsNullOrEmpty(programFiles)) return;
 
-        Assert.True(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "dotnet")));
+        Assert.IsTrue(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "dotnet")));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void IsAdminInstallPath_ProgramFilesX86Dotnet_ReturnsTrue()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
         if (string.IsNullOrEmpty(programFilesX86)) return;
 
-        Assert.True(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFilesX86, "dotnet")));
+        Assert.IsTrue(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFilesX86, "dotnet")));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void IsAdminInstallPath_ProgramFilesSubfolder_ReturnsTrue()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         if (string.IsNullOrEmpty(programFiles)) return;
 
         // Subfolders of Program Files\dotnet should also be blocked
-        Assert.True(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "dotnet", "sdk")));
+        Assert.IsTrue(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "dotnet", "sdk")));
     }
 
-    [Fact]
+    [TestMethod]
     public void IsAdminInstallPath_UserPath_ReturnsFalse()
     {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrEmpty(localAppData)) return;
 
-        Assert.False(InstallPathClassifier.IsAdminInstallPath(Path.Combine(localAppData, "dotnet")));
+        Assert.IsFalse(InstallPathClassifier.IsAdminInstallPath(Path.Combine(localAppData, "dotnet")));
     }
 
-    [Fact]
+    [TestMethod]
     public void IsAdminInstallPath_CustomPath_ReturnsFalse()
     {
         var path = OperatingSystem.IsWindows()
             ? @"D:\custom\dotnet"
             : "/tmp/custom/dotnet";
 
-        Assert.False(InstallPathClassifier.IsAdminInstallPath(path));
+        Assert.IsFalse(InstallPathClassifier.IsAdminInstallPath(path));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void IsAdminInstallPath_UsrShareDotnet_ReturnsTrue()
     {
-        if (OperatingSystem.IsWindows()) return;
-
-        Assert.True(InstallPathClassifier.IsAdminInstallPath("/usr/share/dotnet"));
+        Assert.IsTrue(InstallPathClassifier.IsAdminInstallPath("/usr/share/dotnet"));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void IsAdminInstallPath_UsrLibDotnet_ReturnsTrue()
     {
-        if (OperatingSystem.IsWindows()) return;
-
-        Assert.True(InstallPathClassifier.IsAdminInstallPath("/usr/lib/dotnet"));
+        Assert.IsTrue(InstallPathClassifier.IsAdminInstallPath("/usr/lib/dotnet"));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void IsAdminInstallPath_UsrLocalShareDotnet_ReturnsTrue()
     {
-        if (OperatingSystem.IsWindows()) return;
-
-        Assert.True(InstallPathClassifier.IsAdminInstallPath("/usr/local/share/dotnet"));
+        Assert.IsTrue(InstallPathClassifier.IsAdminInstallPath("/usr/local/share/dotnet"));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void IsAdminInstallPath_OptPath_ReturnsFalse()
     {
-        if (OperatingSystem.IsWindows()) return;
-
         // /opt/dotnet is a system path but not an admin dotnet location
-        Assert.False(InstallPathClassifier.IsAdminInstallPath("/opt/dotnet"));
+        Assert.IsFalse(InstallPathClassifier.IsAdminInstallPath("/opt/dotnet"));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void IsAdminInstallPath_HomePath_ReturnsFalse()
     {
-        if (OperatingSystem.IsWindows()) return;
-
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrEmpty(home)) return;
 
-        Assert.False(InstallPathClassifier.IsAdminInstallPath(Path.Combine(home, ".dotnet")));
+        Assert.IsFalse(InstallPathClassifier.IsAdminInstallPath(Path.Combine(home, ".dotnet")));
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void IsAdminInstallPath_ProgramFilesNonDotnet_ReturnsFalse()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         if (string.IsNullOrEmpty(programFiles)) return;
 
         // Program Files\SomeOtherTool is NOT an admin dotnet path
-        Assert.False(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "SomeOtherTool")));
+        Assert.IsFalse(InstallPathClassifier.IsAdminInstallPath(Path.Combine(programFiles, "SomeOtherTool")));
     }
 }
 
+[TestClass]
 public class GetVersionTests
 {
-    [Fact]
+    [TestMethod]
     public void GetVersion_ReturnsNonEmptyVersion()
     {
         var version = TelemetryCommonProperties.GetVersion();
 
-        Assert.False(string.IsNullOrEmpty(version));
+        Assert.IsFalse(string.IsNullOrEmpty(version));
     }
 
-    [Fact]
+    [TestMethod]
     public void GetVersion_DevBuild_ContainsAtSymbol()
     {
         // In test builds (compiled as Debug), GetVersion should include @commitsha
@@ -534,18 +509,18 @@ public class GetVersionTests
             Assert.Contains("@", version);
             // The part after @ should be the commit SHA
             var parts = version.Split('@');
-            Assert.Equal(2, parts.Length);
-            Assert.Equal(BuildInfo.CommitSha, parts[1]);
+            Assert.HasCount(2, parts);
+            Assert.AreEqual(BuildInfo.CommitSha, parts[1]);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void GetVersion_VersionPartMatchesBuildInfoVersion()
     {
         var version = TelemetryCommonProperties.GetVersion();
 
         // The version part (before @) should match BuildInfo.Version
         var versionPart = version.Split('@')[0];
-        Assert.Equal(BuildInfo.Version, versionPart);
+        Assert.AreEqual(BuildInfo.Version, versionPart);
     }
 }

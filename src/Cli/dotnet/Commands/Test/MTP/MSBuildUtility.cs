@@ -14,6 +14,8 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections.Immutable;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -26,6 +28,7 @@ internal static class MSBuildUtility
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
     static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
@@ -76,6 +79,7 @@ internal static class MSBuildUtility
         return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
     {
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
@@ -110,6 +114,7 @@ internal static class MSBuildUtility
     /// Builds each TFM separately with its selected device/RuntimeIdentifier injected, then
     /// evaluates each to get test modules. This ensures device-provided RIDs are part of the build.
     /// </summary>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) BuildPerTfmWithDevices(
         string projectFilePath,
         BuildOptions buildOptions,
@@ -203,27 +208,12 @@ internal static class MSBuildUtility
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
-        LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
+        LoggerUtility.SeparateLoggerArguments(parseResult.UnmatchedTokens, out var loggerArgs, out var otherArgs);
 
-        // Terminal logger arguments (e.g. --tl:off, -terminalLogger:auto, -tlp:default=true)
-        // should be forwarded to MSBuild during the build phase rather than being passed to
-        // the test application as it doesn't recognize them. See https://github.com/dotnet/sdk/issues/52229.
-        var terminalLoggerArgs = new List<string>();
-        for (int i = otherArgs.Count - 1; i >= 0; i--)
-        {
-            if (LoggerUtility.IsTerminalLoggerArgument(otherArgs[i]))
-            {
-                terminalLoggerArgs.Add(otherArgs[i]);
-                otherArgs.RemoveAt(i);
-            }
-        }
-        terminalLoggerArgs.Reverse();
-
-        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(ref otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
-            .Concat(binLogArgs)
-            .Concat(terminalLoggerArgs);
+            .Concat(loggerArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)
@@ -272,7 +262,7 @@ internal static class MSBuildUtility
             Device: parseResult.GetValue(definition.DeviceOption));
     }
 
-    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(List<string> otherArgs)
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(ref ImmutableArray<string> otherArgs)
     {
         string? positionalProjectOrSolution = null;
         string? positionalTestModules = null;
@@ -282,7 +272,7 @@ internal static class MSBuildUtility
         // So, disabling validation is okay if the user scenario is valid.
         bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument = Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
 
-        for (int i = 0; i < otherArgs.Count; i++)
+        for (int i = 0; i < otherArgs.Length; i++)
         {
             var token = otherArgs[i];
             if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
@@ -292,7 +282,7 @@ internal static class MSBuildUtility
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
-                    otherArgs.RemoveAt(0);
+                    otherArgs = otherArgs.RemoveAt(0);
                     break;
                 }
                 else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
@@ -307,7 +297,7 @@ internal static class MSBuildUtility
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
-                    otherArgs.RemoveAt(0);
+                    otherArgs = otherArgs.RemoveAt(0);
                     break;
                 }
                 else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
@@ -322,7 +312,7 @@ internal static class MSBuildUtility
                 if (i == 0)
                 {
                     positionalTestModules = token;
-                    otherArgs.RemoveAt(0);
+                    otherArgs = otherArgs.RemoveAt(0);
                     break;
                 }
                 else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
@@ -335,7 +325,7 @@ internal static class MSBuildUtility
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
-                    otherArgs.RemoveAt(0);
+                    otherArgs = otherArgs.RemoveAt(0);
                     break;
                 }
                 else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
@@ -373,6 +363,7 @@ internal static class MSBuildUtility
         return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static (ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsProperties(
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,

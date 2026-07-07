@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumWithFlagsAttributeAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumWithFlagsAttributeFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumWithFlagsAttributeFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_SimpleCaseAsync()
         {
             var code = @"
@@ -57,7 +57,7 @@ public enum HexFlagsEnumClass
             await VerifyCS.VerifyCodeFixAsync(code, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCaseAsync()
         {
             var code = @"
@@ -96,7 +96,7 @@ End Enum";
             await VerifyVB.VerifyCodeFixAsync(code, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_DuplicateValuesAsync()
         {
             string code = @"
@@ -128,7 +128,7 @@ public enum DuplicateValuesEnumClass
             await VerifyCS.VerifyCodeFixAsync(code, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_DuplicateValuesAsync()
         {
             string code = @"
@@ -158,7 +158,7 @@ End Enum
             await VerifyVB.VerifyCodeFixAsync(code, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_MissingPowerOfTwoAsync()
         {
             string code = @"
@@ -205,7 +205,7 @@ public enum MultipleMissingPowerOfTwoEnumClass
             await VerifyCS.VerifyCodeFixAsync(code, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumWithFlagsAttributes_IncorrectNumbersAsync()
         {
             string code = @"
@@ -231,7 +231,7 @@ public enum AnotherTestValue
             await VerifyCS.VerifyCodeFixAsync(code, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_MissingPowerOfTwoAsync()
         {
             string code = @"
@@ -276,7 +276,7 @@ End Enum
             await VerifyVB.VerifyCodeFixAsync(code, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumWithFlagsAttributes_IncorrectNumberAsync()
         {
             string code = @"

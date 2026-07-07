@@ -126,6 +126,13 @@ public enum DotnetInstallErrorCode
     /// bad input, not a product failure.
     /// </summary>
     InvalidArguments,
+
+    /// <summary>
+    /// The release exists for the platform but publishes no archive that dotnetup can install
+    /// at the user level with only non-installable artifacts such as .exe installers.
+    /// Distinct from <see cref="NoMatchingReleaseFileForPlatform"/>
+    /// </summary>
+    NoUserInstallableArtifact,
 }
 
 /// <summary>

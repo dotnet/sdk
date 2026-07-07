@@ -3,14 +3,15 @@
 
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class EnvShellProviderTests
 {
-    [Fact]
+    [TestMethod]
     public void BashProvider_ShouldGenerateValidScript()
     {
         // Arrange
@@ -28,7 +29,7 @@ public class EnvShellProviderTests
         script.Should().Contain($"export PATH='{installPath}':$PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void BashProvider_ShouldIncludeDotnetupDirInPath()
     {
         var provider = new BashEnvShellProvider();
@@ -37,7 +38,7 @@ public class EnvShellProviderTests
         script.Should().Contain("export PATH='/usr/local/bin':'/test/dotnet':$PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void BashProvider_DotnetupOnly_ShouldNotSetDotnetRoot()
     {
         var provider = new BashEnvShellProvider();
@@ -49,7 +50,7 @@ public class EnvShellProviderTests
         script.Should().NotContain("'/test/dotnet'");
     }
 
-    [Fact]
+    [TestMethod]
     public void BashProvider_ShouldNormalizePathInCommentToSingleLine()
     {
         var provider = new BashEnvShellProvider();
@@ -60,7 +61,7 @@ public class EnvShellProviderTests
         script.Should().Contain("# This bash script configures the environment for .NET installed at /test/dotnet path");
     }
 
-    [Fact]
+    [TestMethod]
     public void ZshProvider_ShouldGenerateValidScript()
     {
         // Arrange
@@ -78,7 +79,7 @@ public class EnvShellProviderTests
         script.Should().Contain($"export PATH='{installPath}':$PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void ZshProvider_ShouldIncludeDotnetupDirInPath()
     {
         var provider = new ZshEnvShellProvider();
@@ -87,7 +88,7 @@ public class EnvShellProviderTests
         script.Should().Contain("export PATH='/usr/local/bin':'/test/dotnet':$PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void ZshProvider_DotnetupOnly_ShouldNotSetDotnetRoot()
     {
         var provider = new ZshEnvShellProvider();
@@ -98,7 +99,7 @@ public class EnvShellProviderTests
         script.Should().Contain("export PATH='/usr/local/bin':$PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void ZshProvider_ShouldPreferZdotdirForProfilePath()
     {
         var originalZdotdir = Environment.GetEnvironmentVariable("ZDOTDIR");
@@ -122,7 +123,7 @@ public class EnvShellProviderTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void PowerShellProvider_ShouldGenerateValidScript()
     {
         // Arrange
@@ -140,7 +141,7 @@ public class EnvShellProviderTests
         script.Should().Contain("[IO.Path]::PathSeparator");
     }
 
-    [Fact]
+    [TestMethod]
     public void PowerShellProvider_NewFileEncoding_IsBomFullOnWindowsBomLessElsewhere()
     {
         // IEnvShellProvider's NewFileEncoding is consulted only when creating brand-new
@@ -156,7 +157,7 @@ public class EnvShellProviderTests
         encoding.GetPreamble().Length.Should().Be(OperatingSystem.IsWindows() ? 3 : 0);
     }
 
-    [Fact]
+    [TestMethod]
     public void PowerShellProvider_ShouldIncludeDotnetupDirInPath()
     {
         var provider = new PowerShellEnvShellProvider();
@@ -165,7 +166,7 @@ public class EnvShellProviderTests
         script.Should().Contain("$env:PATH = '/usr/local/bin' + [IO.Path]::PathSeparator + '/test/dotnet' + [IO.Path]::PathSeparator + $env:PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void PowerShellProvider_DotnetupOnly_ShouldNotSetDotnetRoot()
     {
         var provider = new PowerShellEnvShellProvider();
@@ -176,7 +177,7 @@ public class EnvShellProviderTests
         script.Should().Contain("$env:PATH = '/usr/local/bin' + [IO.Path]::PathSeparator + $env:PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void PowerShellProvider_ShouldCaptureScriptBeforeInvokingExpression()
     {
         var provider = new PowerShellEnvShellProvider();
@@ -184,17 +185,17 @@ public class EnvShellProviderTests
         var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
-        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup | Out-String");
+        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' print-env-script --shell pwsh | Out-String");
         profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
         profileEntry.Should().Contain("Invoke-Expression $dotnetupScript");
 
-        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script | Out-String)");
+        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' print-env-script --shell pwsh | Out-String)");
     }
 
-    [Theory]
-    [InlineData("bash")]
-    [InlineData("zsh")]
-    [InlineData("pwsh")]
+    [TestMethod]
+    [DataRow("bash")]
+    [DataRow("zsh")]
+    [DataRow("pwsh")]
     public void ShellProviders_ShouldHaveCorrectArgumentName(string expectedName)
     {
         // Arrange
@@ -205,10 +206,10 @@ public class EnvShellProviderTests
         provider!.ArgumentName.Should().Be(expectedName);
     }
 
-    [Theory]
-    [InlineData("/bin/bash", "bash")]
-    [InlineData("/bin/zsh", "zsh")]
-    [InlineData(@"C:\Program Files\PowerShell\7\pwsh.exe", "pwsh")]
+    [TestMethod]
+    [DataRow("/bin/bash", "bash")]
+    [DataRow("/bin/zsh", "zsh")]
+    [DataRow(@"C:\Program Files\PowerShell\7\pwsh.exe", "pwsh")]
     public void ShellDetection_ShouldResolveProviderFromShellPath(string shellPath, string expectedName)
     {
         var provider = ShellDetection.ResolveShellProvider(shellPath);
@@ -217,7 +218,7 @@ public class EnvShellProviderTests
         provider!.ArgumentName.Should().Be(expectedName);
     }
 
-    [Fact]
+    [TestMethod]
     public void BashProvider_ShouldHaveCorrectProperties()
     {
         // Arrange
@@ -229,7 +230,7 @@ public class EnvShellProviderTests
         provider.HelpDescription.Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void ZshProvider_ShouldHaveCorrectProperties()
     {
         // Arrange
@@ -241,7 +242,7 @@ public class EnvShellProviderTests
         provider.HelpDescription.Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void PowerShellProvider_ShouldHaveCorrectProperties()
     {
         // Arrange
@@ -253,7 +254,7 @@ public class EnvShellProviderTests
         provider.HelpDescription.Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void BashProvider_ShouldEscapeSingleQuotesInPath()
     {
         // Arrange
@@ -268,7 +269,7 @@ public class EnvShellProviderTests
         script.Should().Contain("export PATH='/test/path/with'\\''quote':$PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void ZshProvider_ShouldEscapeSingleQuotesInPath()
     {
         // Arrange
@@ -283,7 +284,7 @@ public class EnvShellProviderTests
         script.Should().Contain("export PATH='/test/path/with'\\''quote':$PATH");
     }
 
-    [Fact]
+    [TestMethod]
     public void PowerShellProvider_ShouldEscapeSingleQuotesInPath()
     {
         // Arrange
@@ -298,8 +299,8 @@ public class EnvShellProviderTests
         script.Should().Contain("$env:PATH = '/test/path/with''quote'");
     }
 
-    [Fact]
-    public void EnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
+    [TestMethod]
+    public void PrintEnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
     {
         // Arrange
         var provider = new BashEnvShellProvider();
@@ -308,7 +309,7 @@ public class EnvShellProviderTests
         using var output = new MemoryStream();
 
         // Act
-        EnvScriptCommand.WriteScript(output, script);
+        PrintEnvScriptCommand.WriteScript(output, script);
 
         // Assert
         var bytes = output.ToArray();

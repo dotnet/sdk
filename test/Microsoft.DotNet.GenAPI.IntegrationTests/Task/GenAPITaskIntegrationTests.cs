@@ -8,11 +8,12 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
     /// <c>Microsoft.DotNet.GenAPI.Task</c> from the local testpackages feed and invoking
     /// <c>dotnet build /t:GenAPIGenerateReferenceAssemblySource</c> against a real test project.
     /// </summary>
-    public class GenAPITaskIntegrationTests(ITestOutputHelper log) : SdkTest(log)
+    [TestClass]
+    public class GenAPITaskIntegrationTests : SdkTest
     {
         private const string TestAssetName = "GenAPITaskTestProject";
 
-        [Fact]
+        [TestMethod]
         public void GenAPITask_GeneratesReferenceSource_OnBuild()
         {
             TestAsset asset = PrepareAsset(nameof(GenAPITask_GeneratesReferenceSource_OnBuild));
@@ -34,7 +35,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
                 .And.NotContain("InternalMultiply", "internal members should not leak into the reference source by default");
         }
 
-        [Fact]
+        [TestMethod]
         public void GenAPITask_TargetInvokedDirectly_DoesNotBuildProjectReferences()
         {
             // Customer scenario: invoke /t:GenAPIGenerateReferenceAssemblySource directly without
@@ -56,7 +57,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
             File.Exists(generated).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void GenAPITask_RespectInternals_IncludesInternalMembers()
         {
             TestAsset asset = PrepareAsset(nameof(GenAPITask_RespectInternals_IncludesInternalMembers));

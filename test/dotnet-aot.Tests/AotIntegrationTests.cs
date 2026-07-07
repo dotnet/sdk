@@ -2,24 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Integration tests that run the actual AOT binary (dn.exe / dn) end-to-end.
 ///  These tests require the AOT binary to be present in the SDK layout.
-///  They are traited with "Category=AOT" so they can be filtered in CI.
+///  They are categorized with <c>[TestCategory("AOT")]</c> so they can be filtered in CI
+///  (e.g. by the <c>AOT</c> test category).
 /// </summary>
-[Trait("Category", "AOT")]
+[TestCategory("AOT")]
+[TestClass]
 public class AotIntegrationTests
 {
-    private readonly ITestOutputHelper _log;
+    public TestContext TestContext { get; set; } = null!;
 
-    public AotIntegrationTests(ITestOutputHelper log)
-    {
-        _log = log;
-    }
+    private ITestOutputHelper? _logBacking;
+    private ITestOutputHelper _log => _logBacking ??= new TestContextOutputHelper(TestContext);
 
     private static string? FindDnPath()
     {
@@ -82,8 +81,8 @@ public class AotIntegrationTests
 
         // Read streams asynchronously before WaitForExit to avoid deadlocks
         // when the child process fills the OS pipe buffer.
-        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
-        Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+        Task<string> stderrTask = process.StandardError.ReadToEndAsync(TestContext.CancellationToken);
 
         if (!process.WaitForExit(timeoutMs))
         {
@@ -105,46 +104,48 @@ public class AotIntegrationTests
     {
         if (FindDnPath() is null)
         {
-            Assert.Skip("AOT binary (dn) not found in SDK layout. Build with NativeAOT to enable these tests.");
+            Assert.Inconclusive("AOT binary (dn) not found in SDK layout. Build with NativeAOT to enable these tests.");
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void AotVersion_WithEnableAot_OutputsVersionAndExitsZero()
     {
         SkipIfDnUnavailable();
 
         var (exitCode, stdout, _) = RunDn(["--version"], enableAot: true);
 
-        Assert.Equal(0, exitCode);
-        Assert.False(string.IsNullOrWhiteSpace(stdout), "Expected version output");
+        Assert.AreEqual(0, exitCode);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(stdout), "Expected version output");
     }
 
-    [Fact]
+    [TestMethod]
     public void AotInfo_WithEnableAot_OutputsInfoAndExitsZero()
     {
         SkipIfDnUnavailable();
 
         var (exitCode, stdout, _) = RunDn(["--info"], enableAot: true);
 
-        Assert.Equal(0, exitCode);
-        Assert.Contains(".NET SDK:", stdout);
-        Assert.Contains("Version:", stdout);
-        Assert.Contains("Runtime Environment:", stdout);
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().Contain(".NET SDK:");
+        stdout.Should().Contain("Version:");
+        stdout.Should().Contain("Workload version:");
+        stdout.Should().Contain("MSBuild version:");
+        stdout.Should().Contain("Runtime Environment:");
     }
 
-    [Fact]
+    [TestMethod]
     public void AotNoArgs_WithEnableAot_ShowsUsage()
     {
         SkipIfDnUnavailable();
 
         var (exitCode, stdout, _) = RunDn([], enableAot: true);
 
-        Assert.Equal(0, exitCode);
-        Assert.Contains("Usage:", stdout);
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().Contain("Usage:");
     }
 
-    [Fact]
+    [TestMethod]
     public void AotBuild_WithEnableAot_FallsBackToManaged()
     {
         SkipIfDnUnavailable();
@@ -156,11 +157,11 @@ public class AotIntegrationTests
         // If managed fallback works, it should show build help (exit 0)
         // If managed fallback is missing, it returns 1
         // Either way, it shouldn't crash or timeout
-        Assert.True(exitCode == 0 || exitCode == 1,
+        Assert.IsTrue(exitCode == 0 || exitCode == 1,
             $"Expected exit code 0 or 1, got {exitCode}. Stderr: {stderr}");
     }
 
-    [Fact]
+    [TestMethod]
     public void Version_WithoutEnableAot_StillWorks()
     {
         SkipIfDnUnavailable();
@@ -173,14 +174,14 @@ public class AotIntegrationTests
         // the fallback correctly fails because dotnet.dll is missing.
         if (exitCode != 0 && stderr.Contains("dotnet.dll"))
         {
-            Assert.Skip("Managed fallback not available (dotnet.dll not in layout)");
+            Assert.Inconclusive("Managed fallback not available (dotnet.dll not in layout)");
         }
 
-        Assert.Equal(0, exitCode);
-        Assert.False(string.IsNullOrWhiteSpace(stdout));
+        Assert.AreEqual(0, exitCode);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(stdout));
     }
 
-    [Fact]
+    [TestMethod]
     public void Info_WithoutEnableAot_ShowsFullInfo()
     {
         SkipIfDnUnavailable();
@@ -189,11 +190,11 @@ public class AotIntegrationTests
 
         if (exitCode != 0 && stderr.Contains("dotnet.dll"))
         {
-            Assert.Skip("Managed fallback not available (dotnet.dll not in layout)");
+            Assert.Inconclusive("Managed fallback not available (dotnet.dll not in layout)");
         }
 
-        Assert.Equal(0, exitCode);
+        Assert.AreEqual(0, exitCode);
         // Managed fallback should include workload and MSBuild info
-        Assert.Contains("Version:", stdout);
+        stdout.Should().Contain("Version:");
     }
 }

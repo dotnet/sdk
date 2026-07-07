@@ -13,8 +13,10 @@ using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
+using Microsoft.DotNet.Cli.Commands.Sdk;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
@@ -23,6 +25,10 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
 using Command = System.CommandLine.Command;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+
+
 
 #if !CLI_AOT
 using System.CommandLine.StaticCompletions;
@@ -44,8 +50,6 @@ using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.Api;
-using Microsoft.DotNet.Cli.Commands.Sdk;
-using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Commands.Workload;
 #endif
@@ -77,7 +81,10 @@ public static class Parser
 #if CLI_AOT
         ConfigureAotActions(rootCommand);
 #else
-        ConfigureManagedActions(rootCommand);
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            ConfigureManagedActions(rootCommand);
+        }
 #endif
 
         rootCommand.SetAction(parseResult =>
@@ -123,6 +130,7 @@ public static class Parser
     }
 
 #if !CLI_AOT
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static void ConfigureManagedActions(DotNetCommandDefinition rootCommand)
     {
         // Augment the definition of each subcommand with command-specific actions and completions.
@@ -191,8 +199,18 @@ public static class Parser
 
         // Commands that can run entirely in AOT mode wire their real implementations on top of the
         // fallback defaults above. SolutionCommandParser is AOT-aware: it keeps real implementations
-        // for `sln list`/`migrate`/`remove` and falls back for `sln` and `sln add`.
+        // for `sln`/`sln list`/`migrate`/`remove` (bare `sln` renders help from AOT) and falls back
+        // only for `sln add`, which requires MSBuild.
         SolutionCommandParser.ConfigureCommand(rootCommand.SolutionCommand);
+
+        // SdkCommandParser is AOT-aware: `sdk check` runs natively and bare `dotnet sdk` renders
+        // help from AOT (no managed fallback needed).
+        SdkCommandParser.ConfigureCommand(rootCommand.SdkCommand);
+
+        // ToolCommandParser is AOT-aware: it keeps real implementations for the local `tool list`/
+        // `tool uninstall`, `tool run`, and `tool search`, and falls back to the managed CLI for the
+        // global/tool-path variants and for install/update/restore/execute.
+        ToolCommandParser.ConfigureCommand(rootCommand.ToolCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);

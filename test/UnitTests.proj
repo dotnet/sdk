@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.DotNet.Helix.Sdk">
+<Project Sdk="Microsoft.DotNet.Helix.Sdk">
 
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
@@ -11,7 +11,7 @@
     <!-- Helix SDK specifies the default run name to be: $(TestRunNamePrefix)$(_CurrentTargetQueue)$(TestRunNameSuffix) -->
     <TestRunNamePrefix Condition="'$(AGENT_JOBNAME)' != ''">$(AGENT_JOBNAME) run on </TestRunNamePrefix>
     <TestRunNameSuffix Condition="'$(SYSTEM_JOBATTEMPT)' != ''"> (attempt $(SYSTEM_JOBATTEMPT))</TestRunNameSuffix>
-    <XUnitWorkItemTimeout>01:00:00</XUnitWorkItemTimeout>
+    <TestWorkItemTimeout>01:00:00</TestWorkItemTimeout>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,20 +19,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;**\*.AnalyzerRedirecting.Tests.csproj;**\dotnetup.Tests.csproj;TemplateEngine\**\*" />
-    <SDKCustomXUnitProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
+    <!-- dotnetup.Tests runs in its own MTP pipeline (eng/pipelines/.../dotnetup/dotnetup-tests.yml); exclude it from the general run. -->
+    <SDKCustomTestProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;**\dotnetup.Tests.csproj" />
+    <SDKCustomTestProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
 
     <!-- Projects suffixed with UnitTests or IntegrationTests are not matched by *.Tests.csproj above, so include them with a separate glob. -->
-    <SDKCustomXUnitProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*" />
+    <SDKCustomTestProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*" />
 
     <!-- Don't run MSI installation tests in Helix / CI -->
-    <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
+    <SDKCustomTestProject Remove="dotnet-MsiInstallation.Tests\**\*" />
 
     <!-- dotnet-format unit tests are run under the DOTNET_FORMAT pipeline section. -->
-    <SDKCustomXUnitProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
+    <SDKCustomTestProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
 
     <!-- Filter out .NET Framework only test projects and add them manually. -->
-    <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
+    <SDKCustomTestProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
   </ItemGroup>
 
   <!-- Run the compatibility-tooling integration tests under desktop MSBuild whenever the
@@ -46,7 +47,7 @@
          to those queues fails at chmod+x time on the missing native exe.
        - The FullFramework leg sets TestFullMSBuild=true and uses a Windows queue. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
-    <SDKCustomXUnitProject Include="
+    <SDKCustomTestProject Include="
       Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
       Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
                            TargetFramework="net472"
@@ -56,7 +57,7 @@
   <!-- When TestFullMSBuild=true, include the .NET Framework tests. .NETCoreApp tests are also executed
        as that validates running tests with desktop msbuild. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
-    <SDKCustomXUnitProject Include="
+    <SDKCustomTestProject Include="
       Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
       Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj;
       Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj;
@@ -67,8 +68,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(RunAoTTests)' == 'true'">
-    <SDKCustomXUnitProject Remove="@(SDKCustomXUnitProject)" />
-    <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
+    <SDKCustomTestProject Remove="@(SDKCustomTestProject)" />
+    <SDKCustomTestProject Include="**\*.AoT.Tests.csproj" />
   </ItemGroup>
 
   <!-- Helix work-item partitioning configuration.
@@ -84,31 +85,39 @@
        MethodLimitMultiplier increases the methods-per-shard threshold, producing
        fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
   <ItemGroup>
-    <SDKCustomXUnitProject Update="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj">
+    <SDKCustomTestProject Update="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj">
       <MethodLimitMultiplier>10</MethodLimitMultiplier>
-    </SDKCustomXUnitProject>
-    <SDKCustomXUnitProject Update="TemplateEngine\**\*.csproj;**\Microsoft.TemplateEngine.Cli.UnitTests.csproj">
+    </SDKCustomTestProject>
+    <SDKCustomTestProject Update="TemplateEngine\**\*.csproj;**\Microsoft.TemplateEngine.Cli.UnitTests.csproj">
       <MethodLimitMultiplier>20</MethodLimitMultiplier>
-    </SDKCustomXUnitProject>
-    <SDKCustomXUnitProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;**\Microsoft.DotNet.GenAPI.Tests.csproj">
+    </SDKCustomTestProject>
+    <SDKCustomTestProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;**\Microsoft.DotNet.GenAPI.Tests.csproj">
       <MethodLimitMultiplier>10</MethodLimitMultiplier>
-    </SDKCustomXUnitProject>
+    </SDKCustomTestProject>
+    <!-- dotnet-aot.Tests compiles the entire shared CLI parser (Parser, CliSchema, all command
+         parsers via AotSourceFiles.props) into its test assembly, so the method-based scheduler
+         counts hundreds of non-test types and over-shards the assembly. Some shards then contain
+         only non-test types (e.g. CliSchema's nested records), which run zero tests and fail under
+         MTP (exit code 8). Consolidate into a single work item; the real test count is small. -->
+    <SDKCustomTestProject Update="**\dotnet-aot.Tests.csproj">
+      <MethodLimitMultiplier>20</MethodLimitMultiplier>
+    </SDKCustomTestProject>
     <!-- EndToEnd.Tests needs installer archives which are excluded from the shared
          correlation payload to reduce download/unpack overhead for all other work items.
          AdditionalPayloadDir: directory whose files are included in the per-item payload.
          AdditionalPayloadDestination: relative path under the correlation payload root
          where files are copied at runtime so the test's expected paths resolve correctly. -->
-    <SDKCustomXUnitProject Update="EndToEnd.Tests\EndToEnd.Tests.csproj">
+    <SDKCustomTestProject Update="EndToEnd.Tests\EndToEnd.Tests.csproj">
       <AdditionalPayloadDir>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</AdditionalPayloadDir>
       <AdditionalPayloadDestination>d/.nuget</AdditionalPayloadDestination>
-    </SDKCustomXUnitProject>
+    </SDKCustomTestProject>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(CustomHelixTargetQueue)' != '' ">
     <HelixTargetQueue Include="$(CustomHelixTargetQueue)" />
   </ItemGroup>
 
-  <Import Project="xunit-runner\XUnitRunner.targets" />
+  <Import Project="test-runner\TestRunner.targets" />
 
   <!-- need to be a target in order to have IsPosixShell available -->
   <Target Name="CopyHelixFiles" AfterTargets="Publish">
@@ -158,7 +167,9 @@
 
       <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />
       <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\SetupHelixEnvironment.cmd" />
+      <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\InstallNode.ps1" />
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\SetupHelixEnvironment.sh" />
+      <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\installnode.sh" />
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\helix-debug-entitlements.plist" />
     </ItemGroup>
 
@@ -201,8 +212,15 @@
 
   <Target Name="AppendHelixPreCommand" BeforeTargets="CoreTest" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
-      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
-      <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
+      <!-- Node.js version for TypeScript tests on Helix (Microsoft.TypeScript.MSBuild requires Node 20+) -->
+      <NodeVersion>22.22.3</NodeVersion>
+      <_NodeArchitecture Condition="'$(TargetArchitecture)' != ''">$(TargetArchitecture)</_NodeArchitecture>
+      <_NodeArchitecture Condition="'$(TargetArchitecture)' == ''">x64</_NodeArchitecture>
+      <!-- Install Node.js for TypeScript compilation tests.
+           Done inside SetupHelixEnvironment scripts to avoid PATH semicolons
+           conflicting with HelixPreCommands separator. -->
+      <HelixPreCommands Condition="!$(IsPosixShell)">set DOTNET_SDK_TEST_NODE_VERSION=$(NodeVersion);call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
+      <HelixPreCommands Condition="$(IsPosixShell)">export DOTNET_SDK_TEST_NODE_VERSION=$(NodeVersion);export DOTNET_SDK_TEST_NODE_ARCH=$(_NodeArchitecture);. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
       <!-- Install wasm-tools workload on Helix for AoT tests (see: https://github.com/dotnet/sdk/issues/22655).
            This must happen on Helix (not the build machine) because cross-arch builds produce a dotnet binary
            that cannot execute on the build machine's architecture.
@@ -210,8 +228,11 @@
       <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and !$(IsPosixShell)">$(HelixPreCommands);%DOTNET_ROOT%\dotnet workload install wasm-tools --skip-manifest-update --configfile %TestExecutionDirectory%\NuGet.config</HelixPreCommands>
       <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and $(IsPosixShell)">$(HelixPreCommands);$DOTNET_ROOT/dotnet workload install wasm-tools --skip-manifest-update --configfile $TestExecutionDirectory/NuGet.config</HelixPreCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
-      <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
-      <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -print0 | xargs -0 -I@ cp @ "$HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
+      <!-- Upload any crash/hang dumps to the work item so they are retained. Matches both the MTP
+           crash/hang dump extensions (*_crash.dmp / *_hang.dmp) and the legacy VSTest blame-hang
+           dumps (*hangdump.dmp). -->
+      <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
+      <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*.dmp' -print0 | xargs -0 -I@ cp @ "$HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <TestDotnetVersion>$(Version)</TestDotnetVersion>
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>

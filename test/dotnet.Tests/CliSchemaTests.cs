@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
@@ -6,9 +6,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests;
 
+[TestClass]
 public class CliSchemaTests : SdkTest
 {
-    public CliSchemaTests(ITestOutputHelper log) : base(log)
+    public CliSchemaTests()
     {
     }
 
@@ -358,6 +359,18 @@ public class CliSchemaTests : SdkTest
         }
       },
       "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        },
         "--framework": {
           "description": "Add the reference only when targeting a specific framework.",
           "hidden": false,
@@ -391,7 +404,21 @@ public class CliSchemaTests : SdkTest
     },
     "list": {
       "description": "List all project-to-project references of the project.",
-      "hidden": false
+      "hidden": false,
+      "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        }
+      }
     },
     "remove": {
       "description": "Remove a project-to-project reference from the project.",
@@ -409,6 +436,18 @@ public class CliSchemaTests : SdkTest
         }
       },
       "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        },
         "--framework": {
           "description": "Remove the reference only when targeting a specific framework.",
           "hidden": false,
@@ -1193,17 +1232,17 @@ public class CliSchemaTests : SdkTest
 }
 """;
 
-    public static TheoryData<string[], string> CommandsJson => new()
-    {
-        { new[] { "solution", "list", "--cli-schema" }, SolutionListJson },
-        { new[] { "clean", "--cli-schema" }, CleanJson },
-        { new[] { "reference", "--cli-schema" }, ReferenceJson },
-        { new[] { "workload", "install", "--cli-schema" }, WorkloadInstallJson },
-        { new[] { "build", "--cli-schema" }, BuildJson }
-    };
+    public static IEnumerable<object[]> CommandsJson =>
+    [
+        [new[] { "solution", "list", "--cli-schema" }, SolutionListJson],
+        [new[] { "clean", "--cli-schema" }, CleanJson],
+        [new[] { "reference", "--cli-schema" }, ReferenceJson],
+        [new[] { "workload", "install", "--cli-schema" }, WorkloadInstallJson],
+        [new[] { "build", "--cli-schema" }, BuildJson]
+    ];
 
-    [Theory]
-    [MemberData(nameof(CommandsJson))]
+    [TestMethod]
+    [DynamicData(nameof(CommandsJson))]
     public void PrintCliSchema_WritesExpectedJson(string[] commandArgs, string json)
     {
         var stream = new MemoryStream();
@@ -1215,7 +1254,7 @@ public class CliSchemaTests : SdkTest
         output.Should().BeVisuallyEquivalentTo(json);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanGenerateJsonSchemaForCLIOutput()
     {
         var schema = CliSchema.GetJsonSchema();

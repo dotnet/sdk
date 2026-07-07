@@ -1,15 +1,12 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="MSTest.Sdk">
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <TargetFrameworks>net472;$(SdkTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(SdkTargetFramework)</TargetFrameworks>
-    <OutputType Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Exe</OutputType>
 
     <AssemblyName>Microsoft.NET.Sdk.Publish.Tasks.Tests</AssemblyName>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
@@ -34,7 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\WebSdk\Publish\Tasks\Microsoft.NET.Sdk.Publish.Tasks.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,5 +40,4 @@
     </None>
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

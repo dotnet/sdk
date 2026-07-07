@@ -5,11 +5,12 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class ParserTests
 {
     public static IEnumerable<object[]> ShellOverrideCommandArgs =>
     [
-        [new[] { "env", "set", "shell", "--shell", "bash" }],
+        [new[] { "defaultinstall", "user", "--shell", "bash" }],
         [new[] { "init", "--shell", "bash" }]
     ];
 
@@ -20,7 +21,7 @@ public class ParserTests
         [new[] { "runtime", "install", "aspnetcore@9.0", "--migrate-from-system" }]
     ];
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseValidCommands()
     {
         // Arrange
@@ -34,7 +35,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldHandleInvalidCommands()
     {
         // Arrange
@@ -48,7 +49,7 @@ public class ParserTests
         parseResult.Errors.Should().NotBeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldHandleSdkHelp()
     {
         // Arrange
@@ -62,7 +63,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldHandleRootHelp()
     {
         // Arrange
@@ -76,7 +77,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseInitCommand()
     {
         var args = new[] { "init", "--help" };
@@ -87,7 +88,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseInitCommandWithInteractiveOption()
     {
         var args = new[] { "init", "--interactive" };
@@ -99,8 +100,8 @@ public class ParserTests
         parseResult.GetValue(CommonOptions.InteractiveOption).Should().BeTrue();
     }
 
-    [Theory]
-    [MemberData(nameof(MigrateFromSystemCommandArgs))]
+    [TestMethod]
+    [DynamicData(nameof(MigrateFromSystemCommandArgs))]
     public void Parser_ShouldParseInstallCommandsWithMigrateFromSystem(string[] args)
     {
         var parseResult = Parser.Parse(args);
@@ -109,7 +110,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldRejectWalkthroughCommand()
     {
         var args = new[] { "walkthrough", "--help" };
@@ -120,7 +121,7 @@ public class ParserTests
         parseResult.Errors.Should().NotBeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseElevatedAdminPathCommand()
     {
         // Arrange
@@ -134,96 +135,22 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
-    public void Parser_ShouldParseEnvSetCommand()
+    [TestMethod]
+    public void Parser_ShouldParseDefaultInstallCommand()
     {
-        var args = new[] { "env", "set", "shell" };
+        // Arrange
+        var args = new[] { "defaultinstall", "user" };
 
+        // Act
         var parseResult = Parser.Parse(args);
 
+        // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
-    public void Parser_ShouldParseEnvShowCommand()
-    {
-        var args = new[] { "env", "show" };
-
-        var parseResult = Parser.Parse(args);
-
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseEnvScriptCommand()
-    {
-        var args = new[] { "env", "script" };
-
-        var parseResult = Parser.Parse(args);
-
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseEnvScriptSelectionFlags()
-    {
-        string[][] variants =
-        [
-            ["env", "script", "--shell", "bash", "--dotnet"],
-            ["env", "script", "--shell", "bash", "--dotnetup"],
-            ["env", "script", "--shell", "bash", "--dotnet", "--dotnetup"],
-            ["env", "script", "--shell", "bash", "--dotnetup-only"],
-        ];
-
-        foreach (var args in variants)
-        {
-            Parser.Parse(args).Errors.Should().BeEmpty($"'{string.Join(' ', args)}' should parse");
-        }
-    }
-
-    [Fact]
-    public void Parser_ShouldParseEnvSetAndClearVariants()
-    {
-        string[][] variants =
-        [
-            ["env", "set", "shell", "--dotnetup-on-path", "false"],
-            ["env", "set", "--dotnetup-on-path", "true", "--shell", "bash"],
-            ["env", "clear", "--shell", "bash"],
-        ];
-
-        foreach (var args in variants)
-        {
-            Parser.Parse(args).Errors.Should().BeEmpty($"'{string.Join(' ', args)}' should parse");
-        }
-    }
-
-    [Fact]
-    public void Parser_EnvSet_RejectsInvalidDotnetupOnPathValue()
-    {
-        var args = new[] { "env", "set", "shell", "--dotnetup-on-path", "maybe" };
-
-        var parseResult = Parser.Parse(args);
-
-        parseResult.Errors.Should().NotBeEmpty();
-    }
-
-    [Fact]
-    public void Parser_ShouldStillParsePrintEnvScriptAlias()
-    {
-        // print-env-script remains as a hidden top-level alias for backwards compat.
-        var args = new[] { "print-env-script" };
-
-        var parseResult = Parser.Parse(args);
-
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-    }
-
-    [Theory]
-    [MemberData(nameof(ShellOverrideCommandArgs))]
+    [TestMethod]
+    [DynamicData(nameof(ShellOverrideCommandArgs))]
     public void Parser_ShouldParseCommandsWithShellOverride(string[] args)
     {
         var parseResult = Parser.Parse(args);
@@ -232,9 +159,9 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("sdk", "install", "9.0", "--shell", "zsh")]
-    [InlineData("runtime", "install", "aspnetcore@9.0", "--shell", "pwsh")]
+    [TestMethod]
+    [DataRow("sdk", "install", "9.0", "--shell", "zsh")]
+    [DataRow("runtime", "install", "aspnetcore@9.0", "--shell", "pwsh")]
     public void Parser_ShouldRejectShellOverrideOnInstallCommands(params string[] args)
     {
         var parseResult = Parser.Parse(args);
@@ -245,10 +172,10 @@ public class ParserTests
             .Should().Contain(message => message.Contains("--shell"));
     }
 
-    [Theory]
-    [InlineData("bash")]
-    [InlineData("zsh")]
-    [InlineData("pwsh")]
+    [TestMethod]
+    [DataRow("bash")]
+    [DataRow("zsh")]
+    [DataRow("pwsh")]
     public void Parser_ShouldParseEnvCommandWithValidShell(string shell)
     {
         // Arrange
@@ -262,7 +189,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseEnvCommandWithCustomPath()
     {
         // Arrange
@@ -275,7 +202,7 @@ public class ParserTests
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
     }
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldHandleVersionOption()
     {
         // Arrange
@@ -289,7 +216,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseEnvCommandWithShortOptions()
     {
         // Arrange
@@ -303,7 +230,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseEnvCommandHelp()
     {
         // Arrange
@@ -317,7 +244,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_Version_ShouldBeDotnetupVersion()
     {
         // Parser.Version should return the dotnetup assembly version, not any other assembly
@@ -328,7 +255,7 @@ public class ParserTests
         version.Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetupProcess_Version_ShouldOutputExpectedVersion()
     {
         // Run dotnetup --version as a process
@@ -346,7 +273,7 @@ public class ParserTests
         output.Trim().Should().Be(Parser.Version);
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetupProcess_RootHelp_ShouldListInitCommand()
     {
         var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
@@ -362,12 +289,12 @@ public class ParserTests
 
     #region Runtime Command Parser Tests
 
-    [Theory]
-    [InlineData("9.0")]           // Version only - installs core runtime
-    [InlineData("latest")]        // Channel - installs core runtime
-    [InlineData("aspnetcore@9.0")]
-    [InlineData("windowsdesktop@lts")]
-    [InlineData("runtime@10.0.1")]
+    [TestMethod]
+    [DataRow("9.0")]           // Version only - installs core runtime
+    [DataRow("latest")]        // Channel - installs core runtime
+    [DataRow("aspnetcore@9.0")]
+    [DataRow("windowsdesktop@lts")]
+    [DataRow("runtime@10.0.1")]
     public void Parser_ShouldParseRuntimeInstallCommand(string componentSpec)
     {
         // Arrange
@@ -381,7 +308,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseRuntimeInstallWithOptions()
     {
         // Arrange
@@ -395,7 +322,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldHandleRuntimeHelp()
     {
         // Arrange
@@ -409,7 +336,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldHandleRuntimeInstallHelp()
     {
         // Arrange
@@ -423,7 +350,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_RuntimeInstallAllowsNoArgument()
     {
         // Arrange - no argument is valid (will use default behavior)
@@ -437,7 +364,7 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty("component-spec argument is optional");
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseRuntimeInstallWithManifestPath()
     {
         // Arrange
@@ -455,7 +382,7 @@ public class ParserTests
 
     #region Untracked Option Parser Tests
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseSdkInstallWithUntracked()
     {
         var args = new[] { "sdk", "install", "9.0", "--untracked" };
@@ -467,7 +394,7 @@ public class ParserTests
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseSdkInstallWithoutUntracked()
     {
         var args = new[] { "sdk", "install", "9.0" };
@@ -479,7 +406,7 @@ public class ParserTests
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseRuntimeInstallWithUntracked()
     {
         var args = new[] { "runtime", "install", "aspnetcore@9.0", "--untracked" };
@@ -491,7 +418,7 @@ public class ParserTests
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_ShouldParseRootInstallWithUntracked()
     {
         var args = new[] { "install", "9.0", "--untracked" };
@@ -503,7 +430,7 @@ public class ParserTests
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void Parser_BareDotnetup_BindsInteractiveOption()
     {
         // Bare `dotnetup` routes to SdkInstallCommand, but the parse result still belongs
@@ -521,7 +448,7 @@ public class ParserTests
 
     #region Help Differentiation Tests
 
-    [Fact]
+    [TestMethod]
     public void Help_RootCommand_ShowsGroupedLayout()
     {
         var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
@@ -536,10 +463,10 @@ public class ParserTests
         output.Should().Contain("Utility Commands:");
     }
 
-    [Theory]
-    [InlineData("sdk")]
-    [InlineData("runtime")]
-    [InlineData("list")]
+    [TestMethod]
+    [DataRow("sdk")]
+    [DataRow("runtime")]
+    [DataRow("list")]
     public void Help_Subcommand_DoesNotShowGroupedLayout(string subcommand)
     {
         var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
@@ -554,7 +481,7 @@ public class ParserTests
         output.Should().NotContain("Utility Commands:");
     }
 
-    [Fact]
+    [TestMethod]
     public void Help_SdkSubcommand_ShowsOwnContent()
     {
         var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
@@ -569,7 +496,7 @@ public class ParserTests
         output.Should().Contain("uninstall");
     }
 
-    [Fact]
+    [TestMethod]
     public void Help_NestedSubcommand_DoesNotShowGroupedLayout()
     {
         var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(

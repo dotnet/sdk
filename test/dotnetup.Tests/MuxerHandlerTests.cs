@@ -9,10 +9,10 @@ using System.Reflection;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
-using Xunit;
 
 namespace Microsoft.Dotnet.Installation.Tests;
 
+[TestClass]
 public class MuxerHandlerTests : IDisposable
 {
     private readonly string _testDir;
@@ -60,7 +60,7 @@ public class MuxerHandlerTests : IDisposable
         return new MuxerHandler(_testDir, requireMuxerUpdate);
     }
 
-    [Fact]
+    [TestMethod]
     public void NoExistingMuxer_ExtractsNewMuxer()
     {
         // Arrange
@@ -76,7 +76,7 @@ public class MuxerHandlerTests : IDisposable
         File.ReadAllText(_muxerPath).Should().Be("new-8.0");
     }
 
-    [Fact]
+    [TestMethod]
     public void ExistingMuxer_NewerRuntime_ReplacesMuxer()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class MuxerHandlerTests : IDisposable
         File.Exists(handler.TempMuxerPath).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ExistingMuxer_SameOrOlderRuntime_KeepsExisting()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class MuxerHandlerTests : IDisposable
         File.Exists(handler.TempMuxerPath).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void NoRuntimeExtracted_DeletesTempMuxer()
     {
         // Arrange - simulates WindowsDesktop which has no core runtime
@@ -129,7 +129,7 @@ public class MuxerHandlerTests : IDisposable
         File.Exists(handler.TempMuxerPath).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void NoTempMuxerExtracted_NoOp()
     {
         // Arrange - archive didn't contain a muxer (MuxerWasExtracted never set)
@@ -145,7 +145,7 @@ public class MuxerHandlerTests : IDisposable
         File.ReadAllText(_muxerPath).Should().Be("existing");
     }
 
-    [Fact]
+    [TestMethod]
     public void MultipleRuntimes_UsesHighestForComparison()
     {
         // Arrange - multiple existing runtimes, highest is 8.0.0
@@ -166,7 +166,7 @@ public class MuxerHandlerTests : IDisposable
         File.ReadAllText(_muxerPath).Should().Be("new-9.0");
     }
 
-    [Fact]
+    [TestMethod]
     public void NoPreExistingRuntime_ExtractsMuxer()
     {
         // Edge case: no runtime directories exist yet
@@ -181,7 +181,7 @@ public class MuxerHandlerTests : IDisposable
         File.ReadAllText(_muxerPath).Should().Be("new-8.0");
     }
 
-    [Fact]
+    [TestMethod]
     public void PreReleaseRuntimeVersion_IsRecognized()
     {
         // Arrange - only a preview runtime exists
@@ -201,7 +201,7 @@ public class MuxerHandlerTests : IDisposable
         File.Exists(handler.TempMuxerPath).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void PreReleaseRuntimeVersion_UpgradeFromRelease()
     {
         // Arrange - release 9.0 runtime exists
@@ -220,7 +220,7 @@ public class MuxerHandlerTests : IDisposable
         File.ReadAllText(_muxerPath).Should().Be("new-10.0-preview");
     }
 
-    [Fact]
+    [TestMethod]
     public void GetLatestRuntimeVersionFromInstallRoot_HandlesPreReleaseVersions()
     {
         // Arrange
@@ -239,7 +239,7 @@ public class MuxerHandlerTests : IDisposable
         result.Prerelease.Should().Be("preview.5.25280.5");
     }
 
-    [Fact]
+    [TestMethod]
     public void PreReleaseRuntimeVersion_Preview5NotReplacedByPreview4()
     {
         // Arrange - preview 6 already installed
@@ -259,7 +259,7 @@ public class MuxerHandlerTests : IDisposable
         File.Exists(handler.TempMuxerPath).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void PreReleaseRuntimeVersion_Preview5ReplacedByPreview6()
     {
         // Arrange - preview 5 already installed
@@ -278,7 +278,7 @@ public class MuxerHandlerTests : IDisposable
         File.ReadAllText(_muxerPath).Should().Be("new-preview6");
     }
 
-    [Fact]
+    [TestMethod]
     public void PreReleaseRuntimeVersion_ReplacedByReleaseOfSameVersion()
     {
         // Arrange - preview runtime exists
@@ -297,14 +297,14 @@ public class MuxerHandlerTests : IDisposable
         File.ReadAllText(_muxerPath).Should().Be("new-ga");
     }
 
-    [Fact]
+    [TestMethod]
     public void GetLatestRuntimeVersionFromInstallRoot_NonexistentPath_ReturnsNull()
     {
         var result = MuxerHandler.GetLatestRuntimeVersionFromInstallRoot(Path.Combine(_testDir, "nonexistent"));
         result.Should().BeNull();
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // File locking simulation only works on Windows; actual error handling is cross-platform
+    [TestMethod, OSCondition(OperatingSystems.Windows)] // File locking simulation only works on Windows; actual error handling is cross-platform
     public void EnsureMuxerIsWritable_ThrowsWhenMuxerIsLocked()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class MuxerHandlerTests : IDisposable
         using var fileLock = new FileStream(_muxerPath, FileMode.Open, FileAccess.Read, FileShare.None);
 
         // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => MuxerHandler.EnsureMuxerIsWritable(_testDir));
+        var ex = Assert.ThrowsExactly<InvalidOperationException>(() => MuxerHandler.EnsureMuxerIsWritable(_testDir));
         ex.Message.Should().Contain(_muxerPath);
         ex.Message.Should().Contain("in use");
 
@@ -324,7 +324,7 @@ public class MuxerHandlerTests : IDisposable
         File.ReadAllText(_muxerPath).Should().Be("existing-8.0");
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnsureMuxerIsWritable_SucceedsWhenMuxerIsNotLocked()
     {
         // Arrange
@@ -334,14 +334,14 @@ public class MuxerHandlerTests : IDisposable
         MuxerHandler.EnsureMuxerIsWritable(_testDir);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnsureMuxerIsWritable_NoOpWhenNoMuxer()
     {
         // No muxer exists — should not throw
         MuxerHandler.EnsureMuxerIsWritable(_testDir);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void MuxerBecomesInUseDuringExtraction_RequireUpdate_ThrowsAtFinalize()
     {
         // Arrange - muxer is NOT locked at construction time (passes the early check)
@@ -359,7 +359,7 @@ public class MuxerHandlerTests : IDisposable
         using var fileLock = new FileStream(_muxerPath, FileMode.Open, FileAccess.Read, FileShare.None);
 
         // Act & Assert - should throw at FinalizeAfterExtraction, not silently succeed
-        var ex = Assert.Throws<InvalidOperationException>(() => handler.FinalizeAfterExtraction());
+        var ex = Assert.ThrowsExactly<InvalidOperationException>(() => handler.FinalizeAfterExtraction());
         ex.Message.Should().Contain(_muxerPath);
         ex.Message.Should().Contain("in use");
 
@@ -369,7 +369,7 @@ public class MuxerHandlerTests : IDisposable
         File.Exists(handler.TempMuxerPath).Should().BeFalse("temp muxer should be cleaned up");
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void MuxerBecomesInUseDuringExtraction_NoRequireUpdate_WarnsAndKeepsExisting()
     {
         // Arrange - muxer is NOT locked at construction time
@@ -395,7 +395,7 @@ public class MuxerHandlerTests : IDisposable
         File.Exists(handler.TempMuxerPath).Should().BeFalse("temp muxer should be cleaned up");
     }
 
-    [Fact]
+    [TestMethod]
     public void GetDotnetProcessPidInfo_DoesNotKillProcess()
     {
         // We need a long-lived "dotnet" process whose lifetime we control.
