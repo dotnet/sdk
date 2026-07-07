@@ -37,7 +37,7 @@ public class DotnetupConfigTests : IDisposable
     {
         var config = new DotnetupConfigData
         {
-            PathPreference = PathPreference.ShellProfile,
+            AccessMode = DotnetAccessMode.Shell,
         };
 
         DotnetupConfig.Write(config);
@@ -45,27 +45,27 @@ public class DotnetupConfigTests : IDisposable
 
         var loaded = DotnetupConfig.Read();
         loaded.Should().NotBeNull();
-        loaded!.PathPreference.Should().Be(PathPreference.ShellProfile);
+        loaded!.AccessMode.Should().Be(DotnetAccessMode.Shell);
         loaded.SchemaVersion.Should().Be("1");
     }
 
     [TestMethod]
-    [DataRow(PathPreference.DotnetupDotnet)]
-    [DataRow(PathPreference.ShellProfile)]
-    [DataRow(PathPreference.FullPathReplacement)]
-    internal void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
+    [DataRow(DotnetAccessMode.None)]
+    [DataRow(DotnetAccessMode.Shell)]
+    [DataRow(DotnetAccessMode.Full)]
+    internal void ReadAccessMode_ReturnsStoredPreference_WhenConfigExists(DotnetAccessMode accessMode)
     {
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = preference });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = accessMode });
 
-        var result = DotnetupConfig.ReadPathPreference();
+        var result = DotnetupConfig.ReadAccessMode();
 
-        result.Should().Be(preference);
+        result.Should().Be(accessMode);
     }
 
     [TestMethod]
-    public void ReadPathPreference_ReturnsNull_WhenNoConfig()
+    public void ReadAccessMode_ReturnsNull_WhenNoConfig()
     {
-        var result = DotnetupConfig.ReadPathPreference();
+        var result = DotnetupConfig.ReadAccessMode();
 
         result.Should().BeNull();
     }
@@ -82,6 +82,59 @@ public class DotnetupConfigTests : IDisposable
     {
         DotnetupPaths.EnsureDataDirectoryExists();
         File.WriteAllText(DotnetupPaths.ConfigPath, "not valid json{{{");
+
+        DotnetupConfig.Read().Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow("DotnetupDotnet", DotnetAccessMode.None)]
+    [DataRow("ShellProfile", DotnetAccessMode.Shell)]
+    [DataRow("FullPathReplacement", DotnetAccessMode.Full)]
+    internal void Read_LegacyConfig_MapsPropertyNameAndEnumSpelling(string legacyEnumValue, DotnetAccessMode expected)
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        var legacyJson = $$"""
+            {
+              "schemaVersion": "1",
+              "pathPreference": "{{legacyEnumValue}}"
+            }
+            """;
+        File.WriteAllText(DotnetupPaths.ConfigPath, legacyJson);
+
+        var config = DotnetupConfig.Read();
+
+        config.Should().NotBeNull();
+        config!.AccessMode.Should().Be(expected);
+        config.DotnetupOnPath.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void WriteAndRead_RoundTripsDotnetupOnPath()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false });
+
+        var loaded = DotnetupConfig.Read();
+
+        loaded!.DotnetupOnPath.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(1, DotnetAccessMode.None)]
+    [DataRow(2, DotnetAccessMode.Shell)]
+    [DataRow(3, DotnetAccessMode.Full)]
+    internal void Read_LegacyNumericAccessMode_Maps(int numeric, DotnetAccessMode expected)
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, $$"""{ "schemaVersion": "1", "accessMode": {{numeric}} }""");
+
+        DotnetupConfig.Read()!.AccessMode.Should().Be(expected);
+    }
+
+    [TestMethod]
+    public void Read_OutOfRangeNumericAccessMode_TreatedAsCorrupt()
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": 99 }""");
 
         DotnetupConfig.Read().Should().BeNull();
     }

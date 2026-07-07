@@ -5,7 +5,6 @@ using FluentAssertions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -14,6 +13,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// wire from the selection flags and the stored config (the no-flag, config-driven default plus the
 /// no-config fallback to both).
 /// </summary>
+[TestClass]
 public class EnvScriptSelectionResolverTests
 {
     private static EnvScriptSelection Resolve(bool dotnet = false, bool dotnetup = false, bool dotnetupOnly = false, DotnetupConfigData? config = null)
@@ -22,26 +22,26 @@ public class EnvScriptSelectionResolverTests
     private static DotnetupConfigData Config(DotnetAccessMode accessMode, bool dotnetupOnPath)
         => new() { AccessMode = accessMode, DotnetupOnPath = dotnetupOnPath };
 
-    [Fact]
+    [TestMethod]
     public void NoFlags_NoConfig_WiresBoth()
     {
         var result = Resolve();
         result.Should().Be(new EnvScriptSelection(IncludeDotnet: true, IncludeDotnetup: true));
     }
 
-    [Theory]
-    [InlineData(DotnetAccessMode.Shell, true, true, true)]
-    [InlineData(DotnetAccessMode.Full, true, true, true)]
-    [InlineData(DotnetAccessMode.None, true, false, true)]
-    [InlineData(DotnetAccessMode.Shell, false, true, false)]
-    [InlineData(DotnetAccessMode.None, false, false, false)]
+    [TestMethod]
+    [DataRow(DotnetAccessMode.Shell, true, true, true)]
+    [DataRow(DotnetAccessMode.Full, true, true, true)]
+    [DataRow(DotnetAccessMode.None, true, false, true)]
+    [DataRow(DotnetAccessMode.Shell, false, true, false)]
+    [DataRow(DotnetAccessMode.None, false, false, false)]
     internal void NoFlags_WithConfig_FollowsConfig(DotnetAccessMode accessMode, bool dotnetupOnPath, bool expectedDotnet, bool expectedDotnetup)
     {
         var result = Resolve(config: Config(accessMode, dotnetupOnPath));
         result.Should().Be(new EnvScriptSelection(expectedDotnet, expectedDotnetup));
     }
 
-    [Fact]
+    [TestMethod]
     public void ExplicitFlags_WinOverConfig()
     {
         // Config says none/off, but an explicit --dotnet should still wire dotnet only.
@@ -49,21 +49,21 @@ public class EnvScriptSelectionResolverTests
         result.Should().Be(new EnvScriptSelection(IncludeDotnet: true, IncludeDotnetup: false));
     }
 
-    [Fact]
+    [TestMethod]
     public void ExplicitDotnetup_WiresDotnetupOnly()
     {
         var result = Resolve(dotnetup: true, config: Config(DotnetAccessMode.Full, dotnetupOnPath: true));
         result.Should().Be(new EnvScriptSelection(IncludeDotnet: false, IncludeDotnetup: true));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetupOnly_LegacyAlias_WiresDotnetupOnly()
     {
         var result = Resolve(dotnetupOnly: true, config: Config(DotnetAccessMode.Shell, dotnetupOnPath: true));
         result.Should().Be(new EnvScriptSelection(IncludeDotnet: false, IncludeDotnetup: true));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotnetupOnly_CombinedWithNewFlags_Throws()
     {
         Action act = () => Resolve(dotnet: true, dotnetupOnly: true);

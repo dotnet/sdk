@@ -41,7 +41,7 @@ public class ShellProfileManagerTests : IDisposable
         var content = File.ReadAllText(modified[0]);
         content.Should().Contain(ShellProfileManager.BeginMarkerComment);
         content.Should().Contain(ShellProfileManager.EndMarkerComment);
-        content.Should().Contain("print-env-script");
+        content.Should().Contain("env script");
         AssertUsesOnlyCurrentPlatformLineEndings(content);
     }
 
@@ -200,7 +200,7 @@ public class ShellProfileManagerTests : IDisposable
         var content = File.ReadAllText(profilePath);
         content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         content.Should().NotContain(ShellProfileManager.EndMarkerComment);
-        content.Should().NotContain("print-env-script");
+        content.Should().NotContain("env script");
     }
 
     [TestMethod]
@@ -368,10 +368,11 @@ public class ShellProfileManagerTests : IDisposable
     {
         var provider = new TestShellProvider(_tempDir, "admin.sh");
 
-        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, includeDotnet: false, includeDotnetup: true);
 
         var content = File.ReadAllText(Path.Combine(_tempDir, "admin.sh"));
-        content.Should().Contain("--dotnetup-only");
+        content.Should().Contain("--dotnetup");
+        content.Should().NotContain("--dotnet ");
     }
 
     [TestMethod]
@@ -393,14 +394,15 @@ public class ShellProfileManagerTests : IDisposable
 
         // Add user entry
         ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
-        File.ReadAllText(profilePath).Should().NotContain("--dotnetup-only");
+        File.ReadAllText(profilePath).Should().Contain("--dotnet");
 
         // Replace with admin entry (AddProfileEntries now replaces in-place)
-        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, includeDotnet: false, includeDotnetup: true);
 
         modified.Should().HaveCount(1);
         var content = File.ReadAllText(profilePath);
-        content.Should().Contain("--dotnetup-only");
+        content.Should().Contain("--dotnetup");
+        content.Should().NotContain("--dotnet ");
         content.Split('\n').Count(l => l.TrimEnd() == ShellProfileManager.BeginMarkerComment).Should().Be(1);
         content.Split('\n').Count(l => l.TrimEnd() == ShellProfileManager.EndMarkerComment).Should().Be(1);
     }
@@ -425,7 +427,7 @@ public class ShellProfileManagerTests : IDisposable
         {
             ProfileEntryOverride =
                 """
-                eval "$('/usr/local/bin/dotnetup' print-env-script --shell test)"
+                eval "$('/usr/local/bin/dotnetup' env script --shell test)"
                 hash -r 2>/dev/null
                 """,
         };
@@ -446,10 +448,10 @@ public class ShellProfileManagerTests : IDisposable
     {
         var provider = new TestShellProvider(_tempDir, "fresh.sh");
 
-        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, includeDotnet: false, includeDotnetup: true);
 
         modified.Should().HaveCount(1);
-        File.ReadAllText(Path.Combine(_tempDir, "fresh.sh")).Should().Contain("--dotnetup-only");
+        File.ReadAllText(Path.Combine(_tempDir, "fresh.sh")).Should().Contain("--dotnetup");
     }
 
     [TestMethod]
@@ -470,19 +472,19 @@ public class ShellProfileManagerTests : IDisposable
     public void BashProvider_GenerateProfileEntry_DotnetupOnly()
     {
         var provider = new BashEnvShellProvider();
-        var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetupOnly: true);
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath, includeDotnet: false, includeDotnetup: true);
 
-        entry.Should().Contain("--dotnetup-only");
+        entry.Should().Contain("--dotnetup");
+        entry.Should().NotContain("--dotnet ");
     }
 
     [TestMethod]
-    public void BashProvider_GenerateActivationCommand_WithCustomInstallPath_IncludesFlag()
+    public void BashProvider_GenerateActivationCommand_UsesStoredConfig()
     {
         var provider = new BashEnvShellProvider();
-        var command = provider.GenerateActivationCommand(FakeDotnetupPath, dotnetInstallPath: FakeDotnetInstallPath);
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath);
 
-        command.Should().Contain($"--dotnet-install-path '{FakeDotnetInstallPath}'");
-        command.Should().NotContain("--dotnetup-only");
+        command.Should().Be($"eval \"$('{FakeDotnetupPath}' env script)\"");
     }
 
     [TestMethod]
@@ -490,7 +492,7 @@ public class ShellProfileManagerTests : IDisposable
     {
         var provider = new BashEnvShellProvider();
         var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetInstallPath: DotnetupPaths.DefaultDotnetInstallPath);
-        var command = provider.GenerateActivationCommand(FakeDotnetupPath, dotnetInstallPath: DotnetupPaths.DefaultDotnetInstallPath);
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath);
 
         entry.Should().NotContain("--dotnet-install-path");
         command.Should().NotContain("--dotnet-install-path");
@@ -532,7 +534,7 @@ public class ShellProfileManagerTests : IDisposable
         var command = provider.GenerateActivationCommand(FakeDotnetupPath);
 
         command.Should().Contain("eval");
-        command.Should().Contain("--shell bash");
+        command.Should().Contain("env script");
         command.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         command.Should().NotContain(ShellProfileManager.EndMarkerComment);
     }
@@ -544,7 +546,7 @@ public class ShellProfileManagerTests : IDisposable
         var command = provider.GenerateActivationCommand(FakeDotnetupPath);
 
         command.Should().Contain("eval");
-        command.Should().Contain("--shell zsh");
+        command.Should().Contain("env script");
     }
 
     [TestMethod]
@@ -554,7 +556,7 @@ public class ShellProfileManagerTests : IDisposable
         var command = provider.GenerateActivationCommand(FakeDotnetupPath);
 
         command.Should().Contain("Invoke-Expression");
-        command.Should().Contain("--shell pwsh");
+        command.Should().Contain("env script");
     }
 
     [TestMethod]
@@ -637,13 +639,13 @@ public class ShellProfileManagerTests : IDisposable
         var manager = new DotnetEnvironmentManager();
         var provider = new TestShellProvider(_tempDir, "user-profile.sh");
 
-        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.User, provider);
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, includeDotnet: true, includeDotnetup: true, provider);
 
         var profilePath = Path.Combine(_tempDir, "user-profile.sh");
         File.Exists(profilePath).Should().BeTrue();
         var content = File.ReadAllText(profilePath);
         content.Should().Contain(ShellProfileManager.BeginMarkerComment);
-        content.Should().Contain("print-env-script");
+        content.Should().Contain("env script");
         // User install with a non-default install root should pass --dotnet-install-path through.
         content.Should().Contain("--dotnet-install-path");
         content.Should().NotContain("--dotnetup-only");
@@ -657,13 +659,14 @@ public class ShellProfileManagerTests : IDisposable
 
         // dotnetRoot is irrelevant for System (dotnet assumed already on PATH), but the parameter
         // is non-nullable so pass the fake path.
-        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.System, provider);
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, includeDotnet: false, includeDotnetup: true, provider);
 
         var profilePath = Path.Combine(_tempDir, "system-profile.sh");
         File.Exists(profilePath).Should().BeTrue();
         var content = File.ReadAllText(profilePath);
         content.Should().Contain(ShellProfileManager.BeginMarkerComment);
-        content.Should().Contain("--dotnetup-only");
+        content.Should().Contain("--dotnetup");
+        content.Should().NotContain("--dotnet ");
         content.Should().NotContain("--dotnet-install-path");
     }
 
@@ -674,10 +677,10 @@ public class ShellProfileManagerTests : IDisposable
         var provider = new TestShellProvider(_tempDir, "default-profile.sh");
 
         // When the install root equals the manager's default install path, the path should be
-        // omitted from the entry so `print-env-script` can fall back to its default-detection.
+        // omitted from the entry so `env script` can fall back to its default-detection.
         var defaultPath = manager.GetDefaultDotnetInstallPath();
 
-        manager.ApplyTerminalProfileModifications(defaultPath, InstallType.User, provider);
+        manager.ApplyTerminalProfileModifications(defaultPath, includeDotnet: true, includeDotnetup: true, provider);
 
         var profilePath = Path.Combine(_tempDir, "default-profile.sh");
         File.Exists(profilePath).Should().BeTrue();
@@ -693,7 +696,7 @@ public class ShellProfileManagerTests : IDisposable
         var manager = new DotnetEnvironmentManager();
         var provider = new TestShellProvider(_tempDir, "null-profile.sh");
 
-        var act = () => manager.ApplyTerminalProfileModifications(null!, InstallType.User, provider);
+        var act = () => manager.ApplyTerminalProfileModifications(null!, includeDotnet: true, includeDotnetup: true, provider);
 
         act.Should().Throw<ArgumentNullException>();
     }
@@ -706,7 +709,7 @@ public class ShellProfileManagerTests : IDisposable
         var manager = new DotnetEnvironmentManager();
         var provider = new TestShellProvider(_tempDir, "flavor1.ps1", "flavor2.ps1");
 
-        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.User, provider);
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, includeDotnet: true, includeDotnetup: true, provider);
 
         var path1 = Path.Combine(_tempDir, "flavor1.ps1");
         var path2 = Path.Combine(_tempDir, "flavor2.ps1");
@@ -737,39 +740,42 @@ public class ShellProfileManagerTests : IDisposable
         Encoding IEnvShellProvider.NewFileEncoding
             => NewFileEncodingOverride ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
-        public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true) =>
+        public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true) =>
             includeDotnet
                 ? $"export DOTNET_ROOT='{dotnetInstallPath}'"
-                : dotnetupDir is not null ? $"export PATH='{dotnetupDir}':$PATH" : "";
+                : !string.IsNullOrEmpty(dotnetupDir) ? $"export PATH='{dotnetupDir}':$PATH" : "";
 
         public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
 
-        public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
+        public string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
         {
             if (ProfileEntryOverride is not null)
             {
                 return ProfileEntryOverride;
             }
 
-            var flags = dotnetupOnly ? " --dotnetup-only" : "";
-            if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+            var flags = new List<string>();
+            if (includeDotnet)
             {
-                flags += $" --dotnet-install-path '{dotnetInstallPath}'";
+                flags.Add("--dotnet");
             }
 
-            return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
-        }
-
-        public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
-        {
-            var flags = dotnetupOnly ? " --dotnetup-only" : "";
-            if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+            if (includeDotnetup)
             {
-                flags += $" --dotnet-install-path '{dotnetInstallPath}'";
+                flags.Add("--dotnetup");
             }
 
-            return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
+            if (includeDotnet && !string.IsNullOrEmpty(dotnetInstallPath))
+            {
+                flags.Add($"--dotnet-install-path '{dotnetInstallPath}'");
+            }
+
+            string joinedFlags = flags.Count == 0 ? string.Empty : " " + string.Join(" ", flags);
+            return $"eval \"$('{dotnetupPath}' env script --shell test{joinedFlags})\"";
         }
+
+        public string GenerateActivationCommand(string dotnetupPath)
+            => $"eval \"$('{dotnetupPath}' env script)\"";
     }
 
     private static void AssertUsesOnlyCrLfLineEndings(string content)

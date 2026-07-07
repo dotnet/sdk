@@ -3,7 +3,6 @@
 
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -13,6 +12,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// and reports whether the current terminal needs additions, removals, or is already active. The
 /// live-process wrapper (which calls GetCommandPath) is not exercised here.
 /// </summary>
+[TestClass]
 public class EnvActivationStatusTests
 {
     private const string DotnetDir = "/managed/dotnet";
@@ -30,11 +30,11 @@ public class EnvActivationStatusTests
             resolvedDotnetDir,
             resolvedDotnetupDir);
 
-    [Fact]
+    [TestMethod]
     public void Shell_DotnetupOn_BothResolveToManaged_IsActive()
         => Evaluate(DotnetAccessMode.Shell, dotnetupOnPath: true, DotnetDir, DotnetupDir).IsActive.Should().BeTrue();
 
-    [Fact]
+    [TestMethod]
     public void Shell_DotnetupOn_NeitherResolved_NeedsAdditionsOnly()
     {
         var state = Evaluate(DotnetAccessMode.Shell, dotnetupOnPath: true, resolvedDotnetDir: null, resolvedDotnetupDir: null);
@@ -43,7 +43,7 @@ public class EnvActivationStatusTests
         state.IsActive.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Shell_DotnetupOn_DotnetResolvesElsewhere_NeedsAdditions()
     {
         // A system dotnet wins resolution, not the managed one → still needs the managed dotnet added.
@@ -52,11 +52,11 @@ public class EnvActivationStatusTests
         state.NeedsRemovals.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void None_DotnetupOn_OnlyDotnetupResolves_IsActive()
         => Evaluate(DotnetAccessMode.None, dotnetupOnPath: true, resolvedDotnetDir: null, resolvedDotnetupDir: DotnetupDir).IsActive.Should().BeTrue();
 
-    [Fact]
+    [TestMethod]
     public void None_DotnetupOn_StaleManagedDotnetResolves_NeedsRemovals()
     {
         // 'none' means the managed dotnet should NOT win; a stale managed dotnet means a removal
@@ -66,19 +66,19 @@ public class EnvActivationStatusTests
         state.NeedsAdditions.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void None_DotnetupOff_NeitherResolvesToManaged_IsActive()
         => Evaluate(DotnetAccessMode.None, dotnetupOnPath: false, resolvedDotnetDir: null, resolvedDotnetupDir: null).IsActive.Should().BeTrue();
 
-    [Fact]
+    [TestMethod]
     public void None_DotnetupOff_StaleManagedDotnetupResolves_NeedsRemovals()
         => Evaluate(DotnetAccessMode.None, dotnetupOnPath: false, resolvedDotnetDir: null, resolvedDotnetupDir: DotnetupDir).NeedsRemovals.Should().BeTrue();
 
-    [Fact]
+    [TestMethod]
     public void All_DotnetupOn_BothResolveToManaged_IsActive()
         => Evaluate(DotnetAccessMode.Full, dotnetupOnPath: true, DotnetDir, DotnetupDir).IsActive.Should().BeTrue();
 
-    [Fact]
+    [TestMethod]
     public void Shell_DotnetupOff_AddDotnetButRemoveDotnetup_NeedsBoth()
     {
         // dotnet should be present but isn't (addition); dotnetup should be absent but resolves (removal).

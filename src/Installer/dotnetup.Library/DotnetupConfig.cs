@@ -38,7 +38,7 @@ internal class DotnetupConfigData
 
     /// <summary>
     /// How the managed dotnet is exposed. Serialized as <c>accessMode</c>. Reads also accept the
-    /// legacy property name <c>pathPreference</c> (see <see cref="DotnetupConfig.Read"/>).
+    /// legacy property name <c>accessMode</c> (see <see cref="DotnetupConfig.Read"/>).
     /// </summary>
     [JsonPropertyName("accessMode")]
     [JsonConverter(typeof(DotnetAccessModeJsonConverter))]
@@ -64,7 +64,7 @@ internal static class DotnetupConfig
     /// Reads the config file if it exists, otherwise returns null.
     /// Uses GlobalJsonFileHelper for encoding-aware reading (handles BOM variants).
     /// Tolerates the legacy config shape written by earlier internal builds: the
-    /// <c>pathPreference</c> property name (now <c>accessMode</c>) and the legacy enum spellings.
+    /// <c>accessMode</c> property name (now <c>accessMode</c>) and the legacy enum spellings.
     /// </summary>
     public static DotnetupConfigData? Read()
     {

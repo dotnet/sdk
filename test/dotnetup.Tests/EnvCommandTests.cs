@@ -5,7 +5,7 @@ using FluentAssertions;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
-using Xunit;
+using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// Windows registry / arbitrary host shell profiles are intentionally not asserted because they
 /// cannot be sandboxed cleanly in CI.
 /// </summary>
+[TestClass]
 public class EnvCommandTests : IDisposable
 {
     private readonly string _tempDir;
@@ -44,7 +45,7 @@ public class EnvCommandTests : IDisposable
 
     // ── EnvSetCommand ──
 
-    [Fact]
+    [TestMethod]
     public void EnvSet_None_PersistsConfig()
     {
         // Pass --shell so the dotnetup-only profile write (None still keeps dotnetup on PATH) does
@@ -64,7 +65,7 @@ public class EnvCommandTests : IDisposable
         _env.LastDotnetupOnUserPathEnabled.Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvSet_DotnetupOnPathOff_PersistsAndRemoves()
     {
         var parseResult = Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "false"]);
@@ -79,7 +80,7 @@ public class EnvCommandTests : IDisposable
         _env.LastDotnetupOnUserPathEnabled.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvSet_DotnetupOnPathOnly_LeavesStoredModeUnchanged()
     {
         // Pre-existing config: shell mode, dotnetup on. Change only --dotnetup-on-path false.
@@ -96,14 +97,9 @@ public class EnvCommandTests : IDisposable
         config.DotnetupOnPath.Should().BeFalse();          // only this changed
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
     public void EnvSet_Full_OnNonWindows_RejectedByParser()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var parseResult = Parser.Parse(["env", "set", "full"]);
 
         parseResult.Errors.Should().NotBeEmpty();
@@ -111,14 +107,9 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Read().Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnvSet_Full_FromNone_OnWindows_AppliesAndPersists()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
         var parseResult = Parser.Parse(["env", "set", "full"]);
         parseResult.Errors.Should().BeEmpty();
 
@@ -133,7 +124,7 @@ public class EnvCommandTests : IDisposable
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvSet_NoModeAndNoStoredConfig_Fails()
     {
         var parseResult = Parser.Parse(["env", "set"]);
@@ -148,7 +139,7 @@ public class EnvCommandTests : IDisposable
 
     // ── EnvClearCommand ──
 
-    [Fact]
+    [TestMethod]
     public void EnvClear_RemovesEverythingAndPersists()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
@@ -167,7 +158,7 @@ public class EnvCommandTests : IDisposable
 
     // ── EnvShowCommand ──
 
-    [Fact]
+    [TestMethod]
     public void EnvShow_NoConfig_ExitCodeZero()
     {
         var parseResult = Parser.Parse(["env", "show"]);
@@ -178,7 +169,7 @@ public class EnvCommandTests : IDisposable
         exitCode.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvShow_ConfiguredNone_ExitCodeZero()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = true });
@@ -189,7 +180,7 @@ public class EnvCommandTests : IDisposable
         exitCode.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvShow_ConfiguredShell_ExitCodeZero()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });

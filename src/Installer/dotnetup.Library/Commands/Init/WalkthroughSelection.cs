@@ -12,9 +12,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// user chose to exit without making any changes.
 /// </summary>
 /// <param name="Requests">The install requests to execute.</param>
-/// <param name="PathPreference">The path preference (mode) to apply and persist.</param>
+/// <param name="AccessMode">The access mode to apply and persist.</param>
 /// <param name="Migrations">The system installs to migrate alongside the install.</param>
 internal sealed record WalkthroughSelection(
     List<ResolvedInstallRequest> Requests,
-    PathPreference PathPreference,
+    DotnetAccessMode AccessMode,
     List<MigrationWorkflow.MigrationSelection> Migrations);

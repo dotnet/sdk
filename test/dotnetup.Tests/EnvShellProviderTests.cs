@@ -3,7 +3,7 @@
 
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -185,11 +185,11 @@ public class EnvShellProviderTests
         var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
-        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' print-env-script --shell pwsh | Out-String");
+        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup | Out-String");
         profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
         profileEntry.Should().Contain("Invoke-Expression $dotnetupScript");
 
-        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' print-env-script --shell pwsh | Out-String)");
+        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script | Out-String)");
     }
 
     [TestMethod]
@@ -300,7 +300,7 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
-    public void PrintEnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
+    public void EnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
     {
         // Arrange
         var provider = new BashEnvShellProvider();
@@ -309,7 +309,7 @@ public class EnvShellProviderTests
         using var output = new MemoryStream();
 
         // Act
-        PrintEnvScriptCommand.WriteScript(output, script);
+        EnvScriptCommand.WriteScript(output, script);
 
         // Assert
         var bytes = output.ToArray();

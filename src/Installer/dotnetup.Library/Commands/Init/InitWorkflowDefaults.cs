@@ -8,7 +8,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
-/// Resolves the recommended init setup (path preference, install root, channel display, and
+/// Resolves the recommended init setup (access mode, install root, channel display, and
 /// migration candidates) for the walkthrough summary. Resolution here is side-effect-free: it
 /// performs no network calls, writes no console output, and does not throw on an unresolvable
 /// channel. The actual install requests are resolved separately (and only once the user commits
@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 internal static class InitWorkflowDefaults
 {
     /// <summary>
-    /// Resolves the recommended setup to display in the summary (install root, path preference,
+    /// Resolves the recommended setup to display in the summary (install root, access mode,
     /// migration candidates, and channel display) without prompting, resolving versions, or
     /// emitting output. When <paramref name="preResolvedRequests"/> is supplied, its already-resolved
     /// root/channel/manifest are reused instead of being re-derived.
@@ -28,18 +28,18 @@ internal static class InitWorkflowDefaults
         List<ResolvedInstallRequest>? preResolvedRequests,
         IDotnetEnvironmentManager dotnetEnvironment)
     {
-        PathPreference pathPreference = GetDefaultPathPreference(command.ShellProvider);
+        DotnetAccessMode accessMode = GetDefaultAccessMode(command.ShellProvider);
 
         if (preResolvedRequests is { Count: > 0 })
         {
             var first = preResolvedRequests[0];
             DotnetInstallRoot resolvedRoot = first.Request.InstallRoot;
             var resolvedMigrations = ResolveDefaultMigrations(
-                dotnetEnvironment, pathPreference, resolvedRoot, first.Request.Options.ManifestPath, preResolvedRequests);
+                dotnetEnvironment, accessMode, resolvedRoot, first.Request.Options.ManifestPath, preResolvedRequests);
 
             return new WalkthroughPlan(
                 resolvedRoot,
-                pathPreference,
+                accessMode,
                 resolvedMigrations,
                 new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath));
         }
@@ -52,9 +52,9 @@ internal static class InitWorkflowDefaults
             InstallerUtilities.GetDefaultInstallArchitecture());
 
         var migrations = ResolveDefaultMigrations(
-            dotnetEnvironment, pathPreference, installRoot, command.ManifestPath, existingRequests: null);
+            dotnetEnvironment, accessMode, installRoot, command.ManifestPath, existingRequests: null);
 
-        return new WalkthroughPlan(installRoot, pathPreference, migrations, ResolveChannelDisplay(globalJson));
+        return new WalkthroughPlan(installRoot, accessMode, migrations, ResolveChannelDisplay(globalJson));
     }
 
     /// <summary>
@@ -82,18 +82,18 @@ internal static class InitWorkflowDefaults
     }
 
     /// <summary>
-    /// Returns the recommended path preference without prompting: terminal-profile mode when a
+    /// Returns the recommended access mode without prompting: terminal-profile mode when a
     /// supported shell is available, otherwise isolation mode. This is the value shown in the
     /// summary and used by the "proceed with defaults" branch.
     /// </summary>
-    public static PathPreference GetDefaultPathPreference(IEnvShellProvider? shellProvider = null)
+    public static DotnetAccessMode GetDefaultAccessMode(IEnvShellProvider? shellProvider = null)
     {
         if ((shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
         {
-            return PathPreference.DotnetupDotnet;
+            return DotnetAccessMode.None;
         }
 
-        return PathPreference.ShellProfile;
+        return DotnetAccessMode.Shell;
     }
 
     /// <summary>
@@ -102,12 +102,12 @@ internal static class InitWorkflowDefaults
     /// </summary>
     public static List<MigrationWorkflow.MigrationSelection> ResolveDefaultMigrations(
         IDotnetEnvironmentManager dotnetEnvironment,
-        PathPreference pathPreference,
+        DotnetAccessMode accessMode,
         DotnetInstallRoot installRoot,
         string? manifestPath,
         IReadOnlyCollection<ResolvedInstallRequest>? existingRequests)
     {
-        if (!PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(pathPreference))
+        if (!DotnetAccessModePolicy.ShouldPromptToConvertSystemInstalls(accessMode))
         {
             return [];
         }
@@ -131,4 +131,3 @@ internal static class InitWorkflowDefaults
         return new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, null);
     }
 }
-

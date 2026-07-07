@@ -6,7 +6,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
-using Xunit;
+using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// system. The Windows user-PATH dotnetup entry is asserted via the mock's
 /// <see cref="MockDotnetInstallManager.LastDotnetupOnUserPathEnabled"/>.
 /// </summary>
+[TestClass]
 public class EnvSettingsApplierTests : IDisposable
 {
     private const string DotnetRoot = "/fake/dotnet";
@@ -53,7 +54,7 @@ public class EnvSettingsApplierTests : IDisposable
 
     // ── dotnetup-on-PATH is always applied (idempotent) ──
 
-    [Fact]
+    [TestMethod]
     public void AlwaysAppliesDotnetupOnUserPath_WithTargetValue()
     {
         EnvSettingsApplier.Apply(DotnetAccessMode.None, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
@@ -61,7 +62,7 @@ public class EnvSettingsApplierTests : IDisposable
         _env.LastDotnetupOnUserPathEnabled.Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void None_DotnetupOff_NoProfile_NoEnvVars()
     {
         // First-time config (nothing observed as wired): no env vars, no profile block.
@@ -72,7 +73,7 @@ public class EnvSettingsApplierTests : IDisposable
         _env.LastDotnetupOnUserPathEnabled.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void None_DotnetupOn_WritesDotnetupOnlyProfile()
     {
         EnvSettingsApplier.Apply(DotnetAccessMode.None, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
@@ -83,7 +84,7 @@ public class EnvSettingsApplierTests : IDisposable
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void Shell_DotnetupOn_WritesBothInProfile_NoEnvVars()
     {
         EnvSettingsApplier.Apply(DotnetAccessMode.Shell, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
@@ -94,7 +95,7 @@ public class EnvSettingsApplierTests : IDisposable
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void Shell_DotnetupOff_WritesDotnetOnlyProfile()
     {
         EnvSettingsApplier.Apply(DotnetAccessMode.Shell, targetDotnetupOnPath: false, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
@@ -104,11 +105,9 @@ public class EnvSettingsApplierTests : IDisposable
         _env.LastIncludeDotnetupForTerminalProfileModifications.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void All_DotnetupOn_WritesEnvVarsAndProfile()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         EnvSettingsApplier.Apply(DotnetAccessMode.Full, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(1);
@@ -120,11 +119,9 @@ public class EnvSettingsApplierTests : IDisposable
 
     // ── Removal transitions (driven by observed reality) ──
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void All_To_Shell_RemovesEnvVarsButKeepsProfile()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         EnvSettingsApplier.Apply(
             DotnetAccessMode.Shell, targetDotnetupOnPath: true,
             Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlockPresent: true),
@@ -135,11 +132,9 @@ public class EnvSettingsApplierTests : IDisposable
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(1);    // profile still written
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void All_To_None_DotnetupOff_RemovesEnvVarsAndProfile()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         WriteManagedBlockToProfile();
 
         EnvSettingsApplier.Apply(
@@ -152,7 +147,7 @@ public class EnvSettingsApplierTests : IDisposable
         ProfileHasManagedBlock().Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Shell_To_None_DotnetupOff_RemovesProfile()
     {
         WriteManagedBlockToProfile();
@@ -166,7 +161,7 @@ public class EnvSettingsApplierTests : IDisposable
         ProfileHasManagedBlock().Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Shell_DotnetupOn_To_None_DotnetupOn_RewritesProfileAsDotnetupOnly()
     {
         // Turning off dotnet access but keeping dotnetup-on-PATH should rewrite (not remove)
@@ -183,7 +178,7 @@ public class EnvSettingsApplierTests : IDisposable
 
     // ── Drift correction: remove what is actually observed, even when no prior config recorded it ──
 
-    [Fact]
+    [TestMethod]
     public void StrayProfileBlock_RemovedEvenWithoutPriorConfig()
     {
         // The config never recorded a block (Empty would say "unknown"), but one is actually
@@ -198,7 +193,7 @@ public class EnvSettingsApplierTests : IDisposable
         ProfileHasManagedBlock().Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ObservedNoProfileBlock_NothingRemoved()
     {
         // Nothing observed and nothing targeted: the removal branch must not run.
@@ -210,11 +205,9 @@ public class EnvSettingsApplierTests : IDisposable
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void StrayDotnetEnvVars_RemovedWhenTargetShell()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         // Reality has 'full'-mode env vars wired but the target is shell: remove them, even though
         // no prior 'full' config is supplied.
         EnvSettingsApplier.Apply(
@@ -227,27 +220,18 @@ public class EnvSettingsApplierTests : IDisposable
 
     // ── Edge cases ──
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
     public void Target_All_On_NonWindows_Throws()
     {
-        if (OperatingSystem.IsWindows()) return;
-
         Action act = () => EnvSettingsApplier.Apply(
             DotnetAccessMode.Full, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         act.Should().Throw<PlatformNotSupportedException>();
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
     public void ProfileWrite_Without_ShellProvider_Throws()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            // GetCurrentShellProvider always resolves PowerShell on Windows, so the null path
-            // is unreachable there.
-            return;
-        }
-
         var originalShell = Environment.GetEnvironmentVariable("SHELL");
         try
         {
@@ -265,21 +249,21 @@ public class EnvSettingsApplierTests : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ArgumentNullException_When_EnvironmentIsNull()
     {
         Action act = () => EnvSettingsApplier.Apply(DotnetAccessMode.None, false, ObservedEnvironmentState.Empty, environment: null!, DotnetRoot, _shellProvider);
         act.Should().Throw<ArgumentNullException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void ArgumentNullException_When_ObservedIsNull()
     {
         Action act = () => EnvSettingsApplier.Apply(DotnetAccessMode.None, false, observed: null!, _env, DotnetRoot, _shellProvider);
         act.Should().Throw<ArgumentNullException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void ArgumentException_When_DotnetRootIsEmpty()
     {
         Action act = () => EnvSettingsApplier.Apply(DotnetAccessMode.None, false, ObservedEnvironmentState.Empty, _env, dotnetRoot: "", _shellProvider);

@@ -4,7 +4,7 @@
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
-using Xunit;
+using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// controlled via a hand-built <see cref="ObservedEnvironmentState"/>. Windows-only drift
 /// (env vars, user PATH) is only asserted when running on Windows.
 /// </summary>
+[TestClass]
 public class EnvDriftAnalyzerTests
 {
     private static ObservedEnvironmentState Observed(
@@ -23,7 +24,7 @@ public class EnvDriftAnalyzerTests
         bool dotnetupOnUserPath = false)
         => new(dotnetEnvVarsPresent, dotnetEnvVarsComplete, profileBlockPresent, dotnetupOnUserPath);
 
-    [Fact]
+    [TestMethod]
     public void ProfileExpectedButMissing_ReportsMissingBlock()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
@@ -34,7 +35,7 @@ public class EnvDriftAnalyzerTests
         drift.Should().Contain(d => d.Contains("missing the dotnetup managed block", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProfileNotExpectedButPresent_ReportsStrayBlock()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false };
@@ -45,7 +46,7 @@ public class EnvDriftAnalyzerTests
         drift.Should().Contain(d => d.Contains("contains a dotnetup managed block", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [TestMethod]
     public void ProfileStateUnknown_NoProfileDrift()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
@@ -56,7 +57,7 @@ public class EnvDriftAnalyzerTests
         drift.Should().NotContain(d => d.Contains("managed block", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [TestMethod]
     public void InSync_NoDrift()
     {
         // Shell + dotnetup-on, profile present, dotnetup on the user PATH (Windows). Non-Windows
@@ -69,11 +70,9 @@ public class EnvDriftAnalyzerTests
         drift.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void ConfiguredAllButIncomplete_ReportsEnvVarDrift()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Full, DotnetupOnPath = true };
         var observed = Observed(dotnetEnvVarsComplete: false, profileBlockPresent: true, dotnetupOnUserPath: true);
 
@@ -82,11 +81,9 @@ public class EnvDriftAnalyzerTests
         drift.Should().Contain(d => d.Contains("'full' mode expectations", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void NotAllButResidualEnvVars_ReportsStrayWiring()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
         var observed = Observed(dotnetEnvVarsPresent: true, profileBlockPresent: true, dotnetupOnUserPath: true);
 
@@ -95,11 +92,9 @@ public class EnvDriftAnalyzerTests
         drift.Should().Contain(d => d.Contains("still has 'full'-mode wiring", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void DotnetupExpectedOnPathButMissing_ReportsDrift()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = true };
         var observed = Observed(profileBlockPresent: true, dotnetupOnUserPath: false);
 
@@ -108,11 +103,9 @@ public class EnvDriftAnalyzerTests
         drift.Should().Contain(d => d.Contains("missing from the user PATH", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void DotnetupOnPathButConfiguredOff_ReportsDrift()
     {
-        if (!OperatingSystem.IsWindows()) return;
-
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false };
         var observed = Observed(profileBlockPresent: false, dotnetupOnUserPath: true);
 
