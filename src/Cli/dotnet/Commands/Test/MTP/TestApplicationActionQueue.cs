@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Channels;
@@ -78,6 +78,18 @@ internal class TestApplicationActionQueue
                     if (result == ExitCode.Success && testApp.HasFailureDuringDispose)
                     {
                         result = ExitCode.GenericFailure;
+                    }
+
+                    // A module that ran zero tests (exit code 8) is not, by itself, a whole-run failure.
+                    // With --test-modules or a global --filter, some modules may legitimately match no tests.
+                    // Normalize it to success here; the aggregate "zero tests ran" verdict is decided once at
+                    // the whole-run level in MicrosoftTestingPlatformTestCommand from the total test count. A
+                    // stricter per-module minimum requested via -- --minimum-expected-tests N still fails that
+                    // module with ExitCode.MinimumExpectedTestsPolicyViolation (9) and is preserved.
+                    // See https://github.com/microsoft/testfx/issues/7457.
+                    if (result == ExitCode.ZeroTests)
+                    {
+                        result = ExitCode.Success;
                     }
 
                     lock (_lock)
