@@ -21,7 +21,27 @@ partial class Program
         string hostPath = Environment.ProcessPath!;
         string baseDir = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
         string dotnetRoot = ResolveDotnetRoot();
-        string sdkDir = baseDir;
+
+        // The muxer loads dotnet-aot from the resolved SDK directory. For local testing, allow the
+        // harness to emulate the deployed (non-flat) layout - where dotnet-aot lives in sdk\<version>\
+        // while dn stays in the parent - via DOTNET_AOT_SDK_DIR, which overrides both where the
+        // library is loaded from and the sdk_dir passed to dotnet_execute. Defaults to dn's own
+        // directory (the flat layout).
+        string sdkDir = ResolveAotSdkDir(baseDir);
+        if (!string.Equals(sdkDir, baseDir, StringComparison.OrdinalIgnoreCase))
+        {
+            NativeLibrary.SetDllImportResolver(typeof(Program).Assembly, (name, assembly, searchPath) =>
+                string.Equals(name, "dotnet-aot", StringComparison.Ordinal)
+                    && NativeLibrary.TryLoad(Path.Combine(sdkDir, AotLibraryFileName), out nint handle)
+                        ? handle
+                        : nint.Zero);
+        }
+
+        // Test hook: pass an empty sdk_dir to exercise dotnet-aot's self-locate fallback while still
+        // loading the library from the resolved directory above.
+        string sdkDirArg = string.Equals(Environment.GetEnvironmentVariable("DOTNET_AOT_BLANK_SDKDIR"), "1", StringComparison.Ordinal)
+            ? string.Empty
+            : sdkDir;
         string hostfxrPath = ResolveHostfxrPath(dotnetRoot);
 
         // Marshal argv to native platform strings (UTF-16 on Windows, UTF-8 on Unix)
@@ -37,7 +57,7 @@ partial class Program
 
             nint hpNative = MarshalStringToNative(hostPath);
             nint drNative = MarshalStringToNative(dotnetRoot);
-            nint sdNative = MarshalStringToNative(sdkDir);
+            nint sdNative = MarshalStringToNative(sdkDirArg);
             nint hfNative = MarshalStringToNative(hostfxrPath);
 
             try
@@ -98,6 +118,27 @@ partial class Program
             Directory.GetDirectories,
             File.Exists);
     }
+
+    /// <summary>
+    ///  Resolves the directory dotnet-aot is loaded from (and passed as sdk_dir). Honors the
+    ///  DOTNET_AOT_SDK_DIR override for emulating the deployed non-flat layout; otherwise defaults
+    ///  to dn's own directory.
+    /// </summary>
+    private static string ResolveAotSdkDir(string baseDir)
+    {
+        string? overrideDir = Environment.GetEnvironmentVariable("DOTNET_AOT_SDK_DIR");
+        return !string.IsNullOrEmpty(overrideDir) && Directory.Exists(overrideDir)
+            ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(overrideDir))
+            : baseDir;
+    }
+
+    /// <summary>
+    ///  The platform-specific file name of the dotnet-aot native library.
+    /// </summary>
+    private static string AotLibraryFileName =>
+        OperatingSystem.IsWindows() ? "dotnet-aot.dll"
+        : OperatingSystem.IsMacOS() ? "dotnet-aot.dylib"
+        : "dotnet-aot.so";
 
     /// <summary>
     ///  Marshals a string to a native platform string (UTF-16 on Windows, UTF-8 on Unix)
