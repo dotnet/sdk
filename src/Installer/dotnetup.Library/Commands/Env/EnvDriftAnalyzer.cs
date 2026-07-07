@@ -6,18 +6,13 @@ using System.Globalization;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 /// <summary>
-/// Pure comparison of the configured env settings against an observed environment snapshot,
-/// producing human-readable drift descriptions. Kept free of any environment reads (the
-/// <see cref="EnvironmentStateInspector"/> does those) so it can be unit-tested without touching
-/// the registry or shell profiles. Used by <see cref="EnvShowCommand"/>.
+/// Comparison of desired versus observed config. Produces human-readable descriptions. Uses unit-testable
+/// snapshots.
 /// </summary>
 internal static class EnvDriftAnalyzer
 {
     public static IReadOnlyList<string> Compare(DotnetupConfigData config, ObservedEnvironmentState observed)
     {
-        ArgumentNullException.ThrowIfNull(config);
-        ArgumentNullException.ThrowIfNull(observed);
-
         var drift = new List<string>();
 
         bool expectsProfileDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Full;
@@ -29,11 +24,11 @@ internal static class EnvDriftAnalyzer
         {
             if (expectsProfileBlock && !profileBlockPresent)
             {
-                drift.Add("Shell profile is missing the dotnetup managed block.");
+                drift.Add(Strings.EnvDriftProfileBlockMissing);
             }
             else if (!expectsProfileBlock && profileBlockPresent)
             {
-                drift.Add("Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.");
+                drift.Add(Strings.EnvDriftProfileBlockUnexpected);
             }
         }
 
@@ -41,25 +36,25 @@ internal static class EnvDriftAnalyzer
         {
             if (expectsDotnetEnvVars && !observed.DotnetUserEnvVarsComplete)
             {
-                drift.Add("Windows user PATH / DOTNET_ROOT / system PATH do not match 'full' mode expectations.");
+                drift.Add(Strings.EnvDriftFullModeEnvVarsIncomplete);
             }
             else if (!expectsDotnetEnvVars && observed.DotnetUserEnvVarsPresent)
             {
                 drift.Add(string.Format(
                     CultureInfo.InvariantCulture,
-                    "Windows user PATH / DOTNET_ROOT still has 'full'-mode wiring (expected dotnet access: '{0}').",
+                    Strings.EnvDriftFullModeEnvVarsUnexpected,
                     config.AccessMode.ToString().ToLowerInvariant()));
             }
 
-            // The user-scope PATH is authoritative for dotnetup-on-PATH on Windows (the profile
+            // The user-scope PATH is authoritative for dotnetupOnPath on Windows (the profile
             // block copy is just a convenience).
             if (config.DotnetupOnPath && !observed.DotnetupOnUserPath)
             {
-                drift.Add("dotnetup is configured to be on PATH but is missing from the user PATH.");
+                drift.Add(Strings.EnvDriftDotnetupOnPathMissing);
             }
             else if (!config.DotnetupOnPath && observed.DotnetupOnUserPath)
             {
-                drift.Add("dotnetup is on the user PATH but is configured to be off.");
+                drift.Add(Strings.EnvDriftDotnetupOnPathUnexpected);
             }
         }
 

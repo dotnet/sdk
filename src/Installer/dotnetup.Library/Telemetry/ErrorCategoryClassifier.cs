@@ -31,6 +31,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.PermissionDenied => ErrorCategory.User,
             DotnetInstallErrorCode.DiskFull => ErrorCategory.User,
             DotnetInstallErrorCode.NetworkError => ErrorCategory.User,
+            DotnetInstallErrorCode.InvalidArguments => ErrorCategory.User,
 
             // Product errors - issues we can take action on
             DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,

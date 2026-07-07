@@ -56,6 +56,36 @@ Or open a new terminal.</source>
 Or open a new terminal.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnvDriftDotnetupOnPathMissing">
+        <source>dotnetup is configured to be on PATH but is missing from the user PATH.</source>
+        <target state="new">dotnetup is configured to be on PATH but is missing from the user PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftDotnetupOnPathUnexpected">
+        <source>dotnetup is on the user PATH but is configured to be off.</source>
+        <target state="new">dotnetup is on the user PATH but is configured to be off.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftFullModeEnvVarsIncomplete">
+        <source>Windows user PATH / DOTNET_ROOT / system PATH do not match 'full' mode expectations.</source>
+        <target state="new">Windows user PATH / DOTNET_ROOT / system PATH do not match 'full' mode expectations.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftFullModeEnvVarsUnexpected">
+        <source>Windows user PATH / DOTNET_ROOT still has 'full'-mode wiring (expected dotnet access: '{0}').</source>
+        <target state="new">Windows user PATH / DOTNET_ROOT still has 'full'-mode wiring (expected dotnet access: '{0}').</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftProfileBlockMissing">
+        <source>Shell profile is missing the dotnetup managed block.</source>
+        <target state="new">Shell profile is missing the dotnetup managed block.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftProfileBlockUnexpected">
+        <source>Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</source>
+        <target state="new">Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EnvOpenNewTerminalToTakeEffect">
         <source>Open a new terminal for the change to take effect.</source>
         <target state="new">Open a new terminal for the change to take effect.</target>
@@ -96,6 +126,11 @@ Or open a new terminal.</target>
         <target state="new">Add the managed dotnet to PATH and set DOTNET_ROOT.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnvScriptDotnetupOnlyConflict">
+        <source>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</source>
+        <target state="new">--dotnetup-only cannot be combined with --dotnet or --dotnetup.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EnvScriptDotnetupOnlyOptionDescription">
         <source>Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</source>
         <target state="new">Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</target>
@@ -104,6 +139,106 @@ Or open a new terminal.</target>
       <trans-unit id="EnvScriptDotnetupOptionDescription">
         <source>Add the dotnetup directory to PATH.</source>
         <target state="new">Add the dotnetup directory to PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptShellNotDetected">
+        <source>Error: Unable to detect current shell. The SHELL environment variable is not set.</source>
+        <target state="new">Error: Unable to detect current shell. The SHELL environment variable is not set.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptShellNotSet">
+        <source>SHELL environment variable is not set; cannot detect shell.</source>
+        <target state="new">SHELL environment variable is not set; cannot detect shell.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptSpecifyShell">
+        <source>Please specify the shell using --shell option.</source>
+        <target state="new">Please specify the shell using --shell option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptSpecifyShellWithSupported">
+        <source>Please specify the shell using --shell option. Supported shells: {0}</source>
+        <target state="new">Please specify the shell using --shell option. Supported shells: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptSupportedShells">
+        <source>Supported shells: {0}</source>
+        <target state="new">Supported shells: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptUnsupportedShell">
+        <source>Error: Unsupported shell '{0}'.</source>
+        <target state="new">Error: Unsupported shell '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptUnsupportedShellError">
+        <source>Unsupported shell '{0}'.</source>
+        <target state="new">Unsupported shell '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvSetFullModeWindowsOnly">
+        <source>'full' mode is only supported on Windows. Use 'shell' on this platform.</source>
+        <target state="new">'full' mode is only supported on Windows. Use 'shell' on this platform.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvSetNoModeSpecified">
+        <source>No env mode specified and none is stored. Specify a mode: none, shell, or full.</source>
+        <target state="new">No env mode specified and none is stored. Specify a mode: none, shell, or full.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowApplyToTerminalPrompt">
+        <source>To apply it to this terminal now, run:</source>
+        <target state="new">To apply it to this terminal now, run:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowDriftHeader">
+        <source>Detected drift between configured settings and the current environment:</source>
+        <target state="new">Detected drift between configured settings and the current environment:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowHeader">
+        <source>dotnetup environment:</source>
+        <target state="new">dotnetup environment:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowInSync">
+        <source>In sync.</source>
+        <target state="new">In sync.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowInSyncNotActive">
+        <source>In sync, but not yet active in this terminal.</source>
+        <target state="new">In sync, but not yet active in this terminal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowLabelDotnetAccess">
+        <source>dotnet access</source>
+        <target state="new">dotnet access</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowLabelDotnetupOnPath">
+        <source>dotnetup on PATH</source>
+        <target state="new">dotnetup on PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowNoConfiguration">
+        <source>No dotnetup env configuration found. Run 'dotnetup env set &lt;mode&gt;' to configure.</source>
+        <target state="new">No dotnetup env configuration found. Run 'dotnetup env set &lt;mode&gt;' to configure.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowOpenNewTerminalToPickUp">
+        <source>Open a new terminal to pick up the change.</source>
+        <target state="new">Open a new terminal to pick up the change.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowOrOpenNewTerminal">
+        <source>Or open a new terminal.</source>
+        <target state="new">Or open a new terminal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowRunSetToResync">
+        <source>Run 'dotnetup env set' to re-sync.</source>
+        <target state="new">Run 'dotnetup env set' to re-sync.</target>
         <note />
       </trans-unit>
       <trans-unit id="FormatOptionDescription">

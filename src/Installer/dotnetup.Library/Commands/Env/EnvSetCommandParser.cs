@@ -25,7 +25,7 @@ internal static class EnvSetCommandParser
 
     public static readonly Argument<DotnetAccessMode?> ModeArgument = CreateModeArgument();
 
-    public static readonly Option<string?> DotnetupOnPathOption = CreateDotnetupOnPathOption();
+    public static readonly Option<bool?> DotnetupOnPathOption = CreateDotnetupOnPathOption();
 
     private static Argument<DotnetAccessMode?> CreateModeArgument()
     {
@@ -72,11 +72,11 @@ internal static class EnvSetCommandParser
         return null;
     }
 
-    // A string option (rather than bool?) so System.CommandLine does not treat it as a
-    // value-optional boolean flag; we require an explicit 'true'/'false' token, parsed in the command.
-    private static Option<string?> CreateDotnetupOnPathOption()
+    // A tri-state bool?: omitted → null (leave unchanged), otherwise the explicit true/false.
+    // ExactlyOne arity requires the value so it is never treated as a value-optional flag.
+    private static Option<bool?> CreateDotnetupOnPathOption()
     {
-        var option = new Option<string?>("--dotnetup-on-path")
+        var option = new Option<bool?>("--dotnetup-on-path")
         {
             Description = "Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.",
             HelpName = "true|false",
@@ -85,18 +85,6 @@ internal static class EnvSetCommandParser
         option.AcceptOnlyFromAmong("true", "false");
         return option;
     }
-
-    /// <summary>
-    /// Parses the raw <c>--dotnetup-on-path</c> token into a tri-state: <c>null</c> when the
-    /// option was omitted (leave unchanged), otherwise the true/false boolean.
-    /// </summary>
-    public static bool? ParseDotnetupOnPath(string? raw) => raw?.ToLowerInvariant() switch
-    {
-        null => null,
-        "true" => true,
-        "false" => false,
-        _ => throw new ArgumentException($"Invalid value '{raw}' for --dotnetup-on-path. Expected 'true' or 'false'.", nameof(raw)),
-    };
 
     public static Command ConstructCommand()
     {

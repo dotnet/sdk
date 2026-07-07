@@ -278,4 +278,85 @@ Or open a new terminal.</value>
   <data name="EnvOpenNewTerminalToTakeEffect" xml:space="preserve">
     <value>Open a new terminal for the change to take effect.</value>
   </data>
+  <data name="EnvSetNoModeSpecified" xml:space="preserve">
+    <value>No env mode specified and none is stored. Specify a mode: none, shell, or full.</value>
+  </data>
+  <data name="EnvSetFullModeWindowsOnly" xml:space="preserve">
+    <value>'full' mode is only supported on Windows. Use 'shell' on this platform.</value>
+  </data>
+  <data name="EnvDriftProfileBlockMissing" xml:space="preserve">
+    <value>Shell profile is missing the dotnetup managed block.</value>
+  </data>
+  <data name="EnvDriftProfileBlockUnexpected" xml:space="preserve">
+    <value>Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</value>
+  </data>
+  <data name="EnvDriftFullModeEnvVarsIncomplete" xml:space="preserve">
+    <value>Windows user PATH / DOTNET_ROOT / system PATH do not match 'full' mode expectations.</value>
+  </data>
+  <data name="EnvDriftFullModeEnvVarsUnexpected" xml:space="preserve">
+    <value>Windows user PATH / DOTNET_ROOT still has 'full'-mode wiring (expected dotnet access: '{0}').</value>
+  </data>
+  <data name="EnvDriftDotnetupOnPathMissing" xml:space="preserve">
+    <value>dotnetup is configured to be on PATH but is missing from the user PATH.</value>
+  </data>
+  <data name="EnvDriftDotnetupOnPathUnexpected" xml:space="preserve">
+    <value>dotnetup is on the user PATH but is configured to be off.</value>
+  </data>
+  <data name="EnvShowNoConfiguration" xml:space="preserve">
+    <value>No dotnetup env configuration found. Run 'dotnetup env set &lt;mode&gt;' to configure.</value>
+  </data>
+  <data name="EnvShowHeader" xml:space="preserve">
+    <value>dotnetup environment:</value>
+  </data>
+  <data name="EnvShowLabelDotnetAccess" xml:space="preserve">
+    <value>dotnet access</value>
+  </data>
+  <data name="EnvShowLabelDotnetupOnPath" xml:space="preserve">
+    <value>dotnetup on PATH</value>
+  </data>
+  <data name="EnvShowInSync" xml:space="preserve">
+    <value>In sync.</value>
+  </data>
+  <data name="EnvShowInSyncNotActive" xml:space="preserve">
+    <value>In sync, but not yet active in this terminal.</value>
+  </data>
+  <data name="EnvShowApplyToTerminalPrompt" xml:space="preserve">
+    <value>To apply it to this terminal now, run:</value>
+  </data>
+  <data name="EnvShowOrOpenNewTerminal" xml:space="preserve">
+    <value>Or open a new terminal.</value>
+  </data>
+  <data name="EnvShowOpenNewTerminalToPickUp" xml:space="preserve">
+    <value>Open a new terminal to pick up the change.</value>
+  </data>
+  <data name="EnvShowDriftHeader" xml:space="preserve">
+    <value>Detected drift between configured settings and the current environment:</value>
+  </data>
+  <data name="EnvShowRunSetToResync" xml:space="preserve">
+    <value>Run 'dotnetup env set' to re-sync.</value>
+  </data>
+  <data name="EnvScriptShellNotDetected" xml:space="preserve">
+    <value>Error: Unable to detect current shell. The SHELL environment variable is not set.</value>
+  </data>
+  <data name="EnvScriptSpecifyShellWithSupported" xml:space="preserve">
+    <value>Please specify the shell using --shell option. Supported shells: {0}</value>
+  </data>
+  <data name="EnvScriptUnsupportedShell" xml:space="preserve">
+    <value>Error: Unsupported shell '{0}'.</value>
+  </data>
+  <data name="EnvScriptSupportedShells" xml:space="preserve">
+    <value>Supported shells: {0}</value>
+  </data>
+  <data name="EnvScriptSpecifyShell" xml:space="preserve">
+    <value>Please specify the shell using --shell option.</value>
+  </data>
+  <data name="EnvScriptShellNotSet" xml:space="preserve">
+    <value>SHELL environment variable is not set; cannot detect shell.</value>
+  </data>
+  <data name="EnvScriptUnsupportedShellError" xml:space="preserve">
+    <value>Unsupported shell '{0}'.</value>
+  </data>
+  <data name="EnvScriptDotnetupOnlyConflict" xml:space="preserve">
+    <value>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</value>
+  </data>
 </root>

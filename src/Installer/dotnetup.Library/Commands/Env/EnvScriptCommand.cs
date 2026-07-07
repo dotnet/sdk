@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -33,22 +34,23 @@ internal class EnvScriptCommand : CommandBase
         if (_shellProvider == null)
         {
             var shellPath = Environment.GetEnvironmentVariable("SHELL");
+            string supportedShells = string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName));
             if (shellPath is null)
             {
-                Console.Error.WriteLine("Error: Unable to detect current shell. The SHELL environment variable is not set.");
-                Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
+                Console.Error.WriteLine(Strings.EnvScriptShellNotDetected);
+                Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.EnvScriptSpecifyShellWithSupported, supportedShells));
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.PlatformNotSupported,
-                    "SHELL environment variable is not set; cannot detect shell.");
+                    Strings.EnvScriptShellNotSet);
             }
 
             var shellName = Path.GetFileName(shellPath);
-            Console.Error.WriteLine($"Error: Unsupported shell '{shellName}'.");
-            Console.Error.WriteLine($"Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
-            Console.Error.WriteLine("Please specify the shell using --shell option.");
+            Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.EnvScriptUnsupportedShell, shellName));
+            Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.EnvScriptSupportedShells, supportedShells));
+            Console.Error.WriteLine(Strings.EnvScriptSpecifyShell);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                $"Unsupported shell '{shellName}'.");
+                string.Format(CultureInfo.InvariantCulture, Strings.EnvScriptUnsupportedShellError, shellName));
         }
 
         EnvScriptSelection selection = EnvScriptSelectionResolver.Resolve(_dotnet, _dotnetup, _dotnetupOnly, DotnetupConfig.Read());

@@ -21,8 +21,8 @@ internal static class EnvScriptSelectionResolver
             if (dotnet || dotnetup)
             {
                 throw new DotnetInstallException(
-                    DotnetInstallErrorCode.Unknown,
-                    "--dotnetup-only cannot be combined with --dotnet or --dotnetup.");
+                    DotnetInstallErrorCode.InvalidArguments,
+                    Strings.EnvScriptDotnetupOnlyConflict);
             }
 
             return new EnvScriptSelection(IncludeDotnet: false, IncludeDotnetup: true);

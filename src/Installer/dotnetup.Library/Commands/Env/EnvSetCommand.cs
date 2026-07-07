@@ -19,7 +19,7 @@ internal class EnvSetCommand : CommandBase
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _modeArg = result.GetValue(EnvSetCommandParser.ModeArgument);
-        _dotnetupOnPathArg = EnvSetCommandParser.ParseDotnetupOnPath(result.GetValue(EnvSetCommandParser.DotnetupOnPathOption));
+        _dotnetupOnPathArg = result.GetValue(EnvSetCommandParser.DotnetupOnPathOption);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
 
@@ -43,15 +43,15 @@ internal class EnvSetCommand : CommandBase
         else
         {
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.Unknown,
-                "No env mode specified and none is stored. Specify a mode: none, shell, or full.");
+                DotnetInstallErrorCode.InvalidArguments,
+                Strings.EnvSetNoModeSpecified);
         }
 
         if (targetEnv == DotnetAccessMode.Full && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                "'full' mode is only supported on Windows. Use 'shell' on this platform.");
+                Strings.EnvSetFullModeWindowsOnly);
         }
 
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.

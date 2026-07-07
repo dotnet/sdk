@@ -26,13 +26,13 @@ internal class EnvShowCommand : CommandBase
         DotnetupConfigData? config = DotnetupConfig.Read();
         if (config is null)
         {
-            Console.WriteLine("No dotnetup env configuration found. Run 'dotnetup env set <mode>' to configure.");
+            Console.WriteLine(Strings.EnvShowNoConfiguration);
             return;
         }
 
-        Console.WriteLine("dotnetup environment:");
-        Console.WriteLine($"  {"dotnet access",-18}{config.AccessMode.ToString().ToLowerInvariant()}");
-        Console.WriteLine($"  {"dotnetup on PATH",-18}{(config.DotnetupOnPath ? "true" : "false")}");
+        Console.WriteLine(Strings.EnvShowHeader);
+        Console.WriteLine($"  {Strings.EnvShowLabelDotnetAccess,-18}{config.AccessMode.ToString().ToLowerInvariant()}");
+        Console.WriteLine($"  {Strings.EnvShowLabelDotnetupOnPath,-18}{(config.DotnetupOnPath ? "true" : "false")}");
 
         IEnvShellProvider? shellProvider = _shellProvider ?? ShellDetection.GetCurrentShellProvider();
         ObservedEnvironmentState observed = _inspector.Inspect(shellProvider);
@@ -44,35 +44,35 @@ internal class EnvShowCommand : CommandBase
             EnvTerminalState terminalState = EnvActivationStatus.EvaluateCurrentProcess(config, _dotnetEnvironment);
             if (terminalState.IsActive)
             {
-                Console.WriteLine("In sync.");
+                Console.WriteLine(Strings.EnvShowInSync);
                 return;
             }
 
-            Console.WriteLine("In sync, but not yet active in this terminal.");
+            Console.WriteLine(Strings.EnvShowInSyncNotActive);
             string? activationCommand = terminalState.NeedsRemovals
                 ? null
                 : EnvActivationCommandBuilder.TryBuild(shellProvider, config.AccessMode, config.DotnetupOnPath);
 
             if (activationCommand is not null)
             {
-                Console.WriteLine("To apply it to this terminal now, run:");
+                Console.WriteLine(Strings.EnvShowApplyToTerminalPrompt);
                 Console.WriteLine($"  {activationCommand}");
-                Console.WriteLine("Or open a new terminal.");
+                Console.WriteLine(Strings.EnvShowOrOpenNewTerminal);
             }
             else
             {
-                Console.WriteLine("Open a new terminal to pick up the change.");
+                Console.WriteLine(Strings.EnvShowOpenNewTerminalToPickUp);
             }
             return;
         }
 
         Console.WriteLine();
-        Console.WriteLine("Detected drift between configured settings and the current environment:");
+        Console.WriteLine(Strings.EnvShowDriftHeader);
         foreach (var item in drift)
         {
             Console.WriteLine($"  - {item}");
         }
         Console.WriteLine();
-        Console.WriteLine("Run 'dotnetup env set' to re-sync.");
+        Console.WriteLine(Strings.EnvShowRunSetToResync);
     }
 }
