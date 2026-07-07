@@ -14,6 +14,8 @@
     <TestWorkItemTimeout>01:00:00</TestWorkItemTimeout>
   </PropertyGroup>
 
+  <Import Project="ConditionalTests.props" />
+
   <ItemGroup>
     <PackageReference Remove="AwesomeAssertions" />
   </ItemGroup>
@@ -115,6 +117,18 @@
   <ItemGroup Condition=" '$(CustomHelixTargetQueue)' != '' ">
     <HelixTargetQueue Include="$(CustomHelixTargetQueue)" />
   </ItemGroup>
+
+  <!-- Remove test projects for inactive conditional test scopes (defined in ConditionalTests.props).
+       ActiveConditionalTestScopes is set by scripts/EvaluateConditionalTestScopes.cs in CI.
+       When empty (local dev or script failure), the target is skipped and all tests run. -->
+  <Target Name="RemoveInactiveConditionalTestProjects" BeforeTargets="CoreTest" Condition="'$(ActiveConditionalTestScopes)' != ''">
+    <ItemGroup>
+      <InactiveTestProject Include="$(RepoRoot)%(ConditionalTestScope.TestProjects)"
+                           Condition="'%(ConditionalTestScope.Mechanism)' == 'project' and !$(ActiveConditionalTestScopes.Contains('%(ConditionalTestScope.Identity)'))" />
+      <SDKCustomTestProject Remove="@(InactiveTestProject)" />
+    </ItemGroup>
+    <Message Importance="normal" Text="Conditional test filtering: removed %(InactiveTestProject.Filename) (scope inactive)" Condition="'@(InactiveTestProject)' != ''" />
+  </Target>
 
   <Import Project="test-runner\TestRunner.targets" />
 
