@@ -221,7 +221,6 @@ public class EvaluationTests
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/EmbeddedAttribute.cs", graphOnly: true),
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.AssemblyInfo.cs", graphOnly: true),
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.GlobalUsings.g.cs", graphOnly: true),
-            new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/ValidatableTypeAttribute.cs", graphOnly: true),
             new("RCL/Page1.razor"),
             new("RCL/Page1.razor.css"),
             new("RCL/Page2.cshtml"),
