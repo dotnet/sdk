@@ -121,7 +121,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
         try
         {
-            // Wait for agent to create the name pipe and send capabilities over.
+            // Wait for agent to create the named pipe and send capabilities over.
             // the agent blocks the app execution until initial updates are applied (if any).
             var managedCodeUpdateCapabilities = await clients.GetUpdateCapabilitiesAsync(processCommunicationCancellationToken);
 
@@ -144,7 +144,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
             {
                 // Observe updates that need to be applied to the new process
                 // and apply them before adding it to running processes.
-                // Do not block on udpates being made to other processes to avoid delaying the new process being up-to-date.
+                // Do not block on updates being made to other processes to avoid delaying the new process being up-to-date.
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any() && clients.IsManagedAgentSupported)
                 {

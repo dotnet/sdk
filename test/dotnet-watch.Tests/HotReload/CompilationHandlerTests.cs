@@ -26,8 +26,6 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
         var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false, virtualProjectTargetFramework: null, CancellationToken.None);
         Assert.NotNull(projectGraph);
 
-        var processOutputReporter = new TestProcessOutputReporter();
-
         var handler = new RunningProjectsManager(new ProcessRunner(processCleanupTimeout: TimeSpan.Zero), NullLogger.Instance);
         var workspace = new ManagedCodeWorkspace(NullLogger.Instance, handler);
 

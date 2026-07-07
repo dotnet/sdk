@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.HotReload;
 /// </summary>
 /// <param name="clients">
 /// Clients that handle managed updates and static asset updates (if <paramref name="useRefreshServerToApplyStaticAssets"/> is false).
-/// It can be empty if managed agents are not supported, otherwise it comprises of one primary client and optional secondary client.
+/// It can be empty if managed agents are not supported, otherwise it comprises one primary client and optional secondary client.
 /// </param>
 /// <param name="browserRefreshServer">
 /// Browser refresh server used to communicate managed code update status and errors to the browser,

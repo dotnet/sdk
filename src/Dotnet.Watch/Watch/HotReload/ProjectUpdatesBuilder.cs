@@ -417,13 +417,14 @@ internal sealed class ProjectUpdatesBuilder
             .ToImmutableDictionary(e => e.Id, e => e.info);
 
         var updates = await HotReloadService.GetUpdatesAsync(Solution, runningProjectInfos, cancellationToken);
+        var hasPendingUpdate = updates.Status is not (HotReloadService.Status.NoChangesToApply or HotReloadService.Status.Blocked);
 
-        var commitUpdates = false;
+        var success = false;
         try
         {
             await DisplayResultsAsync(updates, runningProjectInfos, cancellationToken);
 
-            if (updates.Status is HotReloadService.Status.NoChangesToApply or HotReloadService.Status.Blocked)
+            if (!hasPendingUpdate)
             {
                 // If Hot Reload is blocked (due to compilation error) we ignore the current
                 // changes and await the next file change.
@@ -434,7 +435,7 @@ internal sealed class ProjectUpdatesBuilder
 
             var projectsToPromptForRestart =
                 (from projectId in updates.ProjectsToRestart.Keys
-                 where !runningProjectInfos[projectId].RestartWhenChangesHaveNoEffect // equivallent to auto-restart
+                 where !runningProjectInfos[projectId].RestartWhenChangesHaveNoEffect // equivalent to auto-restart
                  select Solution.GetProject(projectId)!.Name).ToList();
 
             if (projectsToPromptForRestart.Any() &&
@@ -446,18 +447,21 @@ internal sealed class ProjectUpdatesBuilder
                 return;
             }
 
-            commitUpdates = true;
+            success = true;
         }
         finally
         {
-            if (commitUpdates)
+            if (hasPendingUpdate)
             {
-                // Note: Releases locked project baseline readers, so we can rebuild any projects that need rebuilding.
-                HotReloadService.CommitUpdate();
-            }
-            else
-            {
-                HotReloadService.DiscardUpdate();
+                if (success)
+                {
+                    // Note: Releases locked project baseline readers, so we can rebuild any projects that need rebuilding.
+                    HotReloadService.CommitUpdate();
+                }
+                else
+                {
+                    HotReloadService.DiscardUpdate();
+                }
             }
         }
 
