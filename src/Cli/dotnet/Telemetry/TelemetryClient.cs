@@ -33,6 +33,7 @@ public class TelemetryClient : ITelemetryClient
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
     // Note: The TelemetryClient instance constructor takes in an environment provider. These fields don't use that currently.
     private static readonly string? s_environmentStoragePath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
+    private static readonly string s_telemetryStorageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
 #endif
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
     private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
@@ -47,7 +48,14 @@ public class TelemetryClient : ITelemetryClient
     private static readonly bool s_enableOtlpExporter =
         Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER)
         || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
-    private static readonly int s_flushTimeoutMs = 10;
+
+    // A CI process is one-shot: there is no subsequent CLI invocation to drain persisted
+    // telemetry. In that case we register the standard Azure Monitor exporter (see the static
+    // constructor) and block on flush long enough for it to upload directly before the process
+    // exits. Locally we only need a brief flush because spans are persisted synchronously as they
+    // end and delivered by a later invocation.
+    private static readonly bool s_isCIEnvironment = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+    private static readonly int s_flushTimeoutMs = s_isCIEnvironment ? Timeout.Infinite : 10;
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
@@ -103,15 +111,33 @@ public class TelemetryClient : ITelemetryClient
         }
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
-        if (!s_disableTraceExport)
+        if (!s_disableTraceExport && !string.IsNullOrWhiteSpace(s_connectionString))
         {
-            var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
-            s_tracerProviderBuilder.AddAzureMonitorTraceExporter(o =>
+            if (s_isCIEnvironment)
             {
-                o.ConnectionString = s_connectionString;
-                o.EnableLiveMetrics = false;
-                o.StorageDirectory = storageDirectory;
-            });
+                // CI runs are one-shot, so there is no "next" invocation to drain persisted
+                // telemetry. Use the standard Azure Monitor exporter and block on shutdown (see
+                // FlushProviders, which uses an infinite timeout in CI) long enough for it to
+                // upload its telemetry directly.
+                s_tracerProviderBuilder.AddAzureMonitorTraceExporter(o =>
+                {
+                    o.ConnectionString = s_connectionString;
+                    o.EnableLiveMetrics = false;
+                    o.StorageDirectory = s_telemetryStorageDirectory;
+                });
+            }
+            else
+            {
+                // Persist spans to durable storage synchronously as they end (Phase 1), so a
+                // short-lived CLI process captures its telemetry before exiting. The exporter
+                // itself starts a background drain (Phase 2) the first time it runs, which
+                // uploads telemetry persisted by this and previous invocations.
+                s_tracerProviderBuilder.AddPersistentStorageExporter(o =>
+                {
+                    o.ConnectionString = s_connectionString;
+                    o.StorageDirectory = s_telemetryStorageDirectory;
+                });
+            }
         }
 #endif
 

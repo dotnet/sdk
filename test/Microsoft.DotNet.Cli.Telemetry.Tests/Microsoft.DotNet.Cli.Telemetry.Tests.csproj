@@ -1,0 +1,15 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <Nullable>enable</Nullable>
+    <!-- Strong naming deprecated on .NET Core -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" />
+  </ItemGroup>
+
+</Project>
