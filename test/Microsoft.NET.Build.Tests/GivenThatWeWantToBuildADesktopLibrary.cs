@@ -234,6 +234,8 @@ public class NETFramework
                 TargetFrameworks = "net462",
             };
 
+            project.AdditionalProperties["NuGetAudit"] = "false";
+
             project.SourceFiles[project.Name + ".cs"] = $@"
 using System;
 public static class {project.Name}
