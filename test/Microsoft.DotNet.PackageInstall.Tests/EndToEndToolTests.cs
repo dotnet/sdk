@@ -168,6 +168,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             // top-level package should declare all of the rids
             var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
+            EnsureToolSettingsFileUsesAnyTfmAndRid(topLevelPackage);
             var foundRids = GetRidsInSettingsFile(topLevelPackage);
             foundRids.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
         }
@@ -264,6 +265,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             // top-level package should declare all of the rids
             var topLevelPackage = packages.FirstOrDefault(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
             topLevelPackage.Should().NotBeNull($"Package {packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg should be present in the tool packages directory")
+                .And.Satisfy<string>(EnsureToolSettingsFileUsesAnyTfmAndRid)
                 .And.Satisfy<string>(SupportAllOfTheseRuntimes([.. expectedRids, "any"]));
         }
 
@@ -554,14 +556,27 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             return nodes;
         }
 
+        static void EnsureToolSettingsFileUsesAnyTfmAndRid(string packagePath)
+        {
+            using var zipArchive = ZipFile.OpenRead(packagePath);
+            GetToolSettingsFileEntry(zipArchive).FullName.Should().Be("tools/any/any/DotnetToolSettings.xml");
+        }
+
         static XElement GetToolSettingsFile(string packagePath)
         {
             using var zipArchive = ZipFile.OpenRead(packagePath);
-            var nuspecEntry = zipArchive.Entries.First(e => e.Name == "DotnetToolSettings.xml")!;
-            var stream = nuspecEntry.Open();
+            var toolSettingsEntry = GetToolSettingsFileEntry(zipArchive);
+            var stream = toolSettingsEntry.Open();
             var xml = XDocument.Load(stream, LoadOptions.None);
             return xml.Root!;
 
+        }
+
+        static ZipArchiveEntry GetToolSettingsFileEntry(ZipArchive zipArchive)
+        {
+            var settingsEntries = zipArchive.Entries.Where(e => e.Name == "DotnetToolSettings.xml").ToArray();
+            settingsEntries.Should().ContainSingle("tool packages should contain exactly one DotnetToolSettings.xml file");
+            return settingsEntries[0];
         }
 
         [TestMethod]
