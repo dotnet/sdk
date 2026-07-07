@@ -43,6 +43,14 @@
       Conditioned to platforms where NativeAOT publish is supported.
     -->
     <RuntimeIdentifier Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">$(TargetRid)</RuntimeIdentifier>
+
+    <!--
+      When cross-compiling on Linux (e.g. building linux-arm64 from an x64 host), opt into the
+      common LocateNativeCompiler target. It maps SysRoot to the ROOTFS_DIR environment variable
+      provided by the cross-prereq build container and detects the cross clang/lld toolchain, so
+      NativeAOT emits the correct sysroot and target linker arguments. Native builds don't need it.
+    -->
+    <UseCommonLocateNativeCompilerTarget Condition="'$(CrossBuild)' == 'true' and '$(OS)' != 'Windows_NT'">true</UseCommonLocateNativeCompilerTarget>
   </PropertyGroup>
 
   <Import Project="AotSourceFiles.props" />
@@ -116,5 +124,13 @@
       <DirectPInvoke Remove="System.Security.Cryptography.Native.Apple" />
     </ItemGroup>
   </Target>
+
+  <!--
+    Cross-compilation compiler/linker detection for NativeAOT (opt-in via
+    UseCommonLocateNativeCompilerTarget above). Sets SysRoot from ROOTFS_DIR and resolves the
+    cross clang/lld linker so linux-arm64 (and other) targets can be built from an x64 Linux host.
+  -->
+  <Import Project="$(RepositoryEngineeringDir)common/native/LocateNativeCompiler.targets"
+          Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'" />
 
 </Project>

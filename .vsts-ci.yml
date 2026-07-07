@@ -77,6 +77,14 @@ extends:
     containers:
       azureLinux30Amd64:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+      # Cross-compilation prereq image (clang + /crossrootfs/arm64 sysroot) used by the Linux arm64
+      # AoT leg. NativeAOT cross-links dotnet-aot for linux-arm64 from an x64 host; the container
+      # provides the native toolchain + sysroot and sets ROOTFS_DIR, and the leg passes
+      # /p:CrossBuild=true so ILC emits --sysroot/--target.
+      azureLinuxCrossArm64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
+        env:
+          ROOTFS_DIR: /crossrootfs/arm64
 
     sdl:
       sourceAnalysisPool:
@@ -248,33 +256,35 @@ extends:
               osProperties: /p:OSName=linux-musl
               runTests: false
 
-      ### AOT (native arm64) ###
-      # The AoT leg builds dotnet-aot via NativeAOT, which cannot cross-compile, so it must run on
-      # native arm64 hardware (HostRid == TargetRid == linux-arm64) to produce the dotnet-aot .so and
-      # its mstat/dgml size-analysis output. Consistent with the other linux-arm64 legs, this only
-      # performs the build (the x64 AoT leg provides the running test coverage). Runs for internal PRs
-      # and test builds; official builds publish via the Official legs above and don't need it.
+      ### AOT (linux-arm64 cross-build) ###
+      # dotnet-aot is built with NativeAOT, which can cross-compile for linux-arm64 from an x64 host
+      # given a cross toolchain and target sysroot. This leg therefore runs on the regular x64 Linux
+      # pool inside the azurelinux cross-arm64 prereq container (which provides clang + the
+      # /crossrootfs/arm64 sysroot and sets ROOTFS_DIR) and passes /p:CrossBuild=true. Consistent
+      # with the other linux-arm64 legs, this only performs the build (the x64 AoT leg provides the
+      # running test coverage). Runs for internal PRs and test builds; official builds publish via
+      # the Official legs above and don't need it.
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
             pool:
-              name: Docker-Linux-Arm-Internal
-              image: build.azurelinux.3.arm64
-              hostArchitecture: Arm64
+              name: $(DncEngInternalBuildPool)
+              image: build.azurelinux.3.amd64
               os: linux
-            helixTargetQueue: Ubuntu.2204.ArmArch
-            timeoutInMinutes: 90
+            helixTargetQueue: ubuntu.2204.amd64
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
             populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            timeoutInMinutes: 90
             linuxJobParameterSets:
             - categoryName: AoT
+              container: azureLinuxCrossArm64
               runAoTTests: true
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
-              osProperties: $(linuxOsglibcProperties)
+              osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
               runTests: false
 
       ############### MACOS ###############

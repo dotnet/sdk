@@ -20,9 +20,10 @@ parameters:
     osProperties: $(linuxOsglibcProperties)
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
-  # The AoT leg builds dotnet-aot via NativeAOT, which cannot cross-compile, so it must run on
-  # native x64 hardware (HostRid == TargetRid == linux-x64) to produce the dotnet-aot .so and its
-  # mstat/dgml size-analysis output, and to run the *.AoT.Tests.csproj test projects.
+  # The x64 AoT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
+  # build dotnet-aot via NativeAOT (producing the .so and its mstat/dgml size-analysis output) and
+  # run the *.AoT.Tests.csproj test projects. linux-arm64 AoT is covered by a separate cross-build
+  # leg (see .vsts-pr.yml / .vsts-ci.yml).
   - categoryName: AoT
     runAoTTests: true
     osProperties: $(linuxOsglibcProperties)

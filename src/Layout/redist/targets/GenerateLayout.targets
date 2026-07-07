@@ -532,11 +532,13 @@
     them entirely in native code, falling back to the managed dotnet.dll for other commands.
     The output is placed next to dotnet.dll so it's packaged with the SDK.
 
-    Only runs for native builds (TargetRid == HostRid) on supported platforms.
-    Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
+    Runs for native builds (TargetRid == HostRid) on supported platforms, and for Linux
+    cross-builds (CrossBuild=true) where NativeAOT targets another architecture from an x64
+    Linux host using a cross toolchain and target sysroot (ROOTFS_DIR). See the
+    _ShouldPublishDotnetAot property in src/Layout/Directory.Build.props.
   -->
   <Target Name="PublishDotnetAot"
-          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))">
+          Condition="'$(_ShouldPublishDotnetAot)' == 'true'">
     <PropertyGroup>
       <!-- Define platform-specific native library naming -->
       <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
@@ -544,6 +546,16 @@
       <_DotnetAotNativeLibExtension Condition="'$(OSName)' == 'osx'">.dylib</_DotnetAotNativeLibExtension>
       <_DotnetAotNativeLibExtension Condition="'$(_DotnetAotNativeLibExtension)' == ''">.so</_DotnetAotNativeLibExtension>
       <_DotnetAotNativeLibName>$(_DotnetAotNativeLibPrefix)dotnet-aot$(_DotnetAotNativeLibExtension)</_DotnetAotNativeLibName>
+
+      <!--
+        Global properties for the dotnet-aot Publish below. _IsPublishing=true is always required
+        (see the note below). For Linux cross-builds we also forward the cross-compilation inputs:
+        the MSBuild task doesn't flow the outer build's global properties to the child project, so
+        CrossBuild and the target architecture/RID must be passed explicitly. The child then maps
+        SysRoot from the ROOTFS_DIR environment variable via LocateNativeCompiler.targets.
+      -->
+      <_DotnetAotPublishProperties>_IsPublishing=true</_DotnetAotPublishProperties>
+      <_DotnetAotPublishProperties Condition="'$(_DotnetAotIsLinuxCrossBuild)' == 'true'">$(_DotnetAotPublishProperties);CrossBuild=true;TargetArchitecture=$(TargetArchitecture);TargetRid=$(TargetRid)</_DotnetAotPublishProperties>
     </PropertyGroup>
 
     <!--
@@ -560,7 +572,7 @@
     <MSBuild
       Targets="Publish;PublishItemsOutputGroup"
       Projects="$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj"
-      Properties="_IsPublishing=true">
+      Properties="$(_DotnetAotPublishProperties)">
       <Output TaskParameter="TargetOutputs" ItemName="_DotnetAotPublishedItems" />
     </MSBuild>
 
