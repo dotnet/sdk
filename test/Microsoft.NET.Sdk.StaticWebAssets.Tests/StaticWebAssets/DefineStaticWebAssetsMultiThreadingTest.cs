@@ -90,7 +90,7 @@ public class DefineStaticWebAssetsMultiThreadingTest
     }
 
     [TestMethod]
-    public void CacheInvalidatesRelativeCandidateWhenProjectFileChanges_NotProcessCurrentDirectory()
+    public void CacheInvalidatesRelativeCandidateWhenAssetFileChanges_NotProcessCurrentDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(DefineStaticWebAssetsMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");

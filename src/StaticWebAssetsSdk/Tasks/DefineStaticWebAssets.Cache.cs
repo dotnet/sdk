@@ -17,11 +17,13 @@ public partial class DefineStaticWebAssets : Task
     {
         // Absolutize the cache manifest path relative to the project directory so file I/O in the cache
         // does not depend on the process working directory (required for multithreaded task execution).
-        var cacheManifestPath = string.IsNullOrEmpty(CacheManifestPath)
-            ? CacheManifestPath
+        // Treat null/empty/whitespace uniformly as "no cache" so we never call GetAbsolutePath on a blank
+        // value (which throws) nor fall through to File.OpenWrite("") when persisting the manifest.
+        var cacheManifestPath = string.IsNullOrWhiteSpace(CacheManifestPath)
+            ? null
             : TaskEnvironment.GetAbsolutePath(CacheManifestPath).Value;
         var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, cacheManifestPath);
-        if (CacheManifestPath == null)
+        if (cacheManifestPath == null)
         {
             assetsCache.NoCache(CandidateAssets);
             return assetsCache;
@@ -141,7 +143,7 @@ public partial class DefineStaticWebAssets : Task
         public Dictionary<string, StaticWebAsset> CachedAssets { get; set; } = [];
         public Dictionary<string, CopyCandidate> CachedCopyCandidates { get; set; } = [];
 
-        internal static DefineStaticWebAssetsCache ReadOrCreateCache(TaskLoggingHelper log, string manifestPath)
+        internal static DefineStaticWebAssetsCache ReadOrCreateCache(TaskLoggingHelper log, string? manifestPath)
         {
             if (manifestPath != null && File.Exists(manifestPath))
             {
