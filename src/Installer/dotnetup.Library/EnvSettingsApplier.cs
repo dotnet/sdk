@@ -41,17 +41,17 @@ internal static class EnvSettingsApplier
         ArgumentNullException.ThrowIfNull(observed);
         ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
 
-        if (targetEnv == DotnetAccessMode.Full && !OperatingSystem.IsWindows())
+        if (targetEnv == DotnetAccessMode.Everywhere && !OperatingSystem.IsWindows())
         {
             throw new PlatformNotSupportedException(
-                $"{nameof(DotnetAccessMode)}.{nameof(DotnetAccessMode.Full)} is only supported on Windows.");
+                $"{nameof(DotnetAccessMode)}.{nameof(DotnetAccessMode.Everywhere)} is only supported on Windows.");
         }
 
         // Windows user-scope dotnet env vars (PATH + DOTNET_ROOT) are wired only by All mode.
-        bool nowWritesDotnetEnvVars = targetEnv == DotnetAccessMode.Full;
+        bool nowWritesDotnetEnvVars = targetEnv == DotnetAccessMode.Everywhere;
 
         // The managed profile block wires dotnet for Shell/All, and dotnetup when dotnetupOnPath.
-        bool nowProfileDotnet = targetEnv is DotnetAccessMode.Shell or DotnetAccessMode.Full;
+        bool nowProfileDotnet = targetEnv is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
         bool nowProfileDotnetup = targetDotnetupOnPath;
         bool nowHasProfileBlock = nowProfileDotnet || nowProfileDotnetup;
 

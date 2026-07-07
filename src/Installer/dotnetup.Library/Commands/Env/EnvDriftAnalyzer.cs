@@ -15,9 +15,9 @@ internal static class EnvDriftAnalyzer
     {
         var drift = new List<string>();
 
-        bool expectsProfileDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Full;
+        bool expectsProfileDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
         bool expectsProfileBlock = expectsProfileDotnet || config.DotnetupOnPath;
-        bool expectsDotnetEnvVars = config.AccessMode == DotnetAccessMode.Full;
+        bool expectsDotnetEnvVars = config.AccessMode == DotnetAccessMode.Everywhere;
 
         // Profile-block presence: only assert when the profile state is known.
         if (observed.ProfileBlockPresent is bool profileBlockPresent)
@@ -36,13 +36,13 @@ internal static class EnvDriftAnalyzer
         {
             if (expectsDotnetEnvVars && !observed.DotnetUserEnvVarsComplete)
             {
-                drift.Add(Strings.EnvDriftFullModeEnvVarsIncomplete);
+                drift.Add(Strings.EnvDriftEverywhereModeEnvVarsIncomplete);
             }
             else if (!expectsDotnetEnvVars && observed.DotnetUserEnvVarsPresent)
             {
                 drift.Add(string.Format(
                     CultureInfo.InvariantCulture,
-                    Strings.EnvDriftFullModeEnvVarsUnexpected,
+                    Strings.EnvDriftEverywhereModeEnvVarsUnexpected,
                     config.AccessMode.ToString().ToLowerInvariant()));
             }
 

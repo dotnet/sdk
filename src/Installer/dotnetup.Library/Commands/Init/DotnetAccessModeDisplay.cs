@@ -19,7 +19,7 @@ internal static class DotnetAccessModeDisplay
     {
         DotnetAccessMode.None => Strings.AccessModeNone,
         DotnetAccessMode.Shell => Strings.AccessModeShell,
-        DotnetAccessMode.Full => Strings.AccessModeFull,
+        DotnetAccessMode.Everywhere => Strings.AccessModeEverywhere,
         _ => accessMode.ToString(),
     };
 

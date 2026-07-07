@@ -47,11 +47,11 @@ internal class EnvSetCommand : CommandBase
                 Strings.EnvSetNoModeSpecified);
         }
 
-        if (targetEnv == DotnetAccessMode.Full && !OperatingSystem.IsWindows())
+        if (targetEnv == DotnetAccessMode.Everywhere && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                Strings.EnvSetFullModeWindowsOnly);
+                Strings.EnvSetEverywhereModeWindowsOnly);
         }
 
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.

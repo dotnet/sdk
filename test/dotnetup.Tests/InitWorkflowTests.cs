@@ -43,7 +43,7 @@ public class InitWorkflowTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow(DotnetAccessMode.Full)]
+    [DataRow(DotnetAccessMode.Everywhere)]
     internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(DotnetAccessMode accessMode)
     {
         DotnetAccessModePolicy.ShouldReplaceSystemConfiguration(accessMode)
@@ -59,7 +59,7 @@ public class InitWorkflowTests : IDisposable
 
     [TestMethod]
     [DataRow(DotnetAccessMode.Shell)]
-    [DataRow(DotnetAccessMode.Full)]
+    [DataRow(DotnetAccessMode.Everywhere)]
     internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(DotnetAccessMode accessMode)
     {
         DotnetAccessModePolicy.ShouldPromptToConvertSystemInstalls(accessMode)

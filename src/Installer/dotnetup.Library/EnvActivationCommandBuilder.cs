@@ -28,7 +28,7 @@ internal static class EnvActivationCommandBuilder
             return null;
         }
 
-        bool wiresDotnet = accessMode is DotnetAccessMode.Shell or DotnetAccessMode.Full;
+        bool wiresDotnet = accessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
         if (!wiresDotnet && !dotnetupOnPath)
         {
             return null;

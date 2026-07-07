@@ -73,12 +73,12 @@ public class EnvDriftAnalyzerTests
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void ConfiguredAllButIncomplete_ReportsEnvVarDrift()
     {
-        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Full, DotnetupOnPath = true };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Everywhere, DotnetupOnPath = true };
         var observed = Observed(dotnetEnvVarsComplete: false, profileBlockPresent: true, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
-        drift.Should().Contain(d => d.Contains("'full' mode expectations", StringComparison.Ordinal));
+        drift.Should().Contain(d => d.Contains("'everywhere' mode expectations", StringComparison.Ordinal));
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
@@ -89,7 +89,7 @@ public class EnvDriftAnalyzerTests
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
-        drift.Should().Contain(d => d.Contains("still has 'full'-mode wiring", StringComparison.Ordinal));
+        drift.Should().Contain(d => d.Contains("still has 'everywhere'-mode wiring", StringComparison.Ordinal));
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]

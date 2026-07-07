@@ -8,8 +8,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
 /// Serializes <see cref="DotnetAccessMode"/> as the lowercase names <c>none</c> / <c>shell</c> /
-/// <c>full</c>, and on read also accepts the legacy enum spellings that shipped in internal
-/// builds (<c>DotnetupDotnet</c> / <c>ShellProfile</c> / <c>FullPathReplacement</c>) and the
+/// <c>everywhere</c>, and on read also accepts the legacy enum spellings that shipped in internal
+/// builds (<c>DotnetupDotnet</c> / <c>ShellProfile</c> / <c>FullPathReplacement</c> / <c>full</c>) and the
 /// numeric form. This is the read-compatibility shim that lets configs written by earlier
 /// internal builds keep their chosen mode after the rename; see the design doc
 /// (documentation/general/dotnetup/designs/dotnetup-env.md, "Config schema").
@@ -34,7 +34,7 @@ internal sealed class DotnetAccessModeJsonConverter : JsonConverter<DotnetAccess
         {
             "none" or "dotnetupdotnet" => DotnetAccessMode.None,
             "shell" or "shellprofile" => DotnetAccessMode.Shell,
-            "full" or "fullpathreplacement" => DotnetAccessMode.Full,
+            "everywhere" or "full" or "fullpathreplacement" => DotnetAccessMode.Everywhere,
             _ => throw new JsonException($"Unknown {nameof(DotnetAccessMode)} value '{value}'."),
         };
     }
@@ -45,7 +45,7 @@ internal sealed class DotnetAccessModeJsonConverter : JsonConverter<DotnetAccess
         {
             DotnetAccessMode.None => "none",
             DotnetAccessMode.Shell => "shell",
-            DotnetAccessMode.Full => "full",
+            DotnetAccessMode.Everywhere => "everywhere",
             _ => throw new JsonException($"Unknown {nameof(DotnetAccessMode)} value '{value}'."),
         });
     }

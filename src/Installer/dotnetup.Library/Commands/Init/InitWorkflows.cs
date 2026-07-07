@@ -286,7 +286,7 @@ internal class InitWorkflows
 
     private static DotnetAccessMode ValidateAccessMode(DotnetAccessMode accessMode)
     {
-        if (accessMode == DotnetAccessMode.Full && !OperatingSystem.IsWindows())
+        if (accessMode == DotnetAccessMode.Everywhere && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
@@ -375,7 +375,7 @@ internal class InitWorkflows
 
         if (isWindows)
         {
-            options.Add(new(Strings.AccessModeFull, Strings.PathDescriptionFull, Strings.PathTooltipFull));
+            options.Add(new(Strings.AccessModeEverywhere, Strings.PathDescriptionEverywhere, Strings.PathTooltipEverywhere));
         }
 
         int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
@@ -384,7 +384,7 @@ internal class InitWorkflows
         {
             0 => DotnetAccessMode.None,
             1 => DotnetAccessMode.Shell,
-            _ => DotnetAccessMode.Full,
+            _ => DotnetAccessMode.Everywhere,
         };
     }
 
@@ -616,7 +616,7 @@ internal class InitWorkflows
         {
             DotnetAccessMode.None => Strings.PathGuidanceNone,
             DotnetAccessMode.Shell => Strings.PathGuidanceShell,
-            DotnetAccessMode.Full => Strings.PathGuidanceFull,
+            DotnetAccessMode.Everywhere => Strings.PathGuidanceEverywhere,
             _ => null,
         };
 

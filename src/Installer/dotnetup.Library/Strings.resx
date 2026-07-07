@@ -187,7 +187,7 @@
     <value>(Suggested)</value>
     <comment>Hint appended after the recommended mode name in the init summary, e.g. "Terminal Mode (Suggested)".</comment>
   </data>
-  <data name="AccessModeFull" xml:space="preserve">
+  <data name="AccessModeEverywhere" xml:space="preserve">
     <value>Replacement Mode</value>
   </data>
   <data name="PathGuidanceNone" xml:space="preserve">
@@ -196,7 +196,7 @@
   <data name="PathGuidanceShell" xml:space="preserve">
     <value>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</value>
   </data>
-  <data name="PathGuidanceFull" xml:space="preserve">
+  <data name="PathGuidanceEverywhere" xml:space="preserve">
     <value>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</value>
   </data>
   <data name="PathDescriptionNone" xml:space="preserve">
@@ -208,7 +208,7 @@
   <data name="PathDescriptionShellBase" xml:space="preserve">
     <value>Configure the current shell profile to use installs managed by dotnetup.</value>
   </data>
-  <data name="PathDescriptionFull" xml:space="preserve">
+  <data name="PathDescriptionEverywhere" xml:space="preserve">
     <value>The system will be configured to use dotnetup installs over any other installs.</value>
   </data>
   <data name="PathTooltipNone" xml:space="preserve">
@@ -220,7 +220,7 @@
   <data name="PathTooltipShellWindowsNote" xml:space="preserve">
     <value>Only PowerShell will work in this mode. CMD has no profile file.</value>
   </data>
-  <data name="PathTooltipFull" xml:space="preserve">
+  <data name="PathTooltipEverywhere" xml:space="preserve">
     <value>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</value>
   </data>
   <data name="PathReplacementModeUnixError" xml:space="preserve">
@@ -285,8 +285,8 @@ Or open a new terminal.</value>
   <data name="EnvSetNoModeSpecified" xml:space="preserve">
     <value>No env mode specified and none is stored. Specify a mode: none, shell, or full.</value>
   </data>
-  <data name="EnvSetFullModeWindowsOnly" xml:space="preserve">
-    <value>'full' mode is only supported on Windows. Use 'shell' on this platform.</value>
+  <data name="EnvSetEverywhereModeWindowsOnly" xml:space="preserve">
+    <value>'everywhere' mode is only supported on Windows. Use 'shell' on this platform.</value>
   </data>
   <data name="EnvDriftProfileBlockMissing" xml:space="preserve">
     <value>Shell profile is missing the dotnetup managed block.</value>
@@ -294,11 +294,11 @@ Or open a new terminal.</value>
   <data name="EnvDriftProfileBlockUnexpected" xml:space="preserve">
     <value>Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</value>
   </data>
-  <data name="EnvDriftFullModeEnvVarsIncomplete" xml:space="preserve">
-    <value>Windows user PATH / DOTNET_ROOT / system PATH do not match 'full' mode expectations.</value>
+  <data name="EnvDriftEverywhereModeEnvVarsIncomplete" xml:space="preserve">
+    <value>Windows user PATH / DOTNET_ROOT / system PATH do not match 'everywhere' mode expectations.</value>
   </data>
-  <data name="EnvDriftFullModeEnvVarsUnexpected" xml:space="preserve">
-    <value>Windows user PATH / DOTNET_ROOT still has 'full'-mode wiring (expected dotnet access: '{0}').</value>
+  <data name="EnvDriftEverywhereModeEnvVarsUnexpected" xml:space="preserve">
+    <value>Windows user PATH / DOTNET_ROOT still has 'everywhere'-mode wiring (expected dotnet access: '{0}').</value>
   </data>
   <data name="EnvDriftDotnetupOnPathMissing" xml:space="preserve">
     <value>dotnetup is configured to be on PATH but is missing from the user PATH.</value>

@@ -15,7 +15,7 @@ internal static class DotnetAccessModePolicy
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
     public static bool ShouldReplaceSystemConfiguration(DotnetAccessMode accessMode) =>
-        accessMode is DotnetAccessMode.Full;
+        accessMode is DotnetAccessMode.Everywhere;
 
     /// <summary>
     /// Returns true when the chosen mode shadows the system PATH and the user should therefore

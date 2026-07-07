@@ -32,7 +32,7 @@ internal static class EnvActivationStatus
         bool needsAdditions = false;
         bool needsRemovals = false;
 
-        bool wantDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Full;
+        bool wantDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
         bool haveDotnet = resolvedDotnetDir is not null && DotnetupUtilities.PathsEqual(resolvedDotnetDir, managedDotnetDir);
         UpdateFlags(wantDotnet, haveDotnet, ref needsAdditions, ref needsRemovals);
 

@@ -15,7 +15,7 @@ internal static class EnvSetCommandParser
     [
         new("none", DotnetAccessMode.None, WindowsOnly: false),
         new("shell", DotnetAccessMode.Shell, WindowsOnly: false),
-        new("full", DotnetAccessMode.Full, WindowsOnly: true),
+        new("everywhere", DotnetAccessMode.Everywhere, WindowsOnly: true),
     ];
 
     private static readonly string[] s_supportedModes = s_modes

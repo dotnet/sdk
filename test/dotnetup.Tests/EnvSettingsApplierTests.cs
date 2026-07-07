@@ -108,7 +108,7 @@ public class EnvSettingsApplierTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void All_DotnetupOn_WritesEnvVarsAndProfile()
     {
-        EnvSettingsApplier.Apply(DotnetAccessMode.Full, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        EnvSettingsApplier.Apply(DotnetAccessMode.Everywhere, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(1);
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(0);
@@ -208,8 +208,8 @@ public class EnvSettingsApplierTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void StrayDotnetEnvVars_RemovedWhenTargetShell()
     {
-        // Reality has 'full'-mode env vars wired but the target is shell: remove them, even though
-        // no prior 'full' config is supplied.
+        // Reality has 'everywhere'-mode env vars wired but the target is shell: remove them, even though
+        // no prior 'everywhere' config is supplied.
         EnvSettingsApplier.Apply(
             DotnetAccessMode.Shell, targetDotnetupOnPath: true,
             Observed(dotnetEnvVarsPresent: true),
@@ -224,7 +224,7 @@ public class EnvSettingsApplierTests : IDisposable
     public void Target_All_On_NonWindows_Throws()
     {
         Action act = () => EnvSettingsApplier.Apply(
-            DotnetAccessMode.Full, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+            DotnetAccessMode.Everywhere, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         act.Should().Throw<PlatformNotSupportedException>();
     }

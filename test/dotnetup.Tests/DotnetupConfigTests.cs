@@ -52,7 +52,7 @@ public class DotnetupConfigTests : IDisposable
     [TestMethod]
     [DataRow(DotnetAccessMode.None)]
     [DataRow(DotnetAccessMode.Shell)]
-    [DataRow(DotnetAccessMode.Full)]
+    [DataRow(DotnetAccessMode.Everywhere)]
     internal void ReadAccessMode_ReturnsStoredPreference_WhenConfigExists(DotnetAccessMode accessMode)
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = accessMode });
@@ -89,7 +89,8 @@ public class DotnetupConfigTests : IDisposable
     [TestMethod]
     [DataRow("DotnetupDotnet", DotnetAccessMode.None)]
     [DataRow("ShellProfile", DotnetAccessMode.Shell)]
-    [DataRow("FullPathReplacement", DotnetAccessMode.Full)]
+    [DataRow("FullPathReplacement", DotnetAccessMode.Everywhere)]
+    [DataRow("full", DotnetAccessMode.Everywhere)]
     internal void Read_LegacyConfig_MapsPropertyNameAndEnumSpelling(string legacyEnumValue, DotnetAccessMode expected)
     {
         DotnetupPaths.EnsureDataDirectoryExists();
@@ -121,7 +122,7 @@ public class DotnetupConfigTests : IDisposable
     [TestMethod]
     [DataRow(1, DotnetAccessMode.None)]
     [DataRow(2, DotnetAccessMode.Shell)]
-    [DataRow(3, DotnetAccessMode.Full)]
+    [DataRow(3, DotnetAccessMode.Everywhere)]
     internal void Read_LegacyNumericAccessMode_Maps(int numeric, DotnetAccessMode expected)
     {
         DotnetupPaths.EnsureDataDirectoryExists();

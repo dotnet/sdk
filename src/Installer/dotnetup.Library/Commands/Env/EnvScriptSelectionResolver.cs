@@ -39,7 +39,7 @@ internal static class EnvScriptSelectionResolver
             return new EnvScriptSelection(IncludeDotnet: true, IncludeDotnetup: true);
         }
 
-        bool includeDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Full;
+        bool includeDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
         return new EnvScriptSelection(IncludeDotnet: includeDotnet, IncludeDotnetup: config.DotnetupOnPath);
     }
 }

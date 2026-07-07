@@ -2,7 +2,7 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../Strings.resx">
     <body>
-      <trans-unit id="AccessModeFull">
+      <trans-unit id="AccessModeEverywhere">
         <source>Replacement Mode</source>
         <target state="new">Replacement Mode</target>
         <note />
@@ -66,14 +66,14 @@ Or open a new terminal.</target>
         <target state="new">dotnetup is on the user PATH but is configured to be off.</target>
         <note />
       </trans-unit>
-      <trans-unit id="EnvDriftFullModeEnvVarsIncomplete">
-        <source>Windows user PATH / DOTNET_ROOT / system PATH do not match 'full' mode expectations.</source>
-        <target state="new">Windows user PATH / DOTNET_ROOT / system PATH do not match 'full' mode expectations.</target>
+      <trans-unit id="EnvDriftEverywhereModeEnvVarsIncomplete">
+        <source>Windows user PATH / DOTNET_ROOT / system PATH do not match 'everywhere' mode expectations.</source>
+        <target state="new">Windows user PATH / DOTNET_ROOT / system PATH do not match 'everywhere' mode expectations.</target>
         <note />
       </trans-unit>
-      <trans-unit id="EnvDriftFullModeEnvVarsUnexpected">
-        <source>Windows user PATH / DOTNET_ROOT still has 'full'-mode wiring (expected dotnet access: '{0}').</source>
-        <target state="new">Windows user PATH / DOTNET_ROOT still has 'full'-mode wiring (expected dotnet access: '{0}').</target>
+      <trans-unit id="EnvDriftEverywhereModeEnvVarsUnexpected">
+        <source>Windows user PATH / DOTNET_ROOT still has 'everywhere'-mode wiring (expected dotnet access: '{0}').</source>
+        <target state="new">Windows user PATH / DOTNET_ROOT still has 'everywhere'-mode wiring (expected dotnet access: '{0}').</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvDriftProfileBlockMissing">
@@ -176,9 +176,9 @@ Or open a new terminal.</target>
         <target state="new">Unsupported shell '{0}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="EnvSetFullModeWindowsOnly">
-        <source>'full' mode is only supported on Windows. Use 'shell' on this platform.</source>
-        <target state="new">'full' mode is only supported on Windows. Use 'shell' on this platform.</target>
+      <trans-unit id="EnvSetEverywhereModeWindowsOnly">
+        <source>'everywhere' mode is only supported on Windows. Use 'shell' on this platform.</source>
+        <target state="new">'everywhere' mode is only supported on Windows. Use 'shell' on this platform.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvSetNoModeSpecified">
@@ -336,7 +336,7 @@ Or open a new terminal.</target>
         <target state="new">Total</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathDescriptionFull">
+      <trans-unit id="PathDescriptionEverywhere">
         <source>The system will be configured to use dotnetup installs over any other installs.</source>
         <target state="new">The system will be configured to use dotnetup installs over any other installs.</target>
         <note />
@@ -356,7 +356,7 @@ Or open a new terminal.</target>
         <target state="new">Configure the current shell profile to use installs managed by dotnetup.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathGuidanceFull">
+      <trans-unit id="PathGuidanceEverywhere">
         <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
         <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>
         <note />
@@ -381,7 +381,7 @@ Or open a new terminal.</target>
         <target state="new">Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathTooltipFull">
+      <trans-unit id="PathTooltipEverywhere">
         <source>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</source>
         <target state="new">Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</target>
         <note />
