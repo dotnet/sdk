@@ -1054,10 +1054,10 @@ public class TrackedOperationTests : IDisposable
             op.EnsureErrorTypeTagged();
         }
 
-        Assert.Single(_capturedActivities);
+        Assert.ContainsSingle(_capturedActivities);
         var tag = _capturedActivities[0].GetTagItem("error.type");
-        Assert.NotNull(tag);
-        Assert.Equal(string.Empty, tag);
+        Assert.IsNotNull(tag);
+        Assert.AreEqual(string.Empty, tag);
     }
 
     [TestMethod]
@@ -1069,8 +1069,8 @@ public class TrackedOperationTests : IDisposable
             op.EnsureErrorTypeTagged();
         }
 
-        Assert.Single(_capturedActivities);
-        Assert.Equal("InstallFailed", _capturedActivities[0].GetTagItem("error.type"));
+        Assert.ContainsSingle(_capturedActivities);
+        Assert.AreEqual("InstallFailed", _capturedActivities[0].GetTagItem("error.type"));
     }
 
     [TestMethod]
