@@ -36,16 +36,16 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
 
     public override bool Execute()
     {
-        AbsolutePath manifestAbsolutePath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : default;
-        AbsolutePath cacheAbsolutePath = !string.IsNullOrEmpty(CacheFilePath) ? TaskEnvironment.GetAbsolutePath(CacheFilePath) : default;
-        AbsolutePath exclusionCacheAbsolutePath = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) ? TaskEnvironment.GetAbsolutePath(ExclusionPatternsCacheFilePath) : default;
+        AbsolutePath manifestAbsolutePath = !string.IsNullOrWhiteSpace(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : default;
+        AbsolutePath cacheAbsolutePath = !string.IsNullOrWhiteSpace(CacheFilePath) ? TaskEnvironment.GetAbsolutePath(CacheFilePath) : default;
+        AbsolutePath exclusionCacheAbsolutePath = !string.IsNullOrWhiteSpace(ExclusionPatternsCacheFilePath) ? TaskEnvironment.GetAbsolutePath(ExclusionPatternsCacheFilePath) : default;
 
         var (patternString, parsedPatterns) = ParseAndSortPatterns(ExclusionPatterns);
-        var existingPatternString = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) && File.Exists(exclusionCacheAbsolutePath)
+        var existingPatternString = !string.IsNullOrWhiteSpace(ExclusionPatternsCacheFilePath) && File.Exists(exclusionCacheAbsolutePath)
             ? File.ReadAllText(exclusionCacheAbsolutePath)
             : null;
         existingPatternString = string.IsNullOrEmpty(existingPatternString) ? null : existingPatternString;
-        if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(manifestAbsolutePath) && File.GetLastWriteTimeUtc(manifestAbsolutePath) > File.GetLastWriteTimeUtc(cacheAbsolutePath))
+        if (!string.IsNullOrWhiteSpace(CacheFilePath) && File.Exists(manifestAbsolutePath) && File.GetLastWriteTimeUtc(manifestAbsolutePath) > File.GetLastWriteTimeUtc(cacheAbsolutePath))
         {
             // Check if exclusion patterns cache is also up to date
             if (string.Equals(patternString, existingPatternString, StringComparison.Ordinal))
@@ -204,7 +204,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
 
     private void UpdateExclusionPatternsCache(string existingPatternString, string patternString, AbsolutePath manifestAbsolutePath, AbsolutePath exclusionCacheAbsolutePath)
     {
-        if (string.IsNullOrEmpty(ExclusionPatternsCacheFilePath))
+        if (string.IsNullOrWhiteSpace(ExclusionPatternsCacheFilePath))
         {
             return;
         }
