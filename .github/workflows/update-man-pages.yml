@@ -1,0 +1,44 @@
+name: Update man-pages workflow
+on:
+  schedule:
+    - cron: "42 3 1/15 * *"   # Trigger every 15 days at 03:42
+    #- cron: "0,5,10,15,20,25,30,35,40,45,50,55 * * * *"  # For testing
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-man-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Update man-pages
+        run: |
+          set -euo pipefail
+
+          rm ./documentation/manpages/sdk/*
+
+          ./documentation/manpages/tool/run_docker.sh
+      
+          # Only add files with more than 2 changed lines
+          for line in $(git diff --numstat | awk '$1+$2 > 2 {print $3}'); do
+            git add "$line"
+          done
+      
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions'
+            git config user.email 'github-actions@github.com'
+            date=$(date +%F)
+            title="[automated] Update man pages"
+            body="This action is executed twice a month to automatically update the manpages based on the latest changes to the dotnet/docs repo"
+            branch=update-man-page-$date
+            git checkout -b $branch
+            git commit -m "$title"
+            git push -u origin $branch --force
+            gh pr create --base main --head $branch --title "$title" --body "$body"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}

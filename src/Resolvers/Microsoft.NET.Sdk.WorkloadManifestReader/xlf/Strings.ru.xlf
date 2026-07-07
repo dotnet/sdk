@@ -142,6 +142,11 @@
         <target state="translated">Неразрешенный целевой объект "{0}" для перенаправления рабочей нагрузки "{1}" в манифесте "{2}" [{3}]</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <note>{Locked="dotnet workload repair"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
         <target state="translated">Версия рабочей нагрузки {0}, указанная в {1}, не найдена. Запустите команду "dotnet workload restore", чтобы установить эту версию рабочей нагрузки.</target>

@@ -1,12 +1,14 @@
 @echo off
 
+setlocal
+
 echo %* | findstr /C:"-pack" >nul
 if %errorlevel%==0 (
-    set PackInstaller=
+    set skipFlags="/p:SkipUsingCrossgen=false /p:SkipBuildingInstallers=false"
 ) else (
-    REM disable crossgen for inner-loop builds to save a ton of time
-    set PackInstaller=/p:PackInstaller=false
-    set DISABLE_CROSSGEN=true
+    REM skip crossgen for inner-loop builds to save a ton of time
+    set skipFlags="/p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true"
 )
-powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -nativeToolsOnMachine -msbuildEngine dotnet %PackInstaller% %*"
+set DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true
+powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -msbuildEngine dotnet %skipFlags% /tlp:summary %*"
 exit /b %ErrorLevel%

@@ -13,7 +13,7 @@
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != '' and '$(SelfContained)' == ''">
     <SelfContained>true</SelfContained>
   </PropertyGroup>
-  
+
   <!-- Enabling compression increases build time. We want to avoid this for tests so we
   disable it here. This doesn't affect any test assertions. -->
   <PropertyGroup>

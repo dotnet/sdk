@@ -1,13 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions.Execution;
+#nullable disable
 
 namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
@@ -40,19 +34,13 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
             public AndConstraint<Assertions> Exist(string because = "", params object[] reasonArgs)
             {
-                Execute.Assertion
-                    .ForCondition(_file.Exists)
-                    .BecauseOf(because, reasonArgs)
-                    .FailWith($"Expected File {_file.Path} to exist, but it does not.");
+                _file.Exists.Should().BeTrue($"Expected File {_file.Path} to exist, but it does not.");
                 return new AndConstraint<Assertions>(this);
             }
 
             public AndConstraint<Assertions> NotExist(string because = "", params object[] reasonArgs)
             {
-                Execute.Assertion
-                    .ForCondition(!_file.Exists)
-                    .BecauseOf(because, reasonArgs)
-                    .FailWith($"Expected File {_file.Path} to not exist, but it does.");
+                _file.Exists.Should().BeFalse($"Expected File {_file.Path} to not exist, but it does.");
                 return new AndConstraint<Assertions>(this);
             }
         }

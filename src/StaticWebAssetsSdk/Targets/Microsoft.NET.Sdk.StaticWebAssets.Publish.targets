@@ -39,12 +39,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestType="Publish"
       Assets="@(_FinalPublishStaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetEndpointsPublishManifestPath)">
+      ManifestPath="$(StaticWebAssetEndpointsPublishManifestPath)"
+      ExclusionPatterns="$(StaticWebAssetEndpointExclusionPattern)"
+      ExclusionPatternsCacheFilePath="$(StaticWebAssetEndpointsPublishExclusionPatternsCachePath)">
     </GenerateStaticWebAssetEndpointsManifest>
 
     <ItemGroup>
       <FileWrites Include="$(StaticWebAssetPublishManifestPath)" />
       <FileWrites Include="$(StaticWebAssetEndpointsPublishManifestPath)" />
+      <FileWrites Include="$(StaticWebAssetEndpointsPublishExclusionPatternsCachePath)" Condition="Exists('$(StaticWebAssetEndpointsPublishExclusionPatternsCachePath)')" />
     </ItemGroup>
   </Target>
 

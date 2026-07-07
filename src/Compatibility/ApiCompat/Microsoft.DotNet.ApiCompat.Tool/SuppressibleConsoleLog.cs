@@ -10,7 +10,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
     /// Class that can log Suppressions to the Console, by implementing ConsoleLog and ISuppressibleLog.
     /// </summary>
     internal sealed class SuppressibleConsoleLog(ISuppressionEngine suppressionEngine,
-        MessageImportance messageImportance) : ConsoleLog(messageImportance), ISuppressibleLog
+        MessageImportance messageImportance,
+        string? noWarn = null) : ConsoleLog(messageImportance, noWarn), ISuppressibleLog
     {
         /// <inheritdoc />
         public bool HasLoggedErrorSuppressions { get; private set; }

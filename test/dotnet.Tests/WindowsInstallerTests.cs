@@ -1,13 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using Microsoft.DotNet.Installer.Windows;
-using Microsoft.DotNet.Installer.Windows.Security;
+using Microsoft.DotNet.Cli.Installer.Windows;
+using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -222,18 +224,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [WindowsOnlyFact]
-        public void ValidateLogFilePath_ShouldRejectSiblingPrefixAttack()
-        {
-            // "C:\TempEvil" should NOT be accepted when serverTemp is "C:\Temp"
-            string serverTemp = @"C:\Temp";
-            string maliciousPath = @"C:\TempEvil\evil.log";
-
-            string result = WindowsUtils.ValidateLogFilePath(maliciousPath, serverTemp);
-            Assert.NotEqual(Path.GetFullPath(maliciousPath), result);
-            Assert.StartsWith(Path.GetFullPath(serverTemp), result, StringComparison.OrdinalIgnoreCase);
-        }
-
-        [WindowsOnlyFact]
         public void ValidatePackagePath_ShouldRejectTraversalAttack()
         {
             string cacheRoot = @"C:\ProgramData\dotnet\workloads";
@@ -367,8 +357,6 @@ namespace Microsoft.DotNet.Tests
         [WindowsOnlyFact]
         public void ValidateManifestPath_ShouldRejectSiblingPrefix()
         {
-            // Ensure that a path that shares a prefix with an allowed root but lies outside it is rejected
-            // (e.g., C:\Temp vs C:\Temp_evil).
             string fakeServerTemp = @"C:\fake-server-temp";
             string sibling = @"C:\fake-server-temp_evil\msi.json";
 
@@ -390,6 +378,17 @@ namespace Microsoft.DotNet.Tests
             Assert.False(WindowsUtils.ValidateManifestPath(null));
             Assert.False(WindowsUtils.ValidateManifestPath(""));
             Assert.False(WindowsUtils.ValidateManifestPath("   "));
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateLogFilePath_ShouldRejectSiblingPrefixAttack()
+        {
+            string serverTemp = @"C:\Temp";
+            string maliciousPath = @"C:\TempEvil\evil.log";
+
+            string result = WindowsUtils.ValidateLogFilePath(maliciousPath, serverTemp);
+            Assert.NotEqual(Path.GetFullPath(maliciousPath), result);
+            Assert.StartsWith(Path.GetFullPath(serverTemp), result, StringComparison.OrdinalIgnoreCase);
         }
 
         [WindowsOnlyFact]

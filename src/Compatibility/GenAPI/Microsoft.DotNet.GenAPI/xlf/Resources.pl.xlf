@@ -12,6 +12,11 @@
         <target state="translated">Nie można rozpoznać typu „{0}” w zawierającym go zestawie „{1}” przez przekazywanie typu. Upewnij się, że zestaw został podany jako odwołanie i zawiera typ.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">Nie znaleziono węzła składni.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

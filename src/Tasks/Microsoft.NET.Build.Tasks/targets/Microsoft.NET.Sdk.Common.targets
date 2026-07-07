@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <MicrosoftNETBuildTasksDirectoryRoot>$(MSBuildThisFileDirectory)..\tools\</MicrosoftNETBuildTasksDirectoryRoot>
-    <MicrosoftNETBuildTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</MicrosoftNETBuildTasksTFM>
+    <MicrosoftNETBuildTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net10.0</MicrosoftNETBuildTasksTFM>
     <MicrosoftNETBuildTasksTFM Condition=" '$(MicrosoftNETBuildTasksTFM)' == ''">net472</MicrosoftNETBuildTasksTFM>
     <MicrosoftNETBuildTasksDirectory>$(MicrosoftNETBuildTasksDirectoryRoot)$(MicrosoftNETBuildTasksTFM)\</MicrosoftNETBuildTasksDirectory>
     <MicrosoftNETBuildTasksAssembly>$(MicrosoftNETBuildTasksDirectory)Microsoft.NET.Build.Tasks.dll</MicrosoftNETBuildTasksAssembly>
@@ -42,12 +42,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <IncludeBuildOutput Condition=" '$(PackAsTool)' == 'true' ">false</IncludeBuildOutput>
-    <PackageType Condition=" '$(PackAsTool)' == 'true' ">DotnetTool</PackageType>
-    <RuntimeIdentifiers Condition=" '$(PackAsTool)' == 'true' ">$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
     <LangVersion>Preview</LangVersion>
   </PropertyGroup>
@@ -56,5 +50,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NETSdkWarning" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="NETSdkInformation" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="ShowPreviewMessage" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'FrameworkPackage' and '$(OS)' == 'Windows_NT' and '$(MSBuildRuntimeType)' == 'Full'">
+    <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
+    <RoslynTasksAssembly>$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll</RoslynTasksAssembly>
+    <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
+    <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
+  </PropertyGroup>
 
 </Project>

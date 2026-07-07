@@ -1,8 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
@@ -236,20 +239,35 @@ namespace Microsoft.NET.Build.Tasks
             {
                 string target = TargetFramework ?? "";
 
-                var messages = LockFile.LogMessages.Where(log => log.LibraryId == package.Name && log.TargetGraphs
-                                .Select(tg =>
-                                {
-                                    var parsedTargetGraph = NuGetFramework.Parse(tg);
-                                    var alias = _lockFile.PackageSpec.TargetFrameworks.FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)?.TargetAlias;
-                                    return alias ?? tg;
-                                }).Contains(target));
+                LogLevel? logLevel = null;
 
-                if (!messages.Any())
+                foreach (var message in LockFile.LogMessages)
                 {
-                    return string.Empty;
+                    if (message.LibraryId == package.Name)
+                    {
+                        foreach (var targetGraph in message.TargetGraphs)
+                        {
+                            string effectiveTargetGraphName = targetGraph;
+                            // If the target graph is not in the map, then very likely aliases are being used.
+                            if (_targetNameToAliasMap.ContainsKey(targetGraph))
+                            {
+                                var parsedTargetGraph = NuGetFramework.Parse(targetGraph);
+                                effectiveTargetGraphName = _lockFile.PackageSpec.TargetFrameworks.FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)?.TargetAlias;
+                            }
+
+                            if (effectiveTargetGraphName == target)
+                            {
+                                if (logLevel == null || message.Level > logLevel)
+                                {
+                                    logLevel = message.Level;
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
 
-                return messages.Max(log => log.Level).ToString();
+                return logLevel != null ? logLevel.ToString() : string.Empty;
             }
         }
 

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Restore.Tests
 {
     public class GivenThatWeWantToUseFrameworkRoslyn : SdkTest
@@ -9,7 +11,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
+        [FullMSBuildOnlyFact]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
@@ -20,42 +22,6 @@ namespace Microsoft.NET.Restore.Tests
             };
 
             project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "true");
-
-            var testAsset = _testAssetsManager
-                .CreateTestProject(project);
-
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
-
-            var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
-
-            testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
-                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
-                .Execute().Should().Pass();
-
-            var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
-
-            Assert.True(Directory.Exists(toolsetPackageDir));
-
-            var toolsetPackageVersion = Directory.EnumerateDirectories(toolsetPackageDir).Should().ContainSingle().Subject;
-
-            new BuildCommand(testAsset)
-                .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
-                .Execute().Should().Pass().And
-                .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
-        }
-
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
-        public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
-        {
-            const string testProjectName = "NetCoreApp";
-            var project = new TestProject
-            {
-                Name = testProjectName,
-                TargetFrameworks = "net6.0",
-            };
-
-            // simulate mismatched MSBuild versions
-            project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
@@ -139,8 +105,7 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "net6.0",
             };
 
-            // simulate mismatched MSBuild versions
-            project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
+            project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "true");
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
@@ -175,8 +140,7 @@ namespace Microsoft.NET.Restore.Tests
                 WorkingDirectory = Path.Combine(testAsset.Path, "FxWpf")
             };
 
-            // simulate mismatched MSBuild versions via _IsDisjointMSBuildVersion
-            buildCommand.Execute("-p:_IsDisjointMSBuildVersion=true")
+            buildCommand.Execute("-p:BuildWithNetFrameworkHostedCompiler=true")
                 .Should().Pass().And.NotHaveStdOutContaining("NETSDK1221");
 
             Assert.True(File.Exists(Path.Combine(testAsset.Path, "obj", "net472", "MainWindow.g.cs")));

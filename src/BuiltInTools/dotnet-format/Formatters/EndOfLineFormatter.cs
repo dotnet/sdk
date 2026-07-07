@@ -32,6 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 }
 
                 var newSourceText = sourceText;
+                var changes = new　List<TextChange>();
                 for (var lineIndex = 0; lineIndex < newSourceText.Lines.Count; lineIndex++)
                 {
                     var line = newSourceText.Lines[lineIndex];
@@ -50,9 +51,10 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                         continue;
                     }
 
-                    var newLineChange = new TextChange(lineEndingSpan, endOfLine);
-                    newSourceText = newSourceText.WithChanges(newLineChange);
+                    changes.Add(new TextChange(lineEndingSpan, endOfLine));
                 }
+
+                newSourceText = newSourceText.WithChanges(changes);
 
                 return newSourceText;
             });

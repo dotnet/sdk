@@ -7,7 +7,7 @@
   "description": "Creates a new MSTest test class",
   "groupIdentity": "Microsoft.Test.MSTest.TestClass",
   "precedence": "10000",
-  "identity": "Microsoft.Test.MSTest.TestClass.FSharp.8.0",
+  "identity": "Microsoft.Test.MSTest.TestClass.FSharp.10.0",
   "shortName": "mstest-class",
   "tags": {
     "language": "F#",
