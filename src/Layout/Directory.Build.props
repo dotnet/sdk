@@ -49,10 +49,14 @@
          linux-musl is excluded because its NativeAOT toolchain is not wired up here. -->
     <_DotnetAotIsNativeBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' == '$(BuildArchitecture)' and '$(CrossBuild)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true' and !$(TargetRid.StartsWith('linux-musl'))">true</_DotnetAotIsNativeBuild>
 
-    <!-- Cross: same OS but a different architecture from the build host. Covers win/osx/linux. On
-         Linux this preserves the existing container-based cross behavior (CrossBuild + ROOTFS_DIR);
-         on Windows/macOS the cross build is inferred purely from the architecture mismatch. -->
-    <_DotnetAotIsCrossBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' != '$(BuildArchitecture)' and '$(DotNetBuildSourceOnly)' != 'true' and !$(TargetRid.StartsWith('linux-musl'))">true</_DotnetAotIsCrossBuild>
+    <!-- Cross: same OS but a different architecture from the build host. On Windows/macOS the cross
+         toolchain (MSVC arm64 linker / clang) is multi-target, so an architecture mismatch alone is
+         sufficient. On Linux a cross toolchain and target sysroot are required, so we only treat it
+         as a cross build when CrossBuild=true - which is set by the leg that runs inside the
+         azurelinux cross-prereq container (providing clang + the sysroot via ROOTFS_DIR). Without
+         that guard the regular linux-arm64 legs (e.g. TestBuild), which build on the x64 pool with
+         no arm64 sysroot, would try to cross-link and fail. -->
+    <_DotnetAotIsCrossBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' != '$(BuildArchitecture)' and '$(DotNetBuildSourceOnly)' != 'true' and !$(TargetRid.StartsWith('linux-musl')) and !($(TargetRid.StartsWith('linux')) and '$(CrossBuild)' != 'true')">true</_DotnetAotIsCrossBuild>
 
     <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == '' and '$(_DotnetAotTargetRidSupported)' == 'true' and ('$(_DotnetAotIsNativeBuild)' == 'true' or '$(_DotnetAotIsCrossBuild)' == 'true')">true</_ShouldPublishDotnetAot>
     <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == ''">false</_ShouldPublishDotnetAot>
