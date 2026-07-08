@@ -217,7 +217,7 @@ public interface IEnvShellProvider
     string ArgumentName { get; }
     string Extension { get; }
     string? HelpDescription { get; }
-    string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true);
+    string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true);
     IReadOnlyList<string> GetProfilePaths();
     string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null);
     string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null);
