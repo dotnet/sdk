@@ -1,21 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+using Microsoft.DotNet.Configurer;
+
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToUseAnalyzers : SdkTest
     {
-        public GivenThatWeWantToUseAnalyzers(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("WebApp", false)]
-        [InlineData("WebApp", true)]
-        [InlineData("WebApp", null)]
+        [TestMethod]
+        [DataRow("WebApp", false)]
+        [DataRow("WebApp", true)]
+        [DataRow("WebApp", null)]
         public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -31,13 +32,13 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.AspNetCore.Http.Generated");
         }
 
-        [Theory]
-        [InlineData("WebApp", false)]
-        [InlineData("WebApp", true)]
-        [InlineData("WebApp", null)]
+        [TestMethod]
+        [DataRow("WebApp", false)]
+        [DataRow("WebApp", true)]
+        [DataRow("WebApp", null)]
         public void It_resolves_configbindinggenerator_correctly(string testAssetName, bool? isEnabled)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -53,10 +54,10 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishAot()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -70,10 +71,25 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        [Fact]
+        [TestMethod]
+        [DataRow("net10.0", true)]
+        [DataRow("net9.0", false)]
+        [DataRow("net8.0", false)]
+        public void It_enables_validationsgenerator_correctly_for_TargetFramework(string targetFramework, bool expectEnabled)
+        {
+            var asset = TestAssetsManager
+                .CopyTestAsset("WebApp")
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            VerifyValidationsGeneratorIsUsed(asset, expectEnabled);
+            VerifyInterceptorsFeatureProperties(asset, expectEnabled, "Microsoft.Extensions.Validation.Generated");
+        }
+
+        [TestMethod]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishTrimmed()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -92,7 +108,7 @@ namespace Microsoft.NET.Build.Tests
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
-                ToolsetInfo.CurrentTargetFramework,
+                targetFramework: null,
                 "Analyzer",
                 GetValuesCommand.ValueType.Item);
 
@@ -103,7 +119,7 @@ namespace Microsoft.NET.Build.Tests
 
             var analyzers = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(generatorName)));
+            Assert.AreEqual(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(generatorName)));
         }
 
         private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
@@ -112,11 +128,81 @@ namespace Microsoft.NET.Build.Tests
         private void VerifyConfigBindingGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
             => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
 
+        private void VerifyValidationsGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+            => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.Extensions.Validation.ValidationsGenerator.dll");
+
         private void VerifyInterceptorsFeatureProperties(TestAsset asset, bool? expectEnabled, params string[] expectedNamespaces)
         {
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
+                targetFramework: null,
+                "InterceptorsPreviewNamespaces",
+                GetValuesCommand.ValueType.Property);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute()
+                .Should().Pass();
+
+            var namespaces = command.GetValues();
+
+            Assert.AreEqual(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
+        }
+
+        [TestMethod]
+        public void It_enables_aspnet_generators_for_non_web_projects_with_framework_reference()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "NonWebAppWithAspNet",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsSdkProject = true,
+                IsExe = true,
+            };
+
+            testProject.AdditionalProperties["ImplicitUsings"] = "Enable";
+
+            testProject.ProjectChanges.Add(project =>
+                 {
+                     var ns = project.Root.Name.Namespace;
+
+                     // Add FrameworkReference to ASP.NET Core (this is key to reproducing the issue)
+                     project.Root.Add(new XElement(ns + "ItemGroup",
+                         new XElement(ns + "FrameworkReference", new XAttribute("Include", "Microsoft.AspNetCore.App"))));
+
+                     // Enable configuration binding generator explicitly (like the repro in the issue)
+                     project.Root.Add(new XElement(ns + "PropertyGroup",
+                         new XElement(ns + "EnableConfigurationBindingGenerator", "true")));
+                 });
+
+            testProject.SourceFiles["Program.cs"] = """
+                using Microsoft.Extensions.Configuration;
+
+                var c = new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string,string?>()
+                    {
+                        ["Value"] = "42",
+                    })
+                    .Build();
+                C value = new();
+                c.Bind(value);
+
+                class C { public int Value { get; set; } }
+                """;
+
+            // Create a simple non-web project with ASP.NET FrameworkReference
+            var asset = TestAssetsManager
+                .CreateTestProject(testProject);
+
+            new BuildCommand(asset)
+                .Execute()
+                .Should().Pass();
+
+            // Get the actual values to see what's happening
+            var command = new GetValuesCommand(
+                Log,
+                Path.Combine(asset.Path, "NonWebAppWithAspNet"),
                 ToolsetInfo.CurrentTargetFramework,
                 "InterceptorsPreviewNamespaces",
                 GetValuesCommand.ValueType.Property);
@@ -128,16 +214,19 @@ namespace Microsoft.NET.Build.Tests
 
             var namespaces = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
+            // This should work correctly - the non-web project should get the InterceptorsPreviewNamespaces
+            // because the logic was moved from Web SDK to FrameworkReferenceResolution targets
+            Assert.Contains("Microsoft.Extensions.Configuration.Binder.SourceGeneration", namespaces,
+                $"Expected InterceptorsPreviewNamespaces to contain 'Microsoft.Extensions.Configuration.Binder.SourceGeneration' but got: [{string.Join(", ", namespaces)}]");
         }
 
-        [Theory]
-        [InlineData("C#", "AppWithLibrary")]
-        [InlineData("VB", "AppWithLibraryVB")]
-        [InlineData("F#", "AppWithLibraryFS")]
+        [TestMethod]
+        [DataRow("C#", "AppWithLibrary")]
+        [DataRow("VB", "AppWithLibraryVB")]
+        [DataRow("F#", "AppWithLibraryFS")]
         public void It_resolves_analyzers_correctly(string language, string testAssetName)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: language)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -179,6 +268,8 @@ namespace Microsoft.NET.Build.Tests
                                 ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/cs/Microsoft.CodeQuality.Analyzers.dll"),
                                 ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/cs/Microsoft.CodeQuality.CSharp.Analyzers.dll"),
                                 ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll"),
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Extensions.Logging.Generators.dll"),
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Extensions.Options.SourceGeneration.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.LibraryImportGenerator.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.JavaScript.JSImportGenerator.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.dll"),
@@ -189,13 +280,13 @@ namespace Microsoft.NET.Build.Tests
 
                 case "VB":
                     analyzers.Select(x => GetPackageAndPath(x)).Should().BeEquivalentTo(new[]
-                        {
-                            ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll"),
-                            ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
-                            ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.Analyzers.dll"),
-                            ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.VisualBasic.Analyzers.dll"),
-                            ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll")
-                        }
+                            {
+                                ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll"),
+                                ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
+                                ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.Analyzers.dll"),
+                                ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.VisualBasic.Analyzers.dll"),
+                                ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll")
+                            }
                         );
                     break;
 
@@ -208,7 +299,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_multitargeted_analyzers()
         {
             var testProject = new TestProject()
@@ -232,7 +323,7 @@ namespace Microsoft.NET.Build.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             List<(string package, string version, string path)> GetAnalyzersForTargetFramework(string targetFramework)
             {
@@ -255,18 +346,18 @@ namespace Microsoft.NET.Build.Tests
 
         static readonly List<string> nugetRoots = new()
             {
-                TestContext.Current.NuGetCachePath,
-                Path.Combine(FileConstants.UserProfileFolder, ".dotnet", "NuGetFallbackFolder"),
-                Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "packs")
+                SdkTestContext.Current.NuGetCachePath,
+                Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder"),
+                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot, "packs")
             };
 
         static (string package, string version, string path) GetPackageAndPath(string absolutePath)
         {
             absolutePath = Path.GetFullPath(absolutePath);
 
-            if (absolutePath.StartsWith(TestContext.Current.ToolsetUnderTest.SdksPath))
+            if (absolutePath.StartsWith(SdkTestContext.Current.ToolsetUnderTest.SdksPath))
             {
-                string path = absolutePath.Substring(TestContext.Current.ToolsetUnderTest.SdksPath.Length + 1)
+                string path = absolutePath.Substring(SdkTestContext.Current.ToolsetUnderTest.SdksPath.Length + 1)
                     .Replace(Path.DirectorySeparatorChar, '/');
                 var components = path.Split(new char[] { '/' }, 2);
                 string sdkName = components[0];

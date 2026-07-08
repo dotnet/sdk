@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.NET.TestFramework
 {
     public class RequiresMSBuildVersionTheoryAttribute : TheoryAttribute
@@ -8,28 +10,29 @@ namespace Microsoft.NET.TestFramework
         /// <summary>
         /// Can be used to document the reason a test needs a specific version of MSBuild
         /// </summary>
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
-        public RequiresMSBuildVersionTheoryAttribute(string version)
+        public RequiresMSBuildVersionTheoryAttribute(string version, [CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             CheckForRequiredMSBuildVersion(this, version);
         }
 
         public static void CheckForRequiredMSBuildVersion(FactAttribute attribute, string version)
         {
-            if (!Version.TryParse(TestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version msbuildVersion))
+            if (!Version.TryParse(SdkTestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version? msbuildVersion))
             {
-                attribute.Skip = $"Failed to determine the version of MSBuild ({TestContext.Current.ToolsetUnderTest.MSBuildVersion}).";
+                attribute.Skip = $"Failed to determine the version of MSBuild ({SdkTestContext.Current.ToolsetUnderTest.MSBuildVersion}).";
                 return;
             }
-            if (!Version.TryParse(version, out Version requiredVersion))
+            if (!Version.TryParse(version, out Version? requiredVersion))
             {
                 attribute.Skip = $"Failed to determine the version required by this test ({version}).";
                 return;
             }
             if (requiredVersion > msbuildVersion)
             {
-                attribute.Skip = $"This test requires MSBuild version {version} to run (using {TestContext.Current.ToolsetUnderTest.MSBuildVersion}).";
+                attribute.Skip = $"This test requires MSBuild version {version} to run (using {SdkTestContext.Current.ToolsetUnderTest.MSBuildVersion}).";
             }
         }
     }

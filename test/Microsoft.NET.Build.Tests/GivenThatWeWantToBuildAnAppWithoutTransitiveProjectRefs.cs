@@ -7,35 +7,40 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithoutTransitiveProjectRefs : SdkTest
     {
-        public GivenThatWeWantToBuildAnAppWithoutTransitiveProjectRefs(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.15")]
         public void It_builds_the_project_successfully_when_RAR_finds_all_references()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/p:DisableTransitiveProjectReferences=true" });
         }
 
-        [Fact]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.15")]
         public void It_builds_the_project_successfully_with_static_graph_and_isolation()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph" });
         }
 
-        [Fact]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.15")]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
-            var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph" });
+            var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/bl:build-{}.binlog" });
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
+                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_cleans_the_project_successfully_with_static_graph_and_isolation)}.binlog") :
+                "./msbuild.binlog";
 
             var cleanCommand = new DotnetCommand(
                 Log,
                 "msbuild",
                 Path.Combine(testAsset.TestRoot, "1", "1.csproj"),
                 "/t:clean",
-                "/graph");
+                "/graph",
+                $"/bl:{binlogDestPath}");
 
             cleanCommand
                 .Execute()
@@ -53,7 +58,7 @@ namespace Microsoft.NET.Build.Tests
         private (TestAsset TestAsset, IReadOnlyDictionary<string, DirectoryInfo> OutputDirectories)
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(string[] msbuildArguments, [CallerMemberName] string callingMethod = "")
         {
-            var testAsset = _testAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(DiamondShapeGraphWithRuntimeDependencies(), callingMethod);
 
             testAsset.Restore(Log, "1");
 
@@ -78,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
                 "1.exe",
                 "1.pdb",
                 "1.exe.config",
-                "System.Diagnostics.DiagnosticSource.dll"
+                "System.Diagnostics.DiagnosticSource.dll",
             };
 
             foreach (var targetFramework in targetFrameworks)
@@ -139,10 +144,10 @@ namespace Microsoft.NET.Build.Tests
             return (testAsset, outputDirectories);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_project_successfully_when_RAR_does_not_find_all_references()
         {
-            var testAsset = _testAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
+            var testAsset = TestAssetsManager.CreateTestProject(GraphWithoutRuntimeDependencies());
 
             testAsset.Restore(Log, "1");
 
@@ -175,11 +180,16 @@ namespace Microsoft.NET.Build.Tests
         private (CommandResult BuildResult, IReadOnlyDictionary<string, DirectoryInfo> OutputDirectories) Build(
             TestAsset testAsset,
             IEnumerable<string> targetFrameworks,
-            string[] msbuildArguments
+            string[] msbuildArguments,
+            [CallerMemberName] string callingMethod = ""
             )
         {
             var buildCommand = new BuildCommand(testAsset, "1");
-            var buildResult = buildCommand.ExecuteWithoutRestore(msbuildArguments);
+            buildCommand.WithWorkingDirectory(testAsset.TestRoot);
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
+                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{callingMethod}.binlog") :
+                "./msbuild.binlog";
+            var buildResult = buildCommand.ExecuteWithoutRestore([..msbuildArguments, $"/bl:{binlogDestPath}"]);
 
             var outputDirectories = targetFrameworks.ToImmutableDictionary(tf => tf, tf => buildCommand.GetOutputDirectory(tf));
 

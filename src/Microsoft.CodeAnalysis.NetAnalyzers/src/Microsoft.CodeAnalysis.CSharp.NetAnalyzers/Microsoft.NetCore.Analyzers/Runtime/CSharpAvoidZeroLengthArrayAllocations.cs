@@ -1,0 +1,28 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.NetCore.Analyzers.Runtime;
+using Analyzer.Utilities.Lightup;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
+
+namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
+{
+    /// <summary>
+    /// RS0007: Avoid zero-length array allocations.
+    /// </summary>
+    [DiagnosticAnalyzer(LanguageNames.CSharp)]
+    public sealed class CSharpAvoidZeroLengthArrayAllocationsAnalyzer : AvoidZeroLengthArrayAllocationsAnalyzer
+    {
+        protected override bool IsAttributeSyntax(SyntaxNode node)
+        {
+            return node is AttributeSyntax;
+        }
+
+        protected override bool IsCollectionExpressionSyntax(SyntaxNode node)
+        {
+            return node.IsKind(SyntaxKindEx.CollectionExpression);
+        }
+    }
+}

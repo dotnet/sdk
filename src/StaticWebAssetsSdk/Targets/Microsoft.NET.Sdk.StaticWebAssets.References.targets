@@ -132,6 +132,10 @@ Copyright (c) .NET Foundation. All rights reserved.
         Assets="@(_ResolvedReferencedProjectBuildStaticWebAssetCandidates)"
         Endpoints="@(_ReferencedProjectBuildStaticWebAssetEndpointsUpdateCandidates)"
         FingerprintInferenceExpressions="@(StaticWebAssetFingerprintInferenceExpression)"
+        StaticWebAssetGroups="@(StaticWebAssetGroup)"
+        IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
+        ProjectPackageId="$(PackageId)"
+        ProjectBasePath="$(StaticWebAssetBasePath)"
       >
         <Output TaskParameter="UpdatedAssets" ItemName="_ResolvedReferencedProjectBuildStaticWebAssets" />
         <Output TaskParameter="UpdatedEndpoints" ItemName="_ResolvedReferencedProjectBuildStaticWebAssetEndpoints" />
@@ -181,7 +185,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         Patterns="@(_CachedBuildStaticWebAssetDiscoveryPatterns)"
         ProjectMode="$(StaticWebAssetProjectMode)"
         AssetKind="Build"
+        MakeReferencedAssetOriginalItemSpecAbsolute="$(StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute)"
         Source="$(PackageId)"
+        FrameworkPattern="$(StaticWebAssetFrameworkPattern)"
       >
         <Output TaskParameter="StaticWebAssets" ItemName="_CachedBuildReferencedStaticWebAsset" />
         <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedBuildReferencedStaticWebAssetDiscoveryPatterns" />
@@ -227,12 +233,13 @@ Copyright (c) .NET Foundation. All rights reserved.
         ProjectMode="$(StaticWebAssetProjectMode)"
         AssetKind="Publish"
         Source="$(PackageId)"
+        MakeReferencedAssetOriginalItemSpecAbsolute="$(StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute)"
       >
         <Output TaskParameter="StaticWebAssets" ItemName="_CachedPublishReferencedStaticWebAsset" />
       </ComputeReferenceStaticWebAssetItems>
 
       <ComputeEndpointsForReferenceStaticWebAssets
-        Assets="@(_CachedPublishStaticWebAssets)"
+        Assets="@(_CachedPublishReferencedStaticWebAsset)"
         CandidateEndpoints="@(_CachedPublishStaticWebAssetEndpoints)"
       >
         <Output TaskParameter="Endpoints" ItemName="_CachedPublishReferencedStaticWebAssetEndpoints" />

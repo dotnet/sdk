@@ -1,30 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    [TestClass]
     public class ToolPackageInstallToManagedLocationInstaller : SdkTest
     {
-        public ToolPackageInstallToManagedLocationInstaller(ITestOutputHelper log) : base(log)
-        {
-        }
+        public ToolPackageInstallToManagedLocationInstaller() { }
 
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
+            string testDirectory = TestAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
 
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
 
@@ -63,12 +64,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             }
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
+            string testDirectory = TestAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
 
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
 
@@ -138,7 +140,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 fileSystem = new FileSystemWrapper();
                 store = new ToolPackageStoreAndQuery(root);
-                var runtimeJsonPathForTests = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                var runtimeJsonPathForTests = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
                 downloader = new ToolPackageDownloader(store, runtimeJsonPathForTests);
             }
 

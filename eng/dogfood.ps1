@@ -26,7 +26,7 @@ function Print-Usage() {
   Write-Host "if it is set, will be used."
 }
 
-function Global:prompt {"(dogfood) PS $PWD> "} 
+function Global:prompt { "(dogfood) PS $PWD> " }
 
 if ($help -or (($command -ne $null) -and ($command.Contains("/help") -or $command.Contains("/?")))) {
   Print-Usage
@@ -35,7 +35,7 @@ if ($help -or (($command -ne $null) -and ($command.Contains("/help") -or $comman
 
 try {
   $toolsetBuildProj = InitializeToolset
-  . $PSScriptroot\restore-toolset.ps1
+  . $PSScriptRoot\restore-toolset.ps1
 
   $env:SDK_REPO_ROOT = $RepoRoot
 
@@ -47,10 +47,12 @@ try {
 
   $env:PATH = "$TestDotnetRoot;$env:Path"
   $env:DOTNET_ROOT = $TestDotnetRoot
+  $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH="0"
 
   # Avoid downloading Microsoft.Net.Sdk.Compilers.Toolset from feed
   # Locally built SDK package version is Major.Minor.0-dev, which won't be available.
   $env:BuildWithNetFrameworkHostedCompiler = $false
+  $env:DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=$true
 
   if ($command -eq $null -and $env:DOTNET_SDK_DOGFOOD_SHELL -ne $null) {
     $command = , $env:DOTNET_SDK_DOGFOOD_SHELL
@@ -60,6 +62,7 @@ try {
     $Host.UI.RawUI.WindowTitle = "SDK Test ($RepoRoot) ($configuration)"
     & $command[0] $command[1..($command.Length-1)]
   }
+  Set-Location "$PSScriptRoot\..\artifacts\tmp\Debug\testing"
 }
 catch {
   Write-Host $_

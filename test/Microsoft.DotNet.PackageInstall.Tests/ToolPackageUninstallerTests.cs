@@ -1,24 +1,27 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    [TestClass]
     public class ToolPackageUninstallerTests : SdkTest
     {
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -71,7 +74,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             [CallerMemberName] string testName = "",
             string identifier = null)
         {
-            var root = new DirectoryPath(_testAssetsManager.CreateTestDirectory(testName, identifier).Path);
+            var root = new DirectoryPath(TestAssetsManager.CreateTestDirectory(testName, identifier).Path);
             var reporter = new BufferedReporter();
 
             IFileSystem fileSystem;
@@ -105,7 +108,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var toolPackageStore = new ToolPackageStoreAndQuery(root);
                 store = toolPackageStore;
                 storeQuery = toolPackageStore;
-                var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                var testRuntimeJsonPath = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
                 downloader = new ToolPackageDownloader(store, testRuntimeJsonPath);
                 uninstaller = new ToolPackageUninstaller(store);
             }
@@ -122,8 +125,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new("global.tool.console.demo.with.shim");
         private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
-        public ToolPackageUninstallerTests(ITestOutputHelper log) : base(log)
-        {
-        }
+        public ToolPackageUninstallerTests() { }
     }
 }

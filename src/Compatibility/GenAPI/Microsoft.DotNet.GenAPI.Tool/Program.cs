@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
         static int Main(string[] args)
         {
             // Global options
-            CliOption<string[]> assembliesOption = new("--assembly")
+            Option<string[]> assembliesOption = new("--assembly")
             {
                 Description = "The path to one or more assemblies or directories with assemblies.",
                 CustomParser = ParseAssemblyArgument,
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<string[]?> assemblyReferencesOption = new("--assembly-reference")
+            Option<string[]?> assemblyReferencesOption = new("--assembly-reference")
             {
                 Description = "Paths to assembly references or their underlying directories for a specific target framework in the package.",
                 CustomParser = ParseAssemblyArgument,
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<string[]?> excludeApiFilesOption = new("--exclude-api-file")
+            Option<string[]?> excludeApiFilesOption = new("--exclude-api-file")
             {
                 Description = "The path to one or more api exclusion files with types in DocId format.",
                 CustomParser = ParseAssemblyArgument,
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<string[]?> excludeAttributesFilesOption = new("--exclude-attributes-file")
+            Option<string[]?> excludeAttributesFilesOption = new("--exclude-attributes-file")
             {
                 Description = "The path to one or more attribute exclusion files with types in DocId format.",
                 CustomParser = ParseAssemblyArgument,
@@ -50,37 +50,51 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<string?> outputPathOption = new("--output-path")
+            Option<string[]?> includeApiFilesOption = new("--include-api-file")
+            {
+                Description = "The path to one or more api inclusion files with types in DocId format. APIs listed in these files are emitted even if they would otherwise be filtered out.",
+                CustomParser = ParseAssemblyArgument,
+                Arity = ArgumentArity.ZeroOrMore,
+                Recursive = true
+            };
+
+            Option<bool> excludeInternalCompilerAttributesOption = new("--exclude-internal-compiler-attributes")
+            {
+                Description = "If true, opts out of emitting the curated set of internal compiler attributes (e.g. IsExternalInit) that are emitted by default.",
+                Recursive = true
+            };
+
+            Option<string?> outputPathOption = new("--output-path")
             {
                 Description = @"Output path. Default is the console. Can specify an existing directory as well
             and then a file will be created for each assembly with the matching name of the assembly.",
                 Recursive = true
             };
 
-            CliOption<string?> headerFileOption = new("--header-file")
+            Option<string?> headerFileOption = new("--header-file")
             {
                 Description = "Specify a file with an alternate header content to prepend to output.",
                 Recursive = true
             };
 
-            CliOption<string?> exceptionMessageOption = new("--exception-message")
+            Option<string?> exceptionMessageOption = new("--exception-message")
             {
                 Description = "If specified - method bodies should throw PlatformNotSupportedException, else `throw null`.",
                 Recursive = true
             };
 
-            CliOption<bool> respectInternalsOption = new("--respect-internals")
+            Option<bool> respectInternalsOption = new("--respect-internals")
             {
                 Description = "If true, includes both internal and public API.",
                 Recursive = true
             };
 
-            CliOption<bool> includeAssemblyAttributesOption = new("--include-assembly-attributes")
+            Option<bool> includeAssemblyAttributesOption = new("--include-assembly-attributes")
             {
                 Description = "Includes assembly attributes which are values that provide information about an assembly. Default is false."
             };
 
-            CliRootCommand rootCommand = new("Microsoft.DotNet.GenAPI v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
+            RootCommand rootCommand = new("Microsoft.DotNet.GenAPI v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
             {
                 TreatUnmatchedTokensAsErrors = true
             };
@@ -89,6 +103,8 @@ namespace Microsoft.DotNet.GenAPI.Tool
             rootCommand.Options.Add(assemblyReferencesOption);
             rootCommand.Options.Add(excludeApiFilesOption);
             rootCommand.Options.Add(excludeAttributesFilesOption);
+            rootCommand.Options.Add(includeApiFilesOption);
+            rootCommand.Options.Add(excludeInternalCompilerAttributesOption);
             rootCommand.Options.Add(outputPathOption);
             rootCommand.Options.Add(headerFileOption);
             rootCommand.Options.Add(exceptionMessageOption);
@@ -97,17 +113,27 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
-                GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal),
-                    parseResult.GetValue(assembliesOption)!,
-                    parseResult.GetValue(assemblyReferencesOption),
-                    parseResult.GetValue(outputPathOption),
-                    parseResult.GetValue(headerFileOption),
-                    parseResult.GetValue(exceptionMessageOption),
-                    parseResult.GetValue(excludeApiFilesOption),
-                    parseResult.GetValue(excludeAttributesFilesOption),
-                    parseResult.GetValue(respectInternalsOption),
-                    parseResult.GetValue(includeAssemblyAttributesOption)
-                );
+                bool respectInternals = parseResult.GetValue(respectInternalsOption);
+
+                ILog log = new ConsoleLog(MessageImportance.Normal);
+
+                string[]? assemblies = parseResult.GetValue(assembliesOption);
+                Debug.Assert(assemblies != null, "Assemblies cannot be null.");
+
+                GenAPIApp.Run(log,
+                    new GenAPIOptions(assemblies)
+                    {
+                        AssemblyReferencesPaths = parseResult.GetValue(assemblyReferencesOption),
+                        OutputPath = parseResult.GetValue(outputPathOption),
+                        HeaderFile = parseResult.GetValue(headerFileOption),
+                        ExceptionMessage = parseResult.GetValue(exceptionMessageOption),
+                        ExcludeApiFiles = parseResult.GetValue(excludeApiFilesOption),
+                        ExcludeAttributesFiles = parseResult.GetValue(excludeAttributesFilesOption),
+                        IncludeApiFiles = parseResult.GetValue(includeApiFilesOption),
+                        ExcludeInternalCompilerAttributes = parseResult.GetValue(excludeInternalCompilerAttributesOption),
+                        RespectInternals = respectInternals,
+                        IncludeAssemblyAttributes = parseResult.GetValue(includeAssemblyAttributesOption),
+                    });
             });
 
             return rootCommand.Parse(args).Invoke();

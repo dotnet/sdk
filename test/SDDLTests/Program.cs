@@ -8,7 +8,7 @@ using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Installer.Windows;
+using Microsoft.DotNet.Cli.Installer.Windows;
 
 namespace SDDLTests
 {
@@ -94,6 +94,15 @@ namespace SDDLTests
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(message);
             Console.ResetColor();
+        }
+
+        private static void Assert(bool condition, string message)
+        {
+            if (!condition)
+            {
+                WriteError(message);
+                Environment.Exit(-1);
+            }
         }
 
         /// <summary>
@@ -185,13 +194,13 @@ namespace SDDLTests
             Console.WriteLine($"Verifying descriptor: {sddlDescriptor}");
             (string owner, string group, IEnumerable<string> ACEs) d = GetDescriptorParts(sddlDescriptor);
 
-            Assert.True(expectedOwnerSID == d.owner, $"Expected owner SID to be {expectedOwnerSID}. Actual value: {d.owner}");
-            Assert.True(expectedGroupSID == d.group, $"Expected group SID to be {expectedGroupSID}. Actual value: {d.group}");
-            Assert.True(d.ACEs.Count() == expectedNumberOfACEsInDACL, $"Expected {expectedNumberOfACEsInDACL}. Actual: {d.ACEs.Count()}");
+            Assert(expectedOwnerSID == d.owner, $"Expected owner SID to be {expectedOwnerSID}. Actual value: {d.owner}");
+            Assert(expectedGroupSID == d.group, $"Expected group SID to be {expectedGroupSID}. Actual value: {d.group}");
+            Assert(d.ACEs.Count() == expectedNumberOfACEsInDACL, $"Expected {expectedNumberOfACEsInDACL}. Actual: {d.ACEs.Count()}");
 
             foreach (string ace in expectedACEs)
             {
-                Assert.True(d.ACEs.Contains(ace), $"Expected DACL to contain {ace}, but it did not.");
+                Assert(d.ACEs.Contains(ace), $"Expected DACL to contain {ace}, but it did not.");
             }
         }
 

@@ -1,14 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
+    [TestClass]
     public class PackIntegrationTest : AspNetSdkTest
     {
 
-        public PackIntegrationTest(ITestOutputHelper log) : base(log) { }
-
-        [Fact]
+        [TestMethod]
         public void Pack_NoBuild_Works_IncludesAssembly()
         {
             var testAsset = "RazorClassLibrary";

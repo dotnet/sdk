@@ -1,15 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.Sdk.Razor.Tests;
+using Microsoft.NET.Sdk.StaticWebAssets.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorWasmBaselineTests(ITestOutputHelper log, bool generateBaselines) : AspNetSdkBaselineTest(log, generateBaselines)
+#pragma warning disable MSTEST0016
+    [TestClass]
+    public class BlazorWasmBaselineTests : AspNetSdkBaselineTest
     {
         protected override string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
 
         protected override string ComputeBaselineFolder() =>
-            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
+            Path.Combine(SdkTestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
     }
+#pragma warning restore MSTEST0016
 }

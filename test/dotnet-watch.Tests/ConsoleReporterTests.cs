@@ -1,114 +1,87 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Tools.Internal
+#nullable disable
+
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.DotNet.Watch.UnitTests;
+
+[TestClass]
+public class ConsoleReporterTests
 {
-    public class ReporterTests
+    private static readonly string EOL = Environment.NewLine;
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void WritesToStandardStreams(bool suppressEmojis)
     {
-        private static readonly string EOL = Environment.NewLine;
+        var testConsole = new TestConsole();
+        var reporter = new ConsoleReporter(testConsole, "test prefix", suppressEmojis: suppressEmojis);
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void WritesToStandardStreams(bool suppressEmojis)
+        reporter.Report(id: default, Emoji.Watch, LogLevel.Trace, "trace {0}");
+        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "⌚")} trace {{0}}" + EOL, testConsole.GetError());
+        testConsole.Clear();
+
+        reporter.Report(id: default, Emoji.Watch, LogLevel.Debug, "verbose");
+        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "⌚")} verbose" + EOL, testConsole.GetError());
+        testConsole.Clear();
+
+        reporter.Report(id: default, Emoji.Watch, LogLevel.Information, "out");
+        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "⌚")} out" + EOL, testConsole.GetError());
+        testConsole.Clear();
+
+        reporter.Report(id: default, Emoji.Warning, LogLevel.Warning, "warn");
+        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "⚠")} warn" + EOL, testConsole.GetError());
+        testConsole.Clear();
+
+        reporter.Report(id: default, Emoji.Error, LogLevel.Error, "error");
+        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetError());
+        testConsole.Clear();
+
+        reporter.Report(id: default, Emoji.Error, LogLevel.Critical, "critical");
+        Assert.AreEqual($"test prefix {(suppressEmojis ? ":" : "❌")} critical" + EOL, testConsole.GetError());
+        testConsole.Clear();
+    }
+
+    private class TestConsole : IConsole
+    {
+        private readonly StringBuilder _out;
+        private readonly StringBuilder _error;
+        public TextWriter Out { get; }
+        public TextWriter Error { get; }
+        public ConsoleColor ForegroundColor { get; set; }
+
+        public TestConsole()
         {
-            var testConsole = new TestConsole();
-            IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
-            var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "⌚")} ";
-
-            // stdout
-            reporter.Verbose("verbose");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}verbose" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            reporter.Output("out");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}out" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            reporter.Warn("warn");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}warn" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            // stderr
-            reporter.Error("error");
-            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetError());
-            testConsole.Clear();
+            _out = new StringBuilder();
+            _error = new StringBuilder();
+            Out = new StringWriter(_out);
+            Error = new StringWriter(_error);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void WritesToStandardStreamsWithCustomEmojis(bool suppressEmojis)
+        event Action<ConsoleKeyInfo> IConsole.KeyPressed
         {
-            var testConsole = new TestConsole();
-            IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
-            var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "😄")}";
-
-            // stdout
-            reporter.Verbose("verbose", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} verbose" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            reporter.Output("out", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} out" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            reporter.Warn("warn", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} warn" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            // stderr
-            reporter.Error("error", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} error" + EOL, testConsole.GetError());
-            testConsole.Clear();
+            add { }
+            remove { }
         }
 
-        private class TestConsole : IConsole
+        public string GetOutput()
+            => _out.ToString();
+
+        public string GetError()
+            => _error.ToString();
+
+        public void Clear()
         {
-            private readonly StringBuilder _out;
-            private readonly StringBuilder _error;
+            _out.Clear();
+            _error.Clear();
+        }
 
-            event Action<ConsoleKeyInfo> IConsole.KeyPressed
-            {
-                add { }
-                remove { }
-            }
-
-            public TestConsole()
-            {
-                _out = new StringBuilder();
-                _error = new StringBuilder();
-                Out = new StringWriter(_out);
-                Error = new StringWriter(_error);
-            }
-
-            event ConsoleCancelEventHandler IConsole.CancelKeyPress
-            {
-                add { }
-                remove { }
-            }
-
-            public string GetOutput() => _out.ToString();
-            public string GetError() => _error.ToString();
-
-            public void Clear()
-            {
-                _out.Clear();
-                _error.Clear();
-            }
-
-            public void ResetColor()
-            {
-                ForegroundColor = default(ConsoleColor);
-            }
-
-            public TextWriter Out { get; }
-            public TextWriter Error { get; }
-            public TextReader In { get; }
-            public bool IsInputRedirected { get; }
-            public bool IsOutputRedirected { get; }
-            public bool IsErrorRedirected { get; }
-            public ConsoleColor ForegroundColor { get; set; }
+        public void ResetColor()
+        {
+            ForegroundColor = default;
         }
     }
 }

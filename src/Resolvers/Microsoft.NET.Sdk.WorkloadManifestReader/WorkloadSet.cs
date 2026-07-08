@@ -1,12 +1,9 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using Microsoft.DotNet.MSBuildSdkResolver;
-using Strings = Microsoft.NET.Sdk.Localization.Strings;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.MSBuildSdkResolver;
+using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -68,15 +65,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public static WorkloadSet FromJson(string json, SdkFeatureBand defaultFeatureBand)
         {
-            var jsonSerializerOptions = new JsonSerializerOptions()
-            {
-                AllowTrailingCommas = true,
-                ReadCommentHandling = JsonCommentHandling.Skip
-            };
-            return FromDictionaryForJson(JsonSerializer.Deserialize<IDictionary<string, string>>(json, jsonSerializerOptions)!, defaultFeatureBand);
+            return FromDictionaryForJson(JsonSerializer.Deserialize(json, WorkloadSetJsonSerializerContext.Default.IDictionaryStringString)!, defaultFeatureBand);
         }
 
-        public static WorkloadSet FromWorkloadSetFolder(string path, string workloadSetVersion, SdkFeatureBand defaultFeatureBand)
+        public static WorkloadSet? FromWorkloadSetFolder(string path, string workloadSetVersion, SdkFeatureBand defaultFeatureBand)
         {
             WorkloadSet? workloadSet = null;
             foreach (var jsonFile in Directory.GetFiles(path, "*.workloadset.json"))
@@ -102,7 +94,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (workloadSet == null)
             {
-                throw new InvalidOperationException("No workload set information found in: " + path);
+                return null;
             }
 
             if (File.Exists(Path.Combine(path, "baseline.workloadset.json")))
@@ -123,7 +115,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public string ToJson()
         {
-            var json = JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
+            var json = JsonSerializer.Serialize(ToDictionaryForJson(), WorkloadSetJsonSerializerContext.Default.DictionaryStringString);
             return json;
         }
 

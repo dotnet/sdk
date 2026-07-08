@@ -1,35 +1,39 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
-    public class ResolvePackageFileConflicts : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolvePackageFileConflicts : TaskBase, IMultiThreadableTask
     {
-        private HashSet<ITaskItem> referenceConflicts = new();
-        private HashSet<ITaskItem> analyzerConflicts = new();
-        private HashSet<ITaskItem> copyLocalConflicts = new();
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
+        private HashSet<ITaskItem?> referenceConflicts = new();
+        private HashSet<ITaskItem?> analyzerConflicts = new();
+        private HashSet<ITaskItem?> copyLocalConflicts = new();
         private HashSet<ConflictItem> compilePlatformWinners = new();
         private HashSet<ConflictItem> allConflicts = new();
 
-        public ITaskItem[] References { get; set; }
+        public ITaskItem[]? References { get; set; }
 
-        public ITaskItem[] Analyzers { get; set; }
+        public ITaskItem[]? Analyzers { get; set; }
 
-        public ITaskItem[] ReferenceCopyLocalPaths { get; set; }
+        public ITaskItem[]? ReferenceCopyLocalPaths { get; set; }
 
-        public ITaskItem[] OtherRuntimeItems { get; set; }
+        public ITaskItem[]? OtherRuntimeItems { get; set; }
 
-        public ITaskItem[] PlatformManifests { get; set; }
+        public ITaskItem[]? PlatformManifests { get; set; }
 
-        public ITaskItem[] TargetFrameworkDirectories { get; set; }
+        public ITaskItem[]? TargetFrameworkDirectories { get; set; }
 
         /// <summary>
         /// NuGet3 and later only.  In the case of a conflict with identical file version information a file from the most preferred package will be chosen.
         /// </summary>
-        public string[] PreferredPackages { get; set; }
+        public string[]? PreferredPackages { get; set; }
 
         /// <summary>
         /// A collection of items that contain information of which packages get overridden
@@ -40,20 +44,20 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         /// in the default cases where platform packages (Microsoft.NETCore.App) should override specific packages
         /// (System.Console v4.3.0).
         /// </remarks>
-        public ITaskItem[] PackageOverrides { get; set; }
+        public ITaskItem[]? PackageOverrides { get; set; }
 
         [Output]
-        public ITaskItem[] ReferencesWithoutConflicts { get; set; }
+        public ITaskItem[]? ReferencesWithoutConflicts { get; set; }
 
         [Output]
-        public ITaskItem[] AnalyzersWithoutConflicts { get; set; }
+        public ITaskItem[]? AnalyzersWithoutConflicts { get; set; }
 
 
         [Output]
-        public ITaskItem[] ReferenceCopyLocalPathsWithoutConflicts { get; set; }
+        public ITaskItem[]? ReferenceCopyLocalPathsWithoutConflicts { get; set; }
 
         [Output]
-        public ITaskItem[] Conflicts { get; set; }
+        public ITaskItem[]? Conflicts { get; set; }
 
         protected override void ExecuteCore()
         {
@@ -62,14 +66,15 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             var packageOverrides = new PackageOverrideResolver<ConflictItem>(PackageOverrides);
 
             //  Treat assemblies from FrameworkList.xml as platform assemblies that also get considered at compile time
-            IEnumerable<ConflictItem> compilePlatformItems = null;
+            IEnumerable<ConflictItem>? compilePlatformItems = null;
             if (TargetFrameworkDirectories != null && TargetFrameworkDirectories.Any())
             {
                 var frameworkListReader = new FrameworkListReader(BuildEngine4);
 
                 compilePlatformItems = TargetFrameworkDirectories.SelectMany(tfd =>
                 {
-                    return frameworkListReader.GetConflictItems(Path.Combine(tfd.ItemSpec, "RedistList", "FrameworkList.xml"), log);
+                    AbsolutePath frameworkListPath = TaskEnvironment.GetAbsolutePath(Path.Combine(tfd.ItemSpec, "RedistList", "FrameworkList.xml"));
+                    return frameworkListReader.GetConflictItems(frameworkListPath, log);
                 }).ToArray();
             }
 
@@ -128,7 +133,17 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             // we only commit the platform items since its not a conflict if other items share the same filename.
             using (var platformConflictScope = new ConflictResolver<ConflictItem>(packageRanks, packageOverrides, log))
             {
-                var platformItems = PlatformManifests?.SelectMany(pm => PlatformManifestReader.LoadConflictItems(pm.ItemSpec, log)) ?? Enumerable.Empty<ConflictItem>();
+                var platformItems = PlatformManifests?.SelectMany(pm =>
+                {
+                    if (string.IsNullOrEmpty(pm.ItemSpec))
+                    {
+                        log.LogError(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotLoadPlatformManifest, pm.ItemSpec));
+                        return Enumerable.Empty<ConflictItem>();
+                    }
+
+                    AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(pm.ItemSpec);
+                    return PlatformManifestReader.LoadConflictItems(manifestPath, log);
+                }) ?? Enumerable.Empty<ConflictItem>();
 
                 if (compilePlatformItems != null)
                 {
@@ -175,17 +190,16 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 //  The Reference item we create in this case should be without the .dll extension
                 //  (which is added in FrameworkListReader in order to make the framework items
                 //  correctly conflict with DLLs from NuGet packages)
-                compilePlatformWinners.Select(c => Path.GetFileNameWithoutExtension(c.FileName))
+                compilePlatformWinners.Select(c => Path.GetFileNameWithoutExtension(c.FileName) ?? string.Empty)
                                       //  Don't add a reference if we already have one (especially in case the existing one has
                                       //  metadata we want to keep, such as aliases)
-                                      .Where(simplename => !referenceItemSpecs.Contains(simplename))
+                                      .Where(simpleName => !referenceItemSpecs.Contains(simpleName))
                                       .Select(r => new TaskItem(r)));
-
         }
 
         //  Concatenate two things, either of which may be null.  Interpret null as empty,
         //  and return null if the result would be empty.
-        private ITaskItem[] SafeConcat(ITaskItem[] first, IEnumerable<ITaskItem> second)
+        private ITaskItem[]? SafeConcat(ITaskItem[]? first, IEnumerable<ITaskItem> second)
         {
             if (first == null || first.Length == 0)
             {
@@ -226,9 +240,9 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             return item;
         }
 
-        private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[] items, ConflictItemType itemType)
+        private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[]? items, ConflictItemType itemType)
         {
-            return (items != null) ? items.Select(i => new ConflictItem(i, itemType)) : Enumerable.Empty<ConflictItem>();
+            return (items != null) ? items.Select(i => new ConflictItem(i, itemType, TaskEnvironment)) : Enumerable.Empty<ConflictItem>();
         }
 
         private void HandleCompileConflict(ConflictItem winner, ConflictItem loser)
@@ -255,7 +269,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         {
             if (loser.ItemType == ConflictItemType.Reference)
             {
-                loser.OriginalItem.SetMetadata(MetadataNames.Private, "False");
+                loser.OriginalItem?.SetMetadata(MetadataNames.Private, "False");
             }
             else if (loser.ItemType == ConflictItemType.CopyLocal)
             {
@@ -270,9 +284,9 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         /// <param name="original"></param>
         /// <param name="conflicts"></param>
         /// <returns></returns>
-        private ITaskItem[] RemoveConflicts(ITaskItem[] original, ICollection<ITaskItem> conflicts)
+        private ITaskItem[]? RemoveConflicts(ITaskItem[]? original, ICollection<ITaskItem?> conflicts)
         {
-            if (conflicts.Count == 0)
+            if (original is null || conflicts.Count == 0)
             {
                 return original;
             }

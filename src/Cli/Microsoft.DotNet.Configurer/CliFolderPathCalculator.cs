@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Configurer
 
         public static string CliFallbackFolderPath =>
             Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
-            Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent.FullName, "NuGetFallbackFolder");
+            Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent?.FullName ?? string.Empty, "NuGetFallbackFolder");
 
         public static string ToolsShimPath => Path.Combine(DotnetUserProfileFolderPath, ToolsShimFolderName);
 
@@ -42,13 +42,11 @@ namespace Microsoft.DotNet.Configurer
 
         public static string ToolsResolverCachePath => Path.Combine(DotnetUserProfileFolderPath, ToolsResolverCacheFolderName);
 
-        public static string PlatformHomeVariableName => CliFolderPathCalculatorCore.PlatformHomeVariableName;
-
         public static string DotnetHomePath
         {
             get
             {
-                return CliFolderPathCalculatorCore.GetDotnetHomePath()
+                return new CliFolderPathCalculatorCore().GetDotnetHomePath()
                     ?? throw new ConfigurationException(
                             string.Format(
                                 LocalizableStrings.FailedToDetermineUserHomeDirectory,

@@ -4,11 +4,13 @@ Documents Index
 ## Overview and general information
 
 - [Intro to .NET Core CLI](general/intro-to-cli.md)
+- [Publishing a solution and its pitfalls](general/solution-publish.md)
 - [CLI UX Guidelines](general/cli-ux-guidelines.md)
 - [.NET Core native pre-requisities document](https://github.com/dotnet/core/blob/main/Documentation/prereqs.md)
 - [Roadmap and OS support](https://github.com/dotnet/core/blob/main/roadmap.md)
 - [Comprehensive CLI documentation](https://docs.microsoft.com/en-us/dotnet/articles/core/preview3/tools/)
 - [ASP.NET Core Command Line Tools](general/aspnetcore-tools.md)
+- [Guidelines for how to introduce a new diagnostic or breaking change](project-docs/breaking-change-guidelines.md)
 
 ## Working with the CLI repo
 

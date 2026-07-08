@@ -1,0 +1,111 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Utils;
+using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
+
+namespace Microsoft.DotNet.Cli.Test.Tests
+{
+    [TestClass]
+    public class GivenDotnetTestBuildsAndRunsHelp : SdkTest
+    {
+        public GivenDotnetTestBuildsAndRunsHelp()
+        {
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunHelpOnTestProject_ShouldReturnExitCodeSuccess(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                Assert.MatchesRegex(@"Extension Options:\s+--[\s\S]*", result.StdOut);
+                Assert.MatchesRegex(@"Options:\s+--[\s\S]*", result.StdOut);
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunHelpOnMultipleTestProjects_ShouldReturnExitCodeSuccess(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                Assert.MatchesRegex(@"Extension Options:\s+--[\s\S]*", result.StdOut);
+                Assert.MatchesRegex(@"Options:\s+--[\s\S]*", result.StdOut);
+
+                string directorySeparator = PathUtility.GetDirectorySeparatorChar();
+                string otherTestProjectPattern = @$"Unavailable extension options:\s+.*{directorySeparator}{ToolsetInfo.CurrentTargetFramework}{directorySeparator}OtherTestProject\.dll.*\s+(--report-trx\s+--report-trx-filename|--report-trx-filename\s+--report-trx)";
+
+                Assert.MatchesRegex(otherTestProjectPattern, result.StdOut);
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunHelpCommand_ShouldNotShowDuplicateOptions(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
+
+            // Parse the help output to extract option names
+            var helpOutput = result.StdOut;
+
+            // Count occurrences of each option in the help output
+            int outputOptionCount = CountOptionOccurrences(helpOutput!, "--output");
+            int noAnsiOptionCount = CountOptionOccurrences(helpOutput!, "--no-ansi");
+
+            // Assert that each option appears only once
+            outputOptionCount.Should().Be(1, $"Option '--output' should not appear more than once in help output");
+            noAnsiOptionCount.Should().Be(1, $"Option '--no-ansi' should not appear more than once in help output");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        private static int CountOptionOccurrences(string helpOutput, string optionName)
+        {
+            // Split by lines and look for lines that start with the option (accounting for indentation)
+            var lines = helpOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            int count = 0;
+
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+                // Look for lines that start with the option name (e.g., "--output" or "--no-ansi")
+                if (trimmedLine.StartsWith(optionName, StringComparison.OrdinalIgnoreCase))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+
+    }
+}

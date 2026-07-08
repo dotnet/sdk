@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,10 +10,11 @@ using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
-using Microsoft.DotNet.GenAPI.Filtering;
+using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
+    [TestClass]
     public class CSharpFileBuilderTests
     {
         class AllowAllFilter : ISymbolFilter
@@ -30,59 +33,133 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
-            string excludedAttributeFile = null,
-            [CallerMemberName] string assemblyName = "")
+            string[] excludedAttributeList = null,
+            ISymbolFilter additionalApiInclusionFilter = null,
+            [CallerMemberName] string assemblyName = "",
+            // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
+            string header = "")
         {
-            StringWriter stringWriter = new();
-
-            // Configure symbol filters
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                includeInternalSymbols,
-                includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols);
-
-            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(accessibilitySymbolFilter);
-
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludedAttributeFile is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
-
-            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
-                new ConsoleLog(MessageImportance.Low),
-                symbolFilter,
-                attributeDataSymbolFilter,
-                stringWriter,
-                null,
-                false,
-                MetadataReferences);
-
-            using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            AssemblySymbolLoader assemblySymbolLoader = new(resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
-            IAssemblySymbol assemblySymbol = assemblySymbolLoader.LoadAssembly(assemblyName, assemblyStream);
-
-            csharpFileBuilder.WriteAssembly(assemblySymbol);
-
-            StringBuilder stringBuilder = stringWriter.GetStringBuilder();
-            string resultedString = stringBuilder.ToString();
-
-            stringBuilder.Remove(0, stringBuilder.Length);
+            string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, additionalApiInclusionFilter, assemblyName, header);
 
             SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
             SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
 
             // compare SyntaxTree and not string representation
-            Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
+            Assert.IsTrue(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
         }
 
-        [Fact]
+        private void RunTestAndCompareOutput(string original,
+            string expected,
+            bool includeInternalSymbols = true,
+            bool includeEffectivelyPrivateSymbols = true,
+            bool includeExplicitInterfaceImplementationSymbols = true,
+            bool allowUnsafe = false,
+            string[] excludedAttributeList = null,
+            [CallerMemberName] string assemblyName = "",
+            // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
+            string header = "")
+        {
+            string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, additionalApiInclusionFilter: null, assemblyName, header);
+
+            Assert.AreEqual(expected.ReplaceLineEndings("\n"), resultedString.ReplaceLineEndings("\n"));
+        }
+
+        private static string GenerateOutput(string original,
+            bool includeInternalSymbols,
+            bool includeEffectivelyPrivateSymbols,
+            bool includeExplicitInterfaceImplementationSymbols,
+            bool allowUnsafe,
+            string[] excludedAttributeList,
+            ISymbolFilter additionalApiInclusionFilter,
+            string assemblyName,
+            string header)
+        {
+            using StringWriter stringWriter = new();
+
+            Mock<ILog> log = new();
+
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
+                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
+
+            ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, additionalApiInclusionFilter: additionalApiInclusionFilter);
+            ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, additionalApiInclusionFilter: additionalApiInclusionFilter);
+
+            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
+                log.Object,
+                stringWriter,
+                loader,
+                symbolFilter,
+                attributeDataSymbolFilter,
+                header: header,
+                exceptionMessage: null,
+                includeAssemblyAttributes: false,
+                MetadataReferences,
+                addPartialModifier: true);
+
+            csharpFileBuilder.WriteAssembly(assemblySymbols.First().Value);
+
+            return stringWriter.ToString();
+        }
+
+        [TestMethod]
+        public void TestDefaultHeader()
+        {
+            RunTest(original: """
+                namespace A
+                {
+                namespace B {}
+
+                namespace C.D { public struct Bar {} }
+                }
+                """,
+                expected: $@"
+{CSharpFileBuilder.DefaultFileHeader}
+namespace A.C.D {{ public partial struct Bar {{}} }}
+                ",
+                header: null);
+        }
+
+        [TestMethod]
+        public void TestCustomHeader()
+        {
+            string customHeader = """
+            // Licensed to the .NET Foundation under one or more agreements.
+            // The .NET Foundation licenses this file to you under the MIT license.
+
+            """;
+
+            RunTest(original: """
+                namespace A
+                {
+                namespace B {}
+
+                namespace C.D { public struct Bar {} }
+                }
+                """,
+                expected: $@"
+                {customHeader}
+                namespace A.C.D {{ public partial struct Bar {{}} }}
+                ",
+                header: customHeader);
+        }
+
+        [TestMethod]
+        public void TestGlobalNamespaceDeclaration()
+        {
+            RunTest(original: """
+                public class Class1 { }
+                """,
+                expected: """
+                public partial class Class1
+                {
+                }
+                """);
+        }
+
+        [TestMethod]
         public void TestNamespaceDeclaration()
         {
             RunTest(original: """
@@ -98,7 +175,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestClassDeclaration()
         {
             RunTest(original: """
@@ -128,7 +205,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestStructDeclaration()
         {
             RunTest(original: """
@@ -224,12 +301,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRecordDeclaration()
         {
             RunTest(original: """
                 namespace Foo
-                {   
+                {
                     public record RecordClass;
                     public record RecordClass1(int i);
                     public record RecordClass2(string s, int i);
@@ -238,7 +315,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public record DerivedRecord3(string x, int i, double d) : RecordClass2(default(string)!, i);
                     public record DerivedRecord4(double d) : RecordClass2(default(string)!, default);
                     public record DerivedRecord5() : RecordClass2(default(string)!, default);
-                
+
                     public record RecordClassWithMethods(int i)
                     {
                         public void DoSomething() { }
@@ -337,17 +414,17 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRecordStructDeclaration()
         {
             RunTest(original: """
                 namespace Foo
                 {
-                    
-                    public record struct RecordStruct;                    
+
+                    public record struct RecordStruct;
                     public record struct RecordStruct1(int i);
                     public record struct RecordStruct2(string s, int i);
-                
+
                     public record struct RecordStructWithMethods(int i)
                     {
                         public void DoSomething() { }
@@ -365,10 +442,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public RecordStructWithConstructors() : this(1) { }
                         public RecordStructWithConstructors(string s) : this(int.Parse(s)) { }
                     }
-                
+
                 }
                 """,
-                expected: """                
+                expected: """
                 namespace Foo
                 {
                     public partial struct RecordStruct : System.IEquatable<RecordStruct>
@@ -557,7 +634,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInterfaceGeneration()
         {
             RunTest(original: """
@@ -588,7 +665,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestEnumGeneration()
         {
             RunTest(original: """
@@ -615,7 +692,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPropertyGeneration()
         {
             RunTest(original: """
@@ -644,7 +721,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAbstractPropertyGeneration()
         {
             RunTest(original: """
@@ -669,7 +746,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceImplementation()
         {
             RunTest(original: """
@@ -714,7 +791,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPartiallySpecifiedGenericClassGeneration()
         {
             RunTest(original: """
@@ -739,7 +816,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGenericClassWitConstraintsParameterGeneration()
         {
             RunTest(original: """
@@ -762,7 +839,253 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
+        public void TestNotNullGenericConstraintGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public abstract class Base
+                    {
+                        public abstract void OverrideMethod<T>() where T : notnull;
+                    }
+
+                    public class Derived : Base
+                    {
+                        public override void OverrideMethod<T>() { }
+                    }
+
+                    public class Container<T> where T : notnull, System.IDisposable, new()
+                    {
+                        public void Method<TKey, TValue>(System.Collections.Generic.Dictionary<TKey, TValue> dict)
+                            where TKey : notnull
+                        {
+                        }
+                    }
+
+                    public delegate void Handler<T>(T value) where T : notnull;
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public abstract partial class Base
+                    {
+                        public abstract void OverrideMethod<T>() where T : notnull;
+                    }
+
+                    public partial class Container<T> where T : notnull, System.IDisposable, new()
+                    {
+                        public void Method<TKey, TValue>(System.Collections.Generic.Dictionary<TKey, TValue> dict) where TKey : notnull { }
+                    }
+
+                    public partial class Derived : Base
+                    {
+                        public override void OverrideMethod<T>() { }
+                    }
+
+                    public delegate void Handler<T>(T value) where T : notnull;
+                }
+                """);
+        }
+
+        [TestMethod]
+        public void TestNotNullConstraintClauseOrdering()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class OrderedContainer<T, U> where T : notnull where U : new()
+                    {
+                        public void OrderedMethod<TMethod, UMethod>() where TMethod : notnull where UMethod : new()
+                        {
+                        }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class OrderedContainer<T, U> where T : notnull where U : new()
+                    {
+                        public void OrderedMethod<TMethod, UMethod>() where TMethod : notnull where UMethod : new() { }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public void TestBlankLineGenerationBetweenTypes()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class First
+                    {
+                        public void Method1()
+                        {
+                        }
+
+                        public void Method2()
+                        {
+                        }
+                    }
+
+                    public class Second
+                    {
+                        public int Property { get; set; }
+
+                        public void Method()
+                        {
+                        }
+                    }
+
+                    public interface Third
+                    {
+                        int Property { get; }
+
+                        void Method();
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class First
+                    {
+                        public void Method1() { }
+                        public void Method2() { }
+                    }
+
+                    public partial class Second
+                    {
+                        public int Property { get { throw null; } set { } }
+                        public void Method() { }
+                    }
+
+                    public partial interface Third
+                    {
+                        int Property { get; }
+                        void Method();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public void TestExplicitInterfaceImplementationNotNullConstraint()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public interface IGeneric
+                    {
+                        void Method<T>(T value) where T : notnull;
+                    }
+
+                    public class ExplicitGeneric : IGeneric
+                    {
+                        void IGeneric.Method<T>(T value)
+                        {
+                        }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class ExplicitGeneric : IGeneric
+                    {
+                        void IGeneric.Method<T>(T value) { }
+                    }
+
+                    public partial interface IGeneric
+                    {
+                        void Method<T>(T value)
+                            where T : notnull;
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public void TestBlankLineGenerationBetweenNestedTypeLikeMembers()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class Container
+                    {
+                        public delegate void ADelegate();
+                        public class BNested
+                        {
+                        }
+                        public delegate void CDelegate();
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Container
+                    {
+                        public delegate void ADelegate();
+
+                        public partial class BNested
+                        {
+                        }
+
+                        public delegate void CDelegate();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public void TestAllowsRefStructGenericConstraintGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class Potato
+                    {
+                        public T Carrot<T>(T t) where T : allows ref struct
+                        {
+                            return t;
+                        }
+
+                        public T CarrotNotNull<T>(T t) where T : notnull, allows ref struct
+                        {
+                            return t;
+                        }
+                    }
+
+                    public class RefContainer<T> where T : allows ref struct
+                    {
+                    }
+
+                    public delegate void RefHandler<T>(T value) where T : allows ref struct;
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Potato
+                    {
+                        public T Carrot<T>(T t) where T : allows ref struct { throw null; }
+                        public T CarrotNotNull<T>(T t) where T : notnull, allows ref struct { throw null; }
+                    }
+
+                    public partial class RefContainer<T> where T : allows ref struct
+                    {
+                    }
+
+                    public delegate void RefHandler<T>(T value) where T : allows ref struct;
+                }
+                """);
+        }
+
+        [TestMethod]
         public void TestPublicMembersGeneration()
         {
             RunTest(original: """
@@ -812,7 +1135,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDelegateGeneration()
         {
             RunTest(original: """
@@ -829,7 +1152,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAbstractEventGeneration()
         {
             RunTest(original: """
@@ -862,7 +1185,129 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
+        public void TestEventGenerationOutput()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class Events
+                    {
+                        public event System.EventHandler<string> OnNewMessage { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Events
+                    {
+                        public event System.EventHandler<string> OnNewMessage { add { } remove { } }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public void TestExplicitInterfaceEventGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public interface INotifications
+                    {
+                        event System.Action<string> PublicEvent;
+                        event System.Action<int> ExplicitEvent;
+                    }
+
+                    public class EventSource : INotifications
+                    {
+                        public event System.Action<string> PublicEvent { add { } remove { } }
+                        event System.Action<int> INotifications.ExplicitEvent { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource : INotifications
+                    {
+                        event System.Action<int> INotifications.ExplicitEvent { add { } remove { } }
+                        public event System.Action<string> PublicEvent { add { } remove { } }
+                    }
+
+                    public partial interface INotifications
+                    {
+                        event System.Action<int> ExplicitEvent;
+                        event System.Action<string> PublicEvent;
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public void TestExplicitInterfaceEventFromInternalInterfaceIsExcluded()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    internal interface IInternalNotifications
+                    {
+                        event System.Action<int> InternalEvent;
+                    }
+
+                    public class EventSource : IInternalNotifications
+                    {
+                        event System.Action<int> IInternalNotifications.InternalEvent { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource
+                    {
+                    }
+                }
+                """,
+                includeInternalSymbols: false);
+        }
+
+        [TestMethod]
+        public void TestExplicitInterfaceEventWithInaccessibleTypeArgumentIsExcluded()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    internal class InternalArg { }
+
+                    public interface IPublicNotifications<T>
+                    {
+                        event System.Action<T> Notify;
+                    }
+
+                    public class EventSource : IPublicNotifications<InternalArg>
+                    {
+                        event System.Action<InternalArg> IPublicNotifications<InternalArg>.Notify { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource
+                    {
+                    }
+
+                    public partial interface IPublicNotifications<T>
+                    {
+                        event System.Action<T> Notify;
+                    }
+                }
+                """,
+                includeInternalSymbols: false);
+        }
+        [TestMethod]
         public void TestCustomAttributeGeneration()
         {
             RunTest(original: """
@@ -932,7 +1377,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestFullyQualifiedNamesForDefaultEnumParameters()
         {
             RunTest(original: """
@@ -978,7 +1423,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCustomComparisonOperatorGeneration()
         {
             RunTest(original: """
@@ -1009,7 +1454,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNestedClassGeneration()
         {
             RunTest(original: """
@@ -1039,7 +1484,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 }
                 """);
         }
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceImplementationMethodGeneration()
         {
             RunTest(original: """
@@ -1062,7 +1507,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNullabilityGeneration()
         {
             RunTest(original: """
@@ -1091,7 +1536,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExtensionMethodsGeneration()
         {
             RunTest(original: """
@@ -1114,7 +1559,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMethodsWithVariableNumberOfArgumentsGeneration()
         {
             RunTest(original: """
@@ -1137,7 +1582,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestConversionOperatorGeneration()
         {
             RunTest(original: """
@@ -1173,7 +1618,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDestructorGeneration()
         {
             RunTest(original: """
@@ -1196,7 +1641,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceImplementationPropertyGeneration()
         {
             RunTest(original: """
@@ -1235,7 +1680,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAccessibilityGenerationForPropertyAccessors()
         {
             RunTest(original: """
@@ -1258,7 +1703,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestConstantFieldGeneration()
         {
             RunTest(original: """
@@ -1282,7 +1727,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTypeParameterVarianceGeneration()
         {
             RunTest(original: """
@@ -1306,7 +1751,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRefMembersGeneration()
         {
             RunTest(original: """
@@ -1338,7 +1783,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDefaultConstraintOnOverrideGeneration()
         {
             RunTest(original: """
@@ -1376,7 +1821,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForValueTypes()
         {
             RunTest(original: """
@@ -1402,7 +1847,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForReferenceTypes()
         {
             RunTest(original: """
@@ -1427,7 +1872,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForGenericTypes()
         {
             RunTest(original: """
@@ -1451,7 +1896,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForNestedGenericTypes()
         {
             RunTest(original: """
@@ -1469,7 +1914,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             expected: """
                 namespace Foo
                 {
-                    public partial struct Bar<T>
+                    public partial struct Bar<T> where T : notnull
                     {
                         private System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<T>> _field;
                         private object _dummy;
@@ -1479,7 +1924,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsAngleBrackets()
         {
             RunTest(original: """
@@ -1496,7 +1941,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             expected: """
                 namespace Foo
                 {
-                    public readonly partial struct Bar<T>
+                    public readonly partial struct Bar<T> where T : notnull
                     {
                         private readonly System.Collections.Generic.List<Bar<T>> _Baz_k__BackingField;
                         private readonly object _dummy;
@@ -1507,7 +1952,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForInaccessibleNestedGenericTypes()
         {
             RunTest(original: """
@@ -1537,7 +1982,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithoutExplicitDefault()
         {
             RunTest(original: """
@@ -1567,7 +2012,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithExplicitDefaultConstructor()
         {
             RunTest(original: """
@@ -1598,7 +2043,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalParameterlessConstructors()
         {
             RunTest(original: """
@@ -1632,7 +2077,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalParameterizedConstructors()
         {
             RunTest(original: """
@@ -1642,12 +2087,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public class C : B
                         {
                             internal C() : base(0) {}
                         }
-                    
+
                         public class D : B
                         {
                             internal D(int i) : base(i) {}
@@ -1670,7 +2115,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public partial class C : B
                         {
                             internal C() : base(default) {}
@@ -1690,7 +2135,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalParameterizedConstructorsPreserveInternals()
         {
             RunTest(original: """
@@ -1700,12 +2145,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public class C : B
                         {
                             internal C() : base(0) {}
                         }
-                    
+
                         public class D : B
                         {
                             internal D(int i) : base(i) {}
@@ -1756,7 +2201,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     includeInternalSymbols: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalConstructorCallingProtected()
         {
             RunTest(original: """
@@ -1779,8 +2224,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public partial class B
                         {
                             protected B() {}
-                        }                    
-                    
+                        }
+
                         public partial class C : B
                         {
                             internal C() {}
@@ -1790,7 +2235,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithoutDefaultConstructor()
         {
             RunTest(original: """
@@ -1831,7 +2276,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithMultipleNonDefaultConstructors()
         {
             RunTest(original: """
@@ -1876,7 +2321,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithAmbiguousNonDefaultConstructors()
         {
             RunTest(original: """
@@ -1913,7 +2358,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact()]
+        [TestMethod]
         public void TestBaseTypeWithAmbiguousNonDefaultConstructorsRegression31655()
         {
             RunTest(original: """
@@ -1933,7 +2378,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public class D { }
 
                         public class Id { }
-                    
+
                         public class V { }
                     }
                     """,
@@ -1960,7 +2405,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeConstructorWithObsoleteAttribute()
         {
             RunTest(original: """
@@ -1997,7 +2442,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestObsoleteBaseTypeConstructorWithoutErrorParameter()
         {
             RunTest(original: """
@@ -2034,7 +2479,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestObsoleteBaseTypeConstructorWithoutMessageParameter()
         {
             RunTest(original: """
@@ -2071,7 +2516,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestFilterOutInternalExplicitInterfaceImplementation()
         {
             RunTest(original: """
@@ -2101,7 +2546,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMethodsWithReferenceParameterGeneration()
         {
             RunTest(original: """
@@ -2125,7 +2570,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/74109")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn/issues/74109")]
         public void TestInterfaceWithOperatorGeneration()
         {
             RunTest(original: """
@@ -2149,7 +2594,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                  includeInternalSymbols: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/74109")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn/issues/74109")]
         public void TestInterfaceWithCheckedOperatorGeneration()
         {
             RunTest(original: """
@@ -2177,7 +2622,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                  includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUnsafeFieldGeneration()
         {
             RunTest(original: """
@@ -2206,7 +2651,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 allowUnsafe: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUnsafeMethodGeneration()
         {
             RunTest(original: """
@@ -2241,7 +2686,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 allowUnsafe: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUnsafeConstructorGeneration()
         {
             RunTest(original: """
@@ -2276,7 +2721,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 allowUnsafe: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUnsafeBaseConstructorGeneration()
         {
             RunTest(original: """
@@ -2311,7 +2756,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 allowUnsafe: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalDefaultConstructorGeneration()
         {
             RunTest(original: """
@@ -2369,7 +2814,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPrivateDefaultConstructorGeneration()
         {
             RunTest(original: """
@@ -2404,7 +2849,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeEffectivelyPrivateSymbols: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalDefaultConstructorGenerationForGenericType()
         {
             RunTest(original: """
@@ -2438,7 +2883,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitParameterlessConstructorNotRemoved()
         {
             RunTest(original: """
@@ -2464,7 +2909,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseClassWithExplicitDefaultConstructor()
         {
             RunTest(original: """
@@ -2495,7 +2940,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGenericBaseInterfaceWithInaccessibleTypeArguments()
         {
             RunTest(original: """
@@ -2540,7 +2985,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void NewKeywordWhenBaseMethodIsHidden()
         {
             RunTest(original: """
@@ -2691,9 +3136,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void TestAttributeWithInternalTypeArgumentOmitted(bool includeInternalSymbols)
         {
             string expected = includeInternalSymbols ? """
@@ -2756,13 +3201,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: includeInternalSymbols);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAttributesExcludedWithFilter()
         {
-            using TempDirectory root = new();
-            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
-            File.WriteAllText(filePath, "T:A.AnyTestAttribute");
-
             RunTest(original: """
                     namespace A
                     {
@@ -2798,10 +3239,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false,
-                excludedAttributeFile: filePath);
+                excludedAttributeList: ["T:A.AnyTestAttribute"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGenericClassImplementsGenericInterface()
         {
             RunTest(original: """
@@ -2826,7 +3267,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
                         }
                     }
-                    
+
                     """,
                 // https://github.com/dotnet/sdk/issues/32195 tracks interface expansion
                 expected: """
@@ -2853,7 +3294,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTypeForwardsToGenericTypesRegression31250()
         {
             RunTest(original: """
@@ -2899,7 +3340,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReservedAttributesAreOmitted()
         {
             RunTest(original: """
@@ -2907,7 +3348,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public ref struct C<T>
                         where T : unmanaged
                     {
-                        public required (string? k, dynamic v, nint n) X { get; init; }    
+                        public required (string? k, dynamic v, nint n) X { get; init; }
                     }
 
                     public static class E
@@ -2916,7 +3357,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                 }
                 """,
-                expected: """                
+                expected: """
                 namespace N
                 {
                     public ref partial struct C<T>
@@ -2933,7 +3374,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceIndexer()
         {
             RunTest(original: """
@@ -2971,7 +3412,90 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
+        public void TestIndexerWithCustomName()
+        {
+            RunTest(original: """
+                    namespace a
+                    {
+                        public partial class Foo
+                        {
+                            [System.Runtime.CompilerServices.IndexerName("MyItem")]
+                            public string this[int index] => string.Empty;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        public partial class Foo
+                        {
+                            [System.Runtime.CompilerServices.IndexerName("MyItem")]
+                            public string this[int index] { get { throw null; } }
+                        }
+                    }
+                    """);
+        }
+
+        [TestMethod]
+        public void TestIndexerWithDefaultNameDoesNotEmitIndexerNameAttribute()
+        {
+            RunTest(original: """
+                    namespace a
+                    {
+                        public partial class Foo
+                        {
+                            public string this[int index] => string.Empty;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        public partial class Foo
+                        {
+                            public string this[int index] { get { throw null; } }
+                        }
+                    }
+                    """);
+        }
+
+        [TestMethod]
+        public void TestExplicitInterfaceIndexerWithCustomNameDoesNotEmitIndexerNameAttribute()
+        {
+            RunTest(original: """
+                    namespace a
+                    {
+                        public partial interface IFoo
+                        {
+                            [System.Runtime.CompilerServices.IndexerName("MyItem")]
+                            string this[int index] { get; }
+                        }
+
+                        public partial class Foo : IFoo
+                        {
+                            string IFoo.this[int index] => string.Empty;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        public partial class Foo : IFoo
+                        {
+                            string IFoo.this[int index] { get { throw null; } }
+                        }
+
+                        public partial interface IFoo
+                        {
+                            [System.Runtime.CompilerServices.IndexerName("MyItem")]
+                            string this[int index] { get; }
+                        }
+                    }
+                    """);
+        }
+
+        [TestMethod]
         public void TestExplicitInterfaceNonGenericCollections()
         {
             RunTest(original: """
@@ -2980,7 +3504,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     namespace a
                     {
                         #pragma warning disable CS8597
-                        
+
                         public partial class MyStringCollection : ICollection, IEnumerable, IList
                         {
                             public int Count { get { throw null; } }
@@ -3004,7 +3528,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             void ICollection.CopyTo(Array array, int index) { }
                             IEnumerator IEnumerable.GetEnumerator() { throw null; }
                             int IList.Add(object? value) { throw null; }
-                            bool IList.Contains(object? value) { throw null; }                            
+                            bool IList.Contains(object? value) { throw null; }
                             int IList.IndexOf(object? value) { throw null; }
                             void IList.Insert(int index, object? value) { }
                             void IList.Remove(object? value) { }
@@ -3013,7 +3537,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         #pragma warning restore CS8597
                     }
                     """,
-                expected: """                    
+                expected: """
                     namespace a
                     {
                         public partial class MyStringCollection : System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList
@@ -3046,6 +3570,122 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         }
                     }
                     """,
+                includeInternalSymbols: false);
+        }
+
+        [TestMethod]
+        public void TestIncludeApiFileEmitsInternalOOBAttribute()
+        {
+            using TempDirectory root = new();
+            string includeDocIdFilePath = Path.Combine(root.DirPath, "inclusions.txt");
+            File.WriteAllText(includeDocIdFilePath, """
+            T:System.Runtime.CompilerServices.CollectionBuilderAttribute
+            """);
+
+            ISymbolFilter inclusionFilter = new CompositeSymbolFilter(CompositeSymbolFilterMode.Or)
+                .Add(DocIdSymbolFilter.CreateFromFiles([includeDocIdFilePath], includeDocIds: true));
+
+            RunTest(original: """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
+                    using System.Runtime.CompilerServices;
+                    namespace a
+                    {
+                        #pragma warning disable CS0436
+                        [CollectionBuilder(typeof(LineBufferBuilder), "Create")]
+                        #pragma warning restore CS0436
+                        public class LineBuffer : IEnumerable<char>
+                        {
+                            public LineBuffer(ReadOnlySpan<char> buffer) { }
+
+                            public IEnumerator<char> GetEnumerator() => default!;
+                            IEnumerator IEnumerable.GetEnumerator() => default!;
+                        }
+
+                        public static class LineBufferBuilder
+                        {
+                            public static LineBuffer Create(ReadOnlySpan<char> values) => new LineBuffer(values);
+                        }
+                    }
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal sealed class CollectionBuilderAttribute(Type builderType, string methodName) : Attribute
+                        {
+                            public Type BuilderType { get; } = builderType;
+
+                            public string MethodName { get; } = methodName;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        [System.Runtime.CompilerServices.CollectionBuilder(typeof(LineBufferBuilder), "Create")]
+                        public partial class LineBuffer : System.Collections.Generic.IEnumerable<char>, System.Collections.IEnumerable
+                        {
+                            public LineBuffer(System.ReadOnlySpan<char> buffer) { }
+
+                            public System.Collections.Generic.IEnumerator<char> GetEnumerator() { throw null; }
+
+                            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+                        }
+
+                        public static partial class LineBufferBuilder
+                        {
+                            public static LineBuffer Create(System.ReadOnlySpan<char> values) { throw null; }
+                        }
+                    }
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal sealed partial class CollectionBuilderAttribute : Attribute
+                        {
+                            public CollectionBuilderAttribute(Type builderType, string methodName) { }
+
+                            public Type BuilderType { get { throw null; } }
+
+                            public string MethodName { get { throw null; } }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                additionalApiInclusionFilter: inclusionFilter);
+        }
+
+        [TestMethod]
+        public void TestIncludeInternalCompilerAttributeByDocIdList()
+        {
+            ISymbolFilter inclusionFilter = new CompositeSymbolFilter(CompositeSymbolFilterMode.Or)
+                .Add(DocIdSymbolFilter.CreateFromLists(["T:System.Runtime.CompilerServices.IsExternalInit"], includeDocIds: true));
+
+            RunTest(original: """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal static class IsExternalInit { }
+                    }
+                    """,
+                expected: """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal static partial class IsExternalInit
+                        {
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                additionalApiInclusionFilter: inclusionFilter);
+        }
+
+        [TestMethod]
+        public void TestInternalOOBAttributeNotEmittedWithoutInclusionFilter()
+        {
+            RunTest(original: """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal static class IsExternalInit { }
+                    }
+                    """,
+                expected: "",
                 includeInternalSymbols: false);
         }
     }

@@ -1,13 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Security.Cryptography;
 using System.Xml;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class GenerateStaticWebAssetEndpointsPropsFile : Task
+[MSBuildMultiThreadableTask]
+public class GenerateStaticWebAssetEndpointsPropsFile : Task, IMultiThreadableTask
 {
     [Required]
     public string TargetPropsFilePath { get; set; }
@@ -20,10 +23,12 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
     [Required]
     public ITaskItem[] StaticWebAssetEndpoints { get; set; }
 
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     public override bool Execute()
     {
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(StaticWebAssetEndpoints);
-        var assets = StaticWebAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity, a => a);
+        var assets = StaticWebAsset.ToAssetDictionary(StaticWebAssets, TaskEnvironment);
         if (!ValidateArguments(endpoints, assets))
         {
             return false;
@@ -46,7 +51,7 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
         foreach (var element in orderedAssets)
         {
             var asset = assets[element.AssetFile];
-            var path = asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
+            var path = asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance, TokenResolveMode.Pack);
             var fullPathExpression = $"""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{StaticWebAsset.Normalize(PackagePathPrefix)}\{StaticWebAsset.Normalize(path).Replace("/", "\\")}'))""";
 
             itemGroup.Add(new XElement(nameof(StaticWebAssetEndpoint),
@@ -86,19 +91,20 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
 
     private void WriteFile(byte[] data)
     {
+        var targetPropsFilePath = string.IsNullOrWhiteSpace(TargetPropsFilePath) ? TargetPropsFilePath : TaskEnvironment.GetAbsolutePath(TargetPropsFilePath).Value;
         var dataHash = ComputeHash(data);
-        var fileExists = File.Exists(TargetPropsFilePath);
-        var existingFileHash = fileExists ? ComputeHash(File.ReadAllBytes(TargetPropsFilePath)) : "";
+        var fileExists = File.Exists(targetPropsFilePath);
+        var existingFileHash = fileExists ? ComputeHash(File.ReadAllBytes(targetPropsFilePath)) : "";
 
         if (!fileExists)
         {
             Log.LogMessage(MessageImportance.Low, $"Creating file '{TargetPropsFilePath}' does not exist.");
-            File.WriteAllBytes(TargetPropsFilePath, data);
+            File.WriteAllBytes(targetPropsFilePath, data);
         }
         else if (!string.Equals(dataHash, existingFileHash, StringComparison.Ordinal))
         {
             Log.LogMessage(MessageImportance.Low, $"Updating '{TargetPropsFilePath}' file because the hash '{dataHash}' is different from existing file hash '{existingFileHash}'.");
-            File.WriteAllBytes(TargetPropsFilePath, data);
+            File.WriteAllBytes(targetPropsFilePath, data);
         }
         else
         {

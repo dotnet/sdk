@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using System.Net;
 using System.Net.Http;
@@ -28,11 +30,11 @@ public partial class OneDeployTests
         Path = $"{TriggeredApiPath}/{WebJobName}",
     }.Uri;
 
-    [Theory]
-    [InlineData(DeploymentStatus.Success, HttpStatusCode.OK, ContinuousWebJob, true)]
-    [InlineData(DeploymentStatus.Success, HttpStatusCode.OK, TriggeredWebJob, true)]
-    [InlineData(DeploymentStatus.Failed, HttpStatusCode.BadRequest, ContinuousWebJob, false)]
-    [InlineData(DeploymentStatus.Failed, HttpStatusCode.NotFound, TriggeredWebJob, false)]
+    [TestMethod]
+    [DataRow(DeploymentStatus.Success, HttpStatusCode.OK, ContinuousWebJob, true)]
+    [DataRow(DeploymentStatus.Success, HttpStatusCode.OK, TriggeredWebJob, true)]
+    [DataRow(DeploymentStatus.Failed, HttpStatusCode.BadRequest, ContinuousWebJob, false)]
+    [DataRow(DeploymentStatus.Failed, HttpStatusCode.NotFound, TriggeredWebJob, false)]
     public async Task OneDeploy_WebJob_Execute_Completes(
         DeploymentStatus deployStatus, HttpStatusCode statusCode, string webJobType, bool expectedResult)
     {
@@ -64,20 +66,20 @@ public partial class OneDeployTests
             FileToPublish, Username, NotShareableValue, PublishUrl, $"{UserAgentName}/8.0", WebJobName, webJobType, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: WebJob deployment operation runs to completion with expected result
-        Assert.Equal(expectedResult, result);
+        Assert.AreEqual(expectedResult, result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
         taskLoggerMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData("not-valid-url", ContinuousWebJob)]
-    [InlineData("not-valid-url", TriggeredWebJob)]
-    [InlineData("", ContinuousWebJob)]
-    [InlineData("", TriggeredWebJob)]
-    [InlineData(null, ContinuousWebJob)]
-    [InlineData(null, TriggeredWebJob)]
+    [TestMethod]
+    [DataRow("not-valid-url", ContinuousWebJob)]
+    [DataRow("not-valid-url", TriggeredWebJob)]
+    [DataRow("", ContinuousWebJob)]
+    [DataRow("", TriggeredWebJob)]
+    [DataRow(null, ContinuousWebJob)]
+    [DataRow(null, TriggeredWebJob)]
     public async Task OneDeploy_WebJob_PublishUrl_Invalid(string invalidUrl, string webjobType)
     {
         // Arrange
@@ -96,23 +98,23 @@ public partial class OneDeployTests
             FileToPublish, Username, NotShareableValue, invalidUrl, $"{UserAgentName}/8.0", WebJobName, webjobType, httpClientMock.Object, deploymentStatusServiceMock.Object, CancellationToken.None);
 
         // Assert: deployment operation fails because 'PublishUrl' is not valid
-        Assert.False(result);
+        Assert.IsFalse(result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();
         taskLoggerMock.VerifyAll();
     }
 
-    [Theory]
-    [InlineData("", ContinuousWebJob)]
-    [InlineData("", TriggeredWebJob)]
-    [InlineData(null, ContinuousWebJob)]
-    [InlineData(null, TriggeredWebJob)]
-    [InlineData(WebJobName, "NotValidType")]
-    [InlineData(WebJobName, "")]
-    [InlineData(WebJobName, null)]
-    [InlineData("", "")]
-    [InlineData(null, null)]
+    [TestMethod]
+    [DataRow("", ContinuousWebJob)]
+    [DataRow("", TriggeredWebJob)]
+    [DataRow(null, ContinuousWebJob)]
+    [DataRow(null, TriggeredWebJob)]
+    [DataRow(WebJobName, "NotValidType")]
+    [DataRow(WebJobName, "")]
+    [DataRow(WebJobName, null)]
+    [DataRow("", "")]
+    [DataRow(null, null)]
     public async Task OneDeploy_WebJob_Missing_NameOrType(string webjobName, string webjobType)
     {
         // Arrange
@@ -146,7 +148,7 @@ public partial class OneDeployTests
 
         // Assert: deployment operation fails because since 'WebJobName' and/or 'WebJobType' is invalid, so we calculate the
         // default OneDeploy URI ('<site_scm_ulr>/api/publish'), which target instance does not recognized as valid
-        Assert.False(result);
+        Assert.IsFalse(result);
 
         httpClientMock.VerifyAll();
         deploymentStatusServiceMock.VerifyAll();

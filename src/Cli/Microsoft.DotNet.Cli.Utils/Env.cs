@@ -1,48 +1,44 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli.Utils
-{
-    public static class Env
-    {
-        private static IEnvironmentProvider _environment = new EnvironmentProvider();
+namespace Microsoft.DotNet.Cli.Utils;
 
-        public static IEnumerable<string> ExecutableExtensions
+public static class Env
+{
+    private static readonly IEnvironmentProvider s_environment = new EnvironmentProvider();
+
+    public static IEnumerable<string> ExecutableExtensions => s_environment.ExecutableExtensions;
+
+    public static string? GetCommandPath(string commandName, params string[] extensions) =>
+        s_environment.GetCommandPath(commandName, extensions);
+
+    public static string? GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions) =>
+        s_environment.GetCommandPathFromRootPath(rootPath, commandName, extensions);
+
+    public static string? GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions) =>
+        s_environment.GetCommandPathFromRootPath(rootPath, commandName, extensions);
+
+    public static bool GetEnvironmentVariableAsBool(string name, bool defaultValue = false) =>
+        s_environment.GetEnvironmentVariableAsBool(name, defaultValue);
+
+    public static bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value) =>
+        s_environment.TryGetEnvironmentVariableAsBool(name, out value);
+
+    public static int? GetEnvironmentVariableAsNullableInt(string name) =>
+        s_environment.GetEnvironmentVariableAsNullableInt(name);
+
+    public static string? GetEnvironmentVariable(string name) =>
+        s_environment.GetEnvironmentVariable(name);
+
+    public static bool AnyEnvironmentVariablesSet(IEnumerable<string> variableNames)
+    {
+        foreach (var name in variableNames)
         {
-            get
+            if (GetEnvironmentVariable(name) != null)
             {
-                return _environment.ExecutableExtensions;
+                return true;
             }
         }
-
-        public static string GetCommandPath(string commandName, params string[] extensions)
-        {
-            return _environment.GetCommandPath(commandName, extensions);
-        }
-
-        public static string GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
-        {
-            return _environment.GetCommandPathFromRootPath(rootPath, commandName, extensions);
-        }
-
-        public static string GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
-        {
-            return _environment.GetCommandPathFromRootPath(rootPath, commandName, extensions);
-        }
-
-        public static bool GetEnvironmentVariableAsBool(string name, bool defaultValue = false)
-        {
-            return _environment.GetEnvironmentVariableAsBool(name, defaultValue);
-        }
-
-        public static int? GetEnvironmentVariableAsNullableInt(string name)
-        {
-            return _environment.GetEnvironmentVariableAsNullableInt(name);
-        }
-
-        public static string GetEnvironmentVariable(string name)
-        {
-            return _environment.GetEnvironmentVariable(name);
-        }
+        return false;
     }
 }

@@ -1,0 +1,18 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <OutputPath>$(ArtifactsNonShippingPackagesDir)</OutputPath>
+
+    <!-- OutputType determines the extension: Package (.msi), Library (.wixlib), Bundle (.exe), etc. -->
+    <OutputType>Package</OutputType>
+
+    <!-- Additional paths to search for include files (.wxi). -->
+    <IncludeSearchPaths>$(MSBuildThisFileDirectory)inc</IncludeSearchPaths>
+
+    <!-- Turn off ICE validation. CodeIntegrity and AppLocker block ICE checks that require elevation, even when running as administator. -->
+    <SuppressValidation>true</SuppressValidation>
+  </PropertyGroup>
+
+</Project>

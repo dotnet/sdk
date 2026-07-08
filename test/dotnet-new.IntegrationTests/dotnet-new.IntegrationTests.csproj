@@ -1,0 +1,139 @@
+﻿<Project Sdk="MSTest.Sdk" ToolsVersion="15.0">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Verify.MSTest" />
+    <PackageReference Include="Verify.DiffPlex" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Tools\Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
+  </ItemGroup>
+
+  <!-- Suppress xUnit compile-time types that leak transitively from TemplateVerifier/TestHelper.
+       Without ExcludeAssets="compile", Xunit.ITestOutputHelper and Xunit.TestContext would
+       conflict with Microsoft.NET.TestFramework.ITestOutputHelper and the MSTest TestContext. -->
+  <ItemGroup>
+    <PackageReference Include="xunit.abstractions" VersionOverride="2.0.3" ExcludeAssets="compile;build;contentfiles" />
+    <PackageReference Include="xunit.v3.common" VersionOverride="4.0.0-pre.81" ExcludeAssets="compile;build;contentfiles" />
+    <PackageReference Include="xunit.v3.assert" VersionOverride="4.0.0-pre.81" ExcludeAssets="compile;build;contentfiles" />
+    <PackageReference Include="xunit.v3.extensibility.core" ExcludeAssets="compile;build;contentfiles" />
+    <PackageReference Include="Verify.XunitV3" ExcludeAssets="compile;build;contentfiles" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Remove xUnit global usings injected transitively via Verify.XunitV3 / xunit packages -->
+    <Using Remove="Xunit" />
+    <Using Remove="VerifyXunit" />
+    <Using Remove="VerifyXunit.Verifier" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.9.0" VersionOverride="9.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.10.0" VersionOverride="10.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.9.0" VersionOverride="9.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.10.0" VersionOverride="10.0.*-*" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GeneratedText>
+      <![CDATA[
+namespace Microsoft.DotNet.Cli.New.IntegrationTests
+{
+  internal static class TemplatePackagesPaths
+  {
+      /// <summary>
+      /// Finds a template package .nupkg file in the test output directory.
+      /// The .nupkg files are copied from the NuGet cache at build time so they
+      /// are available on Helix test machines regardless of the build machine's cache location.
+      /// </summary>
+      private static string FindNupkg(string namePrefix)
+      {
+          string[] files = System.IO.Directory.GetFiles(System.AppContext.BaseDirectory, namePrefix + "*.nupkg")%3B
+          if (files.Length == 0)
+              throw new System.IO.FileNotFoundException($"No nupkg matching '{namePrefix}*.nupkg' in '{System.AppContext.BaseDirectory}'")%3B
+          return files[0]%3B
+      }
+
+      public static string MicrosoftDotNetCommonProjectTemplates60Path => FindNupkg("microsoft.dotnet.common.projecttemplates.6.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates70Path => FindNupkg("microsoft.dotnet.common.projecttemplates.7.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates80Path => FindNupkg("microsoft.dotnet.common.projecttemplates.8.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates90Path => FindNupkg("microsoft.dotnet.common.projecttemplates.9.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates100Path => FindNupkg("microsoft.dotnet.common.projecttemplates.10.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates60Path => FindNupkg("microsoft.dotnet.web.projecttemplates.6.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates70Path => FindNupkg("microsoft.dotnet.web.projecttemplates.7.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates80Path => FindNupkg("microsoft.dotnet.web.projecttemplates.8.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates90Path => FindNupkg("microsoft.dotnet.web.projecttemplates.9.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates100Path => FindNupkg("microsoft.dotnet.web.projecttemplates.10.0.")%3B
+  }
+
+  internal class TemplatePackageVersion
+  {
+      public const string MicrosoftTemplateSearchTemplateDiscoveryPackageVersion = "TEMPLATE_DISCOVERY_VERSION_PLACEHOLDER"%3B
+  }
+}
+      ]]>
+    </GeneratedText>
+  </PropertyGroup>
+
+  <!-- Copy template package .nupkg files from NuGet cache to test output so they are
+       available on Helix test machines (which don't have the build machine's NuGet cache). -->
+  <ItemGroup>
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_6_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_7_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_8_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_9_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_10_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_6_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_7_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_8_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_9_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_10_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="AddGeneratedFile" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)GeneratedFile.cs">
+    <PropertyGroup>
+      <GeneratedFilePath>$(IntermediateOutputPath)TemplatePackagesPaths.cs</GeneratedFilePath>
+      <!-- $(Version) isn't available when GeneratedText is evaluated, so substitute it here -->
+      <ResolvedGeneratedText>$(GeneratedText.Replace('TEMPLATE_DISCOVERY_VERSION_PLACEHOLDER', '$(Version)'))</ResolvedGeneratedText>
+    </PropertyGroup>
+    <ItemGroup>
+      <Compile Include="$(GeneratedFilePath)" />
+      <FileWrites Include="$(GeneratedFilePath)" />
+    </ItemGroup>
+    <WriteLinesToFile Lines="$(ResolvedGeneratedText)" File="$(GeneratedFilePath)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+  </Target>
+
+  <Target Name="CopyDBFilesToTestLayoutDir" AfterTargets="Build">
+    <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.props" DestinationFolder="$(TestLayoutDir)" />
+    <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.targets" DestinationFolder="$(TestLayoutDir)" />
+  </Target>
+
+  <ItemGroup>
+    <Compile Remove="TestTemplates\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestTemplates\**\*" Exclude="TestTemplates\**\bin\**;TestTemplates\**\obj\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Approvals\**\*" />
+    <None Include="Approvals\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

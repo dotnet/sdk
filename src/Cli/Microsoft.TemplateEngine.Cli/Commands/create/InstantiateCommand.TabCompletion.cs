@@ -10,7 +10,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>
+    internal partial class InstantiateCommand
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
 
@@ -54,17 +54,17 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                         try
                         {
                             TemplateCommand command = new(
-                                args.Command,
+                                args.NewOrInstantiateCommand,
                                 environmentSettings,
                                 templatePackageManager,
                                 templateGroup,
                                 template);
 
-                            CliConfiguration parser = ParserFactory.CreateParser(command);
+                            System.CommandLine.Command parser = ParserFactory.CreateParser(command);
 
                             //it is important to pass raw text to get the completion
                             //completions for args passed as array are not supported
-                            ParseResult parseResult = parser.Parse(context.CommandLineText);
+                            ParseResult parseResult = parser.Parse(context.CommandLineText, ParserFactory.ParserConfiguration);
                             foreach (CompletionItem completion in parseResult.GetCompletions(context.CursorPosition))
                             {
                                 ////TODO: conditionals tab completion here

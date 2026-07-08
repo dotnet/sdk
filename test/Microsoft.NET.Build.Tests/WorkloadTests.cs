@@ -1,17 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class WorkloadTests : SdkTest
     {
-        public WorkloadTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_should_build_with_workload()
         {
             var testProject = new TestProject()
@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-workloadtestplatform"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_fail_without_workload()
         {
             var testProject = new TestProject()
@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-missingworkloadtestplatform"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1147");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_create_suggested_workload_items()
         {
             var testProject = new TestProject()
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-missingworkloadtestplatform"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "SuggestedWorkload", GetValuesCommand.ValueType.Item)
@@ -82,7 +82,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo(new[] { ("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload") });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_fail_to_restore_without_workload_when_multitargeted()
         {
             var testProject = new TestProject()
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new RestoreCommand(testAsset)
@@ -109,7 +109,7 @@ namespace Microsoft.NET.Build.Tests
             //  .HaveStdOutContaining("android");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_fail_to_build_without_workload_when_multitargeted()
         {
             var testProject = new TestProject()
@@ -118,7 +118,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("android");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_fail_to_build_when_multitargeted_to_unknown_platforms()
         {
             var testProject = new TestProject()
@@ -140,7 +140,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-foo;{ToolsetInfo.CurrentTargetFramework}-bar"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
@@ -152,7 +152,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [Fact]
+        [TestMethod]
         public void It_should_fail_with_resolver_disabled()
         {
             var testProject = new TestProject()
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             //  NETSDK1208: The target platform identifier android was not recognized.
@@ -174,7 +174,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1208");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_import_AutoImports_for_installed_workloads()
         {
             var testProject = new TestProject()
@@ -183,7 +183,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var expectedProperty = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "WinTestWorkloadAutoImportPropsImported" : "UnixTestWorkloadAutoImportPropsImported";
 
@@ -200,7 +200,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("true");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_import_aliased_pack()
         {
             var testProject = new TestProject()
@@ -209,7 +209,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-workloadtestplatform"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var expectedProperty = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
@@ -229,18 +229,19 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("true");
         }
 
-        [Fact]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/45516")]
         public void It_should_get_suggested_workload_by_GetRequiredWorkloads_target()
         {
             var mainProject = new TestProject()
             {
                 Name = "MainProject",
-                TargetFrameworks = $"net9.0-android",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android",
                 IsSdkProject = true,
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(mainProject);
 
             var getValuesCommand =
@@ -259,15 +260,16 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("android");
         }
 
-        [Theory]
-        [InlineData("net9.0-android;net9.0-ios", "net9.0-android;net9.0-ios", "android;ios")]
-        [InlineData("net9.0", "net9.0;net9.0-android;net9.0-ios", "android;ios")]
-        [InlineData("net9.0;net9.0-ios", "net9.0;net9.0-android", "android;ios")]
-        [InlineData("net9.0", "net9.0", null)]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/45516")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "android;ios")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "android;ios")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android", "android;ios")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFramework, null)]
         public void Given_multi_target_It_should_get_suggested_workload_by_GetRequiredWorkloads_target(string mainTfm, string referencingTfm, string expected)
         {
             // Skip Test if SDK is < 6.0.400
-            var sdkVersion = SemanticVersion.Parse(TestContext.Current.ToolsetUnderTest.SdkVersion);
+            var sdkVersion = SemanticVersion.Parse(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
             if (new SemanticVersion(sdkVersion.Major, sdkVersion.Minor, sdkVersion.Patch) < new SemanticVersion(6, 0, 400))
                 return; // MAUI was removed from earlier versions of the SDK
 
@@ -290,7 +292,7 @@ namespace Microsoft.NET.Build.Tests
             mainProject.ReferencedProjects.Add(referencedProject);
 
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(mainProject, identifier: mainTfm + "_" + referencingTfm);
 
             var getValuesCommand =
@@ -312,12 +314,6 @@ namespace Microsoft.NET.Build.Tests
             }
             else
             {
-                // Conditionally check the OS and modify the expected workloads on Linux
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    expected = "android;wasi-experimental";
-                }
-                
                 getValuesCommand.GetValues()
                     .Should()
                     .Contain(expected.Split(";")); // there are extra workloads in certain platform, only assert contains

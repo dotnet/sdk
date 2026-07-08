@@ -1,30 +1,40 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
+using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackAToolProject : SdkTest
     {
         private string _testRoot;
         private string _targetFrameworkOrFrameworks = "netcoreapp2.1";
-
-        public GivenThatWeWantToPackAToolProject(ITestOutputHelper log) : base(log)
+        private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
-        }
-
-        private string SetupNuGetPackage(bool multiTarget, [CallerMemberName] string callingMethod = "")
-        {
-
-            TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", callingMethod + multiTarget)
+            // Include all distinguishing parameters so each [DataRow] gets a unique test asset
+            // directory. Tests run with method-level parallelization (MSTest.Sdk default), so rows
+            // sharing a directory would race on the copied project files. Sanitize characters that
+            // are unsafe for the directory name and the /bl: binlog argument below.
+            string id = $"{callingMethod}-{multiTarget}-{packageType}-{_targetFrameworkOrFrameworks}"
+                .Replace(' ', '_').Replace(',', '_').Replace(';', '_');
+            TestAsset helloWorldAsset = TestAssetsManager
+                .CopyTestAsset("PortableTool", id)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
                     XNamespace ns = project.Root.Name.Namespace;
                     XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    if (packageType is not null)
+                    {
+                        propertyGroup.Add(new XElement("packageType", packageType));
+                    }
                 })
                 .WithTargetFrameworkOrFrameworks(_targetFrameworkOrFrameworks, multiTarget);
 
@@ -32,15 +42,15 @@ namespace Microsoft.NET.ToolPack.Tests
 
             var packCommand = new PackCommand(helloWorldAsset);
 
-            var result = packCommand.Execute();
+            var result = packCommand.Execute($"/bl:{id}-{{}}.binlog");
             result.Should().Pass();
 
             return packCommand.GetNuGetPackage();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_packs_successfully(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -52,19 +62,19 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
             AssertFiles(nugetPackage);
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_nuget_alias_It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file()
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -118,9 +128,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_removes_all_package_dependencies(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -132,9 +142,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_runtimeconfig_for_each_tfm(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -151,9 +161,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_does_not_contain_apphost_exe(bool multiTarget)
         {
             var extension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
@@ -185,17 +195,15 @@ namespace Microsoft.NET.ToolPack.Tests
                 string[] args = multiTarget ? new[] { $"/p:TargetFramework={_targetFrameworkOrFrameworks}" } : Array.Empty<string>();
                 getValuesCommand.Execute(args)
                     .Should().Pass();
-                string runCommandPath = getValuesCommand.GetValues().Single();
-                Path.GetExtension(runCommandPath)
-                    .Should().Be(extension);
-                File.Exists(runCommandPath).Should()
-                    .BeTrue("run command should be apphost executable (for WinExe) to debug. But it will not be packed");
+                var runCommand = new FileInfo(getValuesCommand.GetValues().Single());
+                runCommand.Name
+                    .Should().Be("consoledemo" + Constants.ExeSuffix, because: "The RunCommand should recognize that this is an AppHost-using project and should use the AppHost for non-tool use cases.");
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_DotnetToolSettingsXml_for_each_tfm(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -212,9 +220,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_does_not_contain_lib(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -224,9 +232,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_folder_structure_tfm_any(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -240,9 +248,9 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_packagetype_dotnettool(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -253,9 +261,38 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow("", "DotnetTool")]
+        [DataRow("MyCustomType", "DotnetTool;MyCustomType")]
+        [DataRow("MyCustomType, 1.0", "DotnetTool;MyCustomType, 1.0")]
+        [DataRow("dotnettool", "dotnettool")]
+        [DataRow("DotnetTool, 1.0.0.0", "DotnetTool, 1.0.0.0")]
+        [DataRow("DotnetTool , 1.0.0.0", "DotnetTool , 1.0.0.0")]
+        [DataRow("MyDotnetTool", "DotnetTool;MyDotnetTool")]
+        public void It_allows_more_package_types(string input, string expectedString)
+        {
+            var nugetPackage = SetupNuGetPackage(multiTarget: false, packageType: input);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
+            {
+                var packageTypes = nupkgReader.GetPackageTypes();
+                var expected = expectedString
+                    .Split(';')
+                    .Select(t => t.Split(',').Select(x => x.Trim()).ToArray())
+                    .Select(t => (Name: t[0], Version: t.Length > 1 ? Version.Parse(t[1]) : PackageType.EmptyVersion))
+                    .Select(t => new PackageType(t.Name, t.Version))
+                    .ToList();
+                packageTypes.Count.Should().Be(expected.Count);
+                for (var i = 0; i < packageTypes.Count; i++)
+                {
+                    packageTypes[i].Name.Should().Be(expected[i].Name);
+                    packageTypes[i].Version.Should().Be(expected[i].Version);
+                }
+            }
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_contains_dependencies_dll(bool multiTarget)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget);
@@ -272,10 +309,10 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_targetplatform_set_It_should_error()
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool")
                 .WithSource()
                 .WithTargetFramework($"{ToolsetInfo.CurrentTargetFramework}-windows");
@@ -287,6 +324,97 @@ namespace Microsoft.NET.ToolPack.Tests
             var result = packCommand.Execute();
             result.Should().Fail().And.HaveStdOutContaining("NETSDK1146");
 
+        }
+
+        [TestMethod]
+        public void It_packs_with_RuntimeIdentifier()
+        {
+            var testProject = new TestProject("ToolWithRuntimeIdentifier")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
+            };
+            testProject.AdditionalProperties["PackAsTool"] = "true";
+            testProject.AdditionalProperties["ImplicitUsings"] = "enable";
+            testProject.AdditionalProperties["CreateRidSpecificToolPackages"] = "false";
+            testProject.AdditionalProperties["UseAppHost"] = "false";
+
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            var packCommand = new PackCommand(testAsset);
+
+            packCommand.Execute().Should().Pass();
+
+            packCommand.GetPackageDirectory().Should().HaveFile($"{testProject.Name}.1.0.0.nupkg");
+            packCommand.GetPackageDirectory().Should().NotHaveFile($"{testProject.Name}.{testProject.RuntimeIdentifier}.1.0.0.nupkg");
+
+            var nupkgPath = packCommand.GetNuGetPackage();
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var toolSettingsItem = nupkgReader.GetToolItems().SelectMany(g => g.Items).SingleOrDefault(i => i.Equals($"tools/{testProject.TargetFrameworks}/{testProject.RuntimeIdentifier}/DotnetToolSettings.xml"));
+                toolSettingsItem.Should().NotBeNull();
+
+                var toolSettingsXml = XDocument.Load(nupkgReader.GetStream(toolSettingsItem));
+                toolSettingsXml.Root.Attribute("Version").Value.Should().Be("1");
+            }
+
+        }
+
+        [TestMethod]
+        public void Framework_dependent_tool_should_target_base_runtime_version()
+        {
+            // This test verifies that framework-dependent tools (FDD) correctly target the .0 patch version
+            // instead of a specific patch version, ensuring compatibility across runtime installations.
+            // File-based apps default to PublishAot=true, which was causing the issue, so we set it here
+            // to properly test the fix.
+            var testProject = new TestProject()
+            {
+                Name = "FddToolTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                IsSdkProject = true,
+            };
+
+            testProject.AdditionalProperties["PackAsTool"] = "true";
+            testProject.AdditionalProperties["ToolCommandName"] = "fddtool";
+            testProject.AdditionalProperties["PublishAot"] = "true";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: "FddToolRuntimeVersion");
+
+            var packCommand = new PackCommand(testAsset);
+            packCommand.Execute().Should().Pass();
+
+            var nupkgPath = packCommand.GetNuGetPackage();
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
+                var runtimeConfigPath = $"tools/{anyTfm}/any/{testProject.Name}.runtimeconfig.json";
+
+                // Read the runtimeconfig.json directly from the archive
+                using (var stream = nupkgReader.GetStream(runtimeConfigPath))
+                using (var reader = new StreamReader(stream))
+                {
+                    string runtimeConfigContents = reader.ReadToEnd();
+                    var runtimeConfig = JObject.Parse(runtimeConfigContents);
+
+                    // Get the framework version
+                    var frameworkVersion = runtimeConfig["runtimeOptions"]["framework"]["version"].Value<string>();
+
+                    // Parse the version to get the base version (major.minor.patch) without any prerelease suffix
+                    // e.g., "11.0.0-preview.1.26069.105" -> "11.0.0"
+                    var dashIndex = frameworkVersion.IndexOf('-');
+                    var baseVersion = dashIndex >= 0 ? frameworkVersion.Substring(0, dashIndex) : frameworkVersion;
+
+                    // Verify it matches the expected pattern (major.minor.0)
+                    var versionParts = baseVersion.Split('.');
+                    versionParts.Should().HaveCount(3, because: "version should be in format major.minor.patch");
+                    versionParts[2].Should().Be("0", because: "patch version should be 0 for FDD tools to ensure compatibility across runtime installations");
+                }
+            }
         }
     }
 }

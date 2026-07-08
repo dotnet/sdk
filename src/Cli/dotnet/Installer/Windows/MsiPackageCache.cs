@@ -1,185 +1,228 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
-#if !DOT_NET_BUILD_FROM_SOURCE
-using Microsoft.DotNet.Installer.Windows.Security;
-#endif
-using Microsoft.DotNet.Workloads.Workload;
-using Newtonsoft.Json;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
-namespace Microsoft.DotNet.Installer.Windows
+using System.Text.Json;
+
+namespace Microsoft.DotNet.Cli.Installer.Windows;
+
+/// <summary>
+/// Manages caching workload pack MSI packages and verifies their Authenticode signatures.
+/// </summary>
+/// <remarks>
+/// <para>This is the second layer of signature verification in the workload pipeline
+/// (the first being NuGet package signature verification in <c>NuGetPackageDownloader</c>).
+/// While NuGet verification checks the <c>.nupkg</c> wrapper, this class verifies the
+/// Authenticode signature of the <c>.msi</c> files extracted from those packages.</para>
+/// <para>Signature verification is performed when retrieving payloads from the cache via
+/// <see cref="TryGetPayloadFromCache"/>. The verification checks both that the MSI has a valid
+/// Authenticode signature and that the certificate chain terminates in a trusted Microsoft root.
+/// This two-step verification is controlled by the <c>verifyMsiSignature</c> parameter inherited
+/// from <see cref="InstallerBase"/>.</para>
+/// </remarks>
+[SupportedOSPlatform("windows")]
+internal class MsiPackageCache(
+    InstallElevationContextBase elevationContext,
+    ISetupLogger logger,
+    bool verifyMsiSignature,
+    string? packageCacheRoot = null) : InstallerBase(elevationContext, logger, verifyMsiSignature)
 {
     /// <summary>
-    /// Manages caching workload pack MSI packages.
+    /// Determines whether revocation checks can go online.
     /// </summary>
-    [SupportedOSPlatform("windows")]
-    internal class MsiPackageCache : InstallerBase
+    private readonly bool _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
+
+    /// <summary>
+    /// The root directory of the package cache where MSI workload packs are stored.
+    /// </summary>
+    public readonly string PackageCacheRoot = string.IsNullOrWhiteSpace(packageCacheRoot)
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "dotnet", "workloads")
+            : packageCacheRoot;
+
+    /// <summary>
+    /// Moves the MSI payload described by the manifest file to the cache.
+    /// </summary>
+    /// <param name="packageId">The ID of the workload pack package containing an MSI.</param>
+    /// <param name="packageVersion">The package version.</param>
+    /// <param name="manifestPath">The JSON manifest associated with the workload pack MSI.</param>
+    public void CachePayload(string packageId, string packageVersion, string manifestPath)
     {
-        /// <summary>
-        /// Determines whether revocation checks can go online.
-        /// </summary>
-        private bool _allowOnlineRevocationChecks;
-
-        /// <summary>
-        /// The root directory of the package cache where MSI workload packs are stored.
-        /// </summary>
-        public readonly string PackageCacheRoot;
-
-        public MsiPackageCache(InstallElevationContextBase elevationContext, ISetupLogger logger,
-            bool verifySignatures, string packageCacheRoot = null) : base(elevationContext, logger, verifySignatures)
+        // Validate that packageId and packageVersion do not contain path traversal characters
+        // to prevent an IPC client from constructing paths outside the package cache.
+        if (!WindowsUtils.ValidatePathComponent(packageId))
         {
-            PackageCacheRoot = string.IsNullOrWhiteSpace(packageCacheRoot)
-                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "dotnet", "workloads")
-                : packageCacheRoot;
-            _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
+            throw new ArgumentException($"Invalid package ID: {packageId}");
         }
 
-        /// <summary>
-        /// Moves the MSI payload described by the manifest file to the cache.
-        /// </summary>
-        /// <param name="packageId">The ID of the workload pack package containing an MSI.</param>
-        /// <param name="packageVersion">The package version.</param>
-        /// <param name="manifestPath">The JSON manifest associated with the workload pack MSI.</param>
-        public void CachePayload(string packageId, string packageVersion, string manifestPath)
+        if (!WindowsUtils.ValidatePathComponent(packageVersion))
         {
-            if (!File.Exists(manifestPath))
-            {
-                throw new FileNotFoundException($"CachePayload: Manifest file not found: {manifestPath}");
-            }
-
-            Elevate();
-
-            if (IsElevated)
-            {
-                string packageDirectory = GetPackageDirectory(packageId, packageVersion);
-
-                // Delete the package directory and create a new one that's secure. If all the files were properly
-                // cached, the client would not request this action.
-                if (Directory.Exists(packageDirectory))
-                {
-                    Directory.Delete(packageDirectory, recursive: true);
-                }
-
-                SecurityUtils.CreateSecureDirectory(packageDirectory);
-
-                // We cannot assume that the MSI adjacent to the manifest is the one to cache. We'll trust
-                // the manifest to provide the MSI filename.
-                MsiManifest msiManifest = JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(manifestPath));
-                // Only use the filename+extension of the payload property in case the manifest has been altered.
-                string msiPath = Path.Combine(Path.GetDirectoryName(manifestPath), Path.GetFileName(msiManifest.Payload));
-
-                string cachedMsiPath = Path.Combine(packageDirectory, Path.GetFileName(msiPath));
-                string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(manifestPath));
-
-                SecurityUtils.MoveAndSecureFile(manifestPath, cachedManifestPath, Log);
-                SecurityUtils.MoveAndSecureFile(msiPath, cachedMsiPath, Log);
-            }
-            else if (IsClient)
-            {
-                Dispatcher.SendCacheRequest(InstallRequestType.CachePayload, manifestPath, packageId, packageVersion);
-            }
+            throw new ArgumentException($"Invalid package version: {packageVersion}");
         }
 
-        /// <summary>
-        /// Gets the full path of the cache directory for the specified package ID and version.
-        /// </summary>
-        /// <param name="packageId">The ID of the MSI workload pack package.</param>
-        /// <param name="packageVersion">The version of the MSI workload pack package.</param>
-        /// <returns>The directory where the MSI package will be cached.</returns>
-        public string GetPackageDirectory(string packageId, string packageVersion)
-        {
-            return Path.Combine(PackageCacheRoot, packageId, packageVersion);
-        }
+            // Validate that the manifest path resolves to a location under the elevated server's temp
+            // directory or the unelevated client's temp directory (when supplied at server launch via
+            // --client-temp). This prevents an IPC client from coercing the elevated server into reading
+            // or moving arbitrary files.
+            string fullManifestPath = Path.GetFullPath(manifestPath);
 
-        /// <summary>
-        /// Determines if the workload pack MSI is cached and tries to retrieve its payload from the cache.
-        /// </summary>
-        /// <param name="packageId">The package ID of NuGet package carrying the MSI payload.</param>
-        /// <param name="packageVersion">The version of the package.</param>
-        /// <param name="payload">Contains the payload if the method returns <see langword="true"/>; otherwise the default value of <see cref="MsiPayload"/>.</param>
-        /// <returns><see langwork="true"/> if the MSI is cached; <see langword="false"/> otherwise.</returns>
-        public bool TryGetPayloadFromCache(string packageId, string packageVersion, out MsiPayload payload)
-        {
-            string packageCacheDirectory = GetPackageDirectory(packageId, packageVersion);
-            payload = default;
-
-            if (!TryGetMsiPathFromPackageData(packageCacheDirectory, out string msiPath, out string manifestPath))
+            if (!WindowsUtils.ValidateManifestPath(fullManifestPath))
             {
-                return false;
+                throw new ArgumentException($"CachePayload: Manifest path is not under an allowed temp directory: {manifestPath}");
             }
 
-            VerifyPackageSignature(msiPath);
-
-            payload = new MsiPayload(manifestPath, msiPath);
-
-            return true;
-        }
-
-        public bool TryGetMsiPathFromPackageData(string packageDataPath, out string msiPath, out string manifestPath)
-        {
-            msiPath = default;
-            manifestPath = Path.Combine(packageDataPath, "msi.json");
-
-            // It's possible that the MSI is cached, but without the JSON manifest we cannot
-            // trust that the MSI in the cache directory is the correct file.
-            if (!File.Exists(manifestPath))
+            if (!File.Exists(fullManifestPath))
             {
-                Log?.LogMessage($"MSI manifest file does not exist, '{manifestPath}'");
-                return false;
+                throw new FileNotFoundException($"CachePayload: Manifest file not found: {fullManifestPath}");
             }
 
-            // The msi.json manifest contains the name of the actual MSI. The filename does not necessarily match the package
-            // ID as it may have been shortened to support VS caching.
-            MsiManifest msiManifest = JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(manifestPath));
-            string possibleMsiPath = Path.Combine(Path.GetDirectoryName(manifestPath), msiManifest.Payload);
+        Elevate();
 
-            if (!File.Exists(possibleMsiPath))
+        if (IsElevated)
+        {
+            string packageDirectory = GetPackageDirectory(packageId, packageVersion);
+
+            // Delete the package directory and create a new one that's secure. If all the files were properly
+            // cached, the client would not request this action.
+            if (Directory.Exists(packageDirectory))
             {
-                Log?.LogMessage($"MSI package not found, '{possibleMsiPath}'");
-                return false;
+                Directory.Delete(packageDirectory, recursive: true);
             }
 
-            msiPath = possibleMsiPath;
-            return true;
+            SecurityUtils.CreateSecureDirectory(packageDirectory);
+
+            // We cannot assume that the MSI adjacent to the manifest is the one to cache. We'll trust
+            // the manifest to provide the MSI filename.
+            MsiManifest? msiManifest = JsonSerializer.Deserialize(File.ReadAllText(fullManifestPath), InstallerJsonSerializerContext.Default.MsiManifest);
+            // Only use the filename+extension of the payload property in case the manifest has been altered.
+            string msiPath = Path.Combine(Path.GetDirectoryName(fullManifestPath)!, Path.GetFileName(msiManifest?.Payload ?? string.Empty));
+
+            string cachedMsiPath = Path.Combine(packageDirectory, Path.GetFileName(msiPath));
+            string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(fullManifestPath));
+
+            SecurityUtils.MoveAndSecureFile(fullManifestPath, cachedManifestPath, Log);
+            SecurityUtils.MoveAndSecureFile(msiPath, cachedMsiPath, Log);
+        }
+        else if (IsClient)
+        {
+            Dispatcher.SendCacheRequest(InstallRequestType.CachePayload, manifestPath, packageId, packageVersion);
+        }
+    }
+
+    /// <summary>
+    /// Gets the full path of the cache directory for the specified package ID and version.
+    /// </summary>
+    /// <param name="packageId">The ID of the MSI workload pack package.</param>
+    /// <param name="packageVersion">The version of the MSI workload pack package.</param>
+    /// <returns>The directory where the MSI package will be cached.</returns>
+    public string GetPackageDirectory(string packageId, string packageVersion)
+    {
+        return Path.Combine(PackageCacheRoot, packageId, packageVersion);
+    }
+
+    /// <summary>
+    /// Determines if the workload pack MSI is cached and tries to retrieve its payload from the cache.
+    /// If found, verifies the MSI Authenticode signature before returning the payload.
+    /// </summary>
+    /// <remarks>
+    /// The signature verification step (via <see cref="VerifyPackageSignature"/>) is critical:
+    /// it ensures that cached MSI files have not been tampered with since they were originally
+    /// extracted from signed NuGet packages. This is separate from and complementary to the
+    /// NuGet-level signature check performed during download.
+    /// </remarks>
+    /// <param name="packageId">The package ID of NuGet package carrying the MSI payload.</param>
+    /// <param name="packageVersion">The version of the package.</param>
+    /// <param name="payload">Contains the payload if the method returns <see langword="true"/>; otherwise the default value of <see cref="MsiPayload"/>.</param>
+    /// <returns><see langword="true"/> if the MSI is cached and valid; <see langword="false"/> otherwise.</returns>
+    public bool TryGetPayloadFromCache(string packageId, string packageVersion, out MsiPayload? payload)
+    {
+        string packageCacheDirectory = GetPackageDirectory(packageId, packageVersion);
+        payload = default;
+
+        if (!TryGetMsiPathFromPackageData(packageCacheDirectory, out string? msiPath, out string manifestPath))
+        {
+            return false;
         }
 
-        /// <summary>
-        /// Verifies that an MSI package contains an Authenticode signature that terminates in a trusted Microsoft root certificate.
-        /// </summary>
-        /// <param name="msiPath">The path of the MSI to verify.</param>
-        private void VerifyPackageSignature(string msiPath)
+        VerifyPackageSignature(msiPath);
+
+        payload = new MsiPayload(manifestPath, msiPath);
+
+        return true;
+    }
+
+    public bool TryGetMsiPathFromPackageData(string packageDataPath, [NotNullWhen(true)] out string? msiPath, out string manifestPath)
+    {
+        msiPath = default;
+        manifestPath = Path.GetFullPath(Path.Combine(packageDataPath, "msi.json"));
+
+        // It's possible that the MSI is cached, but without the JSON manifest we cannot
+        // trust that the MSI in the cache directory is the correct file.
+        if (!File.Exists(manifestPath))
         {
-            if (VerifySignatures)
-            {
-                // MSI and authenticode verification only applies to Windows. NET only supports Win7 and later.
-#if !DOT_NET_BUILD_FROM_SOURCE
+            Log?.LogMessage($"MSI manifest file does not exist, '{manifestPath}'");
+            return false;
+        }
+
+        // The msi.json manifest contains the name of the actual MSI. The filename does not necessarily match the package
+        // ID as it may have been shortened to support VS caching.
+        MsiManifest? msiManifest = JsonSerializer.Deserialize(File.ReadAllText(manifestPath), InstallerJsonSerializerContext.Default.MsiManifest);
+        string possibleMsiPath = Path.Combine(Path.GetDirectoryName(manifestPath)!, msiManifest?.Payload ?? string.Empty);
+
+        if (!File.Exists(possibleMsiPath))
+        {
+            Log?.LogMessage($"MSI package not found, '{possibleMsiPath}'");
+            return false;
+        }
+
+        msiPath = possibleMsiPath;
+        return true;
+    }
+
+    /// <summary>
+    /// Verifies that an MSI package has a valid Authenticode signature that terminates in a trusted Microsoft root certificate.
+    /// </summary>
+    /// <remarks>
+    /// <para>This performs two sequential checks:</para>
+    /// <list type="number">
+    ///   <item><see cref="Security.Signature.IsAuthenticodeSigned"/> — verifies a valid Authenticode
+    ///     signature exists. This uses <c>WinVerifyTrust</c> with full chain and revocation validation.</item>
+    ///   <item><see cref="Security.Signature.HasMicrosoftTrustedRoot"/> — verifies the signing
+    ///     certificate chain terminates in a Microsoft root certificate. This is essential because a
+    ///     valid Authenticode signature alone does not guarantee the signer is Microsoft.</item>
+    /// </list>
+    /// <para>When <see cref="InstallerBase.VerifyMsiSignature"/> is <see langword="false"/>,
+    /// this method logs a skip message and returns without checking.</para>
+    /// </remarks>
+    /// <param name="msiPath">The full path of the MSI to verify.</param>
+    private void VerifyPackageSignature(string msiPath)
+    {
+        if (!VerifyMsiSignature)
+        {
+            Log?.LogMessage($"Skipping signature verification for {msiPath}.");
+            return;
+        }
+
+        // MSI and authenticode verification only applies to Windows. NET only supports Win7 and later.
 #pragma warning disable CA1416
-                unsafe
-                {
-                    int result = Signature.IsAuthenticodeSigned(msiPath, _allowOnlineRevocationChecks);
+        int result = Signature.IsAuthenticodeSigned(msiPath, _allowOnlineRevocationChecks);
 
-                    if (result != 0)
-                    {
-                        ExitOnError((uint)result, $"Failed to verify Authenticode signature, package: {msiPath}, allow online revocation checks: {_allowOnlineRevocationChecks}");
-                    }
-
-                    result = Signature.HasMicrosoftTrustedRoot(msiPath);
-
-                    if (result != 0)
-                    {
-                        ExitOnError((uint)result, $"Failed to verify the Authenticode signature terminates in a trusted Microsoft root certificate. Package: {msiPath}");
-                    }
-
-                }
-                Log?.LogMessage($"Successfully verified Authenticode signature for {msiPath}");
-#pragma warning restore CA1416
-#endif
-            }
-            else
-            {
-                Log?.LogMessage($"Skipping signature verification for {msiPath}.");
-            }
+        if (result != 0)
+        {
+            ExitOnError((uint)result, $"Failed to verify Authenticode signature, package: {msiPath}, allow online revocation checks: {_allowOnlineRevocationChecks}");
         }
+
+        result = Signature.HasMicrosoftTrustedRoot(msiPath);
+
+        if (result != 0)
+        {
+            ExitOnError((uint)result, $"Failed to verify the Authenticode signature terminates in a trusted Microsoft root certificate. Package: {msiPath}");
+        }
+
+        Log?.LogMessage($"Successfully verified Authenticode signature for {msiPath}");
+#pragma warning restore CA1416
     }
 }

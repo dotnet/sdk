@@ -1,20 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantAllResourcesInSatellite : SdkTest
     {
-        public GivenThatWeWantAllResourcesInSatellite(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
         public void It_retrieves_strings_successfully()
         {
-            TestSatelliteResources(Log, _testAssetsManager);
+            TestSatelliteResources(Log, TestAssetsManager);
         }
 
         internal static void TestSatelliteResources(

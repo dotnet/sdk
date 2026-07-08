@@ -1,27 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
+namespace Microsoft.DotNet.Watch.UnitTests;
 
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tests;
-
-public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class RuntimeProcessLauncherTests : DotNetWatchTestBase
 {
     public enum TriggerEvent
     {
-        HotReloadSessionStarting,
-        HotReloadSessionStarted,
+        RuntimeProcessLauncherCreated,
         WaitingForChanges,
     }
 
-    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
+    [TestMethod]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
-        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc", identifier: trigger.ToString())
-            .WithSource();
+        var testAsset = CopyTestAsset("WatchAppMultiProc", [trigger]);
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
 
         var workingDirectory = testAsset.Path;
         var hostDir = Path.Combine(testAsset.Path, "Host");
@@ -36,37 +33,14 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        await using var w = CreateInProcWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
-        var program = Program.TryCreate(
-            TestOptions.GetCommandLineOptions(["--verbose", "--non-interactive", "--project", hostProject]),
-            console,
-            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
-            reporter,
-            out var errorCode);
+        var launchCompletionA = w.CreateCompletionSource();
+        var launchCompletionB = w.CreateCompletionSource();
 
-        Assert.Equal(0, errorCode);
-        Assert.NotNull(program);
-
-        TestRuntimeProcessLauncher? service = null;
-        var factory = new TestRuntimeProcessLauncher.Factory(s =>
+        w.Observer.RegisterAction(trigger switch
         {
-            service = s;
-        });
-
-        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(factory));
-
-        var watchCancellationSource = new CancellationTokenSource();
-        var watchTask = watcher.WatchAsync(watchCancellationSource.Token);
-
-        var launchCompletionA = new TaskCompletionSource();
-        var launchCompletionB = new TaskCompletionSource();
-
-        reporter.RegisterAction(trigger switch
-        {
-            TriggerEvent.HotReloadSessionStarting => MessageDescriptor.HotReloadSessionStarting,
-            TriggerEvent.HotReloadSessionStarted => MessageDescriptor.HotReloadSessionStarted,
+            TriggerEvent.RuntimeProcessLauncherCreated => MessageDescriptor.RuntimeProcessLauncherCreatedNotification,
             TriggerEvent.WaitingForChanges => MessageDescriptor.WaitingForChanges,
             _ => throw new InvalidOperationException(),
         }, () =>
@@ -77,92 +51,67 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 return;
             }
 
-            Launch(serviceProjectA, launchCompletionA).Wait();
-            Launch(serviceProjectB, launchCompletionB).Wait();
+            // service should have been created after MessageDescriptor.RuntimeProcessLauncherCreatedNotification has been received:
+            Assert.IsNotNull(w.Service);
+
+            w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token).Wait(w.ShutdownSource.Token);
+            launchCompletionA.TrySetResult();
+
+            w.Service.Launch(serviceProjectB, workingDirectory, w.ShutdownSource.Token).Wait(w.ShutdownSource.Token);
+            launchCompletionB.TrySetResult();
         });
 
-        var waitingForChanges = reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
-        var launchedProcessCount = 0;
-        reporter.RegisterAction(MessageDescriptor.LaunchedProcess, () => Interlocked.Increment(ref launchedProcessCount));
+        var changeHandled = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var projectsRestarted = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectsRestarted);
+        var sessionStarted = w.Observer.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
+        var projectBaselinesUpdated = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
 
-        var changeHandled = reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
-        var sessionStarted = reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
+        w.Start();
 
         await launchCompletionA.Task;
         await launchCompletionB.Task;
 
         // let the host process start:
-        await waitingForChanges.WaitAsync();
-        await sessionStarted.WaitAsync();
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for session started...");
+        await sessionStarted.WaitAsync(w.ShutdownSource.Token);
 
         await MakeRudeEditChange();
-        await changeHandled.WaitAsync();
 
-        // Wait for a new session to start, so that we capture the new solution snapshot
+        Log("Waiting for projects restarted ...");
+        await projectsRestarted.WaitAsync(w.ShutdownSource.Token);
+
+        // Wait for project baselines to be updated, so that we capture the new solution snapshot
         // and further changes are treated as another update.
-        await sessionStarted.WaitAsync();
+        Log("Waiting for baselines updated...");
+        await projectBaselinesUpdated.WaitAsync(w.ShutdownSource.Token);
 
         await MakeValidDependencyChange();
-        await changeHandled.WaitAsync();
 
-        // clean up:
-        watchCancellationSource.Cancel();
-        try
-        {
-            await watchTask;
-        }
-        catch (OperationCanceledException)
-        {
-        }
-
-        Assert.Equal(4, launchedProcessCount);
-
-        async Task Launch(string projectPath, TaskCompletionSource completion)
-        {
-            // service should have been created before Hot Reload session started:
-            Assert.NotNull(service);
-
-            var processTerminationSource = new CancellationTokenSource();
-            var projectOptions = new ProjectOptions()
-            {
-                IsRootProject = false,
-                ProjectPath = projectPath,
-                WorkingDirectory = workingDirectory,
-                BuildProperties = [],
-                Command = "run",
-                CommandArguments = ["--project", projectPath],
-                LaunchEnvironmentVariables = [],
-                LaunchProfileName = null,
-                NoLaunchProfile = true,
-                TargetFramework = null,
-            };
-
-            var runningProject = await service.ProjectLauncher.TryLaunchProcessAsync(projectOptions, processTerminationSource, build: false, watchCancellationSource.Token);
-            Assert.NotNull(runningProject);
-
-            await runningProject.WaitForProcessRunningAsync(CancellationToken.None);
-
-            completion.SetResult();
-        }
+        Log("Waiting for changed handled ...");
+        await changeHandled.WaitAsync(w.ShutdownSource.Token);
 
         // Hot Reload shared dependency - should update both service projects
         async Task MakeValidDependencyChange()
         {
-            var hasUpdateSourceA = new TaskCompletionSource();
-            var hasUpdateSourceB = new TaskCompletionSource();
-            reporter.OnProcessOutput += (projectPath, output) =>
+            var hasUpdateSourceA = w.CreateCompletionSource();
+            var hasUpdateSourceB = w.CreateCompletionSource();
+            w.Reporter.OnProcessOutput += line =>
             {
-                if (output.Contains("<Updated Lib>"))
+                if (line.Content.Contains("<Updated Lib>"))
                 {
-                    if (projectPath == serviceProjectA)
+                    if (line.Content.StartsWith($"[A ({tfm})]"))
                     {
                         if (!hasUpdateSourceA.Task.IsCompleted)
                         {
                             hasUpdateSourceA.SetResult();
                         }
                     }
-                    else if (projectPath == serviceProjectB)
+                    else if (line.Content.StartsWith($"[B ({tfm})]"))
                     {
                         if (!hasUpdateSourceB.Task.IsCompleted)
                         {
@@ -171,12 +120,10 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                     }
                     else
                     {
-                        Assert.Fail("Only service projects should be updated");
+                        Assert.Fail($"Only service projects should be updated: '{line.Content}'");
                     }
                 }
             };
-
-            await Task.Delay(TimeSpan.FromSeconds(1));
 
             UpdateSourceFile(libSource,
                 """
@@ -191,46 +138,46 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
                 """);
 
+            Log("Waiting for updated output from project A ...");
             await hasUpdateSourceA.Task;
+
+            Log("Waiting for updated output from project B ...");
             await hasUpdateSourceB.Task;
 
-            Assert.True(hasUpdateSourceA.Task.IsCompletedSuccessfully);
-            Assert.True(hasUpdateSourceB.Task.IsCompletedSuccessfully);
+            Assert.IsTrue(hasUpdateSourceA.Task.IsCompletedSuccessfully);
+            Assert.IsTrue(hasUpdateSourceB.Task.IsCompletedSuccessfully);
         }
 
         // make a rude edit and check that the process is restarted
         async Task MakeRudeEditChange()
         {
-            var hasUpdateSource = new TaskCompletionSource();
-            reporter.OnProcessOutput += (projectPath, output) =>
+            var hasUpdateSource = w.CreateCompletionSource();
+            w.Reporter.OnProcessOutput += line =>
             {
-                if (projectPath == serviceProjectA && output.Contains("Started A: 2"))
+                if (line.Content.StartsWith($"[A ({tfm})]") && line.Content.Contains("Started A: 2"))
                 {
                     hasUpdateSource.SetResult();
                 }
             };
-
-            await Task.Delay(TimeSpan.FromSeconds(1));
 
             // rude edit in A (changing assembly level attribute):
             UpdateSourceFile(serviceSourceA2, """
                 [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
                 """);
 
+            Log("Waiting for updated output from project A ...");
             await hasUpdateSource.Task;
 
-            Assert.True(hasUpdateSource.Task.IsCompletedSuccessfully);
-
-            Assert.Equal(4, launchedProcessCount);
+            Assert.IsTrue(hasUpdateSource.Task.IsCompletedSuccessfully);
         }
     }
 
-    [Theory(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+    [TestMethod]
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
-        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc", identifier: sharedOutput.ToString())
-            .WithSource();
+        var testAsset = CopyTestAsset("WatchAppMultiProc", [sharedOutput]);
+        var tfm = ToolsetInfo.CurrentTargetFramework;
 
         if (sharedOutput)
         {
@@ -245,64 +192,45 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var serviceDirB = Path.Combine(testAsset.Path, "ServiceB");
         var serviceProjectB = Path.Combine(serviceDirB, "B.csproj");
         var libDir = Path.Combine(testAsset.Path, "Lib");
-        var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        await using var w = CreateInProcWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
-        var program = Program.TryCreate(
-            TestOptions.GetCommandLineOptions(["--verbose", "--non-interactive", "--project", hostProject]),
-            console,
-            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
-            reporter,
-            out var errorCode);
-
-        Assert.Equal(0, errorCode);
-        Assert.NotNull(program);
-
-        TestRuntimeProcessLauncher? service = null;
-        var factory = new TestRuntimeProcessLauncher.Factory(s =>
-        {
-            service = s;
-        });
-
-        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(factory));
-
-        var watchCancellationSource = new CancellationTokenSource();
-        var watchTask = watcher.WatchAsync(watchCancellationSource.Token);
-
-        var waitingForChanges = reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
-        var changeHandled = reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
-        var updatesApplied = reporter.RegisterSemaphore(MessageDescriptor.UpdatesApplied);
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var changeHandled = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var updatesApplied = w.Observer.RegisterSemaphore(MessageDescriptor.UpdateBatchCompleted);
 
         var hasUpdateA = new SemaphoreSlim(initialCount: 0);
         var hasUpdateB = new SemaphoreSlim(initialCount: 0);
-        reporter.OnProcessOutput += (projectPath, output) =>
+        w.Reporter.OnProcessOutput += line =>
         {
-            if (output.Contains("<Updated Lib>"))
+            if (line.Content.Contains("<Updated Lib>"))
             {
-                if (projectPath == serviceProjectA)
+                if (line.Content.StartsWith($"[A ({tfm})]"))
                 {
                     hasUpdateA.Release();
                 }
-                else if (projectPath == serviceProjectB)
+                else if (line.Content.StartsWith($"[B ({tfm})]"))
                 {
                     hasUpdateB.Release();
                 }
                 else
                 {
-                    Assert.Fail("Only service projects should be updated");
+                    Assert.Fail($"Only service projects should be updated: '{line.Content}'");
                 }
             }
         };
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        w.Start();
 
         // let the host process start:
-        await waitingForChanges.WaitAsync();
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
-        await Launch(serviceProjectA);
+        // service should have been created before Hot Reload session started:
+        Assert.IsNotNull(w.Service);
+
+        await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
 
         UpdateSourceFile(libSource,
             """
@@ -317,53 +245,24 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
                 """);
 
-        await hasUpdateA.WaitAsync();
+        Log("Waiting for updated output from A ...");
+        await hasUpdateA.WaitAsync(w.ShutdownSource.Token);
 
         // Host and ServiceA received updates:
-        await updatesApplied.WaitAsync();
-        await updatesApplied.WaitAsync();
+        Log("Waiting for updates applied 1/2 ...");
+        await updatesApplied.WaitAsync(w.ShutdownSource.Token);
 
-        await Launch(serviceProjectB);
+        Log("Waiting for updates applied 2/2 ...");
+        await updatesApplied.WaitAsync(w.ShutdownSource.Token);
+
+        await w.Service.Launch(serviceProjectB, workingDirectory, w.ShutdownSource.Token);
 
         // ServiceB received updates:
-        await updatesApplied.WaitAsync();
-        await hasUpdateB.WaitAsync();
+        Log("Waiting for updates applied ...");
+        await updatesApplied.WaitAsync(w.ShutdownSource.Token);
 
-        // clean up:
-        watchCancellationSource.Cancel();
-        try
-        {
-            await watchTask;
-        }
-        catch (OperationCanceledException)
-        {
-        }
-
-        async Task Launch(string projectPath)
-        {
-            // service should have been created before Hot Reload session started:
-            Assert.NotNull(service);
-
-            var processTerminationSource = new CancellationTokenSource();
-            var projectOptions = new ProjectOptions()
-            {
-                IsRootProject = false,
-                ProjectPath = projectPath,
-                WorkingDirectory = workingDirectory,
-                BuildProperties = [],
-                Command = "run",
-                CommandArguments = ["--project", projectPath],
-                LaunchEnvironmentVariables = [],
-                LaunchProfileName = null,
-                NoLaunchProfile = true,
-                TargetFramework = null,
-            };
-
-            var runningProject = await service.ProjectLauncher.TryLaunchProcessAsync(projectOptions, processTerminationSource, build: false, watchCancellationSource.Token);
-            Assert.NotNull(runningProject);
-
-            await runningProject.WaitForProcessRunningAsync(CancellationToken.None);
-        }
+        Log("Waiting for updated output from B ...");
+        await hasUpdateB.WaitAsync(w.ShutdownSource.Token);
     }
 
     public enum UpdateLocation
@@ -373,69 +272,46 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
+    [TestMethod]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
-        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc", identifier: updateLocation.ToString())
-            .WithSource();
+        var testAsset = CopyTestAsset("WatchAppMultiProc", [updateLocation]);
+        var tfm = ToolsetInfo.CurrentTargetFramework;
 
         var workingDirectory = testAsset.Path;
         var hostDir = Path.Combine(testAsset.Path, "Host");
         var hostProject = Path.Combine(hostDir, "Host.csproj");
         var hostProgram = Path.Combine(hostDir, "Program.cs");
-        var libProject = Path.Combine(testAsset.Path, "Lib2", "Lib2.csproj");
         var lib = Path.Combine(testAsset.Path, "Lib2", "Lib2.cs");
 
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        await using var w = CreateInProcWatcher(testAsset, args: ["--project", hostProject], workingDirectory);
 
-        var program = Program.TryCreate(
-            TestOptions.GetCommandLineOptions(["--verbose", "--project", hostProject]),
-            console,
-            TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath),
-            reporter,
-            out var errorCode);
-
-        Assert.Equal(0, errorCode);
-        Assert.NotNull(program);
-
-        TestRuntimeProcessLauncher? service = null;
-        var factory = new TestRuntimeProcessLauncher.Factory(s =>
-        {
-            service = s;
-        });
-
-        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(factory));
-
-        var watchCancellationSource = new CancellationTokenSource();
-        var watchTask = watcher.WatchAsync(watchCancellationSource.Token);
-
-        var waitingForChanges = reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
-        var changeHandled = reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
-        var restartNeeded = reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_ChangingEntryPoint);
-        var restartRequested = reporter.RegisterSemaphore(MessageDescriptor.RestartRequested);
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var changeHandled = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var restartNeeded = w.Observer.RegisterSemaphore(MessageDescriptor.ApplyUpdate_ChangingEntryPoint);
+        var restartRequested = w.Observer.RegisterSemaphore(MessageDescriptor.RestartRequested);
 
         var hasUpdate = new SemaphoreSlim(initialCount: 0);
-        reporter.OnProcessOutput += (projectPath, output) =>
+        w.Reporter.OnProcessOutput += line =>
         {
-            if (output.Contains("<Updated>"))
+            if (line.Content.Contains("<Updated>"))
             {
-                if (projectPath == hostProject)
+                if (line.Content.StartsWith($"[Host ({tfm})]"))
                 {
                     hasUpdate.Release();
                 }
                 else
                 {
-                    Assert.Fail("Only service projects should be updated");
+                    Assert.Fail($"Only service projects should be updated: '{line.Content}'");
                 }
             }
         };
 
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        w.Start();
 
-        // let the host process start:
-        await waitingForChanges.WaitAsync();
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
         switch (updateLocation)
         {
@@ -453,7 +329,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                     """);
 
                 // Host received Hot Reload updates:
-                await changeHandled.WaitAsync();
+                Log("Waiting for change handled ...");
+                await changeHandled.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case UpdateLocation.TopFunction:
@@ -461,7 +338,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 UpdateSourceFile(hostProgram, content => content.Replace("Waiting", "<Updated>"));
 
                 // Host received Hot Reload updates:
-                await changeHandled.WaitAsync();
+                Log("Waiting for change handled ...");
+                await changeHandled.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case UpdateLocation.TopLevel:
@@ -469,24 +347,144 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 UpdateSourceFile(hostProgram, content => content.Replace("Started", "<Updated>"));
 
                 // ⚠ ENC0118: Changing 'top-level code' might not have any effect until the application is restarted. Press "Ctrl + R" to restart.
-                await restartNeeded.WaitAsync();
+                Log("Waiting for restart needed ...");
+                await restartNeeded.WaitAsync(w.ShutdownSource.Token);
 
-                console.PressKey(new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true));
+                w.Console.PressKey(new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true));
 
-                await restartRequested.WaitAsync();
+                Log("Waiting for restart requested ...");
+                await restartRequested.WaitAsync(w.ShutdownSource.Token);
                 break;
         }
 
-        await hasUpdate.WaitAsync();
+        Log("Waiting updated output from Host ...");
+        await hasUpdate.WaitAsync(w.ShutdownSource.Token);
+    }
 
-        // clean up:
-        watchCancellationSource.Cancel();
-        try
+    [TestMethod]
+    public async Task RudeEditInProjectWithoutRunningProcess()
+    {
+        var testAsset = CopyTestAsset("WatchAppMultiProc");
+
+        var workingDirectory = testAsset.Path;
+        var hostDir = Path.Combine(testAsset.Path, "Host");
+        var hostProject = Path.Combine(hostDir, "Host.csproj");
+        var serviceDirA = Path.Combine(testAsset.Path, "ServiceA");
+        var serviceSourceA2 = Path.Combine(serviceDirA, "A2.cs");
+        var serviceProjectA = Path.Combine(serviceDirA, "A.csproj");
+
+        await using var w = CreateInProcWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
+
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+
+        var projectsRebuilt = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
+        var sessionStarted = w.Observer.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
+        var applyUpdateVerbose = w.Observer.RegisterSemaphore(MessageDescriptor.ApplyUpdate_AutoVerbose);
+
+        w.Start();
+
+        // let the host process start:
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        // service should have been created before Hot Reload session started:
+        Assert.IsNotNull(w.Service);
+
+        var runningProject = await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
+        Log("Waiting for session started ...");
+        await sessionStarted.WaitAsync(w.ShutdownSource.Token);
+
+        // Terminate the process:
+        Log($"Terminating process {runningProject.ProjectNode.GetDisplayName()} ...");
+        await runningProject.Process.TerminateAsync();
+
+        // rude edit in A (changing assembly level attribute):
+        UpdateSourceFile(serviceSourceA2, """
+            [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
+            """);
+
+        Log("Waiting for projects rebuilt ...");
+        await projectsRebuilt.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for verbose rude edit reported ...");
+        await applyUpdateVerbose.WaitAsync(w.ShutdownSource.Token);
+    }
+
+    [TestMethod]
+    public async Task RelaunchOnCrash()
+    {
+        var testAsset = CopyTestAsset("WatchAppMultiProc");
+
+        var workingDirectory = testAsset.Path;
+        var hostDir = Path.Combine(testAsset.Path, "Host");
+        var hostProject = Path.Combine(hostDir, "Host.csproj");
+        var serviceDirA = Path.Combine(testAsset.Path, "ServiceA");
+        var serviceProjectA = Path.Combine(serviceDirA, "A.csproj");
+        var libDir = Path.Combine(testAsset.Path, "Lib");
+        var libSource = Path.Combine(libDir, "Lib.cs");
+
+        await using var w = CreateInProcWatcher(testAsset, ["--project", hostProject], workingDirectory);
+
+        var waitingForChanges = w.Observer.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var processCrashedAndWillBeRelaunched = w.Observer.RegisterSemaphore(MessageDescriptor.ProcessCrashedAndWillBeRelaunched);
+        var projectRelaunched = w.Observer.RegisterSemaphore(MessageDescriptor.ProjectRelaunched);
+
+        var hasCrashed = new SemaphoreSlim(initialCount: 0);
+        var hasUpdate = new SemaphoreSlim(initialCount: 0);
+        w.Reporter.OnProcessOutput += line =>
         {
-            await watchTask;
-        }
-        catch (OperationCanceledException)
-        {
-        }
+            if (line.Content.Contains("<Crashed>"))
+            {
+                hasCrashed.Release();
+            }
+            else if (line.Content.Contains("<Updated>"))
+            {
+                hasUpdate.Release();
+            }
+        };
+
+        w.Start();
+
+        // let the host process start:
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        // service should have been created before Hot Reload session started:
+        Assert.IsNotNull(w.Service);
+
+        await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
+
+        UpdateSourceFile(libSource, """
+            using System;
+
+            public class Lib
+            {
+                public static void Common()
+                    => throw new Exception("<Crashed>");
+            }
+            """);
+
+        Log("Waiting <Crashed> in output ...");
+        await hasCrashed.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for process crashed ...");
+        await processCrashedAndWillBeRelaunched.WaitAsync(w.ShutdownSource.Token);
+
+        // file change triggers relaunch:
+        UpdateSourceFile(libSource,"""
+            using System;
+
+            public class Lib
+            {
+                public static void Common()
+                    => Console.WriteLine("<Updated>");
+            }
+            """);
+
+        Log("Waiting for A to relaunch ...");
+        await projectRelaunched.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for <Updated> in output ...");
+        await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 }

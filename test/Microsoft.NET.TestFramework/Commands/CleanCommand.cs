@@ -5,16 +5,17 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public sealed class CleanCommand : MSBuildCommand
     {
-        public CleanCommand(ITestOutputHelper log, string projectPath, string relativePathToProject = null)
+        public CleanCommand(ITestOutputHelper log, string projectPath, string? relativePathToProject = null)
             : base(log, "Clean", projectPath, relativePathToProject)
         {
+            ShouldRestore = false;
         }
 
-        public CleanCommand(TestAsset testAsset, string relativePathToProject = null)
+        public CleanCommand(TestAsset testAsset, string? relativePathToProject = null)
            : base(testAsset, "Clean", relativePathToProject)
         {
+            ShouldRestore = false;
         }
 
-        protected override bool ExecuteWithRestoreByDefault => false;
     }
 }

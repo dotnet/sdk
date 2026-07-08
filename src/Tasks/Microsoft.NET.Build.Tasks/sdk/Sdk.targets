@@ -46,8 +46,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Import targets from NuGet.Build.Tasks.Pack package/Sdk -->
   <PropertyGroup Condition="'$(NuGetBuildTasksPackTargets)' == '' AND '$(ImportNuGetBuildTasksPackTargetsFromSdk)' != 'false'">
-    <NuGetBuildTasksPackTargets Condition="'$(IsCrossTargetingBuild)' == 'true'">$(MSBuildThisFileDirectory)..\..\NuGet.Build.Tasks.Pack\buildCrossTargeting\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
-    <NuGetBuildTasksPackTargets Condition="'$(IsCrossTargetingBuild)' != 'true'">$(MSBuildThisFileDirectory)..\..\NuGet.Build.Tasks.Pack\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
+    <NuGetBuildTasksPackTargets>$(MSBuildThisFileDirectory)..\..\..\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
     <ImportNuGetBuildTasksPackTargetsFromSdk>true</ImportNuGetBuildTasksPackTargetsFromSdk>
   </PropertyGroup>
 
@@ -65,5 +64,5 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props')" />
 
   <Import Project="$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets"
-    Condition="$(_IsNotSetContainersTargetsDir) AND Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets') AND '$(TargetFramework)' != ''" />
+    Condition="$(_IsNotSetContainersTargetsDir) AND Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets')" />
 </Project>

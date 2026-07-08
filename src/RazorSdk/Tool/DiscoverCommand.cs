@@ -1,13 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
-using Newtonsoft.Json;
+using Microsoft.NET.Sdk.Razor.Tool.Json;
+using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -169,13 +171,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
                 b.Features.Add(new DefaultMetadataReferenceFeature() { References = metadataReferences });
                 b.Features.Add(new CompilationTagHelperFeature());
-                b.Features.Add(new DefaultTagHelperDescriptorProvider());
+
+                b.RegisterDefaultTagHelperProducer();
 
                 CompilerFeatures.Register(b);
             });
 
             var feature = engine.Engine.Features.OfType<ITagHelperFeature>().Single();
-            var tagHelpers = feature.GetDescriptors();
+            var tagHelpers = feature.GetTagHelpers();
 
             using (var stream = new MemoryStream())
             {
@@ -241,14 +244,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private static void Serialize(Stream stream, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
-            using (var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 4096, leaveOpen: true))
-            {
-                var serializer = new JsonSerializer();
-                serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
-                serializer.Converters.Add(new RazorDiagnosticJsonConverter());
-
-                serializer.Serialize(writer, tagHelpers);
-            }
+            JsonSerializer.Serialize(stream, tagHelpers, TagHelperDescriptorJsonConverter.SerializerOptions);
         }
     }
 }

@@ -1,23 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using NuGet.Packaging;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackAToolProjectWithExplicitConfig : SdkTest
     {
-
-        public GivenThatWeWantToPackAToolProjectWithExplicitConfig(ITestOutputHelper log) : base(log)
-        {
-
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_finds_the_entry_point_dll_and_put_in_setting_file()
         {
             const string explicitEntryPoint = "explicit_entry_point.dll";
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                                         .CopyTestAsset("PortableTool", "PackPortableToolToolEntryPoint")
                                         .WithSource()
                                         .WithProjectChanges(project =>
@@ -49,11 +46,11 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
 
-        [Fact]
+        [TestMethod]
         public void It_finds_commandName_and_put_in_setting_file()
         {
             const string explicitCommandName = "explicit_command_name";
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                                         .CopyTestAsset("PortableTool", "PackPortableToolToolCommandName")
                                         .WithSource()
                                         .WithProjectChanges(project =>

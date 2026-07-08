@@ -1,0 +1,136 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Tools.Test.Utilities;
+
+namespace Microsoft.DotNet.Cli.Test.Tests
+{
+    [TestClass]
+    public class GivenDotnettestBuildsAndRunsTestFromDll : SdkTest
+    {
+        public GivenDotnettestBuildsAndRunsTestFromDll()
+        {
+        }
+
+        private readonly string[] ConsoleLoggerOutputNormal = new[] { "--logger", "console;verbosity=normal" };
+
+        [TestMethod]
+        public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
+        {
+            var testAppName = "VSTestCore";
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithVersionVariables();
+
+            var testRoot = testAsset.Path;
+
+            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute()
+                .Should().Pass();
+
+            var outputDll = Path.Combine(buildCommand.GetOutputDirectory(configuration: configuration).FullName, $"{testAppName}.dll");
+
+            // Call vstest
+            var result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .Execute(outputDll, "--logger:console;verbosity=normal");
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Total tests: 2")
+                    .And.Contain("Passed: 1")
+                    .And.Contain("Failed: 1")
+                    .And.Contain("Passed VSTestPassTest")
+                    .And.Contain("Failed VSTestFailTest");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void ItSetsDotnetRootToTheLocationOfDotnetExecutableWhenRunningDotnetTestWithDll()
+        {
+            var testAppName = "VSTestCore";
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithVersionVariables();
+
+            var testRoot = testAsset.Path;
+
+            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should().Pass();
+
+            var outputDll = Path.Combine(testRoot, "bin", configuration, ToolsetInfo.CurrentTargetFramework, $"{testAppName}.dll");
+
+            // Call dotnet test + dll
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
+                .Execute(outputDll, "--logger:console;verbosity=normal");
+
+            result.ExitCode.Should().Be(1);
+            var dotnet = result.StartInfo.FileName;
+            Path.GetFileNameWithoutExtension(dotnet).Should().Be("dotnet");
+            string dotnetRoot = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
+            result.StartInfo.EnvironmentVariables.ContainsKey(dotnetRoot).Should().BeTrue($"because {dotnetRoot} should be set");
+            result.StartInfo.EnvironmentVariables[dotnetRoot].Should().Be(Path.GetDirectoryName(dotnet));
+        }
+
+        [TestMethod]
+        public void TestsFromAGivenContainerAndArchSwitchShouldFlowToVsTestConsole()
+        {
+            var testAppName = "VSTestCore";
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithVersionVariables();
+
+            var testRoot = testAsset.Path;
+
+            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should().Pass();
+
+            var outputDll = Path.Combine(testRoot, "bin", configuration, ToolsetInfo.CurrentTargetFramework, $"{testAppName}.dll");
+
+            // Call vstest
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
+                .Execute(outputDll, "--arch", "wrongArchitecture");
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdErr.Should().StartWith("Invalid platform type: wrongArchitecture. Valid platform types are ");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [TestMethod]
+        [DataRow("-e:foo=bardll")]
+        [DataRow("-e:foo=barexe")]
+        public void MissingOutputDllAndArgumentsEndWithDllOrExeShouldFailInMSBuild(string arg)
+        {
+            var testAppName = "VSTestCore";
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithVersionVariables();
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should().Pass();
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
+                .Execute(arg);
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("MSBUILD : error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+    }
+}

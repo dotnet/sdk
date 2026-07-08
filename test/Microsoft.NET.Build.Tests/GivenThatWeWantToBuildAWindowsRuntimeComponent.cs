@@ -1,18 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAWindowsRuntimeComponent : SdkTest
     {
-        public GivenThatWeWantToBuildAWindowsRuntimeComponent(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_to_produce_winmds_for_net5_0_or_newer()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("WindowsRuntimeComponent")
                 .WithSource();
 
@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1131: ");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_when_referencing_windows_sdk_contracts_nuget_package_for_net5_0_or_newer()
         {
             var testProject = new TestProject("WinMDClasslibrary")
@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.Sdk.Contracts", "10.0.18362.2005"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdOutContaining("NETSDK1149");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_when_referencing_a_library_using_built_in_winrt_support()
         {
             var testProject = new TestProject("WinMDClasslibrary")
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Toolkit.Uwp.Notifications", "6.1.1"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -67,9 +67,9 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdOutContaining("NETSDK1130");
         }
 
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net48")]
+        [TestMethod]
+        [DataRow("netcoreapp3.1")]
+        [DataRow("net48")]
         public void It_successfully_builds_when_referencing_winmds(string targetFramework)
         {
             var testProject = new TestProject("WinMDClasslibrary")
@@ -78,7 +78,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.Sdk.Contracts", "10.0.18362.2005"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -87,21 +87,20 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/52032")]
+        [OSCondition(OperatingSystems.Windows)]
         public void ManagedWinRTComponentCanBeReferenced()
         {
             var managedWinRTComponent = new TestProject()
             {
                 Name = "ManagedWinRTComponent",
-                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.26100.0",
             };
 
-            managedWinRTComponent.AdditionalProperties.Add("CsWinRTWindowsMetadata", "10.0.19041.0");
+            managedWinRTComponent.AdditionalProperties.Add("CsWinRTWindowsMetadata", "10.0.26100.0");
             managedWinRTComponent.AdditionalProperties.Add("CsWinRTComponent", "true");
             managedWinRTComponent.AdditionalProperties.Add("PlatformTarget", "x64");
-
-            // Temporary until new projections flow to tests
-            managedWinRTComponent.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.39";
 
             //  TODO: Update to latest (currently 2.1.1) once it shows up on dotnet-public feed
             managedWinRTComponent.PackageReferences.Add(new TestPackageReference("Microsoft.Windows.CsWinRT", "2.1.1"));
@@ -164,7 +163,7 @@ class Program
     }
 }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(consoleApp);
+            var testAsset = TestAssetsManager.CreateTestProject(consoleApp);
 
             //  Disable workaround for NETSDK1130 which is in Microsoft.Windows.CsWinRT
             File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), @"<Project>
@@ -195,7 +194,9 @@ class Program
                 .HaveStdOut("(0, 0)");
         }
 
-        [FullMSBuildOnlyFact]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/51361")]
+        [FullMSBuildOnly]
         public void WinMDInteropProjectCanBeReferenced()
         {
 
@@ -244,10 +245,10 @@ Console.WriteLine(""Adding 5.5 + 6.5..."");
 Console.WriteLine(x.add(5.5, 6.5).ToString());";
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(consoleApp);
+            var testAsset = TestAssetsManager.CreateTestProject(consoleApp);
 
             //  Copy C++ project file which is referenced
-            var cppWinMDSourceDirectory = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("CppWinMDComponent"), "SimpleMathComponent");
+            var cppWinMDSourceDirectory = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("CppWinMDComponent"), "SimpleMathComponent");
             var cppWinTargetDirectory = Path.Combine(testAsset.TestRoot, "SimpleMathComponent");
             Directory.CreateDirectory(cppWinTargetDirectory);
             foreach (var file in Directory.GetFiles(cppWinMDSourceDirectory))

@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
+#nullable disable
 
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Mapping;
@@ -11,9 +11,10 @@ using Moq;
 
 namespace Microsoft.DotNet.ApiCompatibility.Tests.Mapping
 {
+    [TestClass]
     public class AssemblyMapperTests
     {
-        [Fact]
+        [TestMethod]
         public void AssemblyMapper_Ctor_PropertiesSet()
         {
             IRuleRunner ruleRunner = Mock.Of<IRuleRunner>();
@@ -23,20 +24,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests.Mapping
 
             AssemblyMapper assemblyMapper = new(ruleRunner, mapperSettings, rightSetSize, assemblySetMapper);
 
-            Assert.Null(assemblyMapper.Left);
-            Assert.Equal(mapperSettings, assemblyMapper.Settings);
-            Assert.Equal(rightSetSize, assemblyMapper.Right.Length);
-            Assert.Equal(assemblySetMapper, assemblyMapper.ContainingAssemblySet);
+            Assert.IsNull(assemblyMapper.Left);
+            Assert.AreEqual(mapperSettings, assemblyMapper.Settings);
+            Assert.HasCount(rightSetSize, assemblyMapper.Right);
+            Assert.AreEqual(assemblySetMapper, assemblyMapper.ContainingAssemblySet);
         }
 
-        [Fact]
+        [TestMethod]
         public void AssemblyMapper_GetNamespacesWithoutLeftAndRight_EmptyResult()
         {
             AssemblyMapper assemblyMapper = new(Mock.Of<IRuleRunner>(), Mock.Of<IMapperSettings>(), rightSetSize: 1);
-            Assert.Empty(assemblyMapper.GetNamespaces());
+            Assert.IsEmpty(assemblyMapper.GetNamespaces());
         }
 
-        [Fact]
+        [TestMethod]
         public void AssemblyMapper_GetNamespaces_ReturnsExpected()
         {
             string leftSyntax = @"
@@ -73,9 +74,9 @@ namespace AssemblyMapperTestNamespace3
 
             IEnumerable<INamespaceMapper> namespaceMappers = assemblyMapper.GetNamespaces();
 
-            Assert.Equal(3, namespaceMappers.Count());
-            Assert.Equal(new string?[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", null }, namespaceMappers.Select(n => n.Left?.Name));
-            Assert.Equal(new string[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", "AssemblyMapperTestNamespace3" }, namespaceMappers.SelectMany(n => n.Right).Select(r => r?.Name));
+            Assert.HasCount(3, namespaceMappers);
+            Assert.AreSequenceEqual(new string[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", null }, namespaceMappers.Select(n => n.Left?.Name));
+            Assert.AreSequenceEqual(new string[] { "AssemblyMapperTestNamespace1", "AssemblyMapperTestNamespace2", "AssemblyMapperTestNamespace3" }, namespaceMappers.SelectMany(n => n.Right).Select(r => r?.Name));
         }
     }
 }

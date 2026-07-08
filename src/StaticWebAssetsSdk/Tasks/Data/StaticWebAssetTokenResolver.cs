@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -16,6 +18,11 @@ public class StaticWebAssetTokenResolver(IReadOnlyDictionary<string, string> tok
         if (string.Equals(key, nameof(StaticWebAsset.Fingerprint), StringComparison.OrdinalIgnoreCase))
         {
             value = asset.Fingerprint;
+            return true;
+        }
+
+        if (asset.TryGetAssetGroupValue(key, out value))
+        {
             return true;
         }
 

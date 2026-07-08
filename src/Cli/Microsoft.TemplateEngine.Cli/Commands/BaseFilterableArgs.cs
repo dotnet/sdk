@@ -6,18 +6,10 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class BaseFilterableArgs : GlobalArgs
+    internal abstract class BaseFilterableArgs<TDefinition>(ParseResult parseResult) : GlobalArgs(parseResult)
+        where TDefinition : Command
     {
-        private IReadOnlyDictionary<FilterOptionDefinition, OptionResult> _filters;
-
-        internal BaseFilterableArgs(BaseCommand command, ParseResult parseResult) : base(command, parseResult)
-        {
-            if (command is not IFilterableCommand filterableCommand)
-            {
-                throw new ArgumentException($"{nameof(command)} should be {nameof(IFilterableCommand)}", nameof(command));
-            }
-            _filters = ParseFilters(filterableCommand, parseResult);
-        }
+        private readonly IReadOnlyDictionary<FilterOptionDefinition, OptionResult> _filters = ParseFilters(parseResult);
 
         /// <summary>
         /// Gets list of <see cref="FilterOptionDefinition"/> parsed from command.
@@ -50,15 +42,17 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return _filters[filter].IdentifierToken?.Value;
         }
 
-        private static IReadOnlyDictionary<FilterOptionDefinition, OptionResult> ParseFilters(IFilterableCommand filterableCommand, ParseResult parseResult)
+        private static IReadOnlyDictionary<FilterOptionDefinition, OptionResult> ParseFilters(ParseResult parseResult)
         {
+            var filterableCommand = (IFilterableCommand)parseResult.CommandResult.Command;
+
             Dictionary<FilterOptionDefinition, OptionResult> filterValues = new();
-            foreach (var filter in filterableCommand.Filters)
+            foreach (var option in filterableCommand.FilterOptions)
             {
-                OptionResult? value = parseResult.GetResult(filter.Value);
+                OptionResult? value = parseResult.GetResult(option);
                 if (value != null)
                 {
-                    filterValues[filter.Key] = value;
+                    filterValues[FilterOptionDefinition.AllDefinitions[option.Name]] = value;
                 }
             }
             return filterValues;

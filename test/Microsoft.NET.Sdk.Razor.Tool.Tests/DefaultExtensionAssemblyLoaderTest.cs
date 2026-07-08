@@ -1,17 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.TestFramework;
+#nullable disable
+
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
+    [TestClass]
     public class DefaultExtensionAssemblyLoaderTest : SdkTest
     {
-        public DefaultExtensionAssemblyLoaderTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [TestMethod]
         public void LoadFromPath_CanLoadAssembly()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
 
             var loader = new TestDefaultExtensionAssemblyLoader(Path.Combine(directory.Path, "shadow"));
@@ -20,14 +23,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var assembly = loader.LoadFromPath(alphaFilePath);
 
             // Assert
-            Assert.NotNull(assembly);
+            Assert.IsNotNull(assembly);
         }
 
-        [Fact]
+        [TestMethod]
         public void LoadFromPath_DoesNotAddDuplicates_AfterLoadingByName()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
             var alphaFilePath2 = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha2.dll");
 
@@ -40,14 +43,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var assembly2 = loader.LoadFromPath(alphaFilePath2);
 
             // Assert
-            Assert.Same(assembly1, assembly2);
+            Assert.AreSame(assembly1, assembly2);
         }
 
-        [Fact]
+        [TestMethod]
         public void LoadFromPath_DoesNotAddDuplicates_AfterLoadingByPath()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
             var alphaFilePath2 = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha2.dll");
 
@@ -58,15 +61,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var assembly2 = loader.LoadFromPath(alphaFilePath2);
 
             // Assert
-            Assert.Same(assembly1, assembly2);
+            Assert.AreSame(assembly1, assembly2);
 
         }
 
-        [Fact]
+        [TestMethod]
         public void Load_CanLoadAssemblyByName_AfterLoadingByPath()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
 
             var loader = new TestDefaultExtensionAssemblyLoader(Path.Combine(directory.Path, "shadow"));
@@ -76,14 +79,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var assembly2 = loader.Load(assembly1.FullName);
 
             // Assert
-            Assert.Same(assembly1, assembly2);
+            Assert.AreSame(assembly1, assembly2);
         }
 
-        [Fact]
+        [TestMethod]
         public void LoadFromPath_WithDependencyPathsSpecified_CanLoadAssemblyDependencies()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
             var betaFilePath = LoaderTestResources.Beta.WriteToFile(directory.Path, "Beta.dll");
             var gammaFilePath = LoaderTestResources.Gamma.WriteToFile(directory.Path, "Gamma.dll");
@@ -111,7 +114,7 @@ Delta: Gamma: Beta: Test B
 
             var actual = builder.ToString();
 
-            Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
+            Assert.AreEqual(expected.ReplaceLineEndings(), actual.ReplaceLineEndings());
         }
     }
 }

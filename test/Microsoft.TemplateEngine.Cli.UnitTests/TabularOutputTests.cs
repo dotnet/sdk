@@ -2,16 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Completions;
-using System.Reflection;
-using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Mocks;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
+    [TestClass]
     public class TabularOutputTests
     {
-        [Fact]
+        [TestMethod]
         public void CanShrinkOneColumn()
         {
             TabularOutputSettings outputSettings = new(
@@ -35,10 +35,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item2, "Column 2");
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShrinkMultipleColumnsAndBalanceShrinking()
         {
             TabularOutputSettings outputSettings = new(
@@ -62,10 +62,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item2, "Column 2", shrinkIfNeeded: true, minWidth: 2);
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CannotShrinkOverMinimumWidth()
         {
             TabularOutputSettings outputSettings = new(
@@ -89,10 +89,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item2, "Column 2", shrinkIfNeeded: true, minWidth: 8);
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowDefaultColumns()
         {
             TabularOutputSettings outputSettings = new(
@@ -117,10 +117,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item3, "Column 3", columnName: "column3", defaultColumn: false);
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowUserSelectedColumns()
         {
             TabularOutputSettings outputSettings = new(
@@ -146,10 +146,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item3, "Column 3", columnName: "column3", defaultColumn: false);
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowAllColumns()
         {
             TabularOutputSettings outputSettings = new(new MockEnvironment() { ConsoleBufferWidth = 10 }, displayAllColumns: true);
@@ -170,10 +170,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item3, "Column 3", columnName: "column3", defaultColumn: false);
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanCenterAlign()
         {
             TabularOutputSettings outputSettings = new(new MockEnvironment() { ConsoleBufferWidth = 10 });
@@ -193,10 +193,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                  .DefineColumn(t => t.Item2, "Column 2", textAlign: TextAlign.Center);
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanRightAlign()
         {
             TabularOutputSettings outputSettings = new(new MockEnvironment() { ConsoleBufferWidth = 10 });
@@ -216,10 +216,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 .DefineColumn(t => t.Item2, "Column 2", textAlign: TextAlign.Right);
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanCalculateWidthCorrectly()
         {
             TabularOutputSettings outputSettings = new(
@@ -254,10 +254,10 @@ Dotnet 本地工具清单文件  tool-manifest
                  .DefineColumn(t => t.Item2, "短名称");
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShrinkWideCharsCorrectly()
         {
             TabularOutputSettings outputSettings = new(
@@ -292,10 +292,10 @@ Dotnet 本地...  tool-manifest
                  .DefineColumn(t => t.Item2, "短名称");
 
             string result = formatter.Layout();
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanIndentAllRows()
         {
             TabularOutputSettings outputSettings = new(new MockEnvironment() { ConsoleBufferWidth = 10 }, displayAllColumns: true);
@@ -316,27 +316,22 @@ Dotnet 本地...  tool-manifest
                  .DefineColumn(t => t.Item3, "Column 3", columnName: "column3", defaultColumn: false);
 
             string result = formatter.Layout(1);
-            Assert.Equal(expectedOutput, result);
+            Assert.AreEqual(expectedOutput, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyColumnsOptionHasAllColumnNamesDefined()
         {
             var columnOption = SharedOptionsFactory.CreateColumnsOption();
 
             //Gets suggestions defined in column options
-            List<string?> suggestedValues = columnOption.GetCompletions(CompletionContext.Empty).Select(c => c.Label).ToList<string?>();
+            var suggestedValues = columnOption.GetCompletions(CompletionContext.Empty).Select(c => c.Label).ToList<string?>();
             suggestedValues.Sort();
 
             //Gets constants defined in TabularOutputSettings.ColumnNams
-            List<string?> columnNamesConstants = (typeof(TabularOutputSettings.ColumnNames))
-                .GetFields(BindingFlags.NonPublic | BindingFlags.Static)
-                .Where(fi => fi.IsLiteral && !fi.IsInitOnly)
-                .Select(fi => (string?)fi.GetValue(null))
-                .ToList();
-            columnNamesConstants.Sort();
+            var columnNamesConstants = typeof(TabularOutputSettingsColumnNames).GetFields().Select(fi => (string?)fi.GetValue(null)).Order();
 
-            Assert.Equal(suggestedValues, columnNamesConstants);
+            Assert.AreSequenceEqual(suggestedValues, columnNamesConstants);
         }
     }
 }

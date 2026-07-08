@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Collections;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
@@ -11,80 +15,597 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 #if WASM_TASKS
-internal sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
+internal sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>, ITaskItem2
 #else
-public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
+public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>, ITaskItem2
 #endif
 {
+    public const string DateTimeAssetFormat = "ddd, dd MMM yyyy HH:mm:ss 'GMT'";
+
+    private bool _modified;
+    private ITaskItem _originalItem;
+    private string _identity;
+    private string _sourceId;
+    private string _sourceType;
+    private string _contentRoot;
+    private string _basePath;
+    private string _relativePath;
+    private string _assetKind;
+    private string _assetMode;
+    private string _assetRole;
+    private string _assetMergeBehavior;
+    private string _assetMergeSource;
+    private string _relatedAsset;
+    private string _assetTraitName;
+    private string _assetTraitValue;
+    private string _assetGroups;
+    private Dictionary<string, string> _assetGroupValues;
+    private string _fingerprint;
+    private string _integrity;
+    private string _copyToOutputDirectory;
+    private string _copyToPublishDirectory;
+    private string _originalItemSpec;
+    private long _fileLength = -1;
+    private DateTimeOffset _lastWriteTime = DateTimeOffset.MinValue;
+    private Dictionary<string, string> _additionalCustomMetadata;
+    private string _fileLengthString;
+    private string _lastWriteTimeString;
+
     public StaticWebAsset()
     {
     }
 
     public StaticWebAsset(StaticWebAsset asset)
     {
-        Identity = asset.Identity;
-        SourceType = asset.SourceType;
-        SourceId = asset.SourceId;
-        ContentRoot = asset.ContentRoot;
-        BasePath = asset.BasePath;
-        RelativePath = asset.RelativePath;
-        AssetKind = asset.AssetKind;
-        AssetMode = asset.AssetMode;
-        AssetRole = asset.AssetRole;
-        AssetMergeBehavior = asset.AssetMergeBehavior;
-        AssetMergeSource = asset.AssetMergeSource;
-        RelatedAsset = asset.RelatedAsset;
-        AssetTraitName = asset.AssetTraitName;
-        AssetTraitValue = asset.AssetTraitValue;
-        CopyToOutputDirectory = asset.CopyToOutputDirectory;
-        CopyToPublishDirectory = asset.CopyToPublishDirectory;
-        OriginalItemSpec = asset.OriginalItemSpec;
+        _identity = asset.Identity;
+        _sourceType = asset.SourceType;
+        _sourceId = asset.SourceId;
+        _contentRoot = asset.ContentRoot;
+        _basePath = asset.BasePath;
+        _relativePath = asset.RelativePath;
+        _assetKind = asset.AssetKind;
+        _assetMode = asset.AssetMode;
+        _assetRole = asset.AssetRole;
+        _assetMergeBehavior = asset.AssetMergeBehavior;
+        _assetMergeSource = asset.AssetMergeSource;
+        _relatedAsset = asset.RelatedAsset;
+        _assetTraitName = asset.AssetTraitName;
+        _assetTraitValue = asset.AssetTraitValue;
+        _assetGroups = asset.AssetGroups;
+        _copyToOutputDirectory = asset.CopyToOutputDirectory;
+        _copyToPublishDirectory = asset.CopyToPublishDirectory;
+        _originalItemSpec = asset.OriginalItemSpec;
+        _fileLength = asset.FileLength;
+        _lastWriteTime = asset.LastWriteTime;
+        _fingerprint = asset.Fingerprint;
+        _integrity = asset.Integrity;
     }
 
-    public string Identity { get; set; }
+    private string GetOriginalItemMetadata(string name) => _originalItem?.GetMetadata(name);
 
-    public string SourceId { get; set; }
+    public string Identity
+    {
+        get
+        {
+            return _identity ??=
+                // Register the identity as the full path since assets might have come
+                // from packages and other sources and the identity (which is typically
+                // just the relative path from the project) is not enough to locate them.
+                GetOriginalItemMetadata("FullPath");
+        }
 
-    public string SourceType { get; set; }
+        set
+        {
+            _modified = true;
+            _identity = value;
+        }
+    }
 
-    public string ContentRoot { get; set; }
+    public string SourceId
+    {
+        get => _sourceId ??= GetOriginalItemMetadata(nameof(SourceId));
+        set
+        {
+            _modified = true;
+            _sourceId = value;
+        }
+    }
 
-    public string BasePath { get; set; }
+    public string SourceType
+    {
+        get => _sourceType ??= GetOriginalItemMetadata(nameof(SourceType));
+        set
+        {
+            _modified = true;
+            _sourceType = value;
+        }
+    }
 
-    public string RelativePath { get; set; }
+    public string ContentRoot
+    {
+        get => _contentRoot ??= GetOriginalItemMetadata(nameof(ContentRoot));
+        set
+        {
+            _modified = true;
+            _contentRoot = value;
+        }
+    }
 
-    public string AssetKind { get; set; }
+    public string BasePath
+    {
+        get => _basePath ??= GetOriginalItemMetadata(nameof(BasePath));
+        set
+        {
+            _modified = true;
+            _basePath = value;
+        }
+    }
 
-    public string AssetMode { get; set; }
+    public string RelativePath
+    {
+        get => _relativePath ??= GetOriginalItemMetadata(nameof(RelativePath));
+        set
+        {
+            _modified = true;
+            _relativePath = value;
+        }
+    }
 
-    public string AssetRole { get; set; }
+    public string AssetKind
+    {
+        get => _assetKind ??= GetOriginalItemMetadata(nameof(AssetKind));
+        set
+        {
+            _modified = true;
+            _assetKind = value;
+        }
+    }
 
-    public string AssetMergeBehavior { get; set; }
+    public string AssetMode
+    {
+        get => _assetMode ??= GetOriginalItemMetadata(nameof(AssetMode));
+        set
+        {
+            _modified = true;
+            _assetMode = value;
+        }
+    }
 
-    public string AssetMergeSource { get; set; }
+    public string AssetRole
+    {
+        get => _assetRole ??= GetOriginalItemMetadata(nameof(AssetRole));
+        set
+        {
+            _modified = true;
+            _assetRole = value;
+        }
+    }
 
-    public string RelatedAsset { get; set; }
+    public string AssetMergeBehavior
+    {
+        get => _assetMergeBehavior ??= GetOriginalItemMetadata(nameof(AssetMergeBehavior));
+        set
+        {
+            _modified = true;
+            _assetMergeBehavior = value;
+        }
+    }
 
-    public string AssetTraitName { get; set; }
+    public string AssetMergeSource
+    {
+        get => _assetMergeSource ??= GetOriginalItemMetadata(nameof(AssetMergeSource));
+        set
+        {
+            _modified = true;
+            _assetMergeSource = value;
+        }
+    }
 
-    public string AssetTraitValue { get; set; }
+    public string RelatedAsset
+    {
+        get => _relatedAsset ??= GetOriginalItemMetadata(nameof(RelatedAsset));
+        set
+        {
+            _modified = true;
+            _relatedAsset = value;
+        }
+    }
 
-    public string Fingerprint { get; set; }
+    public string AssetTraitName
+    {
+        get => _assetTraitName ??= GetOriginalItemMetadata(nameof(AssetTraitName));
+        set
+        {
+            _modified = true;
+            _assetTraitName = value;
+        }
+    }
 
-    public string Integrity { get; set; }
+    public string AssetTraitValue
+    {
+        get => _assetTraitValue ??= GetOriginalItemMetadata(nameof(AssetTraitValue));
+        set
+        {
+            _modified = true;
+            _assetTraitValue = value;
+        }
+    }
 
-    public string CopyToOutputDirectory { get; set; }
+    public string AssetGroups
+    {
+        get => _assetGroups ??= GetOriginalItemMetadata(nameof(AssetGroups));
+        set
+        {
+            _modified = true;
+            _assetGroups = value;
+            _assetGroupValues = null;
+        }
+    }
 
-    public string CopyToPublishDirectory { get; set; }
+    internal IReadOnlyDictionary<string, string> GetAssetGroupValues()
+    {
+        _assetGroupValues ??= ParseAssetGroupValues(AssetGroups);
+        return _assetGroupValues;
+    }
 
-    public string OriginalItemSpec { get; set; }
+    // Returns true if the asset's group requirements are all satisfied by the declared groups.
+    // When skipDeferred is true, groups marked Deferred are treated as provisionally satisfied.
+    // When sourceId is non-null, assets whose SourceId does not match pass through unconditionally.
+    internal bool MatchesGroups(Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groups, bool skipDeferred = false, string sourceId = null)
+    {
+        if (!string.IsNullOrEmpty(sourceId) && !string.Equals(SourceId, sourceId, StringComparison.Ordinal))
+        {
+            return true;
+        }
 
-    public static StaticWebAsset FromTaskItem(ITaskItem item)
+        var requirements = GetAssetGroupValues();
+        if (requirements.Count == 0)
+        {
+            return true;
+        }
+
+        foreach (var requirement in requirements)
+        {
+            if (!groups.TryGetValue((SourceId, requirement.Key), out var group))
+            {
+                return false;
+            }
+
+            if (skipDeferred && group.Deferred)
+            {
+                continue;
+            }
+
+            if (!string.Equals(group.Value, requirement.Value, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Sorts assets by RelatedAsset, then filters by group with cascading exclusion.
+    // Assets whose parent was excluded are also excluded.
+    // When sourceId is non-null, only assets with matching SourceId are evaluated;
+    // others pass through unconditionally.
+    internal static (List<StaticWebAsset> included, HashSet<string> excluded) FilterByGroup(
+        StaticWebAsset[] assets,
+        Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groups,
+        bool skipDeferred,
+        string sourceId = null)
+    {
+        SortByRelatedAssetInPlace(assets);
+        var included = new List<StaticWebAsset>(assets.Length);
+        var excluded = new HashSet<string>(OSPath.PathComparer);
+
+        foreach (var asset in assets)
+        {
+            if (!string.IsNullOrEmpty(asset.RelatedAsset) && excluded.Contains(asset.RelatedAsset))
+            {
+                excluded.Add(asset.Identity);
+                continue;
+            }
+
+            if (asset.MatchesGroups(groups, skipDeferred, sourceId))
+            {
+                included.Add(asset);
+            }
+            else
+            {
+                excluded.Add(asset.Identity);
+            }
+        }
+
+        return (included, excluded);
+    }
+
+    // In-place topological sort by RelatedAsset using a two-pointer approach.
+    // Mutates the input span so that parents appear before dependents.
+    // O(n) amortized time — i and tail each visit every index at most once.
+    // O(n) auxiliary space for the seen/deferred maps; no result array allocated.
+    internal static void SortByRelatedAssetInPlace(Span<StaticWebAsset> assets)
+    {
+        if (assets.Length <= 1)
+        {
+            return;
+        }
+
+        var seen = new HashSet<string>(assets.Length, OSPath.PathComparer);
+        var deferred = new Dictionary<string, int>(OSPath.PathComparer);
+        var tail = assets.Length - 1;
+
+        for (var i = 0; i < assets.Length; i++)
+        {
+            while (!IsPlaceable(assets[i], seen))
+            {
+                // Strategy 1: the parent was displaced earlier and we know where it is.
+                var parentIndex = FindInDeferred(assets[i], deferred);
+                if (parentIndex >= 0)
+                {
+                    deferred.Remove(assets[i].RelatedAsset);
+                    deferred[assets[i].Identity] = parentIndex;
+                    (assets[i], assets[parentIndex]) = (assets[parentIndex], assets[i]);
+                    continue;
+                }
+
+                // Strategy 2: scan backward from tail for any placeable element.
+                var placeableIndex = ScanTailForPlaceable(assets, seen, deferred, i, ref tail);
+                if (placeableIndex < 0)
+                {
+                    break; // tail exhausted — orphan, place as-is
+                }
+
+                deferred[assets[i].Identity] = placeableIndex;
+                (assets[i], assets[placeableIndex]) = (assets[placeableIndex], assets[i]);
+            }
+
+            seen.Add(assets[i].Identity);
+        }
+    }
+
+    private static bool IsPlaceable(StaticWebAsset asset, HashSet<string> seen) =>
+        string.IsNullOrEmpty(asset.RelatedAsset) || seen.Contains(asset.RelatedAsset);
+
+    private static int FindInDeferred(StaticWebAsset asset, Dictionary<string, int> deferred) =>
+        deferred.TryGetValue(asset.RelatedAsset, out var index) ? index : -1;
+
+    // Walks tail downward, deferring every non-placeable element it passes,
+    // and returns the index of the first placeable element found (or -1).
+    private static int ScanTailForPlaceable(
+        Span<StaticWebAsset> assets, HashSet<string> seen,
+        Dictionary<string, int> deferred, int floor, ref int tail)
+    {
+        while (tail > floor)
+        {
+            if (IsPlaceable(assets[tail], seen))
+            {
+                return tail--;
+            }
+
+            deferred[assets[tail].Identity] = tail;
+            tail--;
+        }
+
+        return -1;
+    }
+
+    // List<T> overload: delegates to Span on modern .NET, uses IList indexer on net472.
+    internal static void SortByRelatedAssetInPlace(List<StaticWebAsset> assets)
+    {
+#if NET6_0_OR_GREATER
+        SortByRelatedAssetInPlace(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(assets));
+#else
+        if (assets.Count <= 1)
+        {
+            return;
+        }
+
+        var seen = new HashSet<string>(assets.Count, OSPath.PathComparer);
+        var deferred = new Dictionary<string, int>(OSPath.PathComparer);
+        var tail = assets.Count - 1;
+
+        for (var i = 0; i < assets.Count; i++)
+        {
+            while (!IsPlaceable(assets[i], seen))
+            {
+                var parentIndex = FindInDeferred(assets[i], deferred);
+                if (parentIndex >= 0)
+                {
+                    deferred.Remove(assets[i].RelatedAsset);
+                    deferred[assets[i].Identity] = parentIndex;
+                    (assets[i], assets[parentIndex]) = (assets[parentIndex], assets[i]);
+                    continue;
+                }
+
+                var placeableIndex = ScanTailForPlaceable(assets, seen, deferred, i, ref tail);
+                if (placeableIndex < 0)
+                {
+                    break;
+                }
+
+                deferred[assets[i].Identity] = placeableIndex;
+                (assets[i], assets[placeableIndex]) = (assets[placeableIndex], assets[i]);
+            }
+
+            seen.Add(assets[i].Identity);
+        }
+#endif
+    }
+
+#if !NET6_0_OR_GREATER
+    private static int ScanTailForPlaceable(
+        List<StaticWebAsset> assets, HashSet<string> seen,
+        Dictionary<string, int> deferred, int floor, ref int tail)
+    {
+        while (tail > floor)
+        {
+            if (IsPlaceable(assets[tail], seen))
+            {
+                return tail--;
+            }
+
+            deferred[assets[tail].Identity] = tail;
+            tail--;
+        }
+
+        return -1;
+    }
+#endif
+
+    internal bool TryGetAssetGroupValue(string key, out string value)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            value = null;
+            return false;
+        }
+
+        return GetAssetGroupValues().TryGetValue(key, out value);
+    }
+
+    private static Dictionary<string, string> ParseAssetGroupValues(string assetGroups)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (string.IsNullOrEmpty(assetGroups))
+        {
+            return result;
+        }
+
+        var requirements = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var requirement in requirements)
+        {
+            var eqIdx = requirement.IndexOf('=');
+            if (eqIdx <= 0 || eqIdx == requirement.Length - 1)
+            {
+                throw new InvalidOperationException(
+                    $"Malformed AssetGroups segment '{requirement}' in value '{assetGroups}'. Expected 'Name=Value' format.");
+            }
+
+            var reqName = requirement.Substring(0, eqIdx);
+            var reqValue = requirement.Substring(eqIdx + 1);
+            result[reqName] = reqValue;
+        }
+
+        return result;
+    }
+
+    public string Fingerprint
+    {
+        get => _fingerprint ??= GetOriginalItemMetadata(nameof(Fingerprint));
+        set
+        {
+            _modified = true;
+            _fingerprint = value;
+        }
+    }
+
+    public string Integrity
+    {
+        get => _integrity ??= GetOriginalItemMetadata(nameof(Integrity));
+        set
+        {
+            _modified = true;
+            _integrity = value;
+        }
+    }
+
+    public string CopyToOutputDirectory
+    {
+        get => _copyToOutputDirectory ??= GetOriginalItemMetadata(nameof(CopyToOutputDirectory));
+        set
+        {
+            _modified = true;
+            _copyToOutputDirectory = value;
+        }
+    }
+
+    public string CopyToPublishDirectory
+    {
+        get => _copyToPublishDirectory ??= GetOriginalItemMetadata(nameof(CopyToPublishDirectory));
+        set
+        {
+            _modified = true;
+            _copyToPublishDirectory = value;
+        }
+    }
+
+    public string OriginalItemSpec
+    {
+        get => _originalItemSpec ??= GetOriginalItemMetadata(nameof(OriginalItemSpec));
+        set
+        {
+            _modified = true;
+            _originalItemSpec = value;
+        }
+    }
+
+    internal string FileLengthString => _fileLengthString ??= GetOriginalItemMetadata(nameof(FileLength));
+
+    public long FileLength
+    {
+        get
+        {
+            if (_fileLength < 0)
+            {
+                var fileLengthString = FileLengthString;
+                _fileLength = !string.IsNullOrEmpty(fileLengthString) &&
+                    long.TryParse(fileLengthString, NumberStyles.None, CultureInfo.InvariantCulture, out var fileLength)
+                    ? fileLength
+                    : -1;
+            }
+            return _fileLength;
+        }
+        set
+        {
+            _fileLengthString = null;
+            _modified = true;
+            _fileLength = value;
+        }
+    }
+
+    internal string LastWriteTimeString => _lastWriteTimeString ??= GetOriginalItemMetadata(nameof(LastWriteTime));
+
+    public DateTimeOffset LastWriteTime
+    {
+        get
+        {
+            if (_lastWriteTime == DateTimeOffset.MinValue)
+            {
+                var lastWriteTimeString = LastWriteTimeString;
+                _lastWriteTime = !string.IsNullOrEmpty(lastWriteTimeString) &&
+                    DateTimeOffset.TryParse(lastWriteTimeString, CultureInfo.InvariantCulture, DateTimeStyles.None, out var lastWriteTime)
+                    ? lastWriteTime
+                    : DateTimeOffset.MinValue;
+            }
+            return _lastWriteTime;
+        }
+        set
+        {
+            _lastWriteTimeString = null;
+            _modified = true;
+            _lastWriteTime = value;
+        }
+    }
+
+    public static StaticWebAsset FromTaskItem(ITaskItem item, bool validate = false)
+        => FromTaskItem(item, TaskEnvironment.Fallback, validate);
+
+    /// <summary>
+    /// Builds a <see cref="StaticWebAsset"/> from an MSBuild item, absolutizing path-bearing
+    /// metadata (ContentRoot, RelatedAsset) against the supplied <paramref name="env"/>'s
+    /// project directory rather than the process current directory. Required for multithreaded
+    /// MSBuild execution.
+    /// </summary>
+    public static StaticWebAsset FromTaskItem(ITaskItem item, TaskEnvironment env, bool validate = false)
     {
         var result = FromTaskItemCore(item);
 
-        result.Normalize();
-        result.Validate();
+        result.Normalize(env);
+        if (validate)
+        {
+            result.Validate();
+        }
 
         return result;
     }
@@ -108,14 +629,20 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         {
             if (item.HasKind(assetKind))
             {
+                // The moment we find a Build or Publish asset, we start ignoring the
+                // All assets
                 ignoreAllKind = true;
 
+                // We still return multiple Build or Publish items if they are present
+                // But we won't error out if there are multiple All assets as long as there
+                // is a single Build or Publish asset present.
                 yield return item;
             }
             else if (!ignoreAllKind && item.IsBuildAndPublish())
             {
                 if (allKindAssetCandidate != null)
                 {
+                    // At this point we have more than one `All` asset, which is an error
                     yield return allKindAssetCandidate;
                     yield return item;
                     yield break;
@@ -130,111 +657,209 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
     }
 
-    internal static bool ValidateAssetGroup(string path, IReadOnlyList<StaticWebAsset> group, out string reason)
+    internal static bool ValidateAssetGroup(string path, (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group, out string reason, HashSet<string> reusableGroupSet)
     {
-        StaticWebAsset prototypeItem = null;
+        var prototypeItem = group.First;
         StaticWebAsset build = null;
         StaticWebAsset publish = null;
         StaticWebAsset all = null;
-        foreach (var item in group)
+
+        if (group.Second == null)
         {
-            prototypeItem ??= item;
+            // Most common case, only one asset for the given path
+            reason = null;
+            return true;
+        }
+
+        // If assets at the same path have different non-empty AssetGroups values, they are variant
+        // alternatives that will be disambiguated by group filtering on the consumer side.
+        // Allow them to coexist in the manifest.
+        if (AllAssetsHaveDistinctGroups(group, reusableGroupSet))
+        {
+            reason = null;
+            return true;
+        }
+
+        // Check First against Second for source ID conflict
+        if (!prototypeItem.HasSourceId(group.Second.SourceId))
+        {
+            reason = $"Conflicting assets with the same target path '{path}'. For assets '{prototypeItem}' and '{group.Second}' from different projects.";
+            return false;
+        }
+
+        // Process First
+        build = group.First.IsBuildOnly() ? group.First : build;
+        publish = group.First.IsPublishOnly() ? group.First : publish;
+        all = group.First.IsBuildAndPublish() ? group.First : all;
+
+        // Process Second
+        if (build != null && group.Second.IsBuildOnly() && !ReferenceEquals(build, group.Second))
+        {
+            reason = $"Conflicting assets with the same target path '{path}'. For 'Build' assets '{build}' and '{group.Second}'.";
+            return false;
+        }
+        build ??= group.Second.IsBuildOnly() ? group.Second : build;
+
+        if (publish != null && group.Second.IsPublishOnly() && !ReferenceEquals(publish, group.Second))
+        {
+            reason = $"Conflicting assets with the same target path '{path}'. For 'Publish' assets '{publish}' and '{group.Second}'.";
+            return false;
+        }
+        publish ??= group.Second.IsPublishOnly() ? group.Second : publish;
+
+        if (all != null && group.Second.IsBuildAndPublish() && !ReferenceEquals(all, group.Second))
+        {
+            reason = $"Conflicting assets with the same target path '{path}'. For 'All' assets '{all}' and '{group.Second}'.";
+            return false;
+        }
+        all ??= group.Second.IsBuildAndPublish() ? group.Second : all;
+
+        if (group.Others == null || group.Others.Count == 0)
+        {
+            reason = null;
+            return true;
+        }
+
+        // Process rest of the items
+        foreach (var item in group.Others)
+        {
             if (!prototypeItem.HasSourceId(item.SourceId))
             {
                 reason = $"Conflicting assets with the same target path '{path}'. For assets '{prototypeItem}' and '{item}' from different projects.";
                 return false;
             }
 
-            build ??= item.IsBuildOnly() ? item : build;
             if (build != null && item.IsBuildOnly() && !ReferenceEquals(build, item))
             {
                 reason = $"Conflicting assets with the same target path '{path}'. For 'Build' assets '{build}' and '{item}'.";
                 return false;
             }
+            build ??= item.IsBuildOnly() ? item : build;
 
-            publish ??= item.IsPublishOnly() ? item : publish;
             if (publish != null && item.IsPublishOnly() && !ReferenceEquals(publish, item))
             {
                 reason = $"Conflicting assets with the same target path '{path}'. For 'Publish' assets '{publish}' and '{item}'.";
                 return false;
             }
+            publish ??= item.IsPublishOnly() ? item : publish;
 
-            all ??= item.IsBuildAndPublish() ? item : all;
             if (all != null && item.IsBuildAndPublish() && !ReferenceEquals(all, item))
             {
                 reason = $"Conflicting assets with the same target path '{path}'. For 'All' assets '{all}' and '{item}'.";
                 return false;
             }
+            all ??= item.IsBuildAndPublish() ? item : all;
         }
+
         reason = null;
         return true;
+    }
+
+    private static bool AllAssetsHaveDistinctGroups(
+        (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group,
+        HashSet<string> reusableGroupSet)
+    {
+        reusableGroupSet.Clear();
+
+        if (!TryAddAssetGroup(reusableGroupSet, group.First))
+        {
+            return false;
+        }
+
+        if (group.Second != null && !TryAddAssetGroup(reusableGroupSet, group.Second))
+        {
+            return false;
+        }
+
+        if (group.Others != null)
+        {
+            foreach (var item in group.Others)
+            {
+                if (!TryAddAssetGroup(reusableGroupSet, item))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return reusableGroupSet.Count > 0;
+    }
+
+    internal static bool AllAssetsHaveDistinctGroups(IEnumerable<StaticWebAsset> assets, HashSet<string> reusableGroupSet)
+    {
+        reusableGroupSet.Clear();
+
+        foreach (var asset in assets)
+        {
+            if (!TryAddAssetGroup(reusableGroupSet, asset))
+            {
+                return false;
+            }
+        }
+        return reusableGroupSet.Count > 0;
+    }
+
+    private static bool TryAddAssetGroup(HashSet<string> groups, StaticWebAsset asset)
+    {
+        if (string.IsNullOrEmpty(asset.AssetGroups))
+        {
+            return false;
+        }
+        return groups.Add(asset.AssetGroups);
     }
 
     private bool HasKind(string assetKind) =>
         AssetKinds.IsKind(AssetKind, assetKind);
 
     public static StaticWebAsset FromV1TaskItem(ITaskItem item)
+        => FromV1TaskItem(item, TaskEnvironment.Fallback);
+
+    public static StaticWebAsset FromV1TaskItem(ITaskItem item, TaskEnvironment env)
     {
         var result = FromTaskItemCore(item);
-        result.ApplyDefaults();
-        result.OriginalItemSpec = item.GetMetadata("FullPath");
+        result.ApplyDefaults(env);
+        result.OriginalItemSpec = string.IsNullOrEmpty(result.OriginalItemSpec) ? item.GetMetadata("FullPath") : result.OriginalItemSpec;
 
-        result.Normalize();
+        result.Normalize(env);
         result.Validate();
 
         return result;
     }
 
-    private static StaticWebAsset FromTaskItemCore(ITaskItem item) =>
-        new()
+    private static StaticWebAsset FromTaskItemCore(ITaskItem item)
+    {
+        return new()
         {
-            // Register the identity as the full path since assets might have come
-            // from packages and other sources and the identity (which is typically
-            // just the relative path from the project) is not enough to locate them.
-            Identity = item.GetMetadata("FullPath"),
-            SourceType = item.GetMetadata(nameof(SourceType)),
-            SourceId = item.GetMetadata(nameof(SourceId)),
-            ContentRoot = item.GetMetadata(nameof(ContentRoot)),
-            BasePath = item.GetMetadata(nameof(BasePath)),
-            RelativePath = item.GetMetadata(nameof(RelativePath)),
-            AssetKind = item.GetMetadata(nameof(AssetKind)),
-            AssetMode = item.GetMetadata(nameof(AssetMode)),
-            AssetRole = item.GetMetadata(nameof(AssetRole)),
-            AssetMergeSource = item.GetMetadata(nameof(AssetMergeSource)),
-            AssetMergeBehavior = item.GetMetadata(nameof(AssetMergeBehavior)),
-            RelatedAsset = item.GetMetadata(nameof(RelatedAsset)),
-            AssetTraitName = item.GetMetadata(nameof(AssetTraitName)),
-            AssetTraitValue = item.GetMetadata(nameof(AssetTraitValue)),
-            Fingerprint = item.GetMetadata(nameof(Fingerprint)),
-            Integrity = item.GetMetadata(nameof(Integrity)),
-            CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
-            CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
-            OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
+            _originalItem = item,
         };
+    }
 
-    public void ApplyDefaults()
+    public void ApplyDefaults() => ApplyDefaults(TaskEnvironment.Fallback);
+
+    public void ApplyDefaults(TaskEnvironment env)
     {
         CopyToOutputDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.Never : CopyToOutputDirectory;
         CopyToPublishDirectory = string.IsNullOrEmpty(CopyToPublishDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
-        (Fingerprint, Integrity) = ComputeFingerprintAndIntegrity();
         AssetKind = !string.IsNullOrEmpty(AssetKind) ? AssetKind : !ShouldCopyToPublishDirectory() ? AssetKinds.Build : AssetKinds.All;
         AssetMode = string.IsNullOrEmpty(AssetMode) ? AssetModes.All : AssetMode;
         AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
+        if (string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) || FileLength == -1 || LastWriteTime == DateTimeOffset.MinValue)
+        {
+            var file = ResolveFile(Identity, OriginalItemSpec, env);
+            (Fingerprint, Integrity) = string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) ?
+                ComputeFingerprintAndIntegrityIfNeeded(file) : (Fingerprint, Integrity);
+            FileLength = FileLength == -1 ? file.Length : FileLength;
+            LastWriteTime = LastWriteTime == DateTimeOffset.MinValue ? file.LastWriteTimeUtc : LastWriteTime;
+        }
     }
 
-    private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrity() =>
+    private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrityIfNeeded(FileInfo file) =>
         (Fingerprint, Integrity) switch
         {
-            ("", "") => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec),
+            ("", "") => ComputeFingerprintAndIntegrity(file),
             (not null, not null) => (Fingerprint, Integrity),
-            _ => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec)
+            _ => ComputeFingerprintAndIntegrity(file)
         };
-
-    internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(string identity, string originalItemSpec)
-    {
-        var fileInfo = ResolveFile(identity, originalItemSpec);
-        return ComputeFingerprintAndIntegrity(fileInfo);
-    }
 
     internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(FileInfo fileInfo)
     {
@@ -250,8 +875,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     internal static string ComputeIntegrity(string identity, string originalItemSpec)
+        => ComputeIntegrity(identity, originalItemSpec, TaskEnvironment.Fallback);
+
+    internal static string ComputeIntegrity(string identity, string originalItemSpec, TaskEnvironment env)
     {
-        var fileInfo = ResolveFile(identity, originalItemSpec);
+        var fileInfo = ResolveFile(identity, originalItemSpec, env);
         return ComputeIntegrity(fileInfo);
     }
 
@@ -270,7 +898,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string ComputeTargetPath(string pathPrefix, char separator) => CombineNormalizedPaths(
             pathPrefix,
-            IsDiscovered() || IsComputed() ? "" : BasePath,
+            IsDiscovered() || IsComputed() || IsFramework() ? "" : BasePath,
             RelativePath, separator);
 
     public static string CombineNormalizedPaths(string prefix, string basePath, string route, char separator)
@@ -285,26 +913,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public ITaskItem ToTaskItem()
     {
-        var result = new TaskItem(Identity);
-        result.SetMetadata(nameof(SourceType), SourceType);
-        result.SetMetadata(nameof(SourceId), SourceId);
-        result.SetMetadata(nameof(ContentRoot), ContentRoot);
-        result.SetMetadata(nameof(BasePath), BasePath);
-        result.SetMetadata(nameof(RelativePath), RelativePath);
-        result.SetMetadata(nameof(AssetKind), AssetKind);
-        result.SetMetadata(nameof(AssetMode), AssetMode);
-        result.SetMetadata(nameof(AssetRole), AssetRole);
-        result.SetMetadata(nameof(AssetMergeSource), AssetMergeSource);
-        result.SetMetadata(nameof(AssetMergeBehavior), AssetMergeBehavior);
-        result.SetMetadata(nameof(RelatedAsset), RelatedAsset);
-        result.SetMetadata(nameof(AssetTraitName), AssetTraitName);
-        result.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
-        result.SetMetadata(nameof(Fingerprint), Fingerprint);
-        result.SetMetadata(nameof(Integrity), Integrity);
-        result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
-        result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
-        result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
-        return result;
+        if (!_modified && _originalItem != null)
+        {
+            // We haven't modified the item, we can just return the original item.
+            // This is still interesting because MSBuild can optimize things and avoid
+            // additional copies.
+            return _originalItem;
+        }
+        // We can always return ourselves, any property that wasn't modified we will copy from the original item if exists.
+        return this;
     }
 
     public void Validate()
@@ -315,10 +932,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             case SourceTypes.Computed:
             case SourceTypes.Project:
             case SourceTypes.Package:
+            case SourceTypes.Framework:
                 break;
             default:
                 throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
-        };
+        }
 
         if (string.IsNullOrEmpty(SourceId))
         {
@@ -353,7 +971,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset kind '{AssetKind}' for '{Identity}'.");
-        };
+        }
 
         switch (AssetMode)
         {
@@ -363,7 +981,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}' for '{Identity}'.");
-        };
+        }
 
         switch (AssetRole)
         {
@@ -373,7 +991,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset role '{AssetRole}' for '{Identity}'.");
-        };
+        }
 
         if (!IsPrimaryAsset() && string.IsNullOrEmpty(RelatedAsset))
         {
@@ -393,6 +1011,16 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         if (string.IsNullOrEmpty(Integrity))
         {
             throw new InvalidOperationException($"Integrity for '{Identity}' is not defined.");
+        }
+
+        if (FileLength < 0)
+        {
+            throw new InvalidOperationException($"File length for '{Identity}' is not defined.");
+        }
+
+        if (LastWriteTime == DateTimeOffset.MinValue)
+        {
+            throw new InvalidOperationException($"Last write time for '{Identity}' is not defined.");
         }
     }
 
@@ -414,7 +1042,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         string integrity,
         string copyToOutputDirectory,
         string copyToPublishDirectory,
-        string originalItemSpec)
+        string originalItemSpec,
+        long fileLength,
+        DateTimeOffset lastWriteTime)
     {
         var result = new StaticWebAsset
         {
@@ -435,7 +1065,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             Integrity = integrity,
             CopyToOutputDirectory = copyToOutputDirectory,
             CopyToPublishDirectory = copyToPublishDirectory,
-            OriginalItemSpec = originalItemSpec
+            OriginalItemSpec = originalItemSpec,
+            FileLength = fileLength,
+            LastWriteTime = lastWriteTime,
         };
 
         result.ApplyDefaults();
@@ -449,21 +1081,25 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     internal bool HasSourceId(string source) =>
         HasSourceId(SourceId, source);
 
-    public void Normalize()
+    public void Normalize() => Normalize(TaskEnvironment.Fallback);
+
+    public void Normalize(TaskEnvironment env)
     {
-        ContentRoot = !string.IsNullOrEmpty(ContentRoot) ? NormalizeContentRootPath(ContentRoot) : ContentRoot;
+        ContentRoot = !string.IsNullOrEmpty(ContentRoot) ? NormalizeContentRootPath(ContentRoot, env) : ContentRoot;
         BasePath = Normalize(BasePath);
         RelativePath = Normalize(RelativePath, allowEmpyPath: true);
-        RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(RelatedAsset) : RelatedAsset;
+        RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(env.GetAbsolutePath(RelatedAsset)) : RelatedAsset;
     }
 
     // Normalizes the given path to a content root path in the way we expect it:
     // * Converts the path to absolute with Path.GetFullPath(path) which takes care of normalizing
     //   the directory separators to use Path.DirectorySeparator
     // * Appends a trailing directory separator at the end.
-    public static string NormalizeContentRootPath(string path)
-        => Path.GetFullPath(path) +
-        // We need to do .ToString because there is no EndsWith overload for chars in .net472
+    public static string NormalizeContentRootPath(string path) => NormalizeContentRootPath(path, TaskEnvironment.Fallback);
+
+    public static string NormalizeContentRootPath(string path, TaskEnvironment env)
+        => Path.GetFullPath(string.IsNullOrEmpty(path) ? path : env.GetAbsolutePath(path)) +
+        // We need to do .ToString because there is no EndsWith overload for chars in .NET Framework
         (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
         {
             (true, _) => "",
@@ -482,6 +1118,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public bool IsPackage()
         => string.Equals(SourceType, SourceTypes.Package, StringComparison.Ordinal);
+
+    public bool IsFramework()
+        => string.Equals(SourceType, SourceTypes.Framework, StringComparison.Ordinal);
 
     public bool IsBuildOnly()
         => string.Equals(AssetKind, AssetKinds.Build, StringComparison.Ordinal);
@@ -516,8 +1155,81 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public bool ShouldCopyToPublishDirectory()
         => !string.Equals(CopyToPublishDirectory, AssetCopyOptions.Never, StringComparison.Ordinal);
 
-    public bool HasContentRoot(string path) =>
-        string.Equals(ContentRoot, NormalizeContentRootPath(path), StringComparison.Ordinal);
+    public bool HasContentRoot(string path) => HasContentRoot(path, TaskEnvironment.Fallback);
+
+    public bool HasContentRoot(string path, TaskEnvironment env) =>
+        string.Equals(ContentRoot, NormalizeContentRootPath(path, env), StringComparison.Ordinal);
+
+    /// <summary>
+    /// Materializes a framework asset by copying it to the consuming project's intermediate directory
+    /// and updating its metadata (Identity, ContentRoot, SourceId, BasePath, SourceType, AssetMode).
+    /// Used by both the P2P and NuGet package paths.
+    /// Returns the old identity and old base path so callers can remap endpoints and related assets.
+    /// </summary>
+    public static (StaticWebAsset Asset, string OldIdentity, string OldBasePath) MaterializeFrameworkAsset(
+        StaticWebAsset asset,
+        string intermediateOutputPath,
+        string projectPackageId,
+        string projectBasePath,
+        TaskLoggingHelper log)
+        => MaterializeFrameworkAsset(asset, intermediateOutputPath, projectPackageId, projectBasePath, log, TaskEnvironment.Fallback);
+
+    public static (StaticWebAsset Asset, string OldIdentity, string OldBasePath) MaterializeFrameworkAsset(
+        StaticWebAsset asset,
+        string intermediateOutputPath,
+        string projectPackageId,
+        string projectBasePath,
+        TaskLoggingHelper log,
+        TaskEnvironment env)
+    {
+        var originalSourceId = asset.SourceId;
+        var oldBasePath = asset.BasePath;
+        var relativePath = asset.RelativePath;
+        var oldIdentity = asset.Identity;
+
+        var fxDir = Path.Combine(intermediateOutputPath, "fx", originalSourceId);
+        var fileSystemRelativePath = asset.ComputePathWithoutTokens(relativePath);
+        var destPath = Path.Combine(fxDir, Normalize(fileSystemRelativePath));
+      
+        destPath = Path.GetFullPath(env.GetAbsolutePath(destPath));
+        if (string.IsNullOrEmpty(asset.Identity))
+        {
+            log.LogError("Source file '{0}' does not exist for framework asset materialization.", asset.Identity);
+            return (null, null, null);
+        }
+
+        var sourceFile = env.GetAbsolutePath(asset.Identity);
+        if (!File.Exists(sourceFile))
+        {
+            log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourceFile.OriginalValue);
+            return (null, null, null);
+        }
+
+        var destDir = Path.GetDirectoryName(destPath);
+        Directory.CreateDirectory(destDir);
+
+        if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(sourceFile) > File.GetLastWriteTimeUtc(destPath))
+        {
+            File.Copy(sourceFile, destPath, overwrite: true);
+            log.LogMessage(MessageImportance.Low, "Materialized framework asset '{0}' to '{1}'.", sourceFile.OriginalValue, destPath);
+        }
+        else
+        {
+            log.LogMessage(MessageImportance.Low, "Framework asset '{0}' already up to date at '{1}'.", sourceFile.OriginalValue, destPath);
+        }
+
+        asset.Identity = destPath;
+        asset.OriginalItemSpec = destPath;
+        asset.ContentRoot = NormalizeContentRootPath(fxDir, env);
+        asset.SourceType = SourceTypes.Discovered;
+        asset.SourceId = projectPackageId;
+        asset.BasePath = projectBasePath;
+        asset.AssetMode = AssetModes.CurrentProject;
+        asset.AssetGroups = "";
+        asset.Normalize(env);
+
+        return (asset, oldIdentity, oldBasePath);
+    }
 
     public static string Normalize(string path, bool allowEmpyPath = false)
     {
@@ -552,27 +1264,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return asset.ItemSpec;
     }
 
-    // Compares all fields in this order
-    // Identity
-    // SourceType
-    // SourceId
-    // ContentRoot
-    // BasePath
-    // RelativePath
-    // AssetKind
-    // AssetMode
-    // AssetRole
-    // AssetMergeSource
-    // AssetMergeBehavior
-    // RelatedAsset
-    // AssetTraitName
-    // AssetTraitValue
-    // Fingerprint
-    // Integrity
-    // CopyToOutputDirectory
-    // CopyToPublishDirectory
-    // OriginalItemSpec
-
     public int CompareTo(StaticWebAsset other)
     {
         var result = string.Compare(Identity, other.Identity, StringComparison.Ordinal);
@@ -582,6 +1273,18 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
 
         result = string.Compare(SourceType, other.SourceType, StringComparison.Ordinal);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        result = FileLength.CompareTo(other.FileLength);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        result = LastWriteTime.CompareTo(other.LastWriteTime);
         if (result != 0)
         {
             return result;
@@ -692,6 +1395,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public bool Equals(StaticWebAsset other) =>
         Identity == other.Identity &&
         SourceType == other.SourceType &&
+        FileLength == other.FileLength &&
+        LastWriteTime == other.LastWriteTime &&
         SourceId == other.SourceId &&
         ContentRoot == other.ContentRoot &&
         BasePath == other.BasePath &&
@@ -735,8 +1440,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         public const string Computed = nameof(Computed);
         public const string Project = nameof(Project);
         public const string Package = nameof(Package);
+        public const string Framework = nameof(Framework);
 
         public static bool IsPackage(string sourceType) => string.Equals(Package, sourceType, StringComparison.Ordinal);
+        public static bool IsFramework(string sourceType) => string.Equals(Framework, sourceType, StringComparison.Ordinal);
     }
 
     public static class AssetCopyOptions
@@ -778,7 +1485,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
         // These have been normalized already, so only contain forward slashes
-        var computedBasePath = IsDiscovered() || IsComputed() ? "" : BasePath;
+        var computedBasePath = IsDiscovered() || IsComputed() || IsFramework() ? "" : BasePath;
         if (computedBasePath == "/")
         {
             // We need to special case the base path "/" to make sure it gets correctly combined with the prefix
@@ -792,10 +1499,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return pathWithTokens;
     }
 
-    public string ComputeTargetPath(string pathPrefix, char separator, StaticWebAssetTokenResolver providedTokens)
+    public string ComputeTargetPath(string pathPrefix, char separator, StaticWebAssetTokenResolver providedTokens, TokenResolveMode resolveMode = TokenResolveMode.Serve)
     {
         var pathWithTokens = CreatePathString(pathPrefix, separator);
-        return ReplaceTokens(pathWithTokens, providedTokens);
+        return ReplaceTokens(pathWithTokens, providedTokens, resolveMode);
     }
 
     // Tokens in static web assets represent a similar concept to tokens within routing. They can be used to identify logical
@@ -820,10 +1527,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // to be embedded in other contexts.
     // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
     // project base path, etc.
-    public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens)
+    public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens, TokenResolveMode resolveMode = TokenResolveMode.Serve)
     {
         var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
-        return pattern.ReplaceTokens(this, tokens, applyPreferences: true).Path;
+        return pattern.ReplaceTokens(this, tokens, resolveMode).Path;
     }
 
     public string ComputePathWithoutTokens(string pathWithTokens)
@@ -849,6 +1556,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         $"AssetTraitValue: {AssetTraitValue}, " +
         $"Fingerprint: {Fingerprint}, " +
         $"Integrity: {Integrity}, " +
+        $"FileLength: {FileLength}, " +
+        $"LastWriteTime: {LastWriteTime}, " +
         $"CopyToOutputDirectory: {CopyToOutputDirectory}, " +
         $"CopyToPublishDirectory: {CopyToPublishDirectory}, " +
         $"OriginalItemSpec: {OriginalItemSpec}";
@@ -859,6 +1568,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var hash = new HashCode();
         hash.Add(Identity);
         hash.Add(SourceType);
+        hash.Add(FileLength);
+        hash.Add(LastWriteTime);
         hash.Add(SourceId);
         hash.Add(ContentRoot);
         hash.Add(BasePath);
@@ -881,6 +1592,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var hashCode = 1447485498;
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Identity);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceType);
+        hashCode = hashCode * -1521134295 + FileLength.GetHashCode();
+        hashCode = hashCode * -1521134295 + LastWriteTime.GetHashCode();
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceId);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ContentRoot);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(BasePath);
@@ -902,14 +1615,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 #endif
     }
 
-    internal IEnumerable<StaticWebAssetResolvedRoute> ComputeRoutes()
+    internal void ComputeRoutes(List<StaticWebAssetResolvedRoute> routes)
     {
+        routes.Clear();
         var tokenResolver = StaticWebAssetTokenResolver.Instance;
         var pattern = StaticWebAssetPathPattern.Parse(RelativePath, Identity);
         foreach (var expandedPattern in pattern.ExpandPatternExpression())
         {
             var (path, tokens) = expandedPattern.ReplaceTokens(this, tokenResolver);
-            yield return new StaticWebAssetResolvedRoute(pattern.ComputePatternLabel(), path, tokens);
+            routes.Add(new StaticWebAssetResolvedRoute(pattern.ComputePatternLabel(), path, tokens));
         }
     }
 
@@ -918,19 +1632,24 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var pattern = StaticWebAssetPathPattern.Parse(relativePath, Identity);
         var resolver = StaticWebAssetTokenResolver.Instance;
         pattern.EmbedTokens(this, resolver);
-        return pattern.RawPattern;
+        return pattern.RawPattern.ToString();
     }
 
-    internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec);
+    internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec, TaskEnvironment.Fallback);
+
+    internal FileInfo ResolveFile(TaskEnvironment env) => ResolveFile(Identity, OriginalItemSpec, env);
 
     internal static FileInfo ResolveFile(string identity, string originalItemSpec)
+        => ResolveFile(identity, originalItemSpec, TaskEnvironment.Fallback);
+
+    internal static FileInfo ResolveFile(string identity, string originalItemSpec, TaskEnvironment env)
     {
-        var fileInfo = new FileInfo(identity);
+        var fileInfo = new FileInfo(string.IsNullOrEmpty(identity) ? identity: env.GetAbsolutePath(identity));
         if (fileInfo.Exists)
         {
             return fileInfo;
         }
-        fileInfo = new FileInfo(originalItemSpec);
+        fileInfo = new FileInfo(string.IsNullOrEmpty(originalItemSpec) ? originalItemSpec : env.GetAbsolutePath(originalItemSpec));
         if (fileInfo.Exists)
         {
             return fileInfo;
@@ -938,6 +1657,360 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
         throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
     }
+
+    internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, bool validate = false)
+        => ToAssetDictionary(candidateAssets, TaskEnvironment.Fallback, validate);
+
+    internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, TaskEnvironment env, bool validate = false)
+    {
+        var dictionary = new Dictionary<string, StaticWebAsset>(candidateAssets.Length);
+        for (var i = 0; i < candidateAssets.Length; i++)
+        {
+            var candidateAsset = FromTaskItem(candidateAssets[i], env, validate);
+            dictionary.Add(candidateAsset.Identity, candidateAsset);
+        }
+
+        return dictionary;
+    }
+
+    internal static StaticWebAsset[] FromTaskItemGroup(ITaskItem[] candidateAssets, bool validate = false)
+        => FromTaskItemGroup(candidateAssets, TaskEnvironment.Fallback, validate);
+
+    internal static StaticWebAsset[] FromTaskItemGroup(ITaskItem[] candidateAssets, TaskEnvironment env, bool validate = false)
+    {
+        var result = new StaticWebAsset[candidateAssets.Length];
+        for (var i = 0; i != result.Length; i++)
+        {
+            var candidateAsset = FromTaskItem(candidateAssets[i], env, validate);
+            result[i] = candidateAsset;
+        }
+        return result;
+    }
+
+    internal static ITaskItem[] ToTaskItems(IEnumerable<StaticWebAsset> assets)
+    {
+        return assets.Select(a => a.ToTaskItem()).ToArray();
+    }
+
+    internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
+        => AssetsByTargetPath(assets, source, assetKind, TaskEnvironment.Fallback);
+
+    internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind, TaskEnvironment env)
+    {
+        // We return either the selected asset or a list with all the candidates that were found to be ambiguous
+        var result = new Dictionary<string, (StaticWebAsset selected, List<StaticWebAsset> all)>();
+        for (var i = 0; i < assets.Length; i++)
+        {
+            var candidate = assets[i];
+            if (!HasSourceId(candidate, source))
+            {
+                continue;
+            }
+            if (HasOppositeKind(candidate, assetKind))
+            {
+                continue;
+            }
+            var asset = FromTaskItem(candidate, env);
+            var key = asset.ComputeTargetPath("", '/');
+            if (!result.TryGetValue(key, out var existing))
+            {
+                result[key] = (asset, null);
+            }
+            else
+            {
+                var (existingAsset, all) = existing;
+                if (existingAsset == null)
+                {
+                    Debug.Assert(all != null);
+                    // We are going to error out, just add to the list
+                    all.Add(asset);
+                }
+                else if (existingAsset.AssetKind == asset.AssetKind)
+                {
+                    // We have an ambiguity because there are either two Build, Publish or All assets
+                    result[key] = (null, [existingAsset, asset]);
+                }
+                else if (existingAsset.IsBuildAndPublish() && !asset.IsBuildAndPublish())
+                {
+                    // There is an All asset overriden by a Build or Publish asset.
+                    result[key] = (asset, null);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static bool HasOppositeKind(ITaskItem candidate, string assetKind)
+    {
+        var candidateKind = candidate.GetMetadata(nameof(AssetKind));
+        return candidateKind switch
+        {
+            AssetKinds.Publish => assetKind switch
+            {
+                AssetKinds.Build => true,
+                _ => false,
+            },
+            AssetKinds.Build => assetKind switch
+            {
+                AssetKinds.Publish => true,
+                _ => false,
+            },
+            _ => false
+        };
+    }
+
+    // We provide the minimal ITaskItem2 implementation so that we can return StaticWebAsset instances without having to convert them
+    // to task items. This is because the underlying implementation uses an immutable dictionary and every call to SetMetadata results
+    // in a new allocation.
+    // When the task returns, MSBuild will convert the task into a ProjectItem instance and will copy the custom metadata, at which point
+    // it will get rid of the instance that we returned and won't use it any longer.
+    // For that reason, and since we control inside the tasks how this is used, we can safely ignore the pieces that MSBuild won't call.
+    #region ITaskItem2 implementation
+
+    string ITaskItem2.EvaluatedIncludeEscaped { get => Identity; set => Identity = value; }
+    string ITaskItem.ItemSpec { get => Identity; set => Identity = value; }
+
+    private static readonly string[] _defaultPropertyNames = [
+        nameof(SourceId),
+        nameof(SourceType),
+        nameof(ContentRoot),
+        nameof(BasePath),
+        nameof(RelativePath),
+        nameof(AssetKind),
+        nameof(AssetMode),
+        nameof(AssetRole),
+        nameof(AssetMergeBehavior),
+        nameof(AssetMergeSource),
+        nameof(RelatedAsset),
+        nameof(AssetTraitName),
+        nameof(AssetTraitValue),
+        nameof(AssetGroups),
+        nameof(Fingerprint),
+        nameof(Integrity),
+        nameof(CopyToOutputDirectory),
+        nameof(CopyToPublishDirectory),
+        nameof(OriginalItemSpec),
+        nameof(FileLength),
+        nameof(LastWriteTime)
+    ];
+
+    ICollection ITaskItem.MetadataNames
+    {
+        get
+        {
+            if (_additionalCustomMetadata == null)
+            {
+                return _defaultPropertyNames;
+            }
+
+            var result = new List<string>(_defaultPropertyNames.Length + _additionalCustomMetadata.Count);
+            result.AddRange(_defaultPropertyNames);
+
+            foreach (var kvp in _additionalCustomMetadata)
+            {
+                result.Add(kvp.Key);
+            }
+
+            return result;
+        }
+    }
+
+    int ITaskItem.MetadataCount => _defaultPropertyNames.Length + (_additionalCustomMetadata?.Count ?? 0);
+
+    string ITaskItem2.GetMetadataValueEscaped(string metadataName)
+    {
+        return metadataName switch
+        {
+            // These two are special and aren't "Real metadata"
+            "FullPath" => Identity ?? "",
+            nameof(Identity) => Identity ?? "",
+            // These are common metadata
+            nameof(SourceId) => SourceId ?? "",
+            nameof(SourceType) => SourceType ?? "",
+            nameof(ContentRoot) => ContentRoot ?? "",
+            nameof(BasePath) => BasePath ?? "",
+            nameof(RelativePath) => RelativePath ?? "",
+            nameof(AssetKind) => AssetKind ?? "",
+            nameof(AssetMode) => AssetMode ?? "",
+            nameof(AssetRole) => AssetRole ?? "",
+            nameof(AssetMergeBehavior) => AssetMergeBehavior ?? "",
+            nameof(AssetMergeSource) => AssetMergeSource ?? "",
+            nameof(RelatedAsset) => RelatedAsset ?? "",
+            nameof(AssetTraitName) => AssetTraitName ?? "",
+            nameof(AssetTraitValue) => AssetTraitValue ?? "",
+            nameof(AssetGroups) => AssetGroups ?? "",
+            nameof(Fingerprint) => Fingerprint ?? "",
+            nameof(Integrity) => Integrity ?? "",
+            nameof(CopyToOutputDirectory) => CopyToOutputDirectory ?? "",
+            nameof(CopyToPublishDirectory) => CopyToPublishDirectory ?? "",
+            nameof(OriginalItemSpec) => OriginalItemSpec ?? "",
+            nameof(FileLength) => GetFileLengthAsString() ?? "",
+            nameof(LastWriteTime) => GetLastWriteTimeAsString() ?? "",
+            _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? (value ?? "") : "",
+        };
+    }
+
+    private string GetFileLengthAsString() =>
+        FileLength == -1 ? (FileLengthString ?? "") : FileLength.ToString(CultureInfo.InvariantCulture);
+
+    private string GetLastWriteTimeAsString() =>
+        LastWriteTime == DateTimeOffset.MinValue ? (LastWriteTimeString ?? "") : LastWriteTime.ToString(DateTimeAssetFormat, CultureInfo.InvariantCulture);
+
+    void ITaskItem2.SetMetadataValueLiteral(string metadataName, string metadataValue)
+    {
+        metadataValue ??= "";
+        switch (metadataName)
+        {
+            case nameof(SourceId):
+                SourceId = metadataValue;
+                break;
+            case nameof(SourceType):
+                SourceType = metadataValue;
+                break;
+            case nameof(ContentRoot):
+                ContentRoot = metadataValue;
+                break;
+            case nameof(BasePath):
+                BasePath = metadataValue;
+                break;
+            case nameof(RelativePath):
+                RelativePath = metadataValue;
+                break;
+            case nameof(AssetKind):
+                AssetKind = metadataValue;
+                break;
+            case nameof(AssetMode):
+                AssetMode = metadataValue;
+                break;
+            case nameof(AssetRole):
+                AssetRole = metadataValue;
+                break;
+            case nameof(AssetMergeBehavior):
+                AssetMergeBehavior = metadataValue;
+                break;
+            case nameof(AssetMergeSource):
+                AssetMergeSource = metadataValue;
+                break;
+            case nameof(RelatedAsset):
+                RelatedAsset = metadataValue;
+                break;
+            case nameof(AssetTraitName):
+                AssetTraitName = metadataValue;
+                break;
+            case nameof(AssetTraitValue):
+                AssetTraitValue = metadataValue;
+                break;
+            case nameof(AssetGroups):
+                AssetGroups = metadataValue;
+                break;
+            case nameof(Fingerprint):
+                Fingerprint = metadataValue;
+                break;
+            case nameof(Integrity):
+                Integrity = metadataValue;
+                break;
+            case nameof(CopyToOutputDirectory):
+                CopyToOutputDirectory = metadataValue;
+                break;
+            case nameof(CopyToPublishDirectory):
+                CopyToPublishDirectory = metadataValue;
+                break;
+            case nameof(OriginalItemSpec):
+                OriginalItemSpec = metadataValue;
+                break;
+            case nameof(FileLength):
+                _fileLengthString = metadataValue;
+                _fileLength = -1;
+                break;
+            case nameof(LastWriteTime):
+                _lastWriteTimeString = metadataValue;
+                _lastWriteTime = DateTimeOffset.MinValue;
+                break;
+            default:
+                _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                _additionalCustomMetadata[metadataName] = metadataValue;
+                _modified = true;
+                break;
+        }
+    }
+
+    IDictionary ITaskItem2.CloneCustomMetadataEscaped()
+    {
+        var result = new Dictionary<string, string>(((ITaskItem)this).MetadataCount)
+        {
+            { nameof(SourceId), SourceId ?? "" },
+            { nameof(SourceType), SourceType  ?? "" },
+            { nameof(ContentRoot), ContentRoot  ?? "" },
+            { nameof(BasePath), BasePath  ?? "" },
+            { nameof(RelativePath), RelativePath  ?? "" },
+            { nameof(AssetKind), AssetKind  ?? "" },
+            { nameof(AssetMode), AssetMode  ?? "" },
+            { nameof(AssetRole), AssetRole  ?? "" },
+            { nameof(AssetMergeBehavior), AssetMergeBehavior  ?? "" },
+            { nameof(AssetMergeSource), AssetMergeSource  ?? "" },
+            { nameof(RelatedAsset), RelatedAsset  ?? "" },
+            { nameof(AssetTraitName), AssetTraitName  ?? "" },
+            { nameof(AssetTraitValue), AssetTraitValue  ?? "" },
+            { nameof(AssetGroups), AssetGroups  ?? "" },
+            { nameof(Fingerprint), Fingerprint  ?? "" },
+            { nameof(Integrity), Integrity  ?? "" },
+            { nameof(CopyToOutputDirectory), CopyToOutputDirectory  ?? "" },
+            { nameof(CopyToPublishDirectory), CopyToPublishDirectory  ?? "" },
+            { nameof(OriginalItemSpec), OriginalItemSpec  ?? "" },
+            { nameof(FileLength), GetFileLengthAsString() ?? "" },
+            { nameof(LastWriteTime), GetLastWriteTimeAsString() ?? "" }
+        };
+        if (_additionalCustomMetadata != null)
+        {
+            foreach (var kvp in _additionalCustomMetadata)
+            {
+                result[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return result;
+    }
+
+    string ITaskItem.GetMetadata(string metadataName) => ((ITaskItem2)this).GetMetadataValueEscaped(metadataName);
+    void ITaskItem.SetMetadata(string metadataName, string metadataValue) => ((ITaskItem2)this).SetMetadataValueLiteral(metadataName, metadataValue);
+
+    void ITaskItem.RemoveMetadata(string metadataName) => _additionalCustomMetadata?.Remove(metadataName);
+
+    void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
+    {
+        destinationItem.SetMetadata(nameof(SourceId), SourceId ?? "");
+        destinationItem.SetMetadata(nameof(SourceType), SourceType ?? "");
+        destinationItem.SetMetadata(nameof(ContentRoot), ContentRoot ?? "");
+        destinationItem.SetMetadata(nameof(BasePath), BasePath ?? "");
+        destinationItem.SetMetadata(nameof(RelativePath), RelativePath ?? "");
+        destinationItem.SetMetadata(nameof(AssetKind), AssetKind ?? "");
+        destinationItem.SetMetadata(nameof(AssetMode), AssetMode ?? "");
+        destinationItem.SetMetadata(nameof(AssetRole), AssetRole ?? "");
+        destinationItem.SetMetadata(nameof(AssetMergeBehavior), AssetMergeBehavior ?? "");
+        destinationItem.SetMetadata(nameof(AssetMergeSource), AssetMergeSource ?? "");
+        destinationItem.SetMetadata(nameof(RelatedAsset), RelatedAsset ?? "");
+        destinationItem.SetMetadata(nameof(AssetTraitName), AssetTraitName ?? "");
+        destinationItem.SetMetadata(nameof(AssetTraitValue), AssetTraitValue ?? "");
+        destinationItem.SetMetadata(nameof(AssetGroups), AssetGroups ?? "");
+        destinationItem.SetMetadata(nameof(Fingerprint), Fingerprint ?? "");
+        destinationItem.SetMetadata(nameof(Integrity), Integrity ?? "");
+        destinationItem.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory ?? "");
+        destinationItem.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory ?? "");
+        destinationItem.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec ?? "");
+        destinationItem.SetMetadata(nameof(FileLength), GetFileLengthAsString() ?? "");
+        destinationItem.SetMetadata(nameof(LastWriteTime), GetLastWriteTimeAsString() ?? "");
+        if (_additionalCustomMetadata != null)
+        {
+            foreach (var kvp in _additionalCustomMetadata)
+            {
+                destinationItem.SetMetadata(kvp.Key, kvp.Value ?? "");
+            }
+        }
+    }
+
+    IDictionary ITaskItem.CloneCustomMetadata() => ((ITaskItem2)this).CloneCustomMetadataEscaped();
+
+    #endregion
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     internal sealed class StaticWebAssetResolvedRoute(string pathLabel, string path, Dictionary<string, string> tokens)

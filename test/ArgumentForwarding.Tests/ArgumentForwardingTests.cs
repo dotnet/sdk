@@ -2,19 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {
+    [TestClass]
     public class ArgumentForwardingTests : SdkTest
     {
         private static readonly string s_reflectorDllName = "ArgumentsReflector.dll";
         private static readonly string s_reflectorCmdName = "reflector_cmd";
 
-        private string ReflectorPath { get; set; }
-        private string ReflectorCmdPath { get; set; }
+        private string ReflectorPath { get; set; } = string.Empty;
+        private string ReflectorCmdPath { get; set; } = string.Empty;
 
-        public ArgumentForwardingTests(ITestOutputHelper log) : base(log)
+        public ArgumentForwardingTests()
         {
             // This test has a dependency on an argument reflector
             // Make sure it's been binplaced properly
@@ -33,22 +35,22 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// This is a critical scenario for the driver.
         /// </summary>
         /// <param name="testUserArgument"></param>
-        [Theory]
-        [InlineData(@"""abc"" d e")]
-        [InlineData(@"""ábc"" d é")]
-        [InlineData(@"""abc""      d e")]
-        [InlineData("\"abc\"\t\td\te")]
-        [InlineData(@"a\\b d""e f""g h")]
-        [InlineData(@"\ \\ \\\")]
-        [InlineData(@"a\""b c d")]
-        [InlineData(@"a\\""b c d")]
-        [InlineData(@"a\\\""b c d")]
-        [InlineData(@"a\\\\""b c d")]
-        [InlineData(@"a\\\\""b c"" d e")]
-        [InlineData(@"a""b c""d e""f g""h i""j k""l")]
-        [InlineData(@"a b c""def")]
-        [InlineData(@"""\a\"" \\""\\\ b c")]
-        [InlineData(@"a\""b \\ cd ""\e f\"" \\""\\\")]
+        [TestMethod]
+        [DataRow(@"""abc"" d e")]
+        [DataRow(@"""ábc"" d é")]
+        [DataRow(@"""abc""      d e")]
+        [DataRow("\"abc\"\t\td\te")]
+        [DataRow(@"a\\b d""e f""g h")]
+        [DataRow(@"\ \\ \\\")]
+        [DataRow(@"a\""b c d")]
+        [DataRow(@"a\\""b c d")]
+        [DataRow(@"a\\\""b c d")]
+        [DataRow(@"a\\\\""b c d")]
+        [DataRow(@"a\\\\""b c"" d e")]
+        [DataRow(@"a""b c""d e""f g""h i""j k""l")]
+        [DataRow(@"a b c""def")]
+        [DataRow(@"""\a\"" \\""\\\ b c")]
+        [DataRow(@"a\""b \\ cd ""\e f\"" \\""\\\")]
         public void TestArgumentForwarding(string testUserArgument)
         {
             // Get Baseline Argument Evaluation via Reflector
@@ -73,17 +75,18 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// This is a critical scenario for the driver.
         /// </summary>
         /// <param name="testUserArgument"></param>
-        [WindowsOnlyTheory]
-        [InlineData(@"""abc"" d e")]
-        [InlineData(@"""abc""      d e")]
-        [InlineData("\"abc\"\t\td\te")]
-        [InlineData(@"a\\b d""e f""g h")]
-        [InlineData(@"\ \\ \\\")]
-        [InlineData(@"a\\""b c d")]
-        [InlineData(@"a\\\\""b c d")]
-        [InlineData(@"a\\\\""b c"" d e")]
-        [InlineData(@"a""b c""d e""f g""h i""j k""l")]
-        [InlineData(@"a b c""def")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(@"""abc"" d e")]
+        [DataRow(@"""abc""      d e")]
+        [DataRow("\"abc\"\t\td\te")]
+        [DataRow(@"a\\b d""e f""g h")]
+        [DataRow(@"\ \\ \\\")]
+        [DataRow(@"a\\""b c d")]
+        [DataRow(@"a\\\\""b c d")]
+        [DataRow(@"a\\\\""b c"" d e")]
+        [DataRow(@"a""b c""d e""f g""h i""j k""l")]
+        [DataRow(@"a b c""def")]
         public void TestArgumentForwardingCmd(string testUserArgument)
         {
             // Get Baseline Argument Evaluation via Reflector
@@ -128,11 +131,12 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             }
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(@"a\""b c d")]
-        [InlineData(@"a\\\""b c d")]
-        [InlineData(@"""\a\"" \\""\\\ b c")]
-        [InlineData(@"a\""b \\ cd ""\e f\"" \\""\\\")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(@"a\""b c d")]
+        [DataRow(@"a\\\""b c d")]
+        [DataRow(@"""\a\"" \\""\\\ b c")]
+        [DataRow(@"a\""b \\ cd ""\e f\"" \\""\\\")]
         public void TestArgumentForwardingCmdFailsWithUnbalancedQuote(string testArgString)
         {
             // Get Baseline Argument Evaluation via Reflector
@@ -144,6 +148,15 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             var escapedEvaluatedRawArgument = EscapeAndEvaluateArgumentStringCmd(rawEvaluatedArgument);
 
             rawEvaluatedArgument.Length.Should().NotBe(escapedEvaluatedRawArgument.Length);
+        }
+
+        [TestMethod]
+        public void ForwardAsWorks()
+        {
+            var cmd = new Microsoft.DotNet.Cli.Commands.Package.Add.PackageAddCommandDefinition();
+            var parseResult = cmd.Parse(["package", "add", "thing", "--prerelease"]);
+            var forwardedValues = parseResult.OptionValuesToBeForwarded();
+            forwardedValues.Should().Contain("--prerelease");
         }
 
         /// <summary>
@@ -165,7 +178,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
 
             Console.WriteLine($"STDERR: {commandResult.StdErr}");
 
-            commandResult.ExitCode.Should().Be(0);
+            commandResult.ExitCode.Should().Be(0, $"STDOUT: {commandResult.StdOut} STDERR: {commandResult.StdErr}");
 
             return ParseReflectorOutput(commandResult.StdOut);
         }
@@ -201,9 +214,9 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// </summary>
         /// <param name="reflectorOutput"></param>
         /// <returns></returns>
-        private string[] ParseReflectorOutput(string reflectorOutput)
+        private string[] ParseReflectorOutput(string? reflectorOutput)
         {
-            return reflectorOutput.TrimEnd('\r', '\n').Split(',');
+            return reflectorOutput?.TrimEnd('\r', '\n').Split(',') ?? Array.Empty<string>();
         }
 
         /// <summary>
@@ -213,9 +226,9 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// </summary>
         /// <param name="reflectorOutput"></param>
         /// <returns></returns>
-        private string[] ParseReflectorCmdOutput(string reflectorOutput)
+        private string[] ParseReflectorCmdOutput(string? reflectorOutput)
         {
-            var args = reflectorOutput.Split(new string[] { "," }, StringSplitOptions.None);
+            var args = reflectorOutput?.Split(new string[] { "," }, StringSplitOptions.None) ?? Array.Empty<string>();
             args[args.Length - 1] = args[args.Length - 1].TrimEnd('\r', '\n');
 
             // To properly pass args to cmd, quotes inside a parameter are doubled
@@ -240,7 +253,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                    FileName = SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath,
                     Arguments = $"{ReflectorPath} {testUserArgument}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -252,7 +265,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             proc.WaitForExit();
             var stdOut = proc.StandardOutput.ReadToEnd();
 
-            Assert.Equal(0, proc.ExitCode);
+            Assert.AreEqual(0, proc.ExitCode);
 
             return ParseReflectorOutput(stdOut);
         }

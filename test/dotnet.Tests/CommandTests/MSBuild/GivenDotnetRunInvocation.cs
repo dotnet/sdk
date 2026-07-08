@@ -1,0 +1,65 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
+
+namespace Microsoft.DotNet.Cli.MSBuild.Tests
+{
+    [TestClass]
+    public class GivenDotnetRunInvocation : SdkTest
+    {
+        [ClassInitialize]
+        public static void ClassInit(TestContext context) => TelemetryClient.DisabledForTests = true;
+
+        private static readonly string[] ConstantRestoreArgs = ["--nologo", "--verbosity:quiet"];
+        private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
+
+        [TestMethod]
+        [DataRow(new string[] { "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [DataRow(new string[] { "--property:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [DataRow(new string[] { "--property", "prop1=true" }, new string[] { "--property:prop1=true" })]
+        [DataRow(new string[] { "-p", "prop1=true" }, new string[] { "--property:prop1=true" })]
+        [DataRow(new string[] { "-p", "prop1=true", "-p", "prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
+        [DataRow(new string[] { "-p:prop1=true;prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
+        [DataRow(new string[] { "-p", "HelloWorld.csproj", "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [DataRow(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
+        public void MsbuildInvocationIsCorrect(string[] args, string[] expectedArgs)
+        {
+            var tam = TestAssetsManager;
+            var oldWorkingDirectory = Directory.GetCurrentDirectory();
+            var newWorkingDir = tam.CopyTestAsset("HelloWorld", identifier: $"{nameof(MsbuildInvocationIsCorrect)}_{args.GetHashCode()}_{expectedArgs.GetHashCode()}").WithSource().Path;
+
+            try
+            {
+                Directory.SetCurrentDirectory(newWorkingDir);
+
+                CommandDirectoryContext.PerformActionWithBasePath(newWorkingDir, () =>
+                {
+                    var command = RunCommand.FromArgs(args);
+                    command.MSBuildArgs
+                        .Should()
+                        .BeEquivalentTo(MSBuildArgs.AnalyzeMSBuildArguments(
+                        [
+                           .. ConstantRestoreArgs,
+                           .. expectedArgs,
+                           NuGetDisabledProperty
+                        ],
+                        options:
+                        [
+                            CommonOptions.CreatePropertyOption(),
+                            CommonOptions.CreateRestorePropertyOption(),
+                            CommonOptions.CreateMSBuildTargetOption(),
+                            CommonOptions.CreateVerbosityOption(),
+                            CommonOptions.CreateNoLogoOption()
+                        ]));
+                });
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(oldWorkingDirectory);
+            }
+        }
+    }
+}
+

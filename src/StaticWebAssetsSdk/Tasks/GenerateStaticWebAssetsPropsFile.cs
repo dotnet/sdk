@@ -1,14 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Security.Cryptography;
 using System.Xml;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class GenerateStaticWebAssetsPropsFile : Task
+[MSBuildMultiThreadableTask]
+public class GenerateStaticWebAssetsPropsFile : Task, IMultiThreadableTask
 {
+    /// <inheritdoc />
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     private const string SourceType = "SourceType";
     private const string SourceId = "SourceId";
     private const string ContentRoot = "ContentRoot";
@@ -25,6 +31,8 @@ public class GenerateStaticWebAssetsPropsFile : Task
     private const string CopyToOutputDirectory = "CopyToOutputDirectory";
     private const string CopyToPublishDirectory = "CopyToPublishDirectory";
     private const string OriginalItemSpec = "OriginalItemSpec";
+    private const string FileLength = "FileLength";
+    private const string LastWriteTime = "LastWriteTime";
 
     [Required]
     public string TargetPropsFilePath { get; set; }
@@ -35,6 +43,8 @@ public class GenerateStaticWebAssetsPropsFile : Task
     public string PackagePathPrefix { get; set; } = "staticwebassets";
 
     public bool AllowEmptySourceType { get; set; }
+
+    public string FrameworkPattern { get; set; }
 
     public override bool Execute()
     {
@@ -55,18 +65,50 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
         var tokenResolver = StaticWebAssetTokenResolver.Instance;
 
+        StaticWebAssetGlobMatcher frameworkMatcher = null;
+        if (!string.IsNullOrEmpty(FrameworkPattern))
+        {
+            var patterns = FrameworkPattern
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .ToArray();
+            frameworkMatcher = new StaticWebAssetGlobMatcherBuilder()
+                .AddIncludePatterns(patterns)
+                .Build();
+        }
+
+        var hasFrameworkMatcher = frameworkMatcher != null;
+        var matchContext = hasFrameworkMatcher ? StaticWebAssetGlobMatcher.CreateMatchContext() : default;
+
         var itemGroup = new XElement("ItemGroup");
         var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
             .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
         foreach (var element in orderedAssets)
         {
-            var asset = StaticWebAsset.FromTaskItem(element);
-            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
-            var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
+            var asset = StaticWebAsset.FromTaskItem(element, TaskEnvironment);
+            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver, TokenResolveMode.Pack);
+            var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver, TokenResolveMode.Pack);
             var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
+
+            var emittedSourceType = "Package";
+            if (hasFrameworkMatcher)
+            {
+                matchContext.SetPathAndReinitialize(relativePath.AsSpan());
+                var match = frameworkMatcher.Match(matchContext);
+                if (match.IsMatch)
+                {
+                    emittedSourceType = "Framework";
+                    Log.LogMessage(MessageImportance.Low, "Asset '{0}' with relative path '{1}' matched framework pattern. Emitting as Framework.", element.ItemSpec, relativePath);
+                }
+                else
+                {
+                    Log.LogMessage(MessageImportance.Low, "Asset '{0}' with relative path '{1}' did not match framework pattern. Emitting as Package.", element.ItemSpec, relativePath);
+                }
+            }
+
             itemGroup.Add(new XElement("StaticWebAsset",
                 new XAttribute("Include", fullPathExpression),
-                new XElement(SourceType, "Package"),
+                new XElement(SourceType, emittedSourceType),
                 new XElement(SourceId, element.GetMetadata(SourceId)),
                 new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
                 new XElement(BasePath, element.GetMetadata(BasePath)),
@@ -81,6 +123,8 @@ public class GenerateStaticWebAssetsPropsFile : Task
                 new XElement(Integrity, element.GetMetadata(Integrity)),
                 new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
                 new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory)),
+                new XElement(FileLength, element.GetMetadata(FileLength)),
+                new XElement(LastWriteTime, element.GetMetadata(LastWriteTime)),
                 new XElement(OriginalItemSpec, fullPathExpression)));
         }
 
@@ -116,18 +160,20 @@ public class GenerateStaticWebAssetsPropsFile : Task
     private void WriteFile(byte[] data)
     {
         var dataHash = ComputeHash(data);
-        var fileExists = File.Exists(TargetPropsFilePath);
-        var existingFileHash = fileExists ? ComputeHash(File.ReadAllBytes(TargetPropsFilePath)) : "";
+        var targetPropsAbsoluteFilePath = string.IsNullOrWhiteSpace(TargetPropsFilePath) ? TargetPropsFilePath : TaskEnvironment.GetAbsolutePath(TargetPropsFilePath).Value;
+
+        var fileExists = File.Exists(targetPropsAbsoluteFilePath);
+        var existingFileHash = fileExists ? ComputeHash(File.ReadAllBytes(targetPropsAbsoluteFilePath)) : "";
 
         if (!fileExists)
         {
             Log.LogMessage(MessageImportance.Low, $"Creating file '{TargetPropsFilePath}' does not exist.");
-            File.WriteAllBytes(TargetPropsFilePath, data);
+            File.WriteAllBytes(targetPropsAbsoluteFilePath, data);
         }
         else if (!string.Equals(dataHash, existingFileHash, StringComparison.Ordinal))
         {
             Log.LogMessage(MessageImportance.Low, $"Updating '{TargetPropsFilePath}' file because the hash '{dataHash}' is different from existing file hash '{existingFileHash}'.");
-            File.WriteAllBytes(TargetPropsFilePath, data);
+            File.WriteAllBytes(targetPropsAbsoluteFilePath, data);
         }
         else
         {
@@ -211,7 +257,7 @@ public class GenerateStaticWebAssetsPropsFile : Task
     private bool EnsureRequiredMetadata(ITaskItem item, string metadataName, bool allowEmpty = false)
     {
         var value = item.GetMetadata(metadataName);
-        var isInvalidValue = allowEmpty ? !GenerateStaticWebAssetsPropsFile.HasMetadata(item, metadataName) : string.IsNullOrEmpty(value);
+        var isInvalidValue = allowEmpty ? !HasMetadata(item, metadataName) : string.IsNullOrEmpty(value);
 
         if (isInvalidValue)
         {

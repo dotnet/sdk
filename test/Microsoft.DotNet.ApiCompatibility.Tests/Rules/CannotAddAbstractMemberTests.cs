@@ -1,18 +1,21 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Tests;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class CannotAddAbstractMemberTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotAddAbstractMember(settings, context));
 
-        [Theory]
-        [MemberData(nameof(AddedAbstractMemberIsReportedData))]
+        [TestMethod]
+        [DynamicData(nameof(AddedAbstractMemberIsReportedData))]
         public void AddedAbstractMemberIsReported(string leftSyntax, string rightSyntax, bool includeInternals)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -25,11 +28,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAbstractMember, string.Empty, DifferenceType.Added, "M:CompatTests.First.SecondAbstract")
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Theory]
-        [MemberData(nameof(AddedAbstractMemberNoVisibleConstructorData))]
+        [TestMethod]
+        [DynamicData(nameof(AddedAbstractMemberNoVisibleConstructorData))]
         public void AddedAbstractMemberNoVisibleConstructor(string leftSyntax, string rightSyntax)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -38,11 +41,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Theory]
-        [MemberData(nameof(AddedToUnsealedTypeInRightNotReportedData))]
+        [TestMethod]
+        [DynamicData(nameof(AddedToUnsealedTypeInRightNotReportedData))]
         public void AddedToUnsealedTypeInRightNotReported(string leftSyntax, string rightSyntax)
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
@@ -51,10 +54,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void StrictModeRuleIsNotExecuted()
         {
             object[] syntaxes = AddedAbstractMemberIsReportedData().First();
@@ -69,11 +72,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
             foreach (CompatDifference difference in differences)
             {
-                Assert.NotEqual(DiagnosticIds.CannotAddAbstractMember, difference.DiagnosticId);
+                Assert.AreNotEqual(DiagnosticIds.CannotAddAbstractMember, difference.DiagnosticId);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleRightsAreReported()
         {
             string leftSyntax = @"
@@ -151,7 +154,7 @@ namespace CompatTests
                 new CompatDifference(left.MetadataInformation, right[1].MetadataInformation, DiagnosticIds.CannotAddAbstractMember, string.Empty, DifferenceType.Added, "M:CompatTests.First.FirstNested.SecondNested.SomeAbstractMethod"),
                 new CompatDifference(left.MetadataInformation, right[2].MetadataInformation, DiagnosticIds.CannotAddAbstractMember, string.Empty, DifferenceType.Added, "M:CompatTests.First.FirstNested.FirstNestedAbstract"),
             };
-            Assert.Equal(expectedDiffs, differences);
+            Assert.AreSequenceEqual(expectedDiffs, differences);
         }
 
         public static IEnumerable<object[]> AddedToUnsealedTypeInRightNotReportedData()

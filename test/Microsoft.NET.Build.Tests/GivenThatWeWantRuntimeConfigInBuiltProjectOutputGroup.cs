@@ -1,20 +1,20 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantRuntimeConfigInBuiltProjectOutputGroup : SdkTest
     {
-        public GivenThatWeWantRuntimeConfigInBuiltProjectOutputGroup(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("netcoreapp1.1")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("netcoreapp1.1")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_has_target_path_and_final_outputput_path_metadata(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -39,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
             metadata.Should().Contain(KeyValuePair.Create("TargetPath", runtimeConfigFile.Name));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_has_runtime_config_properties_after_partial_build()
         {
             var testProject = new TestProject()
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true,
                 RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
             File.ReadAllText(configFile).Should().Contain("\"System.Runtime.Loader.UseRidGraph\": true");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_updates_runtime_config_properties_after_partial_build()
         {
             var testProject = new TestProject()
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true,
                 RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             testAsset = testAsset.WithProjectChanges(project =>
             {

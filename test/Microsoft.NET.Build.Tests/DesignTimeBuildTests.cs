@@ -1,21 +1,21 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class DesignTimeBuildTests : SdkTest
     {
-        public DesignTimeBuildTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("TestLibrary", null)]
-        [InlineData("TestApp", null)]
-        [InlineData("TestApp", "netcoreapp2.1")]
-        [InlineData("TestApp", ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("TestLibrary", null)]
+        [DataRow("TestApp", null)]
+        [DataRow("TestApp", "netcoreapp2.1")]
+        [DataRow("TestApp", ToolsetInfo.CurrentTargetFramework)]
         public void The_design_time_build_succeeds_before_nuget_restore(string relativeProjectPath, string targetFramework)
         {
             var args = GetDesignTimeMSBuildArgs();
@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary", identifier: relativeProjectPath + "_" + targetFramework ?? string.Empty)
                 .WithSource()
                 .WithProjectChanges(p =>
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
             result.Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void DesignTimeBuildSucceedsAfterTargetFrameworkIsChanged()
         {
             TestDesignTimeBuildAfterChange(project =>
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void DesignTimeBuildSucceedsAfterRuntimeIdentifierIsChanged()
         {
             TestDesignTimeBuildAfterChange(project =>
@@ -74,7 +74,10 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Regression test for https://github.com/dotnet/sdk/issues/13513
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void DesignTimeBuildSucceedsWhenTargetingNetCore21WithRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -85,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new MSBuildCommand(testAsset, "ResolvePackageDependenciesDesignTime")
                 .Execute()
@@ -93,11 +96,11 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
-        [InlineData("netcoreapp3.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows")]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
+        [TestMethod]
+        [DataRow("netcoreapp3.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
         public void DesignTimePackageDependenciesAreResolved(string targetFramework)
         {
             var testProject = new TestProject()
@@ -111,7 +114,7 @@ namespace Microsoft.NET.Build.Tests
             // disable implicit use of the Roslyn Toolset compiler package
             testProject.AdditionalProperties["BuildWithNetFrameworkHostedCompiler"] = false.ToString();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "_PackageDependenciesDesignTime", GetValuesCommand.ValueType.Item)
             {
@@ -127,11 +130,11 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo($"Newtonsoft.Json/{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}", "Humanizer/2.8.26");
         }
 
-        [Theory]
-        [InlineData("netcoreapp3.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows")]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
+        [TestMethod]
+        [DataRow("netcoreapp3.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
         public void PackageErrorsAreSet(string targetFramework)
         {
             var designTimeArgs = GetDesignTimeMSBuildArgs();
@@ -153,7 +156,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Commands", "4.0.0"));
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Packaging", "3.5.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             new RestoreCommand(testAsset)
                 .Execute()
@@ -202,7 +205,7 @@ namespace Microsoft.NET.Build.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;

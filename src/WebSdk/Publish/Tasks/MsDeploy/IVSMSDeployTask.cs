@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         IBuildEngine BuildEngine { get; }
 
-        object GetProperty(string propertyName);
+        object? GetProperty(string propertyName);
     }
 
     internal interface IVSMSDeployHost : IVsPublishMsBuildTaskHost

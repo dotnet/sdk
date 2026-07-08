@@ -1,36 +1,40 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
-    public class GivenThatWeWantToVerifyNuGetReferenceCompat : SdkTest, IClassFixture<DeleteNuGetArtifactsFixture>
+    [TestClass]
+    public class GivenThatWeWantToVerifyNuGetReferenceCompat : SdkTest
     {
-        public GivenThatWeWantToVerifyNuGetReferenceCompat(ITestOutputHelper log) : base(log)
+        private static readonly Lazy<DeleteNuGetArtifactsFixture> s_deleteNuGetArtifactsFixture = new(() => new DeleteNuGetArtifactsFixture());
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext context) => GC.KeepAlive(s_deleteNuGetArtifactsFixture.Value);
+
+        [ClassCleanup]
+        public static void ClassCleanup()
         {
+            if (s_deleteNuGetArtifactsFixture.IsValueCreated)
+            {
+                s_deleteNuGetArtifactsFixture.Value.Dispose();
+            }
         }
 
-        [Theory]
-        [InlineData("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
-        [InlineData("net451", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 net45 net451", true, true)]
-        [InlineData("net46", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 net45 net451 net46", true, true)]
-        [InlineData("net461", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461", true, true)]
-        [InlineData("net462", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461 net462", true, true)]
-        [InlineData("netstandard1.0", "Full", "netstandard1.0", true, true)]
-        [InlineData("netstandard1.1", "Full", "netstandard1.0 netstandard1.1", true, true)]
-        [InlineData("netstandard1.2", "Full", "netstandard1.0 netstandard1.1 netstandard1.2", true, true)]
-        [InlineData("netstandard1.3", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3", true, true)]
-        [InlineData("netstandard1.4", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4", true, true)]
-        [InlineData("netstandard1.5", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5", true, true)]
-        [InlineData("netstandard1.6", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6", true, true)]
-        [InlineData("netstandard2.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0", true, true)]
-        [InlineData("netcoreapp1.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netcoreapp1.0", true, true)]
-        [InlineData("netcoreapp1.1", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netcoreapp1.0 netcoreapp1.1", true, true)]
-        [InlineData("netcoreapp2.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 netcoreapp1.0 netcoreapp1.1 netcoreapp2.0", true, true)]
 
-        [InlineData("netstandard2.0", "OptIn", "net45 net451 net46 net461", true, true)]
-        [InlineData("netcoreapp2.0", "OptIn", "net45 net451 net46 net461", true, true)]
+        [TestMethod]
+        [DataRow("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
+        [DataRow("net462", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461 net462", true, true)]
+        [DataRow("netstandard1.6", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6", true, true)]
+        [DataRow("netstandard2.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0", true, true)]
+        [DataRow("netcoreapp2.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 netcoreapp1.0 netcoreapp1.1 netcoreapp2.0", true, true)]
+
+        [DataRow("netstandard2.0", "OptIn", "net45 net451 net46 net461", true, true)]
+        [DataRow("netcoreapp2.0", "OptIn", "net45 net451 net46 net461", true, true)]
 
         public void Nuget_reference_compat(string referencerTarget, string testDescription, string rawDependencyTargets,
                 bool restoreSucceeds, bool buildSucceeds)
@@ -46,31 +50,56 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            foreach (string dependencyTarget in rawDependencyTargets.Split(',', ';', ' ').ToList())
-            {
-                TestProject dependencyProject = GetTestProject(ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'), dependencyTarget, true);
-                TestPackageReference dependencyPackageReference = new(
-                    dependencyProject.Name,
-                    "1.0.0",
-                    ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
+            // ConcurrentBag because Parallel.ForEach calls Add from multiple threads.
+            // Also fixes a pre-existing bug: the original List was never populated inside
+            // the parallel loop, so dependencyPackageReferences was always empty and the
+            // test passed vacuously without verifying any NuGet reference compatibility.
+            var dependencyPackageReferences = new ConcurrentBag<TestPackageReference>();
 
-                //  Skip creating the NuGet package if not running on Windows; or if the NuGet package already exists
-                //        https://github.com/dotnet/sdk/issues/335
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows)
+            // Process all dependencies in parallel
+            Parallel.ForEach(
+                rawDependencyTargets.Split(',', ';', ' ').Where(s => !string.IsNullOrWhiteSpace(s)),
+                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                dependencyTarget =>
                 {
-                    if (!dependencyPackageReference.NuGetPackageExists())
+                    // Create the dependency project and package
+                    TestProject dependencyProject = GetTestProject(
+                        ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'),
+                        dependencyTarget,
+                        true);
+
+                    TestPackageReference dependencyPackageReference = new(
+                        dependencyProject.Name,
+                        "1.0.0",
+                        ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
+
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows)
                     {
-                        //  Create the NuGet packages
-                        var dependencyTestAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets);
-                        var dependencyRestoreCommand = dependencyTestAsset.GetRestoreCommand(Log, relativePath: dependencyProject.Name).Execute().Should().Pass();
-                        var dependencyProjectDirectory = Path.Combine(dependencyTestAsset.TestRoot, dependencyProject.Name);
+                        if (!dependencyPackageReference.NuGetPackageExists())
+                        {
+                            var dependencyTestAsset = TestAssetsManager.CreateTestProject(
+                                dependencyProject,
+                                identifier: referencerTarget + testDescription + rawDependencyTargets);
 
-                        var dependencyPackCommand = new PackCommand(Log, dependencyProjectDirectory);
-                        var dependencyPackResult = dependencyPackCommand.Execute().Should().Pass();
+                            dependencyTestAsset.GetRestoreCommand(Log, relativePath: dependencyProject.Name)
+                                .Execute().Should().Pass();
+
+                            var dependencyProjectDirectory = Path.Combine(
+                                dependencyTestAsset.TestRoot,
+                                dependencyProject.Name);
+
+                            new PackCommand(Log, dependencyProjectDirectory)
+                                .Execute().Should().Pass();
+                        }
+
+                        dependencyPackageReferences.Add(dependencyPackageReference);
                     }
+                });
 
-                    referencerProject.PackageReferences.Add(dependencyPackageReference);
-                }
+            // Add all references to the referencer project
+            foreach (var dependencyPackageReference in dependencyPackageReferences)
+            {
+                referencerProject.PackageReferences.Add(dependencyPackageReference);
             }
 
             //  Skip running tests if no NuGet packages are referenced
@@ -87,7 +116,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             //  Create the referencing app and run the compat test
-            var referencerTestAsset = _testAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
+            var referencerTestAsset = TestAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
             var referencerRestoreCommand = referencerTestAsset.GetRestoreCommand(Log, relativePath: referencerProject.Name);
 
             List<string> referencerRestoreSources = new();
@@ -123,9 +152,10 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("netstandard2.0")]
-        [InlineData("netcoreapp2.0")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("netstandard2.0")]
+        [DataRow("netcoreapp2.0")]
         public void Netfx_is_implicit_for_Netstandard_and_Netcore_20(string targetFramework)
         {
             var testProjectName = targetFramework.Replace(".", "_") + "implicit_atf";
@@ -143,9 +173,10 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("netstandard1.6")]
-        [InlineData("netcoreapp1.1")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("netstandard1.6")]
+        [DataRow("netcoreapp1.1")]
         public void Netfx_is_not_implicit_for_Netstandard_and_Netcore_less_than_20(string targetFramework)
         {
             var testProjectName = targetFramework.Replace(".", "_") + "non_implicit_atf";
@@ -157,7 +188,8 @@ namespace Microsoft.NET.Build.Tests
             restoreCommand.Execute().Should().Fail();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_is_possible_to_disable_netfx_implicit_asset_target_fallback()
         {
             const string testProjectName = "netstandard20_disabled_atf";
@@ -173,7 +205,8 @@ namespace Microsoft.NET.Build.Tests
             restoreCommand.Execute().Should().Fail();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_chooses_lowest_netfx_in_default_atf()
         {
             var testProjectName = $"{ToolsetInfo.CurrentTargetFramework.Replace(".", "")}_multiple_atf";
@@ -195,7 +228,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
 
             var referencedDll = buildCommand.GetOutputDirectory().File("net462_net472_pkg.dll").FullName;
-            var referencedTargetFramework = AssemblyInfo.Get(referencedDll)["TargetFrameworkAttribute"];
+            var referencedTargetFramework = AssemblyInfo.Get(referencedDll).Where(i => i.Key == "TargetFrameworkAttribute").Single().Value;
             referencedTargetFramework.Should().Be(".NETFramework,Version=v4.6.2");
         }
 
@@ -226,7 +259,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(testPackageReference);
 
-            var testProjectTestAsset = _testAssetsManager.CreateTestProject(
+            var testProjectTestAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 string.Empty,
                 $"{testProjectName}_{calleeTargetFrameworks}");
@@ -252,7 +285,7 @@ namespace Microsoft.NET.Build.Tests
             if (!packageReference.NuGetPackageExists())
             {
                 var testAsset =
-                    _testAssetsManager.CreateTestProject(
+                    TestAssetsManager.CreateTestProject(
                         project,
                         callingMethod,
                         identifier);
@@ -277,6 +310,13 @@ namespace Microsoft.NET.Build.Tests
             if (isSdkProject)
             {
                 ret.TargetFrameworks = target;
+
+                // Pin RuntimeFrameworkVersion for netcoreapp2.0 to avoid NETSDK1061
+                // (restore/build version mismatch from implicit patch roll-forward)
+                if (target == "netcoreapp2.0")
+                {
+                    ret.RuntimeFrameworkVersion = SdkTestContext.LatestRuntimePatchForNetCoreApp2_0;
+                }
             }
             else
             {

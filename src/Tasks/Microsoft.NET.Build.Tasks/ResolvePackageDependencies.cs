@@ -1,8 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
@@ -15,7 +18,8 @@ namespace Microsoft.NET.Build.Tasks
     /// <remarks>
     /// Only called for backwards compatability, when <c>ResolvePackageDependencies</c> is true.
     /// </remarks>
-    public sealed class ResolvePackageDependencies : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class ResolvePackageDependencies : TaskBase, IMultiThreadableTask
     {
         private readonly Dictionary<string, string> _fileTypes = new(StringComparer.OrdinalIgnoreCase);
 
@@ -111,6 +115,8 @@ namespace Microsoft.NET.Build.Tasks
 
         #endregion
 
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         public ResolvePackageDependencies()
         {
         }
@@ -128,7 +134,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private IPackageResolver PackageResolver => _packageResolver ??= NuGetPackageResolver.CreateResolver(LockFile);
 
-        private LockFile LockFile => _lockFile ??= new LockFileCache(this).GetLockFile(ProjectAssetsFile);
+        private LockFile LockFile => _lockFile ??= new LockFileCache(this).GetLockFile(TaskEnvironment.GetAbsolutePath(ProjectAssetsFile));
 
         private Dictionary<string, string> _targetNameToAliasMap;
 
@@ -236,20 +242,35 @@ namespace Microsoft.NET.Build.Tasks
             {
                 string target = TargetFramework ?? "";
 
-                var messages = LockFile.LogMessages.Where(log => log.LibraryId == package.Name && log.TargetGraphs
-                                .Select(tg =>
-                                {
-                                    var parsedTargetGraph = NuGetFramework.Parse(tg);
-                                    var alias = _lockFile.PackageSpec.TargetFrameworks.FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)?.TargetAlias;
-                                    return alias ?? tg;
-                                }).Contains(target));
+                LogLevel? logLevel = null;
 
-                if (!messages.Any())
+                foreach (var message in LockFile.LogMessages)
                 {
-                    return string.Empty;
+                    if (message.LibraryId == package.Name)
+                    {
+                        foreach (var targetGraph in message.TargetGraphs)
+                        {
+                            string effectiveTargetGraphName = targetGraph;
+                            // If the target graph is not in the map, then very likely aliases are being used.
+                            if (_targetNameToAliasMap.ContainsKey(targetGraph))
+                            {
+                                var parsedTargetGraph = NuGetFramework.Parse(targetGraph);
+                                effectiveTargetGraphName = _lockFile.PackageSpec.TargetFrameworks.FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)?.TargetAlias;
+                            }
+
+                            if (effectiveTargetGraphName == target)
+                            {
+                                if (logLevel == null || message.Level > logLevel)
+                                {
+                                    logLevel = message.Level;
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
 
-                return messages.Max(log => log.Level).ToString();
+                return logLevel != null ? logLevel.ToString() : string.Empty;
             }
         }
 
@@ -446,7 +467,13 @@ namespace Microsoft.NET.Build.Tasks
 
         private string GetAbsolutePathFromProjectRelativePath(string path)
         {
-            return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ProjectPath), path));
+            string projectDirectory = Path.GetDirectoryName(ProjectPath);
+            AbsolutePath absProjectDir = string.IsNullOrEmpty(projectDirectory)
+                ? TaskEnvironment.ProjectDirectory
+                : TaskEnvironment.GetAbsolutePath(projectDirectory);
+            // Path.GetFullPath resolves ".." segments so output matches the old behavior.
+            // Cannot use AbsolutePath.GetCanonicalForm() as it only exists in the NETFRAMEWORK polyfill.
+            return Path.GetFullPath(new AbsolutePath(path, absProjectDir));
         }
     }
 }

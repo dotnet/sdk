@@ -3,9 +3,14 @@
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
-    public class GivenAnEnvironmentForResolution
+    [TestClass]
+    public class GivenAnEnvironmentForResolution : SdkTest
     {
-        [Fact]
+        public GivenAnEnvironmentForResolution() : base()
+        {
+        }
+
+        [TestMethod]
         public void ItIgnoresInvalidPath()
         {
             Func<string, string> getPathEnvVarFunc = (string var) => { return $"{Directory.GetCurrentDirectory()}Dir{Path.GetInvalidPathChars().First()}Name"; };
@@ -14,13 +19,34 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             pathResult.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotReturnNullDotnetRootOnExtraPathSeparator()
         {
-            File.Create(Path.Combine(Directory.GetCurrentDirectory(), "dotnet.exe"));
+            File.Create(Path.Combine(Directory.GetCurrentDirectory(), "dotnet.exe")).Close();
             Func<string, string> getPathEnvVarFunc = (input) => input.Equals("PATH") ? $"fake{Path.PathSeparator}" : string.Empty;
             var result = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(getPathEnvVarFunc);
             result.Should().NotBeNullOrWhiteSpace();
+        }
+
+        [TestMethod]
+        public void ItDoesNotMistakeDotnetPrefixedProcessForDotnetHost()
+        {
+            // Use separate directories for the dotnet host and the dotnet-prefixed process
+            // to verify the resolver finds dotnet via PATH, not from the process path.
+            var dotnetDir = TestAssetsManager.CreateTestDirectory(identifier: "dotnetHost").Path;
+            var processDir = TestAssetsManager.CreateTestDirectory(identifier: "processDir").Path;
+
+            var dotnetFileName = "dotnet" + (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty);
+            File.Create(Path.Combine(dotnetDir, dotnetFileName)).Close();
+
+            // Simulate a dotnet-prefixed process (e.g. dotnet.Tests from xunit v3)
+            Func<string, string?> getEnvVar = (input) => input.Equals("PATH") ? dotnetDir : null;
+            Func<string?> getProcessPath = () => Path.Combine(processDir, "dotnet.Tests");
+
+            var result = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(getEnvVar, getProcessPath);
+
+            // Should resolve via PATH to the real dotnet directory, not the process directory
+            result.Should().Be(dotnetDir);
         }
     }
 }

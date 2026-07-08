@@ -1,13 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
+    [TestClass]
     public class DesignTimeBuildIntegrationTest : AspNetSdkTest
     {
-        public DesignTimeBuildIntegrationTest(ITestOutputHelper log) : base(log) { }
-
-        [Fact]
+        [TestMethod]
         public void DesignTimeBuild_DoesNotRunRazorTargets()
         {
             var testAsset = "RazorSimpleMvc";
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void RazorGenerateDesignTime_ReturnsRazorGenerateWithTargetPath()
         {
             var testAsset = "RazorSimpleMvc";
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void RazorGenerateComponentDesignTime_ReturnsRazorComponentWithTargetPath()
         {
             var testAsset = "RazorComponentLibrary";

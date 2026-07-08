@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Arquivo de Filtro de Solução",
+  "description": "Criar um arquivo de filtro de solução que se refere a uma solução pai",
+  "symbols/ParentSolution/displayName": "Arquivo de solução pai",
+  "symbols/ParentSolution/description": "O arquivo de solução pai (sln ou slnx) ao qual este filtro se refere (padrão: mesmo nome com a extensão .slnx)."
+}

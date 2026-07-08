@@ -1,16 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.TestFramework;
 namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
 {
+    [TestClass]
     public class WorkloadPackGroupTests : SdkTest
     {
-        public WorkloadPackGroupTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
 
-        [Fact]
+        [TestMethod]
         public void TestGetManifestDirectories()
         {
             var manifestProvider = CreateManifestProvider();
@@ -22,7 +21,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGetManifests()
         {
             var manifests = GetManifests();
@@ -33,7 +32,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/28759")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/28759")]
         public void GetPackDefinitionLocations()
         {
             var definitionLocations = GetWorkloadPackDefinitionLocations(GetManifests());
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGetPackGroups()
         {
             var packGroups = GetPackGroups();
@@ -78,11 +78,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGetManifestFeatureBands()
         {
             var manifestProvider = CreateManifestProvider();
-            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, TestContext.Current.ToolsetUnderTest.DotNetRoot);
+            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
 
             foreach (var manifestInfo in workloadResolver.GetInstalledManifests())
             {
@@ -93,7 +93,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
 
         SdkDirectoryWorkloadManifestProvider CreateManifestProvider()
         {
-            return new(TestContext.Current.ToolsetUnderTest.DotNetRoot, TestContext.Current.ToolsetUnderTest.SdkVersion, userProfileDir: null, globalJsonPath: null);
+            return new(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot, SdkTestContext.Current.ToolsetUnderTest.SdkVersion, userProfileDir: null, globalJsonPath: null);
         }
 
         public IEnumerable<WorkloadManifest> GetManifests(SdkDirectoryWorkloadManifestProvider? manifestProvider = null)
@@ -149,7 +149,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
 
             var manifestProvider = CreateManifestProvider();
             var manifests = GetManifests(manifestProvider);
-            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, TestContext.Current.ToolsetUnderTest.DotNetRoot);
+            var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
 
             foreach (var manifest in manifests)
             {

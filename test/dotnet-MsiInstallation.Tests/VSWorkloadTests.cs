@@ -1,24 +1,23 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+#nullable disable
+
 using Microsoft.DotNet.MsiInstallerTests.Framework;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
+    [TestClass]
     public class VSWorkloadTests : VMTestBase
     {
-        public VSWorkloadTests(ITestOutputHelper log) : base(log)
+        [TestInitialize]
+        public void Initialize()
         {
             VM.SetCurrentState("Install VS 17.10 Preview 6");
             DeployStage2Sdk();
         }
 
-        [Fact]
+        [TestMethod]
         public void WorkloadListShowsVSInstalledWorkloads()
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "list")
@@ -30,7 +29,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             result.Should().HaveStdOutContaining("aspire");
         }
 
-        [Fact]
+        [TestMethod]
         public void UpdatesAreAdvertisedForVSInstalledWorkloads()
         {
             AddNuGetSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json");

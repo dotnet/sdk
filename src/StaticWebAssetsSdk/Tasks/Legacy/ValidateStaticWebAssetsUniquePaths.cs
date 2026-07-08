@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -30,7 +32,7 @@ public class ValidateStaticWebAssetsUniquePaths : Task
             }
             else
             {
-                var webRootPath = ValidateStaticWebAssetsUniquePaths.GetWebRootPath("/wwwroot",
+                var webRootPath = GetWebRootPath("/wwwroot",
                     contentRootDefinition.GetMetadata(BasePath),
                     contentRootDefinition.GetMetadata(RelativePath));
 
@@ -53,7 +55,7 @@ public class ValidateStaticWebAssetsUniquePaths : Task
         {
             var webRootFile = WebRootFiles[i];
             var relativePath = webRootFile.GetMetadata(TargetPath);
-            var webRootFileWebRootPath = ValidateStaticWebAssetsUniquePaths.GetWebRootPath("", "/", relativePath);
+            var webRootFileWebRootPath = GetWebRootPath("", "/", relativePath);
             if (assetsByWebRootPaths.TryGetValue(webRootFileWebRootPath, out var existingAsset))
             {
                 Log.LogError($"The static web asset '{existingAsset.ItemSpec}' has a conflicting web root path '{webRootFileWebRootPath}' with the project file '{webRootFile.ItemSpec}'.");

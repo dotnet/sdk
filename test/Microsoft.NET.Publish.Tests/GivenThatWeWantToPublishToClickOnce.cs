@@ -1,19 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAClickOnceProject : SdkTest
     {
-        public GivenThatWeWantToPublishAClickOnceProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [FullMSBuildOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [FullMSBuildOnly]
+        [DataRow(false)]
+        [DataRow(true)]
         public void PublishClickOnceWithPublishProfile(bool? publishSingleFile)
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -28,7 +28,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: publishSingleFile.ToString());
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: publishSingleFile.ToString());
 
             var projectDirectory = Path.Combine(testProjectInstance.Path, testProject.Name);
             var publishProfilesDirectory = Path.Combine(projectDirectory, "Properties", "PublishProfiles");

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LinkAlternativeRepresentationsToOriginalResource>ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
+  </PropertyGroup>
+  <ItemGroup>
+    <SupportedPlatform Include="browser"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0"/>
+  </ItemGroup>
+</Project>

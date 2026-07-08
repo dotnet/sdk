@@ -1,14 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.DotNet.Watcher.Tests;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class CompilationHandlerTests : DotNetWatchTestBase
 {
-    [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+    [TestMethod]
     public async Task ReferenceOutputAssembly_False()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
@@ -17,14 +17,37 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var workingDirectory = testAsset.Path;
         var hostDir = Path.Combine(testAsset.Path, "Host");
         var hostProject = Path.Combine(hostDir, "Host.csproj");
+        var hostProjectRepr = new ProjectRepresentation(hostProject, entryPointFilePath: null);
 
-        var reporter = new TestReporter(Logger);
-        var options = TestOptions.GetProjectOptions(["--project", hostProject]);
+        var cmdOptions = TestOptions.GetCommandLineOptions(["--project", hostProject]);
+        var projectOptions = TestOptions.GetProjectOptions(cmdOptions);
+        var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory);
 
-        var projectGraph = Program.TryReadProject(options, reporter);
-        var handler = new CompilationHandler(reporter);
+        var factory = new ProjectGraphFactory([hostProjectRepr], buildProperties: [], NullLogger.Instance, cmdOptions.GlobalOptions, environmentOptions);
+        var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false, virtualProjectTargetFramework: null, CancellationToken.None);
+        Assert.IsNotNull(projectGraph);
 
-        await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
+        var processOutputReporter = new TestProcessOutputReporter();
+
+        var context = new DotNetWatchContext()
+        {
+            ProcessOutputReporter = processOutputReporter,
+            Logger = NullLogger.Instance,
+            BuildLogger = NullLogger.Instance,
+            LoggerFactory = NullLoggerFactory.Instance,
+            ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
+            Options = new(),
+            MainProjectOptions = TestOptions.ProjectOptions,
+            RootProjects = [hostProjectRepr],
+            BuildArguments = [],
+            EnvironmentOptions = environmentOptions,
+            BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
+            BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
+        };
+
+        var handler = new CompilationHandler(context);
+
+        await handler.UpdateProjectGraphAsync(projectGraph.Graph, CancellationToken.None);
 
         // all projects are present
         AssertEx.SequenceEqual(["Host", "Lib2", "Lib", "A", "B"], handler.Workspace.CurrentSolution.Projects.Select(p => p.Name));

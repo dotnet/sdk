@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -8,7 +10,8 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class StaticWebAssetsGeneratePackManifest : Task
+[MSBuildMultiThreadableTask]
+public class StaticWebAssetsGeneratePackManifest : Task, IMultiThreadableTask
 {
     // Since the manifest is only used at build time, it's ok for it to use the relaxed
     // json escaping (which is also what MVC uses by default) and to produce indented output
@@ -29,6 +32,8 @@ public class StaticWebAssetsGeneratePackManifest : Task
 
     [Required]
     public string ManifestPath { get; set; }
+
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     public override bool Execute()
     {
@@ -67,27 +72,28 @@ public class StaticWebAssetsGeneratePackManifest : Task
             ElementsToRemove = [.. AdditionalElementsToRemoveFromPacking.Select(e => e.ItemSpec).OrderBy(id => id)]
         };
 
-        PersistManifest(manifest);
+        string manifestPath = string.IsNullOrEmpty(ManifestPath) ? ManifestPath : TaskEnvironment.GetAbsolutePath(ManifestPath);
+        PersistManifest(manifest, manifestPath);
 
         return !Log.HasLoggedErrors;
     }
 
-    private void PersistManifest(StaticWebAssetsPackManifest manifest)
+    private void PersistManifest(StaticWebAssetsPackManifest manifest, string manifestPath)
     {
         var data = JsonSerializer.SerializeToUtf8Bytes(manifest, ManifestSerializationOptions);
         var dataHash = ComputeHash(data);
-        var fileExists = File.Exists(ManifestPath);
-        var existingManifestHash = fileExists ? ComputeHash(File.ReadAllBytes(ManifestPath)) : "";
+        var fileExists = File.Exists(manifestPath);
+        var existingManifestHash = fileExists ? ComputeHash(File.ReadAllBytes(manifestPath)) : "";
 
         if (!fileExists)
         {
             Log.LogMessage(MessageImportance.Low, $"Creating manifest because manifest file '{ManifestPath}' does not exist.");
-            File.WriteAllBytes(ManifestPath, data);
+            File.WriteAllBytes(manifestPath, data);
         }
         else if (!string.Equals(dataHash, existingManifestHash, StringComparison.Ordinal))
         {
             Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{dataHash}' is different from existing manifest hash '{existingManifestHash}'.");
-            File.WriteAllBytes(ManifestPath, data);
+            File.WriteAllBytes(manifestPath, data);
         }
         else
         {

@@ -1,14 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.Razor.Language;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
+    [TestClass]
     public class CompositeRazorProjectFileSystemTest
     {
-        [Fact]
+        [TestMethod]
         public void EnumerateItems_ReturnsResultsFromAllFileSystems()
         {
             // Arrange
@@ -29,10 +32,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var result = compositeRazorProjectFileSystem.EnumerateItems(basePath);
 
             // Assert
-            Assert.Equal(new[] { file1, file2, file3 }, result);
+            Assert.AreSequenceEqual(new[] { file1, file2, file3 }, result);
         }
 
-        [Fact]
+        [TestMethod]
         public void EnumerateItems_ReturnsEmptySequence_IfNoFileSystemReturnsResults()
         {
             // Arrange
@@ -48,10 +51,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var result = compositeRazorProjectFileSystem.EnumerateItems(basePath);
 
             // Assert
-            Assert.Empty(result);
+            Assert.IsEmpty(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetItem_ReturnsFirstInstanceThatExists()
         {
             // Arrange
@@ -73,7 +76,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var result = compositeRazorProjectFileSystem.GetItem(filePath, fileKind: null);
 
             // Assert
-            Assert.Same(file2, result);
+            Assert.AreSame(file2, result);
         }
     }
 }

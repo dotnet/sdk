@@ -1,30 +1,30 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithLibrary : SdkTest
     {
-        public GivenThatWeWantToBuildAnAppWithLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_project_successfully()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
             VerifyAppBuilds(testAsset);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_project_successfully_twice()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
@@ -78,10 +78,10 @@ namespace Microsoft.NET.Build.Tests
             libInfo.ProductVersion.Should().Be("42.43.44.45-alpha");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_generates_satellite_assemblies()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("KitchenSink")
                 .WithSource();
 
@@ -123,10 +123,11 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
@@ -159,10 +160,10 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().OnlyHaveFiles(Array.Empty<string>());
         }
 
-        [Fact]
+        [TestMethod]
         public void An_appx_app_can_reference_a_cross_targeted_library()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("AppxReferencingCrossTargeting")
                 .WithSource();
 

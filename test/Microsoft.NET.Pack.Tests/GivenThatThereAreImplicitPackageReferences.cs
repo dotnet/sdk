@@ -1,15 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 namespace Microsoft.NET.Pack.Tests
 {
+    [TestClass]
     public class GivenThatThereAreImplicitPackageReferences : SdkTest
     {
-        public GivenThatThereAreImplicitPackageReferences(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void Packing_a_netstandard_1_x_library_includes_the_implicit_dependency()
         {
             TestProject testProject = new()
@@ -28,7 +28,7 @@ namespace Microsoft.NET.Pack.Tests
                 .Should().Be("1.6.1");
         }
 
-        [Fact]
+        [TestMethod]
         public void Packing_a_netstandard_2_0_library_does_not_include_the_implicit_dependency()
         {
             TestProject testProject = new()
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Pack.Tests
             dependencies.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void Packing_a_netcoreapp_1_1_library_includes_the_implicit_dependency()
         {
             TestProject testProject = new()
@@ -64,7 +64,7 @@ namespace Microsoft.NET.Pack.Tests
                 .Should().StartWith("1.1.");
         }
 
-        [Fact]
+        [TestMethod]
         public void Packing_a_netcoreapp_2_0_library_does_not_include_the_implicit_dependency()
         {
             TestProject testProject = new()
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Pack.Tests
             dependencies.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void Packing_a_netcoreapp_1_1_app_includes_the_implicit_dependency()
         {
             TestProject testProject = new()
@@ -100,7 +100,8 @@ namespace Microsoft.NET.Pack.Tests
                 .Should().StartWith("1.1.");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void Packing_an_app_exclude_dependencies_framework_assemblies_dependency()
         {
             TestProject testProject = new()
@@ -122,9 +123,9 @@ namespace Microsoft.NET.Pack.Tests
             dependencies.Single().Attribute("assemblyName").Value.Should().Be("System.Web");
         }
 
-        [Theory]
-        [InlineData("netcoreapp2.0")]
-        [InlineData("netcoreapp3.0")]
+        [TestMethod]
+        [DataRow("netcoreapp2.0")]
+        [DataRow("netcoreapp3.0")]
         public void Packing_a_netcoreapp_2_0_app_includes_no_dependencies(string targetFramework)
         {
             TestProject testProject = new()
@@ -139,9 +140,9 @@ namespace Microsoft.NET.Pack.Tests
             dependencies.Should().BeEmpty();
         }
 
-        [Theory]
-        [InlineData("Microsoft.AspNetCore.App")]
-        [InlineData("Microsoft.AspNetCore.All")]
+        [TestMethod]
+        [DataRow("Microsoft.AspNetCore.App")]
+        [DataRow("Microsoft.AspNetCore.All")]
         public void Package_an_aspnetcore_2_1_app_does_not_include_the_implicit_dependency(string packageId)
         {
             TestProject testProject = new()
@@ -159,7 +160,7 @@ namespace Microsoft.NET.Pack.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void Packing_a_netcoreapp_2_0_DotnetCliTool_app_includes_the_implicit_dependency()
         {
             TestProject testProject = new()
@@ -182,7 +183,7 @@ namespace Microsoft.NET.Pack.Tests
                 .Should().StartWith("2.0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void Packing_a_multitargeted_library_includes_implicit_dependencies_when_appropriate()
         {
             TestProject testProject = new()
@@ -253,7 +254,7 @@ namespace Microsoft.NET.Pack.Tests
 
         private XDocument PackAndGetNuspec(TestProject testProject, string identifier = null)
         {
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
 
             var packCommand = new PackCommand(Log, testProjectInstance.TestRoot, testProject.Name);
 

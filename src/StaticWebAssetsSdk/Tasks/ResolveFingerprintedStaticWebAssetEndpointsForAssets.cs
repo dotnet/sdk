@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
@@ -11,8 +13,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // cumbersome to do so, specially for third-party targets and SDKs. This task encapsulates the logic to
 // resolve the preferrred set of endpoints for a given set of assets, taking into account the hosting model
 // (Standalone or Hosted) and ensuring that fingerprinted endpoints are used when possible.
-public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
+[MSBuildMultiThreadableTask]
+public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required] public ITaskItem[] CandidateEndpoints { get; set; }
 
     [Required] public ITaskItem[] CandidateAssets { get; set; }
@@ -24,7 +30,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
     public override bool Execute()
     {
         var candidateEndpoints = StaticWebAssetEndpoint.FromItemGroup(CandidateEndpoints);
-        var candidateAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray();
+        var candidateAssets = StaticWebAsset.FromTaskItemGroup(CandidateAssets, TaskEnvironment);
         var resolvedEndpoints = new List<StaticWebAssetEndpoint>();
 
         var endpointsByAsset = candidateEndpoints.GroupBy(e => e.AssetFile, OSPath.PathComparer)
@@ -65,7 +71,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
                     for (var j = 0; j < endpoints.Length; j++)
                     {
                         var endpoint = endpoints[j];
-                        if (ResolveFingerprintedStaticWebAssetEndpointsForAssets.HasFingerprint(endpoint))
+                        if (HasFingerprint(endpoint))
                         {
                             foundFingerprintedEndpoint = true;
                             var route = asset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);

@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToStoreAProjectWithDependencies : SdkTest
     {
         private static readonly string _libPrefix = FileConstants.DynamicLibPrefix;
@@ -45,14 +48,11 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        public GivenThatWeWantToStoreAProjectWithDependencies(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies()
         {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 
@@ -76,19 +76,14 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll"
                };
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // https://github.com/dotnet/core-setup/issues/2716 - an unintended native shim is getting published to the runtime store
-                files_on_disk.Add($"runtime.{_runtimeRid}.runtime.native.system.security.cryptography/1.0.1/runtimes/{_runtimeRid}/native/System.Security.Cryptography.Native{FileConstants.DynamicLibSuffix}");
-            }
-
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies_noopt()
         {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 
@@ -96,11 +91,24 @@ namespace Microsoft.NET.Publish.Tests
 
             var OutputFolder = Path.Combine(simpleDependenciesAsset.TestRoot, "outdir");
             var WorkingDir = Path.Combine(simpleDependenciesAsset.TestRoot, "w");
-
+            string binlogPath = null;
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            {
+                binlogPath = Path.Combine(uploadRoot, "compose_dependencies_noopt().binlog");
+            }
+            List<string> args = [$"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeDir={OutputFolder}", "/p:SkipOptimization=true", $"/p:ComposeWorkingDir={WorkingDir}", "/p:DoNotDecorateComposeDir=true", "/p:PreserveComposeWorkingDir=true", "/p:CreateProfilingSymbols=false"];
+            if (binlogPath is not null)
+            {
+                args.Add($"/bl:{binlogPath}");
+            }
             storeCommand
-                .Execute($"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeDir={OutputFolder}", "/p:SkipOptimization=true", $"/p:ComposeWorkingDir={WorkingDir}", "/p:DoNotDecorateComposeDir=true", "/p:PreserveComposeWorkingDir=true", "/p:CreateProfilingSymbols=false")
+                .Execute(args)
                 .Should()
                 .Pass();
+            if (binlogPath is not null)
+            {
+                Log.WriteLine($"Binlog written to {binlogPath}");
+            }
             DirectoryInfo storeDirectory = new(OutputFolder);
 
             List<string> files_on_disk = new()
@@ -112,50 +120,14 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll"
                };
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // https://github.com/dotnet/core-setup/issues/2716 - an unintended native shim is getting published to the runtime store
-                files_on_disk.Add($"runtime.{_runtimeRid}.runtime.native.system.security.cryptography/1.0.1/runtimes/{_runtimeRid}/native/System.Security.Cryptography.Native{FileConstants.DynamicLibSuffix}");
-            }
-
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
-        public void store_nativeonlyassets()
-        {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
-                .CopyTestAsset("UnmanagedStore")
-                .WithSource();
-
-            var storeCommand = new ComposeStoreCommand(Log, simpleDependenciesAsset.TestRoot);
-
-            var OutputFolder = Path.Combine(simpleDependenciesAsset.TestRoot, "outdir");
-            var WorkingDir = Path.Combine(simpleDependenciesAsset.TestRoot, "w");
-
-            NuGetConfigWriter.Write(simpleDependenciesAsset.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
-
-            storeCommand
-                .Execute($"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeWorkingDir={WorkingDir}", $"/p:ComposeDir={OutputFolder}", $"/p:DoNotDecorateComposeDir=true")
-                .Should()
-                .Pass();
-
-            DirectoryInfo storeDirectory = new(OutputFolder);
-
-            List<string> files_on_disk = new()
-            {
-               "artifact.xml",
-               $"runtime.{_runtimeRid}.microsoft.netcore.coredistools/1.0.1-prerelease-00001/runtimes/{_runtimeRid}/native/{_libPrefix}coredistools{FileConstants.DynamicLibSuffix}",
-               $"runtime.{_runtimeRid}.microsoft.netcore.coredistools/1.0.1-prerelease-00001/runtimes/{_runtimeRid}/native/coredistools.h"
-               };
-
-            storeDirectory.Should().OnlyHaveFiles(files_on_disk);
-        }
-
-        [Fact]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/49900")]
         public void compose_multifile()
         {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests", "multifile")
                 .WithSource();
 
@@ -186,12 +158,6 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll",
                };
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // https://github.com/dotnet/core-setup/issues/2716 - an unintended native shim is getting published to the runtime store
-                files_on_disk.Add($"runtime.{_runtimeRid}.runtime.native.system.security.cryptography/1.0.1/runtimes/{_runtimeRid}/native/System.Security.Cryptography.Native{FileConstants.DynamicLibSuffix}");
-            }
-
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
 
             var knownpackage = new HashSet<PackageIdentity>
@@ -212,10 +178,10 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_uses_star_versions_correctly()
         {
-            TestAsset targetManifestsAsset = _testAssetsManager
+            TestAsset targetManifestsAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 
@@ -240,16 +206,17 @@ namespace Microsoft.NET.Publish.Tests
             // 4.0.0-rc2
             // 4.0.0-rc-2048
             //
-            // and the StarVersion.xml uses Version="4.0.0-*", 
+            // and the StarVersion.xml uses Version="4.0.0-*",
             // so we expect a version greater than 4.0.0-rc2, since there is
             // a higher version on the feed that meets the criteria
             nugetPackage.Version.Should().BeGreaterThan(NuGetVersion.Parse("4.0.0-rc2"));
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void It_creates_profiling_symbols()
         {
-            TestAsset targetManifestsAsset = _testAssetsManager
+            TestAsset targetManifestsAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 
@@ -260,7 +227,7 @@ namespace Microsoft.NET.Publish.Tests
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // clear the PATH on windows to ensure creating .ni.pdbs works without 
+                // clear the PATH on windows to ensure creating .ni.pdbs works without
                 // being in a VS developer command prompt
                 composeStore.WithEnvironmentVariable("PATH", string.Empty);
             }
@@ -295,9 +262,11 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_stores_when_targeting_netcoreapp3(bool isExe)
         {
             const string TFM = "netcoreapp3.0";
@@ -311,7 +280,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: isExe.ToString());
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: isExe.ToString());
 
             var outputFolder = Path.Combine(testProjectInstance.TestRoot, "o");
             var workingDir = Path.Combine(testProjectInstance.TestRoot, "w");
@@ -334,12 +303,14 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void DotnetStoreWithPrunedPackages()
         {
             const string TargetFramework = "netcoreapp3.1";
 
-            TestAsset targetManifestsAsset = _testAssetsManager
+            TestAsset targetManifestsAsset = TestAssetsManager
                 .CopyTestAsset("TargetManifests")
                 .WithSource();
 

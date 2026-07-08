@@ -1,16 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GlobalPropertyFlowTests : SdkTest
     {
         TestProject _testProject;
         TestProject _referencedProject;
 
-        public GlobalPropertyFlowTests(ITestOutputHelper log) : base(log)
+        public GlobalPropertyFlowTests()
         {
             _referencedProject = new TestProject("ReferencedProject")
             {
@@ -31,7 +34,7 @@ namespace Microsoft.NET.Build.Tests
 
         TestAsset Build(bool passSelfContained, bool passRuntimeIdentifier, [CallerMemberName] string callingMethod = "", string identifier = "")
         {
-            var testAsset = _testAssetsManager.CreateTestProject(_testProject, callingMethod: callingMethod, identifier: identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(_testProject, callingMethod: callingMethod, identifier: identifier);
 
             var arguments = GetDotnetArguments(passSelfContained, passRuntimeIdentifier);
 
@@ -61,11 +64,12 @@ namespace Microsoft.NET.Build.Tests
             return arguments;
         }
 
-        [RequiresMSBuildVersionTheory("17.4.0.41702")]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.4.0.41702")]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(false, false)]
         public void TestGlobalPropertyFlowToLibrary(bool passSelfContained, bool passRuntimeIdentifier)
         {
             var testAsset = Build(passSelfContained, passRuntimeIdentifier, identifier: passSelfContained.ToString() + "_" + passRuntimeIdentifier);
@@ -76,11 +80,12 @@ namespace Microsoft.NET.Build.Tests
             ValidateProperties(testAsset, _referencedProject, expectSelfContained: false, expectRuntimeIdentifier: false);
         }
 
-        [RequiresMSBuildVersionTheory("17.4.0.41702")]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.4.0.41702")]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(false, false)]
         public void TestGlobalPropertyFlowToExe(bool passSelfContained, bool passRuntimeIdentifier)
         {
             _referencedProject.IsExe = true;
@@ -94,11 +99,12 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.4.0.41702")]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.4.0.41702")]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(false, false)]
         public void TestGlobalPropertyFlowToExeWithSelfContainedFalse(bool passSelfContained, bool passRuntimeIdentifier)
         {
             _referencedProject.IsExe = true;
@@ -115,11 +121,12 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.4.0.41702")]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.4.0.41702")]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(false, false)]
         public void TestGlobalPropertyFlowToLibraryWithRuntimeIdentifier(bool passSelfContained, bool passRuntimeIdentifier)
         {
             //  Set a RuntimeIdentifier in the referenced project that is different from what is passed in on the command line
@@ -135,11 +142,12 @@ namespace Microsoft.NET.Build.Tests
                 expectedRuntimeIdentifier: passRuntimeIdentifier ? EnvironmentInfo.GetCompatibleRid() : _referencedProject.RuntimeIdentifier);
         }
 
-        [RequiresMSBuildVersionTheory("17.4.0.41702")]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.4.0.41702")]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(false, false)]
         public void TestGlobalPropertyFlowToMultitargetedProject(bool passSelfContained, bool passRuntimeIdentifier)
         {
             _testProject.TargetFrameworks = $"net6.0;{ToolsetInfo.CurrentTargetFramework}";
@@ -168,16 +176,18 @@ namespace Microsoft.NET.Build.Tests
                 thisTargetFramework: ToolsetInfo.CurrentTargetFramework);
         }
 
-        [RequiresMSBuildVersionTheory("17.4.0.41702", Skip = "https://github.com/dotnet/msbuild/issues/8154")]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/msbuild/issues/8154")]
+        [RequiresMSBuildVersion("17.4.0.41702")]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(false, false)]
         public void TestGlobalPropertyFlowInSolution(bool passSelfContained, bool passRuntimeIdentifier)
         {
             var identifier = passSelfContained.ToString() + "_" + passRuntimeIdentifier;
 
-            var testAsset = _testAssetsManager.CreateTestProject(_testProject, identifier: identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(_testProject, identifier: identifier);
 
             new DotnetNewCommand(Log, "sln")
                 .WithVirtualHive()

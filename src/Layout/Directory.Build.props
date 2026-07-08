@@ -1,0 +1,117 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$(__DistroRid)</HostRid>
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</HostRid>
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</HostRid>
+
+    <IsDebianBaseDistro Condition="$(HostRid.StartsWith('ubuntu')) or $(HostRid.StartsWith('debian'))">true</IsDebianBaseDistro>
+    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('rhel'))">true</IsRPMBasedDistro>
+    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Whether to publish the dotnet-aot NativeAOT shared library (see the PublishDotnetAot target
+      in redist/targets/GenerateLayout.targets). This is shared by that target and by the
+      dotnet-aot.csproj ProjectReference in redist.csproj so the two stay in sync.
+
+      It is published for supported win/linux/osx RIDs in these cases:
+        * native builds, where the target RID matches the build host. On win/osx that is an exact
+          TargetRid == HostRid comparison. On Linux, HostRid is the distro-specific RID (e.g.
+          azurelinux.3-x64) while TargetRid is the portable RID (e.g. linux-x64), so an exact
+          comparison fails even for a native build. Following the VMR/arcade convention, a Linux
+          build is treated as native when it isn't a cross-build (TargetArchitecture ==
+          BuildArchitecture) and the build host OS is Linux.
+        * Linux cross-builds, where NativeAOT targets another architecture from an x64 Linux host.
+          NativeAOT can cross-compile as long as a cross toolchain and target sysroot are available
+          (CrossBuild=true, with ROOTFS_DIR provided by the azurelinux cross-prereq build
+          containers). Cross-compilation across operating systems is not supported.
+    -->
+    <_DotnetAotTargetRidSupported Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">true</_DotnetAotTargetRidSupported>
+    <_DotnetAotIsLinuxNativeBuild Condition="'$(CrossBuild)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true' and $(TargetRid.StartsWith('linux')) and !$(TargetRid.StartsWith('linux-musl')) and $([MSBuild]::IsOSPlatform('LINUX')) and '$(TargetArchitecture)' == '$(BuildArchitecture)'">true</_DotnetAotIsLinuxNativeBuild>
+    <_DotnetAotIsLinuxCrossBuild Condition="'$(CrossBuild)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true' and $(TargetRid.StartsWith('linux'))">true</_DotnetAotIsLinuxCrossBuild>
+    <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == '' and '$(_DotnetAotTargetRidSupported)' == 'true' and ('$(TargetRid)' == '$(HostRid)' or '$(_DotnetAotIsLinuxNativeBuild)' == 'true' or '$(_DotnetAotIsLinuxCrossBuild)' == 'true')">true</_ShouldPublishDotnetAot>
+    <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == ''">false</_ShouldPublishDotnetAot>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ArchiveExtension>.tar.gz</ArchiveExtension>
+    <ArchiveExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.zip</ArchiveExtension>
+
+    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.msi</InstallerExtension>
+    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.pkg</InstallerExtension>
+    <InstallerExtension Condition="'$(IsDebianBaseDistro)' == 'true'">.deb</InstallerExtension>
+    <InstallerExtension Condition="'$(IsRPMBasedDistro)' == 'true'">.rpm</InstallerExtension>
+
+    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.exe</BundleExtension>
+    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(InstallerExtension)</BundleExtension>
+    <BundleExtension Condition="'$(IsDebianBaseDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
+    <BundleExtension Condition="'$(IsRPMBasedDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
+
+    <ExeExtension>.exe</ExeExtension>
+    <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
+
+    <ProductMonikerRid>$(TargetRid)</ProductMonikerRid>
+
+    <PortableProductMonikerRid>$(PortableTargetRid)</PortableProductMonikerRid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SkipBuildingInstallers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="'$(PgoInstrument)' == 'true'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="
+      (
+       $(TargetRid.StartsWith('freebsd')) or
+       $(TargetRid.StartsWith('openbsd')) or
+       $(TargetRid.StartsWith('solaris')) or
+       $(TargetRid.StartsWith('illumos')) or
+       $(TargetRid.StartsWith('haiku')) or
+       $(TargetRid.StartsWith('linux-musl'))
+      )">true</SkipBuildingInstallers>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateSdkBundleOnly Condition="'$(DotNetBuildPass)' == '3' and '$(OS)' == 'Windows_NT'">true</GenerateSdkBundleOnly>
+    <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
+    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true'">true</BundleNativeAotCompiler>
+
+    <!-- Crossgen2 is not bundled by default on platforms where Microsoft provides a package on nuget.org,
+         because it is large (100MB+). -->
+    <_IsCommunityPlatform Condition="'$(OSName)' != 'win' and '$(OSName)' != 'osx'
+      and !(('$(OSName)' == 'linux' or '$(OSName)' == 'linux-musl') and ('$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86' or '$(TargetArchitecture)' == 'arm' or '$(TargetArchitecture)' == 'arm64'))">true</_IsCommunityPlatform>
+    <BundleCrossgen2 Condition="'$(BundleCrossgen2)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(_IsCommunityPlatform)' == 'true'">true</BundleCrossgen2>
+
+    <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
+    <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' and '$(IsLinux)' == 'true' and !$(TargetRid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>
+    <HighEntropyVA>true</HighEntropyVA>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
+    <NetRuntimeRid Condition="('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd' or '$(OSName)' == 'openbsd' or '$(OSName)' == 'illumos' or '$(OSName)' == 'solaris' or '$(OSName)' == 'haiku') and '$(DotNetBuildSourceOnly)' != 'true'">$(OSName)-$(TargetArchitecture)</NetRuntimeRid>
+    <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
+
+    <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
+    <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
+    <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(TargetArchitecture)</SharedFrameworkRid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)pkg\</SdkPkgSourcesRootDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\csc.dll" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\vbc.dll" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\VBCSCompiler.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" />
+  </ItemGroup>
+
+</Project>

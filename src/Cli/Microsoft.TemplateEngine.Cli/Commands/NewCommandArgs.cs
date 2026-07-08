@@ -4,14 +4,24 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Commands.New;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class NewCommandArgs : GlobalArgs
+    internal sealed class NewCommandArgs : GlobalArgs
     {
-        public NewCommandArgs(NewCommand command, ParseResult parseResult) : base(command, parseResult)
+        private IEnumerable<string> s_passByOptionNames =
+        [
+            SharedOptionsFactory.ForceOptionName,
+            SharedOptionsFactory.NameOptionName,
+            SharedOptionsFactory.DryRunOptionName,
+            SharedOptionsFactory.NoUpdateCheckOptionName
+        ];
+
+        public NewCommandArgs(NewCommand command, ParseResult parseResult)
+            : base(parseResult)
         {
-            List<CliToken> tokensToEvaluate = new();
+            List<Token> tokensToEvaluate = new();
             foreach (var childrenResult in parseResult.CommandResult.Children)
             {
                 if (childrenResult is OptionResult o)
@@ -20,7 +30,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     {
                         continue;
                     }
-                    if (!command.LegacyOptions.Contains(o.Option) && !command.PassByOptions.Contains(o.Option))
+
+                    if (!LegacyOptions.AllNames.Contains(o.Option.Name) && !s_passByOptionNames.Contains(o.Option.Name))
                     {
                         continue;
                     }

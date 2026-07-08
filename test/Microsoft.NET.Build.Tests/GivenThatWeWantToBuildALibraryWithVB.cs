@@ -1,21 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildALibraryWithVB : SdkTest
     {
-        public GivenThatWeWantToBuildALibraryWithVB(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_library_successfully()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB")
                 .WithSource();
 
@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netstandard1.5");
+            var outputDirectory = buildCommand.GetOutputDirectory("netstandard2.0");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "TestLibrary.dll",
@@ -34,10 +34,10 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_library_twice_in_a_row()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB")
                 .WithSource();
 
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Build.Tests
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
 
-            string targetFramework = "netstandard1.6";
+            string targetFramework = "netstandard2.0";
 
             var testAsset = testAssetsManager
                 .CopyTestAsset("AppWithLibraryVB", callingMethod)
@@ -107,10 +107,10 @@ namespace Microsoft.NET.Build.Tests
             return itemValues;
         }
 
-        [Fact]
+        [TestMethod]
         public void The_build_fails_if_nuget_restore_has_not_occurred()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB")
                 .WithSource();
 
@@ -121,10 +121,10 @@ namespace Microsoft.NET.Build.Tests
                 .Fail();
         }
 
-        [Fact]
+        [TestMethod]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB")
                 .WithSource();
 
@@ -143,21 +143,21 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
-        [InlineData("Debug", new[] { "CONFIG=\"Debug\"", "DEBUG=-1", "TRACE=-1", "_MyType=\"Empty\"" })]
-        [InlineData("Release", new[] { "CONFIG=\"Release\"", "RELEASE=-1", "TRACE=-1", "_MyType=\"Empty\"" })]
-        [InlineData("CustomConfiguration", new[] { "CONFIG=\"CustomConfiguration\"", "CUSTOMCONFIGURATION=-1", "_MyType=\"Empty\"" })]
-        [InlineData("Debug-NetCore", new[] { "CONFIG=\"Debug-NetCore\"", "DEBUG_NETCORE=-1", "_MyType=\"Empty\"" })]
+        [TestMethod]
+        [DataRow("Debug", new[] { "CONFIG=\"Debug\"", "DEBUG=-1", "TRACE=-1", "_MyType=\"Empty\"" })]
+        [DataRow("Release", new[] { "CONFIG=\"Release\"", "RELEASE=-1", "TRACE=-1", "_MyType=\"Empty\"" })]
+        [DataRow("CustomConfiguration", new[] { "CONFIG=\"CustomConfiguration\"", "CUSTOMCONFIGURATION=-1", "_MyType=\"Empty\"" })]
+        [DataRow("Debug-NetCore", new[] { "CONFIG=\"Debug-NetCore\"", "DEBUG_NETCORE=-1", "_MyType=\"Empty\"" })]
         public void It_implicitly_defines_compilation_constants_for_the_configuration(string configuration, string[] expectedDefines)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB", "ImplicitConfigurationConstantsVB", configuration)
                 .WithSource();
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
             var getValuesCommand = new GetValuesCommand(Log, libraryProjectDirectory,
-                "netstandard1.5", "FinalDefineConstants")
+                "netstandard2.0", "FinalDefineConstants")
             {
                 ShouldCompile = true,
                 Configuration = configuration
@@ -170,28 +170,26 @@ namespace Microsoft.NET.Build.Tests
 
             var definedConstants = ExpandSequence(getValuesCommand.GetValues()).ToList();
 
-            definedConstants.Should().BeEquivalentTo(expectedDefines.Concat(new[] { "PLATFORM=\"AnyCPU\"", "NETSTANDARD=-1", "NETSTANDARD1_5=-1", "NETSTANDARD1_0_OR_GREATER=-1",
-                "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1" }));
+            definedConstants.Should().BeEquivalentTo(expectedDefines.Concat(new[] { "PLATFORM=\"AnyCPU\"", "NETSTANDARD=-1", "NETSTANDARD2_0=-1", "NETSTANDARD1_0_OR_GREATER=-1",
+                "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "NETSTANDARD2_0_OR_GREATER=-1" }));
         }
 
-        [Theory]
-        [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD=-1", "NETSTANDARD1_0=-1", "NETSTANDARD1_0_OR_GREATER=-1", "_MyType=\"Empty\"" })]
-        [InlineData("netstandard1.3", new[] { "NETSTANDARD=-1", "NETSTANDARD1_3=-1", "NETSTANDARD1_0_OR_GREATER=-1", "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "_MyType=\"Empty\"" })]
-        [InlineData("netstandard1.6", new[] { "NETSTANDARD=-1", "NETSTANDARD1_6=-1", "NETSTANDARD1_0_OR_GREATER=-1", "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1",
-            "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "_MyType=\"Empty\"" })]
-        [InlineData("net45", new[] { "NETFRAMEWORK=-1", "NET45=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1", "NET45_OR_GREATER=-1" })]
-        [InlineData("net461", new[] { "NETFRAMEWORK=-1", "NET461=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1", "NET45_OR_GREATER=-1", "NET451_OR_GREATER=-1",
+        [TestMethod]
+        [DataRow(".NETStandard,Version=v2.0", new[] { "NETSTANDARD=-1", "NETSTANDARD2_0=-1", "NETSTANDARD1_0_OR_GREATER=-1",
+                "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "NETSTANDARD2_0_OR_GREATER=-1", "_MyType=\"Empty\"" })]
+        [DataRow("netstandard2.0", new[] { "NETSTANDARD=-1", "NETSTANDARD2_0=-1", "NETSTANDARD1_0_OR_GREATER=-1", "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "NETSTANDARD2_0_OR_GREATER=-1", "_MyType=\"Empty\"" })]
+        [DataRow("net461", new[] { "NETFRAMEWORK=-1", "NET461=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1", "NET45_OR_GREATER=-1", "NET451_OR_GREATER=-1",
             "NET452_OR_GREATER=-1", "NET46_OR_GREATER=-1", "NET461_OR_GREATER=-1" })]
-        [InlineData("netcoreapp1.0", new[] { "NETCOREAPP=-1", "NETCOREAPP1_0=-1", "_MyType=\"Empty\"", "NETCOREAPP1_0_OR_GREATER=-1" })]
-        [InlineData("net5.0", new[] { "NET=-1", "NET5_0=-1", "NETCOREAPP=-1", "_MyType=\"Empty\"", "NETCOREAPP1_0_OR_GREATER=-1", "NETCOREAPP1_1_OR_GREATER=-1", "NETCOREAPP2_0_OR_GREATER=-1", "NETCOREAPP2_1_OR_GREATER=-1",
+        [DataRow("netcoreapp1.0", new[] { "NETCOREAPP=-1", "NETCOREAPP1_0=-1", "_MyType=\"Empty\"", "NETCOREAPP1_0_OR_GREATER=-1" })]
+        [DataRow("net5.0", new[] { "NET=-1", "NET5_0=-1", "NETCOREAPP=-1", "_MyType=\"Empty\"", "NETCOREAPP1_0_OR_GREATER=-1", "NETCOREAPP1_1_OR_GREATER=-1", "NETCOREAPP2_0_OR_GREATER=-1", "NETCOREAPP2_1_OR_GREATER=-1",
             "NETCOREAPP2_2_OR_GREATER=-1", "NETCOREAPP3_0_OR_GREATER=-1", "NETCOREAPP3_1_OR_GREATER=-1", "NET5_0_OR_GREATER=-1" })]
-        [InlineData(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { "_MyType=\"Empty\"" })]
-        [InlineData(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NETFRAMEWORK=-1", "NET40=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1" })]
-        [InlineData("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS=-1", "XAMARINIOS1_0=-1", "_MyType=\"Empty\"" })]
-        [InlineData("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK=-1", "UNKNOWNFRAMEWORK3_14=-1", "_MyType=\"Empty\"" })]
+        [DataRow(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { "_MyType=\"Empty\"" })]
+        [DataRow(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NETFRAMEWORK=-1", "NET40=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1" })]
+        [DataRow("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS=-1", "XAMARINIOS1_0=-1", "_MyType=\"Empty\"" })]
+        [DataRow("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK=-1", "UNKNOWNFRAMEWORK3_14=-1", "_MyType=\"Empty\"" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryVB", "ImplicitFrameworkConstantsVB", targetFramework, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>

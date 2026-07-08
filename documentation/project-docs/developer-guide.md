@@ -8,7 +8,7 @@ In order to build and test the .NET Core Command-line Interface (CLI), you need 
 ### For Windows
 
 1. git (available from the [Git Website](http://www.git-scm.com/)) on the PATH.
-2. MSVC, C++ CMake Tools, and C++ ATL through the Visual Studio Installer.
+2. Visual Studio "Desktop development with C++" workload with all defaults (see [Native AOT prerequisites](https://learn.microsoft.com/dotnet/core/deploying/native-aot/?tabs=windows%2Cnet8#prerequisites)).
 
 ### For Linux
 
@@ -30,13 +30,13 @@ build.cmd
 
 The build script will output a `dotnet` installation to `artifacts\bin\redist\Debug\dotnet` that will include any local changes to the .NET Core CLI.
 
-As part of the build, some intermediate files will get generated which may run into long-path issues. If you encounter a build failure with an error message similar to `Resource file [filename].resx cannot be found.`, [enable long paths](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later) and try again.
+As part of the build, some intermediate files will get generated which may run into long-path issues. If you encounter a build failure with an error message similar to `Resource file [filename].resx cannot be found.`, [enable long paths in Windows](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later) and in Git (`git config core.longpaths true`), then try again.
 
 #### Using Visual Studio
 
-The simple way to launch Visual Studio after building via `build.cmd` is to double-click the `VS with sdk.sln` Windows shortcut in the `artifacts` folder. This will load the generated environment automatically and launch Visual Studio with the `sdk.sln` solution.
+The simple way to launch Visual Studio after building via `build.cmd` is to double-click the `VS with sdk.slnx` Windows shortcut in the `artifacts` folder. This will load the generated environment automatically and launch Visual Studio with the `sdk.slnx` solution.
 
-Alternatively, to open the solution in Visual Studio, be sure to build with `build.cmd` and run the generated environment for your shell. If you're using `cmd`, then run `artifacts\sdk-build-env.bat`. If you're using PowerShell, you need to 'dot source' `artifacts/sdk-build-env.ps1`. Finally, open Visual Studio with `devenv sdk.sln`.
+Alternatively, to open the solution in Visual Studio, be sure to build with `build.cmd` and run the generated environment for your shell. If you're using `cmd`, then run `artifacts\sdk-build-env.bat`. If you're using PowerShell, you need to 'dot source' `artifacts/sdk-build-env.ps1`. Finally, open Visual Studio with `devenv sdk.slnx`.
 
 In addition, Visual Studio must have the following option set (this option is automatically set in preview Visual Studio builds):
 
@@ -79,7 +79,7 @@ Run the following command from the root of the repository to run all the .NET Co
 
 The `dotnet` executable in the artifacts directory can be run directly.
 
-However, it's easier to configure a test environment to run the built `dotnet`. This test environment is managed by dogfood. 
+However, it's easier to configure a test environment to run the built `dotnet`. This test environment is managed by dogfood.
 The dogfood script starts a new Powershell with the environment configured to redirect SDK resolution to your build.
 
 From that shell your SDK will be available in:
@@ -146,7 +146,7 @@ Use developer command prompt for Visual Studio or put devenv on you PATH
 ```shell
 build.cmd # to have a full build first
 .\artifacts\sdk-build-env.bat
-devenv sdk.sln
+devenv sdk.slnx
 ```
 
 Note again that in Visual studio "Use previews of the .NET SDK (requires restart)" must be checked. See the above comment for how to enable this.
@@ -166,7 +166,7 @@ This should print `Hello World!`.
 
 ## Locked files
 
-If you see error like ` error MSB3021: Unable to copy file "toolset-tasks.dll" to "toolset-tasks.dll". The process cannot access the file 'toolset-tasks.dll' because it is being used by another process.`
+If you see error like ` error MSB3021: Unable to copy file "sdk-tasks.dll" to "sdk-tasks.dll". The process cannot access the file 'sdk-tasks.dll' because it is being used by another process.`
 
 You could run the following to stop all dotnet related processes
 
@@ -175,6 +175,69 @@ taskkill /F /IM dotnet.exe /T ||
 taskkill /F /IM VSTest.Console.exe /T ||
 taskkill /F /IM msbuild.exe /T
 ```
+
+## Automated PR Maintenance Commands
+
+The SDK repository includes GitHub Actions workflows that automate common maintenance tasks directly from pull requests.
+
+### `/xlf` or `/updatexlf` - Update Translation Files
+
+- Workflow: [Update XLF files on command](https://github.com/dotnet/sdk/actions/workflows/update-xlf-on-comment.yml)
+- Source: [update-xlf-on-comment.yml](../../.github/workflows/update-xlf-on-comment.yml)
+
+When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, comment `/xlf` or `/updatexlf` on the PR and the GitHub Action will:
+
+1. Check out the PR branch
+2. Run `./build.sh /t:UpdateXlf` (or full build if needed)
+3. Commit any updated `.xlf` files directly to the PR branch
+
+This is useful when you've changed localized strings and the CI build is failing due to outdated XLF files.
+
+See also: [Localization documentation](Localization.md)
+
+### `/completions` or `/fixcompletions` - Update CLI Completion Snapshots
+
+- Workflow: [Fix completion snapshots on command](https://github.com/dotnet/sdk/actions/workflows/fix-completions-on-comment.yml)
+- Source: [fix-completions-on-comment.yml](../../.github/workflows/fix-completions-on-comment.yml)
+
+The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/completions` or `/fixcompletions` on the PR and the GitHub Action will:
+
+1. Build the repository
+2. Run the completion tests
+3. Update the verified snapshot files
+4. Commit the changes directly to the PR branch
+
+This is useful when you've added new commands or options and the completion snapshot tests are failing.
+
+See also: [Snapshot-based testing documentation](snapshot-based-testing.md)
+
+### `/backport to <branch>`
+
+- Workflow: [Backport PR to branch](https://github.com/dotnet/sdk/actions/workflows/backport.yml)
+- Source: [backport.yml](../../.github/workflows/backport.yml)
+
+Comment `/backport to <branch>` on a merged PR to create a new pull request that cherry-picks the changes onto the target branch. The backport PR will be labeled with `backport` and will CC the original PR participants.
+
+### `/ba-g <reason>` - Bypass Build Analysis
+
+Comment `/ba-g <reason>` on a PR to unconditionally turn the Build Analysis check green. The reason
+is captured by telemetry and should be descriptive - avoid non-specific justifications like
+"unrelated issues". This is useful when CI failures are caused by known flaky tests or
+infrastructure issues unrelated to the PR.
+
+Example reasons:
+
+- `/ba-g deadletter` - Helix work item crashed with "DeadLetter" status.
+- `/ba-g insufficient info in logs` - No good unique pattern in the logs to open a known issue.
+- `/ba-g recently fixed known issue #<number>` - The known issue fix was already merged, but CI ran
+  before it.
+- `/ba-g failures are from known issues #<number1>, #<number2>` - All failures have known issues
+  filed, but Build Analysis isn't turning green.
+
+For details on triaging CI failures and filing known issues, see the [runtime failure analysis
+documentation](https://github.com/dotnet/runtime/blob/main/docs/workflow/ci/failure-analysis.md).
+The [Build Analysis Known Issue Helper](https://helix.dot.net/BuildAnalysis/CreateKnownIssues) can
+assist in creating known issue reports with the correct labels and JSON format.
 
 ## Adding a Command
 

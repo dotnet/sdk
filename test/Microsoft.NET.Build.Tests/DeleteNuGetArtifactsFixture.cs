@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
@@ -36,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
             try
             {
                 //  Delete the generated NuGet packages in the cache.
-                foreach (string dir in Directory.EnumerateDirectories(TestContext.Current.NuGetCachePath, ConstantStringValues.DependencyDirectoryNamePrefix + "*"))
+                foreach (string dir in Directory.EnumerateDirectories(SdkTestContext.Current.NuGetCachePath, ConstantStringValues.DependencyDirectoryNamePrefix + "*"))
                 {
                     Directory.Delete(dir, true);
                 }

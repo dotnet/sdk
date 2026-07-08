@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -13,9 +13,10 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
-    public class TemplateCommandTests
+    [TestClass]
+    public class TemplateCommandTests : VerifyBase
     {
-        [Fact]
+        [TestMethod]
         public Task CannotCreateCommandForInvalidParameter()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -43,28 +44,20 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
             TemplatePackageManager packageManager = A.Fake<TemplatePackageManager>();
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($" new foo");
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
 
-            try
-            {
-                _ = new TemplateCommand(myCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
-            }
-            catch (InvalidTemplateParametersException e)
-            {
-                Assert.Equal(2, e.ParameterErrors.Count);
-                Assert.Equal(templateGroup.Templates.Single(), e.Template);
+            InvalidTemplateParametersException e = Assert.ThrowsExactly<InvalidTemplateParametersException>(
+                () => _ = new TemplateCommand(myCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single()));
 
-                return Verify(e.Message);
-            }
+            Assert.HasCount(2, e.ParameterErrors);
+            Assert.AreEqual(templateGroup.Templates.Single(), e.Template);
 
-            Assert.Fail("should not land here");
-            return Task.FromResult(1);
-
+            return Verify(e.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Constraints_WhenTheTemplateIsAllowed()
         {
             MockTemplateInfo template = new MockTemplateInfo(shortName: "test", identity: "testId1").WithConstraints(new TemplateConstraintInfo("test", "yes"));
@@ -74,10 +67,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.Empty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
+            Assert.IsEmpty((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationToken)));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Constraints_WhenTheTemplateIsRestricted()
         {
             MockTemplateInfo template = new MockTemplateInfo(shortName: "test").WithConstraints(new TemplateConstraintInfo("test", "no"));
@@ -87,10 +80,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
+            Assert.IsNotEmpty((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationToken)));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Constraints_WhenTheConstraintCannotBeEvaluated()
         {
             MockTemplateInfo template = new MockTemplateInfo(shortName: "test").WithConstraints(new TemplateConstraintInfo("test", "bad-arg"));
@@ -99,7 +92,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
+            Assert.IsNotEmpty((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationToken)));
         }
 
     }

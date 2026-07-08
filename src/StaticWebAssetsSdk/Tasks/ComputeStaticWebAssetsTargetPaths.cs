@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ComputeStaticWebAssetsTargetPaths : Task
+[MSBuildMultiThreadableTask]
+public class ComputeStaticWebAssetsTargetPaths : Task, IMultiThreadableTask
 {
     [Required]
     public ITaskItem[] Assets { get; set; }
@@ -20,20 +22,26 @@ public class ComputeStaticWebAssetsTargetPaths : Task
     [Output]
     public ITaskItem[] AssetsWithTargetPath { get; set; }
 
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     public override bool Execute()
     {
         try
         {
             Log.LogMessage(MessageImportance.Low, "Using path prefix '{0}'", PathPrefix);
-            AssetsWithTargetPath = new TaskItem[Assets.Length];
+            AssetsWithTargetPath = new ITaskItem[Assets.Length];
+            var separator = UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar;
+
+            var resolveMode = AdjustPathsForPack ? TokenResolveMode.Pack : TokenResolveMode.Serve;
 
             for (var i = 0; i < Assets.Length; i++)
             {
-                var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i]);
+                var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i], TaskEnvironment);
                 var result = staticWebAsset.ToTaskItem();
+
                 var targetPath = staticWebAsset.ComputeTargetPath(
                     PathPrefix,
-                    UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar, StaticWebAssetTokenResolver.Instance);
+                    separator, StaticWebAssetTokenResolver.Instance, resolveMode);
 
                 if (AdjustPathsForPack && string.IsNullOrEmpty(Path.GetExtension(targetPath)))
                 {
@@ -52,4 +60,5 @@ public class ComputeStaticWebAssetsTargetPaths : Task
 
         return !Log.HasLoggedErrors;
     }
+
 }

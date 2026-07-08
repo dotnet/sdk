@@ -1,21 +1,24 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using Microsoft.DotNet.Configurer;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class GivenThatDotNetRunsCommands : SdkTest
     {
-        public GivenThatDotNetRunsCommands(ITestOutputHelper log) : base(log)
+        public GivenThatDotNetRunsCommands()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void UnresolvedPlatformReferencesFailAsExpected()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithUnresolvedPlatformDependency", testAssetSubdirectory: "NonRestoredTestProjects")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithUnresolvedPlatformDependency", testAssetSubdirectory: "NonRestoredTestProjects")
                             .WithSource();
 
             new RestoreCommand(testInstance)
@@ -31,13 +34,13 @@ namespace Microsoft.DotNet.Tests
                     .And.HaveStdOutContaining(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-crash"));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(null)]
         public void GivenAMissingHomeVariableItExecutesHelpCommandSuccessfully(string value)
         {
             new DotnetCommand(Log)
-                .WithEnvironmentVariable(CliFolderPathCalculator.PlatformHomeVariableName, value)
+                .WithEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME", value)
                 .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, "")
                 .Execute("--help")
                 .Should()
@@ -46,10 +49,10 @@ namespace Microsoft.DotNet.Tests
                 .HaveStdOutContaining(LocalizableStrings.DotNetSdkInfo);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenASpecifiedDotnetCliHomeVariableItPrintsUsageMessage()
         {
-            var home = _testAssetsManager.CreateTestDirectory(identifier: "DOTNET_HOME").Path;
+            var home = TestAssetsManager.CreateTestDirectory(identifier: "DOTNET_HOME").Path;
 
             new DotnetCommand(Log)
                 .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, home)

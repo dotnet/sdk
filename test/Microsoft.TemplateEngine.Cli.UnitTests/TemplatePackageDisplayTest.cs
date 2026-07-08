@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -14,9 +14,12 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
+    [TestClass]
     public class TemplatePackageDisplayTest
     {
-        [Fact]
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestMethod]
         public void DisplayUpdateCheckResultTest()
         {
             var fakeOutputReporter = new FakeReporter();
@@ -47,10 +50,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var reportedErrors = fakeErrorReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             fakeOutputReporter.ReportedStrings.ToString().Should().BeNullOrEmpty();
             reportedErrors.Should().NotBeEmpty();
-            Assert.Equal(expectedErrors, reportedErrors);
+            Assert.AreEqual(expectedErrors, reportedErrors);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisplayInstallResultTest_WithForceSpecified()
         {
             var fakeOutputReporter = new FakeReporter();
@@ -78,7 +81,7 @@ Installed package has the following vulnerabilities:
 
     [1m[36mLow[39m[22m:
         low1".UnixifyLineBreaks();
-            ParseResult parseResult = NewCommandFactory.Create("new", _ => CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
 
             await packageDisplayer.DisplayInstallResultAsync(
                 "PackageA",
@@ -88,15 +91,15 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                CancellationToken.None);
+                TestContext.CancellationToken);
 
             var reportedOutput = fakeOutputReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             reportedOutput.Should().NotBeEmpty();
             fakeErrorReporter.ReportedStrings.ToString().Should().BeEmpty();
-            Assert.Equal(expectedOutput, reportedOutput);
+            Assert.AreEqual(expectedOutput, reportedOutput);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisplayInstallResultTest()
         {
             var fakeOutputReporter = new FakeReporter();
@@ -125,7 +128,7 @@ Installed package has the following vulnerabilities:
 [1mIn order to install this package, run:[22m
    new install testPackage --force".UnixifyLineBreaks();
 
-            ParseResult parseResult = NewCommandFactory.Create("new", _ => CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
             await packageDisplayer.DisplayInstallResultAsync(
                 "testPackage",
                 installResult,
@@ -134,15 +137,15 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                CancellationToken.None);
+                TestContext.CancellationToken);
 
             var reportedErrors = fakeErrorReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             fakeOutputReporter.ReportedStrings.ToString().Should().BeNullOrEmpty();
             reportedErrors.Should().NotBeEmpty();
-            Assert.Equal(expectedErrors, reportedErrors);
+            Assert.AreEqual(expectedErrors, reportedErrors);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisplayInstallResultTest_UpdateRequest()
         {
             var fakeOutputReporter = new FakeReporter();
@@ -168,7 +171,7 @@ Installed package has the following vulnerabilities:
    new uninstall testPackage
    new install testPackage --force".UnixifyLineBreaks();
 
-            ParseResult parseResult = NewCommandFactory.Create("new", _ => CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
             await packageDisplayer.DisplayInstallResultAsync(
                 "testPackage",
                 updateResult,
@@ -177,12 +180,12 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                CancellationToken.None);
+                TestContext.CancellationToken);
 
             var reportedErrors = fakeErrorReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             fakeOutputReporter.ReportedStrings.ToString().Should().BeNullOrEmpty();
             reportedErrors.Should().NotBeEmpty();
-            Assert.Equal(expectedErrors, reportedErrors);
+            Assert.AreEqual(expectedErrors, reportedErrors);
         }
 
         private IManagedTemplatePackage GetFakedManagedTemplatePackage(string mountPointUri, string displayName)

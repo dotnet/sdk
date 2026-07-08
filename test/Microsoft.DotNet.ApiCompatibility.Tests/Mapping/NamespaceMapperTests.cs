@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
+#nullable disable
 
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Mapping;
@@ -11,9 +11,10 @@ using Moq;
 
 namespace Microsoft.DotNet.ApiCompatibility.Tests.Mapping
 {
+    [TestClass]
     public class NamespaceMapperTests
     {
-        [Fact]
+        [TestMethod]
         public void NamespaceMapper_Ctor_PropertiesSet()
         {
             IRuleRunner ruleRunner = Mock.Of<IRuleRunner>();
@@ -23,20 +24,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests.Mapping
 
             NamespaceMapper namespaceMapper = new(ruleRunner, mapperSettings, rightSetSize, assemblyMapper);
 
-            Assert.Null(namespaceMapper.Left);
-            Assert.Equal(mapperSettings, namespaceMapper.Settings);
-            Assert.Equal(rightSetSize, namespaceMapper.Right.Length);
-            Assert.Equal(assemblyMapper, namespaceMapper.ContainingAssembly);
+            Assert.IsNull(namespaceMapper.Left);
+            Assert.AreEqual(mapperSettings, namespaceMapper.Settings);
+            Assert.HasCount(rightSetSize, namespaceMapper.Right);
+            Assert.AreEqual(assemblyMapper, namespaceMapper.ContainingAssembly);
         }
 
-        [Fact]
+        [TestMethod]
         public void NamespaceMapper_GetTypesWithoutLeftAndRight_EmptyResult()
         {
             NamespaceMapper namespaceMapper = new(Mock.Of<IRuleRunner>(), Mock.Of<IMapperSettings>(), rightSetSize: 1, Mock.Of<IAssemblyMapper>());
-            Assert.Empty(namespaceMapper.GetTypes());
+            Assert.IsEmpty(namespaceMapper.GetTypes());
         }
 
-        [Fact]
+        [TestMethod]
         public void NamespaceMapper_GetTypes_ReturnsExpected()
         {
             string leftSyntax = @"
@@ -61,13 +62,13 @@ namespace NamespaceMapper
             assemblyMapper.AddElement(right, ElementSide.Right);
 
             IEnumerable<INamespaceMapper> namespaceMappers = assemblyMapper.GetNamespaces();
-            Assert.Single(namespaceMappers);
+            Assert.ContainsSingle(namespaceMappers);
 
             IEnumerable<ITypeMapper> typeMappers = namespaceMappers.Single().GetTypes();
-            Assert.Equal(2, typeMappers.Count());
+            Assert.HasCount(2, typeMappers);
 
-            Assert.Equal(new string?[] { "A", null }, typeMappers.Select(n => n.Left?.Name));
-            Assert.Equal(new string[] { "A", "B" }, typeMappers.SelectMany(n => n.Right).Select(r => r?.Name));
+            Assert.AreSequenceEqual(new string[] { "A", null }, typeMappers.Select(n => n.Left?.Name));
+            Assert.AreSequenceEqual(new string[] { "A", "B" }, typeMappers.SelectMany(n => n.Right).Select(r => r?.Name));
         }
     }
 }

@@ -1,24 +1,45 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
-    public class GivenThatWeWantToPackAToolProjectWithPackagedShim : SdkTest, IClassFixture<NupkgOfPackWithShimsFixture>
+    [TestClass]
+    public class GivenThatWeWantToPackAToolProjectWithPackagedShim : SdkTest
     {
         private string _testRoot;
         private string _packageId;
         private string _packageVersion = "1.0.0";
         private const string _customToolCommandName = "customToolCommandName";
-        readonly NupkgOfPackWithShimsFixture _fixture;
+        private static readonly Lazy<NupkgOfPackWithShimsFixture> s_fixture = new(CreateFixture);
+        private readonly NupkgOfPackWithShimsFixture _fixture = s_fixture.Value;
 
-        public GivenThatWeWantToPackAToolProjectWithPackagedShim(NupkgOfPackWithShimsFixture fixture, ITestOutputHelper log) : base(log)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext context)
         {
-            fixture.Init(log, _testAssetsManager);
-            _fixture = fixture;
+            _ = s_fixture.Value;
+        }
+
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            if (s_fixture.IsValueCreated)
+            {
+                s_fixture.Value.Dispose();
+            }
+        }
+
+        private static NupkgOfPackWithShimsFixture CreateFixture()
+        {
+            var log = new TestContextOutputHelper(testContext: null);
+            var fixture = new NupkgOfPackWithShimsFixture();
+            fixture.Init(log, new TestAssetsManager(log));
+            return fixture;
         }
 
         private string SetupNuGetPackage(
@@ -48,7 +69,7 @@ namespace Microsoft.NET.ToolPack.Tests
             string targetFramework,
             Dictionary<string, string> additionalProperty = null)
         {
-            return _testAssetsManager
+            return TestAssetsManager
                 .CopyTestAsset("PortableTool", assetName)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -69,11 +90,11 @@ namespace Microsoft.NET.ToolPack.Tests
                 .WithTargetFrameworkOrFrameworks(targetFramework, multiTarget);
         }
 
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(true, "netcoreapp2.1")]
+        [DataRow(false, "netcoreapp2.1")]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_packs_successfully(bool multiTarget, string targetFramework)
         {
             var nugetPackage = _fixture.GetTestToolPackagePath(multiTarget, targetFramework: targetFramework);
@@ -85,11 +106,11 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(true, "netcoreapp2.1")]
+        [DataRow(false, "netcoreapp2.1")]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_contains_dependencies_dll(bool multiTarget, string targetFramework)
         {
             var nugetPackage = _fixture.GetTestToolPackagePath(multiTarget, targetFramework: targetFramework);
@@ -106,11 +127,11 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(true, "netcoreapp2.1")]
+        [DataRow(false, "netcoreapp2.1")]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_contains_shim(bool multiTarget, string targetFramework)
         {
             var nugetPackage = _fixture.GetTestToolPackagePath(multiTarget, targetFramework: targetFramework);
@@ -130,15 +151,15 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(true, "netcoreapp2.1")]
+        [DataRow(false, "netcoreapp2.1")]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_uses_customized_PackagedShimOutputRootDirectory(bool multiTarget, string targetFramework)
         {
-            string shimoutputPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "shimoutput");
-            TestAsset helloWorldAsset = _testAssetsManager
+            string shimoutputPath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "shimoutput");
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget.ToString(), identifier: multiTarget.ToString() + targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -153,9 +174,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
             _testRoot = helloWorldAsset.TestRoot;
 
-            var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
-
-            packCommand.Execute().Should().Pass();
+            new PackCommand(Log, helloWorldAsset.TestRoot).Execute().Should().Pass();
 
             string windowShimPath = Path.Combine(shimoutputPath, $"shims/{targetFramework}/win-x64/{_customToolCommandName}.exe");
             File.Exists(windowShimPath).Should().BeTrue($"Shim {windowShimPath} should exist");
@@ -163,11 +182,11 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(true, "netcoreapp2.1")]
+        [DataRow(false, "netcoreapp2.1")]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_uses_outputs_to_bin_by_default(bool multiTarget, string targetFramework)
         {
             TestAsset helloWorldAsset = CreateTestAsset(
@@ -189,11 +208,11 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeTrue($"Shim {osxShimPath} should exist");
         }
 
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(true, "netcoreapp2.1")]
+        [DataRow(false, "netcoreapp2.1")]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void Clean_should_remove_bin_output(bool multiTarget, string targetFramework)
         {
             TestAsset helloWorldAsset = CreateTestAsset(
@@ -218,11 +237,11 @@ namespace Microsoft.NET.ToolPack.Tests
             File.Exists(osxShimPath).Should().BeFalse($"Shim {osxShimPath} should not exists");
         }
 
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(true, "netcoreapp2.1")]
+        [DataRow(false, "netcoreapp2.1")]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void Generate_shims_runs_incrementally(bool multiTarget, string targetFramework)
         {
             TestAsset helloWorldAsset = CreateTestAsset(
@@ -249,21 +268,24 @@ namespace Microsoft.NET.ToolPack.Tests
             windowShimPathSecondModifiedTime.Should().Be(windowShimPathFirstModifiedTime);
         }
 
-        [Theory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(true, "netcoreapp2.1")]
+        [DataRow(false, "netcoreapp2.1")]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_contains_shim_with_no_build(bool multiTarget, string targetFramework)
         {
             var testAsset = CreateTestAsset(multiTarget, nameof(It_contains_shim_with_no_build) + multiTarget + targetFramework, targetFramework);
 
-            var buildCommand = new BuildCommand(testAsset);
+            var buildCommand = new BuildCommand(testAsset).WithWorkingDirectory(testAsset.Path);
             buildCommand.Execute().Should().Pass();
 
-            var packCommand = new PackCommand(testAsset);
+            var packCommand = new PackCommand(testAsset).WithWorkingDirectory(testAsset.Path) as PackCommand;
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot ?
+                Path.Combine(ciOutputRoot, "binlog", $"{nameof(It_contains_shim_with_no_build)}_{multiTarget}_{targetFramework}.binlog") :
+                "./msbuild.binlog";
 
-            packCommand.Execute("/p:NoBuild=true").Should().Pass();
+            packCommand.Execute($"/p:NoBuild=true", $"/bl:{binlogDestPath}").Should().Pass();
             var nugetPackage = packCommand.GetNuGetPackage();
 
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
@@ -282,9 +304,10 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_produces_valid_shims(bool multiTarget, string targetFramework)
         {
             if (!Environment.Is64BitOperatingSystem)
@@ -297,9 +320,10 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(_testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_produces_valid_shims_when_the_first_build_is_wrong(bool multiTarget, string targetFramework)
         {
             // The first build use wrong package id and should embed wrong string to shims. However, the pack should produce correct shim
@@ -330,9 +354,10 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void When_version_and_packageVersion_is_different_It_produces_valid_shims(bool multiTarget, string targetFramework)
         {
             if (!Environment.Is64BitOperatingSystem)
@@ -352,9 +377,10 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(_testRoot, nugetPackage);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow(false, ToolsetInfo.CurrentTargetFramework)]
         public void When_version_and_packageVersion_is_different_It_produces_valid_shims2(bool multiTarget, string targetFramework)
         {
             if (!Environment.Is64BitOperatingSystem)
@@ -375,7 +401,7 @@ namespace Microsoft.NET.ToolPack.Tests
             AssertValidShim(_testRoot, nugetPackage);
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_wpf_project_It_contains_shim_with_WindowsGraphicalUserInterfaceBit()
         {
             ushort windowsGUISubsystem = 0x2;
@@ -393,7 +419,7 @@ namespace Microsoft.NET.ToolPack.Tests
             testProject.AdditionalProperties.Add("ToolCommandName", _customToolCommandName);
             testProject.AdditionalProperties.Add("PackAsTool", "true");
 
-            TestAsset asset = _testAssetsManager.CreateTestProject(testProject);
+            TestAsset asset = TestAssetsManager.CreateTestProject(testProject);
             var packCommand = new PackCommand(Log, Path.Combine(asset.Path, testProject.Name));
 
             packCommand

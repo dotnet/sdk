@@ -1,0 +1,37 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Cli.Commands.Test;
+
+namespace Microsoft.DotNet.Cli.MSBuild.Tests
+{
+    [TestClass]
+    public class GivenDotnetVsTestForwardingApp
+    {
+        [TestMethod]
+        public void ItRunsVsTestApp()
+        {
+            new VSTestForwardingApp(new string[0])
+                .GetProcessStartInfo().Arguments.Should().EndWith("vstest.console.dll");
+        }
+
+        [TestMethod]
+        public void ItCanUseEnvironmentVariableToForceCustomPathToVsTestApp()
+        {
+            string vsTestConsolePath = "VSTEST_CONSOLE_PATH";
+            string dummyPath = Path.Join(Path.GetTempPath(), "vstest.custom.console.dll");
+
+            try
+            {
+                Environment.SetEnvironmentVariable(vsTestConsolePath, dummyPath);
+                new VSTestForwardingApp(new string[0])
+                    .GetProcessStartInfo().Arguments.Should().EndWith("vstest.custom.console.dll");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(vsTestConsolePath, null);
+            }
+        }
+    }
+}
+

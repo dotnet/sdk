@@ -1,12 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class CollectStaticWebAssetsToCopy : Task
+[MSBuildMultiThreadableTask]
+public class CollectStaticWebAssetsToCopy : Task, IMultiThreadableTask
 {
     [Required]
     public ITaskItem[] Assets { get; set; }
@@ -17,13 +20,15 @@ public class CollectStaticWebAssetsToCopy : Task
     [Output]
     public ITaskItem[] AssetsToCopy { get; set; }
 
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     public override bool Execute()
     {
         var copyToOutputFolder = new List<ITaskItem>();
-        var normalizedOutputPath = StaticWebAsset.NormalizeContentRootPath(Path.GetFullPath(OutputPath));
+        var normalizedOutputPath = StaticWebAsset.NormalizeContentRootPath(OutputPath, TaskEnvironment);
         try
         {
-            foreach (var asset in Assets.Select(StaticWebAsset.FromTaskItem))
+            foreach (var asset in StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment))
             {
                 string fileOutputPath = null;
                 if (!(asset.IsDiscovered() || asset.IsComputed()))
@@ -49,6 +54,7 @@ public class CollectStaticWebAssetsToCopy : Task
                             Log.LogMessage(MessageImportance.Low, "Source for asset '{0}' is '{1}' since the identity points to the output path.", asset.Identity, asset.OriginalItemSpec);
                             source = asset.OriginalItemSpec;
                         }
+                        // StaticWebAsset.Identity is invariantly an absolute path.
                         else if (File.Exists(asset.Identity))
                         {
                             Log.LogMessage(MessageImportance.Low, "Source for asset '{0}' is '{0}' since the asset exists.", asset.Identity);

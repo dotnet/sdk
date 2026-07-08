@@ -1,59 +1,30 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.Eventing.Reader;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+internal static class MuxerCommandSpecMaker
 {
-    internal static class MuxerCommandSpecMaker
+    internal static CommandSpec CreatePackageCommandSpecUsingMuxer(string commandPath, IEnumerable<string> commandArguments, IDictionary<string, string>? environment = null)
     {
-        internal static CommandSpec CreatePackageCommandSpecUsingMuxer(
-            string commandPath,
-            IEnumerable<string> commandArguments)
+        var arguments = new List<string>();
+        var rollForwardArgument = commandArguments.Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
+        if (rollForwardArgument.Any())
         {
-            var arguments = new List<string>();
-
-            var muxer = new Muxer();
-
-            var host = muxer.MuxerPath;
-
-            if (host == null)
-            {
-                throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
-            }
-
-            var rollForwardArgument = (commandArguments ?? Enumerable.Empty<string>()).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
-
-            if (rollForwardArgument.Any())
-            {
-                arguments.Add("--roll-forward");
-                arguments.Add("Major");
-            }
-
-            arguments.Add(commandPath);
-
-            if (commandArguments != null)
-            {
-                if (rollForwardArgument.Any())
-                {
-                    arguments.AddRange(commandArguments.Except(rollForwardArgument));
-                }
-                else
-                {
-                    arguments.AddRange(commandArguments);
-                }
-            }
-            return CreateCommandSpec(host, arguments);
+            arguments.Add("--roll-forward");
+            arguments.Add("Major");
         }
 
-        private static CommandSpec CreateCommandSpec(
-            string commandPath,
-            IEnumerable<string> commandArguments)
-        {
-            var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments);
+        arguments.Add(commandPath);
+        var filteredCommandArgs = rollForwardArgument.Any()
+            ? commandArguments.Where(arg => !arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase))
+            : commandArguments;
+        arguments.AddRange(filteredCommandArgs);
 
-            return new CommandSpec(commandPath, escapedArgs);
-        }
+        var host = new Muxer().MuxerPath;
+        var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(arguments);
+        return new CommandSpec(host, escapedArgs, environment);
     }
 }

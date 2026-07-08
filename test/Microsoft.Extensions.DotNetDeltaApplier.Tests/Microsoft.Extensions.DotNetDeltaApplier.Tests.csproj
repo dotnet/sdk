@@ -1,18 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.Extensions.DotNetDeltaApplier</RootNamespace>
-    <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\BuiltInTools\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-    <PackageReference Include="Xunit.Combinatorial" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\..\src\Dotnet.Watch\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Test.MSTest.Utilities\Microsoft.DotNet.Test.MSTest.Utilities.csproj" />
+    <PackageReference Include="Combinatorial.MSTest" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
+  <Import Project="..\..\src\Dotnet.Watch\HotReloadClient\Microsoft.DotNet.HotReload.Client.projitems" Label="Shared" />
 </Project>

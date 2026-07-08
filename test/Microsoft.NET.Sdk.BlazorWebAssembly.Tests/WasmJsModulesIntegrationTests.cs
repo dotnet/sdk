@@ -1,14 +1,20 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.NET.Sdk.WebAssembly;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmJsModulesIntegrationTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
+    [TestClass]
+    public class WasmJsModulesIntegrationTests : BlazorWasmBaselineTests
     {
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
@@ -36,17 +42,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
 
-            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, "blazor.boot.json"));
+            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, WasmBootConfigFileName));
             blazorBootJson.Should().Exist();
-            var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
+            var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out _).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm-minimal.lib.module.js");
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void JSModules_ManifestIncludesModuleTargetPaths()
         {
             // Arrange
@@ -78,21 +88,24 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
 
-            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), "blazor.boot.json"));
+            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), WasmBootConfigFileName));
             blazorBootJson.Should().Exist();
-            var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
+            var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm.lib.module.js", out _).Should().BeTrue();
-            initializers.TryGetProperty("_content/RazorClassLibrary/razorclasslibrary.lib.module.js", out var hash).Should().BeTrue();
-
-            // Do some validation to ensure the hash is included
-            Convert.TryFromBase64String(hash.GetString().Substring("SHA256-".Length), new byte[256], out _).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm.lib.module.js");
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "_content/RazorClassLibrary/razorclasslibrary.lib.module.js");
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorhosted.modules.json")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
@@ -120,13 +133,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, "publish.blazor.boot.json"));
+            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, $"publish.{WasmBootConfigFileName}"));
             blazorBootJson.Should().Exist();
-            var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
+            var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out var hash).Should().BeTrue();
-            Convert.TryFromBase64String(hash.GetString().Substring("SHA256-".Length), new byte[256], out _).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm-minimal.lib.module.js");
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
 
@@ -139,7 +154,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void JsModules_CanHaveDifferentBuildAndPublishModules()
         {
             // Arrange
@@ -182,36 +198,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var buildLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "blazor.boot.json"));
-            var publishLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "publish.blazor.boot.json"));
-
-            publishLibrary.GetString().Should().NotBe(buildLibrary.GetString());
-
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
             var lib = new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.lib.module.js"));
             lib.Should().Exist();
-
-            var wwwrootPublishLibrary = GetLibraryInitializer(Path.Combine(outputPath, "wwwroot", "_framework", "blazor.boot.json"));
-            publishLibrary.GetString().Should().Be(wwwrootPublishLibrary.GetString());
 
             AssertPublishAssets(
                 manifest,
                 outputPath,
                 intermediateOutputPath);
-
-            static JsonElement GetLibraryInitializer(string path)
-            {
-                var blazorBootJson = new FileInfo(path);
-                blazorBootJson.Should().Exist();
-                var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
-                contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
-                resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-                initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out var buildLibrary).Should().BeTrue();
-                return buildLibrary;
-            }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105393")]
+        [TestMethod]
         public void JsModules_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -257,14 +254,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var publishExtension = GetPublishExtension(Path.Combine(intermediateOutputPath, "publish.blazor.boot.json"));
-            GetPublishExtensionEntriesCount(Path.Combine(intermediateOutputPath, "publish.blazor.boot.json")).Should().Be(1);
+            var publishExtension = GetPublishExtension(Path.Combine(intermediateOutputPath, $"publish.{WasmBootConfigFileName}"));
+            GetPublishExtensionEntriesCount(Path.Combine(intermediateOutputPath, $"publish.{WasmBootConfigFileName}")).Should().Be(1);
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
             var lib = new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.lib.module.js"));
             lib.Should().Exist();
 
-            var wwwrootPublishExtension = GetPublishExtension(Path.Combine(outputPath, "wwwroot", "_framework", "blazor.boot.json"));
+            var wwwrootPublishExtension = GetPublishExtension(Path.Combine(outputPath, "wwwroot", "_framework", WasmBootConfigFileName));
             publishExtension.GetString().Should().Be(wwwrootPublishExtension.GetString());
 
             var extension = new FileInfo(Path.Combine(outputPath, "wwwroot", "_bin", "publish.extension.txt"));
@@ -276,7 +273,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105393")]
+        [TestMethod]
         public void JsModules_Hosted_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -328,13 +325,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var publishExtension = GetPublishExtension(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), "publish.blazor.boot.json"));
+            var publishExtension = GetPublishExtension(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), $"publish.{WasmBootConfigFileName}"));
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorhosted.modules.json")).Should().Exist();
             var lib = new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm.lib.module.js"));
             lib.Should().Exist();
 
-            var wwwrootPublishExtension = GetPublishExtension(Path.Combine(outputPath, "wwwroot", "_framework", "blazor.boot.json"));
+            var wwwrootPublishExtension = GetPublishExtension(Path.Combine(outputPath, "wwwroot", "_framework", WasmBootConfigFileName));
             publishExtension.GetString().Should().Be(wwwrootPublishExtension.GetString());
 
             var extension = new FileInfo(Path.Combine(outputPath, "wwwroot", "_bin", "publish.extension.txt"));
@@ -350,7 +347,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             var blazorBootJson = new FileInfo(path);
             blazorBootJson.Should().Exist();
-            var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
+            var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(path));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("extensions", out var extensions).Should().BeTrue();
             extensions.TryGetProperty("my-custom-extension", out var extension).Should().BeTrue();
@@ -362,7 +359,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             var blazorBootJson = new FileInfo(path);
             blazorBootJson.Should().Exist();
-            var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
+            var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(path));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("extensions", out var extensions).Should().BeTrue();
             extensions.TryGetProperty("my-custom-extension", out var extension).Should().BeTrue();

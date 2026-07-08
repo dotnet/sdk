@@ -7,6 +7,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal interface IFilterableCommand
     {
-        IReadOnlyDictionary<FilterOptionDefinition, CliOption> Filters { get; }
+        IEnumerable<Option> FilterOptions { get; }
     }
 }

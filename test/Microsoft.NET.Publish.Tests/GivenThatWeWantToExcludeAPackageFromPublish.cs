@@ -1,21 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToExcludeAPackageFromPublish : SdkTest
     {
-        public GivenThatWeWantToExcludeAPackageFromPublish(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Theory]
-        [InlineData("netcoreapp1.1", false)]
-        [InlineData("netcoreapp2.0", false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        [TestMethod]
+        [DataRow("netcoreapp1.1", false)]
+        [DataRow("netcoreapp2.0", false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_does_not_publish_a_PackageReference_with_PrivateAssets_All(string targetFramework, bool shouldIncludeExecutable)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "PublishExcludePackage", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -60,13 +59,13 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
 
-        [Theory]
-        [InlineData("netcoreapp1.1", false)]
-        [InlineData("netcoreapp2.0", false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        [TestMethod]
+        [DataRow("netcoreapp1.1", false)]
+        [DataRow("netcoreapp2.0", false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_does_not_publish_a_PackageReference_with_Publish_false(string targetFramework, bool shouldIncludeExecutable)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "PublishPackagePublishFalse", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -110,13 +109,13 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
 
-        [Theory]
-        [InlineData("netcoreapp1.1", false)]
-        [InlineData("netcoreapp2.0", false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        [TestMethod]
+        [DataRow("netcoreapp1.1", false)]
+        [DataRow("netcoreapp2.0", false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_publishes_a_PackageReference_with_PrivateAssets_All_and_Publish_true(string targetFramework, bool shouldIncludeExecutable)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "PublishPrivateAssets", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -171,7 +170,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact]
+        [TestMethod]
         public void TransitiveNetStandardPackageReferenceAndPublishFalse()
         {
             var testLibraryProject = new TestProject()
@@ -193,14 +192,14 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.ReferencedProjects.Add(testLibraryProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand.Execute().Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void TransitivePackageReferenceAndPublishFalse()
         {
             var testLibraryProject = new TestProject()
@@ -222,7 +221,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.ReferencedProjects.Add(testLibraryProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -232,7 +231,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().NotHaveFile("Newtonsoft.Json.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_exclude_packages_depended_on_by_non_privateassets_references()
         {
             var testProject = new TestProject()
@@ -247,7 +246,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json.Schema", "3.0.13"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Extensions.DependencyModel", "3.1.6", privateAssets: "all"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute().Should().Pass();

@@ -1,0 +1,226 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Moq;
+
+namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
+
+[TestClass]
+public class ComputeEndpointsForReferenceStaticWebAssetsTest
+{
+    [TestMethod]
+    public void IncludesEndpointsForAssetsFromCurrentProject()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = buildEngine.Object,
+            Assets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All")],
+            CandidateEndpoints = [CreateCandidateEndpoint("candidate.js", Path.Combine("wwwroot", "candidate.js"))]
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        task.Endpoints.Should().ContainSingle();
+        task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
+        task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+    }
+
+    [TestMethod]
+    public void UpdatesLabelAsNecessary_ForChosenEndpoints()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = buildEngine.Object,
+            Assets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All")],
+            CandidateEndpoints = [CreateCandidateEndpoint("candidate.js", Path.Combine("wwwroot", "candidate.js"), addLabel: true)]
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        task.Endpoints.Should().ContainSingle();
+        task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
+        task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+        var properties = StaticWebAssetEndpointProperty.FromMetadataValue(task.Endpoints[0].GetMetadata("EndpointProperties"));
+        properties.Should().ContainSingle();
+        properties[0].Name.Should().Be("label");
+        properties[0].Value.Should().Be("base/label-value");
+    }
+
+    [TestMethod]
+    public void FiltersOutEndpointsForAssetsNotFound()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = buildEngine.Object,
+            Assets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All")],
+            CandidateEndpoints = [
+                CreateCandidateEndpoint("candidate.js", Path.Combine("wwwroot", "candidate.js")),
+                CreateCandidateEndpoint("package.js", Path.Combine("..", "_content", "package-id", "package.js"))
+            ]
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        task.Endpoints.Where(e => e != null).Should().ContainSingle();
+        task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
+        task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+    }
+
+    [TestMethod]
+    public void AppliesBasePathWhenRouteStartsWithBasePathButNotAsPathSegment()
+    {
+        // This test verifies the fix for a bug where routes like "App1.styles.css"
+        // were incorrectly skipped because they start with the BasePath "App1".
+        // The correct behavior is that the base path should only be considered
+        // "already applied" if the route starts with "App1/" (as a path segment),
+        // not just any string starting with "App1".
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        // Create an asset with BasePath "App1" and a route "App1.styles.css"
+        // The route starts with "App1" but NOT "App1/", so the base path should still be applied
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = buildEngine.Object,
+            Assets = [CreateCandidate(
+                Path.Combine("obj", "scopedcss", "bundle", "App1.styles.css"),
+                "App1",
+                "Project",
+                "App1.styles.css",
+                "All",
+                "CurrentProject",
+                basePath: "App1")],
+            CandidateEndpoints = [CreateCandidateEndpoint("App1.styles.css", Path.Combine("obj", "scopedcss", "bundle", "App1.styles.css"))]
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        task.Endpoints.Should().ContainSingle();
+        // The route should be "App1/App1.styles.css", not just "App1.styles.css"
+        task.Endpoints[0].ItemSpec.Should().Be("App1/App1.styles.css");
+    }
+
+    [TestMethod]
+    public void SkipsBasePathApplicationWhenRouteAlreadyHasBasePathAsPathSegment()
+    {
+        // This test verifies that routes already starting with "BasePath/" are correctly skipped
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = buildEngine.Object,
+            Assets = [CreateCandidate(
+                Path.Combine("wwwroot", "css", "app.css"),
+                "App1",
+                "Discovered",
+                "css/app.css",
+                "All",
+                "All",
+                basePath: "App1")],
+            // Route already has the base path as a path segment
+            CandidateEndpoints = [CreateCandidateEndpoint("App1/css/app.css", Path.Combine("wwwroot", "css", "app.css"))]
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        task.Endpoints.Should().ContainSingle();
+        // Should remain "App1/css/app.css", not become "App1/App1/css/app.css"
+        task.Endpoints[0].ItemSpec.Should().Be("App1/css/app.css");
+    }
+
+    private static ITaskItem CreateCandidate(
+        string itemSpec,
+        string sourceId,
+        string sourceType,
+        string relativePath,
+        string assetKind,
+        string assetMode,
+        string basePath = "base")
+    {
+        var result = new StaticWebAsset()
+        {
+            Identity = Path.GetFullPath(itemSpec),
+            SourceId = sourceId,
+            SourceType = sourceType,
+            ContentRoot = Directory.GetCurrentDirectory(),
+            BasePath = basePath,
+            RelativePath = relativePath,
+            AssetKind = assetKind,
+            AssetMode = assetMode,
+            AssetRole = "Primary",
+            RelatedAsset = "",
+            AssetTraitName = "",
+            AssetTraitValue = "",
+            CopyToOutputDirectory = "",
+            CopyToPublishDirectory = "",
+            OriginalItemSpec = itemSpec,
+            // Add these to avoid accessing the disk to compute them
+            Integrity = "integrity",
+            Fingerprint = "fingerprint",
+            LastWriteTime = DateTime.UtcNow,
+            FileLength = 10,
+        };
+
+        result.ApplyDefaults();
+        result.Normalize();
+
+        return result.ToTaskItem();
+    }
+
+    private static ITaskItem CreateCandidateEndpoint(string route, string assetFile, bool addLabel = false)
+    {
+        return new StaticWebAssetEndpoint
+        {
+            Route = route,
+            AssetFile = Path.GetFullPath(assetFile),
+            EndpointProperties = addLabel
+                ? [new StaticWebAssetEndpointProperty { Name = "label", Value = "label-value" }]
+                : [],
+        }.ToTaskItem();
+    }
+}

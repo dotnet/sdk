@@ -1,16 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace EndToEnd.Tests
 {
-    public class ValidateInsertedManifests(ITestOutputHelper log) : SdkTest(log)
+    [TestClass]
+    public class ValidateInsertedManifests : SdkTest
     {
-        [Fact]
+        [TestMethod]
         public void ManifestReaderCanReadManifests()
         {
-            var sdkManifestDir = Path.Combine(Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath), "sdk-manifests");
+            var sdkManifestDir = Path.Combine(Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath), "sdk-manifests");
             var sdkversionDir = new DirectoryInfo(sdkManifestDir).EnumerateDirectories().First();
             foreach (var manifestVersionDir in sdkversionDir.EnumerateDirectories())
             {

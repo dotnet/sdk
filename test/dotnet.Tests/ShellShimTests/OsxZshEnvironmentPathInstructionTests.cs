@@ -1,0 +1,106 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ShellShim;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
+using Moq;
+
+namespace Microsoft.DotNet.ShellShim.Tests
+{
+    [TestClass]
+    public class OsxZshEnvironmentPathInstructionTests
+    {
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        public void GivenPathNotSetItPrintsManualInstructions()
+        {
+            BufferedReporter reporter = new();
+            BashPathUnderHomeDirectory toolsPath = new(
+                "/home/user",
+                ".dotnet/tools");
+            string pathValue = @"/usr/bin";
+            Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
+
+            provider
+                .Setup(p => p.GetEnvironmentVariable("PATH"))
+                .Returns(pathValue);
+
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns("/bin/bash");
+
+            OsxZshEnvironmentPathInstruction environmentPath = new(
+                toolsPath,
+                reporter,
+                provider.Object);
+
+            environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
+
+            reporter.Lines.Should().Equal(
+                string.Format(
+                    CliStrings.EnvironmentPathOSXZshManualInstructions,
+                    toolsPath.Path));
+        }
+
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [DataRow("/home/user/.dotnet/tools")]
+        public void GivenPathSetItPrintsNothing(string toolsDirectoryOnPath)
+        {
+            BufferedReporter reporter = new();
+            BashPathUnderHomeDirectory toolsPath = new(
+                "/home/user",
+                ".dotnet/tools");
+            string pathValue = @"/usr/bin";
+            Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
+
+            provider
+                .Setup(p => p.GetEnvironmentVariable("PATH"))
+                .Returns(pathValue + ":" + toolsDirectoryOnPath);
+
+            OsxZshEnvironmentPathInstruction environmentPath = new(
+                toolsPath,
+                reporter,
+                provider.Object);
+
+            environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
+
+            reporter.Lines.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [DataRow("~/.dotnet/tools")]
+        public void GivenPathSetItPrintsInstruction(string toolsDirectoryOnPath)
+        {
+            BufferedReporter reporter = new();
+            BashPathUnderHomeDirectory toolsPath = new(
+                "/home/user",
+                ".dotnet/tools");
+            string pathValue = @"/usr/bin";
+            Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
+
+            provider
+                .Setup(p => p.GetEnvironmentVariable("PATH"))
+                .Returns(pathValue + ":" + toolsDirectoryOnPath);
+
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns("/bin/zsh");
+
+            OsxZshEnvironmentPathInstruction environmentPath = new(
+                toolsPath,
+                reporter,
+                provider.Object);
+
+            environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
+
+            reporter.Lines.Should().Equal(
+                string.Format(
+                    CliStrings.EnvironmentPathOSXZshManualInstructions,
+                    toolsPath.Path));
+        }
+    }
+}

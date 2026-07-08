@@ -1,0 +1,204 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.Test;
+using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
+
+namespace Microsoft.DotNet.Cli.Test.Tests
+{
+    [TestClass]
+    public class GivenDotnetTestBuildsAndRunsTestsForMultipleTFMs : SdkTest
+    {
+        public GivenDotnetTestBuildsAndRunsTestsForMultipleTFMs()
+        {
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunMultipleProjectWithDifferentTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                MatchCollection previousDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: false, configuration));
+                MatchCollection currentDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, useCurrentVersion: true, configuration));
+
+                MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test2");
+                MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
+
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
+
+                Assert.ContainsSingle(failedTestsMatches);
+                Assert.HasCount(2, skippedTestsMatches);
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Failed!")
+                    .And.Contain("total: 5")
+                    .And.Contain("succeeded: 2")
+                    .And.Contain("failed: 1")
+                    .And.Contain("skipped: 2");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunProjectWithMultipleTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                MatchCollection previousDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: false, configuration));
+                MatchCollection currentDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: true, configuration));
+                MatchCollection currentDotnetOtherProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, useCurrentVersion: true, configuration));
+
+                MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test1");
+                MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test2");
+                MatchCollection timeoutTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test3");
+                MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
+                MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test5");
+
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetOtherProjectMatches.Count);
+
+                Assert.HasCount(2, skippedTestsMatches);
+                Assert.HasCount(2, failedTestsMatches);
+                Assert.HasCount(2, timeoutTestsMatches);
+                Assert.HasCount(2, errorTestsMatches);
+                Assert.HasCount(2, skippedTestsMatches);
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Failed!")
+                    .And.Contain("total: 14")
+                    .And.Contain("succeeded: 3")
+                    .And.Contain("failed: 8")
+                    .And.Contain("skipped: 3");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void RunProjectWithMultipleTFMs_ParallelizationTest_RunInParallelShouldFail(bool testTfmsInParallel)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("--property", $"TestTfmsInParallel={testTfmsInParallel}");
+
+            if (testTfmsInParallel)
+            {
+                if (!SdkTestContext.IsLocalized())
+                {
+                    result.StdOut
+                        .Should().Contain("Test run summary: Failed!")
+                        .And.Contain("total: 2")
+                        .And.Contain("succeeded: 0")
+                        .And.Contain("failed: 2")
+                        .And.Contain("skipped: 0")
+                        .And.Contain("This is run in parallel!");
+                }
+                else
+                {
+                    result.StdOut
+                        .Should().Contain("This is run in parallel!");
+                }
+
+                result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+            }
+            else
+            {
+                result.ExitCode.Should().Be(ExitCodes.Success);
+            }
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunProjectWithMultipleTFMsWithArchOption_ShouldReturnExitCodeGenericFailure(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+            var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration,
+                                    "--arch", arch);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("error NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specify the RID at the individual project level instead.");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("NETSDK1134");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunProjectWithMSTestMetaPackageAndMultipleTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                MatchCollection previousDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: false, configuration));
+                MatchCollection currentDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: true, configuration));
+
+                MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed TestMethod3");
+
+                Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
+                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
+
+                Assert.HasCount(2, failedTestsMatches);
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Failed!")
+                    .And.Contain("total: 5")
+                    .And.Contain("succeeded: 3")
+                    .And.Contain("failed: 2")
+                    .And.Contain("skipped: 0");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+    }
+}

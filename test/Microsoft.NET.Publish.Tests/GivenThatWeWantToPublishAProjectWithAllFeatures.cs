@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using FluentAssertions.Json;
 using Microsoft.Extensions.DependencyModel;
@@ -8,14 +10,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAProjectWithAllFeatures : SdkTest
     {
-        public GivenThatWeWantToPublishAProjectWithAllFeatures(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Theory]
-        [MemberData(nameof(PublishData))]
+        [TestMethod]
+        [DynamicData(nameof(PublishData))]
         public void It_publishes_the_project_correctly(string targetFramework, string[] expectedPublishFiles)
         {
             PublishCommand publishCommand = GetPublishCommand(targetFramework);
@@ -69,13 +68,17 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Diagnostics.Tracing.EventSource.IsSupported"": false,
             ""System.Drawing.Design.UITypeEditor.IsSupported"": true,
             ""System.Globalization.Invariant"": true,
+            ""System.TimeZoneInfo.Invariant"": true,
             ""System.Globalization.PredefinedCulturesOnly"": true,
             ""System.GC.Concurrent"": false,
             ""System.GC.Server"": true,
             ""System.GC.RetainVM"": false,
+            ""System.Linq.Enumerable.IsSizeOptimized"": true,
             ""System.Net.Http.EnableActivityPropagation"": false,
             ""System.Net.Http.UseNativeHttpHandler"": true,
+            ""System.Net.Http.WasmEnableStreamingResponse"": true,
             ""System.Net.Security.UseManagedNtlm"": true,
+            ""System.Net.SocketsHttpHandler.Http3Support"": false,
             ""System.Reflection.Metadata.MetadataUpdater.IsSupported"": false,
             ""System.Reflection.NullabilityInfoContext.IsSupported"": false,
             ""System.Resources.ResourceManager.AllowCustomResourceTypes"": false,
@@ -122,15 +125,15 @@ namespace Microsoft.NET.Publish.Tests
                 .BeEquivalentTo(baselineConfigJsonObject);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_when_nobuild_is_set_and_build_was_not_performed_previously()
         {
             var publishCommand = GetPublishCommand(ToolsetInfo.CurrentTargetFramework).Execute("/p:NoBuild=true");
             publishCommand.Should().Fail().And.HaveStdOutContaining("MSB3030"); // "Could not copy ___ because it was not found."
         }
 
-        [Theory]
-        [MemberData(nameof(PublishData))]
+        [TestMethod]
+        [DynamicData(nameof(PublishData))]
         public void It_does_not_build_when_nobuild_is_set(string targetFramework, string[] expectedPublishFiles)
         {
             var publishCommand = GetPublishCommand(targetFramework);
@@ -182,7 +185,7 @@ namespace Microsoft.NET.Publish.Tests
 
         private PublishCommand GetPublishCommand(string targetFramework, [CallerMemberName] string callingMethod = null)
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("KitchenSink", callingMethod, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges((path, project) =>

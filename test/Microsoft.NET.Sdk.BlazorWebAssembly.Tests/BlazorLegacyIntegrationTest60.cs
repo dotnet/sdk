@@ -1,22 +1,25 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.NET.Sdk.Razor.Tests;
+using Microsoft.NET.Sdk.StaticWebAssets.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest60(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest60))
+    [TestClass]
+    public class BlazorLegacyIntegrationTest60 : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
+        protected override string RestoreNugetPackagePath => nameof(BlazorLegacyIntegrationTest60);
 
-        protected override string EmbeddedResourcePrefix => 
+        protected override string EmbeddedResourcePrefix =>
             string.Join('.', "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
 
         protected override string ComputeBaselineFolder() =>
-            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
-            
-        [CoreMSBuildOnlyFact]
+            Path.Combine(SdkTestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "StaticWebAssetsBaselines");
+
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build60Hosted_Works()
         {
             // Arrange
@@ -33,10 +36,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(clientBuildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
             new FileInfo(Path.Combine(clientBuildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(clientBuildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(clientBuildOutputDirectory, "wwwroot", "_framework", "dotnet.timezones.blat")).Should().Exist();
-            new FileInfo(Path.Combine(clientBuildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(clientBuildOutputDirectory, "wwwroot", "_framework", $"{testAsset}.Client.dll")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(clientBuildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(clientBuildOutputDirectory, "wwwroot", "_framework", $"{testAsset}.Client.dll")).Should().NotExist();
 
             var serverBuildOutputDirectory = Path.Combine(testInstance.Path, "Server", "bin", "Debug", targetFramework);
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Server.dll")).Should().Exist();
@@ -44,8 +46,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("17.13", Reason = "Needs System.Text.Json 8.0.5")] // https://github.com/dotnet/sdk/issues/44886
-        [SkipOnPlatform(TestPlatforms.Linux | TestPlatforms.OSX, "https://github.com/dotnet/sdk/issues/42145")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [RequiresMSBuildVersion("17.13")]
+        [Ignore("https://github.com/dotnet/sdk/issues/49925")] // https://github.com/dotnet/sdk/issues/44886, https://github.com/dotnet/sdk/issues/42145
         public void Publish60Hosted_Works()
         {
             // Arrange
@@ -54,7 +58,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = CreatePublishCommand(ProjectDirectory, "Server");
-            ExecuteCommand(publish)
+            ExecuteCommand(publish, "/p:BuildWithNetFrameworkHostedCompiler=true")
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("warning IL");

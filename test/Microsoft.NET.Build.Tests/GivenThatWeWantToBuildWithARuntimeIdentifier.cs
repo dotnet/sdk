@@ -1,18 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildWithARuntimeIdentifier : SdkTest
     {
-        public GivenThatWeWantToBuildWithARuntimeIdentifier(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void It_fails_with_solution_level_RID()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource();
 
@@ -25,10 +26,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1134");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_succeeds_with_project_level_RID()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_with_unsupported_RID()
         {
             var testProject = new TestProject()
@@ -59,7 +60,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = "won-x64"
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .Execute()

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -8,10 +10,7 @@ using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
@@ -27,7 +26,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         public DotnetEnvironmentTestFixture()
         {
-            string dotnetRootUnderTest = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string dotnetRootUnderTest = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
             _originalPath = Environment.GetEnvironmentVariable(_PATH_VAR_NAME);
             Environment.SetEnvironmentVariable(_PATH_VAR_NAME, dotnetRootUnderTest + Path.PathSeparator + _originalPath);
         }
@@ -35,21 +34,29 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void Dispose() => Environment.SetEnvironmentVariable(_PATH_VAR_NAME, _originalPath);
     }
 
-    public class ToolPackageDownloaderTests : SdkTest, IClassFixture<DotnetEnvironmentTestFixture>
+    [TestClass]
+    public class ToolPackageDownloaderTests : SdkTest
     {
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        private static DotnetEnvironmentTestFixture _envFixture;
+        private static readonly TestToolBuilder ToolBuilder = TestToolBuilder.SharedInstance.Value;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _) => _envFixture = new DotnetEnvironmentTestFixture();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => _envFixture?.Dispose();
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath,
+                includeLocalFeedInNugetConfig: true,
                 identiifer: testMockBehaviorIsInSync.ToString());
 
-            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
+            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
@@ -62,23 +69,21 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenNugetConfigInstallSucceedsInTransaction(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
             IToolPackage package = null;
             using (var transactionScope = new TransactionScope(
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
             {
-                package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
+                package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                     packageId: TestPackageId,
                     verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(TestPackageVersion),
@@ -94,18 +99,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenNugetConfigInstallCreatesAnAssetFile(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
-            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
+            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
@@ -134,42 +137,21 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAConfigFileRootDirectoryPackageInstallSucceedsViaFindingNugetConfigInParentDir(
             bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-            var subDirUnderNugetConfigPath = nugetConfigPath.GetDirectoryPath().WithSubDirectories("sub");
-
-            var onlyNugetConfigInParentDirHasPackagesFeed = new List<MockFeed>
-            {
-                new MockFeed
-                {
-                    Type = MockFeedType.FeedFromLookUpNugetConfig,
-                    Uri = nugetConfigPath.Value,
-                    Packages = new List<MockFeedPackage>
-                    {
-                        new MockFeedPackage
-                        {
-                            PackageId = TestPackageId.ToString(),
-                            Version = TestPackageVersion,
-                            ToolCommandName = "SimulatorCommand"
-                        }
-                    }
-                }
-            };
-
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath,
-                feeds: onlyNugetConfigInParentDirHasPackagesFeed);
+                includeLocalFeedInNugetConfig: true);
 
-            fileSystem.Directory.CreateDirectory(subDirUnderNugetConfigPath.Value);
+            var subDirectory = testDir.WithSubDirectories("sub");
+            fileSystem.Directory.CreateDirectory(subDirectory.Value);
 
             var package = downloader.InstallPackage(
-                new PackageLocation(rootConfigDirectory: subDirUnderNugetConfigPath),
+                new PackageLocation(rootConfigDirectory: subDirectory),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
@@ -182,66 +164,60 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAllButNoPackageVersionItReturnLatestStableVersion(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
             var package = downloader.GetNuGetVersion(
-                new PackageLocation(nugetConfig: nugetConfigPath),
+                new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
-                verbosity: TestVerbosity,
-                isGlobalTool: true);
+                verbosity: TestVerbosity).version;
 
             package.OriginalVersion.Should().Be(TestPackageVersion);
         }
 
-        [Theory]
-        [InlineData(false, "1.0.0-rc*", TestPackageVersion)]
-        [InlineData(true, "1.0.0-rc*", TestPackageVersion)]
-        [InlineData(false, "1.*", TestPackageVersion)]
-        [InlineData(true, "1.*", TestPackageVersion)]
-        [InlineData(false, TestPackageVersion, TestPackageVersion)]
-        [InlineData(true, TestPackageVersion, TestPackageVersion)]
+        [TestMethod]
+        [DataRow(false, "1.0.0-rc*", TestPackageVersion)]
+        [DataRow(true, "1.0.0-rc*", TestPackageVersion)]
+        [DataRow(false, "1.*", TestPackageVersion)]
+        [DataRow(true, "1.*", TestPackageVersion)]
+        [DataRow(false, TestPackageVersion, TestPackageVersion)]
+        [DataRow(true, TestPackageVersion, TestPackageVersion)]
         public void GivenASpecificVersionGetCorrectVersion(bool testMockBehaviorIsInSync, string requestedVersion, string expectedVersion)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+
             var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(emptySource);
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
-            var package = downloader.GetNuGetVersion(new PackageLocation(nugetConfig: nugetConfigPath,
+            var package = downloader.GetNuGetVersion(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config"),
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
-                versionRange: VersionRange.Parse(requestedVersion),
-                isGlobalTool: true);
+                versionRange: VersionRange.Parse(requestedVersion)).version;
 
             package.OriginalVersion.Should().Be(expectedVersion);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAllButNoPackageVersionItCanInstallThePackage(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
             var package = downloader.InstallPackage(
-                new PackageLocation(nugetConfig: nugetConfigPath),
+                new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
@@ -253,18 +229,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAllButNoTargetFrameworkItCanDownloadThePackage(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
-            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
+            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
@@ -276,16 +250,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenASourceInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
@@ -300,20 +274,29 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenARelativeSourcePathInstallSucceeds(bool testMockBehaviorIsInSync)
         {
+            //  CI seems to be getting an old version of the global.tool.console.demo package which targets .NET Core 2.1.  This may fix that
+            ToolBuilder.RemovePackageFromGlobalPackages(Log, TestPackageId.ToString(), TestPackageVersion);
+
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
+
+            var relativePath = Path.GetRelativePath(testDir.Value, source);
+
+            Log.WriteLine("Root path: " + testDir.Value);
+            Log.WriteLine("Relative path: " + relativePath);
+            Log.WriteLine("Current Directory: " + Directory.GetCurrentDirectory());
 
             var package = downloader.InstallPackage(
-                new PackageLocation(additionalFeeds: new[]
-                    {Path.GetRelativePath(Directory.GetCurrentDirectory(), source)}), packageId: TestPackageId,
+                new PackageLocation(additionalFeeds: new[] {relativePath}),
+                packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
@@ -325,16 +308,19 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAUriSourceInstallSucceeds(bool testMockBehaviorIsInSync)
         {
+            //  CI seems to be getting an old version of the global.tool.console.demo package which targets .NET Core 2.1.  This may fix that
+            ToolBuilder.RemovePackageFromGlobalPackages(Log, TestPackageId.ToString(), TestPackageVersion);
+
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[] { new Uri(source).AbsoluteUri }), packageId: TestPackageId,
@@ -349,20 +335,19 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAEmptySourceAndNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
             var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(emptySource);
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
-            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath,
+            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config"),
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
@@ -376,16 +361,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenFailureAfterRestoreInstallWillRollback(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             static void FailedStepAfterSuccessRestore() => throw new GracefulException("simulated error");
 
@@ -413,16 +398,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             AssertInstallRollBack(fileSystem, store);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenSecondInstallInATransactionTheFirstInstallShouldRollback(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             Action a = () =>
             {
@@ -455,27 +440,33 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             a.Should().Throw<ToolPackageException>().Where(
                 ex => ex.Message ==
                       string.Format(
-                          CommonLocalizableStrings.ToolPackageConflictPackageId,
+                          CliStrings.ToolPackageConflictPackageId,
                           TestPackageId,
                           TestPackageVersion));
 
             AssertInstallRollBack(fileSystem, store);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenFailureWhenInstallLocalToolsItWillRollbackPackageVersion(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             static void FailedStepAfterSuccessDownload() => throw new GracefulException("simulated error");
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
             var localToolDownloadDir = Path.Combine(new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings)).ToString().Trim('"'), TestPackageId.ToString());
+            var localToolVersionDir = Path.Combine(localToolDownloadDir, TestPackageVersion.ToString());
+
+            if (fileSystem.Directory.Exists(localToolVersionDir))
+            {
+                fileSystem.Directory.Delete(localToolVersionDir, true);
+            }
 
             Action a = () =>
             {
@@ -490,9 +481,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         targetFramework: _testTargetframework,
                         verifySignatures: false);
 
-                    fileSystem
-                    .Directory
+                    fileSystem.Directory
                         .Exists(localToolDownloadDir)
+                        .Should()
+                        .BeTrue();
+
+                    fileSystem.Directory
+                        .Exists(localToolVersionDir)
                         .Should()
                         .BeTrue();
 
@@ -509,7 +504,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Should()
                 .BeTrue();
 
-            var localToolVersionDir = Path.Combine(localToolDownloadDir, TestPackageVersion.ToString());
+            
             fileSystem
                 .Directory
                 .Exists(localToolVersionDir)
@@ -517,16 +512,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .BeFalse();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenSecondInstallOfLocalToolItShouldNotThrowException(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             Action a = () =>
             {
@@ -552,18 +547,23 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     t.Complete();
                 }
             };
+
+            a();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenSecondInstallWithoutATransactionTheFirstShouldNotRollback(bool testMockBehaviorIsInSync)
         {
+            new RunExeCommand(Log, "dotnet", "nuget", "locals", "all", "--list")
+                .Execute().Should().Pass();
+
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
@@ -588,7 +588,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             secondCall.Should().Throw<ToolPackageException>().Where(
                 ex => ex.Message ==
                       string.Format(
-                          CommonLocalizableStrings.ToolPackageConflictPackageId,
+                          CliStrings.ToolPackageConflictPackageId,
                           TestPackageId,
                           TestPackageVersion));
 
@@ -607,16 +607,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .BeEmpty();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source),
+                includeLocalFeedInNugetConfig: false,
                 identiifer: testMockBehaviorIsInSync.ToString());
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
@@ -634,16 +634,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             storeQuery.EnumeratePackages().Should().BeEmpty();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAnInstalledPackageUninstallRollsbackWhenTransactionFails(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[] { source }),
@@ -670,17 +670,17 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackageWhenTransactionCommits(
             bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForSource(source));
+                includeLocalFeedInNugetConfig: false);
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
@@ -703,18 +703,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             storeQuery.EnumeratePackages().Should().BeEmpty();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void GivenAPackageNameWithDifferentCaseItCanInstallThePackage(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
-            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
+            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: new PackageId("GlObAl.TooL.coNsoLe.DemO"),
                 verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
@@ -726,20 +724,22 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenARootWithNonAsciiCharacterInstallSucceeds()
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
-
             var surrogate = char.ConvertFromUtf32(int.Parse("2A601", NumberStyles.HexNumber));
             string nonAscii = "ab Ṱ̺̺̕o 田中さん åä," + surrogate;
 
-            var root = _testAssetsManager.CreateTestDirectory(testName: nonAscii, identifier: "root");
+            var root = TestAssetsManager.CreateTestDirectory(testName: nonAscii, identifier: "root");
             var reporter = new BufferedReporter();
             var fileSystem = new FileSystemWrapper();
             var store = new ToolPackageStoreAndQuery(new DirectoryPath(root.Path));
-            WriteNugetConfigFileToPointToTheFeed(fileSystem, nugetConfigPath);
-            var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+
+            var nugetConfigPath = new FilePath(Path.Combine(root.Path, "NuGet.config"));
+
+            WriteNugetConfigFile(fileSystem, nugetConfigPath, true);
+
+            var testRuntimeJsonPath = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
 
             var downloader = new ToolPackageDownloader(
                 store: store,
@@ -760,21 +760,20 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         // repro https://github.com/dotnet/cli/issues/9409
         public void GivenAComplexVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
             var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(emptySource);
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
-            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath,
+            var package = downloader.InstallPackage(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config"),
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
@@ -788,37 +787,23 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [UnixOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         // repro https://github.com/dotnet/cli/issues/10101
         public void GivenAPackageWithCasingAndenUSPOSIXInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+
             var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(emptySource);
 
             var packageId = new PackageId("Global.Tool.Console.Demo.With.Casing");
             var packageVersion = "2.0.4";
-            var feed = new MockFeed
-            {
-                Type = MockFeedType.ImplicitAdditionalFeed,
-                Uri = nugetConfigPath.Value,
-                Packages = new List<MockFeedPackage>
-                    {
-                        new MockFeedPackage
-                        {
-                            PackageId = packageId.ToString(),
-                            Version = packageVersion,
-                            ToolCommandName = "DemoWithCasing",
-                        }
-                    }
-            };
 
-            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: new List<MockFeed> { feed },
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                includeLocalFeedInNugetConfig: true);
 
             CultureInfo currentCultureBefore = CultureInfo.CurrentCulture;
             try
@@ -827,7 +812,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 IToolPackage package = null;
                 Action action = () => package = downloader.InstallPackage(
                     new PackageLocation(
-                        nugetConfig: nugetConfigPath,
+                        nugetConfig: testDir.WithFile("NuGet.config"),
                         additionalFeeds: new[] { emptySource }),
                     packageId: packageId,
                     verbosity: TestVerbosity,
@@ -892,94 +877,14 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .BeEmpty();
         }
 
-        private static FilePath GetUniqueTempProjectPathEachTest()
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.WithFile(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
-        }
-
-        private static List<MockFeed> GetMockFeedsForConfigFile(FilePath? nugetConfig)
-        {
-            if (nugetConfig.HasValue)
-            {
-                return new List<MockFeed>
-                {
-                    new MockFeed
-                    {
-                        Type = MockFeedType.ExplicitNugetConfig,
-                        Uri = nugetConfig.Value.Value,
-                        Packages = new List<MockFeedPackage>
-                        {
-                            new MockFeedPackage
-                            {
-                                PackageId = TestPackageId.ToString(),
-                                Version = TestPackageVersion,
-                                ToolCommandName = "SimulatorCommand"
-                            }
-                        }
-                    }
-                };
-            }
-            else
-            {
-                return new List<MockFeed>();
-            }
-        }
-
-        private static List<MockFeed> GetMockFeedsForSource(string source)
-        {
-            return new List<MockFeed>
-            {
-                new MockFeed
-                {
-                    Type = MockFeedType.ImplicitAdditionalFeed,
-                    Uri = source,
-                    Packages = new List<MockFeedPackage>
-                    {
-                        new MockFeedPackage
-                        {
-                            PackageId = TestPackageId.ToString(),
-                            Version = TestPackageVersion,
-                            ToolCommandName = "SimulatorCommand"
-                        }
-                    }
-                }
-            };
-        }
-
-        private static List<MockFeed> GetOfflineMockFeed()
-        {
-            return new List<MockFeed>
-            {
-                new MockFeed
-                {
-                    Type = MockFeedType.ImplicitAdditionalFeed,
-                    Uri = GetTestLocalFeedPath(),
-                    Packages = new List<MockFeedPackage>
-                    {
-                        new MockFeedPackage
-                        {
-                            PackageId = TestPackageId.ToString(),
-                            Version = TestPackageVersion,
-                            ToolCommandName = "SimulatorCommand"
-                        }
-                    }
-                }
-            };
-        }
-
-        private (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader, IToolPackageUninstaller, BufferedReporter, IFileSystem
+        private (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader, IToolPackageUninstaller, BufferedReporter, IFileSystem, DirectoryPath testDir
             ) Setup(
                 bool useMock,
-                List<MockFeed> feeds = null,
-                FilePath? writeLocalFeedToNugetConfig = null,
+                bool includeLocalFeedInNugetConfig,
                 [CallerMemberName] string callingMethod = "",
                 string identiifer = null)
         {
-            var root = new DirectoryPath(_testAssetsManager.CreateTestDirectory(callingMethod, identifier: useMock.ToString() + identiifer).Path);
+            var root = new DirectoryPath(TestAssetsManager.CreateTestDirectory(callingMethod, identifier: useMock.ToString() + identiifer).Path);
             var reporter = new BufferedReporter();
 
             IFileSystem fileSystem;
@@ -987,77 +892,72 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             IToolPackageStoreQuery storeQuery;
             IToolPackageDownloader downloader;
             IToolPackageUninstaller uninstaller;
+
+            var nugetConfigPath = new FilePath(Path.Combine(root.Value, "NuGet.config"));
+
+            var toolsRoot = root.WithSubDirectories("tools");
+
+
             if (useMock)
             {
                 fileSystem = new FileSystemMockBuilder().Build();
                 var frameworksMap = new Dictionary<PackageId, IEnumerable<NuGetFramework>>()
                         { {TestPackageId, TestFrameworks } };
-                WriteNugetConfigFileToPointToTheFeed(fileSystem, writeLocalFeedToNugetConfig);
-                var toolPackageStoreMock = new ToolPackageStoreMock(root, fileSystem, frameworksMap);
-                store = toolPackageStoreMock;
-                storeQuery = toolPackageStoreMock;
-                downloader = new ToolPackageDownloaderMock(
-                    store: toolPackageStoreMock,
-                    fileSystem: fileSystem,
-                    reporter: reporter,
-                    feeds: feeds == null
-                            ? GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)
-                            : feeds.Concat(GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)).ToList(),
-                    frameworksMap: frameworksMap);
-                uninstaller = new ToolPackageUninstallerMock(fileSystem, toolPackageStoreMock);
+
+                WriteNugetConfigFile(fileSystem, nugetConfigPath, includeLocalFeedInNugetConfig);
+                var storeAndQuery = new ToolPackageStoreAndQuery(toolsRoot, fileSystem);
+                store = storeAndQuery;
+                storeQuery = storeAndQuery;
+                downloader = new ToolPackageDownloaderMock2(storeAndQuery,
+                    runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
+                    currentWorkingDirectory: root.Value,
+                    fileSystem);
+
+                uninstaller = new ToolPackageUninstallerMock(fileSystem, storeAndQuery);
             }
             else
             {
                 fileSystem = new FileSystemWrapper();
-                WriteNugetConfigFileToPointToTheFeed(fileSystem, writeLocalFeedToNugetConfig);
-                var toolPackageStore = new ToolPackageStoreAndQuery(root);
+                WriteNugetConfigFile(fileSystem, nugetConfigPath, includeLocalFeedInNugetConfig);
+                var toolPackageStore = new ToolPackageStoreAndQuery(toolsRoot);
                 store = toolPackageStore;
                 storeQuery = toolPackageStore;
-                var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
-                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath);
+                var testRuntimeJsonPath = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath, root.Value);
                 uninstaller = new ToolPackageUninstaller(store);
             }
 
-            store.Root.Value.Should().Be(Path.GetFullPath(root.Value));
+            store.Root.Value.Should().Be(Path.GetFullPath(toolsRoot.Value));
 
-            return (store, storeQuery, downloader, uninstaller, reporter, fileSystem);
+            return (store, storeQuery, downloader, uninstaller, reporter, fileSystem, root);
         }
 
-        private static void WriteNugetConfigFileToPointToTheFeed(IFileSystem fileSystem, FilePath? filePath)
+        private static void WriteNugetConfigFile(IFileSystem fileSystem, FilePath? filePath, bool includeLocalFeedPath)
         {
             if (!filePath.HasValue) return;
 
             fileSystem.Directory.CreateDirectory(filePath.Value.GetDirectoryPath().Value);
 
             fileSystem.File.WriteAllText(filePath.Value.Value, FormatNuGetConfig(
-                localFeedPath: GetTestLocalFeedPath()));
+                localFeedPath: includeLocalFeedPath ? GetTestLocalFeedPath() : null));
         }
 
         public static string FormatNuGetConfig(string localFeedPath)
         {
-            const string template = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            string localFeed = string.IsNullOrEmpty(localFeedPath)
+                ? string.Empty
+                : $"<add key=\"Test Source\" value=\"{localFeedPath}\" />";
+
+            return $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 <packageSources>
 <!--To inherit the global NuGet package sources remove the <clear/> line below -->
 <clear />
-<add key=""Test Source"" value=""{0}"" />
+{localFeed}
 <add key=""dotnet-public"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"" />
 <add key=""myget-legacy"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/myget-legacy/nuget/v3/index.json"" />
 </packageSources>
 </configuration>";
-            return string.Format(template, localFeedPath);
-        }
-
-        private static FilePath GenerateRandomNugetConfigFilePath()
-        {
-            const string nugetConfigName = "nuget.config";
-            var tempPathForNugetConfigWithWhiteSpace =
-                Path.Combine(Path.GetTempPath(),
-                    Path.GetRandomFileName() + " " + Path.GetRandomFileName());
-
-            FilePath nugetConfigFullPath =
-                new(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
-            return nugetConfigFullPath;
         }
 
         private static string GetTestLocalFeedPath() =>
@@ -1066,10 +966,72 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new("global.tool.console.demo");
-        private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse("netcoreapp2.1") };
+        private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse(ToolPackageDownloaderMock2.DefaultTargetFramework) };
         private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
-        public ToolPackageDownloaderTests(ITestOutputHelper log) : base(log)
+
+        public ToolPackageDownloaderTests() { }
+
+        [TestMethod]
+        public void GivenAToolWithHigherFrameworkItShowsAppropriateErrorMessage()
         {
+            // Create a mock tool package with net99.0 framework to simulate a tool requiring a higher .NET version
+            var testDir = TestAssetsManager.CreateTestDirectory();
+            var fileSystem = new FileSystemWrapper();
+            var packageId = new PackageId("test.tool.higher.framework");
+            var packageVersion = new NuGetVersion("1.0.0");
+            var packageRoot = new DirectoryPath(testDir.Path).WithSubDirectories(".store", packageId.ToString(), packageVersion.ToNormalizedString());
+
+            // Create the package directory structure with net99.0 framework
+            var toolsPath = Path.Combine(packageRoot.Value, "tools", "net99.0", "any");
+            fileSystem.Directory.CreateDirectory(toolsPath);
+
+            // Create DotnetToolSettings.xml
+            var settingsContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<DotNetCliTool Version=""1"">
+  <Commands>
+    <Command Name=""test-tool"" EntryPoint=""test.dll"" Runner=""dotnet"" />
+  </Commands>
+</DotNetCliTool>";
+            fileSystem.File.WriteAllText(Path.Combine(toolsPath, "DotnetToolSettings.xml"), settingsContent);
+
+            // Create a dummy assembly file
+            fileSystem.File.WriteAllText(Path.Combine(toolsPath, "test.dll"), "dummy");
+
+            // Create an empty asset file (simulating NuGet restore with no compatible frameworks)
+            var assetFilePath = Path.Combine(packageRoot.Value, "project.assets.json");
+            var currentFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            var assetFileContents = $$"""
+                {
+                  "version": 3,
+                  "targets": {
+                    "{{currentFramework}}/{{RuntimeInformation.RuntimeIdentifier}}": {
+                      "{{packageId}}/{{packageVersion}}": {
+                        "type": "package",
+                        "tools": {
+                        }
+                      }
+                    }
+                  },
+                  "libraries": {},
+                  "projectFileDependencyGroups": {}
+                }
+                """;
+            fileSystem.File.WriteAllText(assetFilePath, assetFileContents);
+
+            // Try to create a ToolPackageInstance, which should throw an informative error
+            Action action = () =>
+            {
+                _ = new ToolPackageInstance(
+                    packageId,
+                    packageVersion,
+                    new DirectoryPath(testDir.Path).WithSubDirectories(".store"),
+                    packageRoot,
+                    fileSystem);
+            };
+
+            action.Should().Throw<GracefulException>()
+                .WithMessage("*requires a higher version of .NET*")
+                .WithMessage("*.NET 99*");
         }
     }
 }

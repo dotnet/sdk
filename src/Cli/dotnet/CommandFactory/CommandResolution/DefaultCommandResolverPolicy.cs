@@ -3,63 +3,79 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class DefaultCommandResolverPolicy : ICommandResolverPolicy
 {
-    public class DefaultCommandResolverPolicy : ICommandResolverPolicy
+    public CompositeCommandResolver CreateCommandResolver(string? sdkRoot = null, string? currentWorkingDirectory = null)
     {
-        public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
+        return Create(sdkRoot: sdkRoot, currentWorkingDirectory: currentWorkingDirectory);
+    }
+
+    public static CompositeCommandResolver Create(string? sdkRoot = null,string? currentWorkingDirectory = null)
+    {
+        var environment = new EnvironmentProvider();
+        var publishedPathCommandSpecFactory = new PublishPathCommandSpecFactory();
+
+        IPlatformCommandSpecFactory platformCommandSpecFactory;
+        if (OperatingSystem.IsWindows())
         {
-            return Create(currentWorkingDirectory);
+            platformCommandSpecFactory = new WindowsExePreferredCommandSpecFactory();
+        }
+        else
+        {
+            platformCommandSpecFactory = new GenericPlatformCommandSpecFactory();
         }
 
-        public static CompositeCommandResolver Create(string currentWorkingDirectory = null)
+        return CreateDefaultCommandResolver(
+            environment,
+#if !CLI_AOT
+            new PackagedCommandSpecFactoryWithCliRuntime(),
+#endif
+            platformCommandSpecFactory,
+            publishedPathCommandSpecFactory,
+            sdkRoot,
+            currentWorkingDirectory);
+    }
+
+    public static CompositeCommandResolver CreateDefaultCommandResolver(
+        IEnvironmentProvider environment,
+#if !CLI_AOT
+        IPackagedCommandSpecFactory packagedCommandSpecFactory,
+#endif
+        IPlatformCommandSpecFactory platformCommandSpecFactory,
+        IPublishedPathCommandSpecFactory publishedPathCommandSpecFactory,
+        string? sdkRoot = null,
+        string? currentWorkingDirectory = null)
+    {
+        var compositeCommandResolver = new CompositeCommandResolver();
+
+        compositeCommandResolver.AddCommandResolver(new MuxerCommandResolver());
+        if (sdkRoot != null)
         {
-            var environment = new EnvironmentProvider();
-            var packagedCommandSpecFactory = new PackagedCommandSpecFactoryWithCliRuntime();
-            var publishedPathCommandSpecFactory = new PublishPathCommandSpecFactory();
-
-            var platformCommandSpecFactory = default(IPlatformCommandSpecFactory);
-            if (OperatingSystem.IsWindows())
-            {
-                platformCommandSpecFactory = new WindowsExePreferredCommandSpecFactory();
-            }
-            else
-            {
-                platformCommandSpecFactory = new GenericPlatformCommandSpecFactory();
-            }
-
-            return CreateDefaultCommandResolver(
-                environment,
-                packagedCommandSpecFactory,
-                platformCommandSpecFactory,
-                publishedPathCommandSpecFactory,
-                currentWorkingDirectory);
+            compositeCommandResolver.AddCommandResolver(DotnetToolsCommandResolver.ForSdkRoot(sdkRoot));
         }
-
-        public static CompositeCommandResolver CreateDefaultCommandResolver(
-            IEnvironmentProvider environment,
-            IPackagedCommandSpecFactory packagedCommandSpecFactory,
-            IPlatformCommandSpecFactory platformCommandSpecFactory,
-            IPublishedPathCommandSpecFactory publishedPathCommandSpecFactory,
-            string currentWorkingDirectory = null)
+        else
         {
-            var compositeCommandResolver = new CompositeCommandResolver();
-
-            compositeCommandResolver.AddCommandResolver(new MuxerCommandResolver());
             compositeCommandResolver.AddCommandResolver(new DotnetToolsCommandResolver());
-            compositeCommandResolver.AddCommandResolver(new LocalToolsCommandResolver(currentWorkingDirectory: currentWorkingDirectory));
-            compositeCommandResolver.AddCommandResolver(new RootedCommandResolver());
-            compositeCommandResolver.AddCommandResolver(
-                new ProjectToolsCommandResolver(packagedCommandSpecFactory, environment));
-            compositeCommandResolver.AddCommandResolver(new AppBaseDllCommandResolver());
-            compositeCommandResolver.AddCommandResolver(
-                new AppBaseCommandResolver(environment, platformCommandSpecFactory));
-            compositeCommandResolver.AddCommandResolver(
-                new PathCommandResolver(environment, platformCommandSpecFactory));
-            compositeCommandResolver.AddCommandResolver(
-                new PublishedPathCommandResolver(environment, publishedPathCommandSpecFactory));
-
-            return compositeCommandResolver;
         }
+        compositeCommandResolver.AddCommandResolver(new LocalToolsCommandResolver(currentWorkingDirectory: currentWorkingDirectory));
+        compositeCommandResolver.AddCommandResolver(new RootedCommandResolver());
+#if !CLI_AOT
+        // ProjectToolsCommandResolver resolves legacy DotNetCliToolReference tools by evaluating the
+        // project with MSBuild and reading the NuGet lock file - neither of which is AOT-compatible.
+        // The AOT bridge omits it and falls back to the managed CLI for these (rare) invocations.
+        compositeCommandResolver.AddCommandResolver(
+            new ProjectToolsCommandResolver(packagedCommandSpecFactory, environment));
+#endif
+        compositeCommandResolver.AddCommandResolver(new AppBaseDllCommandResolver());
+        compositeCommandResolver.AddCommandResolver(
+            new AppBaseCommandResolver(environment, platformCommandSpecFactory));
+        compositeCommandResolver.AddCommandResolver(
+            new PathCommandResolver(environment, platformCommandSpecFactory));
+        compositeCommandResolver.AddCommandResolver(
+            new PublishedPathCommandResolver(environment, publishedPathCommandSpecFactory));
+
+        return compositeCommandResolver;
     }
 }

@@ -9,18 +9,9 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 partial class CreateNewImage
 {
     /// <summary>
-    /// The path to the folder containing `containerize.dll`.
-    /// </summary>
-    /// <remarks>
-    /// Used only for the ToolTask implementation of this task.
-    /// </remarks>
-    public string ContainerizeDirectory { get; set; }
-
-    /// <summary>
     /// The base registry to pull from.
     /// Ex: mcr.microsoft.com
     /// </summary>
-    [Required]
     public string BaseRegistry { get; set; }
 
     /// <summary>
@@ -34,8 +25,13 @@ partial class CreateNewImage
     /// The base image tag.
     /// Ex: 6.0
     /// </summary>
-    [Required]
     public string BaseImageTag { get; set; }
+
+    /// <summary>
+    /// The base image digest.
+    /// Ex: sha256:12345...
+    /// </summary>
+    public string BaseImageDigest { get; set; }
 
     /// <summary>
     /// The registry to push to.
@@ -161,6 +157,15 @@ partial class CreateNewImage
     [Required]
     public bool GenerateDigestLabel { get; set; }
 
+    /// <summary>
+    /// Set to either 'OCI', 'Docker', or null. If unset, the generated images' mediaType will be that of the base image. If set, the generated image will be given the specified media type.
+    /// </summary>
+    public string? ImageFormat { get; set; }
+
+    /// If true, the tooling will skip the publishing step.
+    /// </summary>
+    public bool SkipPublishing { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
@@ -174,16 +179,20 @@ partial class CreateNewImage
     public string GeneratedArchiveOutputPath { get; set; }
 
     [Output]
+    public string GeneratedContainerMediaType { get; set; }
+
+    [Output]
     public ITaskItem[] GeneratedContainerNames { get; set; }
+
+    [Output]
+    public ITaskItem? GeneratedDigestLabel { get; set; }
 
     public CreateNewImage()
     {
-        ContainerizeDirectory = "";
-        ToolExe = "";
-        ToolPath = "";
         BaseRegistry = "";
         BaseImageName = "";
         BaseImageTag = "";
+        BaseImageDigest = "";
         OutputRegistry = "";
         ArchiveOutputPath = "";
         Repository = "";
@@ -208,7 +217,9 @@ partial class CreateNewImage
         GeneratedContainerManifest = "";
         GeneratedContainerDigest = "";
         GeneratedArchiveOutputPath = "";
+        GeneratedContainerMediaType = "";
         GeneratedContainerNames = Array.Empty<ITaskItem>();
+        GeneratedDigestLabel = null;
 
         GenerateLabels = false;
         GenerateDigestLabel = false;

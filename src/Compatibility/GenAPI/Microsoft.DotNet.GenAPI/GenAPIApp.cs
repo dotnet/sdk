@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !NET
-using System.Text.RegularExpressions;
-#endif
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -18,89 +14,140 @@ namespace Microsoft.DotNet.GenAPI
     /// </summary>
     public static class GenAPIApp
     {
+        // A curated set of internal compiler attributes that, when defined in an assembly, enable out-of-band
+        // language features. GenAPI emits these by default so that the generated reference assembly keeps working
+        // with the same language features as the original assembly.
+        // NOTE: This is a heuristic curated list. A more general, namespace-based approach is tracked by
+        // https://github.com/dotnet/sdk/issues/54527.
+        private static readonly string[] s_compilerAttributes =
+        [
+            "T:System.Runtime.CompilerServices.IsExternalInit",
+            "T:System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute",
+            "T:System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute",
+            "T:System.Runtime.CompilerServices.RequiredMemberAttribute",
+            "T:System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute",
+            "T:System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute",
+            "T:System.Runtime.CompilerServices.CollectionBuilderAttribute",
+            "T:System.Diagnostics.CodeAnalysis.AllowNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DisallowNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MaybeNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.NotNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute",
+            "T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute",
+            "T:System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MemberNotNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute"
+        ];
+
         /// <summary>
-        /// Initialize and run Roslyn-based GenAPI tool.
+        /// Initialize and run Roslyn-based GenAPI tool using <see cref="GenAPIOptions"/>.
         /// </summary>
-        public static void Run(ILog logger,
-            string[] assemblies,
-            string[]? assemblyReferences,
+        public static void Run(ILog log, GenAPIOptions options)
+        {
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
+                log,
+                options.AssembliesPaths,
+                options.AssemblyReferencesPaths,
+                assembliesToExclude: [],
+                respectInternals: options.RespectInternals);
+
+            Run(log,
+                loader,
+                assemblySymbols,
+                options.OutputPath,
+                options.HeaderFile,
+                options.ExceptionMessage,
+                options.ExcludeApiFiles,
+                options.ExcludeAttributesFiles,
+                options.IncludeApiFiles,
+                options.ExcludeInternalCompilerAttributes,
+                options.RespectInternals,
+                options.IncludeAssemblyAttributes);
+        }
+
+        /// <summary>
+        /// Initialize and run Roslyn-based GenAPI tool using an assembly symbol loader that pre-loaded the assemblies separately.
+        /// </summary>
+        public static void Run(ILog log,
+            IAssemblySymbolLoader loader,
+            Dictionary<string, IAssemblySymbol> assemblySymbols,
             string? outputPath,
             string? headerFile,
             string? exceptionMessage,
             string[]? excludeApiFiles,
             string[]? excludeAttributesFiles,
+            string[]? includeApiFiles,
+            bool excludeInternalCompilerAttributes,
             bool respectInternals,
             bool includeAssemblyAttributes)
         {
-            bool resolveAssemblyReferences = assemblyReferences?.Length > 0;
-
-            // Create, configure and execute the assembly loader.
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences, respectInternals);
-            if (assemblyReferences is not null)
-            {
-                loader.AddReferenceSearchPaths(assemblyReferences);
-            }
-            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(assemblies);
-
-            string headerFileText = ReadHeaderFile(headerFile);
-
+            // Shared accessibility filter for the API and Attribute composite filters.
             AccessibilitySymbolFilter accessibilitySymbolFilter = new(
                 respectInternals,
                 includeEffectivelyPrivateSymbols: true,
                 includeExplicitInterfaceImplementationSymbols: true);
 
-            // Configure the symbol filter
-            CompositeSymbolFilter symbolFilter = new();
-            if (excludeApiFiles is not null)
-            {
-                symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
-            }
-            symbolFilter.Add(new ImplicitSymbolFilter());
-            symbolFilter.Add(accessibilitySymbolFilter);
-
-            // Configure the attribute data symbol filter
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludeAttributesFiles is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+            // Build an optional filter that includes additional APIs which would otherwise be filtered out by the
+            // accessibility filter: APIs explicitly listed via includeApiFiles and, unless opted out, the curated set
+            // of internal compiler attributes.
+            ISymbolFilter? additionalApiInclusionFilter = CreateAdditionalApiInclusionFilter(includeApiFiles, excludeInternalCompilerAttributes);
 
             // Invoke the CSharpFileBuilder for each directly loaded assembly.
-            foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
+            foreach (KeyValuePair<string, IAssemblySymbol> kvp in assemblySymbols)
             {
-                if (assemblySymbol is null)
-                    continue;
+                using TextWriter textWriter = GetTextWriter(outputPath, kvp.Key);
 
-                using TextWriter textWriter = GetTextWriter(outputPath, assemblySymbol.Name);
-                textWriter.Write(headerFileText);
+                ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromFiles(
+                        excludeApiFiles, accessibilitySymbolFilter,
+                        respectInternals: respectInternals,
+                        additionalApiInclusionFilter: additionalApiInclusionFilter);
+                ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromFiles(
+                        excludeAttributesFiles, accessibilitySymbolFilter,
+                        respectInternals: respectInternals,
+                        additionalApiInclusionFilter: additionalApiInclusionFilter);
 
-                using CSharpFileBuilder fileBuilder = new(logger,
+                string? headerText = headerFile != null ? File.ReadAllText(headerFile) : null;
+
+                CSharpFileBuilder fileBuilder = new(log,
+                    textWriter,
+                    loader,
                     symbolFilter,
                     attributeDataSymbolFilter,
-                    textWriter,
+                    headerText,
                     exceptionMessage,
                     includeAssemblyAttributes,
-                    loader.MetadataReferences);
+                    loader.MetadataReferences,
+                    addPartialModifier: true);
 
-                fileBuilder.WriteAssembly(assemblySymbol);
+                fileBuilder.WriteAssembly(kvp.Value);
             }
+        }
 
-            if (loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
+        // Builds an OR composite filter that includes APIs listed in includeApiFiles and, unless opted out, the
+        // curated set of internal compiler attributes. Returns null when there is nothing additional to include.
+        private static ISymbolFilter? CreateAdditionalApiInclusionFilter(string[]? includeApiFiles, bool excludeInternalCompilerAttributes)
+        {
+            bool hasIncludeApiFiles = includeApiFiles?.Length > 0;
+            if (!hasIncludeApiFiles && excludeInternalCompilerAttributes)
             {
-                foreach (Diagnostic warning in roslynDiagnostics)
-                {
-                    logger.LogWarning(warning.Id, warning.ToString());
-                }
+                return null;
             }
 
-            if (loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
+            CompositeSymbolFilter inclusionFilter = new(CompositeSymbolFilterMode.Or);
+
+            if (hasIncludeApiFiles)
             {
-                foreach (AssemblyLoadWarning warning in loadWarnings)
-                {
-                    logger.LogWarning(warning.DiagnosticId, warning.Message);
-                }
+                inclusionFilter.Add(DocIdSymbolFilter.CreateFromFiles(includeApiFiles!, includeDocIds: true));
             }
+
+            if (!excludeInternalCompilerAttributes)
+            {
+                inclusionFilter.Add(DocIdSymbolFilter.CreateFromLists(s_compilerAttributes, includeDocIds: true));
+            }
+
+            return inclusionFilter;
         }
 
         // Creates a TextWriter capable of writing into Console or a cs file.
@@ -118,34 +165,6 @@ namespace Microsoft.DotNet.GenAPI
             }
 
             return File.CreateText(outputDirPath);
-        }
-
-        // Read the header file if specified, or use default one.
-        private static string ReadHeaderFile(string? headerFile)
-        {
-            const string defaultFileHeader = """
-            //------------------------------------------------------------------------------
-            // <auto-generated>
-            //     This code was generated by a tool.
-            //
-            //     Changes to this file may cause incorrect behavior and will be lost if
-            //     the code is regenerated.
-            // </auto-generated>
-            //------------------------------------------------------------------------------
-
-            """;
-
-            string header = !string.IsNullOrEmpty(headerFile) ?
-                File.ReadAllText(headerFile) :
-                defaultFileHeader;
-
-#if NET
-            header = header.ReplaceLineEndings();
-#else
-            header = Regex.Replace(header, @"\r\n|\n\r|\n|\r", Environment.NewLine);
-#endif
-
-            return header;
         }
     }
 }

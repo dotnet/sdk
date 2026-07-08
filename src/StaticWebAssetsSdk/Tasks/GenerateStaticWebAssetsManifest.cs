@@ -1,14 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class GenerateStaticWebAssetsManifest : Task
+[MSBuildMultiThreadableTask]
+public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public string Source { get; set; }
 
@@ -42,19 +48,23 @@ public class GenerateStaticWebAssetsManifest : Task
     {
         try
         {
-            var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem).ToArray();
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment, validate: true);
+            Array.Sort(assets, (l, r) => string.CompareOrdinal(l.Identity, r.Identity));
 
-            var endpoints = FilterPublishEndpointsIfNeeded(assets)
-                .OrderBy(a => a.Route)
-                .ThenBy(a => a.AssetFile)
-                .ToArray();
+            var endpoints = FilterPublishEndpointsIfNeeded(assets);
+            Array.Sort(endpoints, (l, r) => string.CompareOrdinal(l.Route, r.Route) switch
+            {
+                0 => string.CompareOrdinal(l.AssetFile, r.AssetFile),
+                int result => result,
+            });
 
             Log.LogMessage(MessageImportance.Low, "Generating manifest for '{0}' assets and '{1}' endpoints", assets.Length, endpoints.Length);
 
-            var assetsByTargetPath = assets.GroupBy(a => a.ComputeTargetPath("", '/'), StringComparer.OrdinalIgnoreCase);
+            var assetsByTargetPath = GroupAssetsByTargetPath(assets);
+            var groupSet = new HashSet<string>(StringComparer.Ordinal);
             foreach (var group in assetsByTargetPath)
             {
-                if (!StaticWebAsset.ValidateAssetGroup(group.Key, [.. group], out var reason))
+                if (!StaticWebAsset.ValidateAssetGroup(group.Key, group.Value, out var reason, groupSet))
                 {
                     Log.LogError(reason);
                     return false;
@@ -88,7 +98,7 @@ public class GenerateStaticWebAssetsManifest : Task
         return !Log.HasLoggedErrors;
     }
 
-    private IEnumerable<StaticWebAssetEndpoint> FilterPublishEndpointsIfNeeded(IEnumerable<StaticWebAsset> assets)
+    private StaticWebAssetEndpoint[] FilterPublishEndpointsIfNeeded(StaticWebAsset[] assets)
     {
         // Only include endpoints for assets that are going to be available in production. We do the filtering
         // inside the manifest because its cumbersome to do it in MSBuild directly.
@@ -110,24 +120,28 @@ public class GenerateStaticWebAssetsManifest : Task
                 }
             }
 
-            return filteredEndpoints;
+            return [.. filteredEndpoints];
         }
 
-        return Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem);
+        return StaticWebAssetEndpoint.FromItemGroup(Endpoints);
     }
 
     private void PersistManifest(StaticWebAssetsManifest manifest)
     {
-        var cacheFileExists = File.Exists(ManifestCacheFilePath);
-        var fileExists = File.Exists(ManifestPath);
+        // Absolutize once; preserve original paths for log messages.
+        string absolutizedManifestPath = !string.IsNullOrWhiteSpace(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : ManifestPath;
+        bool isManifestCacheFileConfigured = !string.IsNullOrWhiteSpace(ManifestCacheFilePath);
+        string absolutizedManifestCacheFilePath = isManifestCacheFileConfigured ? TaskEnvironment.GetAbsolutePath(ManifestCacheFilePath) : ManifestCacheFilePath;
+        var cacheFileExists = isManifestCacheFileConfigured && File.Exists(absolutizedManifestCacheFilePath);
+        var manifestFileExists = File.Exists(absolutizedManifestPath);
         var existingManifestHash = cacheFileExists ?
-            File.ReadAllText(ManifestCacheFilePath) :
-            fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath)).Hash : "";
+            File.ReadAllText(absolutizedManifestCacheFilePath) :
+            manifestFileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(absolutizedManifestPath)).Hash : "";
 
-        if (!fileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
+        if (!manifestFileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
         {
             var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsManifest);
-            if (!fileExists)
+            if (!manifestFileExists)
             {
                 Log.LogMessage(MessageImportance.Low, $"Creating manifest because manifest file '{ManifestPath}' does not exist.");
             }
@@ -135,15 +149,47 @@ public class GenerateStaticWebAssetsManifest : Task
             {
                 Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{manifest.Hash}' is different from existing manifest hash '{existingManifestHash}'.");
             }
-            File.WriteAllBytes(ManifestPath, data);
-            if (!string.IsNullOrEmpty(ManifestCacheFilePath))
+            File.WriteAllBytes(absolutizedManifestPath, data);
+            if (isManifestCacheFileConfigured)
             {
-                File.WriteAllText(ManifestCacheFilePath, manifest.Hash);
+                File.WriteAllText(absolutizedManifestCacheFilePath, manifest.Hash);
             }
         }
         else
         {
             Log.LogMessage(MessageImportance.Low, $"Skipping manifest updated because manifest version '{manifest.Hash}' has not changed.");
         }
+    }
+
+    private static Dictionary<string, (StaticWebAsset First, StaticWebAsset Second, List<StaticWebAsset> Other)> GroupAssetsByTargetPath(StaticWebAsset[] assets)
+    {
+        var result = new Dictionary<string, (StaticWebAsset First, StaticWebAsset Second, List<StaticWebAsset> Other)>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var asset in assets)
+        {
+            var targetPath = asset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
+
+            if (result.TryGetValue(targetPath, out var existing))
+            {
+                if (existing.Second == null)
+                {
+                    // We have first but not second
+                    result[targetPath] = (existing.First, asset, null);
+                }
+                else
+                {
+                    // We already have first and second, add to rest
+                    existing.Other ??= [];
+                    existing.Other.Add(asset);
+                }
+            }
+            else
+            {
+                // First asset with this path
+                result.Add(targetPath, (asset, null, null));
+            }
+        }
+
+        return result;
     }
 }

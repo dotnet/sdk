@@ -1,0 +1,5 @@
+﻿The template "Template Package" was created successfully.
+
+Processing post-creation actions...
+Description: Manual actions required
+Manual instructions: Open *.csproj in the editor and complete the package metadata configuration. Copy the templates to 'content' folder. Fill in README.md.

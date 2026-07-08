@@ -37,14 +37,36 @@
       "datatype": "string",
       "displayName": "dotnet CLI version"
     },
-    "CombinedVersion": {
+    "CoalescedVersion": {
       "type": "generated",
       "generator": "coalesce",
       "parameters": {
         "sourceVariableName": "SdkVersion",
         "fallbackVariableName": "dotnet-cli-version"
-      },
-      "replaces": "SDK_VERSION"
+      }
+    },
+    "CombinedVersion": {
+      "type": "generated",
+      "generator": "regex",
+      "datatype": "string",
+      "replaces": "SDK_VERSION",
+      "parameters": {
+        "source": "CoalescedVersion",
+        "steps": [
+          {
+            "regex": "^(\\d+)$",
+            "replacement": "$1.0.100"
+          },
+          {
+            "regex": "^(\\d+\\.\\d+)$",
+            "replacement": "$1.100"
+          },
+          {
+            "regex": "^(\\d+\\.\\d+)\\.(\\d|[1-9]\\d)$",
+            "replacement": "$1.100"
+          }
+        ]
+      }
     },
     "RollForward": {
       "type": "parameter",
@@ -98,6 +120,26 @@
           "choice": "disable",
           "description": "Doesn't roll forward. Exact match required.",
           "displayName": "Disable roll-forward"
+        }
+      ]
+    },
+    "TestRunner": {
+      "type": "parameter",
+      "description": "The test runner to use.",
+      "displayName": "Test runner",
+      "replaces": "TEST_RUNNER_VALUE",
+      "defaultValue": "",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "VSTest",
+          "description": "Use VSTest as test runner",
+          "displayName": "VSTest"
+        },
+        {
+          "choice": "Microsoft.Testing.Platform",
+          "description": "Use Microsoft.Testing.Platform as test runner",
+          "displayName": "Microsoft.Testing.Platform"
         }
       ]
     }

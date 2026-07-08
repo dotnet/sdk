@@ -1,8 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="MSTest.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks>net472;$(ToolsetTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(ToolsetTargetFramework)</TargetFrameworks>
-    <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
+    <TargetFrameworks>net472;$(SdkTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(SdkTargetFramework)</TargetFrameworks>
+    <!-- For product build, the .NET Framework TFM only builds in the second build pass as it depends on assets from other
+         verticals that are built in the first build pass. -->
+    <TargetFrameworks Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">$(SdkTargetFramework)</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- By default test projects don't append TargetFramework to output path, but for multi-targeted tests
@@ -14,7 +17,7 @@
     <ProjectReference Include="..\..\src\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.SdkResolver\Microsoft.DotNet.SdkResolver.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,4 +28,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 </Project>

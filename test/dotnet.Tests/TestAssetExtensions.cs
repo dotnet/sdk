@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
@@ -39,7 +41,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             {
                 var ns = project.Root.Name.Namespace;
                 project.Root.Element(ns + "PropertyGroup")
-                    .Add(new XElement(ns + "RestorePackagesPath", TestContext.Current.TestGlobalPackagesFolder));
+                    .Add(new XElement(ns + "RestorePackagesPath", SdkTestContext.Current.TestGlobalPackagesFolder));
             });
         }
     }

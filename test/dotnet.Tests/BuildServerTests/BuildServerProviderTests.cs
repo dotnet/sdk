@@ -1,24 +1,28 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.BuildServer;
+#nullable disable
+
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;
-using LocalizableStrings = Microsoft.DotNet.BuildServer.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.BuildServerTests
 {
+    [TestClass]
     public class BuildServerProviderTests : SdkTest
     {
-        public BuildServerProviderTests(ITestOutputHelper log) : base(log)
+        public BuildServerProviderTests()
         {
 
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenMSBuildFlagItYieldsMSBuild()
         {
             var provider = new BuildServerProvider(
@@ -29,10 +33,10 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .EnumerateBuildServers(ServerEnumerationFlags.MSBuild)
                 .Select(s => s.Name)
                 .Should()
-                .Equal(LocalizableStrings.MSBuildServer);
+                .Equal(CliStrings.MSBuildServer);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenVBCSCompilerFlagItYieldsVBCSCompiler()
         {
             var provider = new BuildServerProvider(
@@ -43,10 +47,10 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .EnumerateBuildServers(ServerEnumerationFlags.VBCSCompiler)
                 .Select(s => s.Name)
                 .Should()
-                .Equal(LocalizableStrings.VBCSCompilerServer);
+                .Equal(CliStrings.VBCSCompilerServer);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenRazorFlagAndNoPidDirectoryTheEnumerationIsEmpty()
         {
             var provider = new BuildServerProvider(
@@ -59,7 +63,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoEnvironmentVariableItUsesTheDefaultPidDirectory()
         {
             var provider = new BuildServerProvider(
@@ -76,7 +80,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                     "build"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenEnvironmentVariableItUsesItForThePidDirectory()
         {
             IFileSystem fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
@@ -92,7 +96,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .Be(pidDirectory);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenARazorPidFileItReturnsARazorBuildServer()
         {
             const int ProcessId = 1234;
@@ -123,7 +127,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
             var razorServer = servers.First() as RazorServer;
             razorServer.Should().NotBeNull();
             razorServer.ProcessId.Should().Be(ProcessId);
-            razorServer.Name.Should().Be(LocalizableStrings.RazorServer);
+            razorServer.Name.Should().Be(CliStrings.RazorServer);
             razorServer.PidFile.Should().NotBeNull();
             razorServer.PidFile.Path.Value.Should().Be(pidFilePath);
             razorServer.PidFile.ProcessId.Should().Be(ProcessId);
@@ -131,9 +135,9 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
             razorServer.PidFile.PipeName.Should().Be(PipeName);
         }
 
-        [Theory]
-        [InlineData(typeof(UnauthorizedAccessException))]
-        [InlineData(typeof(IOException))]
+        [TestMethod]
+        [DataRow(typeof(UnauthorizedAccessException))]
+        [DataRow(typeof(IOException))]
         public void GivenAnExceptionAccessingTheRazorPidFileItPrintsAWarning(Type exceptionType)
         {
             const int ProcessId = 1234;
@@ -173,7 +177,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    LocalizableStrings.FailedToReadPidFile,
+                    CliStrings.FailedToReadPidFile,
                     pidFilePath,
                     ErrorMessage).Yellow());
         }

@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
+    [TestClass]
     public abstract class MvcBuildIntegrationTestLegacy : AspNetSdkTest
     {
         public abstract string TestProjectName { get; }
@@ -13,9 +16,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         // Remove Razor prefix from assembly name
         public virtual string OutputFileName => $"{TestProjectName}.dll";
 
-        public MvcBuildIntegrationTestLegacy(ITestOutputHelper log) : base(log) { }
-
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public virtual void Building_Project()
         {
             var testAsset = $"Razor{TestProjectName}";
@@ -41,7 +43,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 @"""Name"":""SimpleMvc.SimpleTagHelper""");
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public virtual void BuildingProject_CopyToOutputDirectoryFiles()
         {
             var testAsset = $"Razor{TestProjectName}";
@@ -61,7 +64,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public virtual void Publish_Project()
         {
             var testAsset = $"Razor{TestProjectName}";
@@ -83,7 +87,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public virtual void Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
         {
             var testAsset = $"Razor{TestProjectName}";
@@ -97,7 +102,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "refs", "System.Threading.Tasks.Extensions.dll")).Should().Exist();
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build_ProducesDepsFileWithCompilationContext_ButNoReferences()
         {
             var testAsset = $"Razor{TestProjectName}";

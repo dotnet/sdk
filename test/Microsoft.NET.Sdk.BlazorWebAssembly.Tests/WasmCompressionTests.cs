@@ -1,13 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
+    [TestClass]
     public class WasmCompressionTests : AspNetSdkTest
     {
-        public WasmCompressionTests(ITestOutputHelper log) : base(log) { }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -35,9 +40,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var mainAppCompressedDll = Path.Combine(blazorHostedPublishDirectory, "wwwroot", "_framework", "blazorwasm.wasm.br");
             var mainAppCompressedDllThumbPrint = FileThumbPrint.Create(mainAppCompressedDll);
 
-            var blazorBootJson = Path.Combine(testInstance.TestRoot, publishCommand.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json");
+            var blazorBootJson = Path.Combine(testInstance.TestRoot, publishCommand.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", WasmBootConfigFileName);
             var blazorBootJsonThumbPrint = FileThumbPrint.Create(blazorBootJson);
-            var blazorBootJsonCompressed = Path.Combine(testInstance.TestRoot, publishCommand.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json.br");
+            var blazorBootJsonCompressed = Path.Combine(testInstance.TestRoot, publishCommand.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", $"{WasmBootConfigFileName}.br");
             var blazorBootJsonCompressedThumbPrint = FileThumbPrint.Create(blazorBootJsonCompressed);
 
             var programFile = Path.Combine(testInstance.TestRoot, "blazorwasm", "Program.cs");
@@ -53,14 +58,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var newBlazorBootJsonThumbPrint = FileThumbPrint.Create(blazorBootJson);
             var newBlazorBootJsonCompressedThumbPrint = FileThumbPrint.Create(blazorBootJsonCompressed);
 
-            Assert.NotEqual(mainAppDllThumbPrint, newMainAppDllThumbPrint);
-            Assert.NotEqual(mainAppCompressedDllThumbPrint, newMainAppCompressedDllThumbPrint);
+            Assert.AreNotEqual(mainAppDllThumbPrint, newMainAppDllThumbPrint);
+            Assert.AreNotEqual(mainAppCompressedDllThumbPrint, newMainAppCompressedDllThumbPrint);
 
-            Assert.NotEqual(blazorBootJsonThumbPrint, newBlazorBootJsonThumbPrint);
-            Assert.NotEqual(blazorBootJsonCompressedThumbPrint, newBlazorBootJsonCompressedThumbPrint);
+            Assert.AreNotEqual(blazorBootJsonThumbPrint, newBlazorBootJsonThumbPrint);
+            Assert.AreNotEqual(blazorBootJsonCompressedThumbPrint, newBlazorBootJsonCompressedThumbPrint);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_WithoutLinkerAndCompression_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -100,11 +106,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var newMainAppDllThumbPrint = FileThumbPrint.Create(mainAppDll);
             var newMainAppCompressedDllThumbPrint = FileThumbPrint.Create(mainAppCompressedDll);
 
-            Assert.NotEqual(mainAppDllThumbPrint, newMainAppDllThumbPrint);
-            Assert.NotEqual(mainAppCompressedDllThumbPrint, newMainAppCompressedDllThumbPrint);
+            Assert.AreNotEqual(mainAppDllThumbPrint, newMainAppDllThumbPrint);
+            Assert.AreNotEqual(mainAppCompressedDllThumbPrint, newMainAppCompressedDllThumbPrint);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_WithLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -128,15 +135,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 ExecuteCommand(buildCommand).Should().Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
-                Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
+                newThumbPrint.Should().HaveCount(thumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
-                    Assert.Equal(thumbPrint[j], newThumbPrint[j]);
+                    Assert.AreEqual(thumbPrint[j], newThumbPrint[j]);
                 }
             }
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_WithoutLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -160,15 +168,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 ExecuteCommand(buildCommand, "/p:BlazorWebAssemblyEnableLinking=false").Should().Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
-                Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
+                newThumbPrint.Should().HaveCount(thumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
-                    Assert.Equal(thumbPrint[j], newThumbPrint[j]);
+                    Assert.AreEqual(thumbPrint[j], newThumbPrint[j]);
                 }
             }
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_CompressesAllFrameworkFiles()
         {
             // Arrange
@@ -191,8 +200,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var extension = Path.GetExtension(file);
                 if (extension != ".br" && extension != ".gz")
                 {
-                    Assert.True(File.Exists($"{file}.gz"), $"Expected file {$"{file}.gz"} to exist, but it did not.");
-                    Assert.True(File.Exists($"{file}.br"), $"Expected file {$"{file}.br"} to exist, but it did not.");
+                    Assert.IsTrue(File.Exists($"{file}.gz"), $"Expected file {$"{file}.gz"} to exist, but it did not.");
+                    Assert.IsTrue(File.Exists($"{file}.br"), $"Expected file {$"{file}.br"} to exist, but it did not.");
                 }
             }
         }

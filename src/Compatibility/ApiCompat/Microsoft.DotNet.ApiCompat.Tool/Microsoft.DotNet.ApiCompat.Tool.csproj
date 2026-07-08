@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(NetToolMinimum)</TargetFramework>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
     <IsShippingPackage>true</IsShippingPackage>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>apicompat</ToolCommandName>
+    <RollForward>Major</RollForward>
     <PackageDescription>Tool to perform api compatibility checks on assemblies and packages.</PackageDescription>
   </PropertyGroup>
 

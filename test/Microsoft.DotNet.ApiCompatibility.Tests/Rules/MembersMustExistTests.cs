@@ -7,12 +7,13 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class MembersMustExistTests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new MembersMustExist(settings, context));
 
-        [Fact]
-        public static void MissingMembersAreReported()
+        [TestMethod]
+        public void MissingMembersAreReported()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -56,11 +57,11 @@ namespace CompatTests
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.ReportMissingField"),
             };
 
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
-        public static void HiddenMemberInLeftIsNotReported()
+        [TestMethod]
+        public void HiddenMemberInLeftIsNotReported()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -100,11 +101,11 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
-        public static void MultipleOverridesAreReported()
+        [TestMethod]
+        public void MultipleOverridesAreReported()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -142,13 +143,13 @@ namespace CompatTests
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MultipleOverrides(System.String,System.Int32,System.String)"),
             };
 
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public static void IncludeInternalsIsRespectedForMembers_IndividualAssemblies(bool includeInternals)
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void IncludeInternalsIsRespectedForMembers_IndividualAssemblies(bool includeInternals)
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -191,16 +192,16 @@ namespace CompatTests
                     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.set_InternalProperty(System.Int32)"),
                 };
 
-                Assert.Equal(expected, differences);
+                Assert.AreSequenceEqual(expected, differences);
             }
             else
             {
-                Assert.Empty(differences);
+                Assert.IsEmpty(differences);
             }
         }
 
-        [Fact]
-        public static void MembersWithDifferentNullableAnnotationsNoErrors()
+        [TestMethod]
+        public void MembersWithDifferentNullableAnnotationsNoErrors()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -226,11 +227,11 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
-        public static void ParametersWithDifferentModifiersNoErrors()
+        [TestMethod]
+        public void ParametersWithDifferentModifiersNoErrors()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -258,11 +259,11 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
-        public static void ParametersWithDifferentModifiersReportedWhenMissing()
+        [TestMethod]
+        public void ParametersWithDifferentModifiersReportedWhenMissing()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -297,11 +298,11 @@ namespace CompatTests
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.MyRefMethod(System.String@)"),
             };
 
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
-        public static void MultipleRightsMissingMembersAreReported()
+        [TestMethod]
+        public void MultipleRightsMissingMembersAreReported()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -394,11 +395,11 @@ namespace CompatTests
                 new CompatDifference(left.MetadataInformation, right.ElementAt(2).MetadataInformation, DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.FirstNested.SecondNested.MyMethod"),
             };
 
-            Assert.Equal(expectedDiffs, differences);
+            Assert.AreSequenceEqual(expectedDiffs, differences);
         }
 
-        [Fact]
-        public static void MultipleRightsNoDifferencesReported()
+        [TestMethod]
+        public void MultipleRightsNoDifferencesReported()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -428,10 +429,10 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void ParameterlessConstructorRemovalIsReported()
         {
             string leftSyntax = @"
@@ -461,10 +462,10 @@ namespace CompatTests
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.#ctor")
             };
-            Assert.Equal(expected, differences);
+            Assert.AreSequenceEqual(expected, differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void NumericPtrNotFlagged()
         {
             string leftSyntax = @"
@@ -495,10 +496,10 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Empty(differences);
+            Assert.IsEmpty(differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void ThisExtensionMethodModifierRemovalFlagged()
         {
             string leftSyntax = @"
@@ -525,14 +526,14 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Equal(new[]
+            Assert.AreSequenceEqual(new[]
             {
                 // The call to GetDocumentationCommentId doesn't return a string that includes the "this" keyword.
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.F(System.String)")
             }, differences);
         }
 
-        [Fact]
+        [TestMethod]
         public void MemberTypesChangeFlagged()
         {
             string leftSyntax = @"
@@ -573,7 +574,7 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            Assert.Equal(new[]
+            Assert.AreSequenceEqual(new[]
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.S"),
                 // CompatTests.First.Prop.set isn't reported as the return types match: 'void'.

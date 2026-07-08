@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ConsoleApp25": {
+      "commandName": "Project",
+      "commandLineArgs": "--from-launch-settings",
+      "environmentVariables": {
+        "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "true"
+      }
+    }
+  }
+}

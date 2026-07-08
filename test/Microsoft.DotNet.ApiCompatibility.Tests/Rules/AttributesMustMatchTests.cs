@@ -8,6 +8,7 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
+    [TestClass]
     public class AttributesMustMatchTests
     {
         /*
@@ -20,16 +21,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
          * - ReturnValues
          * - Constructors
          * - Generic Parameters
-         * 
+         *
          * Grouped into:
          * - Type
          * - Member
          */
 
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context));
-
-        private static ISymbolFilter GetAccessibilityAndAttributeSymbolFiltersAsComposite(params string[] excludeAttributeFiles) =>
-            new CompositeSymbolFilter().Add(new AccessibilitySymbolFilter(false)).Add(new DocIdSymbolFilter(excludeAttributeFiles));
 
         public static TheoryData<string, string, CompatDifference[]> TypesCases => new()
         {
@@ -39,7 +37,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -56,7 +54,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -77,7 +75,7 @@ new CompatDifference[] {}
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -94,7 +92,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -116,7 +114,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -133,7 +131,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -156,7 +154,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -173,7 +171,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -196,7 +194,7 @@ new CompatDifference[] {}
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -212,7 +210,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -311,7 +309,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -337,7 +335,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -370,7 +368,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -396,7 +394,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -429,7 +427,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -457,7 +455,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -492,7 +490,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -518,7 +516,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -551,7 +549,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -577,7 +575,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -610,7 +608,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -634,7 +632,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -666,7 +664,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -687,7 +685,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -716,7 +714,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -740,7 +738,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -792,7 +790,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -815,7 +813,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -832,7 +830,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1321,9 +1319,9 @@ new CompatDifference[] {
             }
         };
 
-        [Theory]
-        [MemberData(nameof(TypesCases))]
-        [MemberData(nameof(MembersCases))]
+        [TestMethod]
+        [DynamicData(nameof(TypesCases))]
+        [DynamicData(nameof(MembersCases))]
         public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
             using TempDirectory root = new();
@@ -1332,15 +1330,15 @@ new CompatDifference[] {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
-            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
+            differ.Settings.AttributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromFiles([filePath], respectInternals: false);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Equal(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
 
-        [Theory]
-        [MemberData(nameof(StrictMode))]
+        [TestMethod]
+        [DynamicData(nameof(StrictMode))]
         public void EnsureStrictModeReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
             using TempDirectory root = new();
@@ -1349,14 +1347,14 @@ new CompatDifference[] {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: true));
-            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
+            differ.Settings.AttributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromFiles([filePath], respectInternals: false);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Equal(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExclusionsFilteredOut()
         {
             using TempDirectory root = new();
@@ -1366,7 +1364,7 @@ new CompatDifference[] {
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1382,7 +1380,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1398,14 +1396,14 @@ namespace CompatTests
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
-            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
+            differ.Settings.AttributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromFiles([filePath], respectInternals: false);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
-            Assert.Empty(actual);
+            Assert.IsEmpty(actual);
         }
 
-        [Fact]
+        [TestMethod]
         public void AttributesExcludedButMembersValidated()
         {
             using TempDirectory root = new();
@@ -1418,7 +1416,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1433,7 +1431,7 @@ namespace CompatTests
 namespace CompatTests
 {
   using System;
-  
+
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
@@ -1448,11 +1446,11 @@ namespace CompatTests
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(ruleFactory, new ApiComparerSettings(strictMode: true));
-            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
+            differ.Settings.AttributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromFiles([filePath], respectInternals: false);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right).ToArray();
 
-            Assert.Equal(new[]
+            Assert.AreSequenceEqual(new[]
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Added, "F:CompatTests.FooAttribute.X"),
             }, actual);

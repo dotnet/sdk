@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 using System.Reflection;
 using Microsoft.DotNet.Configurer;
@@ -167,7 +169,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var path = Environment.GetEnvironmentVariable("DOTNET_BUILD_PIDFILE_DIRECTORY");
             if (string.IsNullOrEmpty(path))
             {
-                var homePath = CliFolderPathCalculatorCore.GetDotnetHomePath();
+                var homePath = new CliFolderPathCalculatorCore().GetDotnetHomePath();
                 if (homePath is null)
                 {
                     // Couldn't locate the user profile directory. Bail.

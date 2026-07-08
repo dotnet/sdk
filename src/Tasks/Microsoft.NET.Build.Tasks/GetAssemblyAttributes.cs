@@ -1,14 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GetAssemblyAttributes : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GetAssemblyAttributes : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         [Required]
         public string PathToTemplateFile { get; set; }
 
@@ -17,8 +22,9 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            var fileVersionInfo = FileVersionInfo.GetVersionInfo(Path.GetFullPath(PathToTemplateFile));
-            Version assemblyVersion = FileUtilities.TryGetAssemblyVersion(Path.GetFullPath(PathToTemplateFile));
+            AbsolutePath templatePath = TaskEnvironment.GetAbsolutePath(PathToTemplateFile);
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(templatePath);
+            Version assemblyVersion = FileUtilities.TryGetAssemblyVersion(templatePath);
 
             AssemblyAttributes = FormatToAttributes(AssemblyAttributesNameByFieldInFileVersionInfo: new Dictionary<string, string>
             {

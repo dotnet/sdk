@@ -1,12 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public sealed class WriteAppConfigWithSupportedRuntime : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class WriteAppConfigWithSupportedRuntime : TaskBase, IMultiThreadableTask
     {
+        /// <inheritdoc/>
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         /// <summary>
         /// Path to the app.config source file.
         /// </summary>
@@ -32,8 +38,9 @@ namespace Microsoft.NET.Build.Tasks
 
             AddSupportedRuntimeToAppconfig(doc, TargetFrameworkIdentifier, TargetFrameworkVersion, TargetFrameworkProfile);
 
+            AbsolutePath outputPath = TaskEnvironment.GetAbsolutePath(OutputAppConfigFile.ItemSpec);
             var fileStream = new FileStream(
-                OutputAppConfigFile.ItemSpec,
+                outputPath.Value,
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.Read);
@@ -154,7 +161,8 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                document = XDocument.Load(appConfigItem.ItemSpec);
+                AbsolutePath appConfigPath = TaskEnvironment.GetAbsolutePath(appConfigItem.ItemSpec);
+                document = XDocument.Load(appConfigPath.Value);
                 if (document.Root == null || document.Root.Name != "configuration")
                 {
                     throw new BuildErrorException(Strings.AppConfigRequiresRootConfiguration);

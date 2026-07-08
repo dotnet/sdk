@@ -34,13 +34,18 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             PackageSource? sourceFeed = null,
             CancellationToken cancellationToken = default)
         {
-            if (sourceFeed == null)
+            if (sourceFeed == null && DotNet.Cli.Utils.PathUtility.CheckForNuGetInNuGetConfig())
             {
                 sourceFeed = _nugetOrgSource;
             }
+            else if (sourceFeed is null)
+            {
+                return null;
+            }
 
             SourceRepository repository = GetSourceRepository(sourceFeed);
-            PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
+            PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"The source '{sourceFeed.Source}' does not provide {nameof(PackageMetadataResource)}.");
             IEnumerable<IPackageSearchMetadata> packagesMetadata = await resource.GetMetadataAsync(
                 packageIdentifier,
                 includePrerelease: true,
@@ -83,7 +88,8 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             string packageIdentifier,
             CancellationToken cancellationToken)
         {
-            var nugetSearchClient = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken).ConfigureAwait(false);
+            var nugetSearchClient = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"The source '{repository.PackageSource.Source}' does not provide {nameof(PackageSearchResource)}.");
 
             var searchResult = (await nugetSearchClient.SearchAsync(
                 packageIdentifier,
@@ -118,7 +124,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
                 LicenseUrl = metadata.LicenseUrl;
                 License = metadata.LicenseMetadata?.License;
                 Identity = metadata.Identity;
-                LicenseExpression = metadata.LicenseMetadata?.LicenseExpression.ToString();
+                LicenseExpression = metadata.LicenseMetadata?.LicenseExpression?.ToString();
                 PackageVersion = metadata.Identity.Version;
 
                 Source = packageSource;

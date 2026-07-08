@@ -1,0 +1,179 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
+using Microsoft.CodeAnalysis.Tools.Workspaces;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
+{
+    [TestClass]
+    public class MSBuildWorkspaceLoaderTests
+    {
+        // Microsoft.CodeAnalysis.CSharp.ErrorCode
+        private const string ERR_NameNotInContext = "CS0103";
+        private const string ERR_NoEntryPoint = "CS5001";
+
+        // Microsoft.CodeAnalysis.VisualBasic.ERRID
+        private const string ERR_UndefinedType1 = "BC30002";
+
+        private static string ProjectsPath => TestProjectsPathHelper.GetProjectsDirectory();
+
+        public TestContext TestContext { get; set; }
+
+        private ITestOutputHelper _testOutputHelper;
+        protected ITestOutputHelper TestOutputHelper => _testOutputHelper ??= new TestContextOutputHelper(TestContext);
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("winforms")]
+        [DataRow("winformslib")]
+        [DataRow("wpf")]
+        [DataRow("wpfusercontrollib")]
+        [DataRow("wpflib")]
+        [DataRow("wpfcustomcontrollib")]
+        public async Task CSharpTemplateProject_WindowsOnly_LoadWithNoDiagnostics(string templateName)
+        {
+            var ignoredDiagnostics = templateName switch
+            {
+                "wpf" => new string[] { ERR_NoEntryPoint, ERR_NameNotInContext },
+                "wpfusercontrollib" => new string[] { ERR_NameNotInContext },
+                _ => Array.Empty<string>(),
+            };
+
+            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp, ignoredDiagnostics);
+        }
+
+        [TestMethod]
+        [DataRow("web")]
+        [DataRow("grpc")]
+        [DataRow("webapi")]
+        [DataRow("razor")]
+        [DataRow("mvc")]
+        [DataRow("blazor")]
+        [DataRow("blazorwasm")]
+        [DataRow("classlib")]
+        [DataRow("console")]
+        [DataRow("mstest")]
+        [DataRow("nunit")]
+        [DataRow("razorclasslib")]
+        [DataRow("worker")]
+        [DataRow("xunit")]
+        public async Task CSharpTemplateProject_LoadWithNoDiagnostics(string templateName)
+        {
+            var ignoredDiagnostics = templateName switch
+            {
+                _ => Array.Empty<string>(),
+            };
+
+            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp, ignoredDiagnostics);
+        }
+
+        [TestMethod]
+        [DataRow("classlib")]
+        [DataRow("console")]
+        [DataRow("mstest")]
+        [DataRow("nunit")]
+        [DataRow("xunit")]
+        public async Task VisualBasicTemplateProject_LoadWithNoDiagnostics(string templateName)
+        {
+            var ignoredDiagnostics = (templateName, isWindows: OperatingSystem.IsWindows()) switch
+            {
+                (_, isWindows: false) => new string[] { ERR_UndefinedType1 },
+                _ => Array.Empty<string>(),
+            };
+
+            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.VisualBasic, ignoredDiagnostics);
+        }
+
+        private async Task AssertTemplateProjectLoadsCleanlyAsync(string templateName, string languageName, string[] ignoredDiagnostics = null)
+        {
+            var logger = new TestLogger();
+
+            try
+            {
+                if (ignoredDiagnostics is not null)
+                {
+                    TestOutputHelper.WriteLine($"Ignoring compiler diagnostics: \"{string.Join("\", \"", ignoredDiagnostics)}\"");
+                }
+
+                // Clean up previous run
+                CleanupProject(templateName, languageName);
+
+                var projectFilePath = await GenerateProjectFromTemplateAsync(templateName, languageName, TestOutputHelper);
+
+                await AssertProjectLoadsCleanlyAsync(projectFilePath, logger, ignoredDiagnostics);
+
+                // Clean up successful run
+                CleanupProject(templateName, languageName);
+            }
+            catch
+            {
+                TestOutputHelper.WriteLine(logger.GetLog());
+                throw;
+            }
+        }
+
+        private static async Task<string> GenerateProjectFromTemplateAsync(string templateName, string languageName, ITestOutputHelper outputHelper)
+        {
+            var projectPath = GetProjectPath(templateName, languageName);
+            var projectFilePath = GetProjectFilePath(projectPath, languageName);
+
+            var exitCode = await DotNetHelper.NewProjectAsync(templateName, projectPath, languageName, outputHelper);
+            Assert.AreEqual(0, exitCode);
+
+            return projectFilePath;
+        }
+
+        private static async Task AssertProjectLoadsCleanlyAsync(string projectFilePath, ILogger logger, string[] ignoredDiagnostics)
+        {
+            var binaryLogPath = Path.ChangeExtension(projectFilePath, ".binlog");
+
+            using var workspace = (MSBuildWorkspace)await MSBuildWorkspaceLoader.LoadAsync(projectFilePath, WorkspaceType.Project, binaryLogPath, logWorkspaceWarnings: true, logger, targetFramework: null, CancellationToken.None);
+
+            Assert.IsEmpty(workspace.Diagnostics);
+
+            var project = workspace.CurrentSolution.Projects.Single();
+            var compilation = await project.GetCompilationAsync();
+
+            // Unnecessary using directives are reported with a severty of Hidden
+            var diagnostics = compilation.GetDiagnostics()
+                .Where(diagnostic => diagnostic.Severity > DiagnosticSeverity.Hidden && ignoredDiagnostics?.Contains(diagnostic.Id) != true);
+
+            Assert.IsEmpty(diagnostics);
+        }
+
+        private static void CleanupProject(string templateName, string languageName)
+        {
+            var projectPath = GetProjectPath(templateName, languageName);
+
+            if (Directory.Exists(projectPath))
+            {
+                Directory.Delete(projectPath, true);
+            }
+        }
+
+        private static string GetProjectPath(string templateName, string languageName)
+        {
+            var languagePrefix = languageName.Replace("#", "Sharp").Replace(' ', '_').ToLower();
+            var projectName = $"{languagePrefix}_{templateName}_project";
+            return Path.Combine(ProjectsPath, "for_workspace_loader", projectName);
+        }
+
+        private static string GetProjectFilePath(string projectPath, string languageName)
+        {
+            var projectName = Path.GetFileName(projectPath);
+            var projectExtension = languageName switch
+            {
+                LanguageNames.CSharp => "csproj",
+                LanguageNames.VisualBasic => "vbproj",
+                _ => throw new ArgumentOutOfRangeException(nameof(languageName), actualValue: languageName, message: "Only C# and VB.Net project are supported.")
+            };
+            return Path.Combine(projectPath, $"{projectName}.{projectExtension}");
+        }
+    }
+}

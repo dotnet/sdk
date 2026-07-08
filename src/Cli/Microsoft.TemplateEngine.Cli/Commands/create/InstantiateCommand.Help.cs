@@ -2,27 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.Diagnostics.CodeAnalysis;
-using System.Resources;
+using Microsoft.DotNet.Cli.Commands.New;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal partial class InstantiateCommand
     {
         private const string Indent = "  ";
-        private static Lazy<ResourceManager> _resourceManager = new(
-            () => new ResourceManager("System.CommandLine.Properties.Resources", typeof(System.CommandLine.CliSymbol).Assembly));
 
         public static void WriteHelp(HelpContext context, InstantiateCommandArgs instantiateCommandArgs, IEngineEnvironmentSettings environmentSettings)
         {
             if (string.IsNullOrWhiteSpace(instantiateCommandArgs.ShortName))
             {
-                WriteCustomInstantiateHelp(context, instantiateCommandArgs.Command);
+                WriteCustomInstantiateHelp(context, instantiateCommandArgs.NewOrInstantiateCommand);
                 return;
             }
 
@@ -82,7 +81,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             ShowTemplateDetailHeaders(preferredTemplate.Template, context.Output);
             //we need to show all possible short names (not just the one specified)
-            ShowUsage(instantiateCommandArgs.Command, templateGroup.ShortNames, context);
+            ShowUsage(instantiateCommandArgs.NewOrInstantiateCommand, templateGroup.ShortNames, context);
             ShowCommandOptions(templatesToShow, context);
             ShowTemplateSpecificOptions(templatesToShow, context);
             ShowHintForOtherTemplates(templateGroup, preferredTemplate.Template, instantiateCommandArgs, context.Output);
@@ -218,9 +217,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             writer.WriteLine(
                 Example
                     .For<NewCommand>(args.ParseResult)
-                    .WithArgument(NewCommand.ShortNameArgument, templateGroup.ShortNames[0])
+                    .WithArguments(templateGroup.ShortNames[0])
                     .WithHelpOption()
-                    .WithOption(SharedOptionsFactory.CreateLanguageOption(), supportedLanguages.First())
+                    .WithOption(c => c.Definition.LegacyOptions.FilterOptions.LanguageOption, supportedLanguages.First())
                     .ToString().Indent());
             writer.WriteLine();
 
@@ -253,9 +252,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             writer.WriteLine(HelpStrings.Hint_HelpForOtherTypes, string.Join(", ", supportedTypes));
             writer.WriteLine(Example
                 .For<NewCommand>(args.ParseResult)
-                .WithArgument(NewCommand.ShortNameArgument, templateGroup.ShortNames[0])
+                .WithArguments(templateGroup.ShortNames[0])
                 .WithHelpOption()
-                .WithOption(SharedOptionsFactory.CreateTypeOption(), supportedTypes.First())
+                .WithOption(c => c.Definition.LegacyOptions.FilterOptions.TypeOption, supportedTypes.First())
                 .ToString().Indent());
             writer.WriteLine();
         }
@@ -287,14 +286,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             IEnumerable<TemplateCommand> templatesToShow,
             HelpContext context)
         {
-            List<CliOption> optionsToShow = new()
+            List<Option> optionsToShow = new()
             {
-                SharedOptions.NameOption,
-                SharedOptions.OutputOption,
-                SharedOptions.DryRunOption,
-                SharedOptions.ForceOption,
-                SharedOptions.NoUpdateCheckOption,
-                SharedOptions.ProjectPathOption
+                SharedOptionsFactory.CreateNameOption(),
+                SharedOptionsFactory.CreateOutputOption(),
+                SharedOptionsFactory.CreateDryRunOption(),
+                SharedOptionsFactory.CreateForceOption(),
+                SharedOptionsFactory.CreateNoUpdateCheckOption(),
+                SharedOptionsFactory.CreateProjectOption()
             };
 
             foreach (TemplateCommand template in templatesToShow)
@@ -322,12 +321,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 }
             }
 
-            foreach (CliOption cliOption in optionsToShow)
+            foreach (Option cliOption in optionsToShow)
             {
                 cliOption.EnsureHelpName();
             }
 
-            context.Output.WriteLine(HelpOptionsTitle());
+            context.Output.WriteLine(LocalizationResources.HelpOptionsTitle());
             IEnumerable<TwoColumnHelpRow> optionsToWrite = optionsToShow.Select(o => context.HelpBuilder.GetTwoColumnRow(o, context));
             context.HelpBuilder.WriteColumns(optionsToWrite.ToArray(), context);
             context.Output.WriteLine();
@@ -367,7 +366,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return matchingTemplates;
         }
 
-        internal static void ShowUsage(CliCommand? command, IReadOnlyList<string> shortNames, HelpContext context)
+        internal static void ShowUsage(Command? command, IReadOnlyList<string> shortNames, HelpContext context)
         {
             List<string> usageParts = new();
             while (command is not null)
@@ -376,18 +375,18 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 {
                     usageParts.Add(command.Name);
                 }
-                command = command.Parents.FirstOrDefault(c => c is CliCommand) as CliCommand;
+                command = command.Parents.FirstOrDefault(c => c is Command) as Command;
             }
 
             usageParts.Reverse();
-            context.Output.WriteLine(HelpUsageTitle());
+            context.Output.WriteLine(LocalizationResources.HelpUsageTitle());
             foreach (string shortName in shortNames)
             {
                 IEnumerable<string> parts = usageParts.Concat(
                     new[]
                     {
                         shortName,
-                        HelpUsageOptions(),
+                        LocalizationResources.HelpUsageOptions(),
                         HelpStrings.Text_UsageTemplateOptionsPart
                     });
                 context.Output.WriteLine(Indent + string.Join(" ", parts));
@@ -440,10 +439,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return optionsToShow;
         }
 
-        private static void WriteCustomInstantiateHelp(HelpContext context, CliCommand command)
+        private static void WriteCustomInstantiateHelp(HelpContext context, Command command)
         {
             //unhide arguments of NewCommand. They are hidden not to appear in subcommands help.
-            foreach (CliArgument arg in command.Arguments)
+            foreach (Argument arg in command.Arguments)
             {
                 arg.Hidden = false;
             }
@@ -460,9 +459,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             context.Output.WriteLine();
         }
 
-        private static void CustomUsageSection(HelpContext context, CliCommand command)
+        private static void CustomUsageSection(HelpContext context, Command command)
         {
-            context.Output.WriteLine(HelpUsageTitle());
+            context.Output.WriteLine(LocalizationResources.HelpUsageTitle());
             context.Output.WriteLine(Indent + string.Join(" ", GetCustomUsageParts(context, command, showSubcommands: false)));
 
             if (command is NewCommand)
@@ -473,21 +472,21 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private static IEnumerable<string> GetCustomUsageParts(
             HelpContext context,
-            CliCommand command,
+            Command command,
             bool showSubcommands = true,
             bool showArguments = true,
             bool showOptions = true)
         {
-            List<CliCommand> parentCommands = new();
-            CliCommand? nextCommand = command;
+            List<Command> parentCommands = new();
+            Command? nextCommand = command;
             while (nextCommand is not null)
             {
                 parentCommands.Add(nextCommand);
-                nextCommand = nextCommand.Parents.FirstOrDefault(c => c is CliCommand) as CliCommand;
+                nextCommand = nextCommand.Parents.FirstOrDefault(c => c is Command) as Command;
             }
             parentCommands.Reverse();
 
-            foreach (CliCommand parentCommand in parentCommands)
+            foreach (Command parentCommand in parentCommands)
             {
                 yield return parentCommand.Name;
             }
@@ -498,21 +497,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (showSubcommands)
             {
-                yield return HelpUsageCommand();
+                yield return LocalizationResources.HelpUsageCommand();
             }
 
             if (showOptions)
             {
-                yield return HelpUsageOptions();
+                yield return LocalizationResources.HelpUsageOptions();
             }
         }
-
-        private static string HelpUsageOptions() => _resourceManager.Value.GetString("HelpUsageOptions")!;
-
-        private static string HelpUsageCommand() => _resourceManager.Value.GetString("HelpUsageCommand")!;
-
-        private static string HelpUsageTitle() => _resourceManager.Value.GetString("HelpUsageTitle")!;
-
-        private static string HelpOptionsTitle() => _resourceManager.Value.GetString("HelpOptionsTitle")!;
     }
 }

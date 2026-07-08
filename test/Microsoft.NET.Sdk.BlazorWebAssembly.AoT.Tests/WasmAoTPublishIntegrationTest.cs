@@ -1,17 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 {
+    [TestClass]
     public class WasmAoTPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
-        public WasmAoTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
-
-        [Fact]
+        [TestMethod]
         public void AoT_Publish_InRelease_Works()
         {
             // Arrange
@@ -35,7 +37,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -54,7 +56,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
         }
 
-        [Fact]
+        [TestMethod]
         public void AoT_Publish_WithExistingWebConfig_Works()
         {
             // Arrange
@@ -82,7 +84,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             webConfig.Should().Contain(webConfigContents);
         }
 
-        [Fact]
+        [TestMethod]
         public void AoT_Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
@@ -124,7 +126,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",

@@ -17,6 +17,13 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// </summary>
     public class SingleLineStatementCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
+        // Use the singleton instead.
+        private SingleLineStatementCSharpSyntaxRewriter()
+        {
+        }
+
+        public static readonly SingleLineStatementCSharpSyntaxRewriter Singleton = new();
+
         /// <inheritdoc />
         public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
             => VisitBaseMethodDeclarationSyntax(node);
@@ -101,10 +108,18 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
                 }
 
                 accessorList = accessorList
-                    .WithOpenBraceToken(accessorList.OpenBraceToken.WithTrailingTrivia())
+                    .WithOpenBraceToken(accessorList.OpenBraceToken.WithLeadingTrivia(SyntaxFactory.Space).WithTrailingTrivia())
                     .WithCloseBraceToken(accessorList.CloseBraceToken.WithLeadingTrivia())
                     .WithAccessors(accessors);
             }
+
+            node = node switch
+            {
+                EventDeclarationSyntax eventDeclaration => eventDeclaration.WithIdentifier(eventDeclaration.Identifier.WithTrailingTrivia()),
+                IndexerDeclarationSyntax indexerDeclaration => indexerDeclaration.WithParameterList(indexerDeclaration.ParameterList.WithTrailingTrivia()),
+                PropertyDeclarationSyntax propertyDeclaration => propertyDeclaration.WithIdentifier(propertyDeclaration.Identifier.WithTrailingTrivia()),
+                _ => node
+            };
 
             return node.WithAccessorList(accessorList);
         }

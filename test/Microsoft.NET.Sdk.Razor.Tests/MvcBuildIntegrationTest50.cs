@@ -1,16 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
+    [TestClass]
     public class MvcBuildIntegrationTest50 : MvcBuildIntegrationTestLegacy
     {
-        public MvcBuildIntegrationTest50(ITestOutputHelper log) : base(log) { }
-
         public override string TestProjectName => "SimpleMvc50";
         public override string TargetFramework => "net5.0";
 
-        [Fact]
+        [TestMethod]
         public void BuildComponents_ErrorInGeneratedCode_ReportsMSBuildError_OnIncrementalBuild()
         {
             var testAsset = "RazorMvcWithComponents";
@@ -44,7 +45,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void IncrementalBuild_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
         {
             // Simulates building the same way VS does by setting BuildProjectReferences=false.
@@ -84,7 +85,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.pdb")).Should().Exist();
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void CshtmlCss_InNET5App_DoesNotProduceErrors()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/39526

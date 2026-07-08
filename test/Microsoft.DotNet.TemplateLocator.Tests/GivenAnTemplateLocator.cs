@@ -5,17 +5,18 @@ using Microsoft.DotNet.DotNetSdkResolver;
 
 namespace Microsoft.DotNet.TemplateLocator.Tests
 {
+    [TestClass]
     public class GivenAnTemplateLocator : SdkTest
     {
         private readonly TemplateLocator _resolver;
         private readonly string _manifestDirectory;
         private readonly string _fakeDotnetRootDirectory;
 
-        public GivenAnTemplateLocator(ITestOutputHelper logger) : base(logger)
+        public GivenAnTemplateLocator()
         {
             _resolver = new TemplateLocator(Environment.GetEnvironmentVariable, null, VSSettings.Ambient, null, null);
             _fakeDotnetRootDirectory =
-                Path.Combine(TestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
+                Path.Combine(SdkTestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
 
             var fakeSdkDirectory = Path.Combine(_fakeDotnetRootDirectory, "sdk", "5.0.102");
             Directory.CreateDirectory(fakeSdkDirectory);
@@ -28,7 +29,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void ItShouldReturnListOfTemplates()
         {
             Directory.CreateDirectory(Path.Combine(_manifestDirectory, "Android"));
@@ -49,7 +50,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
             result.Should().HaveCount(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoSdkToBondItShouldReturnEmpty()
         {
             Directory.CreateDirectory(Path.Combine(_manifestDirectory, "Android"));
@@ -60,11 +61,11 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
             result.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoManifestDirectoryItShouldReturnEmpty()
         {
             var fakeDotnetRootDirectory =
-                Path.Combine(TestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
+                Path.Combine(SdkTestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
             var result = _resolver.GetDotnetSdkTemplatePackages("5.0.102", fakeDotnetRootDirectory, userProfileDir: null);
             result.Should().BeEmpty();
         }

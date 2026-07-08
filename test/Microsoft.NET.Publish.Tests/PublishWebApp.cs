@@ -1,15 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class PublishWebApp : SdkTest
     {
-        public PublishWebApp(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_publishes_and_runs_self_contained_web_app()
         {
             var testProject = new TestProject()
@@ -21,7 +20,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                             .WithProjectChanges(project =>
                             {
                                 var ns = project.Root.Name.Namespace;
@@ -49,7 +48,7 @@ namespace Microsoft.NET.Publish.Tests
                 FileName = Path.Combine(publishDirectory.FullName, testProject.Name + EnvironmentInfo.ExecutableExtension)
             };
 
-            runAppCommand.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
+            runAppCommand.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
 
             var result = runAppCommand.ToCommand()
                 .CaptureStdErr()

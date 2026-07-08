@@ -1,23 +1,21 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using NuGet.Packaging;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackAToolProjectWithComplexNugetDependency : SdkTest
     {
-        public GivenThatWeWantToPackAToolProjectWithComplexNugetDependency(ITestOutputHelper log) : base(log)
-        {
-
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_has_native_and_transitive_dependencies_dll(bool multiTarget)
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                                         .CopyTestAsset("PortableTool", identifier: multiTarget.ToString())
                                         .WithSource()
                                         .WithProjectChanges(project =>

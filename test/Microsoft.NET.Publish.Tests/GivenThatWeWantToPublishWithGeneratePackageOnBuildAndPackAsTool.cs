@@ -1,25 +1,25 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool : SdkTest
     {
-        public GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool(ITestOutputHelper log) : base(log)
-        { }
-
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
         public void It_publishes_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             Console.WriteLine(generatePackageOnBuild.ToString() + packAsTool.ToString());
 
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: generatePackageOnBuild.ToString() + packAsTool.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -38,14 +38,14 @@ namespace Microsoft.NET.ToolPack.Tests
                   .Pass();
         }
 
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
         public void It_builds_with_GeneratePackageOnBuild_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: generatePackageOnBuild.ToString() + packAsTool.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>

@@ -22,20 +22,16 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public string TargetName { get; set; } = "WriteValuesToFile";
 
-        public string Configuration { get; set; }
+        public string? Configuration { get; set; }
 
         public List<string> MetadataNames { get; set; } = new List<string>();
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
-
-        public bool ShouldRestore { get; set; } = true;
-
-        protected override bool ExecuteWithRestoreByDefault => ShouldRestore;
 
         public GetValuesCommand(ITestOutputHelper log, string projectPath, string targetFramework,
             string valueName, ValueType valueType = ValueType.Property)
             : base(log, "WriteValuesToFile", projectPath, relativePathToProject: null)
         {
-            _targetFramework = targetFramework;
+            _targetFramework = targetFramework ?? OutputPathCalculator.FromProject(ProjectFile).TargetFramework ?? string.Empty;
 
             _valueName = valueName;
             _valueType = valueType;
@@ -43,10 +39,10 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public GetValuesCommand(TestAsset testAsset,
             string valueName, ValueType valueType = ValueType.Property,
-            string targetFramework = null)
+            string? targetFramework = null)
             : base(testAsset, "WriteValuesToFile", relativePathToProject: null)
         {
-            _targetFramework = targetFramework ?? OutputPathCalculator.FromProject(ProjectFile, testAsset).TargetFramework;
+            _targetFramework = targetFramework ?? OutputPathCalculator.FromProject(ProjectFile, testAsset).TargetFramework ?? string.Empty;
 
             _valueName = valueName;
             _valueType = valueType;
@@ -66,6 +62,11 @@ namespace Microsoft.NET.TestFramework.Commands
                 "Custom.After.Directory.Build.targets");
 
             var project = XDocument.Load(ProjectFile);
+
+            if(project.Root is null)
+            {
+                throw new InvalidOperationException($"The project file '{ProjectFile}' does not have a root element.");
+            }
 
             var ns = project.Root.Name.Namespace;
 
@@ -102,12 +103,12 @@ namespace Microsoft.NET.TestFramework.Commands
                 new XAttribute("Name", TargetName),
                 ShouldCompile ? new XAttribute("DependsOnTargets", DependsOnTargets) : null);
 
-            customAfterDirectoryBuildTargets.Root.Add(target);
+            customAfterDirectoryBuildTargets.Root?.Add(target);
 
             if (Properties.Count != 0)
             {
                 propertyGroup = new XElement(ns + "PropertyGroup");
-                customAfterDirectoryBuildTargets.Root.Add(propertyGroup);
+                customAfterDirectoryBuildTargets.Root?.Add(propertyGroup);
 
                 foreach (var pair in Properties)
                 {
@@ -134,7 +135,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var outputDirectory = GetValuesOutputDirectory(_targetFramework);
             outputDirectory.Create();
 
-            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
+            return SdkTestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
         }
 
         public List<string> GetValues()
@@ -148,7 +149,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var outputDirectory = GetValuesOutputDirectory(_targetFramework, Configuration ?? "Debug");
             string fullFileName = Path.Combine(outputDirectory.FullName, outputFilename);
 
-            if (File.Exists(fullFileName))
+            //if (File.Exists(fullFileName))
             {
                 return File.ReadAllLines(fullFileName)
                    .Where(line => !string.IsNullOrWhiteSpace(line))
@@ -173,10 +174,10 @@ namespace Microsoft.NET.TestFramework.Commands
                    })
                    .ToList();
             }
-            else
-            {
-                return new List<(string value, Dictionary<string, string> metadata)>();
-            }
+            // else
+            // {
+            //     return new List<(string value, Dictionary<string, string> metadata)>();
+            // }
         }
 
         DirectoryInfo GetValuesOutputDirectory(string targetFramework = "", string configuration = "Debug")

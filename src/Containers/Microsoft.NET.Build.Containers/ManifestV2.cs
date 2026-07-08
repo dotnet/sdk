@@ -14,6 +14,12 @@ namespace Microsoft.NET.Build.Containers;
 /// </remarks>
 public class ManifestV2
 {
+    /// <summary>
+    /// The digest of this manifest, as provided by the registry via the
+    /// <c>Docker-Content-Digest</c> response header. This value follows the
+    /// OCI descriptor digest format.
+    /// <see href="https://github.com/opencontainers/image-spec/blob/a4c6ade7bb82b316d45391f572727a63e268b252/descriptor.md#digests"/>
+    /// </summary>
     [JsonIgnore]
     public string? KnownDigest { get; set; }
 
@@ -30,7 +36,7 @@ public class ManifestV2
     /// When used, this field MUST contain the media type application/vnd.oci.image.manifest.v1+json. This field usage differs from the descriptor use of mediaType.
     /// </summary>
     [JsonPropertyName("mediaType")]
-    public required string MediaType { get; init; }
+    public string? MediaType { get; init; }
 
     /// <summary>
     /// This REQUIRED property references a configuration object for a container, by digest.
@@ -50,7 +56,7 @@ public class ManifestV2
     /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
-    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
+    public string GetDigest() => KnownDigest ??= DigestUtils.ComputeSha256Digest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
 }
 
 public record struct ManifestConfig(string mediaType, long size, string digest);

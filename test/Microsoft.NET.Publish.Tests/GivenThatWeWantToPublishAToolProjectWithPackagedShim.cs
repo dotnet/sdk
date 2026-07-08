@@ -1,21 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAToolProjectWithPackagedShim : SdkTest
     {
         private const string _customToolCommandName = "customToolCommandName";
 
-        public GivenThatWeWantToPublishAToolProjectWithPackagedShim(ITestOutputHelper log) : base(log)
-        {
-        }
-
         private TestAsset SetupTestAsset([CallerMemberName] string callingMethod = "")
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", callingMethod)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -29,7 +28,7 @@ namespace Microsoft.NET.Publish.Tests
             return helloWorldAsset;
         }
 
-        [Fact]
+        [TestMethod]
         public void It_contains_dependencies_shims()
         {
             var testAsset = SetupTestAsset();
@@ -43,7 +42,7 @@ namespace Microsoft.NET.Publish.Tests
                 .EnumerateFiles().Should().Contain(f => f.Name == _customToolCommandName + ".exe");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_contains_dependencies_shims_with_no_build()
         {
             var testAsset = SetupTestAsset();

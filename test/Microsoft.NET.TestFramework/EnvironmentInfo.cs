@@ -19,7 +19,7 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public static string GetCompatibleRid(string targetFramework = null)
+        public static string GetCompatibleRid(string? targetFramework = null)
         {
             string rid = RuntimeInformation.RuntimeIdentifier;
 
@@ -62,7 +62,7 @@ namespace Microsoft.NET.TestFramework
         //  able to run on the current OS
         public static bool SupportsTargetFramework(string targetFramework)
         {
-            NuGetFramework nugetFramework = null;
+            NuGetFramework? nugetFramework = null;
             try
             {
                 nugetFramework = NuGetFramework.Parse(targetFramework);
@@ -101,7 +101,21 @@ namespace Microsoft.NET.TestFramework
                         return false;
                     }
                 }
-                else if (Version.TryParse(versionString, out Version osVersion))
+                else if (osId.Equals("centos", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (osId.Equals("debian", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (Version.TryParse(versionString, out Version? osVersion))
                 {
                     if (osId.Equals("fedora", StringComparison.OrdinalIgnoreCase))
                     {

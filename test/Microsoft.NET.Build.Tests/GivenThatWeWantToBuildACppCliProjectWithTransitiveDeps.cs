@@ -1,18 +1,21 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildACppCliProjectWithTransitiveDeps : SdkTest
     {
-        public GivenThatWeWantToBuildACppCliProjectWithTransitiveDeps(ITestOutputHelper log) : base(log)
+        public GivenThatWeWantToBuildACppCliProjectWithTransitiveDeps()
         {
             _buildAsset = new Lazy<TestAsset>(BuildAsset);
         }
 
         private readonly Lazy<TestAsset> _buildAsset;
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void It_can_generate_correct_depsJson_file()
         {
             TestAsset testAsset = _buildAsset.Value;
@@ -23,7 +26,9 @@ namespace Microsoft.NET.Build.Tests
             depsJsonContent.Should().Contain("NETCoreCppCliTestC.dll", "should contain transitive reference");
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void It_can_generate_all_runtimeconfig_files_to_output_folder()
         {
             TestAsset testAsset = _buildAsset.Value;
@@ -35,7 +40,9 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void It_can_generate_all_depsjson_files_to_output_folder()
         {
             TestAsset testAsset = _buildAsset.Value;
@@ -48,7 +55,7 @@ namespace Microsoft.NET.Build.Tests
 
         private TestAsset BuildAsset()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCppCliLibWithTransitiveDeps")
                 .WithSource();
 

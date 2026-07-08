@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
@@ -11,9 +13,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // The manifest needs to always be case sensitive, since we don't know what the final runtime environment
 // will be. The runtime is responsible for merging the tree nodes in the manifest when the underlying OS
 // is case insensitive.
-public class GenerateStaticWebAssetsDevelopmentManifest : Task
+[MSBuildMultiThreadableTask]
+public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadableTask
 {
     private static readonly char[] _separator = ['/'];
+
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     [Required]
     public string Source { get; set; }
@@ -32,7 +38,8 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
 
     public override bool Execute()
     {
-        if (File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
+        AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(ManifestPath);
+        if (File.Exists(manifestPath) && File.GetLastWriteTimeUtc(manifestPath) > File.GetLastWriteTimeUtc(TaskEnvironment.GetAbsolutePath(CacheFilePath)))
         {
             Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
             return true;
@@ -47,10 +54,10 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
             }
 
             var manifest = ComputeDevelopmentManifest(
-                Assets.Select(StaticWebAsset.FromTaskItem),
+                StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment),
                 DiscoveryPatterns.Select(StaticWebAssetsDiscoveryPattern.FromTaskItem));
 
-            PersistManifest(manifest);
+            PersistManifest(manifest, manifestPath);
         }
         catch (Exception ex)
         {
@@ -91,7 +98,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
             return 0;
         });
 
-        var manifest = GenerateStaticWebAssetsDevelopmentManifest.CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
+        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
         return manifest;
     }
 
@@ -123,7 +130,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
         }
     }
 
-    private void PersistManifest(StaticWebAssetsDevelopmentManifest manifest)
+    private void PersistManifest(StaticWebAssetsDevelopmentManifest manifest, AbsolutePath manifestPath)
     {
         var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsDevelopmentManifest);
 #if !NET9_0_OR_GREATER
@@ -132,19 +139,19 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
 #else
         var currentHash = SHA256.HashData(data);
 #endif
-        var fileExists = File.Exists(ManifestPath);
+        var fileExists = File.Exists(manifestPath);
         var existingManifestHash = fileExists ?
 #if !NET9_0_OR_GREATER
-            sha256.ComputeHash(File.ReadAllBytes(ManifestPath)) :
+            sha256.ComputeHash(File.ReadAllBytes(manifestPath)) :
 #else
-            SHA256.HashData(File.ReadAllBytes(ManifestPath)) :
+            SHA256.HashData(File.ReadAllBytes(manifestPath)) :
 #endif
             [];
 
         if (!fileExists)
         {
             Log.LogMessage(MessageImportance.Low, "Creating manifest because manifest file '{0}' does not exist.", ManifestPath);
-            File.WriteAllBytes(ManifestPath, data);
+            File.WriteAllBytes(manifestPath, data);
         }
         else if (!currentHash.SequenceEqual(existingManifestHash))
         {
@@ -153,7 +160,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
                 "Updating manifest because manifest version '{0}' is different from existing manifest hash '{1}'.",
                 Convert.ToBase64String(currentHash),
                 Convert.ToBase64String(existingManifestHash));
-            File.WriteAllBytes(ManifestPath, data);
+            File.WriteAllBytes(manifestPath, data);
         }
         else
         {

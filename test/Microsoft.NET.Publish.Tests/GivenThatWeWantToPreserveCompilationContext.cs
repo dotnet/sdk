@@ -1,22 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPreserveCompilationContext : SdkTest
     {
-        public GivenThatWeWantToPreserveCompilationContext(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Theory]
-        [InlineData("net46", "netstandard1.3", false)]
-        [InlineData("netcoreapp2.0", "netstandard2.0", false)]
-        [InlineData("netcoreapp2.0", "netstandard2.0", true)]
-        [InlineData("netcoreapp3.0", "netstandard2.0", false)]
-        [InlineData("netcoreapp3.0", "netstandard2.0", true)]
+        [TestMethod]
+        // Skip = "https://github.com/dotnet/sdk/issues/53796"
+        //[DataRow("net46", "netstandard1.3", false)]
+        [DataRow("netcoreapp2.0", "netstandard2.0", false)]
+        [DataRow("netcoreapp2.0", "netstandard2.0", true)]
+        [DataRow("netcoreapp3.0", "netstandard2.0", false)]
+        [DataRow("netcoreapp3.0", "netstandard2.0", true)]
         public void It_publishes_the_project_with_a_refs_folder_and_correct_deps_file(string appTargetFramework, string libraryTargetFramework, bool withoutCopyingRefs)
         {
             if (appTargetFramework == "net46" && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("System.Data.SqlClient", ToolsetInfo.GetSystemDataSqlClientPackageVersion()));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: appTargetFramework + withoutCopyingRefs);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: appTargetFramework + withoutCopyingRefs);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "LangVersion");
             getValuesCommand.Execute().Should().Pass();
@@ -158,12 +158,12 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_excludes_runtime_store_packages_from_the_refs_folder()
         {
             var targetFramework = "netcoreapp2.0";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("CompilationContext", "PreserveCompilationContextRefs")
                 .WithSource()
                 .WithProjectChanges((path, project) =>

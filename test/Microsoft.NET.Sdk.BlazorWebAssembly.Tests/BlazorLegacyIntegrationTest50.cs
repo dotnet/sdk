@@ -1,14 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.Sdk.Razor.Tests;
+using Microsoft.NET.Sdk.StaticWebAssets.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest50(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest50))
+    [TestClass]
+    public class BlazorLegacyIntegrationTest50 : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [CoreMSBuildOnlyFact]
+        protected override string RestoreNugetPackagePath => nameof(BlazorLegacyIntegrationTest50);
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build50Hosted_Works()
         {
             // Arrange
@@ -45,7 +48,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             content.Should().Contain(Path.Combine("Client", "wwwroot"));
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/49665
         public void Publish50Hosted_Works()
         {
             // Arrange

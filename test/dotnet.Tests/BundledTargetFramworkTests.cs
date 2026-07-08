@@ -1,18 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class BundledTargetFrameworkTests : SdkTest
     {
-        public BundledTargetFrameworkTests(ITestOutputHelper log) : base(log)
+        public BundledTargetFrameworkTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void VersionCommandDisplaysCorrectVersion()
         {
             var filePath = Path.Combine(

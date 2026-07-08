@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http.Headers;
@@ -38,11 +38,10 @@ internal class DefaultManifestOperations : IManifestOperations
         };
     }
 
-    public async Task PutAsync(string repositoryName, string reference, ManifestV2 manifest, CancellationToken cancellationToken)
+    public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
     {
-        string jsonString = JsonSerializer.SerializeToNode(manifest)?.ToJsonString() ?? "";
-        HttpContent manifestUploadContent = new StringContent(jsonString);
-        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(manifest.MediaType);
+        HttpContent manifestUploadContent = new StringContent(manifestJson);
+        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
 
         HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
 

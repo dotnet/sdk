@@ -1,26 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 #if MICROSOFT_ENABLE_TELEMETRY
-      [assembly: System.Reflection.AssemblyMetadata("TelemetryOptOutDefault", Microsoft.DotNet.Cli.CompileOptions.TelemetryOptOutDefaultString)]
+[assembly: System.Reflection.AssemblyMetadata("TelemetryOptOutDefault", Microsoft.DotNet.Cli.CompileOptions.TelemetryOptOutDefaultString)]
 #endif
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+static class CompileOptions
 {
-    static class CompileOptions
-    {
-        public const bool TelemetryOptOutDefault =
+    public const bool TelemetryOptOutDefault =
 #if MICROSOFT_ENABLE_TELEMETRY
-        false;
+    false;
 #else
-        true;
+    true;
 #endif
-        public const string TelemetryOptOutDefaultString =
+    public const string TelemetryOptOutDefaultString =
 #if MICROSOFT_ENABLE_TELEMETRY
-        "False";
+    "False";
 #else
-        "True";
+    "True";
 #endif
-    }
 }

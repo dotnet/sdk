@@ -10,32 +10,34 @@ namespace Microsoft.NET.TestFramework.Commands
         public string Target { get; }
 
         private readonly string _projectRootPath;
+        private readonly string[] _requiredArgs;
 
         public string ProjectRootPath => _projectRootPath;
 
         public string ProjectFile { get; }
 
-        public TestAsset TestAsset { get; }
+        public TestAsset? TestAsset { get; }
 
         public string FullPathProjectFile => Path.Combine(ProjectRootPath, ProjectFile);
 
-        public MSBuildCommand(ITestOutputHelper log, string target, string projectRootPath, string relativePathToProject = null)
+        public MSBuildCommand(ITestOutputHelper log, string target, string projectRootPath, string? relativePathToProject = null, params ReadOnlySpan<string> requiredArgs)
             : base(log)
         {
             Target = target;
 
             _projectRootPath = projectRootPath;
+            _requiredArgs = requiredArgs.ToArray();
 
             ProjectFile = FindProjectFile(ref _projectRootPath, relativePathToProject);
         }
 
-        public MSBuildCommand(TestAsset testAsset, string target, string relativePathToProject = null)
-            : this(testAsset.Log, target, testAsset.TestRoot, relativePathToProject ?? testAsset.TestProject?.Name)
+        public MSBuildCommand(TestAsset testAsset, string target, string? relativePathToProject = null, params ReadOnlySpan<string> requiredArgs)
+            : this(testAsset.Log, target, testAsset.TestRoot, relativePathToProject ?? testAsset.TestProject?.Name, requiredArgs)
         {
             TestAsset = testAsset;
         }
 
-        internal static string FindProjectFile(ref string projectRootPath, string relativePathToProject)
+        internal static string FindProjectFile(ref string projectRootPath, string? relativePathToProject)
         {
             if (File.Exists(projectRootPath) && string.IsNullOrEmpty(relativePathToProject))
             {
@@ -68,7 +70,7 @@ namespace Microsoft.NET.TestFramework.Commands
             return buildProjectFiles[0];
         }
 
-        public virtual DirectoryInfo GetOutputDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = null, string platform = null)
+        public virtual DirectoryInfo GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = null, string? platform = null)
         {
             if (TestAsset != null)
             {
@@ -84,7 +86,7 @@ namespace Microsoft.NET.TestFramework.Commands
             return new DirectoryInfo(output);
         }
 
-        public virtual DirectoryInfo GetIntermediateDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = null)
+        public virtual DirectoryInfo GetIntermediateDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = null)
         {
             if (TestAsset != null)
             {
@@ -124,16 +126,30 @@ namespace Microsoft.NET.TestFramework.Commands
             return new DirectoryInfo(output);
         }
 
-        protected virtual bool ExecuteWithRestoreByDefault => true;
+        public bool ShouldRestore { get; set; } = true;
 
         public override CommandResult Execute(IEnumerable<string> args)
         {
-            if (ExecuteWithRestoreByDefault)
+            if (ShouldRestore)
             {
                 args = new[] { "/restore" }.Concat(args);
             }
+            args = [.. _requiredArgs, .. args];
 
-            return base.Execute(args);
+            var command = base.Execute(args);
+
+            var error = command.StdErr?.ToString();
+            var output = command.StdOut?.ToString();
+            if ((!String.IsNullOrEmpty(error) && error.Contains("NU3003")) || (!String.IsNullOrEmpty(output) && output.Contains("NU3003")))
+            {
+                // NU3003 (NuGet signature verification) is typically transient. Retry the
+                // command as-is. The binlog (uploaded to Helix) captures full diagnostic
+                // data if deeper investigation is needed.
+                Log.WriteLine("NU3003 (signature verification) detected — retrying. Check the uploaded binlog for diagnostic details.");
+                command = base.Execute(args);
+            }
+
+            return command;
         }
 
         public CommandResult ExecuteWithoutRestore(IEnumerable<string> args)
@@ -152,7 +168,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var newArgs = args.ToList();
             newArgs.Insert(0, FullPathProjectFile);
 
-            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(Target, newArgs);
+            return SdkTestContext.Current.ToolsetUnderTest.CreateCommandForTarget(Target, newArgs);
         }
     }
 }

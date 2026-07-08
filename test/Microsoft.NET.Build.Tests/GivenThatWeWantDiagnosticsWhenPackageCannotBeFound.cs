@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantDiagnosticsWhenPackageCannotBeFound : SdkTest
     {
-        public GivenThatWeWantDiagnosticsWhenPackageCannotBeFound(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_reports_missing_package_deleted_since_restore()
         {
             var package = GeneratePackageToGoMissing();
@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
                 "RestoreAdditionalProjectSources",
                 Path.GetDirectoryName(package.NupkgPath));
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CreateTestProject(project, project.Name)
                 .Restore(Log, project.Name);
 
@@ -54,13 +54,13 @@ namespace Microsoft.NET.Build.Tests
             // only that file here to confirm that behavior and mitigate risk of a typo
             // here resulting in an overly aggressive recursive directory deletion.
             var shaFile = Path.Combine(
-               TestContext.Current.NuGetCachePath,
+               SdkTestContext.Current.NuGetCachePath,
                package.ID,
                package.Version,
                $"{package.ID}.{package.Version}.nupkg.sha512");
 
             var nupkgMetadataFile = Path.Combine(
-               TestContext.Current.NuGetCachePath,
+               SdkTestContext.Current.NuGetCachePath,
                package.ID,
                package.Version,
                $".nupkg.metadata");
@@ -77,7 +77,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard1.3",
             };
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                .CreateTestProject(project, project.Name);
 
             var pack = new PackCommand(

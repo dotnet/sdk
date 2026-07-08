@@ -1,21 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildALibraryWithFSharp : SdkTest
     {
-        public GivenThatWeWantToBuildALibraryWithFSharp(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_library_successfully()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS")
                 .WithSource();
 
@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netstandard1.6");
+            var outputDirectory = buildCommand.GetOutputDirectory("netstandard2.0");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "TestLibrary.dll",
@@ -34,10 +34,10 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_library_twice_in_a_row()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS")
                 .WithSource();
 
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
 
-            string targetFramework = "netstandard1.6";
+            string targetFramework = "netstandard2.0";
 
             var testAsset = testAssetsManager
                 .CopyTestAsset("AppWithLibraryFS", callingMethod)
@@ -96,10 +96,10 @@ namespace Microsoft.NET.Build.Tests
             return itemValues;
         }
 
-        [Fact]
+        [TestMethod]
         public void The_build_fails_if_nuget_restore_has_not_occurred()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS")
                 .WithSource();
 
@@ -110,10 +110,10 @@ namespace Microsoft.NET.Build.Tests
                 .Fail();
         }
 
-        [Fact]
+        [TestMethod]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS")
                 .WithSource();
 
@@ -132,21 +132,21 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
-        [InlineData("Debug", "DEBUG")]
-        [InlineData("Release", "RELEASE")]
-        [InlineData("CustomConfiguration", "CUSTOMCONFIGURATION")]
-        [InlineData("Debug-NetCore", "DEBUG_NETCORE")]
+        [TestMethod]
+        [DataRow("Debug", "DEBUG")]
+        [DataRow("Release", "RELEASE")]
+        [DataRow("CustomConfiguration", "CUSTOMCONFIGURATION")]
+        [DataRow("Debug-NetCore", "DEBUG_NETCORE")]
         public void It_implicitly_defines_compilation_constants_for_the_configuration(string configuration, string expectedDefine)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS", "ImplicitConfigurationConstantsFS", configuration)
                 .WithSource();
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
             var getValuesCommand = new GetValuesCommand(Log, libraryProjectDirectory,
-                "netstandard1.6", "DefineConstants")
+                "netstandard2.0", "DefineConstants")
             {
                 ShouldCompile = true,
                 Configuration = configuration
@@ -159,22 +159,19 @@ namespace Microsoft.NET.Build.Tests
 
             var definedConstants = getValuesCommand.GetValues();
 
-            definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD1_6", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER",
-                "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER" });
+            definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" });
         }
 
-        [Theory]
-        [InlineData("netstandard1.6", new[] { "NETSTANDARD", "NETSTANDARD1_6", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER",
-            "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER" })]
-        [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" })]
-        [InlineData("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
+        [TestMethod]
+        [DataRow("netstandard2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
+        [DataRow("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
             "NET451_OR_GREATER", "NET452_OR_GREATER", "NET46_OR_GREATER", "NET461_OR_GREATER" })]
-        [InlineData("netcoreapp2.0", new[] { "NETCOREAPP", "NETCOREAPP2_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER" })]
-        [InlineData("net5.0", new[] { "NETCOREAPP", "NET", "NET5_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER",
+        [DataRow("netcoreapp2.0", new[] { "NETCOREAPP", "NETCOREAPP2_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER" })]
+        [DataRow("net5.0", new[] { "NETCOREAPP", "NET", "NET5_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER",
             "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET5_0_OR_GREATER" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS", "ImplicitFrameworkConstantsFS", targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>

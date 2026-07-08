@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
@@ -8,7 +10,8 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class MergeConfigurationProperties : Task
+[MSBuildMultiThreadableTask]
+public class MergeConfigurationProperties : Task, IMultiThreadableTask
 {
     [Required]
     public ITaskItem[] CandidateConfigurations { get; set; }
@@ -19,11 +22,13 @@ public class MergeConfigurationProperties : Task
     [Output]
     public ITaskItem[] ProjectConfigurations { get; set; }
 
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     public override bool Execute()
     {
         try
         {
-            ProjectConfigurations = new TaskItem[CandidateConfigurations.Length];
+            ProjectConfigurations = new ITaskItem[CandidateConfigurations.Length];
 
             for (var i = 0; i < CandidateConfigurations.Length; i++)
             {
@@ -108,7 +113,7 @@ public class MergeConfigurationProperties : Task
             // We can be more lenient here and fallback to the project reference ItemSpec if not present.
             referenceMetadata = !string.IsNullOrEmpty(referenceMetadata) ? referenceMetadata : projectReference.ItemSpec;
             var configurationFullPath = configuration.GetMetadata("FullPath");
-            var projectReferenceFullPath = Path.GetFullPath(referenceMetadata);
+            var projectReferenceFullPath = Path.GetFullPath((string)TaskEnvironment.GetAbsolutePath(referenceMetadata));
             var matchPath = string.Equals(
                 configurationFullPath,
                 projectReferenceFullPath,

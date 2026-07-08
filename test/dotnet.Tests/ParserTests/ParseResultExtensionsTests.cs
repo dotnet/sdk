@@ -1,45 +1,40 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
+    [TestClass]
     public class ParseResultExtensionsTests
     {
-        private readonly ITestOutputHelper output;
 
-        public ParseResultExtensionsTests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
-        [Theory]
-        [InlineData("build /p:prop=true", "build")]
-        [InlineData("add package", "add")]
-        [InlineData("watch run", "watch")]
-        [InlineData("watch run -h", "watch")]
-        [InlineData("ignore list", "ignore")] // Global tool
+        [TestMethod]
+        [DataRow("build /p:prop=true", "build")]
+        [DataRow("add package", "add")]
+        [DataRow("watch run", "watch")]
+        [DataRow("watch run -h", "watch")]
+        [DataRow("ignore list", "ignore")] // Global tool
         public void RootSubCommandResultReturnsCorrectSubCommand(string input, string expected)
         {
-            var result = Parser.Instance.Parse(input);
+            var result = Parser.Parse(input);
 
             result.RootSubCommandResult()
                 .Should()
                 .Be(expected);
         }
 
-        [Theory]
-        [InlineData(new string[] { "dotnet", "build" }, new string[] { })]
-        [InlineData(new string[] { "build" }, new string[] { })]
-        [InlineData(new string[] { "dotnet", "test", "-d" }, new string[] { "-d" })]
-        [InlineData(new string[] { "dotnet", "publish", "-o", "foo" }, new string[] { "-o", "foo" })]
-        [InlineData(new string[] { "publish", "-o", "foo" }, new string[] { "-o", "foo" })]
-        [InlineData(new string[] { "dotnet", "add", "package", "-h" }, new string[] { "package", "-h" })]
-        [InlineData(new string[] { "add", "package", "-h" }, new string[] { "package", "-h" })]
-        [InlineData(new string[] { "dotnet", "-d", "help" }, new string[] { })]
-        [InlineData(new string[] { "dotnet", "run", "--", "-d" }, new string[] { "--", "-d" })]
+        [TestMethod]
+        [DataRow(new string[] { "dotnet", "build" }, new string[] { })]
+        [DataRow(new string[] { "build" }, new string[] { })]
+        [DataRow(new string[] { "dotnet", "test", "-d" }, new string[] { "-d" })]
+        [DataRow(new string[] { "dotnet", "publish", "-o", "foo" }, new string[] { "-o", "foo" })]
+        [DataRow(new string[] { "publish", "-o", "foo" }, new string[] { "-o", "foo" })]
+        [DataRow(new string[] { "dotnet", "add", "package", "-h" }, new string[] { "package", "-h" })]
+        [DataRow(new string[] { "add", "package", "-h" }, new string[] { "package", "-h" })]
+        [DataRow(new string[] { "dotnet", "-d", "help" }, new string[] { })]
+        [DataRow(new string[] { "dotnet", "run", "--", "-d" }, new string[] { "--", "-d" })]
         public void GetSubArgumentsRemovesTopLevelCommands(string[] input, string[] expected)
         {
             input.GetSubArguments()

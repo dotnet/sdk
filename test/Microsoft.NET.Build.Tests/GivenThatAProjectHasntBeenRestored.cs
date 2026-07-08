@@ -1,22 +1,22 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatAProjectHasntBeenRestored : SdkTest
     {
-        public GivenThatAProjectHasntBeenRestored(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("TestLibrary", null)]
-        [InlineData("TestApp", null)]
-        [InlineData("TestApp", "netcoreapp2.1")]
-        [InlineData("TestApp", ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("TestLibrary", null)]
+        [DataRow("TestApp", null)]
+        [DataRow("TestApp", "netcoreapp2.1")]
+        [DataRow("TestApp", ToolsetInfo.CurrentTargetFramework)]
         public void The_build_fails_if_nuget_restore_has_not_occurred(string relativeProjectPath, string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary", identifier: relativeProjectPath + "_" + targetFramework ?? string.Empty)
                 .WithSource()
                 .WithTargetFramework(targetFramework, relativeProjectPath);
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("1 Error(s)");
         }
 
-        [Fact]
+        [TestMethod]
         public void ReadingCacheDoesNotFail()
         {
             var testProject = new TestProject()
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 

@@ -1,0 +1,228 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Buffers;
+using System.CommandLine;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Schema;
+using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Command = System.CommandLine.Command;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
+
+namespace Microsoft.DotNet.Cli;
+
+internal static class CliSchema
+{
+    // Using UnsafeRelaxedJsonEscaping because this JSON is not transmitted over the web. Therefore, HTML-sensitive characters are not encoded.
+    // See: https://learn.microsoft.com/dotnet/api/system.text.encodings.web.javascriptencoder.unsaferelaxedjsonescaping
+    // Force the newline to be "\n" instead of the default "\r\n" for consistency across platforms (and for testing)
+    // Using a source-generated JsonSerializerContext as the TypeInfoResolver so that
+    // the options are AOT compatible and have a resolver set (avoiding https://github.com/dotnet/aspnetcore/issues/55692).
+    private static readonly CliSchemaJsonSerializerContext s_jsonContext = new(new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        NewLine = "\n",
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        RespectNullableAnnotations = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    });
+
+    public record ArgumentDetails(
+        string? description,
+        int order,
+        bool hidden,
+        string? helpName,
+        string valueType,
+        bool hasDefaultValue,
+        object? defaultValue,
+        ArityDetails arity);
+
+    public record ArityDetails(
+        int minimum,
+        int? maximum);
+
+    public record OptionDetails(
+        string? description,
+        bool hidden,
+        string[]? aliases,
+        string? helpName,
+        string valueType,
+        bool hasDefaultValue,
+        object? defaultValue,
+        ArityDetails arity,
+        bool required,
+        bool recursive);
+
+    public record CommandDetails(
+        string? description,
+        bool hidden,
+        string[]? aliases,
+        Dictionary<string, ArgumentDetails>? arguments,
+        Dictionary<string, OptionDetails>? options,
+        Dictionary<string, CommandDetails>? subcommands);
+
+    public record RootCommandDetails(
+        string name,
+        string version,
+        string? description,
+        bool hidden,
+        string[]? aliases,
+        Dictionary<string, ArgumentDetails>? arguments,
+        Dictionary<string, OptionDetails>? options,
+        Dictionary<string, CommandDetails>? subcommands
+    ) : CommandDetails(description, hidden, aliases, arguments, options, subcommands);
+
+    public static void PrintCliSchema(ParseResult parseResult, TextWriter outputWriter, ITelemetryClient? telemetryClient)
+    {
+        var command = parseResult.CommandResult.Command;
+        RootCommandDetails transportStructure = CreateRootCommandDetails(command);
+        var result = JsonSerializer.Serialize(transportStructure, s_jsonContext.RootCommandDetails);
+        outputWriter.Write(result.AsSpan());
+        outputWriter.Flush();
+        var commandString = parseResult.GetCommandName();
+        var telemetryProperties = new Dictionary<string, string?> { { "command", commandString } };
+        telemetryClient?.TrackEvent("schema", telemetryProperties);
+    }
+
+    public static object GetJsonSchema()
+    {
+          var node = s_jsonContext.RootCommandDetails.GetJsonSchemaAsNode(new JsonSchemaExporterOptions());
+        return node.ToJsonString(s_jsonContext.Options);
+    }
+
+    private static ArityDetails CreateArityDetails(ArgumentArity arity)
+    {
+        return new ArityDetails(
+            minimum: arity.MinimumNumberOfValues,
+            maximum: arity.MaximumNumberOfValues == ArgumentArity.ZeroOrMore.MaximumNumberOfValues ? null : arity.MaximumNumberOfValues
+        );
+    }
+
+    private static RootCommandDetails CreateRootCommandDetails(Command command)
+    {
+        var arguments = CreateArgumentsDictionary(command.Arguments);
+        var options = CreateOptionsDictionary(command.Options);
+        var subcommands = CreateSubcommandsDictionary(command.Subcommands);
+
+        return new RootCommandDetails(
+            name: command.Name,
+            version: Product.Version,
+            description: command.Description?.ReplaceLineEndings("\n"),
+            hidden: command.Hidden,
+            aliases: DetermineAliases(command.Aliases),
+            arguments: arguments,
+            options: options,
+            subcommands: subcommands
+        );
+    }
+
+    private static Dictionary<string, ArgumentDetails>? CreateArgumentsDictionary(IList<Argument> arguments)
+    {
+        if (arguments.Count == 0)
+        {
+            return null;
+        }
+        var dict = new Dictionary<string, ArgumentDetails>();
+        foreach ((var index, var argument) in arguments.Index())
+        {
+            dict[argument.Name] = CreateArgumentDetails(index, argument);
+        }
+        return dict;
+    }
+
+    private static Dictionary<string, OptionDetails>? CreateOptionsDictionary(IList<Option> options)
+    {
+        if (options.Count == 0)
+        {
+            return null;
+        }
+        var dict = new Dictionary<string, OptionDetails>();
+        foreach (var option in options.OrderBy(o => o.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            dict[option.Name] = CreateOptionDetails(option);
+        }
+        return dict;
+    }
+
+    private static Dictionary<string, CommandDetails>? CreateSubcommandsDictionary(IList<Command> subcommands)
+    {
+        if (subcommands.Count == 0)
+        {
+            return null;
+        }
+        var dict = new Dictionary<string, CommandDetails>();
+        foreach (var subcommand in subcommands.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            dict[subcommand.Name] = CreateCommandDetails(subcommand);
+        }
+        return dict;
+    }
+
+    private static string[]? DetermineAliases(ICollection<string> aliases)
+    {
+        if (aliases.Count == 0)
+        {
+            return null;
+        }
+
+        // Order the aliases to ensure consistent output.
+        return aliases.Order().ToArray();
+    }
+
+    private static CommandDetails CreateCommandDetails(Command subCommand) => new CommandDetails(
+                subCommand.Description?.ReplaceLineEndings("\n"),
+                subCommand.Hidden,
+                DetermineAliases(subCommand.Aliases),
+                CreateArgumentsDictionary(subCommand.Arguments),
+                CreateOptionsDictionary(subCommand.Options),
+                CreateSubcommandsDictionary(subCommand.Subcommands)
+            );
+
+    private static OptionDetails CreateOptionDetails(Option option) => new OptionDetails(
+                option.Description?.ReplaceLineEndings("\n"),
+                option.Hidden,
+                DetermineAliases(option.Aliases),
+                option.HelpName,
+                option.ValueType.ToCliTypeString(),
+                option.HasDefaultValue,
+                option.HasDefaultValue ? HumanizeValue(option.GetDefaultValue()) : null,
+                CreateArityDetails(option.Arity),
+                option.Required,
+                option.Recursive
+            );
+
+    /// <summary>
+    /// Maps some types that don't serialize well to more human-readable strings.
+    /// For example, <see cref="VerbosityOptions"/> is serialized as a string instead of an integer.
+    /// Enums in general are rendered as their name: besides being more readable, this avoids
+    /// requiring the source-generated <see cref="CliSchemaJsonSerializerContext"/> to carry metadata
+    /// for every enum type that might appear as an option/argument default (which is also required
+    /// for the schema to serialize under NativeAOT).
+    /// </summary>
+    private static object? HumanizeValue(object? v) => v switch
+    {
+        VerbosityOptions o => Enum.GetName(o),
+        Enum e => e.ToString(),
+        null => null,
+        _ => v // For other types, return as is
+    };
+
+    private static ArgumentDetails CreateArgumentDetails(int index, Argument argument) => new ArgumentDetails(
+                argument.Description?.ReplaceLineEndings("\n"),
+                index,
+                argument.Hidden,
+                argument.HelpName,
+                argument.ValueType.ToCliTypeString(),
+                argument.HasDefaultValue,
+                argument.HasDefaultValue ? HumanizeValue(argument.GetDefaultValue()) : null,
+                CreateArityDetails(argument.Arity)
+            );
+}
+
+[JsonSerializable(typeof(CliSchema.RootCommandDetails))]
+internal partial class CliSchemaJsonSerializerContext : JsonSerializerContext;

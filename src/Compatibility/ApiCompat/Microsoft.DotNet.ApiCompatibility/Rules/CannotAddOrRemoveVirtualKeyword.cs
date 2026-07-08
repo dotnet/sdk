@@ -63,14 +63,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         leftMetadata,
                         rightMetadata,
                         DiagnosticIds.CannotRemoveVirtualFromMember,
-                        string.Format(Resources.CannotRemoveVirtualFromMember, left),
+                        string.Format(Resources.CannotRemoveVirtualOrAbstractFromMember, "virtual", left),
                         DifferenceType.Removed,
                         right));
                 }
             }
             // If the left member is not virtual, ensure that we're in strict mode.
-            // TODO: This check can be expanded once compatibility rules for
-            // adding a virtual keyword are clarified: https://github.com/dotnet/sdk/issues/26169.
+            // Adding virtual to a member is only flagged in strict mode as it's not a binary breaking change,
+            // though it may break source compatibility in some scenarios (e.g., when overriding methods with covariant return types).
             else if (_settings.StrictMode)
             {
                 // If the right member is virtual, emit a diagnostic
@@ -83,6 +83,21 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         DiagnosticIds.CannotAddVirtualToMember,
                         string.Format(Resources.CannotAddVirtualToMember, right),
                         DifferenceType.Added,
+                        right));
+                }
+            }
+
+            if (left.IsAbstract)
+            {
+                if (!right.IsAbstract && !right.IsVirtual)
+                {
+                    // abstract can be made virtual but cannot remove abstract.
+                    differences.Add(new CompatDifference(
+                        leftMetadata,
+                        rightMetadata,
+                        DiagnosticIds.CannotRemoveVirtualFromMember,
+                        string.Format(Resources.CannotRemoveVirtualOrAbstractFromMember, "abstract", left),
+                        DifferenceType.Removed,
                         right));
                 }
             }

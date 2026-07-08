@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -9,11 +9,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
     public partial class TabCompletionTests : BaseTest
     {
-        [Fact]
+        [TestMethod]
         public Task RootCommand_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = ParserFactory.CreateParser(myCommand).Parse("new ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -21,11 +21,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task RootCommand_GetStartsWtihSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new c");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -33,11 +33,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Install_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new install ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -45,11 +45,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Uninstall_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new uninstall ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -57,11 +57,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Update_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new update ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -69,11 +69,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task List_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new list ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -81,11 +81,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Search_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new search ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -93,11 +93,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Create_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new create ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -105,11 +105,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TemplateCommand_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new console ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();
@@ -117,11 +117,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task DetailsCommand_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new details ");
             System.CommandLine.Completions.CompletionItem[] result = parseResult.GetCompletions().ToArray();

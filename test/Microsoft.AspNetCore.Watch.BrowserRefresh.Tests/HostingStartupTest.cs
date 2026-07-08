@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
@@ -7,9 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
+    [TestClass]
     public class HostingStartupTest
     {
-        [Fact]
+        [TestMethod]
         public async Task ClearSiteDataWorks()
         {
             // Arrange
@@ -21,11 +22,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.Equal("\"cache\"", context.Response.Headers["Clear-Site-Data"]);
+            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.AreEqual("\"cache\"", context.Response.Headers["Clear-Site-Data"].ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GetBlazorHotReloadMiddlewareWorks()
         {
             // Arrange
@@ -39,27 +40,41 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+            Assert.AreEqual(StatusCodes.Status204NoContent, context.Response.StatusCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PostBlazorHotReloadMiddlewareWorks()
         {
-            // Arrange
             var requestDelegate = GetRequestDelegate();
             var context = new DefaultHttpContext();
             context.Request.Path = "/_framework/blazor-hotreload";
             context.Request.Method = "POST";
-            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[]"));
 
-            // Act
+            var updateJson = """
+                {"id":0,"deltas":[{"moduleId":"9BBB9BBD-48F0-4EB2-B7A3-956CFC220CC4","metadataDelta":"","ilDelta":"","pdbDelta":"","updatedTypes":[1,2,3]}]}
+                """;
+
+            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(updateJson));
+
             await requestDelegate(context);
 
-            // Assert
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            context.Request.Path = "/_framework/blazor-hotreload";
+            context.Request.Method = "GET";
+
+            var body = new MemoryStream();
+            context.Response.Body = body;
+
+            await requestDelegate(context);
+
+            var bodyJson = Encoding.UTF8.GetString(body.ToArray());
+
+            Assert.AreEqual($"[{updateJson}]", bodyJson);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GetBlazorHotReloadJsWorks()
         {
             // Arrange
@@ -73,11 +88,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.NotEmpty(responseBody.ToArray());
+            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.IsNotEmpty(responseBody.ToArray());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GetAspNetCoreBrowserRefreshWorks()
         {
             // Arrange
@@ -91,11 +106,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.NotEmpty(responseBody.ToArray());
+            Assert.AreEqual(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.IsNotEmpty(responseBody.ToArray());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GetUnknownUrlWorks()
         {
             // Arrange
@@ -107,10 +122,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
+            Assert.AreEqual(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GetUnknownFrameworkPathWorks()
         {
             // Arrange
@@ -141,7 +156,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.Equal(StatusCodes.Status206PartialContent, context.Response.StatusCode);
+            Assert.AreEqual(StatusCodes.Status206PartialContent, context.Response.StatusCode);
 
 
             // Act - 2
@@ -149,7 +164,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await requestDelegate(context);
 
             // Assert
-            Assert.Equal(StatusCodes.Status226IMUsed, context.Response.StatusCode);
+            Assert.AreEqual(StatusCodes.Status226IMUsed, context.Response.StatusCode);
         }
 
         private static RequestDelegate GetRequestDelegate(Action<IApplicationBuilder>? configureBuilder = null)

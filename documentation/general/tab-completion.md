@@ -9,7 +9,7 @@ Input                                | becomes                                  
 `dotnet a⇥`                          | `dotnet add`                                                                 | `add` is the first subcommand, alphabetically.
 `dotnet add p⇥`                      | `dotnet add --help`                                                          | it matches substrings and `--help` comes first alphabetically.
 `dotnet add p⇥⇥`                    | `dotnet add package`                                                          | pressing tab a second time brings up the next suggestion.      
-`dotnet add package Microsoft⇥`      | `dotnet add package Microsoft.ApplicationInsights.Web`                      | results are returned alphabetically.
+`dotnet add package Microsoft⇥`      | `dotnet add package Microsoft.AspNetCore.Http`                               | results are returned alphabetically.
 `dotnet remove reference ⇥`          | `dotnet remove reference ..\..\src\OmniSharp.DotNet\OmniSharp.DotNet.csproj` | it is project file aware.
 
 ## How to enable it

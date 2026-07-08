@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -7,14 +9,14 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
-    [Collection("VM Tests")]
     public class VMTestBase : SdkTest, IDisposable
     {
-        internal VirtualMachine VM { get; }
+        private VirtualMachine _vm;
 
-        public VMTestBase(ITestOutputHelper log) : base(log)
+        internal VirtualMachine VM => _vm ??= new VirtualMachine(Log);
+
+        public VMTestBase()
         {
-            VM = new VirtualMachine(Log);
             _sdkInstallerVersion = new Lazy<string>(() =>
             {
                 if (!string.IsNullOrEmpty(VM.VMTestSettings.SdkInstallerVersion))
@@ -23,7 +25,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 }
                 else
                 {
-                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
+                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting", mustExist: true);
 
                     string installerPrefix = "dotnet-sdk-";
                     string installerSuffix = "-win-x64.exe";
@@ -49,8 +51,10 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         public virtual void Dispose()
         {
-            VM.Dispose();
+            _vm?.Dispose();
         }
+
+        protected virtual bool NeedsIncludePreviews => false;
 
         Lazy<string> _sdkInstallerVersion;
         private bool _sdkInstalled = false;
@@ -130,17 +134,17 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             string existingVersionToOverwrite = result.StdOut;
 
             var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{existingVersionToOverwrite}";
 
-            Log.WriteLine($"Deploying SDK from {TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest} to {installedSdkFolder} on VM.");
+            Log.WriteLine($"Deploying SDK from {SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest} to {installedSdkFolder} on VM.");
 
             //  TODO: It would be nice if the description included the date/time of the SDK build, to distinguish different snapshots
             VM.CreateActionGroup("Deploy Stage 2 SDK",
-                    VM.CopyFolder(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder),
+                    VM.CopyFolder(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder),
                     ChangeVersionFileContents(existingVersionToOverwrite))
                 .Execute()
                 .Should()
@@ -173,7 +177,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{sdkVersion}";
             var vmVersionFilePath = Path.Combine(installedSdkFolder, ".version");
 
-            var newVersionFileContents = File.ReadAllLines(Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
+            var newVersionFileContents = File.ReadAllLines(Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
             newVersionFileContents[1] = sdkVersion;
 
             return VM.WriteFile(vmVersionFilePath, string.Join(Environment.NewLine, newVersionFileContents));
@@ -185,13 +189,17 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             var command = VM.CreateRunCommand("dotnet", "--version");
             command.IsReadOnly = true;
             var result = command.Execute();
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
             return result.StdOut;
         }
 
         protected CommandResult InstallWorkload(string workloadName, bool skipManifestUpdate)
         {
-            string [] args = { "dotnet", "workload", "install", workloadName, "--include-previews"};
+            string [] args = { "dotnet", "workload", "install", workloadName};
+            if (NeedsIncludePreviews)
+            {
+                args = [.. args, "--include-previews"];
+            }
             if (skipManifestUpdate)
             {
                 args = [.. args, "--skip-manifest-update"];
@@ -201,7 +209,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                     .WithDescription($"Install {workloadName} workload")
                     .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return result;
         }
@@ -213,7 +221,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return ParseRollbackOutput(result.StdOut);
         }
@@ -233,7 +241,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return result.StdOut;
         }
@@ -244,7 +252,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithDescription($"Add {source} to NuGet.config")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
         }
     }
 }

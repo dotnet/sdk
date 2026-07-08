@@ -11,7 +11,7 @@ internal static class ToolsetUtils
     /// <returns></returns>
     internal static string GetRuntimeGraphFilePath()
     {
-        return TestContext.GetRuntimeGraphFilePath();
+        return SdkTestContext.GetRuntimeGraphFilePath();
     }
 
     internal static IManifestPicker RidGraphManifestPicker { get; } = new RidGraphManifestPicker(GetRuntimeGraphFilePath());
@@ -20,18 +20,18 @@ internal static class ToolsetUtils
     /// Gets path to built Microsoft.NET.Build.Containers.*.nupkg prepared for tests.
     /// </summary>
     /// <returns></returns>
-    internal static (string PackagePath, string PackageVersion) GetContainersPackagePath()
+    internal static (string? PackagePath, string? PackageVersion) GetContainersPackagePath()
     {
-        string packageDir = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
+        string packageDir = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "package");
 
-        //until the package is stabilized, the package version matches TestContext.Current.ToolsetUnderTest.SdkVersion
+        //until the package is stabilized, the package version matches SdkTestContext.Current.ToolsetUnderTest.SdkVersion
         //after the package is stabilized, the package version doesn't have -prefix (-dev, -ci) anymore
         //so one of those is expected
-        string[] expectedPackageVersions = new[] { TestContext.Current.ToolsetUnderTest.SdkVersion, TestContext.Current.ToolsetUnderTest.SdkVersion.Split('-')[0] };
+        string?[] expectedPackageVersions = new[] { SdkTestContext.Current.ToolsetUnderTest?.SdkVersion, SdkTestContext.Current.ToolsetUnderTest?.SdkVersion?.Split('-')[0] };
 
-        foreach (string expectedVersion in expectedPackageVersions)
+        foreach (string? expectedVersion in expectedPackageVersions)
         {
-            string fullFileName = Path.Combine(packageDir, $"Microsoft.NET.Build.Containers.{expectedVersion}.nupkg");
+            string? fullFileName = Path.Combine(packageDir, $"Microsoft.NET.Build.Containers.{expectedVersion}.nupkg");
             if (File.Exists(fullFileName))
             {
                 return (fullFileName, expectedVersion);

@@ -1,17 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Build.Tests
 {
 
+    [TestClass]
     public class GivenThatWeWantToUseContentFiles : SdkTest
     {
-        public GivenThatWeWantToUseContentFiles(ITestOutputHelper log) : base(log)
-        {
-        }
 
 
-        [Fact]
+        [TestMethod]
         public void It_handles_content_files_correctly()
         {
             const string targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -39,7 +39,7 @@ namespace {project.Name}
     }}
 }}";
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CreateTestProject(project);
 
             // First Build

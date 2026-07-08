@@ -1,17 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackAProjectTool : SdkTest
     {
-        public GivenThatWeWantToPackAProjectTool(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_packs_project_tools_targeting_netcoreapp2_2()
         {
             TestProject toolProject = new()
@@ -23,14 +21,14 @@ namespace Microsoft.NET.Build.Tests
 
             toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                        .CreateTestProject(toolProject, toolProject.Name);
 
             var packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, toolProject.Name));
             packCommand.Execute().Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_to_pack_project_tools_targeting_netcoreapp3_0()
         {
             TestProject toolProject = new()
@@ -42,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
 
             toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                        .CreateTestProject(toolProject, toolProject.Name);
 
             var result = new PackCommand(Log, Path.Combine(asset.TestRoot, toolProject.Name)).Execute();

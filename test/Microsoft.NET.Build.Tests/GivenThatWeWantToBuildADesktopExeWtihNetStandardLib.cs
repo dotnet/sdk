@@ -1,8 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildADesktopExeWithNetStandardLib : SdkTest
     {
         private const string AppName = "TestApp";
@@ -11,10 +14,6 @@ namespace Microsoft.NET.Build.Tests
         private const string TemplateName = "DesktopAppWithLibrary";
         private const string TemplateNamePackagesConfig = "DesktopAppWithLibrary-PackagesConfig";
         private const string TemplateNameNonSdk = "DesktopAppWithLibrary-NonSDK";
-
-        public GivenThatWeWantToBuildADesktopExeWithNetStandardLib(ITestOutputHelper log) : base(log)
-        {
-        }
 
         public enum ReferenceScenario
         {
@@ -74,16 +73,17 @@ namespace Microsoft.NET.Build.Tests
             return Path.GetFileNameWithoutExtension(projectPath).Equals(LibraryName, StringComparison.OrdinalIgnoreCase);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(true, ReferenceScenario.ProjectReference)]
-        [InlineData(true, ReferenceScenario.RawFileName)]
-        [InlineData(true, ReferenceScenario.HintPath)]
-        [InlineData(false, ReferenceScenario.ProjectReference)]
-        [InlineData(false, ReferenceScenario.RawFileName)]
-        [InlineData(false, ReferenceScenario.HintPath)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true, ReferenceScenario.ProjectReference)]
+        [DataRow(true, ReferenceScenario.RawFileName)]
+        [DataRow(true, ReferenceScenario.HintPath)]
+        [DataRow(false, ReferenceScenario.ProjectReference)]
+        [DataRow(false, ReferenceScenario.RawFileName)]
+        [DataRow(false, ReferenceScenario.HintPath)]
         public void It_includes_netstandard(bool isSdk, ReferenceScenario scenario)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: (isSdk ? "sdk_" : "") + scenario.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -120,14 +120,15 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [FullMSBuildOnlyFact]
+        [TestMethod]
+        [FullMSBuildOnly]
         public void It_includes_netstandard_in_design_time_builds()
         {
             //  Verify that a P2P reference to a .NET Standard 2.0 project is correctly detected
             //  even if doing a design-time build where there is no output on disk to examine
             //  See https://github.com/dotnet/sdk/issues/1403
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopAppWithLibrary-NonSDK")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -166,15 +167,16 @@ namespace Microsoft.NET.Build.Tests
                 .Should().Contain("netstandard.dll");
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(true, false)]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true, false)]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
         public void It_resolves_conflicts(bool isSdk, bool usePackagesConfig)
         {
             var successMessage = "No conflicts found for support libs";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk, usePackagesConfig),
                                identifier: isSdk.ToString() + "_" + usePackagesConfig.ToString())
                 .WithSource()
@@ -206,7 +208,7 @@ namespace Microsoft.NET.Build.Tests
 
                         target.Add(new XElement(ns + "FindUnderPath",
                             new XAttribute("Files", "@(_ConflictPackageFiles)"),
-                            new XAttribute("Path", TestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath()),
+                            new XAttribute("Path", SdkTestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath()),
                             new XElement(ns + "Output",
                                 new XAttribute("TaskParameter", "InPath"),
                                 new XAttribute("ItemName", "_ConflictsInSupportLibs"))
@@ -253,12 +255,13 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_does_not_include_netstandard_when_inbox(bool isSdk)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -320,12 +323,13 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [WindowsOnlyTheory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_does_not_include_netstandard_when_library_targets_netstandard14(bool isSdk)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -358,12 +362,13 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [WindowsOnlyTheory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_includes_netstandard_when_library_targets_netstandard15(bool isSdk)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>

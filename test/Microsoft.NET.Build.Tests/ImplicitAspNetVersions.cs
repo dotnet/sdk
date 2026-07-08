@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -8,15 +10,13 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class ImplicitAspNetVersions : SdkTest
     {
-        public ImplicitAspNetVersions(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("Microsoft.AspNetCore.App")]
-        [InlineData("Microsoft.AspNetCore.All")]
+        [TestMethod]
+        [DataRow("Microsoft.AspNetCore.App")]
+        [DataRow("Microsoft.AspNetCore.All")]
         public void AspNetCoreVersionIsSetImplicitly(string aspnetPackageName)
         {
             var testProject = new TestProject()
@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add versionless PackageReference
             testProject.PackageReferences.Add(new TestPackageReference(aspnetPackageName, null));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -44,9 +44,12 @@ namespace Microsoft.NET.Build.Tests
             aspnetVersion.ToString().Should().Be("2.1.1");
         }
 
-        [Theory]
-        [InlineData("Microsoft.AspNetCore.App")]
-        [InlineData("Microsoft.AspNetCore.All")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DataRow("Microsoft.AspNetCore.App")]
+        [DataRow("Microsoft.AspNetCore.All")]
         public void AspNetCoreVersionRollsForward(string aspnetPackageName)
         {
             var testProject = new TestProject()
@@ -62,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add versionless PackageReference
             testProject.PackageReferences.Add(new TestPackageReference(aspnetPackageName, null));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -77,9 +80,9 @@ namespace Microsoft.NET.Build.Tests
             aspnetVersion.CompareTo(new SemanticVersion(2, 1, 1)).Should().BeGreaterThan(0);
         }
 
-        [Theory]
-        [InlineData("Microsoft.AspNetCore.App")]
-        [InlineData("Microsoft.AspNetCore.All")]
+        [TestMethod]
+        [DataRow("Microsoft.AspNetCore.App")]
+        [DataRow("Microsoft.AspNetCore.All")]
         public void ExplicitVersionsOfAspNetCoreWarn(string aspnetPackageName)
         {
             var testProject = new TestProject()
@@ -93,7 +96,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference(aspnetPackageName, explicitVersion));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -109,7 +112,7 @@ namespace Microsoft.NET.Build.Tests
             aspnetVersion.ToString().Should().Be(explicitVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleWarningsAreGeneratedForMultipleExplicitReferences()
         {
             var testProject = new TestProject()
@@ -122,7 +125,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.NETCore.App", "2.1.0"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.App", "2.1.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand
@@ -145,10 +148,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1023");
         }
 
-        [Theory]
-        [InlineData(true, null)]
-        [InlineData(true, "2.1.1")]
-        [InlineData(false, null)]
+        [TestMethod]
+        [DataRow(true, null)]
+        [DataRow(true, "2.1.1")]
+        [DataRow(false, null)]
         public void WhenTargetingNetCore3_0AspNetCoreAllPackageReferenceErrors(bool useWebSdk, string packageVersion)
         {
             var testProject = new TestProject()
@@ -162,7 +165,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add PackageReference
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.All", packageVersion));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{useWebSdk}_{packageVersion}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{useWebSdk}_{packageVersion}");
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand.Execute()
@@ -180,10 +183,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1079");
         }
 
-        [Theory]
-        [InlineData(true, null)]
-        [InlineData(true, "2.1.1")]
-        [InlineData(false, null)]
+        [TestMethod]
+        [DataRow(true, null)]
+        [DataRow(true, "2.1.1")]
+        [DataRow(false, null)]
         public void WhenTargetingNetCore3_0AspNetCoreAppPackageReferenceWarns(bool useWebSdk, string packageVersion)
         {
             var testProject = new TestProject()
@@ -197,7 +200,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add PackageReference
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.App", packageVersion));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{useWebSdk}_{packageVersion}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{useWebSdk}_{packageVersion}");
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand.Execute()

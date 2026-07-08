@@ -100,14 +100,14 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         {
             Dictionary<NuGetFramework, HashSet<NuGetFramework>> packageTfmMapping = [];
 
-            // creating a map framework in package => frameworks to test based on default compatibilty mapping.
+            // creating a map framework in package => frameworks to test based on default compatibility mapping.
             foreach (OneWayCompatibilityMappingEntry item in DefaultFrameworkMappings.Instance.CompatibilityMappings)
             {
                 NuGetFramework forwardTfm = item.SupportedFrameworkRange.Max;
                 NuGetFramework reverseTfm = item.TargetFrameworkRange.Min;
-                if (packageTfmMapping.ContainsKey(forwardTfm))
+                if (packageTfmMapping.TryGetValue(forwardTfm, out HashSet<NuGetFramework>? value))
                 {
-                    packageTfmMapping[forwardTfm].Add(reverseTfm);
+                    value.Add(reverseTfm);
                 }
                 else
                 {

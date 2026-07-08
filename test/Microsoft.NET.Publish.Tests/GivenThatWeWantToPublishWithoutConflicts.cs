@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishWithoutConflicts : SdkTest
     {
-        public GivenThatWeWantToPublishWithoutConflicts(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_solves_conflicts_between_package_and_implicit_references()
         {
             // Test case from https://github.com/dotnet/sdk/issues/3904.
@@ -25,7 +25,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.PackageReferences.Add(new TestPackageReference(reference, "4.3.0"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore", "2.1.4"));
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, "ResolvedFileToPublish", GetValuesCommand.ValueType.Item)
             {
@@ -45,9 +45,9 @@ namespace Microsoft.NET.Publish.Tests
             files.FirstOrDefault().Contains(@"Microsoft.NET.Build.Extensions\net462\lib\System.Runtime.InteropServices.RuntimeInformation.dll").Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_has_consistent_behavior_when_publishing_single_file(bool shouldPublishSingleFile)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Publish.Tests
             // runtime package. Without _HandleFileConflictsForPublish this would be caught when by the bundler when publishing single file, but a normal publish would succeed with double writes.
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.TestPlatform.CLI", "16.5.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: shouldPublishSingleFile.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: shouldPublishSingleFile.ToString());
             var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, "ResolvedFileToPublish", GetValuesCommand.ValueType.Item)
             {
                 DependsOnTargets = "Publish"

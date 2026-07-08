@@ -1,0 +1,231 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
+    <IsCrossgenSupported Condition="'$(SkipUsingCrossgen)' != 'true' and
+                                    '$(TargetArchitecture)' != 's390x' and
+                                    '$(TargetArchitecture)' != 'ppc64le' and
+                                    '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
+
+    <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(NETCoreSdkRuntimeIdentifier)</RuntimeNETCrossgenPackageName>
+  </PropertyGroup>
+
+  <!-- Download the runtime package with the crossgen executable in it -->
+  <ItemGroup Condition="'$(IsCrossgenSupported)' == 'true'">
+    <PackageDownload Include="$(RuntimeNETCrossgenPackageName)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+  </ItemGroup>
+
+  <Target Name="CrossgenLayout" Condition="'$(IsCrossgenSupported)' == 'true'">
+    <PropertyGroup>
+      <CrossgenPath>$(NuGetPackageRoot)$(RuntimeNETCrossgenPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools/crossgen2$(ExeExtension)</CrossgenPath>
+      <CreateCrossgenSymbols Condition="'$(CreateCrossgenSymbols)' == ''">true</CreateCrossgenSymbols>
+      <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
+           as will the archive file names themselves. -->
+      <SharedFrameworkNameVersionPath>$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
+
+      <!-- The target OS to pass to crossgen2. Without it, crossgen2 defaults to the OS it is running
+           on, which produces images for the wrong OS when cross-compiling the SDK toolset (e.g.
+           building an OpenBSD SDK on a Linux host). crossgen2 only recognizes the base OS name, so
+           Linux flavors ('linux-musl', 'linux-bionic') must be normalized to 'linux'. -->
+      <_CrossgenTargetOS>$(TargetOS)</_CrossgenTargetOS>
+      <_CrossgenTargetOS Condition="$(TargetOS.StartsWith('linux'))">linux</_CrossgenTargetOS>
+    </PropertyGroup>
+
+    <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
+         cross-genned. This tooling multi-targets, and we only want to cross-gen the .NET Core
+         targeted bits. Below, this propertygroup is used to verify that these paths exist as expected,
+         no that we do not silently miss cross-genning some bits. When a TFM for a tool is updated,
+         update its path explicitly. If all TFMs match, update DefaultToolTfm -->
+    <PropertyGroup>
+      <DefaultToolTfm>$(SdkTargetFramework)</DefaultToolTfm>
+
+      <NetSdkAnalyzers>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\analyzers\</NetSdkAnalyzers>
+      <NetSdkTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
+      <BlazorWasmTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
+      <RazorSourceGenerators>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\source-generators\</RazorSourceGenerators>
+      <RazorTasks>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
+      <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
+      <PublishTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
+      <WebTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
+      <ProjectSystemTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>
+      <WorkerTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Worker\tools\$(DefaultToolTfm)\</WorkerTools>
+      <ContainerTasks>$(InstallerOutputDirectory)Containers\tasks\$(DefaultToolTfm)\</ContainerTasks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RoslynFiles Include="$(InstallerOutputDirectory)Roslyn\bincore\**\*" />
+
+      <FSharpFilesRuntimes Include="$(InstallerOutputDirectory)FSharp\runtimes\**\*" />
+      <FSharpFilesRoot Include="$(InstallerOutputDirectory)FSharp\**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(FSharpFilesRuntimes)" />
+      <FSharpFiles Include="@(FSharpFilesRuntimes);@(FSharpFilesRoot)" />
+
+      <RazorToolFiles Include="$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
+
+      <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles);$(InstallerOutputDirectory)Roslyn\binfx\**\*" />
+
+      <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error, and they need to stay their original architecture. -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)TestHost*\**\*" />
+      <!-- Removing Full CLR built DumpMiniTool executables from Crossgen, because they need to stay their original architecture to allow creating dumps with a given bitness. -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)Extensions\dump*\**\*" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)Sdks\**\*" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
+
+      <!-- Removing Containers as containerize .DLLs shouldn't be crossgenned. -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />
+
+      <!-- Add back the .NET Core assemblies in the Sdks folder -->
+      <RemainingFiles Include="$(NetSdkAnalyzers)**\*" />
+      <RemainingFiles Include="$(NetSdkTools)**\*" />
+      <RemainingFiles Include="$(BlazorWasmTools)**\*" />
+      <RemainingFiles Include="$(RazorSourceGenerators)**\*" />
+      <RemainingFiles Include="$(RazorTasks)**\*" />
+      <RemainingFiles Include="$(WindowsDesktopTools)**\*" />
+      <RemainingFiles Include="$(PublishTools)**\*" />
+      <RemainingFiles Include="$(WebTools)**\*" />
+      <RemainingFiles Include="$(ProjectSystemTools)**\*" />
+      <RemainingFiles Include="$(WorkerTools)**\*" />
+      <RemainingFiles Include="$(ContainerTasks)**\*" />
+
+      <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
+      <RoslynFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll" />
+
+      <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
+
+      <!-- Don't CrossGen .NET Framework components of DotnetTools -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\BuildHost-net472\**\*" />
+
+      <!-- Don't CrossGen assemblies injected by dotnet-watch into user apps at runtime -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\dotnet-watch\**\Microsoft.Extensions.DotNetDeltaApplier.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\dotnet-watch\**\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" />
+
+      <!-- Don't crossgen satellite assemblies -->
+      <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
+      <FSharpFiles Remove="$(InstallerOutputDirectory)FSharp\**\*.resources.dll" />
+      <RazorToolFiles Remove="$(InstallerOutputDirectory)**\*.resources.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\*.resources.dll" />
+
+      <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
+      <RazorToolFiles Remove="$(InstallerOutputDirectory)**\ref\*.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\ref\*.dll" />
+
+      <!-- Don't crossgen DotnetTools assemblies that are unique to DotnetTools. Crossgen'ing these provides
+           limited value given usage/scenarios. Crossgen'ing assemblies that exist elsewhere in the layout
+           provides value because they will be deduplicated with the other copies therefore reducing the
+           overall size of the layout. -->
+      <_DotnetToolsCandidateFiles Include="$(InstallerOutputDirectory)DotnetTools\**\*" />
+      <_NonDotnetToolsReferenceFiles Include="@(RoslynFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(FSharpFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(RazorToolFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(RemainingFiles)" />
+      <_NonDotnetToolsReferenceFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\*" />
+    </ItemGroup>
+
+    <!-- Filter DotnetTools assemblies: only crossgen those that also exist elsewhere in the layout. -->
+    <FilterItemsByDuplicateHash
+        CandidateFiles="@(_DotnetToolsCandidateFiles)"
+        ReferenceFiles="@(_NonDotnetToolsReferenceFiles)">
+      <Output TaskParameter="UnmatchedFiles" ItemName="_DotnetToolsUniqueFiles" />
+    </FilterItemsByDuplicateHash>
+
+    <!-- Remove DotnetTools-unique assemblies from crossgen -->
+    <ItemGroup>
+      <RemainingFiles Remove="@(_DotnetToolsUniqueFiles)" />
+    </ItemGroup>
+
+    <AddMetadataIsPE Items="@(RoslynFiles)">
+      <Output TaskParameter="ResultItems" ItemName="RoslynFilesWithPEMarker" />
+    </AddMetadataIsPE>
+    <AddMetadataIsPE Items="@(FSharpFiles)">
+      <Output TaskParameter="ResultItems" ItemName="FSharpFilesWithPEMarker" />
+    </AddMetadataIsPE>
+    <AddMetadataIsPE Items="@(RazorToolFiles)">
+      <Output TaskParameter="ResultItems" ItemName="RazorToolFilesWithPEMarker" />
+    </AddMetadataIsPE>
+    <AddMetadataIsPE Items="@(RemainingFiles)">
+      <Output TaskParameter="ResultItems" ItemName="RemainingFilesWithPEMarker" />
+    </AddMetadataIsPE>
+
+    <ItemGroup>
+      <RoslynTargets Include="%(RoslynFilesWithPEMarker.FullPath)" Condition=" '%(RoslynFilesWithPEMarker.IsPE)' == 'True' " />
+      <FSharpTargets Include="%(FSharpFilesWithPEMarker.FullPath)" Condition=" '%(FSharpFilesWithPEMarker.IsPE)' == 'True' " />
+      <RazorToolTargets Include="%(RazorToolFilesWithPEMarker.FullPath)" Condition=" '%(RazorToolFilesWithPEMarker.IsPE)' == 'True' " />
+      <RemainingTargets Include="%(RemainingFilesWithPEMarker.FullPath)" Condition=" '%(RemainingFilesWithPEMarker.IsPE)' == 'True' " />
+
+      <RoslynFolders Include="@(RoslynTargets-&gt;DirectoryName()-&gt;Distinct())" />
+      <FSharpFolders Include="@(FSharpTargets-&gt;DirectoryName()-&gt;Distinct())" />
+      <RazorToolFolders Include="@(RazorToolTargets-&gt;DirectoryName()-&gt;Distinct())" />
+      <RemainingFolders Include="@(RemainingTargets-&gt;DirectoryName()-&gt;Distinct())" />
+
+      <!-- FSharp.Build.dll causes the FSharp folder to be included. Remove it, as we don't want other FSharp dlls being included in the crossgen. -->
+      <RemainingFolders Remove="$(PublishDir)FSharp\**\*" />
+
+      <!-- RemainingFolders should be ordered so that dependencies are first looked up in the leaf folders.
+        Currently it is not ordered and crossgen is picking the wrong dlls when resolving dependencies: https://github.com/dotnet/core-sdk/pull/6774
+        As a partial solution, we remove the root folder from the list and put it back to the end.
+        Remove the following 2 lines when resolving this issue: https://github.com/dotnet/core-sdk/issues/6877 -->
+      <RemainingFolders Remove="$(InstallerOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
+      <RemainingFolders Include="$(InstallerOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
+    </ItemGroup>
+
+    <Error Text="Potentially missed crossgen for '$(NetSdkTools)', directory does not exist" Condition= "!EXISTS('$(NetSdkTools)') " />
+    <Error Text="Potentially missed crossgen for '$(BlazorWasmTools)', directory does not exist" Condition= "!EXISTS('$(BlazorWasmTools)') " />
+    <Error Text="Potentially missed crossgen for '$(RazorTasks)', directory does not exist" Condition= "!EXISTS('$(RazorTasks)') " />
+    <Error Text="Potentially missed crossgen for '$(WindowsDesktopTools)', directory does not exist" Condition= "!EXISTS('$(WindowsDesktopTools)') AND '$(DotNetBuildSourceOnly)' != 'true'" />
+    <Error Text="Potentially missed crossgen for '$(PublishTools)', directory does not exist" Condition= "!EXISTS('$(PublishTools)') " />
+    <Error Text="Potentially missed crossgen for '$(WebTools)', directory does not exist" Condition= "!EXISTS('$(WebTools)') " />
+    <Error Text="Potentially missed crossgen for '$(ProjectSystemTools)', directory does not exist" Condition= "!EXISTS('$(ProjectSystemTools)') " />
+    <Error Text="Potentially missed crossgen for '$(WorkerTools)', directory does not exist" Condition= "!EXISTS('$(WorkerTools)') " />
+    <Error Text="Potentially missed crossgen for Roslyn, RoslynTargets is empty" Condition= "@(RoslynTargets) == ''" />
+    <Error Text="Potentially missed crossgen for FSharp, FSharpTargets is empty" Condition= "@(FSharpTargets) == ''" />
+    <Error Text="Potentially missed crossgen for Razor, RazorToolTargets is empty" Condition= "@(RazorToolTargets) == ''" />
+    <Error Text="Potentially missed crossgen for other SDK files, RemainingTargets is empty" Condition= "@(RemainingTargets) == ''" />
+
+    <Crossgen
+        SourceAssembly="%(RoslynTargets.FullPath)"
+        DestinationPath="%(RoslynTargets.FullPath)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
+        CrossgenPath="$(CrossgenPath)"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        PlatformAssemblyPaths="@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
+
+    <Crossgen
+        SourceAssembly="%(FSharpTargets.FullPath)"
+        DestinationPath="%(FSharpTargets.FullPath)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
+        CrossgenPath="$(CrossgenPath)"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        PlatformAssemblyPaths="@(FSharpFolders);$(SharedFrameworkNameVersionPath)" />
+
+    <Crossgen
+        SourceAssembly="%(RemainingTargets.FullPath)"
+        DestinationPath="%(RemainingTargets.FullPath)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
+        CrossgenPath="$(CrossgenPath)"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
+
+    <Crossgen
+        SourceAssembly="%(RazorToolTargets.FullPath)"
+        DestinationPath="%(RazorToolTargets.FullPath)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
+        CrossgenPath="$(CrossgenPath)"
+        CreateSymbols="$(CreateCrossgenSymbols)"
+        PlatformAssemblyPaths="@(RazorToolFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
+
+    <ItemGroup>
+      <PdbsToMove Include="$(InstallerOutputDirectory)**/*.pdb" />
+      <PdbsToMove Include="$(InstallerOutputDirectory)**/*.ni.*.map" />
+    </ItemGroup>
+
+    <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
+    <Move SourceFiles="@(PdbsToMove)"
+          DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+</Project>

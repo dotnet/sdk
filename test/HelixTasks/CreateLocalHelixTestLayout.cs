@@ -8,25 +8,49 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     public sealed class CreateLocalHelixTestLayout : Build.Utilities.Task
     {
         [Required]
-        public ITaskItem[] HelixCorrelationPayload { get; set; }
+        public ITaskItem[]? HelixCorrelationPayload { get; set; }
 
         [Required]
-        public string TestOutputDirectory { get; set; }
+        public string? TestOutputDirectory { get; set; }
 
         public override bool Execute()
         {
+            if (HelixCorrelationPayload is null)
+            {
+                return false;
+            };
+
+            // Clean the test output directory once at the start
+            if (Directory.Exists(TestOutputDirectory))
+            {
+                Directory.Delete(TestOutputDirectory, recursive: true);
+            }
+
             foreach (var payload in HelixCorrelationPayload)
             {
-                var copyfrom = new DirectoryInfo(payload.GetMetadata("PayloadDirectory"));
+                var sourceItem = payload.ItemSpec;
                 var relativeDestinationPathOnHelix = payload.GetMetadata("Destination");
-                var destination = new DirectoryInfo(Path.Combine(TestOutputDirectory, relativeDestinationPathOnHelix));
+                var destinationDir = Path.Combine(TestOutputDirectory ?? string.Empty, relativeDestinationPathOnHelix);
 
-                if (Directory.Exists(destination.FullName))
+                if (File.Exists(sourceItem))
                 {
-                    Directory.Delete(destination.FullName, true);
+                    // It's a file - copy just this file to the destination directory
+                    Directory.CreateDirectory(destinationDir);
+                    var fileName = Path.GetFileName(sourceItem);
+                    File.Copy(sourceItem, Path.Combine(destinationDir, fileName), overwrite: true);
                 }
+                else if (Directory.Exists(sourceItem))
+                {
+                    // It's a directory - copy all its contents
+                    var source = new DirectoryInfo(sourceItem);
+                    var destination = new DirectoryInfo(destinationDir);
 
-                CopyAll(copyfrom, destination);
+                    CopyAll(source, destination);
+                }
+                else
+                {
+                    Log.LogWarning($"Payload item '{sourceItem}' does not exist.");
+                }
             }
             Log.LogMessage($"set HELIX_CORRELATION_PAYLOAD={TestOutputDirectory}");
             return true;
@@ -39,10 +63,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 return;
             }
 
-            if (Directory.Exists(target.FullName) == false)
-            {
-                Directory.CreateDirectory(target.FullName);
-            }
+            Directory.CreateDirectory(target.FullName);
 
             foreach (FileInfo fi in source.GetFiles())
             {

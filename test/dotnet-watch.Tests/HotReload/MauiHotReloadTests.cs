@@ -1,0 +1,214 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+namespace Microsoft.DotNet.Watch.UnitTests;
+
+[TestClass]
+public class MauiHotReloadTests : DotNetWatchTestBase
+{
+    /// <summary>
+    /// Currently only works on Windows.
+    /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
+    /// </summary>
+    [TestMethod]
+    [CombinatorialData]
+    [OSCondition(OperatingSystems.Windows)]
+    [Ignore("https://github.com/dotnet/sdk/issues/54150")]
+    public async Task MauiBlazor(bool selectTfm)
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor", identifier: selectTfm.ToString())
+            .WithSource();
+
+        var workloadInstallCommandSpec = new DotnetCommand(Logger, ["workload", "install", "maui", "--include-previews"])
+        {
+            WorkingDirectory = testAsset.Path,
+        };
+
+        var result = workloadInstallCommandSpec.Execute();
+        Assert.AreEqual(0, result.ExitCode);
+
+        var platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows10.0.19041.0" : "maccatalyst";
+        var tfm = $"{ToolsetInfo.CurrentTargetFramework}-{platform}";
+        App.Start(testAsset, selectTfm ? [] : ["-f", tfm], testFlags: TestFlags.ReadKeyFromStdin);
+
+        if (selectTfm)
+        {
+            await App.WaitUntilOutputContains(Resources.SelectTargetFrameworkPrompt);
+
+            // Type the target framework to search and select it via Spectre.Console's search
+            foreach (var c in tfm)
+            {
+                App.SendKey(c);
+            }
+            App.SendKey('\r');
+        }
+
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+
+        // only the selected target framework is built:
+        Assert.AreEqual(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", tfm, "win-x64", "maui-blazor.dll")));
+        Assert.AreEqual(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), File.Exists(Path.Combine(testAsset.Path, "bin", "Debug", tfm, "maccatalyst-x64", "maui-blazor.dll")));
+
+        // update code file:
+        var razorPath = Path.Combine(testAsset.Path, "Components", "Pages", "Home.razor");
+        UpdateSourceFile(razorPath, content => content.Replace("Hello, world!", "Updated"));
+
+        await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
+
+        await App.WaitUntilOutputContains("Microsoft.AspNetCore.Components.HotReload.HotReloadManager.UpdateApplication");
+        App.Process.ClearOutput();
+
+        // update static asset:
+        var cssPath = Path.Combine(testAsset.Path, "wwwroot", "css", "app.css");
+        UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
+
+        await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
+        await App.WaitUntilOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
+        await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
+        App.Process.ClearOutput();
+
+        // update scoped css:
+        var scopedCssPath = Path.Combine(testAsset.Path, "Components", "Pages", "Counter.razor.css");
+        UpdateSourceFile(scopedCssPath, content => content.Replace("background-color: green", "background-color: red"));
+
+        await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
+        await App.WaitUntilOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
+        await App.WaitUntilOutputContains(MessageDescriptor.NoManagedCodeChangesToApply);
+
+        // no warnings - these would be reported if we tried to access web asset manifest from unbuilt TFMs:
+        App.AssertOutputDoesNotContain(MessageDescriptor.StaticWebAssetManifestNotFound);
+        App.AssertOutputDoesNotContain(MessageDescriptor.ScopedCssBundleFileNotFound);
+        App.AssertOutputDoesNotContain(MessageDescriptor.ManifestFileNotFound);
+    }
+
+    /// <summary>
+    /// Tests device selection in dotnet-watch using the DotnetRunDevices test asset,
+    /// which provides ComputeAvailableDevices and DeployToDevice MSBuild targets.
+    /// </summary>
+    [TestMethod]
+    public async Task SelectsDevice()
+    {
+        var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
+        // Start watch with ReadKeyFromStdin so we can interact with Spectre prompts.
+        // Pass --framework to skip TFM selection and focus on device selection.
+        App.Start(testAsset, ["-f", tfm], testFlags: TestFlags.ReadKeyFromStdin);
+
+        // Wait for the device selection prompt
+        await App.WaitUntilOutputContains(Resources.SelectDevicePrompt);
+
+        // Type to search for "test-device-1" and select it
+        foreach (var c in "test-device-1")
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // The app should launch and print the selected device
+        await App.WaitUntilOutputContains("Device: test-device-1");
+    }
+
+    /// <summary>
+    /// Tests that the device selection prompt works after a TFM selection prompt.
+    /// This is the scenario reported as hanging on macOS: when PhysicalConsole's
+    /// KeyPressed channel is used for the first Spectre prompt, the second prompt
+    /// must also receive key events from the same channel.
+    /// </summary>
+    [TestMethod]
+    public async Task SelectsFrameworkThenDevice()
+    {
+        var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
+        // Start watch WITHOUT --framework so both TFM and device prompts appear.
+        App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+        // First prompt: select target framework
+        await App.WaitUntilOutputContains(Resources.SelectTargetFrameworkPrompt);
+
+        foreach (var c in tfm)
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // Second prompt: select device (this is the one that hangs without the fix)
+        await App.WaitUntilOutputContains(Resources.SelectDevicePrompt);
+
+        foreach (var c in "test-device-1")
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // The app should launch and print the selected device
+        await App.WaitUntilOutputContains("Device: test-device-1");
+    }
+
+    /// <summary>
+    /// Simulates the MAUI scenario where ComputeAvailableDevices is only available
+    /// for TFM-specific inner builds (imported conditionally by workload targets).
+    /// When dotnet-watch loads the project graph with null TFM, the outer project
+    /// doesn't have the target, so device selection falls through to the child
+    /// dotnet-run process. This causes a stdin race: dotnet-watch's Console.ReadKey()
+    /// loop steals all key presses from the child process's device prompt.
+    /// </summary>
+    [TestMethod]
+    public async Task SelectsFrameworkThenDevice_WorkloadConditionalTarget()
+    {
+        var testAsset = TestAssets.CopyTestAsset("DotnetRunDevicesWorkload")
+            .WithSource();
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
+        // Start watch WITHOUT --framework so both TFM and device prompts appear.
+        App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+        // First prompt: select target framework
+        await App.WaitUntilOutputContains(Resources.SelectTargetFrameworkPrompt);
+
+        foreach (var c in tfm)
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // Second prompt: select device.
+        // With the bug, dotnet-watch doesn't see ComputeAvailableDevices in the outer
+        // project, skips device selection, and launches the child dotnet-run which shows
+        // its own device prompt. The child's stdin competes with dotnet-watch's
+        // Console.ReadKey() loop, causing the prompt to hang.
+        await App.WaitUntilOutputContains(Resources.SelectDevicePrompt);
+
+        foreach (var c in "test-device-1")
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // The app should launch and print the selected device
+        await App.WaitUntilOutputContains("Device: test-device-1");
+    }
+
+    [TestMethod]
+    public async Task AutoSelectsSingleDevice()
+    {
+        var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
+        // SingleDevice=true makes ComputeAvailableDevices return only one device.
+        App.Start(testAsset, ["-f", tfm, "--property", "SingleDevice=true"], testFlags: TestFlags.ReadKeyFromStdin);
+
+        // Should auto-select without prompting and launch the app
+        await App.WaitUntilOutputContains("Device: single-device");
+    }
+}

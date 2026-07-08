@@ -1,0 +1,16 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MSTest 테스트 클래스",
+  "description": "새 MSTest 테스트 클래스를 만듭니다.",
+  "symbols/Fixture/description": "프로젝트에 포함할 픽스쳐 종류를 선택합니다.",
+  "symbols/Fixture/displayName": "픽스쳐",
+  "symbols/Fixture/choices/None/description": "픽스쳐 메서드 없음",
+  "symbols/Fixture/choices/None/displayName": "없음",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize fixture 메서드",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "AssemblyCleanup fixture 메서드",
+  "symbols/Fixture/choices/ClassInitialize/description": "ClassInitialize fixture 메서드",
+  "symbols/Fixture/choices/ClassCleanup/description": "ClassCleanup fixture 메서드",
+  "symbols/Fixture/choices/TestInitialize/description": "TestInitialize fixture 메서드",
+  "symbols/Fixture/choices/TestCleanup/description": "TestCleanup fixture 메서드",
+  "postActions/openInEditor/description": "편집기에서 Test1.cs를 엽니다."
+}

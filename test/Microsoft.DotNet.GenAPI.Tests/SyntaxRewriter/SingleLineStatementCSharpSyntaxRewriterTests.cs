@@ -1,18 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
-#nullable enable
 
 using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
 {
+    [TestClass]
     public class SingleLineStatementCSharpSyntaxRewriterTests : CSharpSyntaxRewriterTestBase
     {
-        [Fact]
+        [TestMethod]
         public void TestEmptyMethodBody()
         {
-            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
+            Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
                 original: """
                 namespace A
                 {
@@ -33,10 +32,10 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMethodBodyWithSingleStatement()
         {
-            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
+            Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
                 original: """
                 namespace A
                 {
@@ -59,10 +58,10 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestConstructorPostProcessing()
         {
-            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
+            Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
                 original: """
                 namespace A
                 {
@@ -83,10 +82,10 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMethodBodyWithSingleStatementInOneLine()
         {
-            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
+            Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
                 original: """
                 namespace A
                 {
@@ -107,10 +106,10 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPropertyPostProcessing()
         {
-            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
+            Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
                 original: """
                 namespace A
                 {
@@ -137,10 +136,10 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestOperatorPostProcessing()
         {
-            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
+            Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
                 original: """
                 namespace A
                 {
@@ -163,10 +162,10 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestConversionOperatorPostProcessing()
         {
-            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
+            Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
                 original: """
                     namespace Foo
                     {

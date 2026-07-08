@@ -1,23 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildASolutionWithNonDefaultConfiguration : SdkTest
     {
-        public GivenThatWeWantToBuildASolutionWithNonDefaultConfiguration(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("Release With Spaces", "RELEASE_WITH_SPACES")]
-        [InlineData("Release-With-Hyphens", "RELEASE_WITH_HYPHENS")]
-        [InlineData("Release.With.Dots", "RELEASE_WITH_DOTS")]
-        [InlineData("Release.With-A Mix", "RELEASE_WITH_A_MIX")]
+        [TestMethod]
+        [DataRow("Release With Spaces", "RELEASE_WITH_SPACES")]
+        [DataRow("Release-With-Hyphens", "RELEASE_WITH_HYPHENS")]
+        [DataRow("Release.With.Dots", "RELEASE_WITH_DOTS")]
+        [DataRow("Release.With-A Mix", "RELEASE_WITH_A_MIX")]
         public void Properly_changes_implicit_defines(string configuration, string expected)
         {
             var targetFramework = "netcoreapp2.1";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", configuration)
                 .WithSource()
                 .WithProjectChanges(project =>

@@ -2,10 +2,10 @@
   "author": "Майкрософт",
   "name": "Файл решения",
   "description": "Создание пустого решения, не содержащего проектов",
-  "symbols/Format/description": "Choose the format for the solution file: sln or slnx.",
-  "symbols/Format/displayName": "Solution file format",
-  "symbols/Format/choices/sln/description": "Solution file",
-  "symbols/Format/choices/sln/displayName": ".sln format",
-  "symbols/Format/choices/slnx/description": "XML Solution file",
-  "symbols/Format/choices/slnx/displayName": ".slnx format"
+  "symbols/Format/description": "Выберите формат файла решения: sln или slnx.",
+  "symbols/Format/displayName": "Формат файла решения",
+  "symbols/Format/choices/sln/description": "Файл решения",
+  "symbols/Format/choices/sln/displayName": "Формат .sln",
+  "symbols/Format/choices/slnx/description": "XML-файл решения",
+  "symbols/Format/choices/slnx/displayName": "Формат .slnx"
 }

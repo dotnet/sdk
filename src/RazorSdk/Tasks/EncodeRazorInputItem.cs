@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Task = Microsoft.Build.Utilities.Task;
 using TaskItem = Microsoft.Build.Utilities.TaskItem;
@@ -15,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     // Characters like {} in the filename cause issues with resolving the type. To work
     // around this, we encode everything before writing it to the editorconfig then decode
     // inside the Razor source generator.
+    [MSBuildMultiThreadableTask]
     public class EncodeRazorInputItem : Task
     {
         [Required]

@@ -1,0 +1,49 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Cli.ShellShim;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.HostModel.AppHost;
+
+namespace Microsoft.DotNet.ShellShim.Tests
+{
+    [TestClass]
+    public class AppHostShellShimMakerTests : SdkTest
+    {
+        const ushort WindowsGUISubsystem = 0x2;
+
+        public AppHostShellShimMakerTests()
+        {
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        public void WhenCallWithWpfDllItCanCreateShimWithWindowsGraphicalUserInterfaceBitSet()
+        {
+            string shimPath = CreateApphostAndReturnShimPath();
+
+            PEUtils.GetWindowsGraphicalUserInterfaceBit(shimPath).Should().Be(WindowsGUISubsystem);
+        }
+
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        public void GivenNonWindowsMachineWhenCallWithWpfDllItCanCreateShimWithoutThrow()
+        {
+            Action a = () => CreateApphostAndReturnShimPath();
+            a.Should().NotThrow("It should skip copying PE bits without throw");
+        }
+
+        private static string CreateApphostAndReturnShimPath()
+        {
+            var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDirectory);
+            var appHostShellShimMaker = new AppHostShellShimMaker(Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "AppHostTemplate"));
+            string shimPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+
+            appHostShellShimMaker.CreateApphostShellShim(
+                new FilePath(Path.GetFullPath(Path.Combine("WpfBinaryTestAssets", "testwpf.dll"))),
+                new FilePath(shimPath));
+            return shimPath;
+        }
+    }
+}

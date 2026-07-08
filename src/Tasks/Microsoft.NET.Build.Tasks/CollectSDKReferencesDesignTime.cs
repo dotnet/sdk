@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -13,6 +15,7 @@ namespace Microsoft.NET.Build.Tasks
     /// TFM support is added to Dependencies logic. 
     /// Tracking issue https://github.com/dotnet/roslyn-project-system/issues/587
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class CollectSDKReferencesDesignTime : TaskBase
     {
         [Required]

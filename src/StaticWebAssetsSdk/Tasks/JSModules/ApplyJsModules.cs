@@ -1,12 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[MSBuildMultiThreadableTask]
 public class ApplyJsModules : Task
 {
     [Required]
@@ -37,7 +40,7 @@ public class ApplyJsModules : Task
                 unmatchedJsModules,
                 jsModulesByRazorItem,
                 "RazorComponent",
-                "(.*)\\.razor\\.js$",
+                "(.*?)(?:#\\[.*?\\](?:\\?|!)?)?(\\.razor\\.js)$",
                 "$1.razor");
         }
 
@@ -50,7 +53,7 @@ public class ApplyJsModules : Task
                 unmatchedJsModules,
                 jsModulesByRazorItem,
                 "View",
-                "(.*)\\.cshtml\\.js$",
+                "(.*?)(?:#\\[.*?\\](?:\\?|!)?)?(\\.cshtml\\.js)$",
                 "$1.cshtml");
         }
 

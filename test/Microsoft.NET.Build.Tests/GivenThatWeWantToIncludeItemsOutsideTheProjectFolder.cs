@@ -1,23 +1,23 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToIncludeItemsOutsideTheProjectFolder : SdkTest
     {
-        public GivenThatWeWantToIncludeItemsOutsideTheProjectFolder(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
         public void Link_metadata_is_added_to_items_outside_the_project_folder(bool includeWithGlob, bool useLinkBase)
         {
             string identifier = (includeWithGlob ? "Globbed" : "Direct") + (useLinkBase ? "_LinkBase" : "");
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("LinkTest", "LinkTest_", identifier)
                 .WithSource()
                 .WithProjectChanges(project =>

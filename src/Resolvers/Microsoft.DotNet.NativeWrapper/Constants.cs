@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.NativeWrapper
         public static readonly string ExeSuffix =
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
 
+        public static readonly string DotNetFileName = DotNet + ExeSuffix;
         public static class RuntimeProperty
         {
             public const string HostFxrPath = "HOSTFXR_PATH";

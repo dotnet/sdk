@@ -1,0 +1,58 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Collections.ObjectModel;
+using System.CommandLine;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.CommandLine;
+using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
+using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
+
+namespace Microsoft.DotNet.Tests.CommandLineParserTests
+{
+    [TestClass]
+    public class MSBuildArgumentCommandLineParserTests
+    {
+
+        [TestMethod]
+        [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, true)]
+        [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, false)]
+        [DataRow(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, false)]
+        [DataRow(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, true)]
+        [DataRow(new string[] { "-detailedSummary" }, true)]
+        [DataRow(new string[] { "-clp:NoSummary" }, true)]
+        [DataRow(new string[] { "-orc" }, true)]
+        [DataRow(new string[] { "-orc" }, false)]
+        public void MSBuildArgumentsAreForwardedCorrectly(string[] arguments, bool buildCommand)
+        {
+            RestoringCommand command = buildCommand ?
+                (RestoringCommand)BuildCommand.FromArgs(arguments) :
+                (RestoringCommand)PublishCommand.FromArgs(arguments);
+            var expectedArguments = arguments.Select(a => a.Replace("-property:", "--property:").Replace("-p:", "--property:"));
+            var argString = command.MSBuildArguments;
+
+            foreach (var expectedArg in expectedArguments)
+            {
+                argString.Should().Contain(expectedArg);
+            }
+        }
+
+        [TestMethod]
+        [DataRow(new string[] { "-p:teamcity_buildConfName=\"Build, Test and Publish\"" }, new string[] { "--property:teamcity_buildConfName=\"Build, Test and Publish\"" })]
+        [DataRow(new string[] { "-p:prop1=true", "-p:prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
+        [DataRow(new string[] { "-p:prop1=\".;/opt/usr\"" }, new string[] { "--property:prop1=\".;/opt/usr\"" })]
+        [DataRow(new string[] { "-p:prop1=true;prop2=false;prop3=\"wut\";prop4=\"1;2;3\"" }, new string[] { "--property:prop1=true", "--property:prop2=false", "--property:prop3=\"wut\"", "--property:prop4=\"1;2;3\"" })]
+        [DataRow(new string[] { "-p:prop4=\"1;2;3\"" }, new string[] { "--property:prop4=\"1;2;3\"" })]
+        [DataRow(new string[] { "-p:prop4=\"1 ;2 ;3 \"" }, new string[] { "--property:prop4=\"1 ;2 ;3 \"" })]
+        [DataRow(new string[] { "-p:RuntimeIdentifiers=linux-x64;linux-arm64" }, new string[] { "--property:RuntimeIdentifiers=linux-x64;linux-arm64" })]
+        public void Can_pass_msbuild_properties_safely(string[] tokens, string[] forwardedTokens)
+        {
+            var option = CommonOptions.CreatePropertyOption();
+            var forwardingFunction = option.ForwardingFunction!;
+            var result = new RootCommand() { option }.Parse(tokens);
+            var parsedTokens = forwardingFunction(result);
+            parsedTokens.Should().BeEquivalentTo(forwardedTokens);
+        }
+    }
+}

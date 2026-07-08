@@ -33,6 +33,8 @@ internal sealed class DockerCli
     private string? _fullCommandPath;
 #endif
 
+    private const string _blobsPath = "blobs/sha256";
+
     public DockerCli(string? command, ILoggerFactory loggerFactory)
     {
         if (!(command == null ||
@@ -82,7 +84,12 @@ internal sealed class DockerCli
         return _fullCommandPath;
     }
 
-    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
+    private async Task LoadAsync<T>(
+        T image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -96,16 +103,12 @@ internal sealed class DockerCli
             RedirectStandardError = true
         };
 
-        using Process? loadProcess = Process.Start(loadInfo);
-
-        if (loadProcess is null)
-        {
+        using Process? loadProcess = Process.Start(loadInfo) ??
             throw new NotImplementedException(Resource.FormatString(Strings.ContainerRuntimeProcessCreationFailed, commandPath));
-        }
 
-        // Create new stream tarball
-
-        await WriteImageToStreamAsync(image, sourceReference, destinationReference, loadProcess.StandardInput.BaseStream, cancellationToken).ConfigureAwait(false);
+        // Call the delegate to write the image to the stream
+        await writeStreamFunc(image, sourceReference, destinationReference, loadProcess.StandardInput.BaseStream, cancellationToken)
+            .ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -118,6 +121,110 @@ internal sealed class DockerCli
         if (loadProcess.ExitCode != 0)
         {
             throw new DockerLoadException(Resource.FormatString(nameof(Strings.ImageLoadFailed), await loadProcess.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false)));
+        }
+    }
+
+    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
+        // For loading to the local registry, we use the Docker format. Two reasons: one - compatibility with previous behavior before oci formatted publishing was available, two - Podman cannot load multi tag oci image tarball.
+        => await LoadAsync(image, sourceReference, destinationReference, WriteDockerImageToStreamAsync, cancellationToken);
+
+    public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
+    {
+        string? command = await GetCommandAsync(cancellationToken);
+        if (command == PodmanCommand)
+        {
+            // Podman's 'load' only keeps the image matching the host architecture from a multi-arch OCI tarball.
+            // Instead, we load each arch separately and assemble them using 'podman manifest'.
+            await LoadMultiArchImageWithPodmanAsync(multiArchImage, sourceReference, destinationReference, cancellationToken);
+        }
+        else
+        {
+            // Docker requires the containerd image store to load multi-arch OCI tarballs.
+            await LoadMultiArchImageWithDockerAsync(multiArchImage, sourceReference, destinationReference, cancellationToken);
+        }
+    }
+
+    private async Task LoadMultiArchImageWithDockerAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
+    {
+        if (!IsContainerdStoreEnabledForDocker())
+        {
+            throw new DockerLoadException(Strings.ImageLoadFailed_ContainerdStoreDisabled);
+        }
+
+        await LoadAsync(multiArchImage, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken);
+    }
+
+    private async Task LoadMultiArchImageWithPodmanAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string commandPath = await FindFullCommandPath(cancellationToken);
+        var createdImages = new List<string>();
+
+        try
+        {
+            string firstTag = destinationReference.Tags.First();
+            string manifestName = $"{destinationReference.Repository}:{firstTag}";
+
+            // Create the manifest list.
+            // 'create' will fail if the manifest already exists.
+            // Note that manifests are considered a type of image, so we can use the regular 'rmi' and 'tag' commands for them.
+            await RunAndIgnoreAsync($"rmi {manifestName}");
+            await RunAsync($"manifest create {manifestName}");
+            createdImages.Add(manifestName);
+
+            // Load per-arch images and add them to the manifest list.
+            // We intentionally don't remove these because that makes the manifest unusable.
+            Debug.Assert(multiArchImage.Images is not null);
+            foreach (var image in multiArchImage.Images)
+            {
+                string repo = $"{destinationReference.Repository}-{image.Architecture}";
+                string tag = $"{repo}:{firstTag}";
+                var destRef = new DestinationImageReference(this, repo, [firstTag]);
+
+                await LoadAsync(image, sourceReference, destRef, WriteDockerImageToStreamAsync, cancellationToken);
+                createdImages.Add(tag);
+
+                await RunAsync($"manifest add {manifestName} {tag}");
+            }
+
+            // Tag the manifest list for any additional tags.
+            foreach (string tag in destinationReference.Tags.Skip(1))
+            {
+                string additionalTag = $"{destinationReference.Repository}:{tag}";
+
+                await RunAsync($"tag {manifestName} {additionalTag}");
+                createdImages.Add(additionalTag);
+            }
+        }
+        catch
+        {
+            foreach (string image in createdImages)
+            {
+                await RunAndIgnoreAsync($"rmi {image}");
+            }
+
+            throw;
+        }
+
+        async Task RunAsync(string arguments)
+        {
+            (int exitCode, string stderr) = await RunProcessAsync(commandPath, arguments, cancellationToken);
+
+            if (exitCode != 0)
+            {
+                throw new DockerLoadException(Resource.FormatString(nameof(Strings.ImageLoadFailed), stderr));
+            }
+        }
+
+        async Task RunAndIgnoreAsync(string arguments)
+        {
+            try
+            {
+                _ = await RunProcessAsync(commandPath, arguments, CancellationToken.None);
+            }
+            catch
+            { }
         }
     }
 
@@ -205,7 +312,7 @@ internal sealed class DockerCli
                     dockerCommandResult.StdErr));
             }
 
-            return JsonDocument.Parse(dockerCommandResult.StdOut);
+            return JsonDocument.Parse(dockerCommandResult.StdOut ?? string.Empty);
         }
         catch (Exception e) when (e is not DockerLoadException)
         {
@@ -231,12 +338,12 @@ internal sealed class DockerCli
                 {
                     foreach (var property in indexConfigs.EnumerateObject())
                     {
-                        if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Secure", out var secure) && !secure.GetBoolean())
+                        if (property.Value.ValueKind == JsonValueKind.Object
+                            && property.Value.TryGetProperty("Secure", out var secure)
+                            && !secure.GetBoolean()
+                            && property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }
@@ -247,12 +354,12 @@ internal sealed class DockerCli
             {
                 foreach (var property in registries.EnumerateObject())
                 {
-                    if (property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Insecure", out var insecure) && insecure.GetBoolean())
+                    if (property.Value.ValueKind == JsonValueKind.Object
+                        && property.Value.TryGetProperty("Insecure", out var insecure)
+                        && insecure.GetBoolean()
+                        && property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (property.Name.Equals(registryDomain, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -271,25 +378,66 @@ internal sealed class DockerCli
 #if NET
     public static async Task WriteImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
+        if (image.ManifestMediaType == SchemaTypes.DockerManifestV2)
+        {
+            await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
+        }
+        else if (image.ManifestMediaType == SchemaTypes.OciManifestV1)
+        {
+            await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
+        }
+        else
+        {
+            throw new ArgumentException(Resource.FormatString(nameof(Strings.UnsupportedMediaTypeForTarball), image.ManifestMediaType));
+        }
+    }
+
+    private static async Task WriteDockerImageToStreamAsync(
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Stream imageStream,
+        CancellationToken cancellationToken)
+    {
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-
         // Feed each layer tarball into the stream
         JsonArray layerTarballPaths = new();
+        await WriteImageLayers(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
+            .ConfigureAwait(false);
+
+        string configTarballPath = $"{image.ImageSha!}.json";
+        await WriteImageConfig(writer, image, configTarballPath, cancellationToken)
+            .ConfigureAwait(false);
+
+        // Add manifest
+        await WriteManifestForDockerImage(writer, destinationReference, configTarballPath, layerTarballPaths, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task WriteImageLayers(
+        TarWriter writer,
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        Func<string, string> layerPathFunc,
+        CancellationToken cancellationToken,
+        JsonArray? layerTarballPaths = null)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
 
         foreach (var d in image.LayerDescriptors)
         {
             if (sourceReference.Registry is { } registry)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, d, cancellationToken).ConfigureAwait(false); ;
+                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, d, cancellationToken).ConfigureAwait(false);
 
                 // Stuff that (uncompressed) tarball into the image tar stream
                 // TODO uncompress!!
-                string layerTarballPath = $"{d.Digest.Substring("sha256:".Length)}/layer.tar";
+                string layerTarballPath = layerPathFunc(d.Digest);
                 await writer.WriteEntryAsync(localPath, layerTarballPath, cancellationToken).ConfigureAwait(false);
-                layerTarballPaths.Add(layerTarballPath);
+                layerTarballPaths?.Add(layerTarballPath);
             }
             else
             {
@@ -299,21 +447,32 @@ internal sealed class DockerCli
                     sourceReference.Registry?.ToString() ?? "<null>"));
             }
         }
+    }
 
-        // add config
-        string configTarballPath = $"{image.ImageSha}.json";
+    private static async Task WriteImageConfig(
+        TarWriter writer,
+        BuiltImage image,
+        string configPath,
+        CancellationToken cancellationToken)
+    {
         cancellationToken.ThrowIfCancellationRequested();
         using (MemoryStream configStream = new(Encoding.UTF8.GetBytes(image.Config)))
         {
-            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configTarballPath)
+            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configPath)
             {
                 DataStream = configStream
             };
-
             await writer.WriteEntryAsync(configEntry, cancellationToken).ConfigureAwait(false);
         }
+    }
 
-        // Add manifest
+    private static async Task WriteManifestForDockerImage(
+        TarWriter writer,
+        DestinationImageReference destinationReference,
+        string configTarballPath,
+        JsonArray layerTarballPaths,
+        CancellationToken cancellationToken)
+    {
         JsonArray tagsNode = new();
         foreach (string tag in destinationReference.Tags)
         {
@@ -336,6 +495,169 @@ internal sealed class DockerCli
             };
 
             await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task WriteOciImageToStreamAsync(
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Stream imageStream,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
+
+        await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteIndexJsonForOciImage(writer, image, destinationReference, cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteOciLayout(writer, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task WriteOciLayout(TarWriter writer, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string ociLayoutPath = "oci-layout";
+        var ociLayoutContent = "{\"imageLayoutVersion\": \"1.0.0\"}";
+        using (MemoryStream ociLayoutStream = new MemoryStream(Encoding.UTF8.GetBytes(ociLayoutContent)))
+        {
+            PaxTarEntry layoutEntry = new(TarEntryType.RegularFile, ociLayoutPath)
+            {
+                DataStream = ociLayoutStream
+            };
+            await writer.WriteEntryAsync(layoutEntry, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task WriteManifestForOciImage(
+        TarWriter writer,
+        BuiltImage image,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string manifestPath = $"{_blobsPath}/{image.ManifestDigest.Substring("sha256:".Length)}";
+        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Manifest)))
+        {
+            PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, manifestPath)
+            {
+                DataStream = manifestStream
+            };
+            await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task WriteIndexJsonForOciImage(
+        TarWriter writer,
+        BuiltImage image,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
+            SchemaTypes.OciManifestV1,
+            image.ManifestDigest,
+            image.Manifest.Length,
+            destinationReference.Repository,
+            destinationReference.Tags);
+
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson)))
+        {
+            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
+            {
+                DataStream = indexStream
+            };
+            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task WriteOciImageToBlobs(
+        TarWriter writer,
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        CancellationToken cancellationToken)
+    {
+        await WriteImageLayers(writer, image, sourceReference, d => $"{_blobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.ImageSha!}", cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteManifestForOciImage(writer, image, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public static async Task WriteMultiArchOciImageToStreamAsync(
+        MultiArchImage multiArchImage,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Stream imageStream,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
+
+        Debug.Assert(multiArchImage.Images is not null);
+        foreach (var image in multiArchImage.Images)
+        {
+            await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken)
+            .ConfigureAwait(false);
+        }
+
+        await WriteIndexJsonForMultiArchOciImage(writer, multiArchImage, destinationReference, cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteOciLayout(writer, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task WriteIndexJsonForMultiArchOciImage(
+        TarWriter writer,
+        MultiArchImage multiArchImage,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+    {
+        // 1. create manifest list for the blobs
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var manifestListDigest = DigestUtils.ComputeSha256Digest(multiArchImage.ImageIndex);
+        var manifestListSha = DigestUtils.GetEncoded(manifestListDigest);
+        var manifestListPath = $"{_blobsPath}/{manifestListSha}";
+        
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(multiArchImage.ImageIndex)))
+        {
+            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, manifestListPath)
+            {
+                DataStream = indexStream
+            };
+            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
+        }
+
+        // 2. create index.json that points to manifest list in the blobs
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
+            multiArchImage.ImageIndexMediaType, 
+            manifestListDigest, 
+            multiArchImage.ImageIndex.Length, 
+            destinationReference.Repository, 
+            destinationReference.Tags);
+
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson)))
+        {
+            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
+            {
+                DataStream = indexStream
+            };
+            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -395,18 +717,42 @@ internal sealed class DockerCli
         }
     }
 
-    private async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
+    internal static bool IsContainerdStoreEnabledForDocker()
     {
         try
         {
-            ProcessStartInfo psi = new(command, "version")
+            // We don't need to check if this is docker, because there is no "DriverStatus" for podman
+            if (!GetDockerConfig().RootElement.TryGetProperty("DriverStatus", out var driverStatus) || driverStatus.ValueKind != JsonValueKind.Array)
             {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            using var process = Process.Start(psi)!;
-            await process.WaitForExitAsync(cancellationToken);
-            return process.ExitCode == 0;
+                return false;
+            }
+
+            foreach (var item in driverStatus.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Array || item.GetArrayLength() != 2) continue;
+
+                var array = item.EnumerateArray().ToArray();
+                // The usual output is [driver-type io.containerd.snapshotter.v1]
+                if (array[0].GetString() == "driver-type" && array[1].GetString()!.StartsWith("io.containerd.snapshotter"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
+    {
+        try
+        {
+            (int ExitCode, string StandardError) = await RunProcessAsync(command, "version", cancellationToken);
+            return ExitCode == 0;
         }
         catch (OperationCanceledException)
         {
@@ -416,6 +762,29 @@ internal sealed class DockerCli
         {
             return false;
         }
+    }
+
+    private static async Task<(int ExitCode, string StandardError)> RunProcessAsync(string commandPath, string arguments, CancellationToken cancellationToken)
+    {
+        ProcessStartInfo psi = new(commandPath, arguments)
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            RedirectStandardInput = true
+        };
+
+        using Process process = Process.Start(psi) ??
+            throw new NotImplementedException(Resource.FormatString(Strings.ContainerRuntimeProcessCreationFailed, commandPath));
+
+        // Close standard input and ignore standard output.
+        process.StandardInput.Close();
+        _ = process.StandardOutput.ReadToEndAsync(cancellationToken)
+            .ContinueWith(t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
+        string stderr = await process.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+        await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+
+        return (process.ExitCode, stderr);
     }
 #endif
 

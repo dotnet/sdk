@@ -23,27 +23,38 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
     internal interface IConflictItem
     {
-        Version AssemblyVersion { get; }
+        Version? AssemblyVersion { get; }
         ConflictItemType ItemType { get; }
         bool Exists { get; }
-        string FileName { get; }
-        Version FileVersion { get; }
-        string PackageId { get; }
-        string DisplayName { get; }
+        string? FileName { get; }
+        Version? FileVersion { get; }
+        string? PackageId { get; }
+        string? DisplayName { get; }
 
-        ConflictVersion PackageVersion { get; }
+        ConflictVersion? PackageVersion { get; }
     }
 
     // Wraps an ITask item and adds lazy evaluated properties used by Conflict resolution.
     internal class ConflictItem : IConflictItem
     {
-        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType)
+        // Null when constructed from a caller that has not been migrated to a multi-threadable task
+        // (e.g. ResolvePackageFileConflicts), or via the Platform-item constructor which does no file
+        // access. When non-null, SourcePath is absolutized through it before any file I/O.
+        private readonly TaskEnvironment? _taskEnvironment;
+
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType, TaskEnvironment? taskEnvironment)
         {
             OriginalItem = originalItem;
             ItemType = itemType;
+            _taskEnvironment = taskEnvironment;
         }
 
-        public ConflictItem(string fileName, string packageId, Version assemblyVersion, Version fileVersion)
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType)
+            : this(originalItem, itemType, taskEnvironment: null)
+        {
+        }
+
+        public ConflictItem(string fileName, string packageId, Version? assemblyVersion, Version? fileVersion)
         {
             OriginalItem = null;
             ItemType = ConflictItemType.Platform;
@@ -55,8 +66,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         }
 
         private bool _hasAssemblyVersion;
-        private Version _assemblyVersion;
-        public Version AssemblyVersion
+        private Version? _assemblyVersion;
+        public Version? AssemblyVersion
         {
             get
             {
@@ -72,7 +83,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePath);
+                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePathForFileAccess ?? string.Empty);
                     }
 
                     // assemblyVersion may be null but don't try to recalculate it
@@ -97,15 +108,15 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 if (_exists == null)
                 {
-                    _exists = ItemType == ConflictItemType.Platform || File.Exists(SourcePath);
+                    _exists = ItemType == ConflictItemType.Platform || File.Exists(SourcePathForFileAccess);
                 }
 
                 return _exists.Value;
             }
         }
 
-        private string _fileName;
-        public string FileName
+        private string? _fileName;
+        public string? FileName
         {
             get
             {
@@ -119,8 +130,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         }
 
         private bool _hasFileVersion;
-        private Version _fileVersion;
-        public Version FileVersion
+        private Version? _fileVersion;
+        public Version? FileVersion
         {
             get
             {
@@ -136,7 +147,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _fileVersion = FileUtilities.GetFileVersion(SourcePath);
+                        _fileVersion = FileUtilities.GetFileVersion(SourcePathForFileAccess);
                     }
 
                     // fileVersion may be null but don't try to recalculate it
@@ -152,10 +163,10 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             }
         }
 
-        public ITaskItem OriginalItem { get; }
+        public ITaskItem? OriginalItem { get; }
 
-        private string _packageId;
-        public string PackageId
+        private string? _packageId;
+        public string? PackageId
         {
             get
             {
@@ -176,8 +187,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         }
 
         private bool _hasPackageVersion;
-        private ConflictVersion _packageVersion;
-        public ConflictVersion PackageVersion
+        private ConflictVersion? _packageVersion;
+        public ConflictVersion? PackageVersion
         {
             get
             {
@@ -200,8 +211,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             }
         }
 
-        private string _sourcePath;
-        public string SourcePath
+        private string? _sourcePath;
+        public string? SourcePath
         {
             get
             {
@@ -215,8 +226,27 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             private set { _sourcePath = value; }
         }
 
-        private string _displayName;
-        public string DisplayName
+        private string? _sourcePathForFileAccess;
+        private bool _hasSourcePathForFileAccess;
+        private string? SourcePathForFileAccess
+        {
+            get
+            {
+                if (!_hasSourcePathForFileAccess)
+                {
+                    var sourcePath = SourcePath;
+                    _sourcePathForFileAccess = !string.IsNullOrEmpty(sourcePath) && _taskEnvironment != null
+                        ? _taskEnvironment.GetAbsolutePath(sourcePath)
+                        : sourcePath;
+                    _hasSourcePathForFileAccess = true;
+                }
+
+                return _sourcePathForFileAccess;
+            }
+        }
+
+        private string? _displayName;
+        public string? DisplayName
         {
             get
             {

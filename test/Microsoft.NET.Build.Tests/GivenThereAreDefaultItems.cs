@@ -1,6 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
 
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -8,13 +9,11 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThereAreDefaultItems : SdkTest
     {
-        public GivenThereAreDefaultItems(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_ignores_excluded_folders()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -32,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
                     "public class Package {}");
             };
 
-            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup);
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup);
 
             RemoveGeneratedCompileItems(compileItems);
 
@@ -48,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_excludes_items_in_a_custom_outputpath()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -71,7 +70,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
 
-            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup, projectChanges: projectChanges);
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);
 
             RemoveGeneratedCompileItems(compileItems);
 
@@ -86,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_excluded_folders_to_be_overridden()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -112,7 +111,7 @@ namespace Microsoft.NET.Build.Tests
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", "**\\*.cs")));
             };
 
-            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager,
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager,
                 "Compile", setup, new[] { "/p:DisableDefaultRemoves=true" }, GetValuesCommand.ValueType.Item,
                 projectChanges: projectChanges);
 
@@ -132,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_items_outside_project_root_to_be_included()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -154,7 +153,7 @@ namespace Microsoft.NET.Build.Tests
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", "..\\Shared\\**\\*.cs")));
             };
 
-            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup, projectChanges: projectChanges);
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);
 
             RemoveGeneratedCompileItems(compileItems);
 
@@ -170,7 +169,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_a_project_subfolder_to_be_excluded()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -190,7 +189,7 @@ namespace Microsoft.NET.Build.Tests
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Remove", "Excluded\\**\\*.cs")));
             };
 
-            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup, projectChanges: projectChanges);
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);
 
             RemoveGeneratedCompileItems(compileItems);
 
@@ -205,7 +204,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_files_in_the_obj_folder_to_be_explicitly_included()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -227,7 +226,7 @@ namespace Microsoft.NET.Build.Tests
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", "obj\\Class2.cs")));
             };
 
-            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup, projectChanges: projectChanges);
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);
 
             RemoveGeneratedCompileItems(compileItems);
 
@@ -243,7 +242,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_a_CSharp_file_to_be_used_as_an_EmbeddedResource()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -264,7 +263,7 @@ namespace Microsoft.NET.Build.Tests
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Remove", "CSharpAsResource.cs")));
             };
 
-            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup, projectChanges: projectChanges);
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);
 
             RemoveGeneratedCompileItems(compileItems);
 
@@ -279,7 +278,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
 
 
-            var embeddedResourceItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "EmbeddedResource", setup, projectChanges: projectChanges, identifier: "EmbeddedResource");
+            var embeddedResourceItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "EmbeddedResource", setup, projectChanges: projectChanges, identifier: "EmbeddedResource");
 
             var expectedEmbeddedResourceItems = new[]
             {
@@ -291,7 +290,7 @@ namespace Microsoft.NET.Build.Tests
             embeddedResourceItems.Should().BeEquivalentTo(expectedEmbeddedResourceItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_allows_a_CSharp_file_to_be_used_as_Content()
         {
             Action<GetValuesCommand> setup = getValuesCommand =>
@@ -315,7 +314,7 @@ namespace Microsoft.NET.Build.Tests
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Remove", "CSharpAsContent.cs")));
             };
 
-            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup, projectChanges: projectChanges);
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);
 
             RemoveGeneratedCompileItems(compileItems);
 
@@ -330,7 +329,7 @@ namespace Microsoft.NET.Build.Tests
             compileItems.Should().BeEquivalentTo(expectedItems);
 
 
-            var contentItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Content", setup, projectChanges: projectChanges, identifier: "Content");
+            var contentItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Content", setup, projectChanges: projectChanges, identifier: "Content");
 
             var expectedContentItems = new[]
             {
@@ -341,7 +340,7 @@ namespace Microsoft.NET.Build.Tests
 
             contentItems.Should().BeEquivalentTo(expectedContentItems);
 
-            var noneItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "None", setup, projectChanges: projectChanges, identifier: expectedContentItems.GetHashCode().ToString());
+            var noneItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "None", setup, projectChanges: projectChanges, identifier: expectedContentItems.GetHashCode().ToString());
 
             var expectedNoneItems = new[]
             {
@@ -353,7 +352,7 @@ namespace Microsoft.NET.Build.Tests
             noneItems.Should().BeEquivalentTo(expectedNoneItems);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_include_items_in_any_group_if_group_specific_default_include_properties_are_false()
         {
             var testProject = new TestProject()
@@ -371,7 +370,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["EnableDefaultContentItems"] = "false";
             testProject.AdditionalProperties["EnableDefaultPRIResourceItems"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     // "Manual" include via project file modification.
@@ -436,7 +435,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void Default_items_have_the_correct_relative_paths()
         {
             Action<XDocument> projectChanges = project =>
@@ -453,7 +452,7 @@ namespace Microsoft.NET.Build.Tests
                 itemGroup.Add(new XElement(ns + "None", new XAttribute("Update", "@(None)"), new XAttribute("CopyToOutputDirectory", "PreserveNewest")));
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource()
                 .WithProjectChanges(projectChanges);
@@ -470,7 +469,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netstandard1.5");
+            var outputDirectory = buildCommand.GetOutputDirectory("netstandard2.0");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "TestLibrary.dll",
@@ -483,7 +482,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
         public void Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used()
         {
             Action<XDocument> projectChanges = project =>
@@ -504,10 +504,10 @@ namespace Microsoft.NET.Build.Tests
                     "!InvalidCSharp!");
             };
 
-            GivenThatWeWantAllResourcesInSatellite.TestSatelliteResources(Log, _testAssetsManager, projectChanges, setup, "ExplicitCompileDefaultEmbeddedResource");
+            GivenThatWeWantAllResourcesInSatellite.TestSatelliteResources(Log, TestAssetsManager, projectChanges, setup, "ExplicitCompileDefaultEmbeddedResource");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_gives_an_error_message_if_duplicate_compile_items_are_included()
         {
             var testProject = new TestProject()
@@ -516,7 +516,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard1.6",
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -538,7 +538,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("EnableDefaultCompileItems");
         }
 
-        [Fact]
+        [TestMethod]
         public void Implicit_package_references_are_overridden_by_PackageReference_includes_in_the_project_file()
         {
             var testProject = new TestProject()
@@ -548,7 +548,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard1.6",
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, "DeduplicatePackage_Reference")
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, "DeduplicatePackage_Reference")
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -576,7 +576,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("'NETStandard.Library'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ImplicitFrameworkReferencesAreOverriddenByProjectFile()
         {
             var testProject = new TestProject()
@@ -585,7 +585,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -614,7 +614,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1086");
         }
 
-        [Fact]
+        [TestMethod]
         public void DuplicateFrameworkReferencesCauseError()
         {
             var testProject = new TestProject()
@@ -623,7 +623,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -650,9 +650,9 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1087");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void Implicit_NetCoreApp_reference_can_be_overridden(bool disableImplicitFrameworkReferences)
         {
             var testProject = new TestProject()
@@ -670,7 +670,7 @@ namespace Microsoft.NET.Build.Tests
             string explicitPackageVersion = "2.0.3";
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.NETCore.App", explicitPackageVersion));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: disableImplicitFrameworkReferences.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: disableImplicitFrameworkReferences.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -689,7 +689,7 @@ namespace Microsoft.NET.Build.Tests
             netCoreAppLibrary.Version.ToString().Should().Be(explicitPackageVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void DuplicatePackageReferencesCanBeUsed()
         {
             var testProject = new TestProject()
@@ -710,7 +710,7 @@ public class Class1
     }
 }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -736,7 +736,7 @@ public class Class1
 
             var newtonsoftReferences = packageReferences.Where(pr => pr.value == "Newtonsoft.Json");
 
-            newtonsoftReferences.Count().Should().BeGreaterOrEqualTo(1);
+            newtonsoftReferences.Count().Should().BeGreaterThanOrEqualTo(1);
 
             foreach (var r in newtonsoftReferences)
             {
@@ -746,7 +746,7 @@ public class Class1
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_includes_Windows_App_SDK_items_in_the_correct_groups_if_Windows_App_SDK_is_present()
         {
             var testProject = new TestProject()
@@ -760,7 +760,7 @@ public class Class1
             testProject.AdditionalProperties["EnableDefaultWindowsAppSdkContentItems"] = "true";
             testProject.AdditionalProperties["EnableDefaultWindowsAppSdkPRIResourceItems"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
 
             File.WriteAllText(Path.Combine(projectFolder, "ResourcesResw.resw"), "<root/>");
@@ -799,7 +799,7 @@ public class Class1
             getContentItems.Should().BeEquivalentTo(imageFiles);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_include_Windows_App_SDK_items_if_Windows_App_SDK_is_absent()
         {
             var testProject = new TestProject()
@@ -811,7 +811,7 @@ public class Class1
 
             // Not setting the "EnableDefaultWindowsAppSdkContentItems" or "EnableDefaultWindowsAppSdkPRIResourceItems" properties!
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
 
             File.WriteAllText(Path.Combine(projectFolder, "ResourcesResw.resw"), "<root/>");
@@ -851,6 +851,61 @@ public class Class1
             getContentItemsCommand.GetValues()
                 .Should()
                 .BeEmpty();
+        }
+
+        [TestMethod]
+        public void It_excludes_items_in_publish_directory()
+        {
+            Action<GetValuesCommand> setup = getValuesCommand =>
+            {
+                // Create a PublishDir with a JSON file (simulating a previous publish)
+                string publishDir = Path.Combine(getValuesCommand.ProjectRootPath, "artifacts", "TestLibrary");
+                WriteFile(Path.Combine(publishDir, "appsettings.json"),
+                    "{ \"Setting\": \"Value\" }");
+
+                WriteFile(Path.Combine(getValuesCommand.ProjectRootPath, "Code", "Class1.cs"),
+                    "public class Class1 {}");
+            };
+
+            Action<XDocument> projectChanges = project =>
+            {
+                var ns = project.Root.Name.Namespace;
+
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.Add(propertyGroup);
+                propertyGroup.Add(new XElement(ns + "PublishDir", "artifacts\\TestLibrary\\"));
+            };
+
+            var noneItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "None", setup, projectChanges: projectChanges);
+
+            // The appsettings.json file in the PublishDir should not be included in None items
+            noneItems.Should().NotContain(item => item.Contains("appsettings.json"));
+        }
+
+        [TestMethod]
+        public void It_does_not_exclude_source_files_when_publish_dir_is_project_root()
+        {
+            Action<GetValuesCommand> setup = getValuesCommand =>
+            {
+                WriteFile(Path.Combine(getValuesCommand.ProjectRootPath, "Code", "Class1.cs"),
+                    "public class Class1 {}");
+            };
+
+            Action<XDocument> projectChanges = project =>
+            {
+                var ns = project.Root.Name.Namespace;
+
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.Add(propertyGroup);
+                // PublishDir set to the project directory itself (simulates 'dotnet publish -o .')
+                propertyGroup.Add(new XElement(ns + "PublishDir", ".\\"));
+            };
+
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);
+
+            RemoveGeneratedCompileItems(compileItems);
+
+            compileItems.Should().BeEquivalentTo(new[] { Path.Combine("Code", "Class1.cs"), "Helper.cs" });
         }
 
         void RemoveGeneratedCompileItems(List<string> compileItems)

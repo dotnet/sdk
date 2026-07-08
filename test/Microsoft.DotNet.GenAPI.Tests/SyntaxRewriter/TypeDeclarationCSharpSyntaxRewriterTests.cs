@@ -1,18 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
-#nullable enable
 
 using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
 {
+    [TestClass]
     public class TypeDeclarationCSharpSyntaxRewriterTests : CSharpSyntaxRewriterTestBase
     {
-        [Fact]
+        [TestMethod]
         public void TestRemoveSystemObjectAsBaseClass()
         {
-            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier: true),
                 original: """
                 namespace A
                 {
@@ -31,10 +30,10 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAddPartialKeyword()
         {
-            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier: true),
                 original: """
                 namespace A
                 {
@@ -53,10 +52,10 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPartialTypeDeclaration()
         {
-            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier: true),
                 original: """
                 namespace A
                 {

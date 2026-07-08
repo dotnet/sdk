@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -8,22 +10,19 @@ using NuGet.Packaging.Signing;
 
 namespace Microsoft.NET.Restore.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToRestoreProjectsUsingNuGetConfigProperties : SdkTest
     {
-        public GivenThatWeWantToRestoreProjectsUsingNuGetConfigProperties(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Theory]
-        [InlineData("netstandard1.3", "1.3", false)]
-        [InlineData("netcoreapp1.0", "1.0", true)]
-        [InlineData("netcoreapp1.1", "1.1", true)]
-        [InlineData("netstandard2.0", "2.0", false)]
-        [InlineData("netcoreapp2.0", "2.0app", false)]
-        [InlineData("net462", "461app", false)]
-        [InlineData("netcoreapp2.0;net462", "multiTFM20app", false)]
-        [InlineData("netcoreapp1.0;netcoreapp2.0", "multiTFM1020app", true)]
-        [InlineData("netcoreapp1.0;net462", "multiTFM1046app", true)]
+        [TestMethod]
+        [DataRow("netstandard1.3", "1.3", false)]
+        [DataRow("netcoreapp1.0", "1.0", true)]
+        [DataRow("netcoreapp1.1", "1.1", true)]
+        [DataRow("netstandard2.0", "2.0", false)]
+        [DataRow("netcoreapp2.0", "2.0app", false)]
+        [DataRow("net462", "461app", false)]
+        [DataRow("netcoreapp2.0;net462", "multiTFM20app", false)]
+        [DataRow("netcoreapp1.0;netcoreapp2.0", "multiTFM1020app", true)]
+        [DataRow("netcoreapp1.0;net462", "multiTFM1046app", true)]
         public void I_can_restore_a_project_with_implicit_msbuild_nuget_config(
             string frameworks,
             string projectPrefix,
@@ -32,10 +31,10 @@ namespace Microsoft.NET.Restore.Tests
             string testProjectName = $"{projectPrefix}Fallback";
             TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
 
-            var packagesFolder = Path.Combine(TestContext.Current.TestExecutionDirectory, "packages", testProjectName);
+            var packagesFolder = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "packages", testProjectName);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            restoreCommand.Execute($"/p:RestorePackagesPath={packagesFolder}", $"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}").Should().Pass();
+            restoreCommand.Execute($"/p:RestorePackagesPath={packagesFolder}", $"/p:_NugetFallbackFolder={SdkTestContext.Current.NuGetFallbackFolder}").Should().Pass();
 
             File.Exists(Path.Combine(
                 packagesFolder,
@@ -44,9 +43,9 @@ namespace Microsoft.NET.Restore.Tests
                 $"{GetUniquePackageNameForEachTestProject(testProjectName)}.1.0.0.nupkg")).Should().Be(fileExists);
         }
 
-        [Theory]
-        [InlineData("netstandard1.3", "1.3")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [TestMethod]
+        [DataRow("netstandard1.3", "1.3")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
         // base line of the following tests
         public void I_can_restore_with_implicit_msbuild_nuget_config(string frameworks, string projectPrefix)
         {
@@ -54,37 +53,37 @@ namespace Microsoft.NET.Restore.Tests
             TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}").Should().Pass();
+            restoreCommand.Execute($"/p:_NugetFallbackFolder={SdkTestContext.Current.NuGetFallbackFolder}").Should().Pass();
         }
 
-        [Theory]
-        [InlineData("netstandard1.3", "1.3")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
-        [InlineData("netcoreapp1.1", "1.1")]
-        [InlineData("netstandard2.0", "2.0")]
-        [InlineData("netcoreapp2.0", "2.0app")]
+        [TestMethod]
+        [DataRow("netstandard1.3", "1.3")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [DataRow("netcoreapp1.1", "1.1")]
+        [DataRow("netstandard2.0", "2.0")]
+        [DataRow("netcoreapp2.0", "2.0app")]
         public void I_can_disable_implicit_msbuild_nuget_config(string frameworks, string projectPrefix)
         {
             string testProjectName = $"{projectPrefix}DisabledFallback";
             TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}", "/p:DisableImplicitNuGetFallbackFolder=true").Should().Fail();
+            restoreCommand.Execute($"/p:_NugetFallbackFolder={SdkTestContext.Current.NuGetFallbackFolder}", "/p:DisableImplicitNuGetFallbackFolder=true").Should().Fail();
         }
 
-        [Theory]
-        [InlineData("netstandard1.3", "1.3", true)]
-        [InlineData("netcoreapp1.0", "1.0", false)]
-        [InlineData("netcoreapp1.1", "1.1", false)]
-        [InlineData("netstandard2.0", "2.0", true)]
-        [InlineData("netcoreapp2.0", "2.0app", true)]
+        [TestMethod]
+        [DataRow("netstandard1.3", "1.3", true)]
+        [DataRow("netcoreapp1.0", "1.0", false)]
+        [DataRow("netcoreapp1.1", "1.1", false)]
+        [DataRow("netstandard2.0", "2.0", true)]
+        [DataRow("netcoreapp2.0", "2.0app", true)]
         public void I_can_disable_1_x_implicit_msbuild_nuget_config(string frameworks, string projectPrefix, bool shouldExecutePass)
         {
             string testProjectName = $"{projectPrefix}1xDisabledFallback";
             TestAsset testProjectTestAsset = CreateTestAsset(testProjectName, frameworks);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
-            var executeResult = restoreCommand.Execute($"/p:_NugetFallbackFolder={TestContext.Current.NuGetFallbackFolder}", "/p:DisableImplicit1xNuGetFallbackFolder=true");
+            var executeResult = restoreCommand.Execute($"/p:_NugetFallbackFolder={SdkTestContext.Current.NuGetFallbackFolder}", "/p:DisableImplicit1xNuGetFallbackFolder=true");
 
             if (shouldExecutePass)
             {
@@ -109,7 +108,7 @@ namespace Microsoft.NET.Restore.Tests
 
             testProject.PackageReferences.Add(packageInNuGetFallbackFolder);
 
-            var testProjectTestAsset = _testAssetsManager.CreateTestProject(
+            var testProjectTestAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 string.Empty,
                 testProjectName);
@@ -130,12 +129,12 @@ namespace Microsoft.NET.Restore.Tests
                 new TestPackageReference(
                     projectInNuGetFallbackFolder.Name,
                     "1.0.0",
-                    TestContext.Current.NuGetFallbackFolder);
+                    SdkTestContext.Current.NuGetFallbackFolder);
 
             if (!projectInNuGetFallbackFolderPackageReference.NuGetPackageExists())
             {
                 var projectInNuGetFallbackFolderTestAsset =
-                    _testAssetsManager.CreateTestProject(projectInNuGetFallbackFolder);
+                    TestAssetsManager.CreateTestProject(projectInNuGetFallbackFolder);
                 var packageRestoreCommand = projectInNuGetFallbackFolderTestAsset.GetRestoreCommand(
                     Log,
                     relativePath: projectInNuGetFallbackFolder.Name).Execute().Should().Pass();
@@ -144,14 +143,14 @@ namespace Microsoft.NET.Restore.Tests
                     projectInNuGetFallbackFolder.Name);
                 var packagePackCommand =
                     new PackCommand(Log, dependencyProjectDirectory)
-                    .Execute($"/p:PackageOutputPath={TestContext.Current.NuGetFallbackFolder}").Should().Pass();
+                    .Execute($"/p:PackageOutputPath={SdkTestContext.Current.NuGetFallbackFolder}").Should().Pass();
 
                 ExtractNupkg(
-                    TestContext.Current.NuGetFallbackFolder,
-                    Path.Combine(TestContext.Current.NuGetFallbackFolder, $"{projectInNuGetFallbackFolder.Name}.1.0.0.nupkg"));
+                    SdkTestContext.Current.NuGetFallbackFolder,
+                    Path.Combine(SdkTestContext.Current.NuGetFallbackFolder, $"{projectInNuGetFallbackFolder.Name}.1.0.0.nupkg"));
 
                 // make sure there is no package in cache
-                DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, projectInNuGetFallbackFolder.Name.ToLowerInvariant()));
+                DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, projectInNuGetFallbackFolder.Name.ToLowerInvariant()));
             }
 
             return projectInNuGetFallbackFolderPackageReference;

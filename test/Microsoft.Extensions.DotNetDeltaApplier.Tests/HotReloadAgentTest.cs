@@ -2,14 +2,57 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.Extensions.HotReload;
+using Microsoft.DotNet.HotReload;
 using Moq;
 
-namespace Microsoft.Extensions.DotNetDeltaApplier
+namespace Microsoft.DotNet.Watch.UnitTests
 {
+    [TestClass]
     public class HotReloadAgentTest
     {
-        [Fact]
+        [TestMethod]
+        public void ClearHotReloadEnvironmentVariables_DoesNotThrow_WhenStartupHooksNotSet()
+        {
+            // Ensure DOTNET_STARTUP_HOOKS is not set
+            var original = Environment.GetEnvironmentVariable("DOTNET_STARTUP_HOOKS");
+            try
+            {
+                Environment.SetEnvironmentVariable("DOTNET_STARTUP_HOOKS", null);
+
+                // Should not throw NullReferenceException
+                HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_STARTUP_HOOKS", original);
+            }
+        }
+
+        [TestMethod]
+        public void ClearHotReloadEnvironmentVariables_ClearsStartupHook()
+        {
+            Assert.AreEqual("",
+                HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), typeof(StartupHook).Assembly.Location));
+        }
+
+        [TestMethod]
+        public void ClearHotReloadEnvironmentVariables_PreservedOtherStartupHooks()
+        {
+            var customStartupHook = "/path/mycoolstartup.dll";
+            Assert.AreEqual(customStartupHook,
+                HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), typeof(StartupHook).Assembly.Location + Path.PathSeparator + customStartupHook));
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        public void ClearHotReloadEnvironmentVariables_RemovesHotReloadStartup_InCaseInvariantManner()
+        {
+            var customStartupHook = "/path/mycoolstartup.dll";
+            Assert.AreEqual(customStartupHook,
+                HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), customStartupHook + Path.PathSeparator + typeof(StartupHook).Assembly.Location.ToUpperInvariant()));
+        }
+
+        [TestMethod]
         public void TopologicalSort_Works()
         {
             // Arrange
@@ -21,10 +64,10 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             var sortedList = MetadataUpdateHandlerInvoker.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3 });
 
             // Assert
-            Assert.Equal(new[] { assembly1, assembly2, assembly3, assembly4 }, sortedList);
+            Assert.AreSequenceEqual(new[] { assembly1, assembly2, assembly3, assembly4 }, sortedList, ReferenceEqualityComparer.Instance);
         }
 
-        [Fact]
+        [TestMethod]
         public void TopologicalSort_IgnoresUnknownReferencedAssemblies()
         {
             // Arrange
@@ -36,10 +79,10 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             var sortedList = MetadataUpdateHandlerInvoker.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3 });
 
             // Assert
-            Assert.Equal(new[] { assembly1, assembly2, assembly3, assembly4 }, sortedList);
+            Assert.AreSequenceEqual(new[] { assembly1, assembly2, assembly3, assembly4 }, sortedList, ReferenceEqualityComparer.Instance);
         }
 
-        [Fact]
+        [TestMethod]
         public void TopologicalSort_WithCycles()
         {
             // Arrange
@@ -52,79 +95,93 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             var sortedList = MetadataUpdateHandlerInvoker.TopologicalSort(new[] { assembly2, assembly4, assembly1, assembly3, assembly5 });
 
             // Assert
-            Assert.Equal(new[] { assembly1, assembly3, assembly2, assembly4, assembly5 }, sortedList);
+            Assert.AreSequenceEqual(new[] { assembly1, assembly3, assembly2, assembly4, assembly5 }, sortedList, ReferenceEqualityComparer.Instance);
         }
 
-        [Fact]
-        public void GetHandlerActions_DiscoversActionsOnTypeWithClearCache()
+        [TestMethod]
+        [DataRow(typeof(HandlerWithClearCache))]
+        [DataRow(typeof(HandlerWithUpdateApplication))]
+        [DataRow(typeof(HandlerWithUpdateContent))]
+        public void GetHandlerActions_SingleAction(Type handlerType)
         {
             var reporter = new AgentReporter();
             var invoker = new MetadataUpdateHandlerInvoker(reporter);
-            var actions = invoker.GetMetadataUpdateHandlerActions([typeof(HandlerWithClearCache)]);
+            var actions = invoker.GetUpdateHandlerActions([handlerType]);
 
-            Assert.Empty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
-            Assert.Single(actions.ClearCache);
-            Assert.Empty(actions.UpdateApplication);
+            Assert.IsEmpty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
+
+            if (handlerType == typeof(HandlerWithUpdateContent))
+            {
+                Assert.ContainsSingle(actions.UpdateContentHandlers);
+                Assert.IsEmpty(actions.ClearCacheHandlers);
+                Assert.IsEmpty(actions.UpdateApplicationHandlers);
+            }
+            else if (handlerType == typeof(HandlerWithUpdateApplication))
+            {
+                Assert.ContainsSingle(actions.UpdateApplicationHandlers);
+                Assert.IsEmpty(actions.ClearCacheHandlers);
+                Assert.IsEmpty(actions.UpdateContentHandlers);
+            }
+            else if (handlerType == typeof(HandlerWithClearCache))
+            {
+                Assert.ContainsSingle(actions.ClearCacheHandlers);
+                Assert.IsEmpty(actions.UpdateContentHandlers);
+                Assert.IsEmpty(actions.UpdateApplicationHandlers);
+            }
         }
 
-        [Fact]
-        public void GetHandlerActions_DiscoversActionsOnTypeWithUpdateApplication()
+        [TestMethod]
+        public void GetHandlerActions_DiscoversActionsOnTypeWithAllActions()
         {
             var reporter = new AgentReporter();
             var invoker = new MetadataUpdateHandlerInvoker(reporter);
-            var actions = invoker.GetMetadataUpdateHandlerActions([typeof(HandlerWithUpdateApplication)]);
+            var actions = invoker.GetUpdateHandlerActions([typeof(HandlerWithAllActions)]);
 
-            Assert.Empty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
-            Assert.Empty(actions.ClearCache);
-            Assert.Single(actions.UpdateApplication);
+            Assert.IsEmpty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
+            Assert.AreEqual(typeof(HandlerWithAllActions).GetMethod("ClearCache", BindingFlags.Static | BindingFlags.NonPublic), actions.ClearCacheHandlers.Single().Method);
+            Assert.AreEqual(typeof(HandlerWithAllActions).GetMethod("UpdateApplication", BindingFlags.Static | BindingFlags.NonPublic), actions.UpdateApplicationHandlers.Single().Method);
+            Assert.AreEqual(typeof(HandlerWithAllActions).GetMethod("UpdateContent", BindingFlags.Static | BindingFlags.NonPublic), actions.UpdateContentHandlers.Single().Method);
         }
 
-        [Fact]
-        public void GetHandlerActions_DiscoversActionsOnTypeWithBothActions()
-        {
-            var reporter = new AgentReporter();
-            var invoker = new MetadataUpdateHandlerInvoker(reporter);
-            var actions = invoker.GetMetadataUpdateHandlerActions([typeof(HandlerWithBothActions)]);
-
-            Assert.Empty(reporter.GetAndClearLogEntries(ResponseLoggingLevel.Verbose));
-            Assert.Single(actions.ClearCache);
-            Assert.Single(actions.UpdateApplication);
-        }
-
-        [Fact]
+        [TestMethod]
         public void GetHandlerActions_LogsMessageIfMethodHasIncorrectSignature()
         {
             var reporter = new AgentReporter();
             var invoker = new MetadataUpdateHandlerInvoker(reporter);
 
             var handlerType = typeof(HandlerWithIncorrectSignature);
-            var actions = invoker.GetMetadataUpdateHandlerActions([handlerType]);
+            var actions = invoker.GetUpdateHandlerActions([handlerType]);
 
             var log = reporter.GetAndClearLogEntries(ResponseLoggingLevel.WarningsAndErrors);
-            var logEntry = Assert.Single(log);
-            Assert.Equal($"Type '{handlerType}' has method 'Void ClearCache()' that does not match the required signature.", logEntry.message);
-            Assert.Equal(AgentMessageSeverity.Warning, logEntry.severity);
-            Assert.Empty(actions.ClearCache);
-            Assert.Single(actions.UpdateApplication);
+            Assert.AreSequenceEqual(
+            [
+                $"Warning: Type '{handlerType}' has method 'Void ClearCache()' that does not match the required signature.",
+                $"Warning: Type '{handlerType}' has method 'Void UpdateContent()' that does not match the required signature."
+            ],
+            log.Select(e => $"{e.severity}: {e.message}"));
+
+            Assert.IsEmpty(actions.ClearCacheHandlers);
+            Assert.IsEmpty(actions.UpdateContentHandlers);
+            Assert.ContainsSingle(actions.UpdateApplicationHandlers);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetHandlerActions_LogsMessageIfNoActionsAreDiscovered()
         {
             var reporter = new AgentReporter();
             var invoker = new MetadataUpdateHandlerInvoker(reporter);
 
             var handlerType = typeof(HandlerWithNoActions);
-            var actions = invoker.GetMetadataUpdateHandlerActions([handlerType]);
+            var actions = invoker.GetUpdateHandlerActions([handlerType]);
 
             var log = reporter.GetAndClearLogEntries(ResponseLoggingLevel.WarningsAndErrors);
-            var logEntry = Assert.Single(log);
-            Assert.Equal(
-                $"Expected to find a static method 'ClearCache' or 'UpdateApplication' on type '{handlerType.AssemblyQualifiedName}' but neither exists.", logEntry.message);
+            var logEntry = Assert.ContainsSingle(log);
+            Assert.AreEqual(
+                $"Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type '{handlerType.AssemblyQualifiedName}' but neither exists.", logEntry.message);
 
-            Assert.Equal(AgentMessageSeverity.Warning, logEntry.severity);
-            Assert.Empty(actions.ClearCache);
-            Assert.Empty(actions.UpdateApplication);
+            Assert.AreEqual(AgentMessageSeverity.Warning, logEntry.severity);
+            Assert.IsEmpty(actions.ClearCacheHandlers);
+            Assert.IsEmpty(actions.UpdateApplicationHandlers);
         }
 
         private static Assembly GetAssembly(string fullName, AssemblyName[] dependencies)
@@ -147,15 +204,22 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             internal static void UpdateApplication(Type[]? _) { }
         }
 
-        private class HandlerWithBothActions
+        private class HandlerWithUpdateContent
+        {
+            public static void UpdateContent(string assemblyName, bool isApplicationProject, string relativePath, byte[] contents) { }
+        }
+
+        private class HandlerWithAllActions
         {
             internal static void ClearCache(Type[]? _) { }
             internal static void UpdateApplication(Type[]? _) { }
+            internal static void UpdateContent(string assemblyName, bool isApplicationProject, string relativePath, byte[] contents) { }
         }
 
         private class HandlerWithIncorrectSignature
         {
-            internal static void ClearCache() { }
+            internal static void ClearCache() { }   
+            internal static void UpdateContent() { }
             internal static void UpdateApplication(Type[]? _) { }
         }
 

@@ -230,7 +230,7 @@ namespace Microsoft.DotNet.PackageValidation
             {
                 NuGetFramework assemblyReferencesFramework = tfmQueue.Dequeue();
 
-                NuGetFramework? bestAssemblyReferencesFramework = NuGetFrameworkUtility.GetNearest(tfmQueue.Concat(new NuGetFramework[] { framework }), assemblyReferencesFramework, (key) => key);
+                NuGetFramework? bestAssemblyReferencesFramework = NuGetFrameworkUtility.GetNearest(tfmQueue.Concat([framework]), assemblyReferencesFramework, (key) => key);
                 if (bestAssemblyReferencesFramework == framework)
                 {
                     return AssemblyReferences[assemblyReferencesFramework];

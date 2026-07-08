@@ -26,7 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Removing the tooling artifacts from all other globs and adding it to the none glob. This ensures that the
          up-to-date check is unimpacted by the changes to the tooling artifacts -->
     <None Remove="@(_WebToolingArtifacts)" />
-    <None Include="@(_WebToolingArtifacts)"
+    <None Include="@(_WebToolingArtifacts->Distinct())"
           CopyToOutputDirectory="Never"
           CopyToPublishDirectory="Never"
           ExcludeFromSingleFile="true" />

@@ -1,7 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
-#nullable enable
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,7 +18,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
             StringBuilder stringBuilder = _stringWriter.GetStringBuilder();
             string resulted = stringBuilder.ToString();
 
-            Assert.True(resulted.Equals(expected),
+            Assert.IsTrue(resulted.Equals(expected),
                 $"Expected:\n{expected}\nResulted:\n{resulted}");
         }
 
@@ -38,7 +36,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
             SyntaxTree expectedSyntaxTree = CSharpSyntaxTree.ParseText(expected);
 
             // compare SyntaxTree and not string representation
-            Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
+            Assert.IsTrue(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resulted}");
         }
     }
