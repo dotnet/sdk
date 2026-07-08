@@ -244,7 +244,6 @@ namespace Microsoft.NET.Publish.Tests
         [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_can_publish_readytorun_composite_with_subdirectory_relative_path(string targetFramework)
         {
-            // Regression test for https://github.com/dotnet/runtime/issues/79902
             // When a target rewrites the RelativePath of the published assemblies to include a subdirectory,
             // composite ReadyToRun publishing used to fail because the SDK looked for the crossgen2 component
             // output under that subdirectory even though crossgen2 emits the components flat into the composite
