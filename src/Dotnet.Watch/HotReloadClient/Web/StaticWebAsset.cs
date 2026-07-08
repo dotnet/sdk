@@ -10,6 +10,8 @@ namespace Microsoft.DotNet.HotReload;
 
 internal readonly struct StaticWebAsset(string filePath, string relativeUrl, string assemblyName, bool isApplicationProject)
 {
+    private static readonly StringComparison OSSpecificPathComparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
     public string FilePath => filePath;
     public string RelativeUrl => relativeUrl;
     public string AssemblyName => assemblyName;
@@ -19,8 +21,10 @@ internal readonly struct StaticWebAsset(string filePath, string relativeUrl, str
     public const string ManifestFileName = "staticwebassets.development.json";
 
     public static bool IsScopedCssFile(string filePath)
-        => filePath.EndsWith(".razor.css", StringComparison.Ordinal) ||
-           filePath.EndsWith(".cshtml.css", StringComparison.Ordinal);
+        // The extension is case-insensitive:
+        // https://github.com/dotnet/sdk/blob/e62d6a2bd7172fdccd1125bfd5703290ac1b32df/src/StaticWebAssetsSdk/Tasks/DiscoverDefaultScopedCssItems.cs#L36
+        => filePath.EndsWith(".razor.css", StringComparison.OrdinalIgnoreCase) ||
+           filePath.EndsWith(".cshtml.css", StringComparison.OrdinalIgnoreCase);
 
     public static string GetScopedCssRelativeUrl(string applicationProjectFilePath, string containingProjectFilePath)
         => WebRoot + "/" + GetScopedCssBundleFileName(applicationProjectFilePath, containingProjectFilePath);
@@ -29,17 +33,22 @@ internal readonly struct StaticWebAsset(string filePath, string relativeUrl, str
     {
         var sourceProjectName = Path.GetFileNameWithoutExtension(containingProjectFilePath);
 
-        return string.Equals(containingProjectFilePath, applicationProjectFilePath, StringComparison.OrdinalIgnoreCase)
+        return string.Equals(containingProjectFilePath, applicationProjectFilePath, OSSpecificPathComparison)
             ? $"{sourceProjectName}.styles.css"
             : $"{sourceProjectName}.bundle.scp.css";
     }
 
     public static bool IsScopedCssBundleFile(string filePath)
-        => filePath.EndsWith(".bundle.scp.css", StringComparison.Ordinal) ||
-           filePath.EndsWith(".styles.css", StringComparison.Ordinal);
+        // The extension is case-insensitive:
+        // https://github.com/dotnet/sdk/blob/e62d6a2bd7172fdccd1125bfd5703290ac1b32df/src/StaticWebAssetsSdk/Tasks/ScopedCss/ResolveAllScopedCssAssets.cs#L35
+        => filePath.EndsWith(".bundle.scp.css", StringComparison.OrdinalIgnoreCase) ||
+           filePath.EndsWith(".styles.css", StringComparison.OrdinalIgnoreCase);
 
     public static bool IsCompressedAssetFile(string filePath)
-        => filePath.EndsWith(".gz", StringComparison.Ordinal);
+        // The extension is case-insensitive:
+        // https://github.com/dotnet/sdk/blob/e62d6a2bd7172fdccd1125bfd5703290ac1b32df/src/StaticWebAssetsSdk/Tasks/Compression/DiscoverPrecompressedAssets.cs#L87
+        => filePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
+           filePath.EndsWith(".br", StringComparison.OrdinalIgnoreCase);
 
     public static string? GetRelativeUrl(string applicationProjectFilePath, string containingProjectFilePath, string assetFilePath)
         => IsScopedCssFile(assetFilePath)
