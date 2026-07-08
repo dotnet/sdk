@@ -1390,7 +1390,8 @@ public class NativeLibraryClass
             }
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void NativeAot_publish_does_not_produce_managed_build_output()
         {
             // AOT publish should not create managed build artifacts (apphost, .dll, .deps.json,
@@ -1448,7 +1449,8 @@ public class NativeLibraryClass
                 "the output directory should not contain the CoreCLR runtime from Build");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void NativeAot_publish_with_project_reference_succeeds()
         {
             // Verify that AOT publish still builds project references correctly via
