@@ -35,7 +35,8 @@
       </TestProjects>
       <TriggerPaths>
         src/TemplateEngine/**;
-        test/TemplateEngine/**
+        test/TemplateEngine/**;
+        test/TestAssets/TestPackages/TemplateEngine/**
       </TriggerPaths>
       <RunAlways>CI</RunAlways>
     </ConditionalTestScope>
