@@ -17,7 +17,18 @@
       RunAlways:    Semicolon-separated list of conditions under which the scope always runs
                     regardless of changed files. Supported values:
                       CI              non-PR builds (Build.Reason != PullRequest)
+
+    GlobalTriggerPaths: If ANY changed file matches these paths, ALL scopes are forced active
+    regardless of individual scope TriggerPaths. Use for shared infrastructure that all tests
+    depend on.
   -->
+
+  <PropertyGroup>
+    <GlobalTriggerPaths>
+      test/Microsoft.NET.TestFramework/**;
+      test/Microsoft.NET.TestFramework.MSTest/**
+    </GlobalTriggerPaths>
+  </PropertyGroup>
 
   <ItemGroup>
     <ConditionalTestScope Include="TemplateEngine">

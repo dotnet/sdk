@@ -112,10 +112,19 @@ projects they control.
 ```text
 Is this a PR build?
 ├── No (CI) → All scopes active, all tests run
-└── Yes (PR) → For each scope:
-    ├── Do changed files match any TriggerPaths? → Scope active
-    └── No match → Scope inactive, test projects excluded
+└── Yes (PR) →
+    ├── Do changed files match any GlobalTriggerPaths? → All scopes active, all tests run
+    └── No global match → For each scope:
+        ├── Do changed files match any TriggerPaths? → Scope active
+        └── No match → Scope inactive, test projects excluded
 ```
+
+### Global trigger paths
+
+Some paths represent shared infrastructure that all tests depend on (e.g. the shared
+test framework assemblies). If any changed file matches a `GlobalTriggerPaths` pattern,
+all scopes are forced active and no tests are filtered. This is defined as a
+`<GlobalTriggerPaths>` property in `ConditionalTests.props`.
 
 ### Safe defaults
 

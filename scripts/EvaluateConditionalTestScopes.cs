@@ -33,6 +33,10 @@ var repoRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(propsFile)!, 
 var doc = XDocument.Load(propsFile);
 var scopes = doc.Descendants("ConditionalTestScope").ToList();
 
+// Parse GlobalTriggerPaths
+var globalTriggerPaths = (doc.Descendants("GlobalTriggerPaths").FirstOrDefault()?.Value ?? "")
+    .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 bool isCI = buildReason is not "" and not "PullRequest";
 
 // Get changed files via git diff
@@ -44,59 +48,95 @@ Console.WriteLine($"Target branch: {targetBranch ?? "(none)"}");
 Console.WriteLine($"Is CI (non-PR): {isCI}");
 Console.WriteLine($"Changed files: {changedFiles.Count}");
 
-var activeScopes = new List<string>();
-
-foreach (var scope in scopes)
+// Check global triggers — if any changed file matches, all scopes are active
+bool globalTriggered = false;
+if (hasChangedFiles && globalTriggerPaths.Length > 0)
 {
-    var name = scope.Attribute("Include")?.Value ?? "";
-    var runAlways = (scope.Element("RunAlways")?.Value ?? "")
-        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-    var triggerPaths = (scope.Element("TriggerPaths")?.Value ?? "")
-        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-    bool shouldRun = false;
-    string reason = "no trigger match";
-
-    // Check RunAlways conditions
-    if (runAlways.Contains("CI", StringComparer.OrdinalIgnoreCase) && isCI)
+    foreach (var changedFile in changedFiles)
     {
-        shouldRun = true;
-        reason = "RunAlways=CI";
-    }
-
-    // If no changed files info available (local dev), run everything
-    if (!hasChangedFiles)
-    {
-        shouldRun = true;
-        reason = "no changed files (safe fallback)";
-    }
-
-    // Check if any changed file matches trigger paths
-    if (!shouldRun && hasChangedFiles)
-    {
-        foreach (var changedFile in changedFiles)
+        var normalized = changedFile.Replace('\\', '/');
+        foreach (var pattern in globalTriggerPaths)
         {
-            var normalized = changedFile.Replace('\\', '/');
-            foreach (var pattern in triggerPaths)
+            if (GlobMatches(normalized, pattern.Replace('\\', '/')))
             {
-                if (GlobMatches(normalized, pattern.Replace('\\', '/')))
-                {
-                    shouldRun = true;
-                    reason = $"matched '{normalized}' against '{pattern}'";
-                    break;
-                }
-            }
-            if (shouldRun)
-            {
+                globalTriggered = true;
+                Console.WriteLine($"Global trigger matched: '{normalized}' against '{pattern}' — all scopes forced active");
                 break;
             }
         }
+        if (globalTriggered)
+        {
+            break;
+        }
     }
+}
 
-    Console.WriteLine($"Scope '{name}': {(shouldRun ? "ACTIVE" : "INACTIVE")} ({reason})");
-    if (shouldRun)
+var activeScopes = new List<string>();
+
+// If global triggered, all scopes are active — skip per-scope evaluation
+if (globalTriggered)
+{
+    foreach (var scope in scopes)
     {
+        var name = scope.Attribute("Include")?.Value ?? "";
         activeScopes.Add(name);
+        Console.WriteLine($"Scope '{name}': ACTIVE (global trigger)");
+    }
+}
+else
+{
+    foreach (var scope in scopes)
+    {
+        var name = scope.Attribute("Include")?.Value ?? "";
+        var runAlways = (scope.Element("RunAlways")?.Value ?? "")
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var triggerPaths = (scope.Element("TriggerPaths")?.Value ?? "")
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        bool shouldRun = false;
+        string reason = "no trigger match";
+
+        // Check RunAlways conditions
+        if (runAlways.Contains("CI", StringComparer.OrdinalIgnoreCase) && isCI)
+        {
+            shouldRun = true;
+            reason = "RunAlways=CI";
+        }
+
+        // If no changed files info available (local dev), run everything
+        if (!shouldRun && !hasChangedFiles)
+        {
+            shouldRun = true;
+            reason = "no changed files (safe fallback)";
+        }
+
+        // Check if any changed file matches trigger paths
+        if (!shouldRun && hasChangedFiles)
+        {
+            foreach (var changedFile in changedFiles)
+            {
+                var normalized = changedFile.Replace('\\', '/');
+                foreach (var pattern in triggerPaths)
+                {
+                    if (GlobMatches(normalized, pattern.Replace('\\', '/')))
+                    {
+                        shouldRun = true;
+                        reason = $"matched '{normalized}' against '{pattern}'";
+                        break;
+                    }
+                }
+                if (shouldRun)
+                {
+                    break;
+                }
+            }
+        }
+
+        Console.WriteLine($"Scope '{name}': {(shouldRun ? "ACTIVE" : "INACTIVE")} ({reason})");
+        if (shouldRun)
+        {
+            activeScopes.Add(name);
+        }
     }
 }
 
