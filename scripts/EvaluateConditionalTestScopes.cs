@@ -39,6 +39,11 @@ bool isCI = buildReason is not "" and not "PullRequest";
 var changedFiles = GetChangedFiles(targetBranch, repoRoot);
 bool hasChangedFiles = changedFiles.Count > 0;
 
+Console.WriteLine($"Build reason: {buildReason}");
+Console.WriteLine($"Target branch: {targetBranch ?? "(none)"}");
+Console.WriteLine($"Is CI (non-PR): {isCI}");
+Console.WriteLine($"Changed files: {changedFiles.Count}");
+
 var activeScopes = new List<string>();
 
 foreach (var scope in scopes)
@@ -50,14 +55,21 @@ foreach (var scope in scopes)
         .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     bool shouldRun = false;
+    string reason = "no trigger match";
 
     // Check RunAlways conditions
     if (runAlways.Contains("CI", StringComparer.OrdinalIgnoreCase) && isCI)
+    {
         shouldRun = true;
+        reason = "RunAlways=CI";
+    }
 
     // If no changed files info available (local dev), run everything
     if (!hasChangedFiles)
+    {
         shouldRun = true;
+        reason = "no changed files (safe fallback)";
+    }
 
     // Check if any changed file matches trigger paths
     if (!shouldRun && hasChangedFiles)
@@ -70,15 +82,22 @@ foreach (var scope in scopes)
                 if (GlobMatches(normalized, pattern.Replace('\\', '/')))
                 {
                     shouldRun = true;
+                    reason = $"matched '{normalized}' against '{pattern}'";
                     break;
                 }
             }
-            if (shouldRun) break;
+            if (shouldRun)
+            {
+                break;
+            }
         }
     }
 
+    Console.WriteLine($"Scope '{name}': {(shouldRun ? "ACTIVE" : "INACTIVE")} ({reason})");
     if (shouldRun)
+    {
         activeScopes.Add(name);
+    }
 }
 
 var result = activeScopes.Count > 0 ? string.Join(";", activeScopes) : "__none__";
@@ -97,7 +116,9 @@ return 0;
 static List<string> GetChangedFiles(string? targetBranch, string repoRoot)
 {
     if (string.IsNullOrEmpty(targetBranch))
+    {
         return [];
+    }
 
     try
     {
@@ -109,7 +130,10 @@ static List<string> GetChangedFiles(string? targetBranch, string repoRoot)
         };
         var result = Process.RunAndCaptureText(psi);
 
-        if (result.ExitStatus.ExitCode != 0) return [];
+        if (result.ExitStatus.ExitCode != 0)
+        {
+            return [];
+        }
 
         return result.StandardOutput
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -139,7 +163,9 @@ static string? GetArg(string name)
     for (int i = 0; i < args.Length - 1; i++)
     {
         if (args[i].Equals(name, StringComparison.OrdinalIgnoreCase))
+        {
             return args[i + 1];
+        }
     }
     return null;
 }
