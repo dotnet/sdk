@@ -1,28 +1,15 @@
 <Project>
 
   <!--
-    Conditional Test Scopes
+    Conditional Test Filtering
 
-    Each ConditionalTestScope defines a set of tests that should only run when specific
-    source paths change (TriggerPaths) or under specific build conditions (RunAlways).
-
+    This file defines which tests can be skipped on PRs that don't touch relevant source.
     See documentation/project-docs/pr-test-filtering.md for design details and usage guide.
-
-    Properties:
-      Mechanism:    "project" = entire test project(s) excluded/included from Helix submission.
-      TestProjects: (Mechanism=project) Glob patterns matching test .csproj files to exclude/include.
-                    Paths are relative to the repository root.
-      TriggerPaths: Semicolon-separated glob patterns. If ANY changed file matches, the scope runs.
-                    Include both source and test paths here. Paths are relative to the repository root.
-      RunAlways:    Semicolon-separated list of conditions under which the scope always runs
-                    regardless of changed files. Supported values:
-                      CI              non-PR builds (Build.Reason != PullRequest)
-
-    GlobalTriggerPaths: If ANY changed file matches these paths, ALL scopes are forced active
-    regardless of individual scope TriggerPaths. Use for shared infrastructure that all tests
-    depend on.
   -->
 
+  <!-- ======== Global trigger paths ========
+       If ANY changed file matches these patterns, ALL scopes below are forced active.
+       Use for shared infrastructure that all code/tests depend on. -->
   <PropertyGroup>
     <GlobalTriggerPaths>
       test/Microsoft.NET.TestFramework/**;
@@ -30,6 +17,16 @@
     </GlobalTriggerPaths>
   </PropertyGroup>
 
+  <!-- ======== Conditional test scopes ========
+       Each ConditionalTestScope item defines a set of tests that only run when specific
+       source paths change or under specific build conditions.
+
+       Metadata:
+         Mechanism:    "project" = entire test project(s) excluded/included from Helix submission.
+         TestProjects: (Mechanism=project) Glob patterns matching test .csproj files.
+         TriggerPaths: Semicolon-separated glob patterns. If ANY changed file matches, the scope runs.
+         RunAlways:    Conditions under which the scope always runs regardless of changed files.
+                       Supported values: CI (non-PR builds). -->
   <ItemGroup>
     <ConditionalTestScope Include="TemplateEngine">
       <Mechanism>project</Mechanism>

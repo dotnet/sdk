@@ -87,8 +87,10 @@ projects they control.
 
 ### How it works
 
-1. **`test/ConditionalTests.props`** — MSBuild props file that defines `ConditionalTestScope`
-   items. Each scope specifies:
+1. **`test/ConditionalTests.props`** — MSBuild props file that defines
+   `ConditionalTestScope` items and a `GlobalTriggerPaths` property.
+
+   Each **conditional test scope** specifies:
    - `Mechanism`: how tests are excluded (currently only `project` is supported)
    - `TestProjects`: the test `.csproj` file(s) controlled by this scope
    - `TriggerPaths`: glob patterns for source/test paths that activate this scope
@@ -98,41 +100,41 @@ projects they control.
      targeted `RunAlways=DependencyFlow:dotnet/dotnet` to only force-run when the flow
      originates from a specific repository.
 
+   **Global trigger paths** are an escape mechanism: if any changed file matches a
+   `GlobalTriggerPaths` pattern, all scopes are forced active and no tests are filtered.
+   Use this for shared infrastructure that all code/tests depend on (e.g. the shared test
+   framework assemblies).
+
 2. **`scripts/EvaluateConditionalTestScopes.cs`** — C# script that runs before test
    submission. It reads `ConditionalTests.props`, computes the git diff against the
-   target branch, and determines which scopes are active. It outputs the
-   `ActiveConditionalTestScopes` Azure DevOps pipeline variable.
+   target branch, and determines which scopes to skip. It outputs the
+   `SkippedTestScopes` Azure DevOps pipeline variable.
 
 3. **`test/UnitTests.proj`** — imports `ConditionalTests.props` and defines a Target
-   (`RemoveInactiveConditionalTestProjects`) that removes inactive test projects from
+   (`RemoveSkippedConditionalTestProjects`) that removes skipped test projects from
    the `SDKCustomTestProject` item group before Helix submission.
 
 ### Decision flow
 
 ```text
 Is this a PR build?
-├── No (CI) → All scopes active, all tests run
+├── No (CI) → RunAlways=CI → nothing skipped, all tests run
 └── Yes (PR) →
-    ├── Do changed files match any GlobalTriggerPaths? → All scopes active, all tests run
+    ├── Do changed files match any GlobalTriggerPaths? → Nothing skipped, all tests run
     └── No global match → For each scope:
-        ├── Do changed files match any TriggerPaths? → Scope active
-        └── No match → Scope inactive, test projects excluded
+        ├── Do changed files match any TriggerPaths? → Scope runs (not skipped)
+        └── No match → Scope skipped, test projects excluded
 ```
-
-### Global trigger paths
-
-Some paths represent shared infrastructure that all tests depend on (e.g. the shared
-test framework assemblies). If any changed file matches a `GlobalTriggerPaths` pattern,
-all scopes are forced active and no tests are filtered. This is defined as a
-`<GlobalTriggerPaths>` property in `ConditionalTests.props`.
 
 ### Safe defaults
 
-- **Local development**: `ActiveConditionalTestScopes` is not set → no projects are
+- **Local development**: `SkippedTestScopes` is not set → no projects are
   removed → all tests run.
-- **Git diff failure**: the script returns an empty changed-file list → all scopes
-  activate (safe fallback).
-- **Non-PR builds**: `RunAlways=CI` ensures all scopes are active on `main` / release
+- **Git diff failure**: the script returns an empty changed-file list → no scopes
+  are skipped (safe fallback).
+- **Global trigger match**: shared infrastructure changed → variable is not set →
+  all tests run.
+- **Non-PR builds**: `RunAlways=CI` ensures no scopes are skipped on `main` / release
   branches.
 
 ## Adding a new scope

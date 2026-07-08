@@ -118,17 +118,17 @@
     <HelixTargetQueue Include="$(CustomHelixTargetQueue)" />
   </ItemGroup>
 
-  <!-- Remove test projects for inactive conditional test scopes (defined in ConditionalTests.props).
-       ActiveConditionalTestScopes is set by scripts/EvaluateConditionalTestScopes.cs in CI.
-       When the script runs but no scopes are active, it outputs "__none__" so this Target still fires.
-       When empty (local dev or script failure), the target is skipped and all tests run. -->
-  <Target Name="RemoveInactiveConditionalTestProjects" BeforeTargets="CoreTest" Condition="'$(ActiveConditionalTestScopes)' != ''">
+  <!-- Remove test projects for skipped conditional test scopes (defined in ConditionalTests.props).
+       SkippedTestScopes is set by scripts/EvaluateConditionalTestScopes.cs in CI.
+       When all scopes are skipped, it outputs "__all__" so all conditional projects are removed.
+       When empty (local dev, script failure, or global trigger), the target is skipped and all tests run. -->
+  <Target Name="RemoveSkippedConditionalTestProjects" BeforeTargets="CoreTest" Condition="'$(SkippedTestScopes)' != ''">
     <ItemGroup>
-      <InactiveTestProject Include="$(RepoRoot)%(ConditionalTestScope.TestProjects)"
-                           Condition="'%(ConditionalTestScope.Mechanism)' == 'project' and !$(ActiveConditionalTestScopes.Contains('%(ConditionalTestScope.Identity)'))" />
-      <SDKCustomTestProject Remove="@(InactiveTestProject)" />
+      <SkippedTestProject Include="$(RepoRoot)%(ConditionalTestScope.TestProjects)"
+                           Condition="'%(ConditionalTestScope.Mechanism)' == 'project' and ('$(SkippedTestScopes)' == '__all__' or $(SkippedTestScopes.Contains('%(ConditionalTestScope.Identity)')))" />
+      <SDKCustomTestProject Remove="@(SkippedTestProject)" />
     </ItemGroup>
-    <Message Importance="normal" Text="Conditional test filtering: removed %(InactiveTestProject.Filename) (scope inactive)" Condition="'@(InactiveTestProject)' != ''" />
+    <Message Importance="normal" Text="Conditional test filtering: removed %(SkippedTestProject.Filename) (scope skipped)" Condition="'@(SkippedTestProject)' != ''" />
   </Target>
 
   <Import Project="test-runner\TestRunner.targets" />

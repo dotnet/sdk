@@ -140,8 +140,8 @@ jobs:
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
 
-      # Evaluate conditional test scopes: determine which test groups should run based on
-      # changed files and build context. Sets the ActiveConditionalTestScopes pipeline variable.
+      # Evaluate conditional test scopes: determine which test groups to skip based on
+      # changed files and build context. Sets the SkippedTestScopes pipeline variable.
       # continueOnError: if evaluation fails, the variable remains empty and all tests run.
       - script: $(Build.SourcesDirectory)/.dotnet/dotnet run $(Build.SourcesDirectory)/scripts/EvaluateConditionalTestScopes.cs --
             --props-file "$(Build.SourcesDirectory)/test/ConditionalTests.props"
@@ -162,7 +162,7 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /p:EnableHelixJobMonitor=true
-            /p:ActiveConditionalTestScopes="$(ActiveConditionalTestScopes)"
+            /p:SkippedTestScopes="$(SkippedTestScopes)"
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
@@ -187,7 +187,7 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             /p:EnableHelixJobMonitor=true
-            /p:ActiveConditionalTestScopes="$(ActiveConditionalTestScopes)"
+            /p:SkippedTestScopes="$(SkippedTestScopes)"
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.

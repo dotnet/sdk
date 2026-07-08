@@ -4,13 +4,13 @@
 #:property TargetFramework=$(NetCurrent)
 #:property RollForward=LatestMajor
 
-// Evaluates which conditional test scopes should run based on changed files and build context.
-// Reads test/ConditionalTests.props and outputs a semicolon-separated list of active scope names.
+// Evaluates which conditional test scopes should be skipped based on changed files and build context.
+// Reads test/ConditionalTests.props and outputs a semicolon-separated list of skipped scope names.
 //
 // Usage:
 //   dotnet run EvaluateConditionalTestScopes.cs -- --props-file <path> [--target-branch <branch>] [--build-reason <reason>]
 //
-// When --target-branch is not provided, all scopes are active (safe default for local dev).
+// When --target-branch is not provided, no scopes are skipped (safe default for local dev).
 // Changed files are determined via `git diff --name-only origin/<target-branch>...HEAD`.
 
 using System.Diagnostics;
@@ -48,7 +48,7 @@ Console.WriteLine($"Target branch: {targetBranch ?? "(none)"}");
 Console.WriteLine($"Is CI (non-PR): {isCI}");
 Console.WriteLine($"Changed files: {changedFiles.Count}");
 
-// Check global triggers — if any changed file matches, all scopes are active
+// Check global triggers — if any changed file matches, no scopes are skipped
 bool globalTriggered = false;
 if (hasChangedFiles && globalTriggerPaths.Length > 0)
 {
@@ -60,7 +60,7 @@ if (hasChangedFiles && globalTriggerPaths.Length > 0)
             if (GlobMatches(normalized, pattern.Replace('\\', '/')))
             {
                 globalTriggered = true;
-                Console.WriteLine($"Global trigger matched: '{normalized}' against '{pattern}' — all scopes forced active");
+                Console.WriteLine($"Global trigger matched: '{normalized}' against '{pattern}' — no scopes skipped");
                 break;
             }
         }
@@ -71,17 +71,12 @@ if (hasChangedFiles && globalTriggerPaths.Length > 0)
     }
 }
 
-var activeScopes = new List<string>();
+var skippedScopes = new List<string>();
 
-// If global triggered, all scopes are active — skip per-scope evaluation
+// If global triggered, nothing is skipped — done
 if (globalTriggered)
 {
-    foreach (var scope in scopes)
-    {
-        var name = scope.Attribute("Include")?.Value ?? "";
-        activeScopes.Add(name);
-        Console.WriteLine($"Scope '{name}': ACTIVE (global trigger)");
-    }
+    Console.WriteLine("All scopes will run (global trigger).");
 }
 else
 {
@@ -102,16 +97,14 @@ else
             shouldRun = true;
             reason = "RunAlways=CI";
         }
-
         // If no changed files info available (local dev), run everything
-        if (!shouldRun && !hasChangedFiles)
+        else if (!hasChangedFiles)
         {
             shouldRun = true;
             reason = "no changed files (safe fallback)";
         }
-
         // Check if any changed file matches trigger paths
-        if (!shouldRun && hasChangedFiles)
+        else
         {
             foreach (var changedFile in changedFiles)
             {
@@ -132,23 +125,29 @@ else
             }
         }
 
-        Console.WriteLine($"Scope '{name}': {(shouldRun ? "ACTIVE" : "INACTIVE")} ({reason})");
         if (shouldRun)
         {
-            activeScopes.Add(name);
+            Console.WriteLine($"Scope '{name}': RUN ({reason})");
+        }
+        else
+        {
+            skippedScopes.Add(name);
+            Console.WriteLine($"Scope '{name}': SKIP ({reason})");
         }
     }
 }
 
-var result = activeScopes.Count > 0 ? string.Join(";", activeScopes) : "__none__";
+var result = skippedScopes.Count == scopes.Count ? "__all__"
+    : skippedScopes.Count > 0 ? string.Join(";", skippedScopes)
+    : "";
 
 // Set Azure DevOps pipeline variable if running in CI
 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BUILD_BUILDNUMBER")))
 {
-    Console.WriteLine($"##vso[task.setvariable variable=ActiveConditionalTestScopes]{result}");
+    Console.WriteLine($"##vso[task.setvariable variable=SkippedTestScopes]{result}");
 }
 
-Console.WriteLine($"Active conditional test scopes: {result}");
+Console.WriteLine($"Skipped test scopes: {(result == "" ? "(none)" : result)}");
 return 0;
 
 // --- Helpers ---
