@@ -60,8 +60,11 @@ jobs:
               // Format: |24-Hour Hit Count|7-Day Hit Count|1-Month Count|
               //         |---|---|---|
               //         |N|N|N|
-              const match = issue.body?.match(
-                /\|24-Hour Hit Count\|.*\r?\n\|[-| ]+\r?\n\|(\d+)\|(\d+)\|(\d+)\|/);
+              // Use the *last* table because infrastructure appends/updates the
+              // final occurrence when there are multiple tables in the body.
+              const matches = [...(issue.body?.matchAll(
+                /\|24-Hour Hit Count\|.*\r?\n\|[-| ]+\r?\n\|(\d+)\|(\d+)\|(\d+)\|/g) ?? [])];
+              const match = matches.length ? matches[matches.length - 1] : null;
               if (!match) {
                 console.log(`  #${issue.number}: no hit count table found`);
                 continue;
