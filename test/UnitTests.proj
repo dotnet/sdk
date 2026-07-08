@@ -120,6 +120,7 @@
 
   <!-- Remove test projects for inactive conditional test scopes (defined in ConditionalTests.props).
        ActiveConditionalTestScopes is set by scripts/EvaluateConditionalTestScopes.cs in CI.
+       When the script runs but no scopes are active, it outputs "__none__" so this Target still fires.
        When empty (local dev or script failure), the target is skipped and all tests run. -->
   <Target Name="RemoveInactiveConditionalTestProjects" BeforeTargets="CoreTest" Condition="'$(ActiveConditionalTestScopes)' != ''">
     <ItemGroup>

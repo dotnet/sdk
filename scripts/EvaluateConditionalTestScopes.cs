@@ -81,7 +81,7 @@ foreach (var scope in scopes)
         activeScopes.Add(name);
 }
 
-var result = string.Join(";", activeScopes);
+var result = activeScopes.Count > 0 ? string.Join(";", activeScopes) : "__none__";
 
 // Set Azure DevOps pipeline variable if running in CI
 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BUILD_BUILDNUMBER")))
