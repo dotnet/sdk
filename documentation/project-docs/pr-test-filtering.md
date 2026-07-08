@@ -169,6 +169,10 @@ also trigger its tests. For example:
   `src/Cli/Microsoft.DotNet.Cli.Definitions/**`.
 - Shared infrastructure or utility projects that multiple features depend on may need to
   appear in multiple scopes' trigger paths.
+- Test assets (e.g. `test/TestAssets/TestPackages/`) that a test suite consumes at
+  runtime should also be included. These are easy to overlook because they are not
+  referenced via `ProjectReference`, but changes to them can cause test failures just
+  the same.
 
 Use judgment here. If a feature has complex or far-reaching dependencies that make it
 difficult to define a reliable set of trigger paths, it may not be a good candidate for
