@@ -24,7 +24,7 @@ Choosing the shell-profile option in the walkthrough is what corresponds to maki
     eval "$('/home/user/.local/share/dotnetup/dotnetup' print-env-script --shell bash)"
   ```
 
-If the user already has a saved path preference, or if the command is non-interactive / uses an explicit `--install-path`, the walkthrough prompt is skipped and dotnetup uses the existing configuration or the explicit path directly. If shell auto-detection is wrong or unavailable, run `dotnetup init --shell bash|zsh|pwsh` (or `defaultinstall` / `print-env-script` with `--shell`) before installing.
+If the user already has a saved path preference, or if the command is non-interactive / uses an explicit `--install-path`, the walkthrough prompt is skipped and dotnetup uses the existing configuration or the explicit path directly. If shell auto-detection is wrong or unavailable, run `dotnetup init --shell bash|zsh|fish|pwsh` (or `defaultinstall` / `print-env-script` with `--shell`) before installing.
 
 ### 2. `dotnetup defaultinstall`
 
@@ -54,6 +54,7 @@ dotnetup defaultinstall system
 |-------|---------------|-----------|
 | **bash** | `~/.bashrc` (always) + the first existing of `~/.bash_profile` / `~/.profile` (creates `~/.profile` if neither exists) | `.bashrc` covers Linux terminals (non-login shells). The login profile covers macOS Terminal and SSH sessions. We never create `~/.bash_profile` to avoid shadowing an existing `~/.profile`. |
 | **zsh** | `$ZDOTDIR/.zshrc` when `ZDOTDIR` is set; otherwise `~/.zshrc` (created if needed) | Covers all interactive zsh sessions. `~/.zshenv` is avoided because on macOS, `/etc/zprofile` runs `path_helper` which resets PATH after `.zshenv` loads. |
+| **fish** | `$XDG_CONFIG_HOME/fish/conf.d/dotnetup.fish` when `XDG_CONFIG_HOME` is set; otherwise `~/.config/fish/conf.d/dotnetup.fish` (creates directory and file if needed) | fish sources every `conf.d/*.fish` snippet before `config.fish` for all interactive sessions, and a dedicated snippet file is the idiomatic way for tools to install configuration. |
 | **pwsh** (Unix) | `~/.config/powershell/profile.ps1` (creates directory and file if needed) | Standard PowerShell profile path on Unix. Targets the `CurrentUserAllHosts` slot so the entry applies to every host (terminal, VS Code, embedded). |
 | **pwsh** (Windows) | `<Documents>\WindowsPowerShell\profile.ps1` and `<Documents>\PowerShell\profile.ps1` -- both flavors are written unconditionally (creates directories and files if needed). `<Documents>` honors OneDrive Known Folder redirection via `Environment.GetFolderPath(MyDocuments)`. | Windows PowerShell 5.1 ships in-box and PowerShell 7+ (pwsh) installs separately, with disjoint profile folders. We write `profile.ps1` (`CurrentUserAllHosts`) for both flavors so the configuration is future-proof: if pwsh is installed later, dotnet is already wired up. `profile.ps1` is a standard PowerShell file; creating it for a not-yet-installed flavor is harmless. |
 
@@ -69,6 +70,15 @@ Each profile file gets a dotnetup-managed block with explicit begin/end markers:
 if [ -x '/path/to/dotnetup' ]; then
     eval "$('/path/to/dotnetup' print-env-script --shell bash)"
 fi
+# dotnetup: end
+```
+
+**Fish:**
+```fish
+# dotnetup: begin
+if test -x '/path/to/dotnetup'
+    '/path/to/dotnetup' print-env-script --shell fish | source
+end
 # dotnetup: end
 ```
 
@@ -113,7 +123,7 @@ dotnetup print-env-script [--shell <shell>] [--dotnet-install-path <path>]
 ### Options
 
 - `--shell` / `-s`: The target shell for which to generate the environment script
-  - Supported values: `bash`, `zsh`, `pwsh`
+  - Supported values: `bash`, `zsh`, `fish`, `pwsh`
   - The supported shell values are based on what `nvm` and `rustup` support today.
   - Optional: If not specified, automatically detects the current shell from the `$SHELL` environment variable
   - On Windows, defaults to PowerShell (`pwsh`)
@@ -162,6 +172,14 @@ hash -d dotnet 2>/dev/null
 hash -d dotnetup 2>/dev/null
 ```
 
+**Fish Example:**
+```fish
+# This fish script configures the environment for .NET installed at /home/user/.local/share/dotnet
+
+set -gx DOTNET_ROOT '/home/user/.local/share/dotnet'
+fish_add_path --global --move --path '/home/user/.local/share/dotnetup' '/home/user/.local/share/dotnet'
+```
+
 **PowerShell Example:**
 ```powershell
 # This PowerShell script configures the environment for .NET installed at /home/user/.local/share/dotnet
@@ -181,6 +199,7 @@ When `--shell` is not specified, the command automatically detects the current s
 
 All installation paths are properly escaped to prevent shell injection vulnerabilities:
 - **Bash/Zsh**: Uses single quotes with `'\''` escaping for embedded single quotes
+- **Fish**: Uses single quotes with `\'` for embedded single quotes
 - **PowerShell**: Uses single quotes with `''` escaping for embedded single quotes
 
 This ensures that paths containing special characters, spaces, or shell metacharacters are handled safely.
@@ -205,7 +224,7 @@ public interface IEnvShellProvider
 }
 ```
 
-**Implementations**: `BashEnvShellProvider`, `ZshEnvShellProvider`, `PowerShellEnvShellProvider`
+**Implementations**: `BashEnvShellProvider`, `ZshEnvShellProvider`, `FishEnvShellProvider`, `PowerShellEnvShellProvider`
 
 ### ShellDetection
 
@@ -222,7 +241,7 @@ public interface IEnvShellProvider
 ## Future Work
 
 1. **System-wide configuration on Unix**: Writing to system-wide locations like `/etc/profile.d/` for admin installs is not yet supported.
-2. **Additional shells**: Support for fish, tcsh, and other shells.
+2. **Additional shells**: Support for tcsh and other shells.
 3. **Environment validation**: Commands to verify that the environment is correctly configured.
 
 ## Related Issues
