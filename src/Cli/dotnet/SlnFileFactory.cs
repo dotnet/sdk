@@ -129,7 +129,7 @@ public static partial class SlnFileFactory
         }
 
         IEnumerable<SolutionProjectModel> projects = filteredSolutionProjectPaths
-            .Select(path => path.Replace('\\', Path.DirectorySeparatorChar))
+            .Select(path => SlnfFileHelper.NormalizePathSeparatorsToOS(path))
             .Select(path => Uri.UnescapeDataString(path))
             .Select(path => originalSolution.FindProject(path) ?? throw new GracefulException(
                     CliStrings.ProjectNotFoundInTheSolution,
@@ -147,7 +147,7 @@ public static partial class SlnFileFactory
         return filteredSolution;
     }
 
-    [GeneratedRegex(@"\\\\|\\(?![""\\\/bfnrt]|u[0-9a-fA-F]{4})")]
+    [GeneratedRegex(@"\\\\|\\(?!"")")]
     private static partial Regex GetInvalidJsonBackslashRegex();
 
     /// <summary>
@@ -156,10 +156,10 @@ public static partial class SlnFileFactory
     /// </summary>
     private static string FixInvalidJsonBackslashes(string json)
     {
-        // Replace any backslash that is NOT part of a valid JSON escape sequence with a forward slash.
-        // Valid JSON escape sequences: \" \\ \/ \b \f \n \r \t \uXXXX
-        // We first match \\ (valid double-backslash) to skip it, then match any other backslash
-        // that isn't followed by a valid escape character.
+        // Replace any backslash that is not part of a JSON string delimiter escape (\" ) with a forward slash.
+        // We first match \\ (valid double-backslash) to preserve it, then replace any remaining single
+        // backslash (including those that look like JSON escapes: \b, \f, \n, \r, \t, \uXXXX) with /,
+        // since in a .slnf these are always Windows path separators, not control characters.
         return GetInvalidJsonBackslashRegex().Replace(json, match =>
             match.Value.Length == 2 ? match.Value : "/");
     }
