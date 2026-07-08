@@ -132,17 +132,18 @@ stages:
 
     - template: /eng/build-pr.yml
       parameters:
-        agentOs: Ubuntu_22_04
+        agentOs: AzureLinux_3
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: 'ubuntu-22.04'
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals build.azurelinux.3.amd64.open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2204.amd64
+            demands: ImageOverride -equals build.azurelinux.3.amd64
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: ubuntu.2204.amd64.open
+          helixTargetQueue: azurelinux.3.amd64.open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: Ubuntu.2204.Amd64
+          helixTargetQueue: AzureLinux.3.Amd64
         strategy:
           matrix:
             Build_Release:
