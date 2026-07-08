@@ -69,12 +69,12 @@ internal static class ShellProviderHelpers
     }
 
     internal static string BuildFishActivationCommand(string dotnetupPath, string shellName, string flags)
-        => $"{BuildPosixPrintEnvCommand(dotnetupPath, shellName, flags)} | source";
+        => $"{BuildFishPrintEnvCommand(dotnetupPath, shellName, flags)} | source";
 
     internal static string BuildFishProfileEntry(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapeFishPath(dotnetupPath);
-        var command = BuildPosixPrintEnvCommand(dotnetupPath, shellName, flags);
+        var command = BuildFishPrintEnvCommand(dotnetupPath, shellName, flags);
 
         return $$"""
             if test -x '{{escapedPath}}'
@@ -106,6 +106,12 @@ internal static class ShellProviderHelpers
     private static string BuildPosixPrintEnvCommand(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapePosixPath(dotnetupPath);
+        return AppendArguments($"'{escapedPath}' print-env-script --shell {shellName}", flags);
+    }
+
+    private static string BuildFishPrintEnvCommand(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapeFishPath(dotnetupPath);
         return AppendArguments($"'{escapedPath}' print-env-script --shell {shellName}", flags);
     }
 
