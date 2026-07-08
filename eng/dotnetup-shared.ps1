@@ -68,7 +68,15 @@ function Invoke-DotnetupNativeCommand([scriptblock]$Command) {
     $ErrorActionPreference = 'Continue'
     $PSNativeCommandUseErrorActionPreference = $false
     try {
-        & $Command
+        # Route the command's output to the host rather than this function's
+        # pipeline. This keeps dotnetup's progress and any error/diagnostic output
+        # visible (and preserved) in the build log, and -- critically -- prevents
+        # that output from being returned alongside the exit code. If it were
+        # captured, the caller would receive an object array (every stdout line
+        # plus the exit code) instead of a single integer, so an '-ne 0' check
+        # would always be truthy and a successful install (exit code 0) would be
+        # misreported as a failure.
+        & $Command | Out-Host
         return $LASTEXITCODE
     }
     catch {
