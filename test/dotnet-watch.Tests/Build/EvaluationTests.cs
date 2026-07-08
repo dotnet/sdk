@@ -219,7 +219,6 @@ public class EvaluationTests
             new("RCL/Code.cs"),
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.AssemblyInfo.cs", graphOnly: true),
-            new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.GlobalUsings.g.cs", graphOnly: true),
             new("RCL/Page1.razor"),
             new("RCL/Page1.razor.css"),
             new("RCL/Page2.cshtml"),
