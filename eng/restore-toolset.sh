@@ -149,9 +149,11 @@ function InstallDotNetSharedFrameworks {
 
   if ! ShouldUseCachedDotnetup "$dotnetup_exe"; then
     if ! AcquireDotnetup "$dotnetup_dir"; then
-      Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup; falling back to dotnet install script."
-      InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$arch" "${specs_to_install[@]}"
-      return
+      # On release/dnup we deliberately do NOT fall back to the dotnet-install
+      # script when dotnetup cannot be acquired or is broken. Failing loudly
+      # here is how CI detects that dotnetup is badly broken.
+      Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup."
+      ExitWithExitCode 1
     fi
   fi
 
@@ -167,8 +169,8 @@ function InstallDotNetSharedFrameworks {
   fi
 
   if [[ $lastexitcode != 0 ]]; then
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install shared frameworks (${specs_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode'); falling back to dotnet install script."
-    InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$arch" "${specs_to_install[@]}"
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install shared frameworks (${specs_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
+    ExitWithExitCode $lastexitcode
   fi
 }
 
