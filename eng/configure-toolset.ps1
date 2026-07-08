@@ -35,8 +35,11 @@ function InstallBootstrapSdkWithDotnetup() {
             Install-DotnetupFromAkaMs $dotnetupDir
         }
         catch {
-            Write-Host "Failed to acquire dotnetup: $($_.Exception.Message). Will fall back to standard dotnet-install script." -ForegroundColor Yellow
-            return
+            # On release/dnup we deliberately do NOT fall back to the standard
+            # dotnet-install script when dotnetup cannot be acquired or is broken.
+            # Failing loudly here is how CI detects that dotnetup is badly broken.
+            Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup: $($_.Exception.Message)."
+            ExitWithExitCode 1
         }
     }
 

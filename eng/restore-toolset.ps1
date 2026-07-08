@@ -241,9 +241,11 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$archite
             Install-DotnetupFromAkaMs $dotnetupDir
         }
         catch {
-            Write-Host "Failed to acquire dotnetup ($($_.Exception.Message)); falling back to dotnet install script." -ForegroundColor Yellow
-            InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
-            return
+            # On release/dnup we deliberately do NOT fall back to the dotnet-install
+            # script when dotnetup cannot be acquired or is broken. Failing loudly
+            # here is how CI detects that dotnetup is badly broken.
+            Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup: $($_.Exception.Message)."
+            ExitWithExitCode 1
         }
     }
 
@@ -251,8 +253,8 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$archite
     & $dotnetupExe runtime install @runtimeSpecsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false
 
     if ($lastExitCode -ne 0) {
-        Write-Host "Failed to install shared frameworks ($($runtimeSpecsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
-        InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install shared frameworks ($($runtimeSpecsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
+        ExitWithExitCode $lastExitCode
     }
 }
 
