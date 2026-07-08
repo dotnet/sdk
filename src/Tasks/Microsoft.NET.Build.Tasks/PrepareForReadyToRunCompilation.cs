@@ -202,6 +202,13 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
+                // The on-disk path of the R2R output that will be copied to the publish directory.
+                // For separately compiled images this matches the '--out' path passed to crossgen2 (which honors any
+                // subdirectory in RelativePath). For component assemblies of a composite image, crossgen2 emits them
+                // flat into the composite output directory using only their file names, so the publish source path must
+                // use just the file name while RelativePath continues to drive the final publish destination.
+                var outputR2RImagePublishPath = outputR2RImage;
+
                 if (eligibility.CompileSeparately)
                 {
                     // This TaskItem is the IL->R2R entry, for an input assembly that needs to be compiled into a R2R image. This will be used as
@@ -219,17 +226,19 @@ namespace Microsoft.NET.Build.Tasks
                 else if (eligibility.CompileUnrootedIntoCompositeImage)
                 {
                     r2rCompositeUnrootedInput.Add(file);
+                    outputR2RImagePublishPath = Path.Combine(OutputPath, Path.GetFileName(outputR2RImageRelativePath));
                 }
                 else if (eligibility.CompileIntoCompositeImage)
                 {
                     r2rCompositeInputList.Add(file);
+                    outputR2RImagePublishPath = Path.Combine(OutputPath, Path.GetFileName(outputR2RImageRelativePath));
                 }
 
                 // This TaskItem corresponds to the output R2R image. It is equivalent to the input TaskItem, only the ItemSpec for it points to the new path
                 // for the newly created R2R image
                 TaskItem r2rFileToPublish = new(file)
                 {
-                    ItemSpec = outputR2RImage
+                    ItemSpec = outputR2RImagePublishPath
                 };
                 r2rFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                 r2rFilesPublishList.Add(r2rFileToPublish);

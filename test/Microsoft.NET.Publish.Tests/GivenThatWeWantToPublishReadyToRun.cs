@@ -231,6 +231,59 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        void It_can_publish_readytorun_composite_with_subdirectory_relative_path(string targetFramework)
+        {
+            // Regression test for https://github.com/dotnet/runtime/issues/79902
+            // When a target rewrites the RelativePath of the published assemblies to include a subdirectory,
+            // composite ReadyToRun publishing used to fail because the SDK looked for the crossgen2 component
+            // output under that subdirectory even though crossgen2 emits the components flat into the composite
+            // output directory.
+            var projectName = "Crossgen2SubdirApp";
+
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                projectName,
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.AdditionalProperties["PublishReadyToRunUseCrossgen2"] = "True";
+            testProject.AdditionalProperties["PublishReadyToRunComposite"] = "True";
+            testProject.SelfContained = "True";
+
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var target = new XElement(ns + "Target",
+                        new XAttribute("Name", "PublishAssembliesToSubdirectory"),
+                        new XAttribute("BeforeTargets", "CreateReadyToRunImages"),
+                        new XAttribute("AfterTargets", "ComputeResolvedFilesToPublishList"),
+                        new XElement(ns + "ItemGroup",
+                            new XElement(ns + "ResolvedFileToPublish",
+                                new XAttribute("Update", "@(ResolvedFileToPublish)"),
+                                new XAttribute("Condition", "'%(Extension)' == '.dll'"),
+                                new XAttribute("RelativePath", "subdir/%(RelativePath)"))));
+                    project.Root.Add(target);
+                });
+
+            var publishCommand = new PublishCommand(testProjectInstance);
+            publishCommand.Execute().Should().Pass();
+
+            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
+                targetFramework,
+                "Debug",
+                testProject.RuntimeIdentifier);
+
+            var subdirectory = new DirectoryInfo(Path.Combine(publishDirectory.FullName, "subdir"));
+            subdirectory.Should().HaveFile($"{projectName}.dll");
+            subdirectory.Should().HaveFile("ClassLib.dll");
+
+            DoesImageHaveR2RInfo(Path.Combine(subdirectory.FullName, $"{projectName}.dll")).Should().BeTrue();
+            DoesImageHaveR2RInfo(Path.Combine(subdirectory.FullName, "ClassLib.dll")).Should().BeTrue();
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("net6.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_supports_libraries_when_using_crossgen2(string targetFramework)
