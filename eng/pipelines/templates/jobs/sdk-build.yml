@@ -144,7 +144,7 @@ jobs:
       # changed files and build context. Sets the SkippedTestScopes pipeline variable.
       # continueOnError: if evaluation fails, the variable remains empty and all tests run.
       - script: $(Build.SourcesDirectory)/.dotnet/dotnet run $(Build.SourcesDirectory)/scripts/EvaluateConditionalTestScopes.cs --
-            --props-file "$(Build.SourcesDirectory)/test/ConditionalTests.props"
+            --repo-root "$(Build.SourcesDirectory)"
             --target-branch "$(System.PullRequest.TargetBranch)"
             --build-reason "$(Build.Reason)"
         displayName: 🟣 Evaluate Conditional Test Scopes

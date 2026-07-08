@@ -8,7 +8,7 @@
 // Reads test/ConditionalTests.props and outputs a semicolon-separated list of skipped scope names.
 //
 // Usage:
-//   dotnet run EvaluateConditionalTestScopes.cs -- --props-file <path> [--target-branch <branch>] [--build-reason <reason>]
+//   dotnet run EvaluateConditionalTestScopes.cs -- --repo-root <path> [--target-branch <branch>] [--build-reason <reason>]
 //
 // When --target-branch is not provided, no scopes are skipped (safe default for local dev).
 // Changed files are determined via `git diff --name-only origin/<target-branch>...HEAD`.
@@ -19,15 +19,21 @@ using System.Xml.Linq;
 
 var targetBranch = GetArg("--target-branch");
 var buildReason = GetArg("--build-reason") ?? "";
-var propsFile = GetArg("--props-file");
+var repoRoot = GetArg("--repo-root");
 
-if (string.IsNullOrEmpty(propsFile) || !File.Exists(propsFile))
+if (string.IsNullOrEmpty(repoRoot) || !Directory.Exists(repoRoot))
 {
-    Console.Error.WriteLine("Error: --props-file is required and must point to an existing ConditionalTests.props.");
+    Console.Error.WriteLine("Error: --repo-root is required and must point to an existing directory.");
     return 1;
 }
-propsFile = Path.GetFullPath(propsFile);
-var repoRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(propsFile)!, ".."));
+repoRoot = Path.GetFullPath(repoRoot);
+
+var propsFile = Path.Combine(repoRoot, "test", "ConditionalTests.props");
+if (!File.Exists(propsFile))
+{
+    Console.Error.WriteLine($"Error: ConditionalTests.props not found at expected location: {propsFile}");
+    return 1;
+}
 
 // Parse ConditionalTests.props
 var doc = XDocument.Load(propsFile);
