@@ -37,6 +37,9 @@ var scopes = doc.Descendants("ConditionalTestScope").ToList();
 var globalTriggerPaths = (doc.Descendants("GlobalTriggerPaths").FirstOrDefault()?.Value ?? "")
     .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+// Validate configuration
+ValidateConfiguration(repoRoot, scopes, globalTriggerPaths);
+
 bool isCI = buildReason is not "" and not "PullRequest";
 
 // Get changed files via git diff
@@ -207,4 +210,72 @@ static string? GetArg(string name)
         }
     }
     return null;
+}
+
+static void ValidateConfiguration(string repoRoot, List<XElement> scopes, string[] globalTriggerPaths)
+{
+    var warnings = new List<string>();
+
+    foreach (var scope in scopes)
+    {
+        var scopeName = scope.Attribute("Include")?.Value;
+        if (string.IsNullOrWhiteSpace(scopeName))
+        {
+            warnings.Add("ConditionalTestScope is missing a name (Include attribute).");
+            continue;
+        }
+
+        var triggerPaths = (scope.Element("TriggerPaths")?.Value ?? "")
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var testProjects = (scope.Element("TestProjects")?.Value ?? "")
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var pattern in triggerPaths)
+        {
+            ValidatePatternBaseDir(repoRoot, pattern, $"scope '{scopeName}' TriggerPaths", warnings);
+        }
+        foreach (var pattern in testProjects)
+        {
+            ValidatePatternBaseDir(repoRoot, pattern, $"scope '{scopeName}' TestProjects", warnings);
+        }
+    }
+
+    foreach (var pattern in globalTriggerPaths)
+    {
+        ValidatePatternBaseDir(repoRoot, pattern, "GlobalTriggerPaths", warnings);
+    }
+
+    foreach (var warning in warnings)
+    {
+        Console.WriteLine($"##[warning]{warning}");
+    }
+}
+
+static void ValidatePatternBaseDir(string repoRoot, string pattern, string context, List<string> warnings)
+{
+    var normalized = pattern.Replace('\\', '/');
+    var firstWildcard = normalized.IndexOfAny(['*', '?']);
+    if (firstWildcard < 0)
+    {
+        // No glob — treat as literal path
+        var fullPath = Path.Combine(repoRoot, normalized.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
+        {
+            warnings.Add($"{context}: '{pattern}' does not exist in the repo.");
+        }
+        return;
+    }
+
+    // Get the directory portion before the first wildcard
+    var baseDir = normalized[..firstWildcard].TrimEnd('/');
+    if (string.IsNullOrEmpty(baseDir))
+    {
+        return;
+    }
+
+    var fullBaseDir = Path.Combine(repoRoot, baseDir.Replace('/', Path.DirectorySeparatorChar));
+    if (!Directory.Exists(fullBaseDir))
+    {
+        warnings.Add($"{context}: '{pattern}' — base directory '{baseDir}' does not exist in the repo.");
+    }
 }

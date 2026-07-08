@@ -1,8 +1,0 @@
-<Project Sdk="MSTest.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
-  </PropertyGroup>
-
-</Project>
