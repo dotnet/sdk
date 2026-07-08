@@ -20,6 +20,11 @@ namespace Microsoft.NET.Build.Tests
         [CoreMSBuildOnlyFact]
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp2.2"))
+            {
+                return;
+            }
+
             TestProject toolProject = new TestProject()
             {
                 Name = "TestTool",
@@ -39,6 +44,11 @@ namespace Microsoft.NET.Build.Tests
         [CoreMSBuildOnlyFact]
         public void It_handles_conflicts_when_creating_a_tool_deps_file()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp2.2"))
+            {
+                return;
+            }
+
             TestProject toolProject = new TestProject()
             {
                 Name = "DependencyContextTool",

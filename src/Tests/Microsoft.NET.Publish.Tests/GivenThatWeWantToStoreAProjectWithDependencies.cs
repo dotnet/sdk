@@ -49,7 +49,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.0")]
         public void compose_dependencies()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -84,7 +84,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.0")]
         public void compose_dependencies_noopt()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -119,7 +119,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.0")]
         public void compose_multifile()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
