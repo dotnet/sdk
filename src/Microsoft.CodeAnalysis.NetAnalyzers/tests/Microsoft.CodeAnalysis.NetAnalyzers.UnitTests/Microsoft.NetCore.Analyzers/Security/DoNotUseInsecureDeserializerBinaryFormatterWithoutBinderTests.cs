@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureDeserializerBinaryFormatterWithoutBinder,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,7 +14,8 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotUseInsecureDeserializerBinaryFormatterWithoutBinderTests
     {
         private static readonly DiagnosticDescriptor BinderNotSetRule = DoNotUseInsecureDeserializerBinaryFormatterWithoutBinder.RealBinderDefinitelyNotSetDescriptor;
@@ -59,10 +59,10 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -98,7 +98,7 @@ public class ExampleClass
                 GetCSharpResultAt(27, 33, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -129,7 +129,7 @@ End Class",
                 GetBasicResultAt(22, 26, BinderNotSetRule, "Function BinaryFormatter.Deserialize(serializationStream As Stream) As Object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -186,7 +186,7 @@ public class ExampleClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Solution_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -235,7 +235,7 @@ Public Class ExampleClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -272,7 +272,7 @@ public class ExampleClass
             GetCSharpResultAt(28, 33, BinderMaybeNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_VB_Violation_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -304,7 +304,7 @@ End Class",
                 GetBasicResultAt(23, 26, BinderMaybeNotSetRule, "Function BinaryFormatter.Deserialize(serializationStream As Stream) As Object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -368,7 +368,7 @@ public class ExampleClass
                 GetCSharpResultAt(55, 32, BinderMaybeNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_VB_Violation_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -422,7 +422,7 @@ End Class",
                 GetBasicResultAt(45, 26, BinderMaybeNotSetRule, "Function BinaryFormatter.Deserialize(serializationStream As Stream) As Object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_CSharp_Solution_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -488,7 +488,7 @@ public class ExampleClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_VB_Solution_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -544,7 +544,7 @@ Public Class ExampleClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -565,7 +565,7 @@ namespace Blah
             GetCSharpResultAt(12, 20, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_OptionalParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -587,7 +587,7 @@ namespace Blah
         }
 
         // Ideally, we'd detect that formatter.Binder is always null.
-        [Fact]
+        [TestMethod]
         public async Task DeserializeWithInstanceField_Diagnostic_NotIdealAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -609,7 +609,7 @@ namespace Blah
             GetCSharpResultAt(13, 20, BinderMaybeNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/1851")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/1851")]
         public async Task DeserializeWithInstanceField_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -632,7 +632,7 @@ namespace Blah
             // Ideally, we'd see that this.formatter.Binder is set and *not* generate a diagnostic.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_BinderMaybeSet_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -659,7 +659,7 @@ namespace Blah
             GetCSharpResultAt(18, 20, BinderMaybeNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_BinderSet_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -681,7 +681,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TwoDeserializersOneBinderOnFirst_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -711,7 +711,7 @@ namespace Blah
                 GetCSharpResultAt(20, 24, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TwoDeserializersOneBinderOnSecond_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -740,7 +740,7 @@ namespace Blah
 
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TwoDeserializersNoBinder_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -770,7 +770,7 @@ namespace Blah
 
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinderSetInline_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -790,7 +790,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serialize_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -812,7 +812,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_LoopBinderSetAfter_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -838,7 +838,7 @@ namespace Blah
                 GetCSharpResultAt(15, 30, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_LoopBinderSetBefore_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -863,7 +863,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_LoopBinderSetBeforeMaybe_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -892,7 +892,7 @@ namespace Blah
                 GetCSharpResultAt(18, 30, BinderMaybeNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_InvokedAsDelegate_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -916,7 +916,7 @@ namespace Blah
                 GetCSharpResultAt(15, 20, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_BranchInvokedAsDelegate_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -951,10 +951,10 @@ namespace Blah
                     GetCSharpResultAt(21, 20, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream, HeaderHandler handler)"),
                     GetCSharpResultAt(21, 20, BinderNotSetRule, "object BinaryFormatter.UnsafeDeserialize(Stream serializationStream, HeaderHandler handler)"),
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_BranchInvokedAsDelegate_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -984,7 +984,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_Property_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1014,7 +1014,7 @@ namespace Blah
                 GetCSharpResultAt(20, 38, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_Constructor_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1038,7 +1038,7 @@ namespace Blah
                 GetCSharpResultAt(15, 34, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_FieldInitializer_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1058,7 +1058,7 @@ namespace Blah
                 GetCSharpResultAt(12, 39, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_InConstructorAndMethod_DiagnosticsAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1104,7 +1104,7 @@ class Derived : Base
             GetCSharpResultAt(34, 16, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinderVariableSetInAllBranches_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1131,7 +1131,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinderParameter_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1155,7 +1155,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinderNotNullInsideIf_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1183,7 +1183,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SomeOtherSerializer_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1207,7 +1207,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OtherMethodInstantiatesWithoutBinder_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1235,7 +1235,7 @@ namespace Blah
             GetCSharpResultAt(14, 20, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OtherMethodInstantiatesWithBinderMaybe_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1266,7 +1266,7 @@ namespace Blah
             GetCSharpResultAt(14, 20, BinderMaybeNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OtherMethodInstantiatesWithBinder_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1292,7 +1292,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OtherMethodDeserializesWithoutBinder_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1322,7 +1322,7 @@ namespace Blah
             // Ideally we'd see Binder is never set, rather than maybe not set.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OtherMethodDeserializesWithoutBinderUsingDelegate_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1352,7 +1352,7 @@ namespace Blah
             // Ideally we'd be able to detect this, but it's kinda a weird case.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OtherMethodDeserializesWithoutBinderUsingBinaryFormatter_DiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1382,13 +1382,13 @@ namespace Blah
             GetCSharpResultAt(21, 20, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = DeserializeBookRecord")]
-        [InlineData(@"dotnet_code_quality.CA2301.excluded_symbol_names = DeserializeBookRecord
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = DeserializeBookRecord")]
+        [DataRow(@"dotnet_code_quality.CA2301.excluded_symbol_names = DeserializeBookRecord
                       dotnet_code_quality.CA2302.excluded_symbol_names = DeserializeBookRecord")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = DeserializeBookRecord")]
-        [InlineData(@"dotnet_code_quality.CA2301.excluded_symbol_names = DeserializeBook*
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = DeserializeBookRecord")]
+        [DataRow(@"dotnet_code_quality.CA2301.excluded_symbol_names = DeserializeBook*
                       dotnet_code_quality.CA2302.excluded_symbol_names = DeserializeBook*")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
@@ -1444,10 +1444,10 @@ public class ExampleClass
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(29, 33, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream)"));
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_SharedBinderInstance_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"
@@ -1472,7 +1472,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_SharedBinderInstanceIntermediate_NoDiagnosticAsync()
         {
             await VerifyCSharpWithMyBinderDefinedAsync(@"

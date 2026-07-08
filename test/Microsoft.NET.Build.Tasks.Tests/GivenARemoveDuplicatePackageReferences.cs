@@ -7,6 +7,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenARemoveDuplicatePackageReferenceTask
     {
         private static ITaskItem[] GetPackageRefItems(List<PackageIdentity> packages)
@@ -14,7 +15,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 itemSpec: kvp.Id,
                 metadata: new Dictionary<string, string> { { "Version", kvp.Version.ToString() } })).ToArray();
 
-        [Fact]
+        [TestMethod]
         public void RemoveDuplicatePackageReference()
         {
             var knownpackage = new List<PackageIdentity>();
@@ -30,7 +31,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var packagelistWithoutDups = new HashSet<PackageIdentity>(knownpackage);
 
-            Assert.True(knownpackage.Count() > packagelistWithoutDups.Count());
+            Assert.IsGreaterThan(packagelistWithoutDups.Count(), knownpackage.Count());
 
             // execute task
             var task = new RemoveDuplicatePackageReferences()

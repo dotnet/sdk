@@ -1,13 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.ApiCompat;
 
 namespace Microsoft.DotNet.ApiCompatibility.Tests
 {
+    [TestClass]
     public class RegexStringTransformerTests
     {
-        [Fact]
+        [TestMethod]
         public void Transform_CaptureGroupPatternDoesNotMatchInput_ReturnsInput()
         {
             const string CaptureGroupPattern = "(abc)def";
@@ -16,10 +17,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             string output = new RegexStringTransformer(CaptureGroupPattern, ReplacementPattern).Transform(Input);
 
-            Assert.Equal(Input, output);
+            Assert.AreEqual(Input, output);
         }
 
-        [Fact]
+        [TestMethod]
         public void Transform_ReplacementPatternWithoutCaptureGroups_ReturnsReplacementPattern()
         {
             const string CaptureGroupPattern = "(abc)d*";
@@ -28,10 +29,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             string output = new RegexStringTransformer(CaptureGroupPattern, ReplacementPattern).Transform(Input);
 
-            Assert.Equal(ReplacementPattern, output);
+            Assert.AreEqual(ReplacementPattern, output);
         }
 
-        [Fact]
+        [TestMethod]
         public void Transform_ReplacementPatternWithTooManyReplacementMarkers_ReturnOutputWithoutTransformedReplacementMarkers()
         {
             const string CaptureGroupPattern = "(abc)(def)ghi";
@@ -40,10 +41,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             string output = new RegexStringTransformer(CaptureGroupPattern, ReplacementPattern).Transform(Input);
 
-            Assert.Equal("1:abc, 2:def, 3:$3", output);
+            Assert.AreEqual("1:abc, 2:def, 3:$3", output);
         }
 
-        [Fact]
+        [TestMethod]
         public void Transform_SameNumberOfGroupsAndMarkers_ReturnsExpected()
         {
             const string CaptureGroupPattern = @".+\\(.+)\\(.+)";
@@ -52,10 +53,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             string output = new RegexStringTransformer(CaptureGroupPattern, ReplacementPattern).Transform(Input);
 
-            Assert.Equal("lib/net7.0-android/System.Linq.dll", output);
+            Assert.AreEqual("lib/net7.0-android/System.Linq.dll", output);
         }
 
-        [Fact]
+        [TestMethod]
         public void Transform_MultiplePatterns_ReturnsExpected()
         {
             var patterns = new (string, string)[]
@@ -69,7 +70,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             string output = new RegexStringTransformer(patterns).Transform(Input);
 
-            Assert.Equal("runtimes/android/lib/net7.0/System.Linq.dll", output);
+            Assert.AreEqual("runtimes/android/lib/net7.0/System.Linq.dll", output);
         }
     }
 }

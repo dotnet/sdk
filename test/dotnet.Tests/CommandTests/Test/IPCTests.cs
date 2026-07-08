@@ -8,12 +8,15 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class IPCTests
 {
-    [Fact]
+    public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
     public async Task SingleConnectionNamedPipeServer_MultipleConnection_Fails()
     {
-        var cancellationToken = TestContext.Current.CancellationToken;
+        var cancellationToken = TestContext.CancellationToken;
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
         List<NamedPipeServer> openedPipes = [];
@@ -49,9 +52,9 @@ public class IPCTests
         await namedPipeClient1.ConnectAsync(cancellationToken);
         waitException.Wait(cancellationToken);
 
-        var openedPipe = Assert.Single(openedPipes);
-        var exception = Assert.Single(exceptions);
-        Assert.Equal(typeof(IOException), exception.GetType());
+        var openedPipe = Assert.ContainsSingle(openedPipes);
+        var exception = Assert.ContainsSingle(exceptions);
+        Assert.AreEqual(typeof(IOException), exception.GetType());
         Assert.Contains("All pipe instances are busy.", exception.Message);
 
         await waitTask;
@@ -65,10 +68,10 @@ public class IPCTests
 
     // CAREFUL: This test produces random test cases.
     // So, flakiness in this test might be an indicator to a serious product bug.
-    [Fact]
+    [TestMethod]
     public async Task SingleConnectionNamedPipeServer_RequestReplySerialization_Succeeded()
     {
-        var cancellationToken = TestContext.Current.CancellationToken;
+        var cancellationToken = TestContext.CancellationToken;
         Queue<BaseMessage> receivedMessages = new();
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         NamedPipeClient namedPipeClient = new(pipeName);
@@ -118,10 +121,10 @@ public class IPCTests
         await clientConnected;
 
         await namedPipeClient.RequestReplyAsync<IntMessage, VoidResponse>(new IntMessage(10), cancellationToken);
-        Assert.Equal(new IntMessage(10), receivedMessages.Dequeue());
+        Assert.AreEqual(new IntMessage(10), receivedMessages.Dequeue());
 
         await namedPipeClient.RequestReplyAsync<LongMessage, VoidResponse>(new LongMessage(11), cancellationToken);
-        Assert.Equal(new LongMessage(11), receivedMessages.Dequeue());
+        Assert.AreEqual(new LongMessage(11), receivedMessages.Dequeue());
 
         for (int i = 0; i < 100; i++)
         {
@@ -148,15 +151,15 @@ public class IPCTests
         {
             string currentString = RandomString(length);
             await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), cancellationToken);
-            Assert.Single(receivedMessages);
-            Assert.Equal(new TextMessage(currentString), receivedMessages.Dequeue());
+            Assert.ContainsSingle(receivedMessages);
+            Assert.AreEqual(new TextMessage(currentString), receivedMessages.Dequeue());
         }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ConnectionNamedPipeServer_MultipleConnection_Succeeds()
     {
-        var cancellationToken = TestContext.Current.CancellationToken;
+        var cancellationToken = TestContext.CancellationToken;
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
         List<NamedPipeServer> pipes = [];
@@ -170,7 +173,7 @@ public class IPCTests
                 skipUnknownMessages: false));
         }
 
-        IOException exception = Assert.Throws<IOException>(() =>
+        IOException exception = Assert.ThrowsExactly<IOException>(() =>
              new NamedPipeServer(
                 pipeName,
                 (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
@@ -201,7 +204,7 @@ public class IPCTests
 
         await Task.WhenAll([.. waitConnectionTask]);
 
-        Assert.Equal(3, connectionCompleted);
+        Assert.AreEqual(3, connectionCompleted);
 
         foreach (NamedPipeClient namedPipeClient in connectedClients)
         {

@@ -6,6 +6,7 @@ using Moq;
 
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
+    [TestClass]
     public class GivenADotnetFirstTimeUseConfigurer
     {
         private Mock<IFirstTimeUseNoticeSentinel> _firstTimeUseNoticeSentinelMock;
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _pathAdderMock = new Mock<IEnvironmentPath>();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_print_the_first_time_use_notice_if_the_sentinel_exists()
         {
             _firstTimeUseNoticeSentinelMock.Setup(n => n.Exists()).Returns(true);
@@ -52,7 +53,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _reporterMock.Verify(r => r.Write(It.IsAny<string>()), Times.Never);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_prints_the_telemetry_if_the_sentinel_does_not_exist()
         {
             _firstTimeUseNoticeSentinelMock.Setup(n => n.Exists()).Returns(false);
@@ -79,7 +80,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _reporterMock.Verify(r => r.Write(It.IsAny<string>()), Times.Never);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_adds_the_tool_path_to_the_environment_if_the_tool_path_sentinel_does_not_exist()
         {
             _toolPathSentinelMock.Setup(s => s.Exists()).Returns(false);
@@ -106,7 +107,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _pathAdderMock.Verify(p => p.AddPackageExecutablePathToUserPath(), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_add_the_tool_path_to_the_environment_if_the_tool_path_sentinel_exists()
         {
             _toolPathSentinelMock.Setup(s => s.Exists()).Returns(true);
@@ -133,7 +134,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _pathAdderMock.Verify(p => p.AddPackageExecutablePathToUserPath(), Times.Never);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_generate_the_aspnet_https_development_certificate_if_the_sentinel_exists()
         {
             _aspNetCertificateSentinelMock.Setup(n => n.Exists()).Returns(true);
@@ -159,7 +160,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _aspNetCoreCertificateGeneratorMock.Verify(s => s.GenerateAspNetCoreDevelopmentCertificate(), Times.Never);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_generate_the_aspnet_https_development_certificate_when_the_user_has_set_the_DOTNET_GENERATE_ASPNET_CERTIFICATE_environment_variable()
         {
             _aspNetCertificateSentinelMock.Setup(n => n.Exists()).Returns(false);
@@ -185,7 +186,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _aspNetCoreCertificateGeneratorMock.Verify(s => s.GenerateAspNetCoreDevelopmentCertificate(), Times.Never);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_generates_the_aspnet_https_development_certificate_if_the_sentinel_does_not_exist()
         {
             _aspNetCertificateSentinelMock.Setup(n => n.Exists()).Returns(false);
@@ -212,7 +213,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _aspNetCoreCertificateGeneratorMock.Verify(s => s.GenerateAspNetCoreDevelopmentCertificate(), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_adds_the_tool_path_to_the_environment_if_addGlobalToolsToPath_is_enabled()
         {
             var dotnetFirstTimeUseConfigurer = new DotnetFirstTimeUseConfigurer(
@@ -236,7 +237,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _pathAdderMock.Verify(p => p.AddPackageExecutablePathToUserPath(), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_add_the_tool_path_to_the_environment_if_addGlobalToolsToPath_is_disabled()
         {
             var dotnetFirstTimeUseConfigurer = new DotnetFirstTimeUseConfigurer(

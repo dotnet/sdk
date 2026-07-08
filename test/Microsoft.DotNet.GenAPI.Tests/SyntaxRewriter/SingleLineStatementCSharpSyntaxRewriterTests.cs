@@ -1,13 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
 {
+    [TestClass]
     public class SingleLineStatementCSharpSyntaxRewriterTests : CSharpSyntaxRewriterTestBase
     {
-        [Fact]
+        [TestMethod]
         public void TestEmptyMethodBody()
         {
             Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
@@ -31,7 +32,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMethodBodyWithSingleStatement()
         {
             Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
@@ -57,7 +58,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestConstructorPostProcessing()
         {
             Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
@@ -81,7 +82,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMethodBodyWithSingleStatementInOneLine()
         {
             Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
@@ -105,7 +106,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPropertyPostProcessing()
         {
             Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
@@ -135,7 +136,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestOperatorPostProcessing()
         {
             Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,
@@ -161,7 +162,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestConversionOperatorPostProcessing()
         {
             Compare(SingleLineStatementCSharpSyntaxRewriter.Singleton,

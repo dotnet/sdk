@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private Func<string, bool>? _fileExistOverride;
         private Func<string, bool>? _directoryExistOverride;
 
-        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir)
+        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir, Func<string, string?>? getEnvironmentVariable = null)
         {
             string runtimeIdentifierChainPath = Path.Combine(dotnetRootPath, "sdk", sdkVersion, "NETCoreSdkRuntimeIdentifierChain.txt");
             string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
@@ -42,10 +42,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 workloadRootPaths = [ new(dotnetRootPath, true) ];
             }
 
-            var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
+            var packRootEnvironmentVariable = (getEnvironmentVariable ?? Environment.GetEnvironmentVariable)(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
             if (!string.IsNullOrEmpty(packRootEnvironmentVariable))
             {
-                workloadRootPaths = packRootEnvironmentVariable.Split(Path.PathSeparator).Select(path => new WorkloadRootPath(path, false)).Concat(workloadRootPaths).ToArray();
+                workloadRootPaths = packRootEnvironmentVariable!.Split(Path.PathSeparator).Select(path => new WorkloadRootPath(path, false)).Concat(workloadRootPaths).ToArray();
             }
 
             return new WorkloadResolver(manifestProvider, workloadRootPaths, currentRuntimeIdentifiers);

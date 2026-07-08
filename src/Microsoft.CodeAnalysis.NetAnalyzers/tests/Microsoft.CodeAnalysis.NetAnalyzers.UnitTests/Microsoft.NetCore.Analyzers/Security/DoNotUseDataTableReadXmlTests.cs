@@ -3,16 +3,16 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseDataTableReadXml,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseDataTableReadXmlTests
     {
-        [Fact]
+        [TestMethod]
         public async Task ReadXml_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -33,7 +33,7 @@ namespace Blah
                 GetCSharpResultAt(12, 13, "XmlReadMode DataTable.ReadXml(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DerivedReadXml_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -58,7 +58,7 @@ namespace Blah
                 GetCSharpResultAt(12, 13, "XmlReadMode DataTable.ReadXml(string fileName)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RejectChanges_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

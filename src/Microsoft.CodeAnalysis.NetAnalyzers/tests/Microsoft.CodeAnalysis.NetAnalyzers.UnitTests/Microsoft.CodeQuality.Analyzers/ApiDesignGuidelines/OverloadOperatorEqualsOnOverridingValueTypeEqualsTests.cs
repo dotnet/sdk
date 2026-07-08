@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -17,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public partial class OverloadOperatorEqualsOnOverridingValueTypeEqualsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2231NoWarningCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -43,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231NoEqualsOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCA2231CSharpResultAt(4, 19));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA2231NoEqualsOperatorButNotExternallyVisibleCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -87,7 +86,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231NoEqualsOperatorCSharpOutofScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -112,7 +111,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231CSharpInnerClassHasNoEqualsOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -138,7 +137,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCA2231CSharpResultAt(11, 23));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231HasEqualsOperatorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -164,7 +163,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231_CSharp_RefStruct_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -179,10 +178,10 @@ public ref struct S
 }
 ",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231NoWarningBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -196,7 +195,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231NoEqualsOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -211,7 +210,7 @@ End Structure
             GetCA2231BasicResultAt(4, 18));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA2231NoEqualsOperatorButNotExternallyVisibleBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -233,7 +232,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231NoEqualsOperatorBasicWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -253,7 +252,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231BasicInnerClassHasNoEqualsOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -275,7 +274,7 @@ End Structure
             GetCA2231BasicResultAt(9, 22));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231HasEqualsOperatorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
