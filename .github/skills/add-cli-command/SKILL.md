@@ -57,6 +57,12 @@ Everything above, plus:
    <Name>CommandParser.ConfigureCommand(rootCommand.<Name>Command);
    ```
 
+> **Native AOT:** a newly registered command already *runs* under Native AOT via the
+> managed fallback (the `dotnet-aot` host runs `dotnet.dll` through hostfxr), and its
+> parsing and `--help` reach the AOT CLI for free. Making the command execute
+> **in-process** in the native binary is separate, deliberate work — follow the
+> **add-dotnet-aot-command** skill when AOT support is required.
+
 ## Checklist
 
 - [ ] Option/command declared in `Definitions`, registered in its parent's constructor.
@@ -64,4 +70,5 @@ Everything above, plus:
 - [ ] Help description in `CommandDefinitionStrings.resx`; runtime message in `CliCommandStrings.resx`.
 - [ ] `.xlf` files regenerated via `/t:UpdateXlf` (not hand-edited), resx + xlf committed together.
 - [ ] No heavy dependency leaked into `Definitions`.
+- [ ] For in-process AOT execution, followed **add-dotnet-aot-command** (managed fallback applies otherwise).
 - [ ] Tests added/updated; Verify `*.verified.txt` snapshots promoted if CLI output changed.
