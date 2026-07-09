@@ -434,6 +434,48 @@ internal sealed class TestApplicationHandler
         }
     }
 
+    internal void OnAzureDevOpsLogReceived(AzureDevOpsLogMessage azureDevOpsLogMessage)
+    {
+        LogAzureDevOpsLog(azureDevOpsLogMessage);
+
+        // These messages carry verbatim Azure DevOps logging commands (e.g. ##[group] / ##[endgroup] / ##vso[...])
+        // that must reach the terminal unchanged so the AzDO agent can render them. They are informational and are
+        // not tied to a session, so - unlike the test-result handlers - we do not require a handshake and we are
+        // lenient about missing/empty content (we simply skip it) instead of failing the run.
+        if (!string.IsNullOrEmpty(azureDevOpsLogMessage.LogText))
+        {
+            _output.WriteMessage(azureDevOpsLogMessage.LogText);
+        }
+    }
+
+    internal void OnDisplayMessageReceived(DisplayMessage displayMessage)
+    {
+        LogDisplayMessage(displayMessage);
+
+        // Generic host diagnostics (hang/crash dump, retry summaries, extension/framework warnings and errors)
+        // forwarded outside of test results. They are informational and not tied to a session, so we do not require
+        // a handshake and we stay lenient about missing content.
+        if (string.IsNullOrEmpty(displayMessage.Text))
+        {
+            return;
+        }
+
+        switch (displayMessage.Level)
+        {
+            case DisplayMessageLevels.Warning:
+                _output.WriteWarningMessage(displayMessage.Text);
+                break;
+
+            case DisplayMessageLevels.Error:
+                _output.WriteErrorMessage(displayMessage.Text);
+                break;
+
+            default:
+                _output.WriteMessage(displayMessage.Text);
+                break;
+        }
+    }
+
     private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionStart(string sessionUid)
     {
         _ = _testSessionEventCountPerSessionUid.TryGetValue(sessionUid, out var count);
@@ -650,6 +692,37 @@ internal sealed class TestApplicationHandler
         logMessageBuilder.AppendLine($"TestSessionEvent.SessionType: {testSessionEvent.SessionType}");
         logMessageBuilder.AppendLine($"TestSessionEvent.SessionUid: {testSessionEvent.SessionUid}");
         logMessageBuilder.AppendLine($"TestSessionEvent.ExecutionId: {testSessionEvent.ExecutionId}");
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogAzureDevOpsLog(AzureDevOpsLogMessage azureDevOpsLogMessage)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.ExecutionId: {azureDevOpsLogMessage.ExecutionId}");
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.InstanceId: {azureDevOpsLogMessage.InstanceId}");
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.LogText: {azureDevOpsLogMessage.LogText}");
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogDisplayMessage(DisplayMessage displayMessage)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"DisplayMessage.ExecutionId: {displayMessage.ExecutionId}");
+        logMessageBuilder.AppendLine($"DisplayMessage.InstanceId: {displayMessage.InstanceId}");
+        logMessageBuilder.AppendLine($"DisplayMessage.Level: {displayMessage.Level}");
+        logMessageBuilder.AppendLine($"DisplayMessage.Text: {displayMessage.Text}");
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 }
