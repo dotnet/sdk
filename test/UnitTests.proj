@@ -122,13 +122,15 @@
        SkippedTestScopes is set by scripts/EvaluateConditionalTestScopes.cs in CI.
        When all scopes are skipped, it outputs "__all__" so all conditional projects are removed.
        When empty (local dev, script failure, or global trigger), the target is skipped and all tests run. -->
-  <Target Name="RemoveSkippedConditionalTestProjects" BeforeTargets="CoreTest" Condition="'$(SkippedTestScopes)' != ''">
+  <Target Name="RemoveSkippedConditionalTestProjects" BeforeTargets="CreateSDKCustomTestWorkItems" Condition="'$(SkippedTestScopes)' != ''">
     <ItemGroup>
       <SkippedTestProject Include="$(RepoRoot)%(ConditionalTestScope.TestProjects)"
                            Condition="'%(ConditionalTestScope.Mechanism)' == 'project' and ('$(SkippedTestScopes)' == '__all__' or $(SkippedTestScopes.Contains('%(ConditionalTestScope.Identity)')))" />
-      <SDKCustomTestProject Remove="@(SkippedTestProject)" />
+      <!-- MatchOnMetadata="FullPath" ensures removal works regardless of whether the
+           SDKCustomTestProject identity is a relative or absolute path. -->
+      <SDKCustomTestProject Remove="@(SkippedTestProject)" MatchOnMetadata="FullPath" />
     </ItemGroup>
-    <Message Importance="normal" Text="Conditional test filtering: removed %(SkippedTestProject.Filename) (scope skipped)" Condition="'@(SkippedTestProject)' != ''" />
+    <Message Importance="normal" Text="Conditional test filtering: removed %(SkippedTestProject.Filename) (scope skipped)" />
   </Target>
 
   <Import Project="test-runner\TestRunner.targets" />

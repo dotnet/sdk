@@ -24,15 +24,14 @@
        Metadata:
          Mechanism:    "project" = entire test project(s) excluded/included from Helix submission.
          TestProjects: (Mechanism=project) Glob patterns matching test .csproj files.
+                       Must be on a single line to support glob expansion.
          TriggerPaths: Semicolon-separated glob patterns. If ANY changed file matches, the scope runs.
          RunAlways:    Conditions under which the scope always runs regardless of changed files.
                        Supported values: CI (non-PR builds). -->
   <ItemGroup>
     <ConditionalTestScope Include="TemplateEngine">
       <Mechanism>project</Mechanism>
-      <TestProjects>
-        test/TemplateEngine/**/*.csproj
-      </TestProjects>
+      <TestProjects>test/TemplateEngine/**/*.csproj</TestProjects>
       <TriggerPaths>
         src/TemplateEngine/**;
         test/TemplateEngine/**;
