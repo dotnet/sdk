@@ -24,7 +24,7 @@
     <PackageVersion Include="Microsoft.Build.TaskAuthoring.Analyzer" Version="$(MicrosoftBuildTaskAuthoringAnalyzerPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryDotnetPackageVersion)" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryDotnetContribPackageVersion)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryDotnetContribPackageVersion)" />
     <!-- roslyn dependencies -->
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
