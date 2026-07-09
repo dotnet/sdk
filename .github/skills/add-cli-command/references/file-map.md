@@ -25,6 +25,14 @@ repo layout.
 | Managed impl + `<Name>CommandParser.cs` (`ConfigureCommand(...)`) | `src/Cli/dotnet/Commands/<Name>/` |
 | Wire parser (`<Name>CommandParser.ConfigureCommand(rootCommand.<Name>Command);`) | `src/Cli/dotnet/Parser.cs` → `ConfigureManagedActions` |
 
+## Native AOT
+
+Parsing and `--help` reach the AOT CLI for free via `Definitions`, and a newly
+registered command runs under AOT through the managed fallback. To make a command
+execute **in-process** in the Native AOT binary — the `dotnet-aot`/`dn` source closure,
+`AotSourceFiles.props`, `#if CLI_AOT` gating, and the AOT tests — follow the
+**add-dotnet-aot-command** skill, which owns those file details.
+
 ## The two resx files
 
 | Resx | Path | Holds | Localized via |
