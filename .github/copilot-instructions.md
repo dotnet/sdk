@@ -103,6 +103,24 @@ Canonical scenarios:
 - For fast inner-loop runs of `dotnet.Tests` without a full rebuild, use the
   `incremental-test` skill.
 
+## Guardrails
+
+These are hard boundaries for agents working in this repo. Treat them as "must not" rules.
+
+### Do not hand-edit generated files
+
+Some files are produced by tooling and are overwritten the next time the build or a
+generation step runs. Editing them by hand causes drift and merge conflicts. Never
+manually edit:
+
+- **`.xlf` localization files.** Change the source `.resx` strings instead, then
+  regenerate the `.xlf` with the `/t:UpdateXlf` MSBuild target. Correctly regenerated
+  entries have a state of `needs-review-translation` or `new`.
+- **Generated man pages** under `documentation/manpages/sdk`. These are generated from
+  documentation; change the upstream documentation in https://github.com/dotnet/docs instead.
+- **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
+- More broadly, any file marked `linguist-generated=true` in `.gitattributes`.
+
 ## Coding Style
 
 - Code should match the style of the file it's in.
@@ -133,10 +151,5 @@ Canonical scenarios:
 
 ## Localization
 
-- Avoid modifying .xlf files and instead prompt the user to update them using the `/t:UpdateXlf` target on MSBuild. Correctly automatically modified .xlf files have elements with state `needs-review-translation` or `new`.
 - Consider localizing strings in .resx files when possible.
 - When adding a new NETSDK error message in `src/Tasks/Common/Resources/Strings.resx`, assign the next available NETSDK code, append the entry at the end of the file, and update the trailing "latest message added" guard comment.
-
-## Documentation
-
-- Do not manually edit files under documentation/manpages/sdk as these are generated based on documentation and should not be manually modified.
