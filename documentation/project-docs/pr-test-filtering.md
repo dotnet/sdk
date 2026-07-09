@@ -191,3 +191,11 @@ a dependency change would have caused a failure.
   avoiding the compute cost of building everything twice.
 - **Generic infrastructure**: `UnitTests.proj` and the evaluation script have no
   knowledge of specific scopes. All scope-specific configuration lives in the props file.
+
+## Future enhancements
+
+- **Force all tests from a PR**: Contributors may want to override conditional
+  filtering and run the full test suite on a specific PR. If this proves desirable, one
+  possible approach is a PR label (e.g. `run-all-tests`) that the pipeline checks before
+  evaluating scopes. Locally, all tests run by default, and manually queued CI runs can
+  override the `SkippedTestScopes` pipeline variable.

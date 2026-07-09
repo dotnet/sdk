@@ -130,7 +130,7 @@
            SDKCustomTestProject identity is a relative or absolute path. -->
       <SDKCustomTestProject Remove="@(SkippedTestProject)" MatchOnMetadata="FullPath" />
     </ItemGroup>
-    <Message Importance="normal" Text="Conditional test filtering: removed %(SkippedTestProject.Filename) (scope skipped)" />
+    <Message Importance="normal" Text="Conditional test filtering applied (SkippedTestScopes: $(SkippedTestScopes))" />
   </Target>
 
   <Import Project="test-runner\TestRunner.targets" />
