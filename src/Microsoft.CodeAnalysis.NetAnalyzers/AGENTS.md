@@ -19,7 +19,7 @@ analyzers (the `CA####` rules).
   (it moves to `AnalyzerReleases.Shipped.md` at release). The `RS2000`/`RS2001`
   analyzers fail the build if you skip this.
 - **Analyzer file pattern**: `XxxAnalyzer.cs` + a **co-located** `Xxx.Fixer.cs`
-  + a test under `tests/…` mirroring theanalyzer's folder.
+  + a test under `tests/…` mirroring the analyzer's folder.
 - **Diagnostic IDs are allocated centrally** in
   `src/Utilities/Compiler/DiagnosticCategoryAndIdRanges.txt` — take the next free
   `CA####` in the category's range and update that file.
