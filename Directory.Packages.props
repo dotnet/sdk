@@ -25,7 +25,7 @@
     <PackageVersion Include="OpenTelemetry" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="$(OpenTelemetryDotnetPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryDotnetPackageVersion)" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryDotnetContribPackageVersion)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryDotnetContribPackageVersion)" />
     <PackageVersion Include="OpenTelemetry.PersistentStorage.FileSystem" Version="$(OpenTelemetryPersistentStoragePackageVersion)" />
     <!-- roslyn dependencies -->

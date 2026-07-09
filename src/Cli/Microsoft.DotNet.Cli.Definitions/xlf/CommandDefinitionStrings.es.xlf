@@ -748,6 +748,11 @@ Ejemplos:
         <target state="translated">Identificador de dispositivo que se va a usar para ejecutar la aplicación.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescriptionForTest">
+        <source>The device identifier to use for running tests.</source>
+        <target state="new">The device identifier to use for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
         <target state="translated">DISPOSITIVO</target>
@@ -776,6 +781,11 @@ Ejemplos:
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
         <target state="translated">Enumere los dispositivos disponibles para ejecutar la aplicación.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescriptionForTest">
+        <source>List available devices for running tests.</source>
+        <target state="new">List available devices for running tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
