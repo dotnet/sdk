@@ -4,8 +4,11 @@ Guidance for changes under `src/Tasks` (MSBuild tasks, targets, and SDK build me
 
 ## Where things live
 
-Four projects, all multi-targeted (`net472` + current .NET) so tasks load in both
-full-framework and .NET Core MSBuild:
+`Microsoft.NET.Build.Tasks` and `Microsoft.NET.Build.Extensions.Tasks` build for
+both `net472` and current .NET, so code added to them must stay
+`net472`-compatible (no .NET-only APIs). `Common` is linked shared source
+compiled into each, so it inherits that constraint; `sdk-tasks` is
+current-.NET-only:
 
 | Project | Role |
 |---------|------|
