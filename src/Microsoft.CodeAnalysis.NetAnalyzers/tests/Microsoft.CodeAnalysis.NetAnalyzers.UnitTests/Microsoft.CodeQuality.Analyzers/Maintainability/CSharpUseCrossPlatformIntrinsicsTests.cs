@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -11,9 +11,22 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
     using static UseCrossPlatformIntrinsicsAnalyzer;
 
+    [TestClass]
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Fact]
+        [TestMethod]
+        public void DiagnosticDescriptors_HaveCorrectTitleAndDescription()
+        {
+            foreach (var rule in Rules)
+            {
+                Assert.AreEqual(RuleId, rule.Id);
+                Assert.IsNotEmpty(rule.Title.ToString());
+                Assert.IsNotEmpty(rule.Description.ToString());
+                Assert.IsNotEmpty(rule.MessageFormat.ToString());
+            }
+        }
+
+        [TestMethod]
         public async Task Fixer_InnerNodeReplacedAsync()
         {
             // lang=C#-test
@@ -48,10 +61,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Fixer_ChainReplacedAsync()
         {
             // lang=C#-test
@@ -87,10 +100,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Fixer_ChainParenthesizedAsync()
         {
             // lang=C#-test
@@ -126,7 +139,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

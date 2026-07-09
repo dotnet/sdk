@@ -1,20 +1,21 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseWeakKDFInsufficientIterationCount,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseWeakKDFInsufficientIterationCountTests
     {
         private const int SufficientIterationCount = 100000;
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringAndByteArrayParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -31,7 +32,7 @@ class TestClass
             GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignIterationCountDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -49,7 +50,7 @@ class TestClass
             GetCSharpResultAt(10, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignIterationsParameterMaybeChangedDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +76,7 @@ class TestClass
             GetCSharpResultAt(18, 9, DoNotUseWeakKDFInsufficientIterationCount.MaybeUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignIterationCountPropertyMaybeChangedDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -101,7 +102,7 @@ class TestClass
             GetCSharpResultAt(18, 9, DoNotUseWeakKDFInsufficientIterationCount.MaybeUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPassRfc2898DeriveBytesAsParameterInterproceduralDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -124,7 +125,7 @@ class TestClass
             GetCSharpResultAt(15, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReturnRfc2898DeriveBytesInterproceduralDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -149,7 +150,7 @@ class TestClass
             GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringAndIntParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -166,7 +167,7 @@ class TestClass
             GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringAndByteArrayAndIntParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -183,7 +184,7 @@ class TestClass
             GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersLowIterationsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -200,7 +201,7 @@ class TestClass
             GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringAndIntAndIntParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -217,7 +218,7 @@ class TestClass
             GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithByteArrayAndByteArrayAndIntAndHashAlgorithmNameParametersDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -244,10 +245,10 @@ class TestClass
                         GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringAndByteArrayAndIntAndHashAlgorithmNameParametersDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -274,10 +275,10 @@ class TestClass
                         GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringAndIntAndIntAndHashAlgorithmNameParametersDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -304,10 +305,10 @@ class TestClass
                         GetCSharpResultAt(9, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignIterationCountNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -324,7 +325,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPassRfc2898DeriveBytesAsParameterInterproceduralNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -346,7 +347,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReturnRfc2898DeriveBytesInterproceduralNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -370,7 +371,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersUnassignedIterationsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -386,7 +387,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithByteArrayAndByteArrayAndIntParametersHighIterationsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -402,14 +403,14 @@ class TestClass
 }");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
-        [InlineData(@"dotnet_code_quality.CA5387.excluded_symbol_names = TestMethod
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = TestMethod")]
+        [DataRow(@"dotnet_code_quality.CA5387.excluded_symbol_names = TestMethod
                       dotnet_code_quality.CA5388.excluded_symbol_names = TestMethod")]
-        [InlineData(@"dotnet_code_quality.CA5387.excluded_symbol_names = TestMet*
+        [DataRow(@"dotnet_code_quality.CA5387.excluded_symbol_names = TestMet*
                       dotnet_code_quality.CA5388.excluded_symbol_names = TestMet*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var test = new VerifyCS.Test
@@ -445,7 +446,7 @@ class TestClass
                 test.ExpectedDiagnostics.Add(GetCSharpResultAt(10, 9, DoNotUseWeakKDFInsufficientIterationCount.DefinitelyUseWeakKDFInsufficientIterationCountRule));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

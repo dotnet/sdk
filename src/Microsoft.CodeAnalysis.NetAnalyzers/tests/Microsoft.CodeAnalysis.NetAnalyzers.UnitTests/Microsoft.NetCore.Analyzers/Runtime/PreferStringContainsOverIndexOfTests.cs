@@ -1,9 +1,11 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information. 
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+ 
 
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferStringContainsOverIndexOfAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.PreferStringContainsOverIndexOfFixer>;
@@ -13,15 +15,16 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class PreferStringContainsOverIndexOfTests
     {
-        [Theory]
-        [InlineData("This", false, " == ", " -1")]
-        [InlineData("a", true, " == ", " -1")]
-        [InlineData("This", false, " >= ", " 0")]
-        [InlineData("a", true, " >= ", " 0")]
-        [InlineData("This", false, " != ", " -1")]
-        [InlineData("a", true, " != ", " -1")]
+        [TestMethod]
+        [DataRow("This", false, " == ", " -1")]
+        [DataRow("a", true, " == ", " -1")]
+        [DataRow("This", false, " >= ", " 0")]
+        [DataRow("a", true, " >= ", " 0")]
+        [DataRow("This", false, " != ", " -1")]
+        [DataRow("a", true, " != ", " -1")]
         public async Task TestStringAndCharAsync(string input, bool isCharTest, string operatorKind, string value)
         {
             string startQuote = isCharTest ? "'" : "\"";
@@ -47,7 +50,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             startQuote = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -73,13 +76,13 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(" == ", " -1")]
-        [InlineData(" >= ", " 0")]
-        [InlineData(" != ", " -1")]
+        [TestMethod]
+        [DataRow(" == ", " -1")]
+        [DataRow(" >= ", " 0")]
+        [DataRow(" != ", " -1")]
         public async Task TestStringNoComparisonArgumentAsync(string operatorKind, string value)
         {
             string csInput = @"
@@ -103,7 +106,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
@@ -125,13 +128,13 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(" == ", " -1")]
-        [InlineData(" >= ", " 0")]
-        [InlineData(" != ", " -1")]
+        [TestMethod]
+        [DataRow(" == ", " -1")]
+        [DataRow(" >= ", " 0")]
+        [DataRow(" != ", " -1")]
         public async Task TestCharAndOrdinalAsync(string operatorKind, string value)
         {
             string csInput = @"
@@ -155,7 +158,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
@@ -177,12 +180,12 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("This", false)]
-        [InlineData("a", true)]
+        [TestMethod]
+        [DataRow("This", false)]
+        [DataRow("a", true)]
         public async Task TestStringAndCharWithMultipleDiagnosticsAsync(string input, bool isCharTest)
         {
             string startQuote = isCharTest ? "'" : "\"";
@@ -214,7 +217,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             startQuote = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -242,12 +245,12 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("This", false)]
-        [InlineData("a", true)]
+        [TestMethod]
+        [DataRow("This", false)]
+        [DataRow("a", true)]
         public async Task TestStringAndCharWithComparisonAsync(string input, bool isCharTest)
         {
             string quotes = isCharTest ? "'" : "\"";
@@ -273,7 +276,7 @@ namespace TestNamespace
                 TestCode = csInput,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
 
             quotes = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -296,12 +299,12 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("This", false)]
-        [InlineData("a", true)]
+        [TestMethod]
+        [DataRow("This", false)]
+        [DataRow("a", true)]
         public async Task TestLeftAndRightOperandInvocationsAsync(string input, bool isCharTest)
         {
             string startQuote = isCharTest ? "'" : "\"";
@@ -350,7 +353,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             startQuote = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -391,12 +394,12 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("This", false)]
-        [InlineData("a", true)]
+        [TestMethod]
+        [DataRow("This", false)]
+        [DataRow("a", true)]
         public async Task TestStringAndCharNamedArgumentCombinationVBAsync(string input, bool isCharTest)
         {
             string startQuote = "\"";
@@ -431,7 +434,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
 
             vbInput = @"
 Public Class StringOf
@@ -463,7 +466,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
 
             vbInput = @"
 Public Class StringOf
@@ -495,7 +498,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
 
             vbInput = @"
 Public Class StringOf
@@ -527,12 +530,12 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("This", false)]
-        [InlineData("a", true)]
+        [TestMethod]
+        [DataRow("This", false)]
+        [DataRow("a", true)]
         public async Task TestStringAndCharNamedArgumentCombinationsCSAsync(string input, bool isCharTest)
         {
             string startQuote = isCharTest ? "'" : "\"";
@@ -572,7 +575,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             csInput = @"
 namespace TestNamespace 
@@ -610,7 +613,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             csInput = @"
 namespace TestNamespace 
@@ -648,7 +651,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             csInput = @"
 namespace TestNamespace 
@@ -686,16 +689,16 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("This", false, ", 1")]
-        [InlineData("a", true, ", 1")]
-        [InlineData("This", false, ", 1", ", 2")]
-        [InlineData("a", true, ", 1", ", 2")]
-        [InlineData("This", false, ", 1", ", System.StringComparison.OrdinalIgnoreCase")]
-        [InlineData("This", false, ", 1", ", 2", ", System.StringComparison.OrdinalIgnoreCase")]
+        [TestMethod]
+        [DataRow("This", false, ", 1")]
+        [DataRow("a", true, ", 1")]
+        [DataRow("This", false, ", 1", ", 2")]
+        [DataRow("a", true, ", 1", ", 2")]
+        [DataRow("This", false, ", 1", ", System.StringComparison.OrdinalIgnoreCase")]
+        [DataRow("This", false, ", 1", ", 2", ", System.StringComparison.OrdinalIgnoreCase")]
         public async Task TestTooManyArgumentsToIndexOfAsync(string input, bool isCharTest, params string[] inputArguments)
         {
             string quotes = isCharTest ? "'" : "\"";
@@ -726,12 +729,12 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("This", false)]
-        [InlineData("a", true)]
+        [TestMethod]
+        [DataRow("This", false)]
+        [DataRow("a", true)]
         public async Task TestIndexWrittenToAsync(string input, bool isCharTest)
         {
             string quotes = isCharTest ? "'" : "\"";
@@ -757,7 +760,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             quotes = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -780,12 +783,12 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("This", false)]
-        [InlineData("a", true)]
+        [TestMethod]
+        [DataRow("This", false)]
+        [DataRow("a", true)]
         public async Task TestIndexWrittenToAfterAsync(string input, bool isCharTest)
         {
             string quotes = isCharTest ? "'" : "\"";
@@ -811,7 +814,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             quotes = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -834,10 +837,10 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonSupportedTargetAsync()
         {
             string csInput = @"
@@ -857,7 +860,7 @@ namespace TestNamespace
                 TestCode = csInput,
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
 
             string csInputStringAndArgument = @"
 namespace TestNamespace 
@@ -876,7 +879,7 @@ namespace TestNamespace
                 TestCode = csInputStringAndArgument,
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
 
             string csCharInput = @"
 namespace TestNamespace 
@@ -895,13 +898,13 @@ namespace TestNamespace
                 TestCode = csCharInput,
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(" != ", "3")]
-        [InlineData(" > ", "2")]
-        [InlineData(" >= ", "2")]
+        [TestMethod]
+        [DataRow(" != ", "3")]
+        [DataRow(" > ", "2")]
+        [DataRow(" >= ", "2")]
         public async Task TestNonSupportedOperationKindAsync(string operatorKind, string right)
         {
             string csInput = @"
@@ -924,10 +927,10 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestRightOperandIsVariableAsync()
         {
             string csInput = @"
@@ -951,10 +954,10 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadOutsideAsync()
         {
             string csInput = @"
@@ -978,13 +981,13 @@ namespace TestNamespace
                 TestCode = csInput,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(" == ", " -1", "!")]
-        [InlineData(" >= ", " 0", "")]
-        [InlineData(" != ", " -1", "")]
+        [TestMethod]
+        [DataRow(" == ", " -1", "!")]
+        [DataRow(" >= ", " 0", "")]
+        [DataRow(" != ", " -1", "")]
         public async Task TestFunctionParameterAsync(string operatorKind, string value, string notString)
         {
             string csInput = @"
@@ -1019,7 +1022,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testCulture.RunAsync();
+            await testCulture.RunAsync(CancellationToken.None);
 
             operatorKind = ToBasicOperator(operatorKind);
             notString = notString == "!" ? " Not" : notString;
@@ -1051,13 +1054,13 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(" == ", " -1", "!")]
-        [InlineData(" >= ", " 0", "")]
-        [InlineData(" != ", " -1", "")]
+        [TestMethod]
+        [DataRow(" == ", " -1", "!")]
+        [DataRow(" >= ", " 0", "")]
+        [DataRow(" != ", " -1", "")]
         public async Task TestFunctionParameterWithStringComparisonArgumentAsync(string operatorKind, string value, string notString)
         {
             string csInput = @"
@@ -1092,7 +1095,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testCulture.RunAsync();
+            await testCulture.RunAsync(CancellationToken.None);
 
             operatorKind = ToBasicOperator(operatorKind);
             notString = notString == "!" ? " Not" : notString;
@@ -1124,13 +1127,13 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(" == ", " -1")]
-        [InlineData(" >= ", " 0")]
-        [InlineData(" != ", " -1")]
+        [TestMethod]
+        [DataRow(" == ", " -1")]
+        [DataRow(" >= ", " 0")]
+        [DataRow(" != ", " -1")]
         public async Task TestReversedMultipleDeclarationsAsync(string operatorKind, string value)
         {
             string csInput = @"
@@ -1154,7 +1157,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
@@ -1176,13 +1179,13 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(" == ", " -1")]
-        [InlineData(" >= ", " 0")]
-        [InlineData(" != ", " -1")]
+        [TestMethod]
+        [DataRow(" == ", " -1")]
+        [DataRow(" >= ", " 0")]
+        [DataRow(" != ", " -1")]
         public async Task TestMultipleDeclarationsAsync(string operatorKind, string value)
         {
             string csInput = @"
@@ -1206,7 +1209,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(CancellationToken.None);
 
             operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
@@ -1228,7 +1231,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(CancellationToken.None);
         }
 
         #region Helpers

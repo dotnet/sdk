@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Xunit;
+using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpMakeTypesInternal,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpMakeTypesInternalFixer>;
@@ -16,6 +17,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
+    [TestClass]
     public sealed class MakeTypesInternalTests
     {
         private static readonly IEnumerable<OutputKind> ExecutableOutputKinds =
@@ -29,8 +31,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
         public static readonly TheoryData<OutputKind> NonDiagnosticTriggeringOutputKinds = new(Enum.GetValues<OutputKind>().Except(ExecutableOutputKinds));
 
-        [Theory]
-        [MemberData(nameof(NonDiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(NonDiagnosticTriggeringOutputKinds))]
         public async Task LibraryCode_NoDiagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind, "public class MyService {}");
@@ -38,8 +40,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVbAsync(outputKind, "Public Class MyService\nEnd Class");
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task ApplicationCode_Diagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -71,8 +73,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(NonDiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(NonDiagnosticTriggeringOutputKinds))]
         public async Task MultipleTypes_LibraryCode_NoDiagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -97,8 +99,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task MultipleTypes_ApplicationCode_Diagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -149,8 +151,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(NonDiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(NonDiagnosticTriggeringOutputKinds))]
         public async Task MultipleDifferentTypes_LibraryCode_NoDiagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -186,8 +188,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task MultipleDifferentTypes_ApplicationCode_Diagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -265,16 +267,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [InlineData(OutputKind.DynamicallyLinkedLibrary)]
-        [InlineData(OutputKind.WindowsRuntimeMetadata)]
+        [TestMethod]
+        [DataRow(OutputKind.DynamicallyLinkedLibrary)]
+        [DataRow(OutputKind.WindowsRuntimeMetadata)]
         public Task Records_LibraryCode_NoDiagnostic(OutputKind outputKind)
         {
             return VerifyCsAsync(outputKind, @"public record Person;");
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public Task Records_ApplicationCode_Diagnostic(OutputKind outputKind)
         {
             return VerifyCsAsync(outputKind,
@@ -296,8 +298,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task NoModifier_ApplicationCode_NoDiagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -326,8 +328,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task MultipleModifiers_ApplicationCode_Diagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -388,8 +390,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task MultipleUnorderedModifiers_ApplicationCode_Diagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -430,8 +432,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task NestedTypes_ApplicationCode_NoDiagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -482,8 +484,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task ProtectedTypes_ApplicationCode_NoDiagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -507,8 +509,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(NonDiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(NonDiagnosticTriggeringOutputKinds))]
         public async Task Delegates_LibraryCode_NoDiagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -530,8 +532,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task Delegates_ApplicationCode_Diagnostic(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -585,14 +587,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
-        [Theory]
-        [InlineData("DynamicallyLinkedLibrary", OutputKind.DynamicallyLinkedLibrary)]
-        [InlineData("ConsoleApplication", OutputKind.ConsoleApplication)]
-        [InlineData("ConsoleApplication,DynamicallyLinkedLibrary", OutputKind.DynamicallyLinkedLibrary)]
-        [InlineData("WindowsApplication", OutputKind.WindowsApplication)]
-        [InlineData("WindowsRuntimeApplication", OutputKind.WindowsRuntimeApplication)]
-        [InlineData("ConsoleApplication,WindowsApplication", OutputKind.WindowsApplication)]
-        [InlineData("ConsoleApplication,WindowsApplication,WindowsRuntimeApplication",
+        [TestMethod]
+        [DataRow("DynamicallyLinkedLibrary", OutputKind.DynamicallyLinkedLibrary)]
+        [DataRow("ConsoleApplication", OutputKind.ConsoleApplication)]
+        [DataRow("ConsoleApplication,DynamicallyLinkedLibrary", OutputKind.DynamicallyLinkedLibrary)]
+        [DataRow("WindowsApplication", OutputKind.WindowsApplication)]
+        [DataRow("WindowsRuntimeApplication", OutputKind.WindowsRuntimeApplication)]
+        [DataRow("ConsoleApplication,WindowsApplication", OutputKind.WindowsApplication)]
+        [DataRow("ConsoleApplication,WindowsApplication,WindowsRuntimeApplication",
             OutputKind.WindowsRuntimeApplication)]
         public async Task CompilationOptions_Diagnostic(string optionsText, OutputKind outputKind)
         {
@@ -625,7 +627,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                     }
                 },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -655,16 +657,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                              """)
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("ConsoleApplication", OutputKind.DynamicallyLinkedLibrary)]
-        [InlineData("DynamicallyLinkedLibrary", OutputKind.ConsoleApplication)]
-        [InlineData("WindowsApplication", OutputKind.ConsoleApplication)]
-        [InlineData("WindowsRuntimeApplication", OutputKind.ConsoleApplication)]
-        [InlineData("ConsoleApplication,WindowsApplication", OutputKind.WindowsRuntimeApplication)]
-        [InlineData("ConsoleApplication,WindowsApplication,WindowsRuntimeApplication",
+        [TestMethod]
+        [DataRow("ConsoleApplication", OutputKind.DynamicallyLinkedLibrary)]
+        [DataRow("DynamicallyLinkedLibrary", OutputKind.ConsoleApplication)]
+        [DataRow("WindowsApplication", OutputKind.ConsoleApplication)]
+        [DataRow("WindowsRuntimeApplication", OutputKind.ConsoleApplication)]
+        [DataRow("ConsoleApplication,WindowsApplication", OutputKind.WindowsRuntimeApplication)]
+        [DataRow("ConsoleApplication,WindowsApplication,WindowsRuntimeApplication",
             OutputKind.DynamicallyLinkedLibrary)]
         public async Task CompilationOptions_NoDiagnostic(string optionsText, OutputKind outputKind)
         {
@@ -691,7 +693,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                     }
                 },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -715,11 +717,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                              """)
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task Trivia(OutputKind outputKind)
         {
             await VerifyCsAsync(outputKind,
@@ -755,6 +757,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
+        public Task ExtensionMembers_NoDiagnostic(OutputKind outputKind)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                           internal static class E
+                           {
+                               public static void Main() {}
+
+                               extension(int x)
+                               {
+                                   public int M() => x + 1;
+                               }
+                           }
+                           """,
+                TestState =
+                {
+                    OutputKind = outputKind,
+                },
+                LanguageVersion = LanguageVersion.CSharp14
+            }.RunAsync(CancellationToken.None);
+        }
+
         private Task VerifyCsAsync(OutputKind outputKind, string testCode, string fixedCode = null)
         {
             return new VerifyCS.Test
@@ -763,7 +790,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode!,
                 TestState = { OutputKind = outputKind },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private Task VerifyVbAsync(OutputKind outputKind, string testCode, string fixedCode = null)
@@ -773,7 +800,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 TestCode = testCode,
                 FixedCode = fixedCode!,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

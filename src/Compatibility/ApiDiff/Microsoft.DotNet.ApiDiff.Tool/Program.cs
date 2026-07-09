@@ -16,7 +16,7 @@ public static class Program
 {
     private static readonly string AttributesToExcludeDefaultFileName = "AttributesToExclude.txt";
 
-    public static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         RootCommand rootCommand = new("ApiDiff - Tool for generating a markdown diff of two different versions of the same assembly.");
 
@@ -147,7 +147,7 @@ public static class Program
             );
             await HandleCommandAsync(diffConfig, cancellationToken).ConfigureAwait(false);
         });
-        await rootCommand.Parse(args).InvokeAsync();
+        return await rootCommand.Parse(args).InvokeAsync();
     }
 
     private static Task HandleCommandAsync(DiffConfiguration diffConfig, CancellationToken cancellationToken = default)
@@ -183,18 +183,7 @@ public static class Program
         }
 
         IDiffGenerator diffGenerator = DiffGeneratorFactory.Create(log,
-                                                                   diffConfig.BeforeAssembliesFolderPath,
-                                                                   diffConfig.BeforeAssemblyReferencesFolderPath,
-                                                                   diffConfig.AfterAssembliesFolderPath,
-                                                                   diffConfig.AfterAssemblyReferencesFolderPath,
-                                                                   diffConfig.OutputFolderPath,
-                                                                   diffConfig.BeforeFriendlyName,
-                                                                   diffConfig.AfterFriendlyName,
-                                                                   diffConfig.TableOfContentsTitle,
-                                                                   diffConfig.FilesWithAssembliesToExclude,
-                                                                   diffConfig.FilesWithAttributesToExclude,
-                                                                   diffConfig.FilesWithApisToExclude,
-                                                                   diffConfig.AddPartialModifier,
+                                                                   diffConfig,
                                                                    writeToDisk: true,
                                                                    diagnosticOptions: null // TODO: If needed, add CLI option to pass specific diagnostic options
                                                                    );

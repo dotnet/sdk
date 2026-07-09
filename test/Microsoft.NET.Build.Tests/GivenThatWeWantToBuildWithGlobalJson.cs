@@ -1,16 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildWithGlobalJson : SdkTest
     {
-        public GivenThatWeWantToBuildWithGlobalJson(ITestOutputHelper log) : base(log)
-        { }
 
-        [FullMSBuildOnlyTheory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [FullMSBuildOnly]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_fails_build_on_failed_sdk_resolution(bool runningInVS)
         {
             var prevIncludeDefault = Environment.GetEnvironmentVariable("MSBUILDINCLUDEDEFAULTSDKRESOLVER");
@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
                     TargetFrameworks = "net5.0"
                 };
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: runningInVS.ToString());
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: runningInVS.ToString());
                 var globalJsonPath = Path.Combine(testAsset.Path, testProject.Name, "global.json");
                 File.WriteAllText(globalJsonPath, @"{
     ""sdk"": {

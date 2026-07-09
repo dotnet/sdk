@@ -3,11 +3,11 @@
 
 #nullable disable
 
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
@@ -17,7 +17,8 @@ namespace Microsoft.NET.Build.Tasks
     /// Generates the $(project).runtimeconfig.json and optionally $(project).runtimeconfig.dev.json files
     /// for a project.
     /// </summary>
-    public class GenerateRuntimeConfigurationFiles : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateRuntimeConfigurationFiles : TaskBase, IMultiThreadableTask
     {
         public string AssetsFilePath { get; set; }
 
@@ -55,6 +56,8 @@ namespace Microsoft.NET.Build.Tasks
         public bool GenerateRuntimeConfigDevFile { get; set; }
 
         public bool AlwaysIncludeCoreFramework { get; set; }
+
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         List<ITaskItem> _filesWritten = new();
 
@@ -127,7 +130,8 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
+                AbsolutePath assetsPath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
+                LockFile lockFile = new LockFileCache(this).GetLockFile(assetsPath);
 
                 ProjectContext projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
@@ -176,7 +180,7 @@ namespace Microsoft.NET.Build.Tasks
                 AddAdditionalProbingPaths(config.RuntimeOptions, packageFolders);
             }
 
-            WriteToJsonFile(RuntimeConfigPath, config);
+            WriteToJsonFile(TaskEnvironment.GetAbsolutePath(RuntimeConfigPath), config);
             _filesWritten.Add(new TaskItem(RuntimeConfigPath));
         }
 
@@ -266,18 +270,22 @@ namespace Microsoft.NET.Build.Tasks
 
         private void AddUserRuntimeOptions(RuntimeOptions runtimeOptions)
         {
-            if (string.IsNullOrEmpty(UserRuntimeConfig) || !File.Exists(UserRuntimeConfig))
+            if (string.IsNullOrEmpty(UserRuntimeConfig))
             {
                 return;
             }
 
-            JObject runtimeOptionsFromProject;
-            using (JsonTextReader reader = new(File.OpenText(UserRuntimeConfig)))
+            AbsolutePath userConfigPath = TaskEnvironment.GetAbsolutePath(UserRuntimeConfig);
+            if (!File.Exists(userConfigPath))
             {
-                runtimeOptionsFromProject = JObject.Load(reader);
+                return;
             }
 
-            foreach (var runtimeOption in runtimeOptionsFromProject)
+            JsonObject runtimeOptionsFromProject = (JsonObject)JsonNode.Parse(
+                File.ReadAllText(userConfigPath),
+                documentOptions: new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+            foreach (KeyValuePair<string, JsonNode> runtimeOption in runtimeOptionsFromProject)
             {
                 runtimeOptions.RawOptions.Add(runtimeOption.Key, runtimeOption.Value);
             }
@@ -290,7 +298,7 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            JObject configProperties = GetConfigProperties(runtimeOptions);
+            JsonObject configProperties = GetConfigProperties(runtimeOptions);
 
             foreach (var hostConfigurationOption in HostConfigurationOptions)
             {
@@ -298,37 +306,33 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static JObject GetConfigProperties(RuntimeOptions runtimeOptions)
+        private static JsonObject GetConfigProperties(RuntimeOptions runtimeOptions)
         {
-            JToken configProperties;
-            if (!runtimeOptions.RawOptions.TryGetValue("configProperties", out configProperties)
-                || configProperties == null
-                || configProperties.Type != JTokenType.Object)
+            if (!runtimeOptions.RawOptions.TryGetValue("configProperties", out JsonNode configProperties)
+                || configProperties is not JsonObject)
             {
-                configProperties = new JObject();
+                configProperties = new JsonObject();
                 runtimeOptions.RawOptions["configProperties"] = configProperties;
             }
 
-            return (JObject)configProperties;
+            return (JsonObject)configProperties;
         }
 
-        private static JToken GetConfigPropertyValue(ITaskItem hostConfigurationOption)
+        private static JsonNode GetConfigPropertyValue(ITaskItem hostConfigurationOption)
         {
             string valueString = hostConfigurationOption.GetMetadata("Value");
 
-            bool boolValue;
-            if (bool.TryParse(valueString, out boolValue))
+            if (bool.TryParse(valueString, out bool boolValue))
             {
-                return new JValue(boolValue);
+                return JsonValue.Create(boolValue);
             }
 
-            int intValue;
-            if (int.TryParse(valueString, out intValue))
+            if (int.TryParse(valueString, out int intValue))
             {
-                return new JValue(intValue);
+                return JsonValue.Create(intValue);
             }
 
-            return new JValue(valueString);
+            return JsonValue.Create(valueString);
         }
 
         private void WriteDevRuntimeConfig(IList<LockFileItem> packageFolders)
@@ -340,7 +344,7 @@ namespace Microsoft.NET.Build.Tasks
 
             AddAdditionalProbingPaths(devConfig.RuntimeOptions, packageFolders);
 
-            WriteToJsonFile(RuntimeConfigDevPath, devConfig);
+            WriteToJsonFile(TaskEnvironment.GetAbsolutePath(RuntimeConfigDevPath), devConfig);
             _filesWritten.Add(new TaskItem(RuntimeConfigDevPath));
         }
 
@@ -381,19 +385,115 @@ namespace Microsoft.NET.Build.Tasks
             return path;
         }
 
-        private static void WriteToJsonFile(string fileName, object value)
+        private static void WriteToJsonFile(string fileName, RuntimeConfig value)
         {
-            JsonSerializer serializer = new()
+            // Build the document explicitly with the System.Text.Json node API instead of a
+            // reflection-based serializer, which is not trim/AOT safe (IL2026/IL3050). The writer
+            // is configured to reproduce the previous output exactly: 2-space indentation,
+            // environment newlines, and relaxed escaping (so characters such as '+' in paths are
+            // written verbatim rather than as \uXXXX escapes).
+            JsonObject json = new()
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Formatting.Indented,
-                DefaultValueHandling = DefaultValueHandling.Ignore
+                ["runtimeOptions"] = SerializeRuntimeOptions(value.RuntimeOptions)
             };
 
-            using (JsonTextWriter writer = new(new StreamWriter(File.Create(fileName))))
+            JsonWriterOptions options = new()
             {
-                serializer.Serialize(writer, value);
+                Indented = true,
+                NewLine = Environment.NewLine,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+
+            using (FileStream stream = File.Create(fileName))
+            using (Utf8JsonWriter writer = new(stream, options))
+            {
+                json.WriteTo(writer);
             }
+        }
+
+        private static JsonObject SerializeRuntimeOptions(RuntimeOptions runtimeOptions)
+        {
+            // Declared properties are emitted in declaration order. Null values are omitted.
+            JsonObject json = new();
+
+            if (runtimeOptions.Tfm != null)
+            {
+                json["tfm"] = runtimeOptions.Tfm;
+            }
+
+            if (runtimeOptions.RollForward != null)
+            {
+                json["rollForward"] = runtimeOptions.RollForward;
+            }
+
+            if (runtimeOptions.Framework != null)
+            {
+                json["framework"] = SerializeFramework(runtimeOptions.Framework);
+            }
+
+            if (runtimeOptions.Frameworks != null)
+            {
+                json["frameworks"] = SerializeFrameworks(runtimeOptions.Frameworks);
+            }
+
+            if (runtimeOptions.IncludedFrameworks != null)
+            {
+                json["includedFrameworks"] = SerializeFrameworks(runtimeOptions.IncludedFrameworks);
+            }
+
+            if (runtimeOptions.AdditionalProbingPaths != null)
+            {
+                JsonArray probingPaths = new();
+                foreach (string probingPath in runtimeOptions.AdditionalProbingPaths)
+                {
+                    // Cast to JsonNode so the non-generic Add overload is used; the generic
+                    // JsonArray.Add<T> is annotated as trim/AOT unsafe (IL2026/IL3050).
+                    probingPaths.Add((JsonNode)probingPath);
+                }
+
+                json["additionalProbingPaths"] = probingPaths;
+            }
+
+            // RawOptions is the extension-data bag; its entries are written as direct children of
+            // runtimeOptions, after the declared properties. Clone each value so it can be
+            // re-parented into this document regardless of where it originated.
+            foreach (KeyValuePair<string, JsonNode> rawOption in runtimeOptions.RawOptions)
+            {
+                json[rawOption.Key] = rawOption.Value?.DeepClone();
+            }
+
+            return json;
+        }
+
+        private static JsonArray SerializeFrameworks(List<RuntimeConfigFramework> frameworks)
+        {
+            JsonArray array = new();
+
+            foreach (RuntimeConfigFramework framework in frameworks)
+            {
+                // Cast to JsonNode to use the non-generic Add overload (the generic
+                // JsonArray.Add<T> is annotated as trim/AOT unsafe).
+                array.Add((JsonNode)SerializeFramework(framework));
+            }
+
+            return array;
+        }
+
+        private static JsonObject SerializeFramework(RuntimeConfigFramework framework)
+        {
+            JsonObject json = new();
+
+            if (framework.Name != null)
+            {
+                json["name"] = framework.Name;
+            }
+
+            if (framework.Version != null)
+            {
+                json["version"] = framework.Version;
+            }
+
+            return json;
         }
     }
 }

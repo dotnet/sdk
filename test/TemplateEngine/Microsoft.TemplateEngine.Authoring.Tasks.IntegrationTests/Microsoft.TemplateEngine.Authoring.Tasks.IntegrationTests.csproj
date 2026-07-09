@@ -1,0 +1,29 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Resources\**\*" CopyToOutputDirectory="Always" />
+    <Compile Remove="Resources\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(TemplateEngSrcDir)Tools/Microsoft.TemplateEngine.Authoring.Tasks\Microsoft.TemplateEngine.Authoring.Tasks.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="..\..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(TemplateEngSrcDir)Tools\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- The shared CommandResultAssertions.cs uses xUnit's Assert.True/False/NotNull which clash
+         with MSTest's Assert global using. Replace it with a local MSTest-friendly copy below. -->
+    <Compile Remove="$(TemplateEngSrcDir)Tools\Shared\Microsoft.TemplateEngine.CommandUtils\CommandResultAssertions.cs" />
+  </ItemGroup>
+
+</Project>

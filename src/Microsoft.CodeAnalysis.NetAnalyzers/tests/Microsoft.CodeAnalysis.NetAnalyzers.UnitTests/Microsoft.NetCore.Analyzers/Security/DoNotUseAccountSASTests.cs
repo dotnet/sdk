@@ -1,14 +1,15 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseAccountSAS,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseAccountSASTests
     {
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -59,10 +60,10 @@ namespace NormalNamespace
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetSharedAccessSignatureOfCloudStorageAccountDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -80,7 +81,7 @@ class TestClass
             GetCSharpResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalMethodOfCloudStorageAccountNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -97,7 +98,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetSharedAccessSignatureOfCloudStorageAccountOfNormalNamespaceNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

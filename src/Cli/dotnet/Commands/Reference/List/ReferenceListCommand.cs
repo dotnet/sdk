@@ -22,8 +22,6 @@ internal class ReferenceListCommand : CommandBase<ListReferenceCommandDefinition
     public ReferenceListCommand(ParseResult parseResult)
         : base(parseResult)
     {
-        ShowHelpOrErrorIfAppropriate(parseResult);
-
         (_fileOrDirectory, _allowedAppKinds) = PackageCommandParser.ProcessPathOptions(
             Definition.GetFileOption(),
             Definition.GetProjectOption(),

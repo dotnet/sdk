@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureDeserializerLosFormatter,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseInsecureDeserializerLosFormatterTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -33,7 +34,7 @@ public class ExampleClass
                 GetCSharpResultAt(10, 16, "object LosFormatter.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
@@ -49,7 +50,7 @@ End Class",
                 GetBasicResultAt(8, 16, "Function LosFormatter.Deserialize(stream As Stream) As Object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeStream_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -70,7 +71,7 @@ namespace Blah
             GetCSharpResultAt(12, 20, "object LosFormatter.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeString_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -91,7 +92,7 @@ namespace Blah
             GetCSharpResultAt(12, 20, "object LosFormatter.Deserialize(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeTextReader_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -112,7 +113,7 @@ namespace Blah
             GetCSharpResultAt(12, 20, "object LosFormatter.Deserialize(TextReader input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_Reference_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -134,7 +135,7 @@ namespace Blah
                 GetCSharpResultAt(13, 20, "object LosFormatter.Deserialize(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serialize_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -156,7 +157,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serialize_Reference_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -190,7 +191,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyBasicAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -206,7 +207,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

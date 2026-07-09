@@ -1,20 +1,21 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EquatableAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForStructWithNoEqualsOverrideAndNoIEquatableImplementationAsync()
         {
             var code = @"
@@ -25,7 +26,7 @@ struct S
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithNoEqualsOverrideAndNoIEquatableImplementationAsync()
         {
             var code = @"
@@ -36,7 +37,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticForStructWithEqualsOverrideButNoIEquatableImplementationAsync()
         {
             var code = @"
@@ -52,7 +53,7 @@ struct S
                 GetCSharpResultAt(2, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, "S"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithEqualsOverrideAndNoIEquatableImplementationAsync()
         {
             var code = @"
@@ -67,7 +68,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticForStructWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
             var code = @"
@@ -85,7 +86,7 @@ struct S : IEquatable<S>
                 GetCSharpResultAt(4, 8, EquatableAnalyzer.OverridesObjectEqualsDescriptor, "S"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticForClassWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
             var code = @"
@@ -103,7 +104,7 @@ class C : IEquatable<C>
                 GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoParameterListAndNoEqualsOverrideAsync()
         {
             var code = @"
@@ -120,7 +121,7 @@ class C : {|CS0535:IEquatable<C>|}
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterListAndNoEqualsOverrideAsync()
         {
             var code = @"
@@ -137,7 +138,7 @@ class C : {|CS0535:IEquatable<C>|}
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterListAndNoEqualsOverride2Async()
         {
             var code = @"
@@ -154,7 +155,7 @@ class C : {|CS0535:IEquatable<C>|}
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoParametersAndNoEqualsOverrideAsync()
         {
             var code = @"
@@ -171,7 +172,7 @@ class C : {|CS0535:IEquatable<C>|}
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithIEquatableImplementationWithMalformedParameterDeclarationAndNoEqualsOverrideAsync()
         {
             var code = @"
@@ -188,7 +189,7 @@ class C : {|CS0535:IEquatable<C>|}
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithIEquatableImplementationWithWrongReturnTypeAndNoEqualsOverrideAsync()
         {
             var code = @"
@@ -205,7 +206,7 @@ class C : {|CS0738:IEquatable<C>|}
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticForClassWithIEquatableImplementationWithNoBodyAndNoEqualsOverrideAsync()
         {
             var code = @"
@@ -220,7 +221,7 @@ class C : IEquatable<C>
                 GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithIEquatableImplementationWithNoReturnTypeAndNoEqualsOverrideAsync()
         {
             var code = @"
@@ -237,7 +238,7 @@ class C : {|CS0535:IEquatable<C>|}
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticForClassWithEqualsOverrideWithWrongSignatureAndNoIEquatableImplementationAsync()
         {
             var code = @"
@@ -254,7 +255,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticForClassWithExplicitIEquatableImplementationAndNoEqualsOverrideAsync()
         {
             var code = @"
@@ -272,7 +273,7 @@ class C : IEquatable<C>
                 GetCSharpResultAt(4, 7, EquatableAnalyzer.OverridesObjectEqualsDescriptor, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticForDerivedStructWithEqualsOverrideAndNoIEquatableImplementationAsync()
         {
             var code = @"
@@ -300,7 +301,7 @@ struct C : {|CS0527:B|}
                 GetCSharpResultAt(12, 8, EquatableAnalyzer.ImplementIEquatableDescriptor, "C"));
         }
 
-        [Fact, WorkItem(1914, "https://github.com/dotnet/roslyn-analyzers/issues/1914")]
+        [TestMethod, WorkItem(1914, "https://github.com/dotnet/roslyn-analyzers/issues/1914")]
         public async Task NoDiagnosticForParentClassWithIEquatableImplementationAsync()
         {
             var code = @"
@@ -321,7 +322,7 @@ public struct S : IValueObject<S>
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(2027, "https://github.com/dotnet/roslyn-analyzers/issues/2027")]
+        [TestMethod, WorkItem(2027, "https://github.com/dotnet/roslyn-analyzers/issues/2027")]
         public async Task NoDiagnosticForDerivedTypesWithBaseTypeWithIEquatableImplementation_01Async()
         {
             var code = @"
@@ -341,7 +342,7 @@ public class B : A<B>
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(2027, "https://github.com/dotnet/roslyn-analyzers/issues/2027")]
+        [TestMethod, WorkItem(2027, "https://github.com/dotnet/roslyn-analyzers/issues/2027")]
         public async Task NoDiagnosticForDerivedTypesWithBaseTypeWithIEquatableImplementation_02Async()
         {
             var code = @"
@@ -370,7 +371,7 @@ public class D : C<D>
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(2324, "https://github.com/dotnet/roslyn-analyzers/issues/2324")]
+        [TestMethod, WorkItem(2324, "https://github.com/dotnet/roslyn-analyzers/issues/2324")]
         public async Task CA1066_CSharp_RefStruct_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -385,7 +386,7 @@ public ref struct S
 }
 ",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string typeName)

@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseNameofInPlaceOfStringAnalyzer,
     Microsoft.CodeQuality.Analyzers.Maintainability.UseNameOfInPlaceOfStringFixer>;
@@ -12,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
+    [TestClass]
     public class UseNameofInPlaceOfStringTests
     {
         #region Unit tests for no analyzer diagnostic
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3023, "https://github.com/dotnet/roslyn-analyzers/issues/3023")]
         public async Task NoDiagnostic_ArgListAsync()
         {
@@ -30,7 +31,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NoArgumentsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -44,7 +45,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NullLiteralAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -58,7 +59,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_StringIsAReservedWordAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -72,7 +73,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NoMatchingParametersInScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -86,7 +87,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NameColonOtherParameterNameAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -100,7 +101,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NotStringLiteralAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -115,7 +116,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NotValidIdentifierAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -129,7 +130,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NoArgumentListAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -143,7 +144,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NoMatchingParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -157,7 +158,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_MatchesParameterButNotCalledParamNameAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -171,7 +172,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_MatchesPropertyButNotCalledPropertyNameAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -203,7 +204,7 @@ public class Person : INotifyPropertyChanged
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_PositionalArgumentOtherParameterNameAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -218,7 +219,7 @@ class C
         }
 
         [WorkItem(1426, "https://github.com/dotnet/roslyn-analyzers/issues/1426")]
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_1426Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -242,7 +243,7 @@ public class C
         }
 
         [WorkItem(1524, "https://github.com/dotnet/roslyn-analyzers/issues/1524")]
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_CSharp5Async()
         {
             await new VerifyCS.Test
@@ -257,11 +258,11 @@ class C
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp5
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(1524, "https://github.com/dotnet/roslyn-analyzers/issues/1524")]
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_VB12Async()
         {
             await new VerifyVB.Test
@@ -275,14 +276,14 @@ Module Mod1
     End Sub
 End Module",
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic12
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region Unit tests for analyzer diagnostic(s)
         [WorkItem(1524, "https://github.com/dotnet/roslyn-analyzers/issues/1524")]
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_CSharp6Async()
         {
             await new VerifyCS.Test
@@ -306,11 +307,11 @@ class C
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp6,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(1524, "https://github.com/dotnet/roslyn-analyzers/issues/1524")]
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_VB14Async()
         {
             await new VerifyVB.Test
@@ -332,10 +333,10 @@ Module Mod1
     End Sub
 End Module",
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic14,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Fixer_CSharp_ArgumentMatchesAParameterInScopeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -358,7 +359,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Fixer_VB_ArgumentMatchesAParameterInScopeAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -379,7 +380,7 @@ Module Mod1
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Fixer_CSharp_ArgumentMatchesAPropertyInScopeAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -435,7 +436,7 @@ public class Person : INotifyPropertyChanged
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_ArgumentMatchesAPropertyInScope2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -513,7 +514,7 @@ public class Person : INotifyPropertyChanged
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_ArgumentNameColonParamNameAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -535,7 +536,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_ArgumentNameColonPropertyNameAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -591,7 +592,7 @@ public class Person : INotifyPropertyChanged
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_AnonymousFunctionMultiline1Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -621,7 +622,7 @@ class Test
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_AnonymousFunctionMultiLine2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -651,7 +652,7 @@ class Test
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_AnonymousFunctionSingleLine1Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -675,7 +676,7 @@ class Test
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_AnonymousFunctionSingleLine2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -699,7 +700,7 @@ class Test
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_AnonymousFunctionMultipleParametersAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -723,7 +724,7 @@ class Test
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_LocalFunction1Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -753,7 +754,7 @@ class Test
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_LocalFunction2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -783,7 +784,7 @@ class Test
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_DelegateAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -819,7 +820,7 @@ namespace ConsoleApp14
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Fixer_CSharp_ArgumentWithCommentsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -842,7 +843,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Fixer_CSharp_ArgumentWithComments2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"

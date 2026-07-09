@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Testing;
@@ -6,7 +7,6 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.VisualBasic.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Runtime;
 using Microsoft.NetCore.VisualBasic.Analyzers.Runtime;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpMarkAllNonSerializableFieldsFixer>;
@@ -16,9 +16,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public partial class MarkAllNonSerializableFieldsFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2235WithNonSerializableFieldsWithFixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -62,7 +63,7 @@ Public Class CA2235WithNonPublicNonSerializableFields
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2235WithNonSerializableFieldsWithFix1Async()
         {
             await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, DefaultVerifier>
@@ -88,7 +89,7 @@ public class CA2235WithNonPublicNonSerializableFields
     internal NonSerializableType s1;
 }",
                 CodeActionIndex = 1,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
@@ -113,10 +114,10 @@ Public Class CA2235WithNonPublicNonSerializableFields
     Friend s1 As NonSerializableType
 End Class",
                 CodeActionIndex = 1,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2235WithNonSerializableFieldsWithFix2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -160,7 +161,7 @@ Public Class CA2235WithNonPublicNonSerializableFields
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2235WithNonSerializableFieldsWithFix3Async()
         {
             await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, DefaultVerifier>
@@ -190,7 +191,7 @@ public class CA2235WithNonPublicNonSerializableFields
     internal NonSerializableType s1;
 }",
                 CodeActionIndex = 1,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
@@ -225,7 +226,7 @@ Public Class CA2235WithNonPublicNonSerializableFields
     Friend s1 As NonSerializableType
 End Class",
                 CodeActionIndex = 1,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

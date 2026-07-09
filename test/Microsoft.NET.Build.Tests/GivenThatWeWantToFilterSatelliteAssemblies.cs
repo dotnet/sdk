@@ -1,20 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToFilterSatelliteAssemblies : SdkTest
     {
-        public GivenThatWeWantToFilterSatelliteAssemblies(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("netcoreapp2.0", true, false)]
-        [InlineData("netcoreapp3.0", false, false)]
-        [InlineData("net47", false, true)]
+        [TestMethod]
+        [DataRow("netcoreapp2.0", true, false)]
+        [DataRow("netcoreapp3.0", false, false)]
+        [DataRow("net47", false, true)]
         public void It_only_publish_selected_ResourceLanguages(string targetFramework, bool explicitCopyLocalLockFile,
             bool needsNetFrameworkReferenceAssemblies)
         {
@@ -38,7 +36,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties.Add("CopyLocalLockFileAssemblies", "true");
             }
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testProjectInstance);
             var buildResult = buildCommand.Execute();
@@ -78,9 +76,9 @@ namespace Microsoft.NET.Build.Tests
 
             outputDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
-        [Theory]
-        [InlineData("netcoreapp2.0", true, false)]
-        [InlineData("net47", false, true)]
+        [TestMethod]
+        [DataRow("netcoreapp2.0", true, false)]
+        [DataRow("net47", false, true)]
         public void It_copies_all_satellites_when_not_filtered(string targetFramework, bool explicitCopyLocalLockFile,
             bool needsNetFrameworkReferenceAssemblies)
         {
@@ -102,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties.Add("CopyLocalLockFileAssemblies", "true");
             }
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testProjectInstance);
             var buildResult = buildCommand.Execute();

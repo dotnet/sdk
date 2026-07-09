@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      We need to output to something other than the normal bin and obj folders to prevent picking up the global.json that
+      is being dropped there as that will break building the project that BenchmarkDotNet generates to run the benchmarks.
+    -->
+    <BaseOutputPath>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', 'artifacts', 'benchmarks', '$(MSBuildProjectName)', 'bin'))</BaseOutputPath>
+    <BaseIntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', 'artifacts', 'benchmarks', '$(MSBuildProjectName)', 'obj'))</BaseIntermediateOutputPath>
+
+    <!--
+      Skipping here as we want the auto-generated projects to skip as well. The project file will copy this Directory.Build.props
+      to the output folder and the auto-generated projects will implicitly import it.
+    -->
+    <SkipCustomizeXlfSourceNames>true</SkipCustomizeXlfSourceNames>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))"/>
+</Project>

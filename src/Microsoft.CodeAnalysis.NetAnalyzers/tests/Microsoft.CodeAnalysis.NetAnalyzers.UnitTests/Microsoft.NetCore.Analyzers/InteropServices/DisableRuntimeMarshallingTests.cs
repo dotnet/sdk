@@ -1,10 +1,10 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.DisableRuntimeMarshallingAnalyzer,
     Microsoft.NetCore.Analyzers.InteropServices.CSharpDisableRuntimeMarshallingFixer>;
@@ -14,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.NetCore.Analyzers.InteropServices
 {
+    [TestClass]
     public class DisableRuntimeMarshallingTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithSetLastError_Emits_Diagnostic()
         {
             string source = @"
@@ -34,7 +35,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_Local_PInvokeWithSetLastError_Emits_Diagnostic()
         {
             string source = @"
@@ -55,7 +56,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithSetLastError_Emits_Diagnostic()
         {
             string source = @"
@@ -71,7 +72,7 @@ End Class
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithLCIDConversion_Emits_Diagnostic()
         {
             string source = @"
@@ -90,7 +91,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithLCIDConversion_Emits_Diagnostic()
         {
             string source = @"
@@ -107,7 +108,7 @@ End Class
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithClassParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -125,7 +126,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithClassParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -141,7 +142,7 @@ End Class
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithClassReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -159,7 +160,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithClassReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -175,7 +176,7 @@ End Class
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokePropertyWithClassReturnValue_EmitsDiagnostic()
         {
             string source = @"
@@ -192,7 +193,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeOperatorWithClassType_EmitsDiagnostic()
         {
             string source = @"
@@ -210,7 +211,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeEvent_EmitsDiagnostic()
         {
             string source = @"
@@ -229,7 +230,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithManagedValueTypeReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -252,7 +253,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithRecursiveManagedValueTypeReturnValue_DoesNotEmitDiagnostic()
         {
             string source = @"
@@ -275,7 +276,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithMutuallyRecursiveManagedValueTypeReturnValue_DoesNotEmitDiagnostic()
         {
             string source = @"
@@ -302,7 +303,7 @@ struct ValueType2
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithManagedValueTypeReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -322,7 +323,7 @@ End Structure
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -345,7 +346,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -365,7 +366,7 @@ End Structure
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithByRefManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -388,7 +389,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithByRefManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -408,7 +409,7 @@ End Structure
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithByRefUnmanagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -431,7 +432,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithByRefUnmanagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -451,7 +452,7 @@ End Structure
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithUnmnagedValueTypeReturnValue_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -474,7 +475,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithUnmnagedValueTypeReturnValue_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -494,7 +495,7 @@ End Structure
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithUnmanagedValueTypeParameter_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -517,7 +518,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithUnmanagedValueTypeParameter_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -537,7 +538,7 @@ End Structure
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithUnmanagedValueTypeParameter_WithAutoLayout_Emits_Diagnostic()
         {
             string source = @"
@@ -561,7 +562,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithUnmanagedValueTypeParameter_WithAutoLayout_Emits_Diagnostic()
         {
             string source = @"
@@ -582,7 +583,7 @@ End Structure
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_PInvokeWithUnmanagedValueTypeParameter_WithAutoLayoutField_Emits_Diagnostic()
         {
             string source = @"
@@ -611,7 +612,7 @@ struct ValueType2
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_PInvokeWithUnmanagedValueTypeParameter_WithAutoLayoutField_Emits_Diagnostic()
         {
             string source = @"
@@ -636,7 +637,7 @@ End Structure
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Declare_Declaration_Emits_Diagnostic()
         {
             string source = @"
@@ -650,7 +651,7 @@ End Class
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PInvokeWithVarargs_Emits_Diagnostic()
         {
             string source = @"
@@ -668,7 +669,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PInvokeWithPreserveSigFalse_Emits_Diagnostic()
         {
             string source = @"
@@ -686,7 +687,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_DelegateWithClassParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -704,7 +705,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_DelegateWithClassParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -719,7 +720,7 @@ Public Delegate Sub DelegateType({|CA1420:param|} As String)
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_DelegateWithClassReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -737,7 +738,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5995, "https://github.com/dotnet/roslyn-analyzers/issues/5995")]
         public async Task CS_DelegateWithClassReturnValue_NoUnmanagedFunctionPointer_MarshalAPIUsage_Emits_Diagnostic()
         {
@@ -769,7 +770,7 @@ class C
             await VerifyCSAnalyzerWithAdditionalAssemblyAsync(source, delegateDefinition);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5995, "https://github.com/dotnet/roslyn-analyzers/issues/5995")]
         public async Task CS_DelegateWithClassReturnValue_NoUnmanagedFunctionPointer_PInvokeUsage_Emits_Diagnostic()
         {
@@ -801,7 +802,7 @@ class C
             await VerifyCSAnalyzerWithAdditionalAssemblyAsync(source, delegateDefinition);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6094, "https://github.com/dotnet/roslyn-analyzers/issues/6094")]
         public async Task CS_DelegateWith_NonBlittableParameter_PInvokeUsage_NoDisableRuntimeMarshalling_DoesNotEmit_Diagnostic()
         {
@@ -826,7 +827,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6094, "https://github.com/dotnet/roslyn-analyzers/issues/5995")]
         public async Task CS_DelegateWithClassReturnValue_NoUnmanagedFunctionPointer_MarshalAPIUsage_NoDisableRuntimeMarshalling_DoesNotEmit_Diagnostic()
         {
@@ -850,7 +851,7 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_DelegateWithClassReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -865,7 +866,7 @@ Public Delegate Function {|CA1420:DelegateType|}() As String
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateWithManagedValueTypeReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -888,7 +889,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateWithManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -911,7 +912,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateWithByRefManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -934,7 +935,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateWithByRefUnmanagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -957,7 +958,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateWithUnmnagedValueTypeReturnValue_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -980,7 +981,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateWithUnmanagedValueTypeParameter_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -1003,7 +1004,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateWithUnmanagedValueTypeParameter_WithAutoLayout_Emits_Diagnostic()
         {
             string source = @"
@@ -1027,7 +1028,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DelegateWithUnmanagedValueTypeParameter_WithAutoLayoutField_Emits_Diagnostic()
         {
             string source = @"
@@ -1056,7 +1057,7 @@ struct ValueType2
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithClassParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -1076,7 +1077,7 @@ class C
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithClassReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -1096,7 +1097,7 @@ class C
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithManagedValueTypeReturnValue_Emits_Diagnostic()
         {
             string source = @"
@@ -1121,7 +1122,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -1146,7 +1147,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithByRefManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -1172,7 +1173,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithByRefUnmanagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
@@ -1198,7 +1199,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithUnmnagedValueTypeReturnValue_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -1223,7 +1224,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithUnmanagedValueTypeParameter_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -1248,7 +1249,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithUnmanagedValueTypeParameter_WithAutoLayout_Emits_Diagnostic()
         {
             string source = @"
@@ -1274,7 +1275,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FunctionPointerWithUnmanagedValueTypeParameter_WithAutoLayoutField_Emits_Diagnostic()
         {
             string source = @"
@@ -1305,7 +1306,7 @@ struct ValueType2
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ManagedFunctionPointerWithUnmanagedValueTypeParameter_WithAutoLayoutField_Does_Not_Emit_Diagnostic()
         {
             string source = @"
@@ -1336,7 +1337,7 @@ struct ValueType2
             await VerifyCSAnalyzerAsync(source, allowUnsafeBlocks: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MarshalOffsetOf_Emits_Diagnostic()
         {
             string source = @"
@@ -1363,7 +1364,7 @@ struct ValueType
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MarshalSizeOf_Emits_Diagnostic()
         {
             string source = @"
@@ -1424,7 +1425,7 @@ struct ValueType
             await VerifyCSCodeFixAsync(source, source, allowUnsafeBlocks: false);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MarshalStructureToPtr_Emits_Diagnostic()
         {
             string source = @"
@@ -1491,7 +1492,7 @@ struct ManagedValueType
             await VerifyCSCodeFixAsync(source, source, allowUnsafeBlocks: false);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MarshalPtrToStructure_Emits_Diagnostic()
         {
             string source = @"
@@ -1576,7 +1577,7 @@ class ClassType
             await VerifyCSCodeFixAsync(source, source, allowUnsafeBlocks: false);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_Marshal_APIs_Emits_Diagnostic()
         {
             string source = @"
@@ -1618,7 +1619,7 @@ End Structure
 
             test.TestState.Sources.Add(additionalSourceFile);
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyCSAnalyzerWithAdditionalAssemblyAsync(string source, string additionalReferencedAssemblySource)
@@ -1640,7 +1641,7 @@ End Structure
             test.TestState.AdditionalProjects.Add(AdditionalAssemblyName, additionalProject);
             test.TestState.AdditionalProjectReferences.Add(AdditionalAssemblyName);
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static Task VerifyCSAnalyzerAsync(string source, bool allowUnsafeBlocks = false)
@@ -1673,7 +1674,7 @@ End Structure
             test.FixedState.MarkupHandling = MarkupMode.Allow;
             test.MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyVBAnalyzerAsync(string source)
@@ -1686,7 +1687,7 @@ End Structure
             };
             test.MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

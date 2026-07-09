@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpForwardCancellationTokenToInvocationsAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpForwardCancellationTokenToInvocationsFixer>;
@@ -13,11 +13,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class ForwardCancellationTokenToInvocationsTests
     {
         #region No Diagnostic - C#
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_NoParentToken_AsyncNoTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -34,7 +35,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_NoParentToken_SyncNoTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -49,7 +50,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_NoParentToken_TokenDefaultAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -66,7 +67,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_NoTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -83,7 +84,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_OverloadArgumentsDontMatchAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -101,7 +102,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_Overload_AlreadyPassingTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -119,7 +120,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_Default_AlreadyPassingTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -135,7 +136,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_PassingTokenFromSourceAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -154,7 +155,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_PassingExplicitDefaultAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -172,7 +173,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_PassingExplicitDefaultCancellationTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -190,7 +191,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_PassingExplicitCancellationTokenNoneAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -208,7 +209,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_OverloadTokenNotLastParameterAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -226,7 +227,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_OverloadWithMultipleTokensAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -244,7 +245,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_OverloadWithMultipleTokensSeparatedAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -262,7 +263,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_NamedTokenUnorderedAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -279,7 +280,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_Overload_NamedTokenUnorderedAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
@@ -297,7 +298,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_CancellationTokenSource_ParamsUsed_OrderAsync()
         {
             /*
@@ -329,7 +330,7 @@ class CTS
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_NoDiagnostic_ExtensionMethodTakesTokenAsync()
         {
             // The extension method is in another class, make sure the object mc is not substituted with the static class name
@@ -356,7 +357,7 @@ public static class Extensions
             return CS8VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task CS_NoDiagnostic_ParametersDifferMoreThanOneAsync()
         {
@@ -377,7 +378,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task CS_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambdaAsync()
         {
@@ -405,7 +406,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task CS_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegateAsync()
         {
@@ -434,7 +435,7 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
         public Task CS_NoDiagnostic_ReturnTypesDifferAsync()
         {
@@ -457,7 +458,7 @@ class P
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5965, "https://github.com/dotnet/roslyn-analyzers/issues/5965")]
         public async Task CS_ArgList()
         {
@@ -478,7 +479,7 @@ class P
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6819, "https://github.com/dotnet/roslyn-analyzers/issues/6819")]
         public Task ObsoleteOverload()
         {
@@ -504,7 +505,7 @@ class Test
 
         #region Diagnostics with no fix = C#
 
-        [Fact]
+        [TestMethod]
         public Task CS_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnorderedAsync()
         {
             // This is a special case that will get a diagnostic but will not get a fix
@@ -527,7 +528,7 @@ class C
             return VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmptyAsync()
         {
             /*
@@ -556,7 +557,7 @@ class C
             return CS8VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task CS_AnalyzerOnlyDiagnostic_StaticLocalMethodAsync()
         {
@@ -582,7 +583,7 @@ class C
             return CS8VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task CS_AnalyzerOnlyDiagnostic_LocalMethod_InsideOf_StaticLocalMethod_TokenInTopParentAsync()
         {
@@ -616,7 +617,7 @@ class C
 
         #region Diagnostics with fix = C#
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Class_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -644,7 +645,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Class_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -674,7 +675,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_NoAwaitAsync()
         {
             string originalCode = @"
@@ -704,7 +705,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_SaveTaskAsync()
         {
             string originalCode = @"
@@ -734,7 +735,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_ClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -764,7 +765,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -794,7 +795,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OtherClass_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -830,7 +831,7 @@ class O
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OtherClass_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -870,7 +871,7 @@ class O
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OtherClassStaticMethod_TokenDefaultAsync()
         {
             // The invocation for a static method includes the type and the dot
@@ -907,7 +908,7 @@ class O
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             // The invocation for a static method includes the type and the dot
@@ -946,7 +947,7 @@ class O
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Struct_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -976,7 +977,7 @@ struct S
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Struct_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -1006,7 +1007,7 @@ struct S
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OverloadTokenAsync()
         {
             string originalCode = @"
@@ -1038,7 +1039,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OverloadToken_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -1070,7 +1071,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OverloadTokenDefaultAsync()
         {
             string originalCode = @"
@@ -1102,7 +1103,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OverloadTokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -1134,7 +1135,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OverloadsArgumentsMatchAsync()
         {
             string originalCode = @"
@@ -1170,7 +1171,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -1206,7 +1207,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_ActionDelegateAwaitAsync()
         {
             string originalCode = @"
@@ -1242,7 +1243,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_ActionDelegateNoAwaitAsync()
         {
             string originalCode = @"
@@ -1278,7 +1279,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_ActionDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -1314,7 +1315,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_FuncDelegateAwaitAsync()
         {
             string originalCode = @"
@@ -1358,7 +1359,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_FuncDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -1402,7 +1403,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_FuncDelegateAwaitOutsideAsync()
         {
             string originalCode = @"
@@ -1438,7 +1439,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_NestedFunctionAwaitAsync()
         {
             string originalCode = @"
@@ -1480,7 +1481,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_NestedFunctionNoAwaitAsync()
         {
             string originalCode = @"
@@ -1522,7 +1523,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_NestedFunctionAwaitOutsideAsync()
         {
             string originalCode = @"
@@ -1564,7 +1565,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_NestedFunctionAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -1606,7 +1607,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_AliasTokenInDefaultAsync()
         {
             string originalCode = @"
@@ -1638,7 +1639,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_AliasTokenInOverloadAsync()
         {
             string originalCode = @"
@@ -1672,7 +1673,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Default_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
@@ -1704,7 +1705,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Overload_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
@@ -1738,7 +1739,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Default_AliasTokenInDefaultAndMethodParameterAsync()
         {
             string originalCode = @"
@@ -1770,7 +1771,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Default_WithAllDefaultParametersImplicitAsync()
         {
             string originalCode = @"
@@ -1806,7 +1807,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Default_WithSomeDefaultParametersAsync()
         {
             string originalCode = @"
@@ -1836,7 +1837,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Default_WithNamedParametersAsync()
         {
             string originalCode = @"
@@ -1866,7 +1867,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Default_WithAncestorAliasAndNamedParametersAsync()
         {
             string originalCode = @"
@@ -1898,7 +1899,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Default_WithMethodArgumentAliasAndNamedParametersAsync()
         {
             string originalCode = @"
@@ -1930,7 +1931,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_Default_WithNamedParametersUnorderedAsync()
         {
             string originalCode = @"
@@ -1959,7 +1960,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_WithLockAsync()
         {
             string originalCode = @"
@@ -1999,7 +2000,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_DereferencePossibleNullReferenceAsync()
         {
             string originalCode = @"
@@ -2046,7 +2047,7 @@ class O
             return CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CS_Diagnostic_WithTriviaAsync()
         {
             string originalCode = @"
@@ -2112,7 +2113,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task CS_Diagnostic_MultiNesting_TopMethodAsync()
         {
@@ -2161,7 +2162,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task CS_Diagnostic_MultiNesting_LocalMethodAsync()
         {
@@ -2210,7 +2211,7 @@ class C
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task CS_Diagnostic_LocalMethod_InsideOf_StaticLocalMethodPassingTokenAsync()
         {
@@ -2258,7 +2259,7 @@ class C
             return CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
         public Task CS_Diagnostic_GenericTypeParamOnInstanceMethodAsync()
         {
@@ -2297,7 +2298,7 @@ class C
             return CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
         public Task CS_Diagnostic_GenericTypeParamOnStaticMethodAsync()
         {
@@ -2330,7 +2331,7 @@ class C
             return CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
         public Task CS_Diagnostic_NullCoalescedDelegatesAsync()
         {
@@ -2369,7 +2370,7 @@ class C
             return CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
         public Task CS_Diagnostic_NullCoalescedDelegatesWithInvokeAsync()
         {
@@ -2408,7 +2409,7 @@ class C
             return CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
         public Task CS_Diagnostic_ReturnTypeIsConvertableAsync()
         {
@@ -2448,7 +2449,7 @@ class P
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
         public Task CS_SpecialCaseTaskLikeReturnTypesAsync()
         {
@@ -2488,7 +2489,7 @@ class P
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
         public Task CS_ParamsArrayAsync()
         {
@@ -2533,7 +2534,7 @@ public class B {
 
         #region No Diagnostic - VB
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_NoParentToken_AsyncNoTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2550,7 +2551,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_NoParentToken_SyncNoTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2564,7 +2565,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_NoParentToken_TokenDefaultAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2581,7 +2582,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_NoTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2598,7 +2599,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_OverloadArgumentsDontMatchAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2618,7 +2619,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_Overload_AlreadyPassingTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2638,7 +2639,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_Default_AlreadyPassingTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2653,7 +2654,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_PassingTokenFromSourceAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2676,7 +2677,7 @@ End Class
 
         // There is no default keyword in VB, must use Nothing instead.
         // The following test method covers the two cases for: `default` and `default(CancellationToken)`
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_PassingExplicitNothingAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2696,7 +2697,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_PassingExplicitCancellationTokenNoneAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2716,7 +2717,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_OverloadTokenNotLastParameterAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2736,7 +2737,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_OverloadWithMultipleTokensAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2756,7 +2757,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_OverloadWithMultipleTokensSeparatedAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2776,7 +2777,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_NamedTokenUnorderedAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2793,7 +2794,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_Overload_NamedTokenUnorderedAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
@@ -2813,7 +2814,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_CancellationTokenSource_ParamsUsedAsync()
         {
             /*
@@ -2840,7 +2841,7 @@ End Class
             return VB16VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_NoDiagnostic_ExtensionMethodTakesTokenAsync()
         {
             // The extension method is in another class, make sure the object mc is not substituted with the static class name
@@ -2867,7 +2868,7 @@ End Module
             return VB16VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task VB_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambdaAsync()
         {
@@ -2900,7 +2901,7 @@ End Class
             return VerifyVB.VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task VB_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegateAsync()
         {
@@ -2930,7 +2931,7 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
         public Task VB_NoDiagnostic_ReturnTypesDifferAsync()
         {
@@ -2959,7 +2960,7 @@ End Module
 
         #region Diagnostics with no fix = VB
 
-        [Fact]
+        [TestMethod]
         public Task VB_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnorderedAsync()
         {
             // This is a special case that will get a diagnostic but will not get a fix
@@ -2985,7 +2986,7 @@ End Class
             return VerifyVB.VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmptyAsync()
         {
             /*
@@ -3017,7 +3018,7 @@ End Class
 
         #region Diagnostics with fix = VB
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Class_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -3045,7 +3046,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Class_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3075,7 +3076,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_NoAwaitAsync()
         {
             string originalCode = @"
@@ -3105,7 +3106,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_SaveTaskAsync()
         {
             string originalCode = @"
@@ -3137,7 +3138,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_ClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -3167,7 +3168,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3197,7 +3198,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OtherClass_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -3231,7 +3232,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OtherClass_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3273,7 +3274,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OtherClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -3307,7 +3308,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3349,7 +3350,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Struct_TokenDefaultAsync()
         {
             string originalCode = @"
@@ -3379,7 +3380,7 @@ End Structure
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Struct_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3409,7 +3410,7 @@ End Structure
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OverloadTokenAsync()
         {
             string originalCode = @"
@@ -3445,7 +3446,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OverloadToken_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3481,7 +3482,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OverloadTokenDefaultAsync()
         {
             string originalCode = @"
@@ -3517,7 +3518,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OverloadTokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3553,7 +3554,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OverloadsArgumentsMatchAsync()
         {
             string originalCode = @"
@@ -3601,7 +3602,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3649,7 +3650,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_ActionDelegateAwaitAsync()
         {
             string originalCode = @"
@@ -3689,7 +3690,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_ActionDelegateNoAwaitAsync()
         {
             string originalCode = @"
@@ -3729,7 +3730,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_ActionDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3769,7 +3770,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_FuncDelegateAwaitAsync()
         {
             string originalCode = @"
@@ -3815,7 +3816,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_FuncDelegateNoAwaitAsync()
         {
             string originalCode = @"
@@ -3861,7 +3862,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_FuncDelegateAwaitOutsideAsync()
         {
             string originalCode = @"
@@ -3901,7 +3902,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_FuncDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
@@ -3953,7 +3954,7 @@ End Class
         // VB_Diagnostic_NestedFunctionAwaitOutside
         // VB_Diagnostic_NestedFunctionAwait_WithConfigureAwait
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_AliasTokenInOverloadAsync()
         {
             string originalCode = @"
@@ -3991,7 +3992,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Default_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
@@ -4023,7 +4024,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Overload_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
@@ -4061,7 +4062,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Default_AliasTokenInDefaultAndMethodParameterAsync()
         {
             string originalCode = @"
@@ -4093,7 +4094,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Overload_AliasTokenInOverloadAndMethodParameterAsync()
         {
             string originalCode = @"
@@ -4131,7 +4132,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Default_WithAllDefaultParametersImplicitAsync()
         {
             string originalCode = @"
@@ -4161,7 +4162,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Default_WithSomeDefaultParametersAsync()
         {
             string originalCode = @"
@@ -4191,7 +4192,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Default_WithNamedParametersAsync()
         {
             string originalCode = @"
@@ -4221,7 +4222,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Default_WithAncestorAliasAndNamedParametersAsync()
         {
             string originalCode = @"
@@ -4253,7 +4254,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Default_WithMethodArgumentAliasAndNamedParametersAsync()
         {
             string originalCode = @"
@@ -4285,7 +4286,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_Default_WithNamedParametersUnorderedAsync()
         {
             string originalCode = @"
@@ -4314,7 +4315,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_WithLockAsync()
         {
             string originalCode = @"
@@ -4352,7 +4353,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_DereferencePossibleNullReferenceAsync()
         {
             string originalCode = @"
@@ -4393,7 +4394,7 @@ End Structure
             return VB16VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public Task VB_Diagnostic_WithTriviaAsync()
         {
             string originalCode = @"
@@ -4483,7 +4484,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
         public Task VB_Diagnostic_MultiNesting_TopMethodAsync()
         {
@@ -4525,7 +4526,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
         public Task VB_Diagnostic_GenericTypeParamOnInstanceMethodAsync()
         {
@@ -4562,7 +4563,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
         public Task VB_Diagnostic_GenericTypeParamOnStaticMethodAsync()
         {
@@ -4595,7 +4596,7 @@ End Class
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
         public Task VB_Diagnostic_ReturnTypeIsConvertableAsync()
         {
@@ -4641,7 +4642,7 @@ End Module
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
         public Task VB_SpecialCaseTaskLikeReturnTypesAsync()
         {
@@ -4687,7 +4688,7 @@ End Module
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
         public Task VB_ParamsArrayAsync()
         {
@@ -4749,7 +4750,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task CS8VerifyAnalyzerAsync(string originalCode)
@@ -4762,7 +4763,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VB16VerifyCodeFixAsync(string originalCode, string fixedCode)
@@ -4776,7 +4777,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VB16VerifyAnalyzerAsync(string originalCode)
@@ -4789,7 +4790,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         #endregion

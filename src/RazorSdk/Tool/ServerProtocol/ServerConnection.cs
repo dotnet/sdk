@@ -290,14 +290,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             expectedPath = Process.GetCurrentProcess().MainModule.FileName;
 #endif
 
-            if ("dotnet".Equals(Path.GetFileNameWithoutExtension(expectedPath), StringComparison.Ordinal))
+            // Use GetFileName (not GetFileNameWithoutExtension) to avoid false matches with dotnet-prefixed names like "dotnet.Tests".
+            var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet";
+            if (exeName.Equals(Path.GetFileName(expectedPath), StringComparison.Ordinal))
             {
                 return expectedPath;
             }
 
             // We were probably running from Visual Studio or Build Tools and found MSBuild instead of dotnet. Use the PATH...
             var paths = Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator);
-            var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet";
             foreach (string path in paths)
             {
                 var dotnetPath = Path.Combine(path, exeName);
@@ -389,14 +390,20 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                         Arguments = processArguments,
                         UseShellExecute = false,
                         WorkingDirectory = clientDir,
+#if NETFRAMEWORK
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
+#endif
                         CreateNoWindow = true
                     };
 
-                    var process = Process.Start(startInfo);
+#if NETFRAMEWORK
+                    using Process process = Process.Start(startInfo);
                     processId = process.Id;
+#else
+                    processId = Process.StartAndForget(startInfo);
+#endif
 
                     return true;
                 }

@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.DoNotRaiseExceptionsInExceptionClausesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotRaiseExceptionsInExceptionClausesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpSimpleCaseAsync()
         {
             var code = @"
@@ -47,7 +48,7 @@ public class Test
                 GetCSharpResultAt(22, 13));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicSimpleCaseAsync()
         {
             var code = @"
@@ -71,7 +72,7 @@ End Class
                 GetBasicResultAt(13, 13));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNestedFinallyAsync()
         {
             var code = @"
@@ -110,7 +111,7 @@ public class Test
                 GetCSharpResultAt(25, 13));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNestedFinallyAsync()
         {
             var code = @"

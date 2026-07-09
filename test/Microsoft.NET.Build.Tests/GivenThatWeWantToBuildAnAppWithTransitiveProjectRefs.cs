@@ -3,20 +3,18 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithTransitiveProjectRefs : SdkTest
     {
-        public GivenThatWeWantToBuildAnAppWithTransitiveProjectRefs(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_builds_the_project_successfully()
         {
             // NOTE the project dependencies in AppWithTransitiveProjectRefs:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs", "BuildAppWithTransitiveProjectRef")
                 .WithSource();
 
@@ -55,10 +53,11 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("This string came from AuxLibrary!");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs")
                 .WithSource();
 
@@ -93,14 +92,14 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().OnlyHaveFiles(Array.Empty<string>());
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_build_the_project_successfully()
         {
             // NOTE the project dependencies in AppWithTransitiveProjectRefs:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs", "BuildAppWithTransitiveProjectRefDisabled")
                 .WithSource();
 

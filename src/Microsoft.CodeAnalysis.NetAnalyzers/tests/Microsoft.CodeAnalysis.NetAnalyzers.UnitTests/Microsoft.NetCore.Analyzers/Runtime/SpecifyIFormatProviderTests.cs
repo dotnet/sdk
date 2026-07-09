@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SpecifyIFormatProviderAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpSpecifyIFormatProviderFixer>;
@@ -14,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class SpecifyIFormatProviderTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1305_StringReturningStringFormatOverloads_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +61,7 @@ GetIFormatProviderAlternateStringRuleCSharpResultAt(25, 16, "string.Format(strin
                                                             "string.Format(IFormatProvider, string, params object[])"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_StringReturningUserMethodOverloads_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -126,7 +127,7 @@ GetIFormatProviderAlternateStringRuleCSharpResultAt(12, 9, "IFormatProviderOverl
                                                            "IFormatProviderOverloads.UserDefinedParamsMatchMethodOverload(IFormatProvider, string, params object[])"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_StringReturningNoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -200,7 +201,7 @@ public class DerivedClass : IFormatProvider
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_NonStringReturningStringFormatOverloads_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -254,7 +255,7 @@ GetIFormatProviderAlternateRuleCSharpResultAt(12, 9, "IFormatProviderOverloads.T
                                                      "IFormatProviderOverloads.TrailingIFormatProvider(string, IFormatProvider)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_NonStringReturningStringFormatOverloads_TargetMethodNoGenerics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -292,7 +293,7 @@ GetIFormatProviderAlternateRuleCSharpResultAt(8, 9, "IFormatProviderOverloads.Ta
                                                     "IFormatProviderOverloads.TargetMethodIsNonGeneric<T>(string, IFormatProvider)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_StringReturningUICultureIFormatProvider_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -349,7 +350,7 @@ GetIFormatProviderUICultureStringRuleCSharpResultAt(13, 9, "UICultureAsIFormatPr
                                                            "IFormatProviderOverloads.IFormatProviderReturningString(string, IFormatProvider, IFormatProvider)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_NonStringReturningUICultureIFormatProvider_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -404,7 +405,7 @@ GetIFormatProviderUICultureRuleCSharpResultAt(13, 9, "UICultureAsIFormatProvider
                                                      "IFormatProviderOverloads.IFormatProviderReturningNonString(string, IFormatProvider, IFormatProvider)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_AcceptNullForIFormatProvider_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -429,7 +430,7 @@ internal static class IFormatProviderOverloads
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_DoesNotRecommendObsoleteOverload_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -460,7 +461,7 @@ internal static class IFormatProviderOverloads
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_RuleException_NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -483,7 +484,7 @@ public static class IFormatProviderStringTest
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_StringReturningStringFormatOverloads_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -525,7 +526,7 @@ GetIFormatProviderAlternateStringRuleBasicResultAt(23, 16, "String.Format(String
                                                            "String.Format(IFormatProvider, String, ParamArray Object())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_StringReturningUserMethodOverloads_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -585,7 +586,7 @@ End Class",
                                                            "IFormatProviderOverloads.UserDefinedParamsMatchMethodOverload(IFormatProvider, String, ParamArray Object())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_StringReturningNoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -635,7 +636,7 @@ Public Class DerivedClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_NonStringReturningStringFormatOverloads_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -687,7 +688,7 @@ End Class",
                                                      "IFormatProviderOverloads.TrailingIFormatProvider(String, IFormatProvider)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_StringReturningUICultureIFormatProvider_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -743,7 +744,7 @@ End Class",
                                                            "IFormatProviderOverloads.IFormatProviderReturningString(String, IFormatProvider, IFormatProvider)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_NonStringReturningUICultureIFormatProvider_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -797,7 +798,7 @@ End Class",
                                                      "IFormatProviderOverloads.IFormatProviderReturningNonString(String, IFormatProvider, IFormatProvider)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_NonStringReturningComputerInfoInstalledUICultureIFormatProvider_VisualBasicAsync()
         {
             await new VerifyVB.Test
@@ -830,10 +831,10 @@ End Class",
                                                     "ComputerInfo.InstalledUICulture",
                                                     "IFormatProviderOverloads.IFormatProviderReturningNonString(String, IFormatProvider)"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_RuleException_NoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -856,7 +857,7 @@ Public NotInheritable Class IFormatProviderStringTest
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2394, "https://github.com/dotnet/roslyn-analyzers/issues/2394")]
         public async Task CA1305_BoolToString_NoDiagnosticsAsync()
         {
@@ -878,7 +879,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2394, "https://github.com/dotnet/roslyn-analyzers/issues/2394")]
         public async Task CA1305_CharToString_NoDiagnosticsAsync()
         {
@@ -900,7 +901,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2394, "https://github.com/dotnet/roslyn-analyzers/issues/2394")]
         public async Task CA1305_StringToString_NoDiagnosticsAsync()
         {
@@ -922,7 +923,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3378, "https://github.com/dotnet/roslyn-analyzers/issues/3378")]
         public async Task CA1305_GuidToString_NoDiagnosticsAsync()
         {
@@ -946,7 +947,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5999, "https://github.com/dotnet/roslyn-analyzers/issues/5999")]
         public async Task CA1305_GuidParse_NoDiagnosticsAsync()
         {
@@ -965,10 +966,10 @@ namespace Test
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1305_NullableInvariantTypes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -998,9 +999,9 @@ Public Class SomeClass
 End Class");
         }
 
-        [Theory, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
-        [InlineData("DateTime")]
-        [InlineData("DateTimeOffset")]
+        [TestMethod, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
+        [DataRow("DateTime")]
+        [DataRow("DateTimeOffset")]
         public async Task CA1305_DateTimeOrDateTimeOffsetInvariantSpecifiers_NoDiagnosticAsync(string type)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1019,9 +1020,9 @@ public class C
 }}");
         }
 
-        [Theory, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
-        [InlineData("DateTime")]
-        [InlineData("DateTimeOffset")]
+        [TestMethod, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
+        [DataRow("DateTime")]
+        [DataRow("DateTimeOffset")]
         public async Task CA1305_DateTimeOrDateTimeOffsetVariantSpecifiers_DiagnosticAsync(string type)
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1040,7 +1041,7 @@ public class C
                 GetIFormatProviderAlternateStringRuleCSharpResultAt(2, $"{type}.ToString(string)", $"C.M({type})", $"{type}.ToString(string, IFormatProvider)"));
         }
 
-        [Fact, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
+        [TestMethod, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
         public async Task CA1305_TimeSpanInvariantSpecifiers_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1053,7 +1054,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
+        [TestMethod, WorkItem(3507, "https://github.com/dotnet/roslyn-analyzers/issues/3507")]
         public async Task CA1305_TimeSpanVariantSpecifiers_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1069,19 +1070,19 @@ public class C
                 GetIFormatProviderAlternateStringRuleCSharpResultAt(1, "TimeSpan.ToString(string)", "C.M(TimeSpan)", "TimeSpan.ToString(string, IFormatProvider)"));
         }
 
-        [Theory, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
+        [TestMethod, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
         // Diagnostics
-        [InlineData("")]
+        [DataRow("")]
         // No diagnostics
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M:NS.C.M1(System.String)")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = T:NS.C")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = N:NS")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = N:NS")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M*")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M:NS.C.M1(System.String)")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = T:NS.C")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = N:NS")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = N:NS")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M*")]
         public async Task CA1305_ExcludedSymbolsOption_NoOverloads(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1114,7 +1115,7 @@ namespace NS
                 },
             };
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1144,22 +1145,22 @@ End Namespace",
                 },
             };
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
+        [TestMethod, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
         // Diagnostics
-        [InlineData("")]
+        [DataRow("")]
         // No diagnostics
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M1|M2")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M:NS.C.M1(System.String)|M:NS.C.M2(System.String)")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = T:NS.C")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = N:NS")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M1|M2")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)|M:NS.C.M2(System.String)")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = N:NS")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M*")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M1|M2")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M:NS.C.M1(System.String)|M:NS.C.M2(System.String)")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = T:NS.C")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = N:NS")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M1|M2")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)|M:NS.C.M2(System.String)")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = N:NS")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M*")]
         public async Task CA1305_ExcludedSymbolsOption_IFormatProviderPositions(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1211,7 +1212,7 @@ namespace NS
                 csharpTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleCSharpResultAt(23, 13, "C.M2(string)", "C.M()", "C.M2(IFormatProvider, string)"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1271,22 +1272,22 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleBasicResultAt(32, 13, "C.M2(String)", "C.M()", "C.M2(IFormatProvider, String)"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
+        [TestMethod, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
         // Diagnostics
-        [InlineData("")]
+        [DataRow("")]
         // No diagnostics
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M1|M2|M3")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M:NS.C.M1(System.String)|M:NS.C.M2(System.String)|M:NS.C.M3(System.String)")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = T:NS.C")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = N:NS")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M1|M2|M3")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)|M:NS.C.M2(System.String)|M:NS.C.M3(System.String)")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = N:NS")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M*")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M1|M2|M3")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M:NS.C.M1(System.String)|M:NS.C.M2(System.String)|M:NS.C.M3(System.String)")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = T:NS.C")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = N:NS")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M1|M2|M3")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)|M:NS.C.M2(System.String)|M:NS.C.M3(System.String)")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = N:NS")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M*")]
         public async Task CA1305_ExcludedSymbolsOption_StringReturnType(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1339,7 +1340,7 @@ namespace NS
                 csharpTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleCSharpResultAt(24, 13, "C.M3(string)", "C.M()", "C.M3(string, IFormatProvider)"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1406,21 +1407,21 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleBasicResultAt(39, 13, "C.M3(String)", "C.M()", "C.M3(IFormatProvider, String)"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
+        [TestMethod, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
         // Diagnostics
-        [InlineData("")]
+        [DataRow("")]
         // No diagnostics
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = Format")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M:System.String.Format(System.String,System.Object)")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = T:System.String")]
-        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = N:System")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = Format")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M:System.String.Format(System.String,System.Object)")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = T:System.String")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = N:System")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = Format")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = M:System.String.Format(System.String,System.Object)")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = T:System.String")]
+        [DataRow("dotnet_code_quality.CA1305.excluded_symbol_names = N:System")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = Format")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M:System.String.Format(System.String,System.Object)")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = T:System.String")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = N:System")]
         public async Task CA1305_ExcludedSymbolsOption_CultureInfo(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1459,7 +1460,7 @@ namespace NS
                 csharpTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleCSharpResultAt(12, 31, "string.Format(string, object)", "C.M()", "string.Format(IFormatProvider, string, params object[])"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1494,10 +1495,10 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleBasicResultAt(9, 38, "String.Format(String, Object)", "C.M()", "String.Format(IFormatProvider, String, ParamArray Object())"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5843, "https://github.com/dotnet/roslyn-analyzers/issues/5843")]
         public async Task IFormatProviderOptional()
         {
@@ -1552,7 +1553,7 @@ public class C
                     VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule).WithLocation(3)
                         .WithArguments("C.MyMethod(string)", "C.M(ReadOnlySpan<char>)", "C.MyMethod(string, [IFormatProvider])"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1587,23 +1588,23 @@ End Class
                     VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule).WithLocation(1)
                         .WithArguments("C.MyMethod(String)", "C.M()", "C.MyMethod(String, [IFormatProvider])"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(6586, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
-        [InlineData("int")]
-        [InlineData("uint")]
-        [InlineData("long")]
-        [InlineData("ulong")]
-        [InlineData("short")]
-        [InlineData("ushort")]
-        [InlineData("double")]
-        [InlineData("float")]
-        [InlineData("decimal")]
-        [InlineData("DateTime")]
-        [InlineData("DateOnly")]
-        [InlineData("TimeOnly")]
-        [InlineData("DateTimeOffset")]
+        [TestMethod, WorkItem(6586, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
+        [DataRow("int")]
+        [DataRow("uint")]
+        [DataRow("long")]
+        [DataRow("ulong")]
+        [DataRow("short")]
+        [DataRow("ushort")]
+        [DataRow("double")]
+        [DataRow("float")]
+        [DataRow("decimal")]
+        [DataRow("DateTime")]
+        [DataRow("DateOnly")]
+        [DataRow("TimeOnly")]
+        [DataRow("DateTimeOffset")]
         public Task FormatProviderForNullableValueTypes(string valueType)
         {
             var code = $$"""
@@ -1625,23 +1626,23 @@ End Class
                 TestCode = code,
                 ExpectedDiagnostics = { result },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
-        [InlineData("int")]
-        [InlineData("uint")]
-        [InlineData("long")]
-        [InlineData("ulong")]
-        [InlineData("short")]
-        [InlineData("ushort")]
-        [InlineData("double")]
-        [InlineData("float")]
-        [InlineData("decimal")]
-        [InlineData("DateTime")]
-        [InlineData("DateOnly")]
-        [InlineData("TimeOnly")]
-        [InlineData("DateTimeOffset")]
+        [TestMethod, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
+        [DataRow("int")]
+        [DataRow("uint")]
+        [DataRow("long")]
+        [DataRow("ulong")]
+        [DataRow("short")]
+        [DataRow("ushort")]
+        [DataRow("double")]
+        [DataRow("float")]
+        [DataRow("decimal")]
+        [DataRow("DateTime")]
+        [DataRow("DateOnly")]
+        [DataRow("TimeOnly")]
+        [DataRow("DateTimeOffset")]
         public Task FormatProviderForNullableValueTypesAlreadyProvided_NoDiagnostic(string valueType)
         {
             var code = $$"""
@@ -1659,10 +1660,10 @@ End Class
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6746")]
+        [TestMethod, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6746")]
         [CombinatorialData]
         public Task FormatProviderForNullableValueTypes_NoDiagnostic(
             [CombinatorialValues("int", "uint", "long", "ulong", "short", "ushort", "double", "float", "decimal", "DateTime", "DateOnly", "TimeOnly", "DateTimeOffset")] string valueType,
@@ -1683,14 +1684,14 @@ End Class
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("bool")]
-        [InlineData("char")]
-        [InlineData("string")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("bool")]
+        [DataRow("char")]
+        [DataRow("string")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToString_NoDiagnostic(string type)
         {
             var source = $$"""
@@ -1710,24 +1711,24 @@ End Class
             {
                 TestCode = source,
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("sbyte")]
-        [InlineData("byte")]
-        [InlineData("short")]
-        [InlineData("ushort")]
-        [InlineData("int")]
-        [InlineData("uint")]
-        [InlineData("long")]
-        [InlineData("ulong")]
-        [InlineData("float")]
-        [InlineData("double")]
-        [InlineData("decimal")]
-        [InlineData("DateTime")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("sbyte")]
+        [DataRow("byte")]
+        [DataRow("short")]
+        [DataRow("ushort")]
+        [DataRow("int")]
+        [DataRow("uint")]
+        [DataRow("long")]
+        [DataRow("ulong")]
+        [DataRow("float")]
+        [DataRow("double")]
+        [DataRow("decimal")]
+        [DataRow("DateTime")]
         public Task CA1305_ConvertToString_Diagnostic(string type)
         {
             var source = $$"""
@@ -1751,10 +1752,10 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
         public Task CA1305_ConvertToChar_NoDiagnostic()
         {
             const string source = """
@@ -1772,9 +1773,9 @@ End Class
             return VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
         public Task CA1305_ConvertToChar_Diagnostic(string type)
         {
             var source = $$"""
@@ -1798,12 +1799,12 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("string")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("string")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToBoolean_NoDiagnostic(string type)
         {
             var source = $$"""
@@ -1823,12 +1824,12 @@ End Class
             {
                 TestCode = source,
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
         public Task CA1305_ConvertToBoolean_Diagnostic(string type)
         {
             var source = $$"""
@@ -1852,13 +1853,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string")]
         public Task CA1305_ConvertToSByte_Diagnostic(string type)
         {
             var source = $$"""
@@ -1882,13 +1883,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToByte_Diagnostic(string type)
         {
             var source = $$"""
@@ -1912,13 +1913,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToInt16_Diagnostic(string type)
         {
             var source = $$"""
@@ -1942,13 +1943,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToUInt16_Diagnostic(string type)
         {
             var source = $$"""
@@ -1972,13 +1973,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToInt32_Diagnostic(string type)
         {
             var source = $$"""
@@ -2002,13 +2003,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToUInt32_Diagnostic(string type)
         {
             var source = $$"""
@@ -2032,13 +2033,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToInt64_Diagnostic(string type)
         {
             var source = $$"""
@@ -2062,13 +2063,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToUInt64_Diagnostic(string type)
         {
             var source = $$"""
@@ -2092,13 +2093,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToSingle_Diagnostic(string type)
         {
             var source = $$"""
@@ -2122,13 +2123,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToDouble_Diagnostic(string type)
         {
             var source = $$"""
@@ -2152,13 +2153,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToDecimal_Diagnostic(string type)
         {
             var source = $$"""
@@ -2182,13 +2183,13 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
-        [InlineData("object")]
-        [InlineData("object?")]
-        [InlineData("string?")]
+        [TestMethod, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
+        [DataRow("object")]
+        [DataRow("object?")]
+        [DataRow("string?")]
         public Task CA1305_ConvertToDateTime_Diagnostic(string type)
         {
             var source = $$"""
@@ -2212,7 +2213,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
