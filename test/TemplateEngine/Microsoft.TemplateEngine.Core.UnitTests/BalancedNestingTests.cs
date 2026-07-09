@@ -12,7 +12,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
     [TestClass]
     public class BalancedNestingTests : TestBase
     {
-        // Test change to validate conditional test filtering
         private static TestLoggerFactory s_loggerFactory = null!;
         private readonly ILogger _logger;
 
