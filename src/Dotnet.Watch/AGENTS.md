@@ -7,7 +7,7 @@ Reload).
 
 | Path | Role |
 |---------|------|
-| `dotnet-watch` | The tool executable and CLI surface. Its command/options are defined `CommandLine/DotnetWatchCommandDefinition.cs`. |
+| `dotnet-watch` | The tool executable and CLI surface. Its command/options are defined in `CommandLine/DotnetWatchCommandDefinition.cs`. |
 | `Watch` (`Microsoft.DotNet.HotReload.Watch`) | Core watcher library: file-set computation, process launching, Hot Reload, app models. |
 | `DotNetWatchTasks` | MSBuild task bundled into the tool for design-time file collection. |
 | `DotNetDeltaApplier`, `Web.Middleware`, `BrowserRefresh` | Assemblies **injected into the running app** via `DOTNET_STARTUP_HOOKS`. |
