@@ -126,9 +126,10 @@
     <ItemGroup>
       <SkippedTestProject Include="$(RepoRoot)%(ConditionalTestScope.TestProjects)"
                            Condition="'%(ConditionalTestScope.Mechanism)' == 'project' and ('$(SkippedTestScopes)' == '__all__' or $(SkippedTestScopes.Contains('%(ConditionalTestScope.Identity)')))" />
-      <!-- MatchOnMetadata="FullPath" ensures removal works regardless of whether the
-           SDKCustomTestProject identity is a relative or absolute path. -->
-      <SDKCustomTestProject Remove="@(SkippedTestProject)" MatchOnMetadata="FullPath" />
+      <!-- MatchOnMetadata="FullPath" with PathLike ensures removal works regardless of whether
+           the SDKCustomTestProject identity is a relative or absolute path, using OS-appropriate
+           path comparison (case-insensitive on Windows). -->
+      <SDKCustomTestProject Remove="@(SkippedTestProject)" MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
     </ItemGroup>
     <Message Importance="normal" Text="Conditional test filtering applied (SkippedTestScopes: $(SkippedTestScopes))" />
   </Target>
