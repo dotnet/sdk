@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="UnableToCheckCertificateChainPolicy">
         <source>The requested certificate chain policy could not be checked: {0}</source>
-        <target state="new">The requested certificate chain policy could not be checked: {0}</target>
+        <target state="translated">無法檢查要求的憑證鏈結原則: {0}</target>
         <note />
       </trans-unit>
     </body>

@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="AllowPackageDowngradeOptionDescription">
+        <source>Allow package downgrade when installing a .NET tool package.</source>
+        <target state="translated">Zezwalaj na obniżanie wersji pakietu podczas instalowania pakietu narzędzi .NET.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CreateManifestIfNeededOptionDescription">
         <source>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</source>
         <target state="translated">Utwórz manifest narzędzi, jeśli nie zostanie znaleziony podczas instalacji narzędzia. Aby uzyskać informacje o lokalizacji manifestów, zobacz https://aka.ms/dotnet/tools/create-manifest-if-needed</target>
@@ -53,9 +58,9 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">Jeśli chcesz zainstalować narzędzie globalne, dodaj opcję „--global” do polecenia.
-Jeśli chcesz utworzyć manifest, użyj polecenia „dotnet new tool-manifest” (zwykle w katalogu głównym repozytorium).</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">Jeśli zamierzasz zainstalować narzędzie globalne, dodaj ciąg „--global” do polecenia.
+Jeśli chcesz utworzyć manifest, użyj flagi „--create-manifest-if-needed” z poleceniem „dotnet tool install” lub użyj polecenia „dotnet new tool-mainfest” (zwykle w katalogu głównym repozytorium).</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
@@ -81,6 +86,11 @@ Jeśli chcesz utworzyć manifest, użyj polecenia „dotnet new tool-manifest”
       <trans-unit id="PrereleaseAndVersionAreNotSupportedAtTheSameTime">
         <source>The --prerelease and --version options are not supported in the same command</source>
         <target state="translated">Opcje --prerelease i --version nie są obsługiwane w tym samym poleceniu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="translated">Zezwalaj narzędziu środowiska .NET na przekazywanie do nowszych wersji środowiska uruchomieniowego .NET, jeśli docelowe środowiska uruchomieniowe nie są zainstalowane.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">

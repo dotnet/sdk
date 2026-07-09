@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetStoreInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m -target:ComposeStore <project>";
+        const string ExpectedPrefix = "-maxcpucount -verbosity:m -nologo -target:ComposeStore <project>";
         static readonly string[] ArgsPrefix = { "--manifest", "<project>" };
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetStoreInvocation));

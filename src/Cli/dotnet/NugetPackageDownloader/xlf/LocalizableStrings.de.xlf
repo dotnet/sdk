@@ -42,6 +42,31 @@
         <target state="translated">Die Überprüfung der NuGet-Paketsignatur wird übersprungen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageVersionDescriptionDefault">
+        <source>A version of {0} of package {1}</source>
+        <target state="translated">Eine Version von "{0}" des Pakets "{1}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForExactVersionMatch">
+        <source>Version {0} of package {1}</source>
+        <target state="translated">Version "{0}" des Pakets "{1}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerAndUpperBounds">
+        <source>A version between {0} and {1} of package {2}</source>
+        <target state="translated">Eine Version zwischen "{0}" und "{1}" des Pakets "{2}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerBound">
+        <source>A version higher than {0} of package {1}</source>
+        <target state="translated">Eine Version, die höher als "{0}" des Pakets "{1}" ist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
+        <source>A version less than {0} of package {1}</source>
+        <target state="translated">Eine Version, die niedriger als "{0}" des Pakets "{1}" ist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
         <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
         <target state="translated">Überprüfung der NuGet-Paketsignierung überspringen. Die Überprüfung der NuGet-Signierung ist auf Linux- oder macOS nicht verfügbar https://aka.ms/workloadskippackagevalidation.</target>

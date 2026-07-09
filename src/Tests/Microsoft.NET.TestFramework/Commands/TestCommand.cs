@@ -132,22 +132,27 @@ namespace Microsoft.NET.TestFramework.Commands
 
             var result = ((Command)command).Execute(ProcessStartedHandler);
 
-            Log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
-            Log.WriteLine(result.StdOut);
+            LogCommandResult(Log, result);
+
+            return result;
+        }
+
+        public static void LogCommandResult(ITestOutputHelper log, CommandResult result)
+        {
+            log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
+            log.WriteLine(result.StdOut);
 
             if (!string.IsNullOrEmpty(result.StdErr))
             {
-                Log.WriteLine("");
-                Log.WriteLine("StdErr:");
-                Log.WriteLine(result.StdErr);
+                log.WriteLine("");
+                log.WriteLine("StdErr:");
+                log.WriteLine(result.StdErr);
             }
 
             if (result.ExitCode != 0)
             {
-                Log.WriteLine($"Exit Code: {result.ExitCode}");
+                log.WriteLine($"Exit Code: {result.ExitCode}");
             }
-
-            return result;
         }
     }
 }
