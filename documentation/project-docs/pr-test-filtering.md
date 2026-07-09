@@ -94,11 +94,11 @@ projects they control.
    - `Mechanism`: how tests are excluded (currently only `project` is supported)
    - `TestProjects`: the test `.csproj` file(s) controlled by this scope
    - `TriggerPaths`: glob patterns for source/test paths that activate this scope
-   - `RunAlways`: conditions under which the scope always runs (currently `CI`).
-     A future enhancement could add dependency flow PRs as a condition — for example,
-     `RunAlways=DependencyFlow` to always run on any dependency flow PR, or a more
-     targeted `RunAlways=DependencyFlow:dotnet/dotnet` to only force-run when the flow
-     originates from a specific repository.
+   - `RunAlways`: conditions under which the scope always runs regardless of changed
+     files. The only supported value today is `CI` (non-PR builds). Flowed-in package
+     dependencies are handled globally: `eng/Version.Details.xml` is a `GlobalTriggerPaths`
+     entry, so any dependency update forces all scopes to run — see
+     [Handling flowed-in dependencies](#handling-flowed-in-dependencies).
 
    **Global trigger paths** are an escape mechanism: if any changed file matches a
    `GlobalTriggerPaths` pattern, all scopes are forced active and no tests are filtered.
@@ -179,6 +179,26 @@ difficult to define a reliable set of trigger paths, it may not be a good candid
 conditional filtering — it is better to run tests unconditionally than to skip them when
 a dependency change would have caused a failure.
 
+#### Handling flowed-in dependencies
+
+Some scopes build against packages that arrive through dependency flow (Roslyn, the
+runtime, MSTest, etc.) rather than source in this repo. Every dependency update — whether
+a VMR flow (`dotnet/dotnet`) or an external one such as `microsoft/testfx` — rewrites
+`eng/Version.Details.xml`.
+
+Rather than asking each scope to add that file to its own trigger paths, it is a
+**`GlobalTriggerPaths`** entry: any change to `eng/Version.Details.xml` forces **all**
+scopes to run. This is intentional and errs on the side of caution:
+
+- A VMR flow bumps the compiler, runtime, and other packages that essentially every test
+  area depends on — a genuinely repo-wide change worth validating broadly.
+- Making it global is safe-by-default: new scopes are covered automatically, with no risk
+  of an author forgetting to opt in and silently skipping tests a dependency bump could break.
+
+The trade-off is that dependency-flow PRs get no filtering savings, but those are a
+minority of PRs and exactly the ones where full validation is most valuable. If this proves
+too coarse, it can be tuned later — see [Future enhancements](#future-enhancements).
+
 ## Design principles
 
 - **Single source of truth**: `test/ConditionalTests.props` defines everything about a
@@ -194,6 +214,20 @@ a dependency change would have caused a failure.
 
 ## Future enhancements
 
+- **Per-repo dependency conditions**: `eng/Version.Details.xml` is a global trigger path, so
+  *every* dependency update runs the full suite, even flows from a repo a given scope doesn't
+  depend on. A finer-grained `RunAlways=Dependency:<owner>/<repo>` condition could force only the
+  scopes that depend on the repo whose dependency actually changed. Identifying which repo a change
+  came from is the hard part, and there are a couple of possible implementations — inspecting the
+  `eng/Version.Details.xml` diff to see which dependencies changed, or detecting that the PR itself
+  is a dependency flow (e.g. from its author/branch/body) and which repo it flows from. Both are
+  non-trivial and somewhat fragile. This was explored but **intentionally not adopted**: there is no
+  return on investment today. Only two dependency flows exist (the VMR and `microsoft/testfx`), and
+  running the full suite on either is desirable anyway — a VMR flow is a large, wide-reaching change,
+  and a testfx flow updates the test infrastructure itself. The machinery to distinguish them adds
+  meaningful complexity for savings that, at present, do not materialize. If additional, more
+  isolated dependency flows appear where broadly running tests is genuinely wasteful, revisiting a
+  per-repo condition (and narrowing the global trigger) would make sense.
 - **Force all tests from a PR**: Contributors may want to override conditional
   filtering and run the full test suite on a specific PR. If this proves desirable, one
   possible approach is a PR label (e.g. `run-all-tests`) that the pipeline checks before
