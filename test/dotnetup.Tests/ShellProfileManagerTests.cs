@@ -737,10 +737,10 @@ public class ShellProfileManagerTests : IDisposable
         Encoding IEnvShellProvider.NewFileEncoding
             => NewFileEncodingOverride ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
-        public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true) =>
+        public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true) =>
             includeDotnet
                 ? $"export DOTNET_ROOT='{dotnetInstallPath}'"
-                : dotnetupDir is not null ? $"export PATH='{dotnetupDir}':$PATH" : "";
+                : !string.IsNullOrEmpty(dotnetupDir) ? $"export PATH='{dotnetupDir}':$PATH" : "";
 
         public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
 

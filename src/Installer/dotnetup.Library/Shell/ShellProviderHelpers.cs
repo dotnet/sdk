@@ -24,6 +24,12 @@ internal static class ShellProviderHelpers
     internal static string EscapePowerShellPath(string path)
         => path.Replace("'", "''", StringComparison.Ordinal);
 
+    // Fish single-quoted strings treat backslash as an escape character for \' and \\,
+    // so backslashes must be escaped first and quotes use \' rather than the POSIX '\''.
+    internal static string EscapeFishPath(string path)
+        => path.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("'", "\\'", StringComparison.Ordinal);
+
     internal static string GetCommandFlags(bool dotnetupOnly, string? dotnetInstallPath, Func<string, string> escapePath)
     {
         List<string> flags = [];
@@ -62,6 +68,21 @@ internal static class ShellProviderHelpers
             """;
     }
 
+    internal static string BuildFishActivationCommand(string dotnetupPath, string shellName, string flags)
+        => $"{BuildFishPrintEnvCommand(dotnetupPath, shellName, flags)} | source";
+
+    internal static string BuildFishProfileEntry(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapeFishPath(dotnetupPath);
+        var command = BuildFishPrintEnvCommand(dotnetupPath, shellName, flags);
+
+        return $$"""
+            if test -x '{{escapedPath}}'
+                {{command}} | source
+            end
+            """;
+    }
+
     internal static string BuildPowerShellActivationCommand(string dotnetupPath, string shellName, string flags)
     {
         var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
@@ -85,6 +106,12 @@ internal static class ShellProviderHelpers
     private static string BuildPosixPrintEnvCommand(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapePosixPath(dotnetupPath);
+        return AppendArguments($"'{escapedPath}' print-env-script --shell {shellName}", flags);
+    }
+
+    private static string BuildFishPrintEnvCommand(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapeFishPath(dotnetupPath);
         return AppendArguments($"'{escapedPath}' print-env-script --shell {shellName}", flags);
     }
 
@@ -124,6 +151,27 @@ internal static class ShellProviderHelpers
         return string.IsNullOrWhiteSpace(dotnetupDir)
             ? string.Empty
             : $"export PATH='{EscapePosixPath(dotnetupDir)}':$PATH";
+    }
+
+    internal static string BuildFishPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
+    {
+        // fish_add_path --move prepends (or moves) the entries so the shell resolves
+        // dotnet/dotnetup from the selected install immediately.
+        // --path/--global keeps the change session-scoped in $PATH instead of persisting
+        // to universal fish_user_paths.
+        if (includeDotnet && !string.IsNullOrWhiteSpace(dotnetupDir))
+        {
+            return $"fish_add_path --global --move --path '{EscapeFishPath(dotnetupDir)}' '{escapedPath}'";
+        }
+
+        if (includeDotnet)
+        {
+            return $"fish_add_path --global --move --path '{escapedPath}'";
+        }
+
+        return string.IsNullOrWhiteSpace(dotnetupDir)
+            ? string.Empty
+            : $"fish_add_path --global --move --path '{EscapeFishPath(dotnetupDir)}'";
     }
 
     internal static string BuildPowerShellPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
@@ -207,6 +255,18 @@ internal static class ShellProviderHelpers
         var fullPath = Path.GetFullPath(zdotdir);
         EnsureDirectoryWritable(fullPath, "ZDOTDIR", createIfMissing: true);
         return fullPath;
+    }
+
+    internal static string GetFishConfigurationDirectoryOrThrow()
+    {
+        var xdgConfigHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+        var configHome = string.IsNullOrWhiteSpace(xdgConfigHome)
+            ? Path.Combine(GetUserHomeDirectoryOrThrow(), ".config")
+            : Path.GetFullPath(xdgConfigHome);
+
+        var confDDirectory = Path.Combine(configHome, "fish", "conf.d");
+        EnsureDirectoryWritable(confDDirectory, "fish configuration directory", createIfMissing: true);
+        return confDDirectory;
     }
 
     internal static string GetPowerShellProfileDirectoryOrThrow()
