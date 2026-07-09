@@ -1,5 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+// Test change to validate conditional test filtering
 
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
