@@ -31,7 +31,7 @@ Reload).
 
 ## Tests
 
-- `test/dotnet-watch.Tests. Parallelism is **ClassLevel by design** —
+- `test/dotnet-watch.Tests`. Parallelism is **ClassLevel by design** —
   don't switch to method-level; these are heavy process-spawning tests and it causes
   Helix timeouts.
 - `InProcTestWatcher` runs the watcher in-process with a mocked process launcher.
