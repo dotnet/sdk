@@ -4,8 +4,8 @@ Guidance for changes under `test/`.
 
 ## Where things live
 
-- **`Microsoft.NET.TestFramework.MSTest`** is the shared harness. Common namespaces are
-  exposed as global usings from `test/Directory.Build.targets`.
+- **`Microsoft.NET.TestFramework.MSTest`** is the shared MSTest harness — test base
+  classes, conditional-test attributes, and assertion helpers that test projects build on.
 - Test projects are grouped by area.
 - **`test/TestAssets/`** holds inputs, not tests.
 
