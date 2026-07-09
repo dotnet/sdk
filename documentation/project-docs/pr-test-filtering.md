@@ -38,7 +38,7 @@ Meaningful overall reduction requires applying this pattern broadly across many 
 areas — but each scope added compounds the savings and frees capacity for the rest of
 the organization.
 
-The goal is to define scopes covering a minimum of one-third tp one-half of total PR test time.
+The goal is to define scopes covering a minimum of one-third to one-half of total PR test time.
 Beyond that, additional scopes are a return-on-investment decision — if a scope is
 straightforward to define with reliable trigger paths, it should be added; if it
 requires complex dependency analysis or invasive refactoring, the effort may not be

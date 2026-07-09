@@ -125,7 +125,7 @@
   <Target Name="RemoveSkippedConditionalTestProjects" BeforeTargets="CreateSDKCustomTestWorkItems" Condition="'$(SkippedTestScopes)' != ''">
     <ItemGroup>
       <SkippedTestProject Include="$(RepoRoot)%(ConditionalTestScope.TestProjects)"
-                           Condition="'%(ConditionalTestScope.Mechanism)' == 'project' and ('$(SkippedTestScopes)' == '__all__' or $(SkippedTestScopes.Contains('%(ConditionalTestScope.Identity)')))" />
+                           Condition="'%(ConditionalTestScope.Mechanism)' == 'project' and ('$(SkippedTestScopes)' == '__all__' or $([System.String]::Concat(';','$(SkippedTestScopes)',';').Contains(';%(ConditionalTestScope.Identity);')))" />
       <!-- MatchOnMetadata="FullPath" with PathLike ensures removal works regardless of whether
            the SDKCustomTestProject identity is a relative or absolute path, using OS-appropriate
            path comparison (case-insensitive on Windows). -->

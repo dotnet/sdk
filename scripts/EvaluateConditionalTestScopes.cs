@@ -170,6 +170,12 @@ static List<string> GetChangedFiles(string? targetBranch, string repoRoot)
 
     try
     {
+        // Strip refs/heads/ prefix if present (AzDO may provide full ref)
+        if (targetBranch.StartsWith("refs/heads/", StringComparison.OrdinalIgnoreCase))
+        {
+            targetBranch = targetBranch["refs/heads/".Length..];
+        }
+
         var psi = new ProcessStartInfo("git", ["diff", "--name-only", $"origin/{targetBranch}...HEAD"])
         {
             WorkingDirectory = repoRoot,
