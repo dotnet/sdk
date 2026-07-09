@@ -146,7 +146,7 @@ else
     }
 }
 
-var result = skippedScopes.Count == scopes.Count ? "__all__"
+var result = skippedScopes.Count > 0 && skippedScopes.Count == scopes.Count ? "__all__"
     : skippedScopes.Count > 0 ? string.Join(";", skippedScopes)
     : "";
 
@@ -195,11 +195,12 @@ static List<string> GetChangedFiles(string? targetBranch, string repoRoot)
 
 static bool GlobMatches(string path, string pattern)
 {
-    // Convert glob to regex: ** = any path, * = any segment chars
+    // Convert glob to regex: ** = any path, * = any segment chars, ? = single char
     var regexPattern = "^" +
         Regex.Escape(pattern)
             .Replace("\\*\\*", "@@GLOBSTAR@@")
             .Replace("\\*", "[^/]*")
+            .Replace("\\?", "[^/]")
             .Replace("@@GLOBSTAR@@", ".*") +
         "$";
     return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase);
