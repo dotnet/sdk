@@ -84,6 +84,9 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            // AOT publish runs Compile instead of full Build, so the AfterBuild target (the default
+            // anchor for recording properties) never runs. Record before Publish, which always runs.
+            testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.PropertiesToRecord.Add("PublishTrimmed");
