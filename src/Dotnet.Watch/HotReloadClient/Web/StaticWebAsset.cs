@@ -68,4 +68,11 @@ internal readonly struct StaticWebAsset(string filePath, string relativeUrl, str
             ? assetFilePath.Substring(webRootDir.Length - webRoot.Length).Replace("\\", "/")
             : null;
     }
+
+    /// <summary>
+    /// Assets with "_content/" prefix live outside the app's  wwwroot.
+    /// ASP.NET Core's convention for static assets contributed by external sources — Razor Class Libraries (RCLs) and NuGet packages.
+    /// </summary>
+    public static bool IsExternalContentUrl(string url)
+        => url.StartsWith("_content/", StringComparison.OrdinalIgnoreCase);
 }

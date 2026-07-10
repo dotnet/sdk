@@ -59,6 +59,14 @@ internal abstract class StaticWebAssetUpdateBuilder
                     _projectInstancesToRegenerate.Add(containingProjectInstanceInfo.Id);
                 }
 
+                // Enumerate running application projects that transitively reference the project containing the changed asset.
+                //
+                // For regular asset files contained in Razor Class Libraries we could expect containingProjectPaths to have all the application projects that transitively reference the RCL
+                // based on the asset manifest (these assets have _content-prefixed URLs). However, scoped CSS files in the RCLs are bundled into a single asset file.
+                // They are not individually listed in the manifest so we can't map each individual asset's file path to its containing project based on the manifest.
+                //
+                // Instead, we only track files directly contained in their own project (Web App or RCL), i.e. the asset's containing project is only the RCL project,
+                // and then enumerate the web application projects that transitively reference the containing project here.
                 foreach (var (applicationProjectInstanceInfo, applicationProjectLogger) in GetApplicationProjectAncestors(containingProjectInstanceInfo.Id))
                 {
                     string relativeUrl;
@@ -94,10 +102,15 @@ internal abstract class StaticWebAssetUpdateBuilder
                         filePath = bundleFilePath;
                         relativeUrl = bundleFileName;
                     }
-                    else
+                    else if (TryGetManifest(applicationProjectInstanceInfo.Id, out var _))
                     {
                         Debug.Assert(staticWebAssetRelativeUrl != null);
                         relativeUrl = staticWebAssetRelativeUrl;
+                    }
+                    else
+                    {
+                        // only refresh static web assets for web application projects (e.g. not for Aspire host app that references a web project)
+                        continue;
                     }
 
                     if (!_assets.TryGetValue(applicationProjectInstanceInfo.Id, out var applicationAssets))

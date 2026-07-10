@@ -57,7 +57,7 @@ internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string
     public ImmutableArray<StaticWebAssetPattern> DiscoveryPatterns => discoveryPatterns;
 
     /// <summary>
-    /// Enumerates all the static web assets in the manifest to be watched for changes.
+    /// Enumerates all the static web assets in the manifest of a project to be watched for changes.
     /// </summary>
     public IEnumerable<(string filePath, string relativeUrl)> GetFilesToWatch()
     {
@@ -66,8 +66,12 @@ internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string
             var url = entry.Key;
             var filePath = entry.Value;
 
-            // watch asset files, but not bundle files as they are regenarated when scoped CSS files are updated:
-            if (!StaticWebAsset.IsCompressedAssetFile(filePath) && !StaticWebAsset.IsScopedCssBundleFile(filePath))
+            // Exclude bundle files as they are regenarated when scoped CSS files are updated.
+            // Exclude compressed asset files as they are not directly editable.
+            // Exclude external content URLs as they are not directly included in the project.
+            if (!StaticWebAsset.IsCompressedAssetFile(filePath) &&
+                !StaticWebAsset.IsScopedCssBundleFile(filePath) &&
+                !StaticWebAsset.IsExternalContentUrl(url))
             {
                 yield return (filePath, url);
             }
