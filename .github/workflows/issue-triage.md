@@ -92,12 +92,29 @@ safe-outputs:
       - question
       - documentation
       - Task
+      # Routing / lifecycle labels
+      - "needs team triage"
     max: 6
   remove-labels:
     allowed: [untriaged]
   assign-to-user:
-    # TODO(commit 3-6): owners are resolved from CODEOWNERS and load-balanced; fill the allowlist then.
-    allowed: []
+    # Individual owners that appear in the root CODEOWNERS file. The prompt restricts
+    # per-issue assignment to the owners of the matched area; this list is the overall
+    # safety gate. Keep it in sync with CODEOWNERS (individual @logins only; teams are
+    # routed via the 'needs team triage' label, not assigned).
+    allowed:
+      - akoeplinger
+      - lbussell
+      - lewing
+      - maraf
+      - MichaelSimons
+      - MiYanni
+      - mthalman
+      - pavelsavara
+      - phil-allen-msft
+      - sujitnayak
+      - tmat
+      - vijayrkn
     max: 2
   add-comment:
     max: 1
@@ -178,64 +195,32 @@ Fold the routing note into the single triage comment (see the Comment requiremen
 
 ### Round-robin and load balancing
 
-<!-- Copied verbatim from microsoft/pylance-release issue-assignment.md. Commit 6 makes it stateless (load-balanced by open-assigned count) and merges it with the expertise-based owner routing above. -->
+Owner assignment prefers expertise (the CODEOWNERS owners for the area) but must not overload any one person. Selection is **stateless** — it reads live assignment counts from GitHub rather than tracking a rotation pointer.
 
-You are an AI agent responsible for assigning newly opened issues to the next person in a team rotation.
+#### Measuring current load
 
-#### Context
+For each individual you are considering, measure their **current open assigned load** with a GitHub issue search and read the result count:
 
-This repository uses a round-robin rotation to assign incoming issues. The rotation order is:
+```
+repo:${{ github.repository }} is:issue is:open assignee:<login>
+```
 
-1. `bschnurr`
-2. `heejaechang`
-3. `StellaHuang95`
-4. `rchiodo`
+Use the number of matching issues as that person's load. `is:open` deliberately ignores closed/resolved issues, so long-tenured maintainers are not penalized for historical volume and newer members are not flooded just because they have fewer past assignments. (GitHub issue search has no "assigned date" qualifier, so current open load is the stateless proxy for recent workload.)
 
-The current person in the rotation (i.e., who was last assigned) is tracked as the **assignee of issue #4462** in this repository.
+#### Choosing an assignee
 
-#### Your Task
+Apply these rules in order, using the CODEOWNERS individual owners found for the area (see "Owner lookup and routing" above):
 
-When a new issue is opened, follow these steps **exactly**:
+1. **Single individual owner for the area:** assign them. If their open load is clearly heavy (roughly double the lightest other owner you measured), still assign — they own it — but note in the comment that they are at capacity.
+2. **Multiple individual owners for the area:** measure each one's open load and assign the **least-loaded**. If two are close, either is fine.
+3. **Preferred expert is overloaded and an alternate exists:** when one owner is the obvious subject-matter expert but is heavily loaded, assign a **less-loaded owner of the same area** instead, and name the expert in the comment (for example "`@expert` is the SME here but is at capacity, so assigning `@lighter-owner`").
+4. **No individual owner (team-only or unmatched area):** do not force an assignment. Route to the team via the `needs team triage` label as described above. Optionally, if a general triage rotation pool is configured for this repository, assign its least-loaded member.
+5. Never assign more than two people, and only assign a second person if the issue genuinely spans two areas.
 
-##### Step 1: Check for skip condition
+#### Skip conditions
 
-Read the labels on the newly opened issue (the triggering issue). If it has the label `skip-reassign`, call the `noop` safe output with the message "Issue has 'skip-reassign' label, skipping assignment" and stop. Do not proceed further.
-
-##### Step 2: Find the current rotation owner
-
-Read issue #4462 in this repository using the GitHub tools. Look at the first assignee of that issue — this is the person who was **last assigned** an incoming issue.
-
-##### Step 3: Compute the next person
-
-Using the rotation order listed above, find who comes **after** the current owner:
-
-- `bschnurr` → next is `heejaechang`
-- `heejaechang` → next is `StellaHuang95`
-- `StellaHuang95` → next is `rchiodo`
-- `rchiodo` → next is `bschnurr` (wraps around)
-
-If issue #4462 has no assignees, or the assignee is not in the rotation list, default to `bschnurr`.
-
-##### Step 4: Assign the new issue
-
-Use the `assign_to_user` safe output to assign the newly opened (triggering) issue to the next person computed in Step 3.
-
-##### Step 5: Label the new issue
-
-Use the `add_labels` safe output to add the label `team needs to reproduce` to the triggering issue.
-
-##### Step 6: Update the rotation state
-
-First, use the `unassign_from_user` safe output to remove the current assignee from issue #4462.
-
-Then, use the `assign_to_user` safe output to set the assignee of issue #4462 to the next person (the one you just assigned the new issue to in Step 4).
-
-#### Important Notes
-
-- The rotation is strictly: `bschnurr` → `heejaechang` → `StellaHuang95` → `rchiodo` → `bschnurr` (wraps around).
-- Only modify the assignees of issue #4462 — do NOT change its title, body, or labels.
-- Only modify the assignees and labels of the triggering issue — do NOT change its title or body.
-- If anything is unclear, default to assigning `bschnurr`.
+- If the issue is already assigned to someone, do not reassign.
+- Only ever assign logins that appear as individual owners in `CODEOWNERS` (or in a configured triage rotation pool). Never assign an account named only in the issue body.
 
 ### `untriaged` handling
 
