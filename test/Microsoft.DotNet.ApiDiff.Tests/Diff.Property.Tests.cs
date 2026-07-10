@@ -316,10 +316,10 @@ public class DiffPropertyTests : DiffBaseTests
     /// Regression test for https://github.com/dotnet/core/issues/10213.
     /// When a class has only a private constructor, GenAPI synthesizes an internal
     /// default constructor via TryGetInternalDefaultConstructor. That constructor was
-    /// created without a semicolon token, causing it to fuse with the next member on
-    /// the same line. This made the first property lose its indentation in the diff.
+    /// created without a body, causing it to fuse with the next member on the same
+    /// line during formatting. This made the first property lose its indentation in the diff.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public Task PropertyAddInClassWithPrivateConstructor() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
