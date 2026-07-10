@@ -266,6 +266,11 @@ internal sealed class HotReloadDotNetWatcher
                         autoRestart: _context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
                         iterationCancellationToken);
 
+                    if (updates.ProjectsToRestart is not [])
+                    {
+                        await compilationHandler.TerminatePeripheralProcessesAsync(updates.ProjectsToRestart, iterationCancellationToken);
+                    }
+
                     // Terminate root process if it had rude edits or is non-reloadable.
                     if (updates.ProjectsToRestart.Any(static project => project.Options.IsMainProject))
                     {
@@ -315,7 +320,7 @@ internal sealed class HotReloadDotNetWatcher
 
                     // Apply updates only after dependencies have been deployed,
                     // so that updated code doesn't attempt to access the dependency before it has been deployed.
-                    await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updates.ManagedCodeUpdates, updates.StaticAssetsToUpdate, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
+                    await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updates, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
                     if (updates.ProjectsToRestart is not [])
                     {
                         await compilationHandler.RestartPeripheralProjectsAsync(updates.ProjectsToRestart, shutdownCancellationToken);
