@@ -969,6 +969,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(text);
         });
 
+    internal void WriteWarningMessage(string text) =>
+        _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            terminal.SetColor(TerminalColor.DarkYellow);
+            terminal.AppendLine(text);
+            terminal.ResetColor();
+        });
+
+    internal void WriteErrorMessage(string text) =>
+        _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            terminal.SetColor(TerminalColor.DarkRed);
+            terminal.AppendLine(text);
+            terminal.ResetColor();
+        });
+
     /// <summary>
     /// Let the user know that cancellation was triggered.
     /// </summary>

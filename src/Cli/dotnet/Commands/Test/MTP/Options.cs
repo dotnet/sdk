@@ -18,4 +18,5 @@ internal record BuildOptions(
     bool NoLaunchProfileArguments,
     ImmutableArray<string> TestApplicationArguments,
     IEnumerable<string> MSBuildArgs,
-    string? Device);
+    string? Device,
+    bool ListDevices);

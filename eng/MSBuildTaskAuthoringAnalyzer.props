@@ -14,12 +14,14 @@
   via .editorconfig as the multithreaded-task migration (IMultiThreadableTask / TaskEnvironment) proceeds.
 
   The analyzer package is produced by the msbuild repo and flows to this repo via eng/Version.Details.xml
-  (dotnet/dotnet), so it is available in source build as well and does not need to be excluded there.
+  (dotnet/dotnet). It is report-only and analyzers do not affect build output, so it is excluded from
+  source-only builds (DotNetBuildSourceOnly), where the package is not produced from source and would
+  otherwise be flagged as a prebuilt.
 -->
 <Project>
 
   <PropertyGroup>
-    <_UseMSBuildTaskAuthoringAnalyzer Condition="'$(IsMSBuildTaskProject)' == 'true'">true</_UseMSBuildTaskAuthoringAnalyzer>
+    <_UseMSBuildTaskAuthoringAnalyzer Condition="'$(IsMSBuildTaskProject)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">true</_UseMSBuildTaskAuthoringAnalyzer>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(_UseMSBuildTaskAuthoringAnalyzer)' == 'true'">
