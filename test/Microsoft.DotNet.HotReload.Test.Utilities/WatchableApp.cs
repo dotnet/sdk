@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
             else
             {
-                Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
+                Assert.IsTrue(line.StartsWith(expectedPrefix, StringComparison.Ordinal));
             }
 
             var result = line.Substring(expectedPrefix.Length);
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         public async Task AssertOutputLineEquals(string expectedLine)
-            => Assert.Equal("", await AssertOutputLineStartsWith(expectedLine));
+            => Assert.AreEqual("", await AssertOutputLineStartsWith(expectedLine));
 
         public ProcessStartInfo GetProcessStartInfo(string workingDirectory, string testOutputPath, IEnumerable<string> arguments, TestFlags testFlags)
         {
@@ -270,7 +270,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void SendKey(char c)
         {
-            Assert.True(TestFlags.HasFlag(TestFlags.ReadKeyFromStdin));
+            Assert.IsTrue(TestFlags.HasFlag(TestFlags.ReadKeyFromStdin));
 
             Process.Process.StandardInput.Write(c);
             Process.Process.StandardInput.Flush();

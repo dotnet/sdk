@@ -10,22 +10,32 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class JoinMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class JoinMacroTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public JoinMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public JoinMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Theory(DisplayName = nameof(TestJoinConstantAndReferenceSymbolConfig))]
-        [InlineData(",", true)]
-        [InlineData("", true)]
-        [InlineData(null, true)]
-        [InlineData(",", false)]
-        [InlineData("", false)]
-        [InlineData(null, false)]
+        [TestMethod]
+        [DataRow(",", true)]
+        [DataRow("", true)]
+        [DataRow(null, true)]
+        [DataRow(",", false)]
+        [DataRow("", false)]
+        [DataRow(null, false)]
         public void TestJoinConstantAndReferenceSymbolConfig(string? separator, bool removeEmptyValues)
         {
             string variableName = "joinedParameter";
@@ -55,12 +65,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 removeEmptyValues ?
                 string.Join(separator, constantValue, referenceSymbolValue) :
                 string.Join(separator, constantValue, null, referenceSymbolValue);
-            Assert.Equal(convertedValue, expectedValue);
+            Assert.AreEqual(expectedValue, convertedValue);
         }
 
-        [Theory]
-        [InlineData(",")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow(",")]
+        [DataRow("")]
         public void GeneratedSymbolTest(string separator)
         {
             string variableName = "joinedParameter";
@@ -88,10 +98,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             string convertedValue = (string)variables[variableName];
             string expectedValue = string.Join(separator, constantValue, referenceSymbolValue);
-            Assert.Equal(expectedValue, convertedValue);
+            Assert.AreEqual(expectedValue, convertedValue);
         }
 
-        [Fact]
+        [TestMethod]
         [Obsolete("IMacro.EvaluateConfig is obsolete")]
         public void ObsoleteEvaluateConfigTest()
         {
@@ -119,10 +129,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
             string convertedValue = (string)variables[variableName];
             string expectedValue = string.Join(",", constantValue, referenceSymbolValue);
-            Assert.Equal(convertedValue, expectedValue);
+            Assert.AreEqual(expectedValue, convertedValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingSymbols()
         {
             JoinMacro macro = new();
@@ -133,11 +143,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "join", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'join' should have 'symbols' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "join", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'join' should have 'symbols' property defined.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingSymbolValue()
         {
             JoinMacro macro = new();
@@ -150,11 +160,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             jsonParameters.Add("symbols", symbols);
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "join", jsonParameters)));
-            Assert.Equal("Generated symbol 'test': array 'symbols' should contain JSON objects with property 'value'.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "join", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test': array 'symbols' should contain JSON objects with property 'value'.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_EmptySymbolValue()
         {
             JoinMacro macro = new();
@@ -167,11 +177,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             jsonParameters.Add("symbols", symbols);
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "join", jsonParameters)));
-            Assert.Equal("Generated symbol 'test': array 'symbols' should contain JSON objects with property non-empty 'value' when 'type' is 'Ref'.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "join", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test': array 'symbols' should contain JSON objects with property non-empty 'value' when 'type' is 'Ref'.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultConfigurationTest()
         {
             JoinMacro macro = new();
@@ -182,9 +192,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             JoinMacroConfig config = new(macro, new GeneratedSymbol("test", "join", jsonParameters));
 
-            Assert.Equal(string.Empty, config.Separator);
-            Assert.False(config.RemoveEmptyValues);
-            Assert.Equal(JoinMacroConfig.JoinType.Const, config.Symbols.Single().Type);
+            Assert.AreEqual(string.Empty, config.Separator);
+            Assert.IsFalse(config.RemoveEmptyValues);
+            Assert.AreEqual(JoinMacroConfig.JoinType.Const, config.Symbols.Single().Type);
         }
     }
 }

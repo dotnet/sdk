@@ -876,6 +876,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1234: RoslynCompilerType 'Framework' は非推奨であり、将来のバージョンで削除される予定です。詳細については、{0} を参照してください。</target>
         <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandRequiresWindowsForNetFramework">
+        <source>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</source>
+        <target state="new">NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
+        <note>{StrBegins="NETSDK1243: "}{Locked="{0}"}{Locked="{1}"}{Locked="TargetFramework"}{Locked="RunCommand"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
         <target state="translated">NETSDK1231: ファイル '{0}' は存在しません。ランタイム グラフ パスが存在することを確認してください。</target>
@@ -911,6 +916,26 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1185: FrameworkReference '{0}' のランタイム パックは使用できませんでした。DisableTransitiveFrameworkReferenceDownloads が true に設定されたことが原因である可能性があります。</target>
         <note>{StrBegins="NETSDK1185: "}</note>
       </trans-unit>
+      <trans-unit id="SdkFeatureBandDiscontinued">
+        <source>NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</source>
+        <target state="new">NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</target>
+        <note>{StrBegins="NETSDK1240: "}{Locked="{0}"}{Locked="{1}"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionHasVulnerabilities">
+        <source>NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</source>
+        <target state="new">NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</target>
+        <note>{StrBegins="NETSDK1238: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionIsEol">
+        <source>NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</source>
+        <target state="new">NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</target>
+        <note>{StrBegins="NETSDK1239: "}{Locked="{0}"}{Locked="{1}"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionUpdateRecommendation_Info">
+        <source>Update to version {0}.</source>
+        <target state="new">Update to version {0}.</target>
+        <note>{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="SelfContainedExeCannotReferenceNonSelfContained">
         <source>NETSDK1150: The referenced project '{0}' is a non self-contained executable.  A non self-contained executable cannot be referenced by a self-contained executable.  For more information, see https://aka.ms/netsdk1150</source>
         <target state="translated">NETSDK1150: 参照先プロジェクト '{0}' は自己完結型以外の実行可能ファイルです。 自己完結型以外の実行可能ファイルは、自己完結型の実行可能ファイルでは参照できません。詳細については、「https://aka.ms/netsdk1150」を参照してください</target>
@@ -937,6 +962,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1197: 複数のソリューションのプロジェクトに、競合する '{0}' 値が含まれています。値が一致するようにしてください。Directory.build.props ファイルを使用して、すべてのプロジェクトのプロパティを設定することを検討してください。競合するプロジェクト: 
 {1}</target>
         <note>{StrBegins="NETSDK1197: "}</note>
+      </trans-unit>
+      <trans-unit id="TargetFrameworkEmpty">
+        <source>NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</source>
+        <target state="new">NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</target>
+        <note>{StrBegins="NETSDK1241: "}</note>
       </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
         <source>NETSDK1138: The target framework '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
@@ -1151,6 +1181,11 @@ To install these workloads, run the following command: dotnet workload restore</
         <target state="translated">NETSDK1147: このプロジェクトをビルドするには、次のワークロードをインストールする必要があります: {0}
 これらのワークロードをインストールするには、次のコマンドを実行します: dotnet workload restore</target>
         <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="MonoRuntimeNotSupportedForPlatform">
+        <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</source>
+        <target state="new">NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</target>
+        <note>{StrBegins="NETSDK1242: "}</note>
       </trans-unit>
     </body>
   </file>

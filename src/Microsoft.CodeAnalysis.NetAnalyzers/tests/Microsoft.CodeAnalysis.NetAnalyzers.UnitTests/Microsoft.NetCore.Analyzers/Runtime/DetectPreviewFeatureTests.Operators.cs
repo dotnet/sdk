@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -11,7 +10,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public partial class DetectPreviewFeatureUnitTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestPreviewMethodUnaryOperator()
         {
             var csInput = @" 
@@ -37,10 +36,10 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("op_UnaryPlus", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPreviewMethodBinaryOperator()
         {
             var csInput = @" 
@@ -66,7 +65,7 @@ namespace Preview_Feature_Scratch
         ";
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("op_Addition", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

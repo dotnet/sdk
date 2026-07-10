@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAssembliesWithAttributesDiagnosticAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpMarkAssembliesWithAssemblyVersionFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class MarkAssembliesWithAssemblyVersionAttributeTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1016BasicTestWithNoComplianceAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
@@ -34,7 +34,7 @@ imports System
                 VerifyVB.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1016CSharpTestWithVersionAttributeNotFromBCLAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -55,7 +55,7 @@ class AssemblyVersionAttribute : Attribute {
                 VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1016CSharpTestWithNoVersionAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -72,7 +72,7 @@ class AssemblyVersionAttribute : Attribute {
                 VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1016CSharpTestWithVersionAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -90,7 +90,7 @@ using System.Reflection;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1016CSharpTestWithTwoFilesWithAttributeAsync()
         {
             await new VerifyCS.Test
@@ -115,10 +115,10 @@ using System.Reflection;
 "
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1016CSharpTestWithVersionAttributeTruncatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -135,7 +135,7 @@ using System.Reflection;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1016CSharpTestWithVersionAttributeFullyQualifiedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -152,7 +152,7 @@ using System.Reflection;
 ");
         }
 
-        [Fact, WorkItem(2143, "https://github.com/dotnet/roslyn-analyzers/issues/2143")]
+        [TestMethod, WorkItem(2143, "https://github.com/dotnet/roslyn-analyzers/issues/2143")]
         public async Task CA1016CSharpTestWithRazorCompiledItemAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(

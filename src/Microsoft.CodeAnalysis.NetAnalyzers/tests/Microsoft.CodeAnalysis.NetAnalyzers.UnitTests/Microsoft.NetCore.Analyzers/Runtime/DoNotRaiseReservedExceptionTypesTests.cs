@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotRaiseReservedExceptionTypesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DoNotRaiseReservedExceptionTypesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CreateSystemNotImplementedExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -44,7 +44,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateSystemExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +75,7 @@ End Namespace",
             GetTooGenericBasicResultAt(7, 19, "System.Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateSystemStackOverflowExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -16,6 +16,6 @@ internal sealed class WebServerAppModel(DotNetWatchContext context, ProjectGraph
     public override bool ManagedHotReloadRequiresBrowserRefresh
         => false;
 
-    protected override ImmutableArray<(HotReloadClient client, string name)> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
-        => [(new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), handlesStaticAssetUpdates: true, new NamedPipeClientTransport(clientLogger)), "")];
+    protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
+        => [new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), handlesStaticAssetUpdates: true, new NamedPipeClientTransport(clientLogger))];
 }

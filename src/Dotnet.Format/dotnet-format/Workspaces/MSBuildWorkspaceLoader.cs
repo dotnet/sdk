@@ -48,13 +48,13 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
             if (workspaceType == WorkspaceType.Solution)
             {
-                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken);
             }
             else
             {
                 try
                 {
-                    await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken);
                 }
                 catch (InvalidOperationException)
                 {

@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.PInvokeDiagnosticAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
+    [TestClass]
     public class PInvokeDiagnosticAnalyzerTests
     {
         #region Verifiers
@@ -50,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 
         #region CA1401 tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA1401CSharpTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +75,7 @@ public class C
                 CSharpResult1401(10, 34, "Method2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1401CSharpTestWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -98,7 +98,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1401BasicSubTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -127,7 +127,7 @@ End Class
                 BasicResult1401(18, 16, "Method4"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1401BasicSubTestWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -153,7 +153,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1401BasicFunctionTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -182,7 +182,7 @@ End Class
                 BasicResult1401(18, 21, "Method4"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1401BasicDeclareSubTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -203,7 +203,7 @@ End Class
                 BasicResult1401(11, 17, "Method4"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1401BasicDeclareFunctionTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -225,7 +225,7 @@ End Class
         }
 
         [WorkItem(792, "https://github.com/dotnet/roslyn-analyzers/issues/792")]
-        [Fact]
+        [TestMethod]
         public async Task CA1401CSharpNonPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -244,7 +244,7 @@ public sealed class TimerFontContainer
         }
 
         [WorkItem(792, "https://github.com/dotnet/roslyn-analyzers/issues/792")]
-        [Fact]
+        [TestMethod]
         public async Task CA1401BasicNonPublicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -260,7 +260,7 @@ End Class
 
         #region CA2101 tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101SimpleCSharpTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -288,7 +288,7 @@ class C
                 CSharpResult2101(16, 6));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101SimpleCSharpTestWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -312,7 +312,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101SimpleBasicTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -343,7 +343,7 @@ End Class
                 BasicResult2101(18, 6));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101SimpleBasicTestWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -370,7 +370,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101SimpleDeclareBasicTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -392,7 +392,7 @@ End Class
                 BasicResult2101(11, 30));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101ParameterMarshaledCSharpTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -446,7 +446,7 @@ class C
                 CSharpResult2101(38, 42));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101ParameterMarshaledBasicTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -510,7 +510,7 @@ End Class
                 BasicResult2101(47, 34));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101CharSetCSharpTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -544,7 +544,7 @@ class C
                 CSharpResult2101(23, 41));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101CharSetBasicTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -583,7 +583,7 @@ End Class
                 BasicResult2101(27, 33));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101ReturnTypeCSharpTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -609,7 +609,7 @@ class C
                 CSharpResult2101(10, 6));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101ReturnTypeBasicTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -641,7 +641,7 @@ End Class
                 BasicResult2101(22, 30));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2101WithoutBestFitMappingCSharpTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

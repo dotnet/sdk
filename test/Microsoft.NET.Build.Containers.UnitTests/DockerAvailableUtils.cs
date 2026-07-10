@@ -1,56 +1,32 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
-
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
-public class DockerAvailableTheoryAttribute : TheoryAttribute
+public sealed class DockerUnavailableCondition : ConditionBaseAttribute
 {
-    public static string LocalRegistry => DockerCliStatus.LocalRegistry;
-
-    public DockerAvailableTheoryAttribute(
-        bool skipPodman = false,
-        [CallerFilePath] string? sourceFilePath = null,
-        [CallerLineNumber] int sourceLineNumber = 0)
-        : base(sourceFilePath, sourceLineNumber)
+    public DockerUnavailableCondition()
+        : base(ConditionMode.Exclude)
     {
-        if (!DockerCliStatus.IsAvailable)
-        {
-            base.Skip = "Skipping test because Docker is not available on this host.";
-        }
-
-        if (skipPodman && DockerCliStatus.Command == DockerCli.PodmanCommand)
-        {
-            base.Skip = $"Skipping test with {DockerCliStatus.Command} cli.";
-        }
+        IgnoreMessage = "Skipping test because Docker is not available on this host.";
     }
+
+    public override string GroupName => nameof(DockerUnavailableCondition);
+
+    public override bool IsConditionMet => !DockerCliStatus.IsAvailable;
 }
 
-public class DockerAvailableFactAttribute : FactAttribute
+public sealed class PodmanCliCondition : ConditionBaseAttribute
 {
-    public static string LocalRegistry => DockerCliStatus.LocalRegistry;
-
-    public DockerAvailableFactAttribute(
-        bool skipPodman = false,
-        bool checkContainerdStoreAvailability = false,
-        [CallerFilePath] string? sourceFilePath = null,
-        [CallerLineNumber] int sourceLineNumber = 0)
-        : base(sourceFilePath, sourceLineNumber)
+    public PodmanCliCondition()
+        : base(ConditionMode.Exclude)
     {
-        if (!DockerCliStatus.IsAvailable)
-        {
-            base.Skip = "Skipping test because Docker is not available on this host.";
-        }
-        else if (checkContainerdStoreAvailability && !DockerCli.IsContainerdStoreEnabledForDocker())
-        {
-            base.Skip = "Skipping test because Docker daemon is not using containerd as the storage driver.";
-        }
-        else if (skipPodman && DockerCliStatus.Command == DockerCli.PodmanCommand)
-        {
-            base.Skip = $"Skipping test with {DockerCliStatus.Command} cli.";
-        }
+        IgnoreMessage = "Skipping test with podman cli.";
     }
+
+    public override string GroupName => nameof(PodmanCliCondition);
+
+    public override bool IsConditionMet => DockerCliStatus.Command == DockerCli.PodmanCommand;
 }
 
 // tiny optimization - since there are many instances of this attribute we should only get

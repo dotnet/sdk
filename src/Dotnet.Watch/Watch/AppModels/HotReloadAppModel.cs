@@ -84,6 +84,32 @@ internal abstract partial class HotReloadAppModel()
             return false;
         }
 
+        // MetadataUpdaterSupport is the primary indicator of whether the runtime supports Hot Reload.
+        // It is however not correctly set prior to .NET 11, so we use Optimize and DebugSymbols instead for older frameworks.
+        // See https://github.com/dotnet/runtime/pull/127163
+        if (project.IsNetCoreApp(Versions.Version11_0))
+        {
+            if (!project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.MetadataUpdaterSupport, defaultValue: true))
+            {
+                logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, PropertyNames.MetadataUpdaterSupport, "False", PropertyNames.MetadataUpdaterSupport, "True");
+                return false;
+            }
+        }
+        else
+        {
+            if (project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.Optimize))
+            {
+                logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, PropertyNames.Optimize, "True", PropertyNames.Optimize, "False");
+                return false;
+            }
+
+            if (!project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.DebugSymbols))
+            {
+                logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, PropertyNames.DebugSymbols, "False", PropertyNames.DebugSymbols, "True");
+                return false;
+            }
+        }
+
         return true;
     }
 }
