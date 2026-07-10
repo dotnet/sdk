@@ -116,23 +116,18 @@ on:
               'on-hold',
               'waiting-for-feedback',
               'needs-more-info',
-              'no-bot',
-              'no-campaign'
+              'no-bot'
             ];
             
             // Labels that indicate an issue is a GOOD candidate for auto-assignment
             const priorityLabels = [
-              'community',
               'good first issue',
               'good-first-issue',
               'bug',
-              'enhancement',
-              'feature',
               'documentation',
               'tech-debt',
               'refactoring',
-              'performance',
-              'security'
+              'performance'
             ];
             
             // Search for open issues with "cookie" label and without excluded labels
@@ -263,13 +258,6 @@ on:
                   return false;
                 }
                 
-                // Exclude issues with campaign labels (campaign:*)
-                // Campaign items are managed by campaign orchestrators
-                if (issueLabels.some(label => label.startsWith('campaign:'))) {
-                  core.info(`Skipping #${issue.number}: has campaign label (managed by campaign orchestrator)`);
-                  return false;
-                }
-                
                 // Exclude issues that have sub-issues (parent/organizing issues)
                 if (issue.subIssuesCount > 0) {
                   core.info(`Skipping #${issue.number}: has ${issue.subIssuesCount} sub-issue(s) - parent issues are used for organizing, not tasks`);
@@ -300,31 +288,20 @@ on:
                 let score = 0;
                 
                 // Score based on priority labels (higher score = higher priority)
-                // Community issues always get the highest priority — these are
-                // requests from external contributors and should be addressed first.
-                if (issueLabels.includes('community')) {
-                  score += 60;
-                }
                 if (issueLabels.includes('good first issue') || issueLabels.includes('good-first-issue')) {
-                  score += 50;
-                }
-                if (issueLabels.includes('bug')) {
                   score += 40;
                 }
-                if (issueLabels.includes('security')) {
-                  score += 45;
+                if (issueLabels.includes('bug')) {
+                  score += 55;
                 }
                 if (issueLabels.includes('documentation')) {
-                  score += 35;
-                }
-                if (issueLabels.includes('enhancement') || issueLabels.includes('feature')) {
-                  score += 30;
+                  score += 60;
                 }
                 if (issueLabels.includes('performance')) {
-                  score += 25;
+                  score += 30;
                 }
                 if (issueLabels.includes('tech-debt') || issueLabels.includes('refactoring')) {
-                  score += 20;
+                  score += 45;
                 }
                 
                 // Bonus for issues with clear labels (any priority label)
@@ -471,24 +448,20 @@ The issue search has already been performed in the pre-activation job with smart
 
 **Filtering Applied:**
 - ✅ Only open issues **with "cookie" label** (indicating approved work queue items from automated workflows)
-- ✅ Excluded issues with labels: wontfix, duplicate, invalid, question, discussion, needs-discussion, blocked, on-hold, waiting-for-feedback, needs-more-info, no-bot, no-campaign
-- ✅ Excluded issues with campaign labels (campaign:*) - these are managed by campaign orchestrators
+- ✅ Excluded issues with labels: wontfix, duplicate, invalid, question, discussion, needs-discussion, blocked, on-hold, waiting-for-feedback, needs-more-info, no-bot
 - ✅ Excluded issues that already have assignees
 - ✅ Excluded issues that have sub-issues (parent/organizing issues)
 - ✅ Excluded issues with closed or merged PRs (treating those as complete)
 - ✅ Excluded issues with open PRs from Copilot coding agent (already being worked on)
-- ✅ Prioritized issues with labels: good-first-issue, bug, security, documentation, enhancement, feature, performance, tech-debt, refactoring
+- ✅ Prioritized issues with labels: documentation, bug, tech-debt, refactoring, good-first-issue, performance
 
 **Scoring System:**
 Issues are scored and sorted by priority:
-- **Community**: +60 points *(always highest — issues from external contributors)*
-- Good first issue: +50 points
-- Security: +45 points
-- Bug: +40 points
-- Documentation: +35 points
-- Enhancement/Feature: +30 points
-- Performance: +25 points
-- Tech-debt/Refactoring: +20 points
+- Documentation: +60 points
+- Bug: +55 points
+- Tech-debt/Refactoring: +45 points
+- Good first issue: +40 points
+- Performance: +30 points
 - Has any priority label: +10 points
 - Age bonus: +0-20 points (older issues get slight priority)
 
