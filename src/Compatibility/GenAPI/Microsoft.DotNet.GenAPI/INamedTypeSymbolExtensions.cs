@@ -211,8 +211,7 @@ namespace Microsoft.DotNet.GenAPI
                 SyntaxFactory.Identifier(namedType.ToDisplayString()),
                 SyntaxFactory.ParameterList(),
                 default,
-                default(BlockSyntax),
-                SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+                SyntaxFactory.Block());
 
             // find base constructor to call if it's not implicit.
             IEnumerable<IMethodSymbol> baseConstructors = namedType.BaseType?.Constructors.Where(symbolFilter.Include) ?? Enumerable.Empty<IMethodSymbol>();
