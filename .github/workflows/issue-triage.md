@@ -118,15 +118,134 @@ Read the triggering issue title and body and triage by meaning, not keyword matc
 - Understand synonyms and short forms so related terms map to the right label (for example "web assets" -> `Area-StaticWebAssets`, "global tool" / "dotnet tool" -> `Area-Tools`).
 - Do not invent labels.
 
-### Owner assignment
+### Owner lookup and routing
 
-<!-- TODO(commit 3-4): replace with CODEOWNERS-based owner lookup for dotnet/sdk. -->
-<!-- TODO(commit 5-6): add load-balanced round-robin fallback. -->
+<!-- Copied from Azure/azure-sdk-for-net issue-triage.md (Step 5 + Step 6). Commit 4 adapts this to dotnet/sdk's CODEOWNERS; commit 5-6 add the load-balanced round-robin fallback. -->
 
-Rules:
+All issues reaching this step have predicted labels and proceed through ownership routing
 
-- Assign more than one owner only if the issue genuinely spans multiple areas.
-- If nothing fits, assign no one.
+Read the `.github/CODEOWNERS` file to look up owners for the predicted label combination
+
+#### CODEOWNERS Matching Rules
+
+The CODEOWNERS file contains `# ServiceLabel:` entries that associate one or more labels with owners
+
+```
+# ServiceLabel: %<Label1>
+# AzureSdkOwners:                       @owner1
+
+# ServiceLabel: %<Label1> %<Label2>
+# ServiceOwners:                        @svcowner1 @svcowner2
+```
+
+**Matching uses bottom-to-top scanning with first-match-wins semantics:**
+
+1. Start from the END of the CODEOWNERS file and scan each line upward
+2. For each `# ServiceLabel:` entry, check if ALL labels listed in it (after each `%`) are present in the issue's predicted labels
+3. STOP at the first entry where all its labels match — this is the matching entry
+4. Use the AzureSdkOwners and/or ServiceOwners from that entry and any adjacent owner lines
+
+**Why this matters:** The file is structured so that more specific multi-label entries appear AFTER less specific entries. In bottom-to-top scanning, entries closer to the end of the file are encountered first. Multi-label entries placed after a catch-all are encountered before it, correctly overriding the catch-all
+
+The following simplified excerpt illustrates the structure:
+
+```
+# --- Client libraries section (earlier in file) ---
+
+# AzureSdkOwners:                   @jsquire
+# ServiceLabel: %Event Hubs
+# ServiceOwners:                    @axisc @hmlam
+
+# --- Management catch-all ---
+
+# ServiceLabel: %Mgmt
+# AzureSdkOwners:                   @ArthurMa1978
+
+# --- Management-specific overrides (after catch-all) ---
+
+# ServiceLabel: %ARM %Mgmt
+# ServiceOwners:                    @Azure/arm-sdk-owners
+
+# ServiceLabel: %ARM - Templates %Mgmt
+# ServiceOwners:                    @armleads-azure
+```
+
+**Example 1 — Predicted labels: "ARM" + "Mgmt"**
+
+Scan starts from end of file upward:
+1. `%ARM - Templates %Mgmt` — requires "ARM - Templates" AND "Mgmt"; issue has "ARM" not "ARM - Templates" → no match, continue
+2. `%ARM %Mgmt` — requires "ARM" AND "Mgmt"; issue has both → ALL labels match ✅ STOP
+
+The `%Mgmt` catch-all is never reached because the more specific `%ARM %Mgmt` entry was encountered first (it appears after the catch-all in the file)
+
+**Outcome:** Matches `%ARM %Mgmt`. ServiceOwners: @Azure/arm-sdk-owners, no AzureSdkOwners. Add "Service Attention" label, no assignment, no @mention. If the issue is also tagged with the "customer-reported" label, add the "needs-team-attention" label
+
+**Example 2 — Predicted labels: "Event Hubs" + "Client"**
+
+Scan starts from end of file upward:
+1. All management-specific entries — each requires "Mgmt" or a management service; issue has "Client" not "Mgmt" → no match for any, continue
+2. `%Mgmt` catch-all — requires "Mgmt"; issue has "Client" → no match, continue
+3. `%Event Hubs` — requires only "Event Hubs"; issue has "Event Hubs" → ALL labels match ✅ STOP
+
+**Outcome:** Matches `%Event Hubs`. AzureSdkOwners: @jsquire, ServiceOwners: @axisc @hmlam. Assign @jsquire, @mention @jsquire in Step 6 comment. If the issue is also tagged with the "customer-reported" label, add the "needs-team-attention" label
+
+Note: There is no `%Client` catch-all entry in CODEOWNERS, so "Client" as a category label does not contribute to CODEOWNERS matching. The service label drives the match
+
+#### Owner Routing Flow
+
+```
+IF a matching ServiceLabel entry is found in CODEOWNERS:
+
+    IF AzureSdkOwners are listed for the matched entry:
+        IF a single AzureSdkOwner:
+            - Assign them to the issue using the `assign_to_user` tool
+        ELSE (multiple AzureSdkOwners):
+            - Pick one AzureSdkOwner at random and assign them using the `assign_to_user` tool
+
+        - IF the issue has the "customer-reported" label: Add the "needs-team-attention" label
+        - Record all AzureSdkOwners for Step 6
+
+    ELSE IF only ServiceOwners are listed (no AzureSdkOwners):
+        - Add the "Service Attention" label
+        - IF the issue has the "customer-reported" label: Add the "needs-team-attention" label
+        - Leave the issue unassigned
+        - Record all ServiceOwners for Step 6
+
+    ELSE (matched entry has neither AzureSdkOwners nor ServiceOwners):
+        - Add the "needs-team-triage" label
+
+ELSE (no ServiceLabel entry matches any of the issue's predicted labels):
+    - Add the "needs-team-triage" label
+```
+
+#### Owner Routing Comment
+
+Post a routing comment before the analysis comment. The comment type depends on who was identified in Step 5:
+
+- For **multiple AzureSdkOwners** or **ServiceOwners**: use `mention_owners` to preserve @mentions as real pings
+- For a **single AzureSdkOwner**: use `add_comment` with just the routing message (no @mentions needed — the assignment already notifies them)
+
+**When using `mention_owners`:** Pass owner names in the `owners` field WITHOUT the @ prefix; the `mention_owners` job prepends @ on the server side to avoid safe-outputs sanitization. Never include @ symbols in any `mention_owners` tool parameter
+
+This comment should be concise: a brief routing message only; no analysis or debugging detail
+
+```
+IF a single AzureSdkOwner was identified in Step 5:
+    - Use `add_comment` with body: "Thank you for your feedback. Tagging and routing to the team member(s) best able to assist."
+
+ELSE IF multiple AzureSdkOwners were identified in Step 5:
+    - Use `mention_owners` with:
+        message: "Thank you for your feedback. Tagging and routing to the team member(s) best able to assist."
+        owners: "owner1, owner2"
+
+ELSE IF ServiceOwners were identified in Step 5 (Service Attention path):
+    - Use `mention_owners` with:
+        message: "Thank you for your feedback. Tagging and routing to the team member(s) best able to assist."
+        owners: "owner1, owner2"
+
+ELSE:
+    - Skip this step
+```
 
 ### `untriaged` handling
 
