@@ -43,6 +43,7 @@ jobs:
         with:
           script: |
             const CLOSE_KBE_AFTER_DAYS = 7;
+            const NEW_ISSUE_GRACE_DAYS = 7;
             const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
             const issues = await github.paginate(
@@ -55,6 +56,14 @@ jobs:
             for (const issue of issues) {
               if (issue.pull_request) continue;
               if (issue.labels.some(l => l.name === process.env.KEEP_OPEN_LABEL)) continue;
+
+              // Skip issues within the grace period so newly-opened KBEs
+              // aren't immediately marked stale before they can accumulate hits.
+              const issueAgeDays = (Date.now() - new Date(issue.created_at).getTime()) / MS_PER_DAY;
+              if (issueAgeDays < NEW_ISSUE_GRACE_DAYS) {
+                console.log(`  #${issue.number}: skipping (created ${issueAgeDays.toFixed(1)} days ago, within ${NEW_ISSUE_GRACE_DAYS}-day grace period)`);
+                continue;
+              }
 
               // Parse the hit count summary table from the issue body.
               // Format: |24-Hour Hit Count|7-Day Hit Count|1-Month Count|
