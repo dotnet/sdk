@@ -41,12 +41,18 @@ namespace Microsoft.DotNet.Cli.Telemetry.Tests;
 public class RealEndpointTelemetryE2ETests
 {
     private const string ConnectionStringEnvVar = "DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING";
+    private const string RunIdEnvVar = "DOTNET_CLI_TELEMETRY_E2E_RUN_ID";
     private const string SourceName = "Microsoft.DotNet.Tests.RealEndpointTelemetry";
 
     // A stable marker plus a per-run id are stamped onto every payload so the emitted rows can
-    // be located later in Application Insights when verifying ingestion by hand.
+    // be located later in Application Insights when verifying ingestion by hand. The run id can
+    // be pinned via DOTNET_CLI_TELEMETRY_E2E_RUN_ID so a harness script can choose the id up
+    // front, run the tests, then query for exactly that id once ingestion completes (~1 hour).
     private const string RunMarker = "cli-telemetry-real-endpoint-e2e";
-    private static readonly string RunId = Guid.NewGuid().ToString("N");
+    private static readonly string RunId =
+        Environment.GetEnvironmentVariable(RunIdEnvVar) is { Length: > 0 } pinned
+            ? pinned
+            : Guid.NewGuid().ToString("N");
 
     private static readonly ActivitySource Source = new(SourceName);
 
@@ -138,6 +144,10 @@ public class RealEndpointTelemetryE2ETests
         }
 
         TestContext.WriteLine($"Real-endpoint telemetry E2E run: marker='{RunMarker}', runId='{RunId}', endpoint='{parsed!.IngestionEndpoint}'.");
+        TestContext.WriteLine(
+            "After ~1 hour (ingestion delay), confirm the data landed with this Application Insights KQL query:");
+        TestContext.WriteLine(
+            $"union traces, requests, dependencies | where customDimensions['e2e.run.id'] == '{RunId}' | summarize count() by itemType");
         return parsed;
     }
 

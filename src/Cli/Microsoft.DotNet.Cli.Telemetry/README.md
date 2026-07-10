@@ -216,9 +216,32 @@ dotnet test test/Microsoft.DotNet.Cli.Telemetry.Tests --filter "FullyQualifiedNa
 
 The Breeze endpoint reports `itemsReceived` / `itemsAccepted` / `errors` **synchronously** in the
 POST response, so drop rate is measured immediately — the ~1 hour ingestion delay only applies to
-querying the emitted rows back out through the Analytics API. Each run stamps a
-`cli-telemetry-real-endpoint-e2e` marker and a unique `e2e.run.id` (both written to the test
-output) onto every envelope so the emitted rows can be located when verifying ingestion by hand.
+querying the emitted rows back out through the Analytics API.
+
+### Verifying end-to-end ingestion after the tests run
+
+Every envelope is stamped with two queryable `customDimensions`: a constant
+`e2e.marker = cli-telemetry-real-endpoint-e2e` and a unique `e2e.run.id`. By default the run id is
+a fresh GUID (written to the test output), but you can **pin** it up front via
+`DOTNET_CLI_TELEMETRY_E2E_RUN_ID` so a script can choose the id, run the tests, wait for ingestion,
+then query for exactly that id:
+
+```powershell
+$runId = [guid]::NewGuid().ToString("N")
+$env:DOTNET_CLI_TELEMETRY_E2E_RUN_ID = $runId
+$env:DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING = "InstrumentationKey=<guid>;IngestionEndpoint=https://<region>.in.applicationinsights.azure.com/"
+dotnet test test/Microsoft.DotNet.Cli.Telemetry.Tests --filter "FullyQualifiedName~RealEndpointTelemetryE2ETests"
+```
+
+After roughly an hour, confirm the rows landed across the `traces` (message events), `requests`
+(server spans), and `dependencies` (internal spans) tables with this Application Insights KQL
+query (also printed to the test output):
+
+```kusto
+union traces, requests, dependencies
+| where customDimensions['e2e.run.id'] == '<runId>'
+| summarize count() by itemType
+```
 
 ## References
 
