@@ -5,8 +5,15 @@ description: Triage newly opened or edited dotnet/sdk issues -- apply Area/type/
 on:
   issues:
     types: [opened, edited]
-# Run for issues from every author, including external contributors.
-roles: all
+  # Manual trigger for testing: point it at a specific existing issue number.
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to triage (manual run against an existing issue)."
+        required: true
+        type: string
+  # Run for issues from every author, including external contributors.
+  roles: all
 engine: copilot
 permissions:
   contents: read
@@ -23,96 +30,15 @@ tools:
 safe-outputs:
   report-failure-as-issue: false
   add-labels:
-    # dotnet/sdk classification labels. Area-* identify the affected component,
-    # type labels classify the kind of issue, and the routing/special-purpose
-    # labels below drive follow-up (needs-info, cookie, Test Debt, performance, ...).
-    allowed:
-      # Area (component) labels
-      - Area-acquisition
-      - Area-AIEngineering
-      - Area-ApiCompat
-      - Area-AspNetCore
-      - Area-CLI
-      - Area-ClickOnce
-      - Area-CodeFlow
-      - "Area-Common templates"
-      - Area-Compilers
-      - Area-Containers
-      - "Area-dotnet AOT"
-      - "Area-dotnet new"
-      - "Area-dotnet test"
-      - "Area-dotnet test (MTP)"
-      - "Area-dotnet test (VSTest)"
-      - Area-esproj
-      - Area-External
-      - Area-Format
-      - Area-FSharp
-      - Area-GenAPI
-      - area-Host
-      - Area-ILLink
-      - Area-ImplicitUsings
-      - Area-Infrastructure
-      - Area-Install
-      - Area-Linux
-      - Area-MacOS
-      - Area-Microsoft.CodeAnalysis.NetAnalyzers
-      - Area-MSBuild
-      - Area-NativeAOT
-      - Area-NetSDK
-      - Area-NuGet
-      - Area-Performance
-      - Area-ReadyToRun
-      - Area-Roslyn
-      - Area-Run
-      - Area-run-file
-      - area-runtime
-      - Area-SBOM
-      - Area-SdkResolvers
-      - Area-Security
-      - area-Single-File
-      - Area-Snap
-      - Area-SourceBuild
-      - Area-SourceLink
-      - Area-StaticWebAssets
-      - area-System.Console
-      - Area-Telemetry
-      - Area-Templates
-      - "Area-Test templates"
-      - Area-Tooling
-      - Area-Tools
-      - Area-TraversalSdk
-      - Area-Trimming
-      - area-unified-build-BuildFailure
-      - area-vendored-sync
-      - Area-VMR
-      - Area-VS
-      - Area-WasmSdk
-      - Area-Watch
-      - Area-WebSDK
-      - Area-WindowsSDK
-      - Area-Workloads
-      # Type labels
-      - Bug
-      - enhancement
-      - "Feature Request"
-      - question
-      - documentation
-      - Task
-      # Routing / lifecycle labels
-      - "needs team triage"
-      - needs-info
-      # Special-purpose labels
-      - cookie
-      - "Test Debt"
-      - performance
-      - dotnetup
-      - breaking-change
-      - "good first issue"
-      - "help wanted"
-      - backport
+    # No fixed allowlist: dotnet/sdk has more labels than the gh-aw allowlist cap (50)
+    # permits, so the agent is instructed to apply only labels that already exist in the
+    # repo (the Area-* component labels, type labels, and the special-purpose labels
+    # described in the prompt) and never to invent labels.
     max: 6
+    target: "*"
   remove-labels:
     allowed: [untriaged]
+    target: "*"
   assign-to-user:
     # Individual owners that appear in the root CODEOWNERS file. The prompt restricts
     # per-issue assignment to the owners of the matched area; this list is the overall
@@ -132,8 +58,10 @@ safe-outputs:
       - tmat
       - vijayrkn
     max: 2
+    target: "*"
   add-comment:
     max: 1
+    target: "*"
   noop:
 ---
 
@@ -141,7 +69,9 @@ safe-outputs:
 
 ## Task
 
-Read the triggering issue title and body and triage by meaning, not keyword matching.
+The issue to triage is **#${{ github.event.issue.number || github.event.inputs.issue_number }}** (the opened/edited issue, or the number passed to a manual `workflow_dispatch` run). Read its title and body with the GitHub tools, then triage by meaning, not keyword matching.
+
+Include that issue number in every safe-output call: pass it as `item_number` for `add_labels`, `remove_labels`, and `add_comment`, and as `issue_number` for `assign_to_user`.
 
 ### Before you start
 
@@ -150,7 +80,7 @@ Read the triggering issue title and body and triage by meaning, not keyword matc
 
 ### Labels to apply
 
-- Apply only labels from the configured `add-labels.allowed` list.
+- First list the repository's existing labels with the labels tool. Apply only labels that already exist in this repository; never invent a label.
 - Apply exactly one `Area-*` component label for the area the issue is genuinely about, and a type label (`Bug`, `enhancement`, `Feature Request`, `question`, `documentation`, or `Task`) when the kind is clear.
 - Apply a second `Area-*` label only if the issue genuinely spans two components.
 - Ignore terms mentioned only in passing (for example in file paths, build flags, or examples).
