@@ -22,7 +22,8 @@ permissions:
 tools:
   github:
     toolsets: [issues, labels]
-    allowed-repos: "${{ github.repository }}"
+    allowed-repos:
+      - "${{ github.repository }}"
     # Read issue content from all authors, including external contributors, so their
     # reports are not filtered out before triage. Untrusted issue content is treated
     # as data, never as instructions (see the security note in the Task section).
