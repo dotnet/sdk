@@ -94,6 +94,16 @@ safe-outputs:
       - Task
       # Routing / lifecycle labels
       - "needs team triage"
+      - needs-info
+      # Special-purpose labels
+      - cookie
+      - "Test Debt"
+      - performance
+      - dotnetup
+      - breaking-change
+      - "good first issue"
+      - "help wanted"
+      - backport
     max: 6
   remove-labels:
     allowed: [untriaged]
@@ -134,6 +144,33 @@ Read the triggering issue title and body and triage by meaning, not keyword matc
 - Ignore terms mentioned only in passing (for example in file paths, build flags, or examples).
 - Understand synonyms and short forms so related terms map to the right label (for example "web assets" -> `Area-StaticWebAssets`, "global tool" / "dotnet tool" -> `Area-Tools`).
 - Do not invent labels.
+
+### SDK-specific patterns and special labels
+
+Recognize common .NET SDK phrasing and map it to the right `Area-*` label, using the `# Area-<Name>` section names in `CODEOWNERS` as the source of truth for area names: `dotnet build`/`restore`/`publish`/`pack`/`test`/`run`/`watch`/`format`; MSBuild targets and `.csproj`/`.props`/`.targets`; NuGet restore; workloads; templates (`dotnet new`); global/local tools; trimming, Native AOT, single-file, and ReadyToRun publish; source-build / VMR; and Static Web Assets / Blazor / Razor.
+
+Beyond the `Area-*` and type labels, apply these special-purpose labels when the issue clearly fits:
+
+- `needs-info` — the report is missing information needed to act on it. See "Ask for more info" below.
+- `cookie` — the issue looks small and self-contained enough that a simple Copilot coding-agent PR could likely handle it: a small bug fix, a documentation change, a backport, a straightforward test addition, and the like. Apply when the scope is clearly bounded; never for issues that need design or architectural decisions.
+- `Test Debt` — the issue is about test gaps, flaky tests, disabled/ignored tests, or other testing technical debt.
+- `performance` — the issue is primarily about speed, memory, startup time, or throughput (pair with `Area-Performance` when the component is known).
+- `dotnetup` — the issue is about the `dotnetup` / .NET install-management experience.
+- `breaking-change` — the issue reports or proposes a change in behavior that would break existing users.
+- `good first issue` / `help wanted` — the issue is approachable for a newcomer or is open for community contribution.
+- `backport` — the issue asks for a fix to be ported to a servicing/release branch.
+
+### Ask for more info
+
+Before deep triage, judge whether a bug report has enough to act on. A bug is missing information if it lacks any of: clear steps to reproduce (or a sample project), expected vs actual behavior, the error text or failing output, and the affected SDK/runtime version. Feature requests and questions are exempt.
+
+If a bug is missing that information, or the issue body is nearly empty / very low signal:
+
+- Apply `needs-info`.
+- In your comment, ask specifically for what is missing (name each item). Do not guess an area or assign an owner while the issue is blocked on missing info.
+- Keep `untriaged` in place so a human still sees it.
+
+If the issue has enough to act on, proceed with normal labeling and owner routing.
 
 ### Owner lookup and routing
 
