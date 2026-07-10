@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watch;
+#nullable enable
+
+namespace Microsoft.DotNet.HotReload;
 
 internal readonly record struct ProjectInstanceId(string ProjectPath, string TargetFramework);
