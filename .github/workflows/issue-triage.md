@@ -17,38 +17,14 @@ tools:
 safe-outputs:
   report-failure-as-issue: false
   add-labels:
-    allowed:
-      - OS-Linux
-      - OS-MacOS
-      - OS-Windows
-      - Container-Process
-      - Container-MicroVM
-      - Container-VM
-      - Container-WSLC
-      - Container-Session
-      - Container-Hyperlight
-      - Area-SDK-Configuration
-      - Area-SDK-Policy
-      - Area-Executor-Schema
-      - Area-SDK-Api
-      - Area-Executor-LXC
-      - Area-Executor-WXC
-      - Area-Build-Rust
-      - Area-Build-TypeScript
-      - Area-Test-SDK
-      - Area-Test-Executor
+    # TODO(commit 2.5): populate with real dotnet/sdk labels once semantics are matched.
+    allowed: []
     max: 6
   remove-labels:
     allowed: [Needs-Triage]
   assign-to-user:
-    allowed:
-      - jsidewhite
-      - mgudgin
-      - SohamDas2021
-      - bbonaby
-      - huzaifa-d
-      - adpa-ms
-      - richiemsft
+    # TODO(commit 3-6): owners are resolved from CODEOWNERS and load-balanced; fill the allowlist then.
+    allowed: []
     max: 2
   add-comment:
     max: 1
@@ -63,24 +39,15 @@ Read the triggering issue title and body and triage by meaning, not keyword matc
 ### Labels to apply
 
 - Apply only labels from the configured `add-labels.allowed` list.
-- Apply the OS-*, Container-*, and Area-* labels the issue is genuinely about.
+- Apply the labels the issue is genuinely about.
 - Ignore terms mentioned only in passing (for example in file paths, build flags, or examples).
-- Understand synonyms and short forms. Treat "Mac", "Mac x64", "Mac ARM", "Mac aarch64", "macOS", "darwin", and "Seatbelt" as the macOS backend.
+- Understand synonyms and short forms so related terms map to the right label.
 - Do not invent labels.
 
-### Owner assignment map
+### Owner assignment
 
-Assign matching owner(s) with `assign_to_user` using this map:
-
-| Owner (login) | Area |
-|---|---|
-| @jsidewhite | AppContainer / BaseContainer / process isolation/container |
-| @mgudgin | AppContainer / BaseContainer / process isolation/container |
-| @bbonaby | AppContainer / BaseContainer / process isolation/container / networking / firewall / DNS / proxy / iptables |
-| @SohamDas2021 | Linux / LXC / WSLC / Bubblewrap (bwrap) / proxy on Linux / iptables |
-| @huzaifa-d | MicroVM / NanVix / Hyperlight / Windows Sandbox |
-| @adpa-ms | IsolationSession / session isolation |
-| @richiemsft | macOS / Seatbelt |
+<!-- TODO(commit 3-4): replace with CODEOWNERS-based owner lookup for dotnet/sdk. -->
+<!-- TODO(commit 5-6): add load-balanced round-robin fallback. -->
 
 Rules:
 
