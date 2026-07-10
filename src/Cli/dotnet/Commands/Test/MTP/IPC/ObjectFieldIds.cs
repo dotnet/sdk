@@ -105,6 +105,9 @@ internal static class FailedTestResultMessageFieldsId
     public const ushort StandardOutput = 7;
     public const ushort ErrorOutput = 8;
     public const ushort SessionUid = 9;
+    // Assertion diff fields: additive/optional, older readers skip unknown ids (no protocol version bump).
+    public const ushort Expected = 10;
+    public const ushort Actual = 11;
 }
 
 internal static class ExceptionMessageFieldsId
