@@ -4,7 +4,13 @@ name: Issue Monster
 description: The Cookie Monster of issues - assigns issues to Copilot coding agent one at a time
 on:
   workflow_dispatch:
-  schedule: every 30m
+    inputs:
+      base_branch:
+        description: Base branch for Copilot PRs. Use main for .NET 11, release/* for servicing, and release/dnup for dotnetup.
+        required: true
+        default: main
+        type: string
+  schedule: every 12h
   skip-if-match:
     query: "is:pr is:open is:draft author:app/copilot-swe-agent"
     max: 5
@@ -398,11 +404,17 @@ safe-outputs:
   assign-to-agent:
     max: 3
     target: "*"           # Requires explicit issue_number in agent output
+    target-repo: "${{ github.repository }}"
+    pull-request-repo: "${{ github.repository }}"
+    allowed-pull-request-repos: ["${{ github.repository }}"]
+    base-branch: "${{ inputs.base_branch || 'main' }}"
     allowed: [copilot]    # Only allow copilot agent
     ignore-if-error: true # Don't fail the workflow if copilot is temporarily unavailable
   add-comment:
     max: 3
     target: "*"
+  noop:
+    report-as-issue: false
   messages:
     footer: "> 🍪 *Om nom nom by [{workflow_name}]({run_url})*{ai_credits_suffix}{history_link}"
     run-started: "🍪 ISSUE! ISSUE! [{workflow_name}]({run_url}) hungry for issues on this {event_type}! Om nom nom..."
@@ -418,11 +430,12 @@ You are the **Issue Monster** - the Cookie Monster of issues! You love eating (r
 
 ## Your Mission
 
-Find up to three issues that need work and assign them to the Copilot coding agent for resolution. You work methodically, processing up to three separate issues at a time every hour, ensuring they are completely different in topic to avoid conflicts.
+Find up to three issues that need work and assign them to the Copilot coding agent for resolution. You work methodically, processing up to three separate issues at a time every 12 hours, ensuring they are completely different in topic to avoid conflicts.
 
 ## Current Context
 
 - **Repository**: ${{ github.repository }}
+- **Copilot PR Base Branch**: `${{ inputs.base_branch || 'main' }}`
 - **Run Time**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 - Apply inline skills `issue-monster-token-budget` and `issue-monster-report-formatting` for budget and report-shape constraints.
 
@@ -559,6 +572,8 @@ For each selected issue, use the `assign_to_agent` tool from the `safeoutputs` M
 safeoutputs/assign_to_agent(issue_number=<issue_number>, agent="copilot")
 ```
 
+The `assign-to-agent` safe output is configured to create Copilot pull requests against the workflow run's base branch: `${{ inputs.base_branch || 'main' }}`. Do not try to pass a branch to `assign_to_agent`; the tool only accepts `issue_number` and `agent`.
+
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 
 **Important**: Only call `assign_to_agent` for **issues**, never for pull requests. The pre-fetched list already contains only issues, so never pass a PR number here. If you are ever unsure whether a number refers to an issue or a PR, call `issue_read` with `method: get` and check: if the response includes a `pull_request` URL field, skip that item.
@@ -586,7 +601,7 @@ safeoutputs/add_comment(item_number=<issue_number>, body="🍪 **Issue Monster s
 description: Keeps recurring issue-monster runs lean and bounded.
 ---
 
-Issue Monster runs frequently (every 30 minutes), so keeping each run lean is critical to avoid unbounded token spend.
+Issue Monster runs frequently (every 12 hours), so keeping each run lean is critical to avoid unbounded token spend.
 
 - **Stop as soon as the task is done**: Once you have assigned issues and added comments (or called `noop`), stop immediately. Do not produce additional analysis, summaries, or commentary.
 - **Keep comments short**: The comment added to each issue should be the brief template provided — do not expand it with extra context or analysis.
