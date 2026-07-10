@@ -406,9 +406,6 @@ engine:
 
 imports:
   - shared/github-guard-policy.md
-  - shared/activation-app.md
-
-  - shared/otlp.md
 timeout-minutes: 30
 
 tools:
