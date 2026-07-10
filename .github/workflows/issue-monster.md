@@ -9,13 +9,6 @@ on:
     query: "is:pr is:open is:draft author:app/copilot-swe-agent"
     max: 5
   skip-if-no-match: "is:issue is:open"
-  skip-if-check-failing:
-    include:
-      - build
-      - test
-      - lint-go
-      - lint-js
-    allow-pending: true
   permissions:
     issues: read
     pull-requests: read
@@ -378,15 +371,13 @@ sandbox:
     sudo: false
 
 engine:
-  id: pi
-  model: copilot/gpt-5.4
+  id: copilot
 
 imports:
   - shared/github-guard-policy.md
 timeout-minutes: 30
 
 tools:
-  cli-proxy: true
   github:
     mode: gh-proxy
     min-integrity: approved
