@@ -444,7 +444,10 @@ internal sealed class TestApplicationHandler
         // lenient about missing/empty content (we simply skip it) instead of failing the run.
         if (!string.IsNullOrEmpty(azureDevOpsLogMessage.LogText))
         {
-            _output.WriteMessage(azureDevOpsLogMessage.LogText);
+            // WriteMessage appends the payload verbatim without a trailing newline (the process-output streaming
+            // path supplies its own newlines). An Azure DevOps logging command must sit on its own line to be
+            // recognized, so terminate the line here without otherwise altering the payload.
+            _output.WriteMessage(EnsureTrailingNewLine(azureDevOpsLogMessage.LogText));
         }
     }
 
@@ -463,6 +466,7 @@ internal sealed class TestApplicationHandler
         switch (displayMessage.Level)
         {
             case DisplayMessageLevels.Warning:
+                // WriteWarningMessage/WriteErrorMessage terminate the line themselves (AppendLine).
                 _output.WriteWarningMessage(displayMessage.Text);
                 break;
 
@@ -471,10 +475,18 @@ internal sealed class TestApplicationHandler
                 break;
 
             default:
-                _output.WriteMessage(displayMessage.Text);
+                // The information path uses the verbatim WriteMessage, which does not append a newline, so
+                // terminate the line here to keep it from running together with subsequent terminal output.
+                _output.WriteMessage(EnsureTrailingNewLine(displayMessage.Text));
                 break;
         }
     }
+
+    // WriteMessage writes text verbatim (no trailing newline). Forwarded host messages arrive as individual
+    // lines without a terminator, so ensure one is present - but leave already-terminated payloads untouched
+    // to avoid introducing blank lines.
+    private static string EnsureTrailingNewLine(string text)
+        => text.EndsWith('\n') ? text : text + Environment.NewLine;
 
     private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionStart(string sessionUid)
     {
