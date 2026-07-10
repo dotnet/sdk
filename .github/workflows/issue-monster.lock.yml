@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"1b42d22ad64f7beba3ea7ab8bfd35c3826b8f92630e066259cf0334e83302c04","body_hash":"c116fcbe4c9c69238d152761ddaee59ea90ae3e49da718bf9dd6285e828a3520","compiler_version":"v0.81.6","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.65"}}
-# gh-aw-manifest: {"version":1,"secrets":["GH_AW_AGENT_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/cache/save","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/checkout","sha":"9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0","version":"v7.0.0"},{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ba6380cc6e5be5d21677bebe04d52fb48e3abec7","version":"v0.81.6"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.11","digest":"sha256:979723c628182da7729333f2208bb249fd25ddee579645cf9a3892d681a929c7","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.11@sha256:979723c628182da7729333f2208bb249fd25ddee579645cf9a3892d681a929c7"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.11","digest":"sha256:807e4831999b44513b0a66e5859d478dc4da7ae74ab1918cec967d513f95bf9d","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.11@sha256:807e4831999b44513b0a66e5859d478dc4da7ae74ab1918cec967d513f95bf9d"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.11"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.11","digest":"sha256:ff27ea0525ad953a6adee28a5fbe9d2e22be47dbec755c15767af4ea3f91df7d","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.11@sha256:ff27ea0525ad953a6adee28a5fbe9d2e22be47dbec755c15767af4ea3f91df7d"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.30","digest":"sha256:35625d1a2269b1238606078c879f59a91cffc4ac33eb54bf39c6418822c1a8be","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.30@sha256:35625d1a2269b1238606078c879f59a91cffc4ac33eb54bf39c6418822c1a8be"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b","pinned_image":"ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b"},{"image":"ghcr.io/github/github-mcp-server:v1.4.0","digest":"sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036","pinned_image":"ghcr.io/github/github-mcp-server:v1.4.0@sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036"}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"4d6662cd53a2d88f50e71b730c747a9d564946018df91d715c6aaf1486a39a7b","body_hash":"997d74aa4b7b78c4185010631c68cd6832800c3f3876277121c336f2c06c30c1","compiler_version":"v0.81.6","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.65"}}
+# gh-aw-manifest: {"version":1,"secrets":["GH_AW_AGENT_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/cache/save","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/checkout","sha":"9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0","version":"v7.0.0"},{"repo":"actions/checkout","sha":"df4cb1c069e1874edd31b4311f1884172cec0e10","version":"v6.0.3"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ba6380cc6e5be5d21677bebe04d52fb48e3abec7","version":"v0.81.6"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.11","digest":"sha256:979723c628182da7729333f2208bb249fd25ddee579645cf9a3892d681a929c7","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.11@sha256:979723c628182da7729333f2208bb249fd25ddee579645cf9a3892d681a929c7"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.11","digest":"sha256:807e4831999b44513b0a66e5859d478dc4da7ae74ab1918cec967d513f95bf9d","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.11@sha256:807e4831999b44513b0a66e5859d478dc4da7ae74ab1918cec967d513f95bf9d"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.11"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.11","digest":"sha256:ff27ea0525ad953a6adee28a5fbe9d2e22be47dbec755c15767af4ea3f91df7d","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.11@sha256:ff27ea0525ad953a6adee28a5fbe9d2e22be47dbec755c15767af4ea3f91df7d"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.30","digest":"sha256:35625d1a2269b1238606078c879f59a91cffc4ac33eb54bf39c6418822c1a8be","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.30@sha256:35625d1a2269b1238606078c879f59a91cffc4ac33eb54bf39c6418822c1a8be"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b","pinned_image":"ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b"},{"image":"ghcr.io/github/github-mcp-server:v1.4.0","digest":"sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036","pinned_image":"ghcr.io/github/github-mcp-server:v1.4.0@sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036"}]}
 # This file was automatically generated by gh-aw (v0.81.6). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _      
@@ -39,7 +39,7 @@
 #   - actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
 #   - actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
 #   - actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-#   - actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+#   - actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 #   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
 #   - actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -76,7 +76,37 @@ on:
         # const { owner, repo } = context.repo;
         # const MAX_ISSUES_WITH_BODY_CONTEXT = 8;
         # const BODY_SNIPPET_MAX_LENGTH = 600;
-        # 
+        # const SERVICING_BRANCH_PATTERN = /^release\/\d{1,2}\.0\.[1-4]xx$/;
+        # const requestedBaseBranch = `${{ inputs.base_branch || 'auto' }}`.trim();
+        # const autoSelectBaseBranch = requestedBaseBranch === '' || requestedBaseBranch.toLowerCase() === 'auto';
+        # const isAllowedBaseBranch = (branch) =>
+          # branch === 'main' || branch === 'release/dnup' || SERVICING_BRANCH_PATTERN.test(branch);
+        # if (!autoSelectBaseBranch && !isAllowedBaseBranch(requestedBaseBranch)) {
+          # throw new Error(`Unsupported base_branch '${requestedBaseBranch}'. Use auto, main, release/dnup, or release/X.0.Yxx where Y is 1, 2, 3, or 4.`);
+        # }
+        # const inferBaseBranch = (issue) => {
+          # const labels = issue.labels.map(label => label.name.toLowerCase());
+          # if (labels.some(label => label.includes('dotnetup'))) {
+            # return 'release/dnup';
+          # }
+          # const text = [issue.title, issue.body || '', labels.join(' ')].join('\n');
+          # const explicitBranch = text.match(/\brelease\/(\d{1,2})\.0\.([1-4])xx\b/i);
+          # if (explicitBranch) {
+            # return `release/${explicitBranch[1]}.0.${explicitBranch[2]}xx`;
+          # }
+          # const trainPattern = /\b(\d{1,2})\.0\.([1-4])xx\b/gi;
+          # const servicingSignal = /backport|servicing|service release|release branch|broken|failing|fails|test|regression|hotfix/i;
+          # let match;
+          # while ((match = trainPattern.exec(text)) !== null) {
+            # const contextStart = Math.max(0, match.index - 100);
+            # const contextEnd = Math.min(text.length, match.index + match[0].length + 100);
+            # const nearbyText = text.slice(contextStart, contextEnd);
+            # if (servicingSignal.test(nearbyText)) {
+              # return `release/${match[1]}.0.${match[2]}xx`;
+            # }
+          # }
+          # return 'main';
+        # };
         # try {
           # // Check for recent rate-limited PRs to avoid scheduling more work during rate limiting
           # core.info('Checking for recent rate-limited PRs...');
@@ -142,6 +172,7 @@ on:
           # 
           # if (rateLimitDetected) {
             # core.warning('🛑 Rate limiting detected in recent PRs. Skipping issue assignment to prevent further rate limit issues.');
+            # core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
             # core.setOutput('issue_count', 0);
             # core.setOutput('issue_numbers', '');
             # core.setOutput('issue_list', '');
@@ -367,39 +398,46 @@ on:
                 # labels: issue.labels.map(l => l.name),
                 # body: issue.body,
                 # created_at: issue.created_at,
-                # score
+                # score,
+                # base_branch: inferBaseBranch(issue)
               # };
             # })
             # .sort((a, b) => b.score - a.score); // Sort by score descending
-          # 
+          # const selectedBaseBranch = autoSelectBaseBranch
+            # ? (scoredIssues[0]?.base_branch || 'main')
+            # : requestedBaseBranch;
+          # const branchFilteredIssues = scoredIssues.filter(i => i.base_branch === selectedBaseBranch);
+          # core.info(`Base branch for this run: ${selectedBaseBranch}${autoSelectBaseBranch ? ' (auto-selected)' : ' (requested)'}`);
+          # core.info(`Candidate issues for ${selectedBaseBranch}: ${branchFilteredIssues.length} of ${scoredIssues.length}`);
           # // Format output
-          # const issueList = scoredIssues.map(i => {
+          # const issueList = branchFilteredIssues.map(i => {
             # const labelStr = i.labels.length > 0 ? ` [${i.labels.join(', ')}]` : '';
-            # return `#${i.number}: ${i.title}${labelStr} (score: ${i.score.toFixed(1)})`;
+            # return `#${i.number}: ${i.title}${labelStr} (score: ${i.score.toFixed(1)}, base: ${i.base_branch})`;
           # }).join('\n');
         # 
           # // Pre-fetch compact body context for top candidates so the agent can
           # // triage without extra reads in most runs.
-          # const issueContext = scoredIssues.slice(0, MAX_ISSUES_WITH_BODY_CONTEXT).map(i => {
+          # const issueContext = branchFilteredIssues.slice(0, MAX_ISSUES_WITH_BODY_CONTEXT).map(i => {
             # const body = (i.body || '').replace(/\s+/g, ' ').trim();
             # const bodySnippet = body.length > BODY_SNIPPET_MAX_LENGTH ? `${body.slice(0, BODY_SNIPPET_MAX_LENGTH)}…` : body;
             # const labelStr = i.labels.length > 0 ? i.labels.join(', ') : 'none';
-            # return `#${i.number} | score=${i.score.toFixed(1)} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
+            # return `#${i.number} | score=${i.score.toFixed(1)} | base=${i.base_branch} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
           # }).join('\n\n---\n\n');
           # 
-          # const issueNumbers = scoredIssues.map(i => i.number).join(',');
+          # const issueNumbers = branchFilteredIssues.map(i => i.number).join(',');
           # 
-          # core.info(`Total candidate issues after filtering: ${scoredIssues.length}`);
-          # if (scoredIssues.length > 0) {
+          # core.info(`Total candidate issues after branch filtering: ${branchFilteredIssues.length}`);
+          # if (branchFilteredIssues.length > 0) {
             # core.info(`Top candidates:\n${issueList.split('\n').slice(0, 10).join('\n')}`);
           # }
           # 
-          # core.setOutput('issue_count', scoredIssues.length);
+          # core.setOutput('base_branch', selectedBaseBranch);
+          # core.setOutput('issue_count', branchFilteredIssues.length);
           # core.setOutput('issue_numbers', issueNumbers);
           # core.setOutput('issue_list', issueList);
           # core.setOutput('issue_context', issueContext);
           # 
-          # if (scoredIssues.length === 0) {
+          # if (branchFilteredIssues.length === 0) {
             # core.info('🍽️ No suitable candidate issues - the plate is empty!');
             # core.setOutput('has_issues', 'false');
           # } else {
@@ -407,6 +445,7 @@ on:
           # }
         # } catch (error) {
           # core.error(`Error searching for issues: ${error.message}`);
+          # core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
           # core.setOutput('issue_count', 0);
           # core.setOutput('issue_numbers', '');
           # core.setOutput('issue_list', '');
@@ -421,8 +460,8 @@ on:
         required: false
         type: string
       base_branch:
-        default: main
-        description: Base branch for Copilot PRs. Use main for .NET 11, release/* for servicing, and release/dnup for dotnetup.
+        default: auto
+        description: Base branch for Copilot PRs. Use auto, main, release/dnup, or release/X.0.Yxx.
         required: true
         type: string
 
@@ -545,7 +584,7 @@ jobs:
             const { main } = require('${{ runner.temp }}/gh-aw/actions/check_daily_aic_workflow_guardrail.cjs');
             await main();
       - name: Checkout .github and .agents folders
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           sparse-checkout: |
@@ -597,14 +636,14 @@ jobs:
           GH_AW_SAFE_OUTPUTS: ${{ runner.temp }}/gh-aw/safeoutputs/outputs.jsonl
           GH_AW_EXPR_1A3A194A: ${{ github.event.discussion.number || (fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_type == 'discussion' && fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number) }}
           GH_AW_EXPR_463A214A: ${{ github.event.pull_request.number || (fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_type == 'pull_request' && fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number) }}
-          GH_AW_EXPR_698F149B: ${{ inputs.base_branch || 'main' }}
           GH_AW_EXPR_802A9F6A: ${{ github.event.issue.number || (fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_type == 'issue' && fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number) }}
+          GH_AW_EXPR_E47B7D20: ${{ needs.pre_activation.outputs.base_branch || 'main' }}
           GH_AW_EXPR_FF1D34CE: ${{ github.event.comment.id || fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').comment_id }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_INPUTS_BASE_BRANCH: ${{ inputs.base_branch }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_BASE_BRANCH: ${{ needs.pre_activation.outputs.base_branch }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_CONTEXT: ${{ needs.pre_activation.outputs.issue_context }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_COUNT: ${{ needs.pre_activation.outputs.issue_count }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_LIST: ${{ needs.pre_activation.outputs.issue_list }}
@@ -669,8 +708,8 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_ENGINE_ID: "copilot"
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_AW_EXPR_698F149B: ${{ inputs.base_branch || 'main' }}
-          GH_AW_INPUTS_BASE_BRANCH: ${{ inputs.base_branch }}
+          GH_AW_EXPR_E47B7D20: ${{ needs.pre_activation.outputs.base_branch || 'main' }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_BASE_BRANCH: ${{ needs.pre_activation.outputs.base_branch }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_CONTEXT: ${{ needs.pre_activation.outputs.issue_context }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_COUNT: ${{ needs.pre_activation.outputs.issue_count }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_LIST: ${{ needs.pre_activation.outputs.issue_list }}
@@ -687,16 +726,16 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_1A3A194A: ${{ github.event.discussion.number || (fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_type == 'discussion' && fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number) }}
           GH_AW_EXPR_463A214A: ${{ github.event.pull_request.number || (fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_type == 'pull_request' && fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number) }}
-          GH_AW_EXPR_698F149B: ${{ inputs.base_branch || 'main' }}
           GH_AW_EXPR_802A9F6A: ${{ github.event.issue.number || (fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_type == 'issue' && fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number) }}
+          GH_AW_EXPR_E47B7D20: ${{ needs.pre_activation.outputs.base_branch || 'main' }}
           GH_AW_EXPR_FF1D34CE: ${{ github.event.comment.id || fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').comment_id }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_INPUTS_BASE_BRANCH: ${{ inputs.base_branch }}
           GH_AW_MCP_CLI_SERVERS_LIST: '- `safeoutputs` — run `safeoutputs --help` to see available tools'
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_BASE_BRANCH: ${{ needs.pre_activation.outputs.base_branch }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_CONTEXT: ${{ needs.pre_activation.outputs.issue_context }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_COUNT: ${{ needs.pre_activation.outputs.issue_count }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_LIST: ${{ needs.pre_activation.outputs.issue_list }}
@@ -714,16 +753,16 @@ jobs:
               substitutions: {
                 GH_AW_EXPR_1A3A194A: process.env.GH_AW_EXPR_1A3A194A,
                 GH_AW_EXPR_463A214A: process.env.GH_AW_EXPR_463A214A,
-                GH_AW_EXPR_698F149B: process.env.GH_AW_EXPR_698F149B,
                 GH_AW_EXPR_802A9F6A: process.env.GH_AW_EXPR_802A9F6A,
+                GH_AW_EXPR_E47B7D20: process.env.GH_AW_EXPR_E47B7D20,
                 GH_AW_EXPR_FF1D34CE: process.env.GH_AW_EXPR_FF1D34CE,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_INPUTS_BASE_BRANCH: process.env.GH_AW_INPUTS_BASE_BRANCH,
                 GH_AW_MCP_CLI_SERVERS_LIST: process.env.GH_AW_MCP_CLI_SERVERS_LIST,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_BASE_BRANCH: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_BASE_BRANCH,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_CONTEXT: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_CONTEXT,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_COUNT: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_COUNT,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_LIST: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ISSUE_LIST,
@@ -818,7 +857,7 @@ jobs:
             echo "GH_AW_SAFE_OUTPUTS_TOOLS_PATH=${RUNNER_TEMP}/gh-aw/safeoutputs/tools.json"
           } >> "$GITHUB_OUTPUT"
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - name: Create gh-aw temp directory
@@ -890,16 +929,16 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_7a4f68b676897757_EOF'
-          {"add_comment":{"max":3,"target":"*"},"assign_to_agent":{"allowed":["copilot"],"allowed-pull-request-repos":["${GITHUB_REPOSITORY}"],"base-branch":"${{ inputs.base_branch || 'main' }}","ignore-if-error":true,"max":3,"pull-request-repo":"${GITHUB_REPOSITORY}","target":"*","target-repo":"${GITHUB_REPOSITORY}"},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"report_incomplete":{}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_7a4f68b676897757_EOF
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_c5fc77ef820611b9_EOF'
+          {"add_comment":{"max":3,"target":"*"},"assign_to_agent":{"allowed":["copilot"],"allowed-pull-request-repos":["${GITHUB_REPOSITORY}"],"base-branch":"${{ needs.pre_activation.outputs.base_branch || 'main' }}","ignore-if-error":true,"max":3,"pull-request-repo":"${GITHUB_REPOSITORY}","target":"*","target-repo":"${GITHUB_REPOSITORY}"},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"report_incomplete":{}}
+          GH_AW_SAFE_OUTPUTS_CONFIG_c5fc77ef820611b9_EOF
       - name: Generate Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
             {
               "description_suffixes": {
                 "add_comment": " CONSTRAINTS: Maximum 3 comment(s) can be added. Target: *. Supports reply_to_id for discussion threading.",
-                "assign_to_agent": " CONSTRAINTS: Maximum 3 issue(s) can be assigned to agent. Pull requests will target the \"${{ inputs.base_branch || 'main' }}\" branch. Issues will be assigned to agent in repository \"${{ github.repository }}\"."
+                "assign_to_agent": " CONSTRAINTS: Maximum 3 issue(s) can be assigned to agent. Pull requests will target the \"${{ needs.pre_activation.outputs.base_branch || 'main' }}\" branch. Issues will be assigned to agent in repository \"${{ github.repository }}\"."
               },
               "repo_params": {},
               "dynamic_tools": []
@@ -1877,6 +1916,7 @@ jobs:
       GH_AW_RUNTIME_FEATURES: ${{ vars.GH_AW_RUNTIME_FEATURES }}
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' && steps.check_skip_if_match.outputs.skip_check_ok == 'true' && steps.check_skip_if_no_match.outputs.skip_no_match_check_ok == 'true' }}
+      base_branch: ${{ steps.search.outputs.base_branch }}
       has_issues: ${{ steps.search.outputs.has_issues }}
       issue_context: ${{ steps.search.outputs.issue_context }}
       issue_count: ${{ steps.search.outputs.issue_count }}
@@ -1946,7 +1986,37 @@ jobs:
             const { owner, repo } = context.repo;
             const MAX_ISSUES_WITH_BODY_CONTEXT = 8;
             const BODY_SNIPPET_MAX_LENGTH = 600;
-
+            const SERVICING_BRANCH_PATTERN = /^release\/\d{1,2}\.0\.[1-4]xx$/;
+            const requestedBaseBranch = `${{ inputs.base_branch || 'auto' }}`.trim();
+            const autoSelectBaseBranch = requestedBaseBranch === '' || requestedBaseBranch.toLowerCase() === 'auto';
+            const isAllowedBaseBranch = (branch) =>
+              branch === 'main' || branch === 'release/dnup' || SERVICING_BRANCH_PATTERN.test(branch);
+            if (!autoSelectBaseBranch && !isAllowedBaseBranch(requestedBaseBranch)) {
+              throw new Error(`Unsupported base_branch '${requestedBaseBranch}'. Use auto, main, release/dnup, or release/X.0.Yxx where Y is 1, 2, 3, or 4.`);
+            }
+            const inferBaseBranch = (issue) => {
+              const labels = issue.labels.map(label => label.name.toLowerCase());
+              if (labels.some(label => label.includes('dotnetup'))) {
+                return 'release/dnup';
+              }
+              const text = [issue.title, issue.body || '', labels.join(' ')].join('\n');
+              const explicitBranch = text.match(/\brelease\/(\d{1,2})\.0\.([1-4])xx\b/i);
+              if (explicitBranch) {
+                return `release/${explicitBranch[1]}.0.${explicitBranch[2]}xx`;
+              }
+              const trainPattern = /\b(\d{1,2})\.0\.([1-4])xx\b/gi;
+              const servicingSignal = /backport|servicing|service release|release branch|broken|failing|fails|test|regression|hotfix/i;
+              let match;
+              while ((match = trainPattern.exec(text)) !== null) {
+                const contextStart = Math.max(0, match.index - 100);
+                const contextEnd = Math.min(text.length, match.index + match[0].length + 100);
+                const nearbyText = text.slice(contextStart, contextEnd);
+                if (servicingSignal.test(nearbyText)) {
+                  return `release/${match[1]}.0.${match[2]}xx`;
+                }
+              }
+              return 'main';
+            };
             try {
               // Check for recent rate-limited PRs to avoid scheduling more work during rate limiting
               core.info('Checking for recent rate-limited PRs...');
@@ -2012,6 +2082,7 @@ jobs:
 
               if (rateLimitDetected) {
                 core.warning('🛑 Rate limiting detected in recent PRs. Skipping issue assignment to prevent further rate limit issues.');
+                core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
                 core.setOutput('issue_count', 0);
                 core.setOutput('issue_numbers', '');
                 core.setOutput('issue_list', '');
@@ -2237,39 +2308,46 @@ jobs:
                     labels: issue.labels.map(l => l.name),
                     body: issue.body,
                     created_at: issue.created_at,
-                    score
+                    score,
+                    base_branch: inferBaseBranch(issue)
                   };
                 })
                 .sort((a, b) => b.score - a.score); // Sort by score descending
-
+              const selectedBaseBranch = autoSelectBaseBranch
+                ? (scoredIssues[0]?.base_branch || 'main')
+                : requestedBaseBranch;
+              const branchFilteredIssues = scoredIssues.filter(i => i.base_branch === selectedBaseBranch);
+              core.info(`Base branch for this run: ${selectedBaseBranch}${autoSelectBaseBranch ? ' (auto-selected)' : ' (requested)'}`);
+              core.info(`Candidate issues for ${selectedBaseBranch}: ${branchFilteredIssues.length} of ${scoredIssues.length}`);
               // Format output
-              const issueList = scoredIssues.map(i => {
+              const issueList = branchFilteredIssues.map(i => {
                 const labelStr = i.labels.length > 0 ? ` [${i.labels.join(', ')}]` : '';
-                return `#${i.number}: ${i.title}${labelStr} (score: ${i.score.toFixed(1)})`;
+                return `#${i.number}: ${i.title}${labelStr} (score: ${i.score.toFixed(1)}, base: ${i.base_branch})`;
               }).join('\n');
 
               // Pre-fetch compact body context for top candidates so the agent can
               // triage without extra reads in most runs.
-              const issueContext = scoredIssues.slice(0, MAX_ISSUES_WITH_BODY_CONTEXT).map(i => {
+              const issueContext = branchFilteredIssues.slice(0, MAX_ISSUES_WITH_BODY_CONTEXT).map(i => {
                 const body = (i.body || '').replace(/\s+/g, ' ').trim();
                 const bodySnippet = body.length > BODY_SNIPPET_MAX_LENGTH ? `${body.slice(0, BODY_SNIPPET_MAX_LENGTH)}…` : body;
                 const labelStr = i.labels.length > 0 ? i.labels.join(', ') : 'none';
-                return `#${i.number} | score=${i.score.toFixed(1)} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
+                return `#${i.number} | score=${i.score.toFixed(1)} | base=${i.base_branch} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
               }).join('\n\n---\n\n');
 
-              const issueNumbers = scoredIssues.map(i => i.number).join(',');
+              const issueNumbers = branchFilteredIssues.map(i => i.number).join(',');
 
-              core.info(`Total candidate issues after filtering: ${scoredIssues.length}`);
-              if (scoredIssues.length > 0) {
+              core.info(`Total candidate issues after branch filtering: ${branchFilteredIssues.length}`);
+              if (branchFilteredIssues.length > 0) {
                 core.info(`Top candidates:\n${issueList.split('\n').slice(0, 10).join('\n')}`);
               }
 
-              core.setOutput('issue_count', scoredIssues.length);
+              core.setOutput('base_branch', selectedBaseBranch);
+              core.setOutput('issue_count', branchFilteredIssues.length);
               core.setOutput('issue_numbers', issueNumbers);
               core.setOutput('issue_list', issueList);
               core.setOutput('issue_context', issueContext);
 
-              if (scoredIssues.length === 0) {
+              if (branchFilteredIssues.length === 0) {
                 core.info('🍽️ No suitable candidate issues - the plate is empty!');
                 core.setOutput('has_issues', 'false');
               } else {
@@ -2277,6 +2355,7 @@ jobs:
               }
             } catch (error) {
               core.error(`Error searching for issues: ${error.message}`);
+              core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
               core.setOutput('issue_count', 0);
               core.setOutput('issue_numbers', '');
               core.setOutput('issue_list', '');
@@ -2373,7 +2452,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":3,\"target\":\"*\"},\"assign_to_agent\":{\"allowed\":[\"copilot\"],\"allowed-pull-request-repos\":[\"${{ github.repository }}\"],\"base-branch\":\"${{ inputs.base_branch || 'main' }}\",\"ignore-if-error\":true,\"max\":3,\"pull-request-repo\":\"${{ github.repository }}\",\"target\":\"*\",\"target-repo\":\"${{ github.repository }}\"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":3,\"target\":\"*\"},\"assign_to_agent\":{\"allowed\":[\"copilot\"],\"allowed-pull-request-repos\":[\"${{ github.repository }}\"],\"base-branch\":\"${{ needs.pre_activation.outputs.base_branch || 'main' }}\",\"ignore-if-error\":true,\"max\":3,\"pull-request-repo\":\"${{ github.repository }}\",\"target\":\"*\",\"target-repo\":\"${{ github.repository }}\"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
           GH_AW_ASSIGN_TO_AGENT_TOKEN: ${{ secrets.GH_AW_AGENT_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}

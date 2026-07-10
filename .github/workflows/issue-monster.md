@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       base_branch:
-        description: Base branch for Copilot PRs. Use main for .NET 11, release/* for servicing, and release/dnup for dotnetup.
+        description: Base branch for Copilot PRs. Use auto, main, release/dnup, or release/X.0.Yxx.
         required: true
-        default: main
+        default: auto
         type: string
   schedule: every 12h
   skip-if-match:
@@ -27,7 +27,37 @@ on:
           const { owner, repo } = context.repo;
           const MAX_ISSUES_WITH_BODY_CONTEXT = 8;
           const BODY_SNIPPET_MAX_LENGTH = 600;
-          
+          const SERVICING_BRANCH_PATTERN = /^release\/\d{1,2}\.0\.[1-4]xx$/;
+          const requestedBaseBranch = `${{ inputs.base_branch || 'auto' }}`.trim();
+          const autoSelectBaseBranch = requestedBaseBranch === '' || requestedBaseBranch.toLowerCase() === 'auto';
+          const isAllowedBaseBranch = (branch) =>
+            branch === 'main' || branch === 'release/dnup' || SERVICING_BRANCH_PATTERN.test(branch);
+          if (!autoSelectBaseBranch && !isAllowedBaseBranch(requestedBaseBranch)) {
+            throw new Error(`Unsupported base_branch '${requestedBaseBranch}'. Use auto, main, release/dnup, or release/X.0.Yxx where Y is 1, 2, 3, or 4.`);
+          }
+          const inferBaseBranch = (issue) => {
+            const labels = issue.labels.map(label => label.name.toLowerCase());
+            if (labels.some(label => label.includes('dotnetup'))) {
+              return 'release/dnup';
+            }
+            const text = [issue.title, issue.body || '', labels.join(' ')].join('\n');
+            const explicitBranch = text.match(/\brelease\/(\d{1,2})\.0\.([1-4])xx\b/i);
+            if (explicitBranch) {
+              return `release/${explicitBranch[1]}.0.${explicitBranch[2]}xx`;
+            }
+            const trainPattern = /\b(\d{1,2})\.0\.([1-4])xx\b/gi;
+            const servicingSignal = /backport|servicing|service release|release branch|broken|failing|fails|test|regression|hotfix/i;
+            let match;
+            while ((match = trainPattern.exec(text)) !== null) {
+              const contextStart = Math.max(0, match.index - 100);
+              const contextEnd = Math.min(text.length, match.index + match[0].length + 100);
+              const nearbyText = text.slice(contextStart, contextEnd);
+              if (servicingSignal.test(nearbyText)) {
+                return `release/${match[1]}.0.${match[2]}xx`;
+              }
+            }
+            return 'main';
+          };
           try {
             // Check for recent rate-limited PRs to avoid scheduling more work during rate limiting
             core.info('Checking for recent rate-limited PRs...');
@@ -93,6 +123,7 @@ on:
             
             if (rateLimitDetected) {
               core.warning('🛑 Rate limiting detected in recent PRs. Skipping issue assignment to prevent further rate limit issues.');
+              core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
               core.setOutput('issue_count', 0);
               core.setOutput('issue_numbers', '');
               core.setOutput('issue_list', '');
@@ -318,39 +349,46 @@ on:
                   labels: issue.labels.map(l => l.name),
                   body: issue.body,
                   created_at: issue.created_at,
-                  score
+                  score,
+                  base_branch: inferBaseBranch(issue)
                 };
               })
               .sort((a, b) => b.score - a.score); // Sort by score descending
-            
+            const selectedBaseBranch = autoSelectBaseBranch
+              ? (scoredIssues[0]?.base_branch || 'main')
+              : requestedBaseBranch;
+            const branchFilteredIssues = scoredIssues.filter(i => i.base_branch === selectedBaseBranch);
+            core.info(`Base branch for this run: ${selectedBaseBranch}${autoSelectBaseBranch ? ' (auto-selected)' : ' (requested)'}`);
+            core.info(`Candidate issues for ${selectedBaseBranch}: ${branchFilteredIssues.length} of ${scoredIssues.length}`);
             // Format output
-            const issueList = scoredIssues.map(i => {
+            const issueList = branchFilteredIssues.map(i => {
               const labelStr = i.labels.length > 0 ? ` [${i.labels.join(', ')}]` : '';
-              return `#${i.number}: ${i.title}${labelStr} (score: ${i.score.toFixed(1)})`;
+              return `#${i.number}: ${i.title}${labelStr} (score: ${i.score.toFixed(1)}, base: ${i.base_branch})`;
             }).join('\n');
 
             // Pre-fetch compact body context for top candidates so the agent can
             // triage without extra reads in most runs.
-            const issueContext = scoredIssues.slice(0, MAX_ISSUES_WITH_BODY_CONTEXT).map(i => {
+            const issueContext = branchFilteredIssues.slice(0, MAX_ISSUES_WITH_BODY_CONTEXT).map(i => {
               const body = (i.body || '').replace(/\s+/g, ' ').trim();
               const bodySnippet = body.length > BODY_SNIPPET_MAX_LENGTH ? `${body.slice(0, BODY_SNIPPET_MAX_LENGTH)}…` : body;
               const labelStr = i.labels.length > 0 ? i.labels.join(', ') : 'none';
-              return `#${i.number} | score=${i.score.toFixed(1)} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
+              return `#${i.number} | score=${i.score.toFixed(1)} | base=${i.base_branch} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
             }).join('\n\n---\n\n');
             
-            const issueNumbers = scoredIssues.map(i => i.number).join(',');
+            const issueNumbers = branchFilteredIssues.map(i => i.number).join(',');
             
-            core.info(`Total candidate issues after filtering: ${scoredIssues.length}`);
-            if (scoredIssues.length > 0) {
+            core.info(`Total candidate issues after branch filtering: ${branchFilteredIssues.length}`);
+            if (branchFilteredIssues.length > 0) {
               core.info(`Top candidates:\n${issueList.split('\n').slice(0, 10).join('\n')}`);
             }
             
-            core.setOutput('issue_count', scoredIssues.length);
+            core.setOutput('base_branch', selectedBaseBranch);
+            core.setOutput('issue_count', branchFilteredIssues.length);
             core.setOutput('issue_numbers', issueNumbers);
             core.setOutput('issue_list', issueList);
             core.setOutput('issue_context', issueContext);
             
-            if (scoredIssues.length === 0) {
+            if (branchFilteredIssues.length === 0) {
               core.info('🍽️ No suitable candidate issues - the plate is empty!');
               core.setOutput('has_issues', 'false');
             } else {
@@ -358,6 +396,7 @@ on:
             }
           } catch (error) {
             core.error(`Error searching for issues: ${error.message}`);
+            core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
             core.setOutput('issue_count', 0);
             core.setOutput('issue_numbers', '');
             core.setOutput('issue_list', '');
@@ -394,6 +433,7 @@ if: needs.pre_activation.outputs.has_issues == 'true'
 jobs:
   pre-activation:
     outputs:
+      base_branch: ${{ steps.search.outputs.base_branch }}
       issue_count: ${{ steps.search.outputs.issue_count }}
       issue_numbers: ${{ steps.search.outputs.issue_numbers }}
       issue_list: ${{ steps.search.outputs.issue_list }}
@@ -407,7 +447,7 @@ safe-outputs:
     target-repo: "${{ github.repository }}"
     pull-request-repo: "${{ github.repository }}"
     allowed-pull-request-repos: ["${{ github.repository }}"]
-    base-branch: "${{ inputs.base_branch || 'main' }}"
+    base-branch: "${{ needs.pre_activation.outputs.base_branch || 'main' }}"
     allowed: [copilot]    # Only allow copilot agent
     ignore-if-error: true # Don't fail the workflow if copilot is temporarily unavailable
   add-comment:
@@ -435,7 +475,7 @@ Find up to three issues that need work and assign them to the Copilot coding age
 ## Current Context
 
 - **Repository**: ${{ github.repository }}
-- **Copilot PR Base Branch**: `${{ inputs.base_branch || 'main' }}`
+- **Copilot PR Base Branch**: `${{ needs.pre_activation.outputs.base_branch || 'main' }}`
 - **Run Time**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 - Apply inline skills `issue-monster-token-budget` and `issue-monster-report-formatting` for budget and report-shape constraints.
 
@@ -482,7 +522,13 @@ ${{ needs.pre_activation.outputs.issue_list }}
 ${{ needs.pre_activation.outputs.issue_context }}
 ```
 
-Work with this pre-fetched, filtered, and prioritized list of issues. Do not perform additional searches - candidate issue numbers and body excerpts are already identified above.
+Work with this pre-fetched, filtered, and prioritized list of issues. Do not perform additional searches - candidate issue numbers and body excerpts are already identified above. The list has already been filtered to issues appropriate for this run's base branch.
+
+**Base Branch Routing Applied:**
+- Issues with a `dotnetup` label target `release/dnup`.
+- Issues that explicitly mention `release/X.0.Yxx`, where X has one or two digits and Y is 1, 2, 3, or 4, target that release branch.
+- Issues that mention an SDK train like `10.0.3xx` near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix target `release/10.0.3xx`.
+- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal.
 
 ### 1a. Handle Parent-Child Issue Relationships (for "task" or "plan" labeled issues)
 
@@ -572,7 +618,7 @@ For each selected issue, use the `assign_to_agent` tool from the `safeoutputs` M
 safeoutputs/assign_to_agent(issue_number=<issue_number>, agent="copilot")
 ```
 
-The `assign-to-agent` safe output is configured to create Copilot pull requests against the workflow run's base branch: `${{ inputs.base_branch || 'main' }}`. Do not try to pass a branch to `assign_to_agent`; the tool only accepts `issue_number` and `agent`.
+The `assign-to-agent` safe output is configured to create Copilot pull requests against the workflow run's selected base branch: `${{ needs.pre_activation.outputs.base_branch || 'main' }}`. Do not try to pass a branch to `assign_to_agent`; the tool only accepts `issue_number` and `agent`.
 
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 
