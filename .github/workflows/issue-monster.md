@@ -13,7 +13,7 @@ on:
   schedule: every 12h
   skip-if-match:
     query: "is:pr is:open is:draft author:app/copilot-swe-agent"
-    max: 5
+    max: 1
   skip-if-no-match: "is:issue is:open"
   permissions:
     issues: read
@@ -65,7 +65,7 @@ on:
             rateLimitCheckDate.setHours(rateLimitCheckDate.getHours() - 1); // Check last hour
             // Format as YYYY-MM-DDTHH:MM:SS for GitHub search API
             const rateLimitCheckISO = rateLimitCheckDate.toISOString().split('.')[0] + 'Z';
-            
+
             const recentPRsQuery = `is:pr author:app/copilot-swe-agent created:>${rateLimitCheckISO} repo:${owner}/${repo}`;
             const recentPRsResponse = await github.rest.search.issuesAndPullRequests({
               q: recentPRsQuery,
@@ -73,9 +73,9 @@ on:
               sort: 'created',
               order: 'desc'
             });
-            
+
             core.info(`Found ${recentPRsResponse.data.total_count} recent Copilot PRs to check for rate limiting`);
-            
+
             // Check if any recent PRs have rate limit indicators
             let rateLimitDetected = false;
             for (const pr of recentPRsResponse.data.items) {
@@ -97,16 +97,16 @@ on:
                     }
                   }
                 `;
-                
+
                 const prTimelineResult = await github.graphql(prTimelineQuery, {
                   owner,
                   repo,
                   number: pr.number
                 });
-                
+
                 const comments = prTimelineResult?.repository?.pullRequest?.timelineItems?.nodes || [];
                 const rateLimitPattern = /rate limit|API rate limit|secondary rate limit|abuse detection|\b429\b|too many requests/i;
-                
+
                 for (const comment of comments) {
                   if (comment.body && rateLimitPattern.test(comment.body)) {
                     core.warning(`Rate limiting detected in PR #${pr.number}: ${comment.body.substring(0, 200)}`);
@@ -114,13 +114,13 @@ on:
                     break;
                   }
                 }
-                
+
                 if (rateLimitDetected) break;
               } catch (error) {
                 core.warning(`Could not check PR #${pr.number} for rate limiting: ${error.message}`);
               }
             }
-            
+
             if (rateLimitDetected) {
               core.warning('🛑 Rate limiting detected in recent PRs. Skipping issue assignment to prevent further rate limit issues.');
               core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
@@ -131,9 +131,9 @@ on:
               core.setOutput('has_issues', 'false');
               return;
             }
-            
+
             core.info('✓ No rate limiting detected. Proceeding with issue search.');
-            
+
             // Labels that indicate an issue should NOT be auto-assigned
             const excludeLabels = [
               'wontfix',
@@ -148,7 +148,7 @@ on:
               'needs-more-info',
               'no-bot'
             ];
-            
+
             // Labels that indicate an issue is a GOOD candidate for auto-assignment
             const priorityLabels = [
               'good first issue',
@@ -159,7 +159,7 @@ on:
               'refactoring',
               'performance'
             ];
-            
+
             // Search for open issues with "cookie" label and without excluded labels
             // The "cookie" label indicates issues that are approved work queue items from automated workflows
             const query = `is:issue is:open repo:${owner}/${repo} label:cookie -label:"${excludeLabels.join('" -label:"')}"`;
@@ -171,7 +171,7 @@ on:
               order: 'desc'
             });
             core.info(`Found ${response.data.total_count} total issues matching basic criteria`);
-            
+
             // Fetch full details for each issue to get labels, assignees, sub-issues, and linked PRs
             // Track integrity-filtered issues to emit a diagnostic summary
             const integrityFilteredIssues = [];
@@ -239,9 +239,9 @@ on:
                     repo,
                     number: issue.number
                   });
-                  
+
                   subIssuesCount = issueDetailsResult?.repository?.issue?.subIssues?.totalCount || 0;
-                  
+
                   // Extract linked PRs from timeline
                   const timelineItems = issueDetailsResult?.repository?.issue?.timelineItems?.nodes || [];
                   linkedPRs = timelineItems
@@ -252,13 +252,13 @@ on:
                       isDraft: item.source.isDraft,
                       author: item.source.author?.login
                     }));
-                    
+
                   core.info(`Issue #${issue.number} has ${linkedPRs.length} linked PR(s)`);
                 } catch (error) {
                   // If GraphQL query fails, continue with defaults
                   core.warning(`Could not check details for #${issue.number}: ${error.message}`);
                 }
-                
+
                 return {
                   ...fullIssue.data,
                   subIssuesCount,
@@ -271,7 +271,7 @@ on:
             if (integrityFilteredIssues.length > 0) {
               core.warning(`🛡️ Integrity filter diagnostic: ${integrityFilteredIssues.length} issue(s) were skipped due to integrity policy: #${integrityFilteredIssues.join(', #')}. These issues will be excluded from this run.`);
             }
-            
+
             // Filter and score issues
             const scoredIssues = issuesWithDetails
               .filter(issue => {
@@ -280,43 +280,43 @@ on:
                   core.info(`Skipping #${issue.number}: already has assignees`);
                   return false;
                 }
-                
+
                 // Exclude issues with excluded labels (double check)
                 const issueLabels = issue.labels.map(l => l.name.toLowerCase());
                 if (issueLabels.some(label => excludeLabels.map(l => l.toLowerCase()).includes(label))) {
                   core.info(`Skipping #${issue.number}: has excluded label`);
                   return false;
                 }
-                
+
                 // Exclude issues that have sub-issues (parent/organizing issues)
                 if (issue.subIssuesCount > 0) {
                   core.info(`Skipping #${issue.number}: has ${issue.subIssuesCount} sub-issue(s) - parent issues are used for organizing, not tasks`);
                   return false;
                 }
-                
+
                 // Exclude issues with closed PRs (treat as complete)
                 const closedPRs = issue.linkedPRs?.filter(pr => pr.state === 'CLOSED' || pr.state === 'MERGED') || [];
                 if (closedPRs.length > 0) {
                   core.info(`Skipping #${issue.number}: has ${closedPRs.length} closed/merged PR(s) - treating as complete`);
                   return false;
                 }
-                
+
                 // Exclude issues with open PRs from Copilot coding agent
-                const openCopilotPRs = issue.linkedPRs?.filter(pr => 
-                  pr.state === 'OPEN' && 
+                const openCopilotPRs = issue.linkedPRs?.filter(pr =>
+                  pr.state === 'OPEN' &&
                   (pr.author === 'copilot-swe-agent' || pr.author?.includes('copilot'))
                 ) || [];
                 if (openCopilotPRs.length > 0) {
                   core.info(`Skipping #${issue.number}: has ${openCopilotPRs.length} open PR(s) from Copilot - already being worked on`);
                   return false;
                 }
-                
+
                 return true;
               })
               .map(issue => {
                 const issueLabels = issue.labels.map(l => l.name.toLowerCase());
                 let score = 0;
-                
+
                 // Score based on priority labels (higher score = higher priority)
                 if (issueLabels.includes('good first issue') || issueLabels.includes('good-first-issue')) {
                   score += 40;
@@ -333,16 +333,16 @@ on:
                 if (issueLabels.includes('tech-debt') || issueLabels.includes('refactoring')) {
                   score += 45;
                 }
-                
+
                 // Bonus for issues with clear labels (any priority label)
                 if (issueLabels.some(label => priorityLabels.map(l => l.toLowerCase()).includes(label))) {
                   score += 10;
                 }
-                
+
                 // Age bonus: older issues get slight priority (days old / 10)
                 const ageInDays = Math.floor((Date.now() - new Date(issue.created_at)) / (1000 * 60 * 60 * 24));
                 score += Math.min(ageInDays / 10, 20); // Cap age bonus at 20 points
-                
+
                 return {
                   number: issue.number,
                   title: issue.title,
@@ -374,20 +374,20 @@ on:
               const labelStr = i.labels.length > 0 ? i.labels.join(', ') : 'none';
               return `#${i.number} | score=${i.score.toFixed(1)} | base=${i.base_branch} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
             }).join('\n\n---\n\n');
-            
+
             const issueNumbers = branchFilteredIssues.map(i => i.number).join(',');
-            
+
             core.info(`Total candidate issues after branch filtering: ${branchFilteredIssues.length}`);
             if (branchFilteredIssues.length > 0) {
               core.info(`Top candidates:\n${issueList.split('\n').slice(0, 10).join('\n')}`);
             }
-            
+
             core.setOutput('base_branch', selectedBaseBranch);
             core.setOutput('issue_count', branchFilteredIssues.length);
             core.setOutput('issue_numbers', issueNumbers);
             core.setOutput('issue_list', issueList);
             core.setOutput('issue_context', issueContext);
-            
+
             if (branchFilteredIssues.length === 0) {
               core.info('🍽️ No suitable candidate issues - the plate is empty!');
               core.setOutput('has_issues', 'false');
@@ -655,7 +655,7 @@ Issue Monster runs frequently (every 12 hours), so keeping each run lean is crit
 - **Avoid repeating the issue list**: The pre-fetched issue list is already in your context. Do not make additional API calls to fetch the list again, and do not generate a summary of the entire list.
 - **One tool call per action**: Assign and comment in two calls per issue. Do not make extra verification calls after a successful assignment.
 
-**Target tokens/run**: 50K–150K  
+**Target tokens/run**: 50K–150K
 **Alert threshold**: >300K tokens
 
 ## Important Guidelines
