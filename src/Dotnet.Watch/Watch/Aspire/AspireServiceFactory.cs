@@ -185,12 +185,13 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
                             await _service.NotifyLogMessageAsync(dcpId, sessionId, isStdErr: line.IsError, data: line.Content, cancellationToken);
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        // canceled on shutdown, ignore
+                    }
                     catch (Exception e)
                     {
-                        if (!cancellationToken.IsCancellationRequested)
-                        {
-                            _logger.LogError("Unexpected error reading output of session '{SessionId}': {Exception}", sessionId, e);
-                        }
+                        _logger.LogError("Unexpected error reading output of session '{SessionId}': {Exception}", sessionId, e);
                     }
                 }
             }
