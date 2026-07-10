@@ -220,11 +220,15 @@ querying the emitted rows back out through the Analytics API.
 
 ### Verifying end-to-end ingestion after the tests run
 
-Every envelope is stamped with two queryable `customDimensions`: a constant
-`e2e.marker = cli-telemetry-real-endpoint-e2e` and a unique `e2e.run.id`. By default the run id is
-a fresh GUID (written to the test output), but you can **pin** it up front via
-`DOTNET_CLI_TELEMETRY_E2E_RUN_ID` so a script can choose the id, run the tests, wait for ingestion,
-then query for exactly that id:
+The dotnet CLI does not query the raw Application Insights tables directly — its telemetry flows
+through a processing pipeline into a downstream destination table that is searched by the
+**`Message` / `EventName`** field. To make an emitted row findable there, each run embeds a unique
+token — `cli-telemetry-real-endpoint-e2e/<runId>` — as the **message event name**, which the
+serializer maps to `MessageData.message` and the pipeline surfaces as `Message`/`EventName`.
+
+By default `<runId>` is a fresh GUID (the full token is written to the test output), but you can
+**pin** it up front via `DOTNET_CLI_TELEMETRY_E2E_RUN_ID` so a script can choose the id, run the
+tests, wait for ingestion, then search for exactly that token:
 
 ```powershell
 $runId = [guid]::NewGuid().ToString("N")
@@ -233,15 +237,10 @@ $env:DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING = "InstrumentationKey=<guid>;Ing
 dotnet test test/Microsoft.DotNet.Cli.Telemetry.Tests --filter "FullyQualifiedName~RealEndpointTelemetryE2ETests"
 ```
 
-After roughly an hour, confirm the rows landed across the `traces` (message events), `requests`
-(server spans), and `dependencies` (internal spans) tables with this Application Insights KQL
-query (also printed to the test output):
-
-```kusto
-union traces, requests, dependencies
-| where customDimensions['e2e.run.id'] == '<runId>'
-| summarize count() by itemType
-```
+After roughly an hour, confirm delivery by searching the telemetry destination table for a row
+whose `Message` / `EventName` equals `cli-telemetry-real-endpoint-e2e/<runId>`. The run id is also
+stamped onto every envelope's `customDimensions` (`e2e.run.id`) for correlating the associated
+request/dependency rows.
 
 ## References
 

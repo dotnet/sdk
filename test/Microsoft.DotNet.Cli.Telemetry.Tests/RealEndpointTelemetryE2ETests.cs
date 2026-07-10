@@ -44,15 +44,23 @@ public class RealEndpointTelemetryE2ETests
     private const string RunIdEnvVar = "DOTNET_CLI_TELEMETRY_E2E_RUN_ID";
     private const string SourceName = "Microsoft.DotNet.Tests.RealEndpointTelemetry";
 
-    // A stable marker plus a per-run id are stamped onto every payload so the emitted rows can
-    // be located later in Application Insights when verifying ingestion by hand. The run id can
-    // be pinned via DOTNET_CLI_TELEMETRY_E2E_RUN_ID so a harness script can choose the id up
-    // front, run the tests, then query for exactly that id once ingestion completes (~1 hour).
+    // A stable marker plus a per-run id uniquely identify one test run. The run id can be pinned
+    // via DOTNET_CLI_TELEMETRY_E2E_RUN_ID so a harness script can choose the id up front, run the
+    // tests, then query for exactly that id once ingestion completes (~1 hour).
+    //
+    // The dotnet CLI does not query the raw Application Insights tables — its telemetry flows
+    // through a processing pipeline into a downstream table searched by the Message / EventName
+    // field. That field is populated from the MessageData.message envelope, which in turn comes
+    // from the activity *event name*. So the run token is embedded in the event name (below), not
+    // just in customDimensions, to make emitted rows findable in the destination table.
     private const string RunMarker = "cli-telemetry-real-endpoint-e2e";
     private static readonly string RunId =
         Environment.GetEnvironmentVariable(RunIdEnvVar) is { Length: > 0 } pinned
             ? pinned
             : Guid.NewGuid().ToString("N");
+
+    // The searchable Message / EventName value stamped onto the message envelope for this run.
+    private static readonly string MessageToken = $"{RunMarker}/{RunId}";
 
     private static readonly ActivitySource Source = new(SourceName);
 
@@ -130,6 +138,23 @@ public class RealEndpointTelemetryE2ETests
     }
 
     /// <summary>
+    /// Offline regression guard (runs without a connection string): asserts the per-run token is
+    /// serialized as the message envelope's <c>message</c> field. That field becomes the
+    /// downstream table's searchable <c>Message</c> / <c>EventName</c>, so this protects the
+    /// "findable after ingestion" contract even when the networked tests are skipped.
+    /// </summary>
+    [TestMethod]
+    public void EmittedMessageEnvelopeCarriesTheRunTokenForDownstreamSearch()
+    {
+        var (payload, _) = BuildValidPayloadWithCount("offline-test-ikey");
+        var text = Encoding.UTF8.GetString(payload);
+
+        text.Should().Contain(
+            $"\"message\":\"{MessageToken}\"",
+            "the run token must land in MessageData.message so the downstream table's Message/EventName search can find the row");
+    }
+
+    /// <summary>
     /// Returns the parsed connection string, or aborts the test as inconclusive when the opt-in
     /// environment variable is not configured.
     /// </summary>
@@ -145,9 +170,7 @@ public class RealEndpointTelemetryE2ETests
 
         TestContext.WriteLine($"Real-endpoint telemetry E2E run: marker='{RunMarker}', runId='{RunId}', endpoint='{parsed!.IngestionEndpoint}'.");
         TestContext.WriteLine(
-            "After ~1 hour (ingestion delay), confirm the data landed with this Application Insights KQL query:");
-        TestContext.WriteLine(
-            $"union traces, requests, dependencies | where customDimensions['e2e.run.id'] == '{RunId}' | summarize count() by itemType");
+            $"After ingestion completes (~1 hour), confirm delivery by searching the telemetry destination table for a row whose Message / EventName equals: {MessageToken}");
         return parsed;
     }
 
@@ -168,7 +191,8 @@ public class RealEndpointTelemetryE2ETests
 
         using var listener = CreateListener();
 
-        // Internal span → RemoteDependencyData, carrying a command-finish event → MessageData.
+        // Internal span → RemoteDependencyData, carrying an event whose name embeds the run token
+        // → MessageData.message → the downstream table's searchable Message / EventName field.
         using var internalSpan = Source.StartActivity("dotnet build", ActivityKind.Internal)!;
         StampRunTags(internalSpan);
         var eventTags = new ActivityTagsCollection
@@ -177,7 +201,7 @@ public class RealEndpointTelemetryE2ETests
             { "e2e.run.id", RunId },
             { "exitCode", "0" },
         };
-        internalSpan.AddEvent(new ActivityEvent("dotnet/cli/command/finish", tags: eventTags));
+        internalSpan.AddEvent(new ActivityEvent(MessageToken, tags: eventTags));
         internalSpan.Stop();
 
         // Server span → RequestData.
