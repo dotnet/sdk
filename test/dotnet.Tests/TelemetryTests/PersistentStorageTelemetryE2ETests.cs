@@ -35,7 +35,11 @@ public class PersistentStorageTelemetryE2ETests : SdkTest
             .WithWorkingDirectory(testDir)
             .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
             // Leave DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT unset so the persist path runs.
-            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_STORAGE_PATH", storageDir);
+            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_STORAGE_PATH", storageDir)
+            // Use a minimal shutdown timeout so that even if the test environment is detected
+            // as CI (despite clearing the CI variables below), the background drain has no
+            // opportunity to upload (and delete) blobs before the process exits.
+            .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS", "1");
 
         // Force the non-CI (persist-then-drain) path: in a CI environment the CLI instead uses the
         // standard Azure Monitor exporter and does not persist blobs. Clear every variable the CI

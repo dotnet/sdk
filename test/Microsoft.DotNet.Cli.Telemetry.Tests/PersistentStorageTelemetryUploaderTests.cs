@@ -22,6 +22,20 @@ public class PersistentStorageTelemetryUploaderTests
     }
 
     [TestMethod]
+    public async Task ItDeletesBlobWhenUploadSucceeds()
+    {
+        var blob = new FakeBlob([10, 20, 30]);
+        var storage = new FakeBlobStorage(blob);
+        var transport = new FakeTransport(TelemetryUploadResult.Accepted);
+        var uploader = new PersistentStorageTelemetryUploader(storage, transport);
+
+        await uploader.DrainAsync(CancellationToken.None);
+
+        blob.Deleted.Should().BeTrue("successfully uploaded blobs must be deleted from storage");
+        blob.Leased.Should().BeTrue("blob must be leased before uploading");
+    }
+
+    [TestMethod]
     public async Task ItRetainsBlobsWhenUploadFails()
     {
         var storage = new FakeBlobStorage(new FakeBlob([1, 2, 3]));

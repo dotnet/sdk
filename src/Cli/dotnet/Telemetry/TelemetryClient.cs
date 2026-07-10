@@ -51,11 +51,12 @@ public class TelemetryClient : ITelemetryClient
 
     // A CI process is one-shot: there is no subsequent CLI invocation to drain persisted
     // telemetry. In that case we register the standard Azure Monitor exporter (see the static
-    // constructor) and block on flush long enough for it to upload directly before the process
-    // exits. Locally we only need a brief flush because spans are persisted synchronously as they
-    // end and delivered by a later invocation.
+    // constructor) and call Shutdown on exit so the provider fully drains the export pipeline
+    // (including waiting for inflight HTTP POSTs to complete). Locally we only need a brief
+    // flush because spans are persisted synchronously as they end and delivered by a later
+    // invocation.
     private static readonly bool s_isCIEnvironment = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
-    private static readonly int s_flushTimeoutMs = s_isCIEnvironment ? Timeout.Infinite : 10;
+    private static readonly int s_shutdownTimeoutMs = GetShutdownTimeoutMs();
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
@@ -63,6 +64,22 @@ public class TelemetryClient : ITelemetryClient
     /// See https://opentelemetry.io/docs/specs/otel/protocol/exporter/.
     /// </summary>
     private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
+
+    /// <summary>
+    /// Returns the shutdown timeout in milliseconds. In CI this defaults to 20 seconds (bounded
+    /// to avoid hanging builds) but can be overridden via DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS.
+    /// Locally it is irrelevant (we use ForceFlush with a brief timeout instead).
+    /// </summary>
+    private static int GetShutdownTimeoutMs()
+    {
+        const int defaultCiTimeoutMs = 20_000;
+        var envValue = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS);
+        if (!string.IsNullOrEmpty(envValue) && int.TryParse(envValue, out var parsed) && parsed > 0)
+        {
+            return parsed;
+        }
+        return defaultCiTimeoutMs;
+    }
 
     public static string? CurrentSessionId { get; private set; } = null;
     public static bool DisabledForTests
@@ -116,9 +133,9 @@ public class TelemetryClient : ITelemetryClient
             if (s_isCIEnvironment)
             {
                 // CI runs are one-shot, so there is no "next" invocation to drain persisted
-                // telemetry. Use the standard Azure Monitor exporter and block on shutdown (see
-                // FlushProviders, which uses an infinite timeout in CI) long enough for it to
-                // upload its telemetry directly.
+                // telemetry. Use the standard Azure Monitor exporter and call Shutdown (see
+                // FlushProviders) with a bounded timeout so the full export pipeline —
+                // including inflight HTTP POSTs — completes before the process exits.
                 s_tracerProviderBuilder.AddAzureMonitorTraceExporter(o =>
                 {
                     o.ConnectionString = s_connectionString;
@@ -230,8 +247,21 @@ public class TelemetryClient : ITelemetryClient
 
     public static void FlushProviders()
     {
-        s_tracerProvider?.ForceFlush(s_flushTimeoutMs);
-        s_metricsProvider?.ForceFlush(s_flushTimeoutMs);
+        if (s_isCIEnvironment)
+        {
+            // Shutdown drains the full export pipeline (BatchExportProcessor → Exporter.OnShutdown)
+            // and waits for inflight HTTP POSTs to complete, bounded by the configured timeout.
+            // This is necessary in CI because there is no subsequent invocation to drain.
+            s_tracerProvider?.Shutdown(s_shutdownTimeoutMs);
+            s_metricsProvider?.Shutdown(s_shutdownTimeoutMs);
+        }
+        else
+        {
+            // Locally, persisted-storage exporters write synchronously as spans end. A brief
+            // flush ensures in-flight batches are handed to the exporter before exit.
+            s_tracerProvider?.ForceFlush(timeoutMilliseconds: 10);
+            s_metricsProvider?.ForceFlush(timeoutMilliseconds: 10);
+        }
     }
 
     public static void WriteLogIfNecessary()

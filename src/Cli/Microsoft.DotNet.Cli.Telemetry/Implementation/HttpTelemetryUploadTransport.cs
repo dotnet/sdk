@@ -15,9 +15,10 @@ namespace Microsoft.DotNet.Cli.Telemetry.Implementation;
 /// </summary>
 internal sealed class HttpTelemetryUploadTransport : ITelemetryUploadTransport
 {
-    // A single shared client for the process. The drain runs opportunistically in the
-    // background and is abandoned on process exit, so a modest timeout is sufficient.
-    private static readonly HttpClient s_httpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
+    // A single shared client for the process. Timeout is set to InfiniteTimeSpan because
+    // cancellation is controlled by the CancellationToken passed to each upload call —
+    // either from the provider's Shutdown budget or from the drain loop's per-blob budget.
+    private static readonly HttpClient s_httpClient = new() { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
 
     private readonly Uri _trackUri;
     private readonly HttpClient _client;
@@ -30,7 +31,7 @@ internal sealed class HttpTelemetryUploadTransport : ITelemetryUploadTransport
     // Test hook: uploads through a caller-supplied handler (its own HttpClient) so gzip and
     // 206 handling can be exercised without a real network call.
     internal HttpTelemetryUploadTransport(Uri trackUri, HttpMessageHandler handler)
-        : this(trackUri, new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(30) })
+        : this(trackUri, new HttpClient(handler) { Timeout = System.Threading.Timeout.InfiniteTimeSpan })
     {
     }
 

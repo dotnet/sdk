@@ -82,6 +82,11 @@ pipeline:
 2. **Drain (in the background).** On startup, a background worker leases previously persisted payloads and POSTs
    them to the Azure Monitor ingestion endpoint. Successfully delivered payloads are deleted; failed uploads are
    retained and retried on a later invocation.
+3. **CI exception.** In CI environments (detected automatically), the CLI uses the standard Azure Monitor exporter
+   and calls `Shutdown` with a bounded timeout (default 20 seconds, configurable via
+   `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS`) at the end of the process. This ensures the full export pipeline —
+   including inflight HTTP POSTs — completes before exit, since there is no subsequent invocation to drain
+   persisted telemetry. If the timeout expires, remaining data is abandoned.
 
 Because a command usually exits before it can upload its *own* telemetry, that data is delivered by a subsequent
 CLI invocation. This means Azure Monitor delivery is *eventually consistent across invocations* rather than

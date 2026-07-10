@@ -42,26 +42,6 @@ internal sealed class PersistentStorageTelemetryUploader
     }
 
     /// <summary>
-    /// Starts draining on a background thread and returns immediately. Safe to call once per
-    /// process; never throws.
-    /// </summary>
-    public void StartBackgroundDrain()
-    {
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await DrainAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                // Background telemetry drain must never surface errors.
-                Debug.Fail(e.ToString());
-            }
-        });
-    }
-
-    /// <summary>
     /// Leases, uploads, and deletes persisted blobs. Blobs that fail to upload are left for a
     /// later retry. This method never throws.
     /// </summary>
@@ -94,7 +74,13 @@ internal sealed class PersistentStorageTelemetryUploader
                     continue;
                 }
 
-                var result = await _transport.TryUploadAsync(data, cancellationToken).ConfigureAwait(false);
+                // Each upload gets a per-blob timeout derived from the lease period. If the
+                // caller already has a tighter deadline (e.g. provider Shutdown budget), the
+                // linked token fires first and cancellation flows through to the HTTP call.
+                using var perBlobCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                perBlobCts.CancelAfter(TimeSpan.FromMilliseconds(_leasePeriodMilliseconds));
+
+                var result = await _transport.TryUploadAsync(data, perBlobCts.Token).ConfigureAwait(false);
                 switch (result.Outcome)
                 {
                     case TelemetryUploadOutcome.PartiallyAccepted:
@@ -116,6 +102,12 @@ internal sealed class PersistentStorageTelemetryUploader
                         // will retry it.
                         break;
                 }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // The overall drain was cancelled (e.g. provider shutdown budget expired).
+                // Stop processing and persist any retriable remainders we already have.
+                break;
             }
             catch (Exception e)
             {

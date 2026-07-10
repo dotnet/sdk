@@ -35,6 +35,8 @@ internal sealed class PersistentStorageLogExporter : BaseExporter<LogRecord>
     private TelemetryResourceContext? _resourceContext;
     // Guards against starting more than one background drain per exporter.
     private int _drainStarted;
+    private CancellationTokenSource? _drainCts;
+    private Task? _drainTask;
 
     public PersistentStorageLogExporter(
         ITelemetryBlobStorage storage,
@@ -73,6 +75,23 @@ internal sealed class PersistentStorageLogExporter : BaseExporter<LogRecord>
         }
     }
 
+    protected override bool OnShutdown(int timeoutMilliseconds)
+    {
+        _drainCts?.Cancel();
+        if (_drainTask is not null)
+        {
+            try
+            {
+                return _drainTask.Wait(timeoutMilliseconds);
+            }
+            catch (AggregateException)
+            {
+                return true;
+            }
+        }
+        return true;
+    }
+
     private void StartBackgroundDrainOnce()
     {
         if (Interlocked.Exchange(ref _drainStarted, 1) != 0)
@@ -80,8 +99,24 @@ internal sealed class PersistentStorageLogExporter : BaseExporter<LogRecord>
             return;
         }
 
+        _drainCts = new CancellationTokenSource();
         var transport = new HttpTelemetryUploadTransport(_ingestionTrackUri);
-        new PersistentStorageTelemetryUploader(_storage, transport, _leasePeriodMilliseconds, _maxBlobsPerDrain)
-            .StartBackgroundDrain();
+        var uploader = new PersistentStorageTelemetryUploader(_storage, transport, _leasePeriodMilliseconds, _maxBlobsPerDrain);
+        _drainTask = Task.Run(async () =>
+        {
+            try
+            {
+                await uploader.DrainAsync(_drainCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when shutdown is signalled.
+            }
+            catch (Exception e)
+            {
+                // Background telemetry drain must never surface errors.
+                Debug.Fail(e.ToString());
+            }
+        });
     }
 }
