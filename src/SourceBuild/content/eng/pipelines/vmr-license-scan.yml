@@ -51,7 +51,6 @@ extends:
     containers:
       licenseScanContainer:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-source-build-test-amd64
-        options: '--memory=20g'
     pool:
       name: NetCore1ESPool-Svc-Internal
       image: build.azurelinux.3.amd64
@@ -79,20 +78,37 @@ extends:
               local name="$1"
               local repoPath="$2"
               local scanIgnorePatterns="${3:-}"
+              local scanProcessCount="${4:-}"
               if [ ! -z "$matrix" ]; then
                 matrix="$matrix,"
               fi
-              matrix="$matrix \"$name\": { \"repoPath\": \"$repoPath\", \"scanIgnorePatterns\": \"$scanIgnorePatterns\" }"
+              matrix="$matrix \"$name\": { \"repoPath\": \"$repoPath\", \"scanIgnorePatterns\": \"$scanIgnorePatterns\", \"scanProcessCount\": \"$scanProcessCount\" }"
             }
 
             # Repos whose src/ subdirectories should be scanned as separate jobs.
             # The repo root is also scanned with --ignore to skip subdirectories covered by sub-scans.
             splitRepos="source-build-assets"
 
+            # Repos that should scan with a reduced number of scancode processes. This is
+            # independent of splitRepos. Their large, text-heavy content deadlocks scancode's
+            # multiprocessing pool at the end of a scan, so they are scanned serially (0 disables
+            # multiprocessing). Other repos use the test's default. Flows through the matrix.
+            serialScanRepos="source-build-assets"
+            serialScanProcessCount=0
+
+            # Returns the scancode --processes value for a repo, or empty to use the test's default.
+            getScanProcessCount() {
+              local repoName="$1"
+              if echo "$serialScanRepos" | grep -qw "$repoName"; then
+                echo "$serialScanProcessCount"
+              fi
+            }
+
             # If the repo name is provided, only scan that repo.
             if [ ! -z "$specificRepoName" ]; then
               repoName="$specificRepoName"
               dir="$vmrSrcDir/$specificRepoName"
+              scanProcessCount=$(getScanProcessCount "$repoName")
 
               if echo "$splitRepos" | grep -qw "$repoName"; then
                 ignorePatterns=""
@@ -104,17 +120,18 @@ extends:
                       ignorePatterns="$ignorePatterns "
                     fi
                     ignorePatterns="$ignorePatterns$subdirName"
-                    addMatrixEntry "${repoName}_${subdirName}" "$subdir"
+                    addMatrixEntry "${repoName}_${subdirName}" "$subdir" "" "$scanProcessCount"
                   fi
                 done
-                addMatrixEntry "$repoName" "$dir" "$ignorePatterns"
+                addMatrixEntry "$repoName" "$dir" "$ignorePatterns" "$scanProcessCount"
               else
-                addMatrixEntry "$repoName" "$dir"
+                addMatrixEntry "$repoName" "$dir" "" "$scanProcessCount"
               fi
             else
               for dir in "$vmrSrcDir"/*/
               do
                 repoName=$(basename "$dir")
+                scanProcessCount=$(getScanProcessCount "$repoName")
 
                 if echo "$splitRepos" | grep -qw "$repoName"; then
                   # Root scan: skip subdirectories that are covered by sub-scans
@@ -129,12 +146,12 @@ extends:
                         ignorePatterns="$ignorePatterns "
                       fi
                       ignorePatterns="$ignorePatterns$subdirName"
-                      addMatrixEntry "${repoName}_${subdirName}" "$subdir"
+                      addMatrixEntry "${repoName}_${subdirName}" "$subdir" "" "$scanProcessCount"
                     fi
                   done
-                  addMatrixEntry "$repoName" "$dir" "$ignorePatterns"
+                  addMatrixEntry "$repoName" "$dir" "$ignorePatterns" "$scanProcessCount"
                 else
-                  addMatrixEntry "$repoName" "$dir"
+                  addMatrixEntry "$repoName" "$dir" "" "$scanProcessCount"
                 fi
               done
             fi
@@ -176,6 +193,7 @@ extends:
             -clp:v=m
             /p:SmokeTestsLicenseScanPath=$(repoPath)
             "/p:SourceBuildTestsLicenseScanIgnorePatterns=$(scanIgnorePatterns)"
+            /p:SourceBuildTestsLicenseScanProcessCount=$(scanProcessCount)
             /p:SmokeTestsWarnOnLicenseScanDiffs=false
             /p:TargetRid=linux-x64
             /p:PortableRid=linux-x64
