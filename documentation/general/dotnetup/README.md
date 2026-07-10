@@ -80,7 +80,7 @@ Channels determine which version of .NET to install and how it gets updated. Pic
 
 Common channel categories include:
 - **Version-based** channels specify an exact version or a range of versions - `10`, `10.0.2xx`, and so on
-- **Daily** channels install CI-produced builds and use the `-daily` suffix for version scopes - `daily`, `10-daily`, `10.0-daily`, `10.0.1xx-daily`, and so on
+- **Daily** channels install CI-produced builds and use the `-daily` suffix for version scopes - `daily`, `10-daily`, `10.0-daily`, `10.0.1xx-daily`, and so on (note that daily builds are not code-signed)
 - **Feature-based** channels group versions by their characteristics - `preview`, `lts`, and so on
 
 ### Step 2: Choose How to Access .NET
