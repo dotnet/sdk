@@ -197,6 +197,29 @@ Resource attributes are projected onto Application Insights context tags:
   so this library does not reference `Azure.Monitor.OpenTelemetry.Exporter` and remains
   source-build friendly.
 
+## Testing against a real ingestion endpoint
+
+Most tests run fully offline against a stubbed `HttpMessageHandler`. There is also an **opt-in**
+end-to-end suite (`RealEndpointTelemetryE2ETests`) that POSTs to a *live* Application Insights
+ingestion endpoint and asserts the accepted/rejected breakdown the Breeze `/v2.1/track` service
+returns. It exists to prove the shipping upload path works against the real service and to act as
+a canary if the App Insights ARM ingestion layer makes a breaking wire-contract change.
+
+These tests are **skipped** (reported inconclusive) unless the
+`DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING` environment variable is set, so they never run — or
+touch the network — during a normal CI pass. To run them locally against your own resource:
+
+```powershell
+$env:DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING = "InstrumentationKey=<guid>;IngestionEndpoint=https://<region>.in.applicationinsights.azure.com/"
+dotnet test test/Microsoft.DotNet.Cli.Telemetry.Tests --filter "FullyQualifiedName~RealEndpointTelemetryE2ETests"
+```
+
+The Breeze endpoint reports `itemsReceived` / `itemsAccepted` / `errors` **synchronously** in the
+POST response, so drop rate is measured immediately — the ~1 hour ingestion delay only applies to
+querying the emitted rows back out through the Analytics API. Each run stamps a
+`cli-telemetry-real-endpoint-e2e` marker and a unique `e2e.run.id` (both written to the test
+output) onto every envelope so the emitted rows can be located when verifying ingestion by hand.
+
 ## References
 
 - [OpenTelemetry .NET](https://github.com/open-telemetry/opentelemetry-dotnet)
