@@ -152,6 +152,12 @@ public class LicenseScanTests : TestBase
         // Indicates how long until a timeout occurs for scanning a given file
         const int FileScanTimeoutSeconds = 1800;
 
+        // Number of parallel processes scancode should use. Large, text-heavy repos can
+        // deadlock scancode's multiprocessing pool at the end of a scan, so the pipeline
+        // scans them serially by passing 0. Default to 4 when not specified by the pipeline.
+        const int DefaultProcessCount = 4;
+        int processCount = Config.LicenseScanProcessCount ?? DefaultProcessCount;
+
         string scancodeResultsPath = Path.Combine(Config.LogsDirectory, "scancode-results.json");
 
         // Combine default and additional ignore patterns
@@ -167,7 +173,7 @@ public class LicenseScanTests : TestBase
         string ignoreOptions = string.Join(" ", allIgnorePatterns.Select(pattern => $"--ignore {pattern}"));
         ExecuteHelper.ExecuteProcessValidateExitCode(
             "scancode",
-            $"--license --processes 4 --timeout {FileScanTimeoutSeconds} --strip-root --only-findings {ignoreOptions} --json-pp {scancodeResultsPath} {Config.LicenseScanPath}",
+            $"--license --processes {processCount} --timeout {FileScanTimeoutSeconds} --strip-root --only-findings {ignoreOptions} --json-pp {scancodeResultsPath} {Config.LicenseScanPath}",
             OutputHelper);
 
         JsonDocument doc = JsonDocument.Parse(File.ReadAllText(scancodeResultsPath));
