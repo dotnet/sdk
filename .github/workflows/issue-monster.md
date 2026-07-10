@@ -418,6 +418,8 @@ sandbox:
 engine:
   id: copilot
 
+environment: issue-monster
+
 imports:
   - shared/github-guard-policy.md
 timeout-minutes: 30
@@ -448,6 +450,7 @@ safe-outputs:
     pull-request-repo: "${{ github.repository }}"
     allowed-pull-request-repos: ["${{ github.repository }}"]
     base-branch: "${{ needs.pre_activation.outputs.base_branch || 'main' }}"
+    github-token: "${{ secrets.GH_AW_GITHUB_TOKEN }}"
     allowed: [copilot]    # Only allow copilot agent
     ignore-if-error: true # Don't fail the workflow if copilot is temporarily unavailable
   add-comment:
