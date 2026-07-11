@@ -45,5 +45,38 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
 
             return editorConfigPaths.ToImmutable();
         }
+
+        public static ImmutableArray<string> GetEditorConfigPathsForFiles(ImmutableArray<string> filePaths)
+        {
+            var editorConfigPaths = ImmutableArray.CreateBuilder<string>(16);
+            var visitedDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var filePath in filePaths)
+            {
+                var directoryName = Path.GetDirectoryName(filePath);
+                if (string.IsNullOrEmpty(directoryName) || !Directory.Exists(directoryName))
+                {
+                    continue;
+                }
+
+                var directory = new DirectoryInfo(directoryName);
+
+                // Walk from the file's directory up to the drive root adding .editorconfig files.
+                // Stop when reaching a directory already visited for a previous file, since its
+                // ancestors have been visited as well.
+                while (directory is not null && visitedDirectories.Add(directory.FullName))
+                {
+                    var files = directory.GetFiles(".editorconfig", SearchOption.TopDirectoryOnly);
+                    if (files.Length == 1)
+                    {
+                        editorConfigPaths.Add(files[0].FullName);
+                    }
+
+                    directory = directory.Parent;
+                }
+            }
+
+            return editorConfigPaths.ToImmutable();
+        }
     }
 }
