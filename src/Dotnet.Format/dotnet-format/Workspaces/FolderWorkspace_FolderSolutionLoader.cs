@@ -17,8 +17,21 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             {
                 var absoluteFolderPath = Path.GetFullPath(folderPath, Directory.GetCurrentDirectory());
 
-                var filePaths = GetMatchingFilePaths(absoluteFolderPath, fileMatcher);
-                var editorConfigPaths = EditorConfigFinder.GetEditorConfigPaths(folderPath);
+                var hasConcreteIncludePaths = fileMatcher.Exclude.IsDefaultOrEmpty && AreAllFilePaths(fileMatcher.Include);
+                var filePaths = GetMatchingFilePaths(absoluteFolderPath, fileMatcher, hasConcreteIncludePaths);
+
+                // When formatting an explicit list of files that all live under the workspace
+                // folder there is no need to search the entire workspace for .editorconfig files.
+                // Only configs in the files' ancestor directories can apply to them. Included
+                // files resolving outside the workspace folder keep the original scan so their
+                // behavior is unchanged.
+                var folderPrefix = absoluteFolderPath.EndsWith(Path.DirectorySeparatorChar)
+                    ? absoluteFolderPath
+                    : absoluteFolderPath + Path.DirectorySeparatorChar;
+                var editorConfigPaths = hasConcreteIncludePaths
+                        && filePaths.All(filePath => filePath.StartsWith(folderPrefix, StringComparison.OrdinalIgnoreCase))
+                    ? EditorConfigFinder.GetEditorConfigPathsForFiles(filePaths)
+                    : EditorConfigFinder.GetEditorConfigPaths(folderPath);
 
                 var projectInfos = ImmutableArray.CreateBuilder<ProjectInfo>(ProjectLoaders.Length);
 
@@ -42,33 +55,16 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                     projectInfos);
             }
 
-            private static ImmutableArray<string> GetMatchingFilePaths(string folderPath, SourceFileMatcher fileMatcher)
+            private static ImmutableArray<string> GetMatchingFilePaths(string folderPath, SourceFileMatcher fileMatcher, bool hasConcreteIncludePaths)
             {
                 // If only file paths were given to be included, then avoid matching against all
                 // the files beneath the folderPath and instead check if the specified files exist.
-                if (fileMatcher.Exclude.IsDefaultOrEmpty && AreAllFilePaths(fileMatcher.Include))
+                if (hasConcreteIncludePaths)
                 {
                     return ValidateFilePaths(folderPath, fileMatcher.Include);
                 }
 
                 return fileMatcher.GetResultsInFullPath(folderPath).ToImmutableArray();
-
-                static bool AreAllFilePaths(ImmutableArray<string> globs)
-                {
-                    for (var index = 0; index < globs.Length; index++)
-                    {
-                        // The FileSystemGlobbing.Matcher only supports the '*' wildcard and paths
-                        // ending in a directory separator are treated as folder paths.
-                        if (globs[index].Contains('*') ||
-                            globs[index].EndsWith('\\') ||
-                            globs[index].EndsWith('/'))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
 
                 static ImmutableArray<string> ValidateFilePaths(string folderPath, ImmutableArray<string> paths)
                 {
@@ -84,6 +80,23 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
                     return filePaths.ToImmutable();
                 }
+            }
+
+            private static bool AreAllFilePaths(ImmutableArray<string> globs)
+            {
+                for (var index = 0; index < globs.Length; index++)
+                {
+                    // The FileSystemGlobbing.Matcher only supports the '*' wildcard and paths
+                    // ending in a directory separator are treated as folder paths.
+                    if (globs[index].Contains('*') ||
+                        globs[index].EndsWith('\\') ||
+                        globs[index].EndsWith('/'))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         }
     }
