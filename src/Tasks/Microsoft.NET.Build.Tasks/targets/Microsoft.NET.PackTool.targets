@@ -63,7 +63,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_IsRidSpecific>false</_IsRidSpecific>
     <_IsRidSpecific Condition="'$(RuntimeIdentifier)' != '' and '$(RuntimeIdentifier)' != 'any'">true</_IsRidSpecific>
     <!-- We need to know if the inner builds are _intended_ to be AOT even if we then explicitly disable AOT for the outer builds.
-      Knowing this lets us correctly decide to create the RID-specific inner tools or not when packaging the outer tool. -->
+      Knowing this lets us determine which RID-specific inner tools can be created on the current host. -->
     <_InnerToolsPublishAot>false</_InnerToolsPublishAot>
     <_InnerToolsPublishAot Condition="$(CreateRidSpecificToolPackages) and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
 
@@ -436,19 +436,52 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     </PropertyGroup>
   </Target>
 
-  <!-- Orchestrator for making the N RID-specific tool packages if this Tool supports that mode.
-       We can't call this for AOT'd tools because we can't AOT cross-architecture and cross-platform in .NET today. -->
-  <Target Name="_CreateRIDSpecificToolPackages"
-    Condition="'$(RuntimeIdentifier)' == ''
-      and $(CreateRidSpecificToolPackages)
-      and !$(_InnerToolsPublishAot)">
+  <!--
+    Extensibility point for determining which RID-specific tool packages can be built.
+
+    This target is intentionally empty. Consumers can define a target with
+    BeforeTargets="ComputeToolPackageRuntimeIdentifiersToPack" to inspect the tool packaging
+    inputs, including ToolPackageRuntimeIdentifiers and RuntimeIdentifiers, and add one
+    ToolPackageRuntimeIdentifiersToPack item for each RID that should be packaged. The SDK
+    subsequently orchestrates a Pack inner build for every ToolPackageRuntimeIdentifiersToPack
+    item.
+
+    If the consumer does not provide any ToolPackageRuntimeIdentifiersToPack items, the SDK
+    computes a default set based on the requested RIDs and the current host's build capabilities.
+  -->
+  <Target Name="ComputeToolPackageRuntimeIdentifiersToPack"
+          Condition="'$(RuntimeIdentifier)' == ''
+            and $(CreateRidSpecificToolPackages)" />
+
+  <!-- Apply the SDK defaults after consumers have had an opportunity to provide their own results. -->
+  <Target Name="_ComputeDefaultToolPackageRuntimeIdentifiersToPack"
+          Condition="'$(RuntimeIdentifier)' == ''
+            and $(CreateRidSpecificToolPackages)
+            and '@(ToolPackageRuntimeIdentifiersToPack)' == ''">
     <PropertyGroup>
-        <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
-        <_PackageRids Condition="'$(_PackageRids)' == ''">$(RuntimeIdentifiers)</_PackageRids>
+      <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
+      <_PackageRids Condition="'$(_PackageRids)' == ''">$(RuntimeIdentifiers)</_PackageRids>
     </PropertyGroup>
 
     <ItemGroup>
-        <_rids Include="$(_PackageRids)" />
+      <_RequestedToolPackageRuntimeIdentifier Include="$(_PackageRids)" />
+
+      <ToolPackageRuntimeIdentifiersToPack Include="@(_RequestedToolPackageRuntimeIdentifier)"
+                                           Condition="!$(_InnerToolsPublishAot)
+                                             or '%(Identity)' == '$(NETCoreSdkPortableRuntimeIdentifier)'
+                                             or ('$(NETCoreSdkPortableRuntimeIdentifier)' == 'win-x64' and '%(Identity)' == 'win-arm64')
+                                             or (($(NETCoreSdkPortableRuntimeIdentifier.StartsWith('osx-')))
+                                               and ('%(Identity)' == 'osx-x64' or '%(Identity)' == 'osx-arm64'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Orchestrator for making the RID-specific tool packages buildable on the current host. -->
+  <Target Name="_CreateRIDSpecificToolPackages"
+    DependsOnTargets="ComputeToolPackageRuntimeIdentifiersToPack;_ComputeDefaultToolPackageRuntimeIdentifiersToPack"
+    Condition="'$(RuntimeIdentifier)' == ''
+      and $(CreateRidSpecificToolPackages)">
+    <ItemGroup>
+        <_rids Include="@(ToolPackageRuntimeIdentifiersToPack)" />
         <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);" />
     </ItemGroup>
 
