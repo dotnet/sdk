@@ -481,8 +481,8 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     Condition="'$(RuntimeIdentifier)' == ''
       and $(CreateRidSpecificToolPackages)">
     <ItemGroup>
-        <_rids Include="@(ToolPackageRuntimeIdentifiersToPack)" />
-        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);" />
+      <_rids Include="@(ToolPackageRuntimeIdentifiersToPack)" />
+      <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);" />
     </ItemGroup>
 
     <MSBuild BuildInParallel="true" Projects="@(_RidSpecificToolPackageProject)" Targets="Pack">
