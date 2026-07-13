@@ -1,0 +1,16 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MSTest 测试类",
+  "description": "创建新的 MSTest 测试类",
+  "symbols/Fixture/description": "选择要包含在项目中的固定例程类型。",
+  "symbols/Fixture/displayName": "固定例程",
+  "symbols/Fixture/choices/None/description": "无固定例程方法",
+  "symbols/Fixture/choices/None/displayName": "无",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize 固定例程方法",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "AssemblyCleanup 固定例程方法",
+  "symbols/Fixture/choices/ClassInitialize/description": "ClassInitialize 固定例程方法",
+  "symbols/Fixture/choices/ClassCleanup/description": "ClassCleanup 固定例程方法",
+  "symbols/Fixture/choices/TestInitialize/description": "TestInitialize 固定例程方法",
+  "symbols/Fixture/choices/TestCleanup/description": "TestCleanup 固定例程方法",
+  "postActions/openInEditor/description": "在编辑器中打开 Test1.cs。"
+}

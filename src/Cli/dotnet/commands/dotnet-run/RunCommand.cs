@@ -20,40 +20,55 @@ namespace Microsoft.DotNet.Tools.Run
     {
         private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
 
-        public bool NoBuild { get; private set; }
-        public string ProjectFileFullPath { get; private set; }
+        public bool NoBuild { get; }
+        public string? ProjectFileOrDirectory { get; }
+        public string ProjectFileFullPath { get; }
         public string[] Args { get; set; }
-        public bool NoRestore { get; private set; }
+        public bool NoRestore { get; }
         public VerbosityOptions? Verbosity { get; }
-        public bool Interactive { get; private set; }
-        public string[] RestoreArgs { get; private set; }
+        public bool Interactive { get; }
+        public string[] RestoreArgs { get; }
+
+        /// <summary>
+        /// Environment variables specified on command line via -e option.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> EnvironmentVariables { get; }
 
         private bool ShouldBuild => !NoBuild;
 
-        public string LaunchProfile { get; private set; }
-        public bool NoLaunchProfile { get; private set; }
-        private bool UseLaunchProfile => !NoLaunchProfile;
+        public string LaunchProfile { get; }
+        public bool NoLaunchProfile { get; }
+
+        /// <summary>
+        /// True to ignore command line arguments specified by launch profile.
+        /// </summary>
+        public bool NoLaunchProfileArguments { get; }
 
         public RunCommand(
             bool noBuild,
             string? projectFileOrDirectory,
             string launchProfile,
             bool noLaunchProfile,
+            bool noLaunchProfileArguments,
             bool noRestore,
             bool interactive,
             VerbosityOptions? verbosity,
             string[] restoreArgs,
-            string[] args)
+            string[] args,
+            IReadOnlyDictionary<string, string> environmentVariables)
         {
             NoBuild = noBuild;
+            ProjectFileOrDirectory = projectFileOrDirectory;
             ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory);
             LaunchProfile = launchProfile;
             NoLaunchProfile = noLaunchProfile;
+            NoLaunchProfileArguments = noLaunchProfileArguments;
             Args = args;
             Interactive = interactive;
             NoRestore = noRestore;
             Verbosity = verbosity;
             RestoreArgs = GetRestoreArguments(restoreArgs);
+            EnvironmentVariables = environmentVariables;
         }
 
         public int Execute()
@@ -76,10 +91,18 @@ namespace Microsoft.DotNet.Tools.Run
             try
             {
                 ICommand targetCommand = GetTargetCommand();
-                var launchSettingsCommand = ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
+                ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
+
+                // Env variables specified on command line override those specified in launch profile:
+                foreach (var (name, value) in EnvironmentVariables)
+                {
+                    targetCommand.EnvironmentVariable(name, value);
+                }
+
                 // Ignore Ctrl-C for the remainder of the command's execution
                 Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-                return launchSettingsCommand.Execute().ExitCode;
+
+                return targetCommand.Execute().ExitCode;
             }
             catch (InvalidProjectFileException e)
             {
@@ -89,35 +112,37 @@ namespace Microsoft.DotNet.Tools.Run
             }
         }
 
-        private ICommand ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+        private void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
         {
-            if (launchSettings != null)
+            if (launchSettings == null)
             {
-                if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
-                {
-                    targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
-                }
-
-                targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
-
-                foreach (var entry in launchSettings.EnvironmentVariables)
-                {
-                    string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                    //NOTE: MSBuild variables are not expanded like they are in VS
-                    targetCommand.EnvironmentVariable(entry.Key, value);
-                }
-                if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
-                {
-                    targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
-                }
+                return;
             }
-            return targetCommand;
+
+            if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
+            {
+                targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
+            }
+
+            targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
+
+            foreach (var entry in launchSettings.EnvironmentVariables)
+            {
+                string value = Environment.ExpandEnvironmentVariables(entry.Value);
+                //NOTE: MSBuild variables are not expanded like they are in VS
+                targetCommand.EnvironmentVariable(entry.Key, value);
+            }
+
+            if (!NoLaunchProfileArguments && string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
+            {
+                targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
+            }
         }
 
         private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
         {
             launchSettingsModel = default;
-            if (!UseLaunchProfile)
+            if (NoLaunchProfile)
             {
                 return true;
             }

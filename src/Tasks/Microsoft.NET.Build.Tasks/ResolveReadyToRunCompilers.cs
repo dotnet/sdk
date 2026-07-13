@@ -52,21 +52,7 @@ namespace Microsoft.NET.Build.Tasks
             _runtimePack = GetNETCoreAppRuntimePack();
             _targetRuntimeIdentifier = _runtimePack?.GetMetadata(MetadataKeys.RuntimeIdentifier);
 
-            // Get the list of runtime identifiers that we support and can target
-            ITaskItem targetingPack = GetNETCoreAppTargetingPack();
-            string supportedRuntimeIdentifiers = targetingPack?.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers);
-
-            var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
-            var supportedRIDsList = supportedRuntimeIdentifiers == null ? Array.Empty<string>() : supportedRuntimeIdentifiers.Split(';');
-
-            // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
-            _hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(
-                runtimeGraph,
-                NETCoreSdkRuntimeIdentifier,
-                supportedRIDsList,
-                out _);
-
-            if (_hostRuntimeIdentifier == null || _targetRuntimeIdentifier == null)
+            if (_targetRuntimeIdentifier == null)
             {
                 Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                 return;
@@ -96,6 +82,13 @@ namespace Microsoft.NET.Build.Tasks
 
         private bool ValidateCrossgenSupport()
         {
+            _hostRuntimeIdentifier = GetHostRuntimeIdentifierForCrossgen();
+            if (_hostRuntimeIdentifier == null)
+            {
+                Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
+                return false;
+            }
+
             _crossgenTool.PackagePath = _runtimePack?.GetMetadata(MetadataKeys.PackageDirectory);
             if (_crossgenTool.PackagePath == null)
             {
@@ -121,12 +114,39 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             return true;
+
+            string GetHostRuntimeIdentifierForCrossgen()
+            {
+                // Crossgen's host RID comes from the runtime pack that Crossgen will be loaded from.
+
+                // Get the list of runtime identifiers that we support and can target
+                ITaskItem targetingPack = GetNETCoreAppTargetingPack();
+                string supportedRuntimeIdentifiers = targetingPack?.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers);
+
+                var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
+                var supportedRIDsList = supportedRuntimeIdentifiers == null ? Array.Empty<string>() : supportedRuntimeIdentifiers.Split(';');
+
+                // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
+                return NuGetUtils.GetBestMatchingRid(
+                    runtimeGraph,
+                    NETCoreSdkRuntimeIdentifier,
+                    supportedRIDsList,
+                    out _);
+            }
         }
 
         private bool ValidateCrossgen2Support()
         {
             ITaskItem crossgen2Pack = Crossgen2Packs?.FirstOrDefault();
-            _crossgen2Tool.PackagePath = crossgen2Pack?.GetMetadata(MetadataKeys.PackageDirectory);
+
+            _hostRuntimeIdentifier = crossgen2Pack?.GetMetadata(MetadataKeys.RuntimeIdentifier);
+            if (_hostRuntimeIdentifier == null)
+            {
+                Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
+                return false;
+            }
+
+            _crossgen2Tool.PackagePath = crossgen2Pack.GetMetadata(MetadataKeys.PackageDirectory);
 
             if (string.IsNullOrEmpty(_crossgen2Tool.PackagePath) ||
                 !NuGetVersion.TryParse(crossgen2Pack.GetMetadata(MetadataKeys.NuGetPackageVersion), out NuGetVersion crossgen2PackVersion))
@@ -181,42 +201,19 @@ namespace Microsoft.NET.Build.Tasks
 
             // Determine targetOS based on target rid.
             // Use the runtime graph to support non-portable target rids.
+            // Use the full target rid instead of just the target OS as the runtime graph
+            // may only have the full target rid and not an OS-only rid for non-portable target rids
+            // added by our source-build partners.
             var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
-                    _targetPlatform,
-                    new[] { "linux", "linux-musl", "osx", "win", "freebsd", "illumos" },
+                    _targetRuntimeIdentifier,
+                    new[] { "linux", "osx", "win", "freebsd", "illumos" },
                     out _);
-
-            // For source-build, allow the bootstrap SDK rid to be unknown to the runtime repo graph.
-            if (portablePlatform == null && _targetRuntimeIdentifier == _hostRuntimeIdentifier)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    portablePlatform = "win";
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    portablePlatform = "linux";
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD")))
-                {
-                    portablePlatform = "freebsd";
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ILLUMOS")))
-                {
-                    portablePlatform = "illumos";
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    portablePlatform = "osx";
-                }
-            }
 
             targetOS = portablePlatform switch
             {
                 "linux" => "linux",
-                "linux-musl" => "linux",
                 "osx" => "osx",
                 "win" => "windows",
                 "freebsd" => "freebsd",

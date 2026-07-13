@@ -28,13 +28,20 @@
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
-        <source>Failed to validate package signing.</source>
-        <target state="translated">Не удалось проверить подпись пакета.</target>
+        <source>Failed to validate package signing.
+{0}</source>
+        <target state="translated">Не удалось проверить подпись пакета.
+{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">{0} не найдено в веб-каналах NuGet {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackageShouldNotBeSigned">
+        <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
+        <target state="translated">Пропуск проверки подписи для пакета NuGet "{0}", так как он получен из источника, который не требует проверки подписи.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
@@ -70,6 +77,11 @@
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
         <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
         <target state="translated">Пропустить проверку подписи пакета NuGet. Проверка подписи NuGet недоступна в Linux или macOS https://aka.ms/workloadskippackagevalidation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerifyingNuGetPackageSignature">
+        <source>Verified that the NuGet package "{0}" has a valid signature.</source>
+        <target state="translated">Проверено, что пакет NuGet "{0}" содержит допустимую подпись.</target>
         <note />
       </trans-unit>
     </body>

@@ -2,6 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
+using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -10,6 +15,8 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-sln";
 
+        public static readonly string CommandName = "solution";
+        public static readonly string CommandAlias = "sln";
         public static readonly CliArgument<string> SlnArgument = new CliArgument<string>(LocalizableStrings.SolutionArgumentName)
         {
             HelpName = LocalizableStrings.SolutionArgumentName,
@@ -26,16 +33,20 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            DocumentedCommand command = new("sln", DocsLink, LocalizableStrings.AppFullName);
+            DocumentedCommand command = new(CommandName, DocsLink, LocalizableStrings.AppFullName);
+
+            command.Aliases.Add(CommandAlias);
 
             command.Arguments.Add(SlnArgument);
             command.Subcommands.Add(SlnAddParser.GetCommand());
             command.Subcommands.Add(SlnListParser.GetCommand());
             command.Subcommands.Add(SlnRemoveParser.GetCommand());
+            command.Subcommands.Add(SlnMigrateCommandParser.GetCommand());
 
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
             return command;
         }
     }
+
 }

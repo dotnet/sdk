@@ -540,8 +540,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 CreateIntermediateNode(
                     ("_other", CreateIntermediateNode(
                         ("_project", CreateIntermediateNode().AddPatterns(
-                            (0, "*.js", 2),
-                            (1, "*.css", 2)))))),
+                            (0, "*.css", 2),
+                            (1, "*.js", 2)))))),
                 Path.GetFullPath("wwwroot"),
                 Path.GetFullPath("styles"));
 
