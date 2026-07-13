@@ -184,6 +184,10 @@ try {
     $binaryLog = $true
   }
 
+  if (-not [string]::IsNullOrEmpty($binaryLogName)) {
+    $binaryLog = $true
+  }
+
   if ($nativeToolsOnMachine) {
     $env:NativeToolsOnMachine = $true
   }
