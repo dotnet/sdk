@@ -248,6 +248,7 @@ public class ParserTests
     [TestMethod]
     [DataRow("bash")]
     [DataRow("zsh")]
+    [DataRow("fish")]
     [DataRow("pwsh")]
     public void Parser_ShouldParseEnvCommandWithValidShell(string shell)
     {

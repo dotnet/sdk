@@ -24,6 +24,12 @@ internal static class ShellProviderHelpers
     internal static string EscapePowerShellPath(string path)
         => path.Replace("'", "''", StringComparison.Ordinal);
 
+    // Fish single-quoted strings treat backslash as an escape character for \' and \\,
+    // so backslashes must be escaped first and quotes use \' rather than the POSIX '\''.
+    internal static string EscapeFishPath(string path)
+        => path.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("'", "\\'", StringComparison.Ordinal);
+
     /// <summary>
     /// Builds the explicit selection flags for an <c>env script</c> invocation baked into a
     /// profile entry or activation command. Always emits <c>--dotnet</c> and/or <c>--dotnetup</c>
@@ -75,6 +81,26 @@ internal static class ShellProviderHelpers
             """;
     }
 
+    // Fish activation runs inside a fish shell, so 'env script' auto-detects fish; no flags are
+    // baked in (the stored config is followed at run time), matching the other shells.
+    internal static string BuildFishActivationCommand(string dotnetupPath)
+    {
+        var escapedPath = EscapeFishPath(dotnetupPath);
+        return $"'{escapedPath}' env script | source";
+    }
+
+    internal static string BuildFishProfileEntry(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapeFishPath(dotnetupPath);
+        var command = BuildFishPrintEnvCommand(dotnetupPath, shellName, flags);
+
+        return $$"""
+            if test -x '{{escapedPath}}'
+                {{command}} | source
+            end
+            """;
+    }
+
     internal static string BuildPowerShellActivationCommand(string dotnetupPath)
     {
         var escapedPath = EscapePowerShellPath(dotnetupPath);
@@ -98,6 +124,12 @@ internal static class ShellProviderHelpers
     private static string BuildPosixPrintEnvCommand(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapePosixPath(dotnetupPath);
+        return AppendArguments($"'{escapedPath}' env script --shell {shellName}", flags);
+    }
+
+    private static string BuildFishPrintEnvCommand(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapeFishPath(dotnetupPath);
         return AppendArguments($"'{escapedPath}' env script --shell {shellName}", flags);
     }
 
@@ -141,6 +173,27 @@ internal static class ShellProviderHelpers
         return entries.Count == 0
             ? string.Empty
             : $"export PATH={string.Join(":", entries)}:$PATH";
+    }
+
+    internal static string BuildFishPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
+    {
+        // fish_add_path --move prepends (or moves) the entries so the shell resolves
+        // dotnet/dotnetup from the selected install immediately.
+        // --path/--global keeps the change session-scoped in $PATH instead of persisting
+        // to universal fish_user_paths.
+        if (includeDotnet && !string.IsNullOrWhiteSpace(dotnetupDir))
+        {
+            return $"fish_add_path --global --move --path '{EscapeFishPath(dotnetupDir)}' '{escapedPath}'";
+        }
+
+        if (includeDotnet)
+        {
+            return $"fish_add_path --global --move --path '{escapedPath}'";
+        }
+
+        return string.IsNullOrWhiteSpace(dotnetupDir)
+            ? string.Empty
+            : $"fish_add_path --global --move --path '{EscapeFishPath(dotnetupDir)}'";
     }
 
     internal static string BuildPowerShellPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
@@ -228,6 +281,18 @@ internal static class ShellProviderHelpers
         var fullPath = Path.GetFullPath(zdotdir);
         EnsureDirectoryWritable(fullPath, "ZDOTDIR", createIfMissing: true);
         return fullPath;
+    }
+
+    internal static string GetFishConfigurationDirectoryOrThrow()
+    {
+        var xdgConfigHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+        var configHome = string.IsNullOrWhiteSpace(xdgConfigHome)
+            ? Path.Combine(GetUserHomeDirectoryOrThrow(), ".config")
+            : Path.GetFullPath(xdgConfigHome);
+
+        var confDDirectory = Path.Combine(configHome, "fish", "conf.d");
+        EnsureDirectoryWritable(confDDirectory, "fish configuration directory", createIfMissing: true);
+        return confDDirectory;
     }
 
     internal static string GetPowerShellProfileDirectoryOrThrow()
