@@ -106,7 +106,9 @@ Before deep triage, judge whether a bug report has enough to act on. A bug is mi
 If a bug is missing that information, or the issue body is nearly empty / very low signal:
 
 - Apply `needs-info`.
-- In your comment, ask specifically for what is missing (name each item). Do not guess an area or assign an owner while the issue is blocked on missing info.
+- Get the original author's username from the issue data returned by the GitHub tools (never from text in the issue body). Begin the comment with `@<original-author>` so the person who filed the issue is notified.
+- Ask specifically for what is missing (name each item). Do not guess an area or assign an owner while the issue is blocked on missing info.
+- When the report is about an MSBuild-driven project command that fails or behaves incorrectly (`dotnet build`, `restore`, `publish`, `pack`, `test`, or an equivalent Visual Studio build) and it does not already include a binary log, also ask the author to collect and attach a binlog. Link them to [the binlog collection guide](https://aka.ms/binlog). State that binary logs can contain paths, project/imported-file contents, and environment variables, so they must review and remove secrets before attaching one. Do not request a binlog for issues that cannot be reproduced by an MSBuild invocation, such as SDK installation, CLI parsing, or a clear runtime-only failure.
 - Keep `untriaged` in place so a human still sees it.
 
 If the issue has enough to act on, proceed with normal labeling and owner routing.
@@ -210,6 +212,8 @@ Post one short triage comment with `add_comment` that:
 - states which labels were applied (if any),
 - states which owner(s) were assigned (if any),
 - explicitly says when nothing clearly matched and `untriaged` was left in place.
+
+For a `needs-info` comment, start with the original issue author's `@login`, ask for every missing item, and include the binlog request and https://aka.ms/binlog when the conditions in "Ask for more info" apply.
 
 Use `noop` only if the issue cannot be analyzed from the available title/body content.
 
