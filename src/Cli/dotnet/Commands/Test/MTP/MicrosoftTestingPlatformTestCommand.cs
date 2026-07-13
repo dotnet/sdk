@@ -100,6 +100,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
             }
             else if (exitCode == ExitCode.Success &&
+                !isHelp &&
                 !parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
                 output.TotalTests == 0)
             {
