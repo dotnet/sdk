@@ -10,8 +10,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "631a17e14d3222969c638302c318fb5dd3894ee3",
+          "baseline_ref_sha": "59d0f9b9f8604e7f366b9ab340a5d194adf85544",
+          "baseline_blob_sha": "f964693792a513c07bef616e35d4754b79257edb",
           "scope": "entire file; ids must match exactly"
         }
       ]
