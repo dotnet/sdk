@@ -206,7 +206,7 @@ internal static class AzureMonitorTelemetrySerializer
                     Stack = BreezeSchema.Truncate(exceptionStack, BreezeSchema.ExceptionStackMaxLength),
                 },
             ],
-            Properties = properties,
+            Properties = properties ?? [],
         };
     }
 

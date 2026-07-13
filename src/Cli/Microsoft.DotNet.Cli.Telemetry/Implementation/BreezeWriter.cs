@@ -74,9 +74,13 @@ internal static class BreezeWriter
         return true;
     }
 
+    // Formats timestamps in ISO-8601 round-trip ("O") form on a UTC DateTime, which renders the
+    // trailing "Z" designator (e.g. 2026-07-13T18:02:26.2656372Z) exactly as the Azure Monitor
+    // exporter does. Formatting a DateTimeOffset instead would emit "+00:00", which is a valid but
+    // byte-different representation.
     public static string FormatTime(DateTime utcTimestamp)
-        => new DateTimeOffset(DateTime.SpecifyKind(utcTimestamp, DateTimeKind.Utc)).ToString("O", CultureInfo.InvariantCulture);
+        => DateTime.SpecifyKind(utcTimestamp, DateTimeKind.Utc).ToString("O", CultureInfo.InvariantCulture);
 
     public static string FormatTime(DateTimeOffset timestamp)
-        => timestamp.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
+        => timestamp.UtcDateTime.ToString("O", CultureInfo.InvariantCulture);
 }

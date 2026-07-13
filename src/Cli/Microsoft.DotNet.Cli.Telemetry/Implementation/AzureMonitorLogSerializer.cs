@@ -183,7 +183,7 @@ internal static class AzureMonitorLogSerializer
                     Stack = BreezeSchema.Truncate(stack, BreezeSchema.ExceptionStackMaxLength),
                 },
             ],
-            Properties = properties,
+            Properties = properties ?? [],
         };
     }
 

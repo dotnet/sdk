@@ -144,9 +144,14 @@ internal sealed class ExceptionData
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SeverityLevel { get; set; }
 
+    /// <summary>
+    /// Application Insights custom properties. Unlike <see cref="MessageData"/>, the Azure Monitor
+    /// exporter always emits <c>ExceptionData.properties</c> — as an empty object when there are no
+    /// properties — so this is written unconditionally (defaulting to an empty dictionary) to stay
+    /// byte-for-byte compatible with the exporter's <c>TelemetryExceptionData</c> serialization.
+    /// </summary>
     [JsonPropertyName("properties")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, string>? Properties { get; set; }
+    public Dictionary<string, string> Properties { get; set; } = [];
 }
 
 /// <summary>A single exception entry inside <see cref="ExceptionData.Exceptions"/>.</summary>
