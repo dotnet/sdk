@@ -44,23 +44,24 @@ public class RealEndpointTelemetryE2ETests
     private const string RunIdEnvVar = "DOTNET_CLI_TELEMETRY_E2E_RUN_ID";
     private const string SourceName = "Microsoft.DotNet.Tests.RealEndpointTelemetry";
 
-    // A stable marker plus a per-run id uniquely identify one test run. The run id can be pinned
-    // via DOTNET_CLI_TELEMETRY_E2E_RUN_ID so a harness script can choose the id up front, run the
-    // tests, then query for exactly that id once ingestion completes (~1 hour).
-    //
-    // The dotnet CLI does not query the raw Application Insights tables — its telemetry flows
-    // through a processing pipeline into a downstream table searched by the Message / EventName
-    // field. That field is populated from the MessageData.message envelope, which in turn comes
-    // from the activity *event name*. So the run token is embedded in the event name (below), not
-    // just in customDimensions, to make emitted rows findable in the destination table.
-    private const string RunMarker = "cli-telemetry-real-endpoint-e2e";
+    // The .NET CLI emits telemetry as ActivityEvents named "dotnet/cli/<event>" (see
+    // TelemetryClient.TrackEventTask and TelemetryFilter) carrying the common telemetry
+    // properties. The downstream processing pipeline only forwards events in this real CLI shape
+    // into the CLI destination table — a fully-synthetic event name is dropped — so the harness
+    // must emit an actual CLI event shape. "toplevelparser/command" is the event every CLI
+    // invocation emits, so we reuse it here (as "dotnet/cli/toplevelparser/command").
+    private const string CliEventName = "dotnet/cli/toplevelparser/command";
+
+    // Specific runs are looked up by the SessionId common property, so the pinnable run id is
+    // stamped there. Pin it via DOTNET_CLI_TELEMETRY_E2E_RUN_ID so a harness script can choose
+    // the id up front, run the tests, then query the destination table for rows whose SessionId
+    // equals that id once ingestion completes (~1 hour). The property key must match
+    // TelemetryCommonProperties.SessionId exactly.
+    private const string SessionIdProperty = "SessionId";
     private static readonly string RunId =
         Environment.GetEnvironmentVariable(RunIdEnvVar) is { Length: > 0 } pinned
             ? pinned
             : Guid.NewGuid().ToString("N");
-
-    // The searchable Message / EventName value stamped onto the message envelope for this run.
-    private static readonly string MessageToken = $"{RunMarker}/{RunId}";
 
     private static readonly ActivitySource Source = new(SourceName);
 
@@ -123,7 +124,7 @@ public class RealEndpointTelemetryE2ETests
 
         // Append one clearly-invalid envelope: a syntactically-valid JSON line with an invalid
         // timestamp, which the Breeze validator rejects on a per-item basis.
-        var malformedLine = $"{{\"ver\":1,\"name\":\"Microsoft.ApplicationInsights.Message\",\"time\":\"not-a-timestamp\",\"iKey\":\"{connection.InstrumentationKey}\",\"tags\":{{}},\"data\":{{\"baseType\":\"MessageData\",\"baseData\":{{\"ver\":2,\"message\":\"{RunMarker}\"}}}}}}\n";
+        var malformedLine = $"{{\"ver\":1,\"name\":\"Microsoft.ApplicationInsights.Message\",\"time\":\"not-a-timestamp\",\"iKey\":\"{connection.InstrumentationKey}\",\"tags\":{{}},\"data\":{{\"baseType\":\"MessageData\",\"baseData\":{{\"ver\":2,\"message\":\"{CliEventName}\"}}}}}}\n";
         var payload = Concat(validPayload, Encoding.UTF8.GetBytes(malformedLine));
         var totalCount = validCount + 1;
 
@@ -138,20 +139,24 @@ public class RealEndpointTelemetryE2ETests
     }
 
     /// <summary>
-    /// Offline regression guard (runs without a connection string): asserts the per-run token is
-    /// serialized as the message envelope's <c>message</c> field. That field becomes the
-    /// downstream table's searchable <c>Message</c> / <c>EventName</c>, so this protects the
-    /// "findable after ingestion" contract even when the networked tests are skipped.
+    /// Offline regression guard (runs without a connection string): asserts the emitted telemetry
+    /// is a real CLI event shape (<c>dotnet/cli/toplevelparser/command</c>) and that the run id is
+    /// stamped into the <c>SessionId</c> property. The pipeline only forwards real CLI event
+    /// shapes into the destination table, and runs are looked up by SessionId, so this protects
+    /// the "findable after ingestion" contract even when the networked tests are skipped.
     /// </summary>
     [TestMethod]
-    public void EmittedMessageEnvelopeCarriesTheRunTokenForDownstreamSearch()
+    public void EmittedTelemetryUsesARealCliEventShapeAndStampsTheRunIdAsSessionId()
     {
         var (payload, _) = BuildValidPayloadWithCount("offline-test-ikey");
         var text = Encoding.UTF8.GetString(payload);
 
         text.Should().Contain(
-            $"\"message\":\"{MessageToken}\"",
-            "the run token must land in MessageData.message so the downstream table's Message/EventName search can find the row");
+            $"\"message\":\"{CliEventName}\"",
+            "the message envelope must use a real dotnet/cli/* event name so the pipeline forwards it to the CLI destination table");
+        text.Should().Contain(
+            $"\"{SessionIdProperty}\":\"{RunId}\"",
+            "the run id must land in the SessionId property, which is how the destination table is searched for a specific run");
     }
 
     /// <summary>
@@ -168,16 +173,17 @@ public class RealEndpointTelemetryE2ETests
                 $"Set {ConnectionStringEnvVar} to an Application Insights connection string to run the real-endpoint telemetry tests.");
         }
 
-        TestContext.WriteLine($"Real-endpoint telemetry E2E run: marker='{RunMarker}', runId='{RunId}', endpoint='{parsed!.IngestionEndpoint}'.");
+        TestContext.WriteLine($"Real-endpoint telemetry E2E run: event='{CliEventName}', SessionId='{RunId}', endpoint='{parsed!.IngestionEndpoint}'.");
         TestContext.WriteLine(
-            $"After ingestion completes (~1 hour), confirm delivery by searching the telemetry destination table for a row whose Message / EventName equals: {MessageToken}");
+            $"After ingestion completes (~1 hour), confirm delivery by searching the .NET CLI telemetry destination table for rows whose SessionId equals: {RunId}");
         return parsed;
     }
 
     /// <summary>
     /// Builds a batch of valid, CLI-representative telemetry — an internal span (dependency), a
-    /// server span (request), and a command-finish activity event (message) — serialized to the
-    /// Breeze NDJSON wire format by the shipping <see cref="AzureMonitorTelemetrySerializer"/>.
+    /// server span (request), and a real <c>dotnet/cli/toplevelparser/command</c> activity event
+    /// (message) stamped with the run id as its <c>SessionId</c> — serialized to the Breeze NDJSON
+    /// wire format by the shipping <see cref="AzureMonitorTelemetrySerializer"/>.
     /// </summary>
     private static byte[] BuildValidPayload(string instrumentationKey) => BuildValidPayloadWithCount(instrumentationKey).Payload;
 
@@ -191,17 +197,19 @@ public class RealEndpointTelemetryE2ETests
 
         using var listener = CreateListener();
 
-        // Internal span → RemoteDependencyData, carrying an event whose name embeds the run token
-        // → MessageData.message → the downstream table's searchable Message / EventName field.
+        // Internal span → RemoteDependencyData, carrying a real CLI event
+        // (dotnet/cli/toplevelparser/command) → MessageData.message. The event's SessionId
+        // property carries the run id, which is how the destination table is searched for a run.
         using var internalSpan = Source.StartActivity("dotnet build", ActivityKind.Internal)!;
         StampRunTags(internalSpan);
         var eventTags = new ActivityTagsCollection
         {
-            { "e2e.marker", RunMarker },
-            { "e2e.run.id", RunId },
-            { "exitCode", "0" },
+            { SessionIdProperty, RunId },
+            // Mirror the property shape a real "toplevelparser/command" event carries.
+            { "verb", "build" },
+            { "event id", Guid.NewGuid().ToString() },
         };
-        internalSpan.AddEvent(new ActivityEvent(MessageToken, tags: eventTags));
+        internalSpan.AddEvent(new ActivityEvent(CliEventName, tags: eventTags));
         internalSpan.Stop();
 
         // Server span → RequestData.
@@ -219,8 +227,9 @@ public class RealEndpointTelemetryE2ETests
 
     private static void StampRunTags(Activity activity)
     {
-        activity.SetTag("e2e.marker", RunMarker);
-        activity.SetTag("e2e.run.id", RunId);
+        // Stamp SessionId on the span too so the corresponding Request / RemoteDependency rows
+        // are findable by the same run id as the message.
+        activity.SetTag(SessionIdProperty, RunId);
     }
 
     private static ActivityListener CreateListener()

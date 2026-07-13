@@ -221,14 +221,16 @@ querying the emitted rows back out through the Analytics API.
 ### Verifying end-to-end ingestion after the tests run
 
 The dotnet CLI does not query the raw Application Insights tables directly — its telemetry flows
-through a processing pipeline into a downstream destination table that is searched by the
-**`Message` / `EventName`** field. To make an emitted row findable there, each run embeds a unique
-token — `cli-telemetry-real-endpoint-e2e/<runId>` — as the **message event name**, which the
-serializer maps to `MessageData.message` and the pipeline surfaces as `Message`/`EventName`.
+through a processing pipeline into a downstream destination table. That pipeline only forwards
+events emitted in the **real CLI event shape** (`ActivityEvent`s named `dotnet/cli/<event>`, as
+`TelemetryClient` produces); a synthetic event name is dropped and never reaches the table. So the
+harness emits a genuine `dotnet/cli/toplevelparser/command` event — the event every CLI invocation
+sends — rather than a made-up name.
 
-By default `<runId>` is a fresh GUID (the full token is written to the test output), but you can
-**pin** it up front via `DOTNET_CLI_TELEMETRY_E2E_RUN_ID` so a script can choose the id, run the
-tests, wait for ingestion, then search for exactly that token:
+Specific runs are looked up by the **`SessionId`** common telemetry property, so each run stamps
+its id there. By default the id is a fresh GUID (written to the test output), but you can **pin** it
+up front via `DOTNET_CLI_TELEMETRY_E2E_RUN_ID` so a script can choose the id, run the tests, wait
+for ingestion, then query for exactly that run:
 
 ```powershell
 $runId = [guid]::NewGuid().ToString("N")
@@ -237,10 +239,10 @@ $env:DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING = "InstrumentationKey=<guid>;Ing
 dotnet test test/Microsoft.DotNet.Cli.Telemetry.Tests --filter "FullyQualifiedName~RealEndpointTelemetryE2ETests"
 ```
 
-After roughly an hour, confirm delivery by searching the telemetry destination table for a row
-whose `Message` / `EventName` equals `cli-telemetry-real-endpoint-e2e/<runId>`. The run id is also
-stamped onto every envelope's `customDimensions` (`e2e.run.id`) for correlating the associated
-request/dependency rows.
+After roughly an hour, confirm delivery by searching the .NET CLI telemetry destination table for
+rows whose **`SessionId`** equals `<runId>`. The `SessionId` is stamped on both the message
+(`dotnet/cli/toplevelparser/command`) and its parent request/dependency spans, so all of a run's
+rows share the same id.
 
 ## References
 
