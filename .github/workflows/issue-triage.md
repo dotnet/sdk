@@ -51,24 +51,8 @@ safe-outputs:
     allowed: [untriaged]
     target: "*"
   assign-to-user:
-    # Individual owners that appear in the root CODEOWNERS file. The prompt restricts
-    # per-issue assignment to the owners of the matched area; this list is the overall
-    # safety gate. Keep it in sync with CODEOWNERS (individual @logins only; teams are
-    # routed via the 'needs team triage' label, not assigned).
-    allowed:
-      - akoeplinger
-      - lbussell
-      - lewing
-      - maraf
-      - MichaelSimons
-      - MiYanni
-      - mthalman
-      - pavelsavara
-      - phil-allen-msft
-      - sujitnayak
-      - tmat
-      - vijayrkn
-    max: 2
+    # CODEOWNERS and routing rules in the prompt determine candidates
+    max: 3
     target: "*"
   add-comment:
     max: 1
