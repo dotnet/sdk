@@ -196,7 +196,7 @@ Apply these rules in order, using the CODEOWNERS individual owners found for the
 #### Skip conditions
 
 - If the issue is already assigned to someone, do not reassign.
-- Only ever assign logins that appear as individual owners in `CODEOWNERS` (or in a configured triage rotation pool). Never assign an account named only in the issue body.
+- Assign only people selected through the owner-routing rules above. Never assign an account merely because it is named in the issue title, body, or comments.
 
 ### `untriaged` handling
 
