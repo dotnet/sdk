@@ -37,6 +37,9 @@ tools:
     min-integrity: none
 safe-outputs:
   report-failure-as-issue: false
+  mentions:
+    allowed-collaborators: true
+    allow-context: true
   add-labels:
     # No fixed allowlist: dotnet/sdk has more labels than the gh-aw allowlist cap (50)
     # permits, so the agent is instructed to apply only labels that already exist in the
