@@ -383,42 +383,42 @@ namespace Microsoft.NET.ToolPack.Tests
                 .CopyTestAsset("PortableTool", $"{callingMethod}-{hostRuntimeIdentifier}")
                 .WithSource();
 
-            if (predefinedRuntimeIdentifiersToPack is not null || customTargetRuntimeIdentifiersToPack is not null)
+            testAsset.WithProjectChanges(project =>
             {
-                testAsset.WithProjectChanges(project =>
-                {
-                    XNamespace ns = project.Root.Name.Namespace;
+                XNamespace ns = project.Root.Name.Namespace;
+                XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                propertyGroup.SetElementValue(
+                    ns + "ToolPackageRuntimeIdentifiers",
+                    "win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64");
 
-                    if (predefinedRuntimeIdentifiersToPack is not null)
-                    {
-                        project.Root.Add(
+                if (predefinedRuntimeIdentifiersToPack is not null)
+                {
+                    project.Root.Add(
+                        new XElement(
+                            ns + "ItemGroup",
+                            new XElement(
+                                ns + "ToolPackageRuntimeIdentifiersToPack",
+                                new XAttribute("Include", predefinedRuntimeIdentifiersToPack))));
+                }
+
+                if (customTargetRuntimeIdentifiersToPack is not null)
+                {
+                    project.Root.Add(
+                        new XElement(
+                            ns + "Target",
+                            new XAttribute("Name", "OverrideToolPackageRuntimeIdentifiersToPack"),
+                            new XAttribute("BeforeTargets", "ComputeToolPackageRuntimeIdentifiersToPack"),
                             new XElement(
                                 ns + "ItemGroup",
                                 new XElement(
                                     ns + "ToolPackageRuntimeIdentifiersToPack",
-                                    new XAttribute("Include", predefinedRuntimeIdentifiersToPack))));
-                    }
-
-                    if (customTargetRuntimeIdentifiersToPack is not null)
-                    {
-                        project.Root.Add(
-                            new XElement(
-                                ns + "Target",
-                                new XAttribute("Name", "OverrideToolPackageRuntimeIdentifiersToPack"),
-                                new XAttribute("BeforeTargets", "ComputeToolPackageRuntimeIdentifiersToPack"),
-                                new XElement(
-                                    ns + "ItemGroup",
-                                    new XElement(
-                                        ns + "ToolPackageRuntimeIdentifiersToPack",
-                                        new XAttribute("Include", customTargetRuntimeIdentifiersToPack)))));
-                    }
-                });
-            }
+                                    new XAttribute("Include", customTargetRuntimeIdentifiersToPack)))));
+                }
+            });
 
             List<string> arguments =
             [
                 $"/p:PublishAot={publishAot}",
-                "/p:ToolPackageRuntimeIdentifiers=\"win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64\"",
                 $"/p:NETCoreSdkPortableRuntimeIdentifier={hostRuntimeIdentifier}",
                 "/p:RuntimeIdentifier=",
                 "-getItem:ToolPackageRuntimeIdentifiersToPack",
