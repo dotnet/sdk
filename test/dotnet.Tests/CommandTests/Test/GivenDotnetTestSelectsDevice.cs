@@ -503,10 +503,11 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
-    public void ItCreatesDeployMarker()
+    public void ItDeploysBeforeComputingRunArguments()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "DeployOrder")
             .WithSource();
+        string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog");
 
         var result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
@@ -514,7 +515,8 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                 "--framework",
                 ToolsetInfo.CurrentTargetFramework,
                 "--device",
-                "test-device-1");
+                "test-device-1",
+                "-bl");
 
         result.Should().Pass();
         File.Exists(Path.Combine(
@@ -523,6 +525,15 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             TestingConstants.Debug,
             ToolsetInfo.CurrentTargetFramework,
             "dotnet-test-deploy.marker")).Should().BeTrue();
+
+        var build = BinaryLog.ReadBuild(binlogPath);
+        var deployTarget = build.FindChildrenRecursive<StructuredLoggerTarget>(
+            target => target.Name == "DeployToDevice").Should().ContainSingle().Which;
+        var computeRunArgumentsTarget = build.FindChildrenRecursive<StructuredLoggerTarget>(
+            target => target.Name == "ComputeRunArguments").Should().ContainSingle().Which;
+        deployTarget.EndTime.Should().BeOnOrBefore(
+            computeRunArgumentsTarget.StartTime,
+            "deployment must complete before run arguments are computed");
     }
 
     [TestMethod]
