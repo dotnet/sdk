@@ -10,13 +10,13 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
