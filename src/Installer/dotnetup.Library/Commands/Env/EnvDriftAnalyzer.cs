@@ -20,8 +20,9 @@ internal static class EnvDriftAnalyzer
         bool expectsDotnetEnvVars = config.AccessMode == DotnetAccessMode.Everywhere;
 
         // Profile-block presence: only assert when the profile state is known.
-        if (observed.ProfileBlockPresent is bool profileBlockPresent)
+        if (observed.ProfileBlock is not ProfileBlockState.Unknown)
         {
+            bool profileBlockPresent = observed.ProfileBlock is ProfileBlockState.Present;
             if (expectsProfileBlock && !profileBlockPresent)
             {
                 drift.Add(Strings.EnvDriftProfileBlockMissing);

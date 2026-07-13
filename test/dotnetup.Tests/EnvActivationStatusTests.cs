@@ -31,59 +31,30 @@ public class EnvActivationStatusTests
             resolvedDotnetupDir);
 
     [TestMethod]
-    public void Shell_DotnetupOn_BothResolveToManaged_IsActive()
-        => Evaluate(DotnetAccessMode.Shell, dotnetupOnPath: true, DotnetDir, DotnetupDir).IsActive.Should().BeTrue();
-
-    [TestMethod]
-    public void Shell_DotnetupOn_NeitherResolved_NeedsAdditionsOnly()
+    [DataRow(DotnetAccessMode.Shell, true, DotnetDir, DotnetupDir, false, false)]
+    [DataRow(DotnetAccessMode.Shell, true, null, null, true, false)]
+    // A system dotnet wins resolution, not the managed one → still needs the managed dotnet added.
+    [DataRow(DotnetAccessMode.Shell, true, "/usr/bin", DotnetupDir, true, false)]
+    [DataRow(DotnetAccessMode.None, true, null, DotnetupDir, false, false)]
+    // 'none' means the managed dotnet should NOT win; a stale managed dotnet means a removal (only a new terminal can drop it).
+    [DataRow(DotnetAccessMode.None, true, DotnetDir, DotnetupDir, false, true)]
+    [DataRow(DotnetAccessMode.None, false, null, null, false, false)]
+    [DataRow(DotnetAccessMode.None, false, null, DotnetupDir, false, true)]
+    [DataRow(DotnetAccessMode.Everywhere, true, DotnetDir, DotnetupDir, false, false)]
+    // dotnet should be present but isn't (addition); dotnetup should be absent but resolves (removal).
+    [DataRow(DotnetAccessMode.Shell, false, null, DotnetupDir, true, true)]
+    internal void Evaluate_ReportsExpectedTerminalState(
+        DotnetAccessMode accessMode,
+        bool dotnetupOnPath,
+        string? resolvedDotnetDir,
+        string? resolvedDotnetupDir,
+        bool expectedNeedsAdditions,
+        bool expectedNeedsRemovals)
     {
-        var state = Evaluate(DotnetAccessMode.Shell, dotnetupOnPath: true, resolvedDotnetDir: null, resolvedDotnetupDir: null);
-        state.NeedsAdditions.Should().BeTrue();
-        state.NeedsRemovals.Should().BeFalse();
-        state.IsActive.Should().BeFalse();
-    }
+        var state = Evaluate(accessMode, dotnetupOnPath, resolvedDotnetDir, resolvedDotnetupDir);
 
-    [TestMethod]
-    public void Shell_DotnetupOn_DotnetResolvesElsewhere_NeedsAdditions()
-    {
-        // A system dotnet wins resolution, not the managed one → still needs the managed dotnet added.
-        var state = Evaluate(DotnetAccessMode.Shell, dotnetupOnPath: true, "/usr/bin", DotnetupDir);
-        state.NeedsAdditions.Should().BeTrue();
-        state.NeedsRemovals.Should().BeFalse();
-    }
-
-    [TestMethod]
-    public void None_DotnetupOn_OnlyDotnetupResolves_IsActive()
-        => Evaluate(DotnetAccessMode.None, dotnetupOnPath: true, resolvedDotnetDir: null, resolvedDotnetupDir: DotnetupDir).IsActive.Should().BeTrue();
-
-    [TestMethod]
-    public void None_DotnetupOn_StaleManagedDotnetResolves_NeedsRemovals()
-    {
-        // 'none' means the managed dotnet should NOT win; a stale managed dotnet means a removal
-        // (only a new terminal can drop it).
-        var state = Evaluate(DotnetAccessMode.None, dotnetupOnPath: true, DotnetDir, DotnetupDir);
-        state.NeedsRemovals.Should().BeTrue();
-        state.NeedsAdditions.Should().BeFalse();
-    }
-
-    [TestMethod]
-    public void None_DotnetupOff_NeitherResolvesToManaged_IsActive()
-        => Evaluate(DotnetAccessMode.None, dotnetupOnPath: false, resolvedDotnetDir: null, resolvedDotnetupDir: null).IsActive.Should().BeTrue();
-
-    [TestMethod]
-    public void None_DotnetupOff_StaleManagedDotnetupResolves_NeedsRemovals()
-        => Evaluate(DotnetAccessMode.None, dotnetupOnPath: false, resolvedDotnetDir: null, resolvedDotnetupDir: DotnetupDir).NeedsRemovals.Should().BeTrue();
-
-    [TestMethod]
-    public void All_DotnetupOn_BothResolveToManaged_IsActive()
-        => Evaluate(DotnetAccessMode.Everywhere, dotnetupOnPath: true, DotnetDir, DotnetupDir).IsActive.Should().BeTrue();
-
-    [TestMethod]
-    public void Shell_DotnetupOff_AddDotnetButRemoveDotnetup_NeedsBoth()
-    {
-        // dotnet should be present but isn't (addition); dotnetup should be absent but resolves (removal).
-        var state = Evaluate(DotnetAccessMode.Shell, dotnetupOnPath: false, resolvedDotnetDir: null, resolvedDotnetupDir: DotnetupDir);
-        state.NeedsAdditions.Should().BeTrue();
-        state.NeedsRemovals.Should().BeTrue();
+        state.NeedsAdditions.Should().Be(expectedNeedsAdditions);
+        state.NeedsRemovals.Should().Be(expectedNeedsRemovals);
+        state.IsActive.Should().Be(!expectedNeedsAdditions && !expectedNeedsRemovals);
     }
 }

@@ -20,15 +20,15 @@ public class EnvDriftAnalyzerTests
     private static ObservedEnvironmentState Observed(
         bool dotnetEnvVarsPresent = false,
         bool dotnetEnvVarsComplete = false,
-        bool? profileBlockPresent = null,
+        ProfileBlockState profileBlock = ProfileBlockState.Unknown,
         bool dotnetupOnUserPath = false)
-        => new(dotnetEnvVarsPresent, dotnetEnvVarsComplete, profileBlockPresent, dotnetupOnUserPath);
+        => new(dotnetEnvVarsPresent, dotnetEnvVarsComplete, profileBlock, dotnetupOnUserPath);
 
     [TestMethod]
     public void ProfileExpectedButMissing_ReportsMissingBlock()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
-        var observed = Observed(profileBlockPresent: false, dotnetupOnUserPath: true);
+        var observed = Observed(profileBlock: ProfileBlockState.Absent, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
@@ -39,7 +39,7 @@ public class EnvDriftAnalyzerTests
     public void ProfileNotExpectedButPresent_ReportsStrayBlock()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false };
-        var observed = Observed(profileBlockPresent: true);
+        var observed = Observed(profileBlock: ProfileBlockState.Present);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
@@ -50,7 +50,7 @@ public class EnvDriftAnalyzerTests
     public void ProfileStateUnknown_NoProfileDrift()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
-        var observed = Observed(profileBlockPresent: null, dotnetupOnUserPath: true);
+        var observed = Observed(profileBlock: ProfileBlockState.Unknown, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
@@ -63,7 +63,7 @@ public class EnvDriftAnalyzerTests
         // Shell + dotnetup-on, profile present, dotnetup on the user PATH (Windows). Non-Windows
         // ignores the user-PATH axis, so this is in sync on both.
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
-        var observed = Observed(profileBlockPresent: true, dotnetupOnUserPath: true);
+        var observed = Observed(profileBlock: ProfileBlockState.Present, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
@@ -74,7 +74,7 @@ public class EnvDriftAnalyzerTests
     public void ConfiguredAllButIncomplete_ReportsEnvVarDrift()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Everywhere, DotnetupOnPath = true };
-        var observed = Observed(dotnetEnvVarsComplete: false, profileBlockPresent: true, dotnetupOnUserPath: true);
+        var observed = Observed(dotnetEnvVarsComplete: false, profileBlock: ProfileBlockState.Present, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
@@ -85,7 +85,7 @@ public class EnvDriftAnalyzerTests
     public void NotAllButResidualEnvVars_ReportsStrayWiring()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
-        var observed = Observed(dotnetEnvVarsPresent: true, profileBlockPresent: true, dotnetupOnUserPath: true);
+        var observed = Observed(dotnetEnvVarsPresent: true, profileBlock: ProfileBlockState.Present, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
@@ -96,7 +96,7 @@ public class EnvDriftAnalyzerTests
     public void DotnetupExpectedOnPathButMissing_ReportsDrift()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = true };
-        var observed = Observed(profileBlockPresent: true, dotnetupOnUserPath: false);
+        var observed = Observed(profileBlock: ProfileBlockState.Present, dotnetupOnUserPath: false);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 
@@ -107,7 +107,7 @@ public class EnvDriftAnalyzerTests
     public void DotnetupOnPathButConfiguredOff_ReportsDrift()
     {
         var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false };
-        var observed = Observed(profileBlockPresent: false, dotnetupOnUserPath: true);
+        var observed = Observed(profileBlock: ProfileBlockState.Absent, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
 

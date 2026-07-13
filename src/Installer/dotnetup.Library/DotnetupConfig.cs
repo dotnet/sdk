@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -37,12 +36,13 @@ internal class DotnetupConfigData
     public string SchemaVersion { get; set; } = "1";
 
     /// <summary>
-    /// How the managed dotnet is exposed. Serialized as <c>accessMode</c>. Reads also accept the
-    /// legacy property name <c>accessMode</c> (see <see cref="DotnetupConfig.Read"/>).
+    /// How the managed dotnet is exposed. Serialized as <c>accessMode</c> via the
+    /// <see cref="DotnetAccessModeJsonConverter"/> (lowercase <c>none</c> / <c>shell</c> /
+    /// <c>everywhere</c>).
     /// </summary>
     [JsonPropertyName("accessMode")]
     [JsonConverter(typeof(DotnetAccessModeJsonConverter))]
-    public DotnetAccessMode AccessMode { get; set; } = DotnetAccessMode.Everywhere;
+    public DotnetAccessMode AccessMode { get; set; } = DotnetAccessMode.Shell;
 
     /// <summary>
     /// Whether the dotnetup directory is on PATH so <c>dotnetup</c> can be invoked. Orthogonal
@@ -63,8 +63,10 @@ internal static class DotnetupConfig
     /// <summary>
     /// Reads the config file if it exists, otherwise returns null.
     /// Uses GlobalJsonFileHelper for encoding-aware reading (handles BOM variants).
-    /// Tolerates the legacy config shape written by earlier internal builds: the
-    /// <c>accessMode</c> property name (now <c>accessMode</c>) and the legacy enum spellings.
+    /// A config written by an earlier internal build (legacy <c>pathPreference</c> property or
+    /// pre-rename enum spellings) no longer maps: the unknown property is ignored and an
+    /// unrecognized <c>accessMode</c> value is treated as corrupt, so the config re-defaults on the
+    /// next write.
     /// </summary>
     public static DotnetupConfigData? Read()
     {
@@ -83,19 +85,7 @@ internal static class DotnetupConfig
                 text = streamReader.ReadToEnd();
             }
 
-            JsonNode? root = JsonNode.Parse(text);
-            if (root is JsonObject obj)
-            {
-                // Legacy property-name shim: map "pathPreference" → "accessMode" when the new
-                // name is absent. Prefer "accessMode" if both are somehow present.
-                if (obj["accessMode"] is null && obj["pathPreference"] is JsonNode legacy)
-                {
-                    obj["accessMode"] = legacy.DeepClone();
-                    obj.Remove("pathPreference");
-                }
-            }
-
-            return root.Deserialize(DotnetupConfigJsonContext.Default.DotnetupConfigData);
+            return JsonSerializer.Deserialize(text, DotnetupConfigJsonContext.Default.DotnetupConfigData);
         }
         catch (Exception ex)
         {

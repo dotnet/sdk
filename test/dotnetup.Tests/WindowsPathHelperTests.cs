@@ -172,6 +172,23 @@ public class WindowsPathHelperTests
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
+    public void PathContainsDotnet_MatchesWhenPathEntryHasTrailingSeparator()
+    {
+        // Regression: the .NET installer writes the system PATH entry with a trailing separator
+        // ("C:\Program Files\dotnet\"), while GetProgramFilesDotnetPaths trims it. The match must
+        // ignore the trailing separator so drift detection agrees with the apply step. A raw
+        // string compare here would return false and cause a permanent, unclearable "everywhere-mode
+        // wiring" drift on stock machines.
+        var pathEntries = new List<string> { "C:\\Path1", "C:\\Program Files\\dotnet\\", "C:\\Path2" };
+        var dotnetPaths = new List<string> { "C:\\Program Files\\dotnet" };
+
+        bool result = WindowsPathHelper.PathContainsDotnet(pathEntries, dotnetPaths);
+
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void FindDotnetPathIndices_IsCaseInsensitive()
     {
         // Arrange

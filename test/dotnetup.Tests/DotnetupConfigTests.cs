@@ -50,6 +50,16 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [TestMethod]
+    public void Write_SerializesAccessModeAsLowercaseString()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Everywhere });
+
+        var text = File.ReadAllText(DotnetupPaths.ConfigPath);
+
+        text.Should().Contain("\"accessMode\": \"everywhere\"");
+    }
+
+    [TestMethod]
     [DataRow(DotnetAccessMode.None)]
     [DataRow(DotnetAccessMode.Shell)]
     [DataRow(DotnetAccessMode.Everywhere)]
@@ -87,26 +97,43 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow("DotnetupDotnet", DotnetAccessMode.None)]
-    [DataRow("ShellProfile", DotnetAccessMode.Shell)]
-    [DataRow("FullPathReplacement", DotnetAccessMode.Everywhere)]
-    [DataRow("full", DotnetAccessMode.Everywhere)]
-    internal void Read_LegacyConfig_MapsPropertyNameAndEnumSpelling(string legacyEnumValue, DotnetAccessMode expected)
+    [DataRow("ShellProfile")]
+    [DataRow("FullPathReplacement")]
+    [DataRow("full")]
+    internal void Read_LegacyEnumSpelling_UnderAccessMode_TreatedAsCorrupt(string legacyEnumValue)
     {
         DotnetupPaths.EnsureDataDirectoryExists();
-        var legacyJson = $$"""
+        var json = $$"""
             {
               "schemaVersion": "1",
-              "pathPreference": "{{legacyEnumValue}}"
+              "accessMode": "{{legacyEnumValue}}"
+            }
+            """;
+        File.WriteAllText(DotnetupPaths.ConfigPath, json);
+
+        // The pre-rename enum spellings are no longer accepted; an unrecognized value is treated
+        // as a corrupt config rather than silently mapped.
+        DotnetupConfig.Read().Should().BeNull();
+    }
+
+    [TestMethod]
+    public void Read_LegacyPathPreferenceProperty_IsIgnored_FallsBackToDefault()
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        var legacyJson = """
+            {
+              "schemaVersion": "1",
+              "pathPreference": "ShellProfile"
             }
             """;
         File.WriteAllText(DotnetupPaths.ConfigPath, legacyJson);
 
         var config = DotnetupConfig.Read();
 
+        // The legacy "pathPreference" property name is no longer honored: it is ignored (no crash)
+        // and AccessMode falls back to its default.
         config.Should().NotBeNull();
-        config!.AccessMode.Should().Be(expected);
-        config.DotnetupOnPath.Should().BeTrue();
+        config!.AccessMode.Should().Be(DotnetAccessMode.Shell);
     }
 
     [TestMethod]
@@ -120,23 +147,16 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow(1, DotnetAccessMode.None)]
-    [DataRow(2, DotnetAccessMode.Shell)]
-    [DataRow(3, DotnetAccessMode.Everywhere)]
-    internal void Read_LegacyNumericAccessMode_Maps(int numeric, DotnetAccessMode expected)
+    [DataRow("1")]
+    [DataRow("3")]
+    [DataRow("99")]
+    internal void Read_NumericAccessMode_TreatedAsCorrupt(string numericLiteral)
     {
         DotnetupPaths.EnsureDataDirectoryExists();
-        File.WriteAllText(DotnetupPaths.ConfigPath, $$"""{ "schemaVersion": "1", "accessMode": {{numeric}} }""");
+        File.WriteAllText(DotnetupPaths.ConfigPath, $$"""{ "schemaVersion": "1", "accessMode": {{numericLiteral}} }""");
 
-        DotnetupConfig.Read()!.AccessMode.Should().Be(expected);
-    }
-
-    [TestMethod]
-    public void Read_OutOfRangeNumericAccessMode_TreatedAsCorrupt()
-    {
-        DotnetupPaths.EnsureDataDirectoryExists();
-        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": 99 }""");
-
+        // Integer access-mode values are no longer accepted (allowIntegerValues: false), so a
+        // numeric value is surfaced as a corrupt config.
         DotnetupConfig.Read().Should().BeNull();
     }
 }

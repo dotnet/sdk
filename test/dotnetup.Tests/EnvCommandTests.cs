@@ -137,6 +137,21 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Read().Should().BeNull();
     }
 
+    [TestMethod]
+    public void EnvSet_NoModeAndCorruptStoredConfig_Fails()
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, "not valid json{{{");
+
+        var parseResult = Parser.Parse(["env", "set"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+
+        // A config exists but is unreadable → DotnetInstallException → exit code 1.
+        exitCode.Should().Be(1);
+    }
+
     // ── EnvClearCommand ──
 
     [TestMethod]

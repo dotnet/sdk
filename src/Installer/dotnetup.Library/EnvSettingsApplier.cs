@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -37,11 +38,9 @@ internal static class EnvSettingsApplier
         string dotnetRoot,
         IEnvShellProvider? shellProvider = null)
     {
-        ArgumentNullException.ThrowIfNull(environment);
-        ArgumentNullException.ThrowIfNull(observed);
         ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
 
-        if (targetEnv == DotnetAccessMode.Everywhere && !OperatingSystem.IsWindows())
+        if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(targetEnv))
         {
             throw new PlatformNotSupportedException(
                 $"{nameof(DotnetAccessMode)}.{nameof(DotnetAccessMode.Everywhere)} is only supported on Windows.");
@@ -57,26 +56,26 @@ internal static class EnvSettingsApplier
 
         shellProvider ??= ShellDetection.GetCurrentShellProvider();
 
-        // 1. Remove the Windows dotnet env-var wiring if it is present and we no longer want it.
-        //    ApplyEnvironmentModifications(InstallType.System) is the inverse of
-        //    ApplyEnvironmentModifications(InstallType.User): it removes the user dotnet from
-        //    user PATH, restores the Program Files dotnet to system PATH, and unsets the
-        //    user-scope DOTNET_ROOT.
-        if (observed.DotnetUserEnvVarsPresent && !nowWritesDotnetEnvVars)
-        {
-            environment.ApplyEnvironmentModifications(InstallType.System);
-        }
-
-        // 2. Apply the Windows dotnet env-var wiring if we now want it.
+        // 1. Windows dotnet env-var wiring (PATH + DOTNET_ROOT): apply it when we now want it,
+        //    otherwise remove an observed wiring when we no longer do. These are the two mutually
+        //    exclusive branches of the same decision. ApplyEnvironmentModifications(InstallType.System)
+        //    is the inverse of (InstallType.User): it removes the user dotnet from user PATH, restores
+        //    the Program Files dotnet to system PATH, and unsets the user-scope DOTNET_ROOT. The apply
+        //    path is idempotent (each change is gated), so re-applying an already-correct state — e.g.
+        //    re-syncing after a system installer clobbered PATH — is safe.
         if (nowWritesDotnetEnvVars)
         {
             environment.ApplyEnvironmentModifications(InstallType.User, dotnetRoot);
         }
+        else if (observed.DotnetUserEnvVarsPresent)
+        {
+            environment.ApplyEnvironmentModifications(InstallType.System);
+        }
 
-        // 3. Windows user-scope dotnetup PATH entry (idempotent add/remove; no-op off Windows).
+        // 2. Windows user-scope dotnetup PATH entry (idempotent add/remove; no-op off Windows).
         environment.ApplyDotnetupOnUserPath(targetDotnetupOnPath);
 
-        // 4. Profile block: write it when something needs wiring, remove an observed block otherwise.
+        // 3. Profile block: write it when something needs wiring, remove an observed block otherwise.
         if (nowHasProfileBlock)
         {
             RequireShellProvider(shellProvider);
@@ -86,7 +85,7 @@ internal static class EnvSettingsApplier
                 includeDotnetup: nowProfileDotnetup,
                 shellProvider: shellProvider);
         }
-        else if (observed.ProfileBlockPresent == true)
+        else if (observed.ProfileBlock is ProfileBlockState.Present)
         {
             RequireShellProvider(shellProvider);
             ShellProfileManager.RemoveProfileEntries(shellProvider!);
@@ -105,7 +104,7 @@ internal static class EnvSettingsApplier
             string supportedShells = string.Join("|", ShellDetection.s_supportedShells.Select(s => s.ArgumentName));
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                $"Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell <{supportedShells}> to specify it explicitly.");
+                string.Format(CultureInfo.InvariantCulture, Strings.EnvShellRequiredForProfile, supportedShells));
         }
     }
 }

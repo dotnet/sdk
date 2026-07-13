@@ -19,9 +19,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// True when the user-scope dotnet env vars are fully in the <c>all</c>-mode state (nothing left
 /// to wire). Always false off Windows. Used to detect a configured-<c>all</c>-but-incomplete drift.
 /// </param>
-/// <param name="ProfileBlockPresent">
-/// Whether the managed dotnetup block exists in the shell profile, or <c>null</c> when the shell
-/// could not be determined (profile state unknown — neither presence nor absence asserted).
+/// <param name="ProfileBlock">
+/// Whether the managed dotnetup block exists in the shell profile, or
+/// <see cref="ProfileBlockState.Unknown"/> when the shell could not be determined (profile state
+/// unknown — neither presence nor absence asserted).
 /// </param>
 /// <param name="DotnetupOnUserPath">
 /// True when the dotnetup directory is on the Windows user-scope PATH. Always false off Windows,
@@ -30,7 +31,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal sealed record ObservedEnvironmentState(
     bool DotnetUserEnvVarsPresent,
     bool DotnetUserEnvVarsComplete,
-    bool? ProfileBlockPresent,
+    ProfileBlockState ProfileBlock,
     bool DotnetupOnUserPath)
 {
     /// <summary>
@@ -40,6 +41,6 @@ internal sealed record ObservedEnvironmentState(
     public static ObservedEnvironmentState Empty { get; } = new(
         DotnetUserEnvVarsPresent: false,
         DotnetUserEnvVarsComplete: false,
-        ProfileBlockPresent: null,
+        ProfileBlock: ProfileBlockState.Unknown,
         DotnetupOnUserPath: false);
 }

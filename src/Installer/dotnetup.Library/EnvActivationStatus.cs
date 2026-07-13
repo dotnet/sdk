@@ -29,16 +29,16 @@ internal static class EnvActivationStatus
         string? resolvedDotnetDir,
         string? resolvedDotnetupDir)
     {
-        bool needsAdditions = false;
-        bool needsRemovals = false;
-
         bool wantDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
         bool haveDotnet = resolvedDotnetDir is not null && DotnetupUtilities.PathsEqual(resolvedDotnetDir, managedDotnetDir);
-        UpdateFlags(wantDotnet, haveDotnet, ref needsAdditions, ref needsRemovals);
 
         bool wantDotnetup = config.DotnetupOnPath;
         bool haveDotnetup = resolvedDotnetupDir is not null && DotnetupUtilities.PathsEqual(resolvedDotnetupDir, managedDotnetupDir);
-        UpdateFlags(wantDotnetup, haveDotnetup, ref needsAdditions, ref needsRemovals);
+
+        // An axis needs adding when it's wanted but not currently resolving to the managed dir, and
+        // needs removing when it resolves to the managed dir but isn't wanted.
+        bool needsAdditions = (wantDotnet && !haveDotnet) || (wantDotnetup && !haveDotnetup);
+        bool needsRemovals = (!wantDotnet && haveDotnet) || (!wantDotnetup && haveDotnetup);
 
         return new EnvTerminalState(needsAdditions, needsRemovals);
     }
@@ -57,22 +57,7 @@ internal static class EnvActivationStatus
             config,
             managedDotnetDir,
             managedDotnetupDir,
-            DirectoryOf(provider.GetCommandPath("dotnet")),
-            DirectoryOf(provider.GetCommandPath("dotnetup")));
+            ExecutablePathResolver.ResolveRealDirectory(provider.GetCommandPath("dotnet")),
+            ExecutablePathResolver.ResolveRealDirectory(provider.GetCommandPath("dotnetup")));
     }
-
-    private static void UpdateFlags(bool want, bool have, ref bool needsAdditions, ref bool needsRemovals)
-    {
-        if (want && !have)
-        {
-            needsAdditions = true;
-        }
-        else if (!want && have)
-        {
-            needsRemovals = true;
-        }
-    }
-
-    private static string? DirectoryOf(string? executablePath)
-        => string.IsNullOrEmpty(executablePath) ? null : Path.GetDirectoryName(Path.GetFullPath(executablePath));
 }

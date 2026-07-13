@@ -28,10 +28,10 @@ internal sealed class TestShellProvider : IEnvShellProvider
     Encoding IEnvShellProvider.NewFileEncoding
         => NewFileEncodingOverride ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
-    public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true) =>
+    public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true) =>
         includeDotnet
             ? $"export DOTNET_ROOT='{dotnetInstallPath}'"
-            : dotnetupDir is not null ? $"export PATH='{dotnetupDir}':$PATH" : "";
+            : !string.IsNullOrEmpty(dotnetupDir) ? $"export PATH='{dotnetupDir}':$PATH" : "";
 
     public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
 
@@ -42,21 +42,12 @@ internal sealed class TestShellProvider : IEnvShellProvider
             return ProfileEntryOverride;
         }
 
-        var flags = new List<string>();
-        if (includeDotnet)
-        {
-            flags.Add("--dotnet");
-        }
-        if (includeDotnetup)
-        {
-            flags.Add("--dotnetup");
-        }
-        if (includeDotnet && !string.IsNullOrEmpty(dotnetInstallPath))
-        {
-            flags.Add($"--dotnet-install-path '{dotnetInstallPath}'");
-        }
-
-        return $"eval \"$('{dotnetupPath}' env script --shell test {string.Join(" ", flags)})\"";
+        // Reuse the production flag builder so this double can't drift from the real
+        // --dotnet / --dotnetup / --dotnet-install-path composition (including the
+        // default-path suppression). Only the surrounding eval wrapper is test-specific.
+        var flags = ShellProviderHelpers.GetCommandFlags(includeDotnet, includeDotnetup, dotnetInstallPath, ShellProviderHelpers.EscapePosixPath);
+        var command = ShellProviderHelpers.AppendArguments($"'{dotnetupPath}' env script --shell test", flags);
+        return $"eval \"$({command})\"";
     }
 
     public string GenerateActivationCommand(string dotnetupPath)

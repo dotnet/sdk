@@ -9,7 +9,7 @@ internal static class EnvShowCommandParser
 {
     public static Command ConstructCommand()
     {
-        Command command = new("show", "Show the configured env mode and report any detected drift.");
+        Command command = new("show", Strings.EnvShowCommandDescription);
         command.Options.Add(CommonOptions.ShellOption);
         command.SetAction(parseResult => new EnvShowCommand(parseResult).Execute());
         return command;

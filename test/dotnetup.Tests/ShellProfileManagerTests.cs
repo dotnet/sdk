@@ -719,65 +719,6 @@ public class ShellProfileManagerTests : IDisposable
         File.ReadAllText(path2).Should().Contain(ShellProfileManager.BeginMarkerComment);
     }
 
-    /// <summary>
-    /// Test-only shell provider that targets files in the temp directory.
-    /// </summary>
-    private sealed class TestShellProvider : IEnvShellProvider
-    {
-        private readonly string[] _profilePaths;
-
-        public TestShellProvider(string dir, params string[] fileNames)
-        {
-            _profilePaths = fileNames.Select(f => Path.Combine(dir, f)).ToArray();
-        }
-
-        public string ArgumentName => "test";
-        public string Extension => "sh";
-        public string? HelpDescription => null;
-        public string? ProfileEntryOverride { get; init; }
-        public Encoding? NewFileEncodingOverride { get; init; }
-
-        Encoding IEnvShellProvider.NewFileEncoding
-            => NewFileEncodingOverride ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-
-        public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true) =>
-            includeDotnet
-                ? $"export DOTNET_ROOT='{dotnetInstallPath}'"
-                : !string.IsNullOrEmpty(dotnetupDir) ? $"export PATH='{dotnetupDir}':$PATH" : "";
-
-        public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
-
-        public string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
-        {
-            if (ProfileEntryOverride is not null)
-            {
-                return ProfileEntryOverride;
-            }
-
-            var flags = new List<string>();
-            if (includeDotnet)
-            {
-                flags.Add("--dotnet");
-            }
-
-            if (includeDotnetup)
-            {
-                flags.Add("--dotnetup");
-            }
-
-            if (includeDotnet && !string.IsNullOrEmpty(dotnetInstallPath))
-            {
-                flags.Add($"--dotnet-install-path '{dotnetInstallPath}'");
-            }
-
-            string joinedFlags = flags.Count == 0 ? string.Empty : " " + string.Join(" ", flags);
-            return $"eval \"$('{dotnetupPath}' env script --shell test{joinedFlags})\"";
-        }
-
-        public string GenerateActivationCommand(string dotnetupPath)
-            => $"eval \"$('{dotnetupPath}' env script)\"";
-    }
-
     private static void AssertUsesOnlyCrLfLineEndings(string content)
     {
         content.Should().Contain("\r\n");

@@ -31,8 +31,13 @@ internal class EnvShowCommand : CommandBase
         }
 
         Console.WriteLine(Strings.EnvShowHeader);
-        Console.WriteLine($"  {Strings.EnvShowLabelDotnetAccess,-18}{config.AccessMode.ToString().ToLowerInvariant()}");
-        Console.WriteLine($"  {Strings.EnvShowLabelDotnetupOnPath,-18}{(config.DotnetupOnPath ? "true" : "false")}");
+
+        // Left-align the values in a single column whose width is derived from the widest
+        // (localizable) label plus a small gap, so the labels stay aligned in any language.
+        const int labelValueGap = 2;
+        int labelWidth = Math.Max(Strings.EnvShowLabelDotnetAccess.Length, Strings.EnvShowLabelDotnetupOnPath.Length) + labelValueGap;
+        Console.WriteLine($"  {Strings.EnvShowLabelDotnetAccess.PadRight(labelWidth)}{config.AccessMode.ToString().ToLowerInvariant()}");
+        Console.WriteLine($"  {Strings.EnvShowLabelDotnetupOnPath.PadRight(labelWidth)}{(config.DotnetupOnPath ? "true" : "false")}");
 
         IEnvShellProvider? shellProvider = _shellProvider ?? ShellDetection.GetCurrentShellProvider();
         ObservedEnvironmentState observed = _inspector.Inspect(shellProvider);

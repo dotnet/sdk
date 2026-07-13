@@ -13,7 +13,7 @@ internal static class EnvCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("env", "Manage the dotnetup environment configuration (PATH and DOTNET_ROOT wiring).");
+        Command command = new("env", Strings.EnvCommandDescription);
 
         command.Subcommands.Add(EnvSetCommandParser.ConstructCommand());
         command.Subcommands.Add(EnvClearCommandParser.ConstructCommand());

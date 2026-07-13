@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -30,7 +31,8 @@ internal class EnvSetCommand : CommandBase
         DotnetupConfigData? previous = DotnetupConfig.Read();
 
         // Resolve the dotnet-access mode: explicit argument wins, otherwise re-apply the
-        // stored mode. With neither, there is nothing to apply.
+        // stored mode. With neither, there is nothing to apply — distinguish "no config" from
+        // "config present but unreadable" so the error tells the user what is actually wrong.
         DotnetAccessMode targetEnv;
         if (_modeArg is DotnetAccessMode mode)
         {
@@ -40,18 +42,25 @@ internal class EnvSetCommand : CommandBase
         {
             targetEnv = storedEnv;
         }
+        else if (DotnetupConfig.Exists())
+        {
+            // A config file exists but could not be read (Read already warned about the corruption).
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UserConfigurationCorrupted,
+                Strings.EnvSetConfigUnreadable);
+        }
         else
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InvalidArguments,
-                Strings.EnvSetNoModeSpecified);
+                Strings.EnvSetNoStoredConfig);
         }
 
-        if (targetEnv == DotnetAccessMode.Everywhere && !OperatingSystem.IsWindows())
+        if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(targetEnv))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                Strings.EnvSetEverywhereModeWindowsOnly);
+                string.Format(CultureInfo.InvariantCulture, Strings.EnvModeWindowsOnly, targetEnv.ToString().ToLowerInvariant()));
         }
 
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.

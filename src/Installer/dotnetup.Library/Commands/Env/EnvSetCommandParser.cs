@@ -3,36 +3,36 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Globalization;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 internal static class EnvSetCommandParser
 {
-    private readonly record struct ModeOption(string Token, DotnetAccessMode Mode, bool WindowsOnly);
-
-    // Single source of truth tying each CLI token to its DotnetAccessMode.
-    private static readonly ModeOption[] s_modes =
-    [
-        new("none", DotnetAccessMode.None, WindowsOnly: false),
-        new("shell", DotnetAccessMode.Shell, WindowsOnly: false),
-        new("everywhere", DotnetAccessMode.Everywhere, WindowsOnly: true),
-    ];
+    // The dotnet-access modes. CLI tokens are derived from the enum names (lowercased),
+    // so the enum stays the single source of truth for the set of modes.
+    private static readonly DotnetAccessMode[] s_modes = Enum.GetValues<DotnetAccessMode>();
 
     private static readonly string[] s_supportedModes = s_modes
-        .Where(m => !m.WindowsOnly || OperatingSystem.IsWindows())
-        .Select(m => m.Token)
+        .Where(DotnetAccessModePolicy.IsSupportedOnCurrentPlatform)
+        .Select(ToToken)
         .ToArray();
 
     public static readonly Argument<DotnetAccessMode?> ModeArgument = CreateModeArgument();
 
     public static readonly Option<bool?> DotnetupOnPathOption = CreateDotnetupOnPathOption();
 
+    private static string ToToken(DotnetAccessMode mode) => mode.ToString().ToLowerInvariant();
+
     private static Argument<DotnetAccessMode?> CreateModeArgument()
     {
         var argument = new Argument<DotnetAccessMode?>("mode")
         {
             HelpName = "MODE",
-            Description = $"The dotnet access mode: {string.Join(", ", s_supportedModes.Select(m => $"'{m}'"))}. Omit to re-apply the stored mode.",
+            Description = string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.EnvSetModeArgumentDescription,
+                string.Join(", ", s_supportedModes.Select(m => $"'{m}'"))),
             Arity = ArgumentArity.ZeroOrOne,
             CustomParser = ParseMode,
         };
@@ -48,22 +48,26 @@ internal static class EnvSetCommandParser
         }
 
         var token = result.Tokens[0].Value.ToLowerInvariant();
-        foreach (var option in s_modes)
+        foreach (var mode in s_modes)
         {
-            if (!string.Equals(option.Token, token, StringComparison.Ordinal))
+            if (!string.Equals(ToToken(mode), token, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            if (option.WindowsOnly && !OperatingSystem.IsWindows())
+            if (DotnetAccessModePolicy.RequiresWindows(mode) && !OperatingSystem.IsWindows())
             {
-                return ModeError(result, $"'{token}' mode is only supported on Windows. Use 'shell' on this platform.");
+                return ModeError(result, string.Format(CultureInfo.InvariantCulture, Strings.EnvModeWindowsOnly, token));
             }
 
-            return option.Mode;
+            return mode;
         }
 
-        return ModeError(result, $"Unknown env mode '{token}'. Expected one of: {string.Join(", ", s_supportedModes)}.");
+        return ModeError(result, string.Format(
+            CultureInfo.InvariantCulture,
+            Strings.EnvSetUnknownMode,
+            token,
+            string.Join(", ", s_supportedModes)));
     }
 
     private static DotnetAccessMode? ModeError(ArgumentResult result, string message)
@@ -78,7 +82,7 @@ internal static class EnvSetCommandParser
     {
         var option = new Option<bool?>("--dotnetup-on-path")
         {
-            Description = "Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.",
+            Description = Strings.EnvSetDotnetupOnPathOptionDescription,
             HelpName = "true|false",
             Arity = ArgumentArity.ExactlyOne,
         };
@@ -88,7 +92,7 @@ internal static class EnvSetCommandParser
 
     public static Command ConstructCommand()
     {
-        Command command = new("set", "Apply (or re-sync) the configured env settings.");
+        Command command = new("set", Strings.EnvSetCommandDescription);
         command.Arguments.Add(ModeArgument);
         command.Options.Add(DotnetupOnPathOption);
         command.Options.Add(CommonOptions.ShellOption);

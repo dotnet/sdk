@@ -56,6 +56,16 @@ Or open a new terminal.</source>
 Or open a new terminal.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnvClearCommandDescription">
+        <source>Remove all dotnetup environment wiring (equivalent to 'env set none --dotnetup-on-path false').</source>
+        <target state="new">Remove all dotnetup environment wiring (equivalent to 'env set none --dotnetup-on-path false').</target>
+        <note>{Locked="env set none --dotnetup-on-path false"}</note>
+      </trans-unit>
+      <trans-unit id="EnvCommandDescription">
+        <source>Manage the dotnetup environment configuration (PATH and DOTNET_ROOT wiring).</source>
+        <target state="new">Manage the dotnetup environment configuration (PATH and DOTNET_ROOT wiring).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EnvDriftDotnetupOnPathMissing">
         <source>dotnetup is configured to be on PATH but is missing from the user PATH.</source>
         <target state="new">dotnetup is configured to be on PATH but is missing from the user PATH.</target>
@@ -84,6 +94,21 @@ Or open a new terminal.</target>
       <trans-unit id="EnvDriftProfileBlockUnexpected">
         <source>Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</source>
         <target state="new">Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvElevationCancelled">
+        <source>Elevation was cancelled. The system PATH was not modified.</source>
+        <target state="new">Elevation was cancelled. The system PATH was not modified.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvModeWindowsOnly">
+        <source>'{0}' mode is only supported on Windows. Use 'shell' on this platform.</source>
+        <target state="new">'{0}' mode is only supported on Windows. Use 'shell' on this platform.</target>
+        <note>{Locked="shell"}</note>
+      </trans-unit>
+      <trans-unit id="EnvOpenNewTerminalForOtherSurfaces">
+        <source>Open a new terminal for the change to take effect in other terminals and applications.</source>
+        <target state="new">Open a new terminal for the change to take effect in other terminals and applications.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvOpenNewTerminalToTakeEffect">
@@ -129,7 +154,7 @@ Or open a new terminal.</target>
       <trans-unit id="EnvScriptDotnetupOnlyConflict">
         <source>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</source>
         <target state="new">--dotnetup-only cannot be combined with --dotnet or --dotnetup.</target>
-        <note />
+        <note>{Locked="--dotnetup-only"}{Locked="--dotnet"}{Locked="--dotnetup"}</note>
       </trans-unit>
       <trans-unit id="EnvScriptDotnetupOnlyOptionDescription">
         <source>Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</source>
@@ -154,12 +179,12 @@ Or open a new terminal.</target>
       <trans-unit id="EnvScriptSpecifyShell">
         <source>Please specify the shell using --shell option.</source>
         <target state="new">Please specify the shell using --shell option.</target>
-        <note />
+        <note>{Locked="--shell"}</note>
       </trans-unit>
       <trans-unit id="EnvScriptSpecifyShellWithSupported">
         <source>Please specify the shell using --shell option. Supported shells: {0}</source>
         <target state="new">Please specify the shell using --shell option. Supported shells: {0}</target>
-        <note />
+        <note>{Locked="--shell"}</note>
       </trans-unit>
       <trans-unit id="EnvScriptSupportedShells">
         <source>Supported shells: {0}</source>
@@ -176,19 +201,49 @@ Or open a new terminal.</target>
         <target state="new">Unsupported shell '{0}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="EnvSetEverywhereModeWindowsOnly">
-        <source>'everywhere' mode is only supported on Windows. Use 'shell' on this platform.</source>
-        <target state="new">'everywhere' mode is only supported on Windows. Use 'shell' on this platform.</target>
+      <trans-unit id="EnvSetCommandDescription">
+        <source>Apply (or re-sync) the configured env settings.</source>
+        <target state="new">Apply (or re-sync) the configured env settings.</target>
         <note />
       </trans-unit>
-      <trans-unit id="EnvSetNoModeSpecified">
-        <source>No env mode specified and none is stored. Specify a mode: none, shell, or full.</source>
-        <target state="new">No env mode specified and none is stored. Specify a mode: none, shell, or full.</target>
+      <trans-unit id="EnvSetConfigUnreadable">
+        <source>No mode specified and the existing configuration could not be read. Specify a mode explicitly: none, shell, or everywhere.</source>
+        <target state="new">No mode specified and the existing configuration could not be read. Specify a mode explicitly: none, shell, or everywhere.</target>
+        <note>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</note>
+      </trans-unit>
+      <trans-unit id="EnvSetDotnetupOnPathOptionDescription">
+        <source>Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</source>
+        <target state="new">Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</target>
+        <note>{Locked="true"}{Locked="false"}</note>
+      </trans-unit>
+      <trans-unit id="EnvSetModeArgumentDescription">
+        <source>The dotnet access mode: {0}. Omit to re-apply the stored mode.</source>
+        <target state="new">The dotnet access mode: {0}. Omit to re-apply the stored mode.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="EnvSetNoStoredConfig">
+        <source>No mode specified and no stored configuration to re-apply. Specify a mode: none, shell, or everywhere.</source>
+        <target state="new">No mode specified and no stored configuration to re-apply. Specify a mode: none, shell, or everywhere.</target>
+        <note>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</note>
+      </trans-unit>
+      <trans-unit id="EnvSetUnknownMode">
+        <source>Unknown env mode '{0}'. Expected one of: {1}.</source>
+        <target state="new">Unknown env mode '{0}'. Expected one of: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShellRequiredForProfile">
+        <source>Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell &lt;{0}&gt; to specify it explicitly.</source>
+        <target state="new">Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell &lt;{0}&gt; to specify it explicitly.</target>
+        <note>{Locked="--shell"}</note>
       </trans-unit>
       <trans-unit id="EnvShowApplyToTerminalPrompt">
         <source>To apply it to this terminal now, run:</source>
         <target state="new">To apply it to this terminal now, run:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowCommandDescription">
+        <source>Show the configured env mode and report any detected drift.</source>
+        <target state="new">Show the configured env mode and report any detected drift.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvShowDriftHeader">

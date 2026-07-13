@@ -244,20 +244,18 @@ remove `dotnetup` from `PATH`** — it removes the Unix profile line and the Win
 
 No `schemaVersion` bump. Builds have shipped **internally** with the original shape
 (`pathPreference` + the pre-rename enum spellings `DotnetupDotnet` / `ShellProfile` /
-`FullPathReplacement`), so existing internal configs must keep working. Rather than a
-versioned migration, the reader tolerates the legacy shape (a read-compatibility shim):
+`FullPathReplacement`). No config files have shipped publicly, so rather than a migration the
+reader simply does not honor the legacy shape:
 
-- Accept the legacy `pathPreference` property name as an alias for `accessMode` (prefer `accessMode`
-  when both are present).
-- Accept the legacy enum spellings and map them: `DotnetupDotnet → none`,
-  `ShellProfile → shell`, `FullPathReplacement → everywhere`.
+- The legacy `pathPreference` property name is ignored (an unknown property does not crash), so
+  `accessMode` falls back to its default (`shell`).
+- Only the current `accessMode` values `none` / `shell` / `everywhere` (case-insensitive) are
+  accepted; a pre-rename enum spelling is treated as a corrupt value.
 - A missing `dotnetupOnPath` defaults to `true`.
 
-This preserves internal users' chosen mode across the upgrade and avoids the spurious
-"config appears to be corrupted" warning that a renamed enum value would otherwise
-trigger. The next write rewrites the file in the new shape, so the legacy form naturally
-ages out. Because the shim handles continuity, `schemaVersion` stays `"1"`; a bump would
-only be warranted if we chose explicit versioned migration instead.
+Either way, the next write rewrites the file in the new shape, so a handful of internal configs
+re-default once instead of carrying a stream-manipulating compatibility shim indefinitely. Because
+no config files have shipped publicly, `schemaVersion` stays `"1"`.
 
 ### Command UI (recommended)
 
@@ -379,10 +377,10 @@ dotnet env-var wiring lives).
    `dotnetup-` prefix usefully signals it's about dotnetup itself rather than dotnet.
    (`--self-on-path <true|false>` was considered as a terser form; rejected for being more
    jargon-y.)
-3. **Config rename** *(resolved)*: rename `pathPreference` → `accessMode`, with the
-   read-compatibility shim above to preserve internal users' configs. The legacy shim is
-   kept **permanently for now**; we can revisit removing
-   it later if it ever becomes a maintenance burden.
+3. **Config rename** *(resolved)*: rename `pathPreference` → `accessMode`. The legacy shape is not
+   carried forward: the old `pathPreference` property name is ignored and the pre-rename enum
+   spellings are not accepted. Since only internal preview builds wrote them, an old config simply
+   re-defaults to `shell` on the next write rather than requiring a compatibility shim.
 4. **Init prompt** *(resolved)*: keep the silent default `dotnetupOnPath = true`. We are
    **not** touching the init walkthrough UI in this PR; a dedicated prompt can be added
    later (likely will be), but it's out of scope here.

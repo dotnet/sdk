@@ -86,12 +86,8 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     }
 
     internal static string ResolveCurrentInstallRootPath(string dotnetExecutablePath)
-    {
-        string fullPath = Path.GetFullPath(dotnetExecutablePath);
-        string resolvedExecutablePath = Microsoft.DotNet.NativeWrapper.FileInterop.ResolveRealPath(fullPath) ?? fullPath;
-        return Path.GetDirectoryName(resolvedExecutablePath)
+        => ExecutablePathResolver.ResolveRealDirectory(dotnetExecutablePath)
             ?? throw new InvalidOperationException($"Unable to determine the install root for '{dotnetExecutablePath}'.");
-    }
 
     public string? GetLatestInstalledSystemVersion()
     {
@@ -287,28 +283,16 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                     }
 
                     var userChanges = installRootManager.GetUserInstallRootChanges();
-                    bool succeeded = InstallRootManager.ApplyUserInstallRoot(
+                    InstallRootManager.ApplyUserInstallRoot(
                         userChanges,
-                        AnsiConsole.WriteLine,
-                        msg => AnsiConsole.MarkupLine(DotnetupTheme.Error(msg)));
-
-                    if (!succeeded)
-                    {
-                        throw new InvalidOperationException("Failed to configure user install root.");
-                    }
+                        AnsiConsole.MarkupLine);
                     break;
 
                 case InstallType.System:
                     var adminChanges = installRootManager.GetAdminInstallRootChanges();
-                    bool adminSucceeded = InstallRootManager.ApplyAdminInstallRoot(
+                    InstallRootManager.ApplyAdminInstallRoot(
                         adminChanges,
-                        AnsiConsole.WriteLine,
-                        msg => AnsiConsole.MarkupLine(DotnetupTheme.Error(msg)));
-
-                    if (!adminSucceeded)
-                    {
-                        throw new InvalidOperationException("Failed to configure system install root.");
-                    }
+                        AnsiConsole.MarkupLine);
                     break;
 
                 default:

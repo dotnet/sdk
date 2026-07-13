@@ -7,46 +7,16 @@ using System.Text.Json.Serialization;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Serializes <see cref="DotnetAccessMode"/> as the lowercase names <c>none</c> / <c>shell</c> /
-/// <c>everywhere</c>, and on read also accepts the legacy enum spellings that shipped in internal
-/// builds (<c>DotnetupDotnet</c> / <c>ShellProfile</c> / <c>FullPathReplacement</c> / <c>full</c>) and the
-/// numeric form. This is the read-compatibility shim that lets configs written by earlier
-/// internal builds keep their chosen mode after the rename; see the design doc
-/// (documentation/general/dotnetup/designs/dotnetup-env.md, "Config schema").
+/// Serializes <see cref="DotnetAccessMode"/> as its lowercase name (<c>none</c> / <c>shell</c> /
+/// <c>everywhere</c>) via the built-in string-enum converter with the camel-case naming policy.
+/// Integer values are not accepted, and any unrecognized string is surfaced as a corrupt config by
+/// the caller. See the design doc (documentation/general/dotnetup/designs/dotnetup-env.md,
+/// "Config schema").
 /// </summary>
-internal sealed class DotnetAccessModeJsonConverter : JsonConverter<DotnetAccessMode>
+internal sealed class DotnetAccessModeJsonConverter : JsonStringEnumConverter<DotnetAccessMode>
 {
-    public override DotnetAccessMode Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public DotnetAccessModeJsonConverter()
+        : base(JsonNamingPolicy.CamelCase, allowIntegerValues: false)
     {
-        if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out int numeric))
-        {
-            var numericMode = (DotnetAccessMode)numeric;
-            if (!Enum.IsDefined(numericMode))
-            {
-                throw new JsonException($"Unknown {nameof(DotnetAccessMode)} numeric value '{numeric}'.");
-            }
-
-            return numericMode;
-        }
-
-        string? value = reader.GetString();
-        return value?.ToLowerInvariant() switch
-        {
-            "none" or "dotnetupdotnet" => DotnetAccessMode.None,
-            "shell" or "shellprofile" => DotnetAccessMode.Shell,
-            "everywhere" or "full" or "fullpathreplacement" => DotnetAccessMode.Everywhere,
-            _ => throw new JsonException($"Unknown {nameof(DotnetAccessMode)} value '{value}'."),
-        };
-    }
-
-    public override void Write(Utf8JsonWriter writer, DotnetAccessMode value, JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            DotnetAccessMode.None => "none",
-            DotnetAccessMode.Shell => "shell",
-            DotnetAccessMode.Everywhere => "everywhere",
-            _ => throw new JsonException($"Unknown {nameof(DotnetAccessMode)} value '{value}'."),
-        });
     }
 }

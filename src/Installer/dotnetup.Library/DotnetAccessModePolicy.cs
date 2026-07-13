@@ -23,4 +23,19 @@ internal static class DotnetAccessModePolicy
     /// </summary>
     public static bool ShouldPromptToConvertSystemInstalls(DotnetAccessMode accessMode) =>
         accessMode != DotnetAccessMode.None;
+
+    /// <summary>
+    /// Returns true when the mode can only be applied on Windows. <see cref="DotnetAccessMode.Everywhere"/>
+    /// edits user-level env-var PATH/DOTNET_ROOT, which dotnetup only manages on Windows today. This is
+    /// the single source of truth for the platform constraint — every entry point that validates a mode
+    /// should consult it rather than re-deriving the assumption.
+    /// </summary>
+    public static bool RequiresWindows(DotnetAccessMode accessMode) =>
+        accessMode is DotnetAccessMode.Everywhere;
+
+    /// <summary>
+    /// Returns true when the mode can be applied on the current platform.
+    /// </summary>
+    public static bool IsSupportedOnCurrentPlatform(DotnetAccessMode accessMode) =>
+        !RequiresWindows(accessMode) || OperatingSystem.IsWindows();
 }

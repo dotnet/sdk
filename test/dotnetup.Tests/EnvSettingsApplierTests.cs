@@ -48,9 +48,9 @@ public class EnvSettingsApplierTests : IDisposable
     private static ObservedEnvironmentState Observed(
         bool dotnetEnvVarsPresent = false,
         bool dotnetEnvVarsComplete = false,
-        bool? profileBlockPresent = null,
+        ProfileBlockState profileBlock = ProfileBlockState.Unknown,
         bool dotnetupOnUserPath = false)
-        => new(dotnetEnvVarsPresent, dotnetEnvVarsComplete, profileBlockPresent, dotnetupOnUserPath);
+        => new(dotnetEnvVarsPresent, dotnetEnvVarsComplete, profileBlock, dotnetupOnUserPath);
 
     // ── dotnetup-on-PATH is always applied (idempotent) ──
 
@@ -124,7 +124,7 @@ public class EnvSettingsApplierTests : IDisposable
     {
         EnvSettingsApplier.Apply(
             DotnetAccessMode.Shell, targetDotnetupOnPath: true,
-            Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlockPresent: true),
+            Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlock: ProfileBlockState.Present),
             _env, DotnetRoot, _shellProvider);
 
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(1);  // env-var removal
@@ -139,7 +139,7 @@ public class EnvSettingsApplierTests : IDisposable
 
         EnvSettingsApplier.Apply(
             DotnetAccessMode.None, targetDotnetupOnPath: false,
-            Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlockPresent: true),
+            Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlock: ProfileBlockState.Present),
             _env, DotnetRoot, _shellProvider);
 
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(1);
@@ -154,7 +154,7 @@ public class EnvSettingsApplierTests : IDisposable
 
         EnvSettingsApplier.Apply(
             DotnetAccessMode.None, targetDotnetupOnPath: false,
-            Observed(profileBlockPresent: true),
+            Observed(profileBlock: ProfileBlockState.Present),
             _env, DotnetRoot, _shellProvider);
 
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
@@ -168,7 +168,7 @@ public class EnvSettingsApplierTests : IDisposable
         // the block as dotnetup-only.
         EnvSettingsApplier.Apply(
             DotnetAccessMode.None, targetDotnetupOnPath: true,
-            Observed(profileBlockPresent: true),
+            Observed(profileBlock: ProfileBlockState.Present),
             _env, DotnetRoot, _shellProvider);
 
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(1);
@@ -187,7 +187,7 @@ public class EnvSettingsApplierTests : IDisposable
 
         EnvSettingsApplier.Apply(
             DotnetAccessMode.None, targetDotnetupOnPath: false,
-            Observed(profileBlockPresent: true),
+            Observed(profileBlock: ProfileBlockState.Present),
             _env, DotnetRoot, _shellProvider);
 
         ProfileHasManagedBlock().Should().BeFalse();
@@ -199,7 +199,7 @@ public class EnvSettingsApplierTests : IDisposable
         // Nothing observed and nothing targeted: the removal branch must not run.
         EnvSettingsApplier.Apply(
             DotnetAccessMode.None, targetDotnetupOnPath: false,
-            Observed(profileBlockPresent: false),
+            Observed(profileBlock: ProfileBlockState.Absent),
             _env, DotnetRoot, _shellProvider);
 
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
@@ -247,20 +247,6 @@ public class EnvSettingsApplierTests : IDisposable
         {
             Environment.SetEnvironmentVariable("SHELL", originalShell);
         }
-    }
-
-    [TestMethod]
-    public void ArgumentNullException_When_EnvironmentIsNull()
-    {
-        Action act = () => EnvSettingsApplier.Apply(DotnetAccessMode.None, false, ObservedEnvironmentState.Empty, environment: null!, DotnetRoot, _shellProvider);
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
-    public void ArgumentNullException_When_ObservedIsNull()
-    {
-        Action act = () => EnvSettingsApplier.Apply(DotnetAccessMode.None, false, observed: null!, _env, DotnetRoot, _shellProvider);
-        act.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]

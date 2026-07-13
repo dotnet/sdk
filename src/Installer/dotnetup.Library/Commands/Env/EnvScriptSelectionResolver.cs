@@ -14,11 +14,25 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 /// </summary>
 internal static class EnvScriptSelectionResolver
 {
-    public static EnvScriptSelection Resolve(bool dotnet, bool dotnetup, bool dotnetupOnly, DotnetupConfigData? config)
+    /// <param name="dotnetRequested">
+    /// True when <c>--dotnet</c> was passed. False means "not explicitly requested" (not
+    /// "exclude dotnet"): when neither this nor <paramref name="dotnetupRequested"/> is set, the
+    /// stored config decides.
+    /// </param>
+    /// <param name="dotnetupRequested">
+    /// True when <c>--dotnetup</c> was passed. False means "not explicitly requested" (not
+    /// "exclude dotnetup"); see <paramref name="dotnetRequested"/>.
+    /// </param>
+    /// <param name="dotnetupOnly">
+    /// True when <c>--dotnetup-only</c> was passed: wire only dotnetup, never dotnet. Cannot be
+    /// combined with <paramref name="dotnetRequested"/> or <paramref name="dotnetupRequested"/>.
+    /// </param>
+    /// <param name="config">The stored config, or <c>null</c> when none exists yet.</param>
+    public static EnvScriptSelection Resolve(bool dotnetRequested, bool dotnetupRequested, bool dotnetupOnly, DotnetupConfigData? config)
     {
         if (dotnetupOnly)
         {
-            if (dotnet || dotnetup)
+            if (dotnetRequested || dotnetupRequested)
             {
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.InvalidArguments,
@@ -28,9 +42,9 @@ internal static class EnvScriptSelectionResolver
             return new EnvScriptSelection(IncludeDotnet: false, IncludeDotnetup: true);
         }
 
-        if (dotnet || dotnetup)
+        if (dotnetRequested || dotnetupRequested)
         {
-            return new EnvScriptSelection(IncludeDotnet: dotnet, IncludeDotnetup: dotnetup);
+            return new EnvScriptSelection(IncludeDotnet: dotnetRequested, IncludeDotnetup: dotnetupRequested);
         }
 
         // No selection flags: use the stored config if present, otherwise wire both.

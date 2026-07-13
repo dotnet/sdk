@@ -27,12 +27,12 @@ internal static class EnvSettingsWriter
 
         // Removal decisions come from the live environment, not the stored config, so drift is
         // corrected on re-sync.
-        ObservedEnvironmentState observed = inspector.Inspect(resolvedShellProvider);
+        ObservedEnvironmentState observedBefore = inspector.Inspect(resolvedShellProvider);
 
         EnvSettingsApplier.Apply(
             targetEnv,
             targetDotnetupOnPath,
-            observed,
+            observedBefore,
             environment,
             dotnetRoot,
             resolvedShellProvider);
@@ -46,23 +46,48 @@ internal static class EnvSettingsWriter
 
         Console.WriteLine(DescribeOutcome(targetEnv, targetDotnetupOnPath));
 
+        // Whether the apply actually wrote anything to the persisted environment (profile block,
+        // Windows user/system PATH, DOTNET_ROOT). Used to decide whether other terminals / cmd.exe
+        // / GUI apps need to be relaunched — and to avoid a spurious reminder on an idempotent re-run.
+        bool changedPersistedEnvironment = inspector.Inspect(resolvedShellProvider) != observedBefore;
+
         EnvTerminalState terminalState = EnvActivationStatus.EvaluateCurrentProcess(newConfig, environment);
+
+        // `eval`-ing the script won't remove existing paths, so don't suggest it when removals are needed.
+        string? activationCommand = !terminalState.IsActive && !terminalState.NeedsRemovals
+            ? EnvActivationCommandBuilder.TryBuild(resolvedShellProvider, targetEnv, targetDotnetupOnPath)
+            : null;
+
+        string? effectMessage = BuildEffectMessage(terminalState, changedPersistedEnvironment, activationCommand);
+        if (effectMessage is not null)
+        {
+            Console.WriteLine(effectMessage);
+        }
+    }
+
+    /// <summary>
+    /// Decides which "how to make this effective" message to print after applying env settings, or
+    /// <c>null</c> when none is needed. Kept pure (no IO) so the branching is unit-testable:
+    /// <list type="bullet">
+    ///   <item>Current terminal not active: offer the activation command if we have one, otherwise
+    ///     tell the user to open a new terminal.</item>
+    ///   <item>Current terminal already active but the apply changed persisted state: the change is
+    ///     live here, but other terminals / cmd.exe / GUI apps won't see it until they relaunch.</item>
+    ///   <item>Current terminal active and nothing changed (idempotent re-run): no message.</item>
+    /// </list>
+    /// </summary>
+    internal static string? BuildEffectMessage(EnvTerminalState terminalState, bool changedPersistedEnvironment, string? activationCommand)
+    {
         if (!terminalState.IsActive)
         {
-            // `eval`-ing the script won't remove existing paths, so don't suggest it in that case
-            string? activationCommand = terminalState.NeedsRemovals
-                ? null
-                : EnvActivationCommandBuilder.TryBuild(resolvedShellProvider, targetEnv, targetDotnetupOnPath);
-
-            if (activationCommand is not null)
-            {
-                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.EnvApplyToTerminalPrompt, activationCommand));
-            }
-            else
-            {
-                Console.WriteLine(Strings.EnvOpenNewTerminalToTakeEffect);
-            }
+            return activationCommand is not null
+                ? string.Format(CultureInfo.InvariantCulture, Strings.EnvApplyToTerminalPrompt, activationCommand)
+                : Strings.EnvOpenNewTerminalToTakeEffect;
         }
+
+        return changedPersistedEnvironment
+            ? Strings.EnvOpenNewTerminalForOtherSurfaces
+            : null;
     }
 
     /// <summary>

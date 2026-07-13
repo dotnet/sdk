@@ -9,7 +9,7 @@ internal static class EnvClearCommandParser
 {
     public static Command ConstructCommand()
     {
-        Command command = new("clear", "Remove all dotnetup environment wiring (equivalent to 'env set none --dotnetup-on-path false').");
+        Command command = new("clear", Strings.EnvClearCommandDescription);
         command.Options.Add(CommonOptions.ShellOption);
         command.SetAction(parseResult => new EnvClearCommand(parseResult).Execute());
         return command;

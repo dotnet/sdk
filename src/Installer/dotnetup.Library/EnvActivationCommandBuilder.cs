@@ -9,12 +9,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// Builds the paste-able shell command that activates the configured env state in the
 /// <em>current</em> terminal (e.g. <c>eval "$(dotnetup env script)"</c>), by delegating to the
 /// detected shell provider's <see cref="IEnvShellProvider.GenerateActivationCommand"/>. The
-/// generated <c>env script</c> call carries no flags — it follows the stored config and auto-detects
-/// the shell at run time, which (because the command is offered right after the config is written /
-/// from the current config) reproduces the configured state. Returns <c>null</c> when there is
-/// nothing to activate (no shell detected, or the config wires neither dotnet nor dotnetup) — the
-/// activation command can only add managed directories to the session, so a pure removal has no
-/// command to offer.
+/// generated <c>env script</c> call carries no flags so the settings from the stored config
+/// are used.
 /// </summary>
 internal static class EnvActivationCommandBuilder
 {

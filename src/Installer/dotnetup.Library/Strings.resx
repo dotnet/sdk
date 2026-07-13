@@ -282,11 +282,50 @@ Or open a new terminal.</value>
   <data name="EnvOpenNewTerminalToTakeEffect" xml:space="preserve">
     <value>Open a new terminal for the change to take effect.</value>
   </data>
-  <data name="EnvSetNoModeSpecified" xml:space="preserve">
-    <value>No env mode specified and none is stored. Specify a mode: none, shell, or full.</value>
+  <data name="EnvOpenNewTerminalForOtherSurfaces" xml:space="preserve">
+    <value>Open a new terminal for the change to take effect in other terminals and applications.</value>
   </data>
-  <data name="EnvSetEverywhereModeWindowsOnly" xml:space="preserve">
-    <value>'everywhere' mode is only supported on Windows. Use 'shell' on this platform.</value>
+  <data name="EnvShellRequiredForProfile" xml:space="preserve">
+    <value>Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell &lt;{0}&gt; to specify it explicitly.</value>
+    <comment>{Locked="--shell"}</comment>
+  </data>
+  <data name="EnvElevationCancelled" xml:space="preserve">
+    <value>Elevation was cancelled. The system PATH was not modified.</value>
+  </data>
+  <data name="EnvSetNoStoredConfig" xml:space="preserve">
+    <value>No mode specified and no stored configuration to re-apply. Specify a mode: none, shell, or everywhere.</value>
+    <comment>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</comment>
+  </data>
+  <data name="EnvSetConfigUnreadable" xml:space="preserve">
+    <value>No mode specified and the existing configuration could not be read. Specify a mode explicitly: none, shell, or everywhere.</value>
+    <comment>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</comment>
+  </data>
+  <data name="EnvModeWindowsOnly" xml:space="preserve">
+    <value>'{0}' mode is only supported on Windows. Use 'shell' on this platform.</value>
+    <comment>{Locked="shell"}</comment>
+  </data>
+  <data name="EnvSetUnknownMode" xml:space="preserve">
+    <value>Unknown env mode '{0}'. Expected one of: {1}.</value>
+  </data>
+  <data name="EnvSetModeArgumentDescription" xml:space="preserve">
+    <value>The dotnet access mode: {0}. Omit to re-apply the stored mode.</value>
+  </data>
+  <data name="EnvSetDotnetupOnPathOptionDescription" xml:space="preserve">
+    <value>Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</value>
+    <comment>{Locked="true"}{Locked="false"}</comment>
+  </data>
+  <data name="EnvSetCommandDescription" xml:space="preserve">
+    <value>Apply (or re-sync) the configured env settings.</value>
+  </data>
+  <data name="EnvClearCommandDescription" xml:space="preserve">
+    <value>Remove all dotnetup environment wiring (equivalent to 'env set none --dotnetup-on-path false').</value>
+    <comment>{Locked="env set none --dotnetup-on-path false"}</comment>
+  </data>
+  <data name="EnvCommandDescription" xml:space="preserve">
+    <value>Manage the dotnetup environment configuration (PATH and DOTNET_ROOT wiring).</value>
+  </data>
+  <data name="EnvShowCommandDescription" xml:space="preserve">
+    <value>Show the configured env mode and report any detected drift.</value>
   </data>
   <data name="EnvDriftProfileBlockMissing" xml:space="preserve">
     <value>Shell profile is missing the dotnetup managed block.</value>
@@ -344,6 +383,7 @@ Or open a new terminal.</value>
   </data>
   <data name="EnvScriptSpecifyShellWithSupported" xml:space="preserve">
     <value>Please specify the shell using --shell option. Supported shells: {0}</value>
+    <comment>{Locked="--shell"}</comment>
   </data>
   <data name="EnvScriptUnsupportedShell" xml:space="preserve">
     <value>Error: Unsupported shell '{0}'.</value>
@@ -353,6 +393,7 @@ Or open a new terminal.</value>
   </data>
   <data name="EnvScriptSpecifyShell" xml:space="preserve">
     <value>Please specify the shell using --shell option.</value>
+    <comment>{Locked="--shell"}</comment>
   </data>
   <data name="EnvScriptShellNotSet" xml:space="preserve">
     <value>SHELL environment variable is not set; cannot detect shell.</value>
@@ -362,6 +403,7 @@ Or open a new terminal.</value>
   </data>
   <data name="EnvScriptDotnetupOnlyConflict" xml:space="preserve">
     <value>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</value>
+    <comment>{Locked="--dotnetup-only"}{Locked="--dotnet"}{Locked="--dotnetup"}</comment>
   </data>
   <data name="SummaryPrompt" xml:space="preserve">
     <value>Would you like to install .NET with the recommended settings?</value>

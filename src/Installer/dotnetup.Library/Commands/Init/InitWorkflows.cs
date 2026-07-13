@@ -286,7 +286,7 @@ internal class InitWorkflows
 
     private static DotnetAccessMode ValidateAccessMode(DotnetAccessMode accessMode)
     {
-        if (accessMode == DotnetAccessMode.Everywhere && !OperatingSystem.IsWindows())
+        if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(accessMode))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
