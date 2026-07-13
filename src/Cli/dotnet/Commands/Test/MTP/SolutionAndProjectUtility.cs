@@ -342,7 +342,9 @@ internal static class SolutionAndProjectUtility
         }
 
         // Create a ProjectCollection if one wasn't provided
-        using var ownedCollection = projectCollection is null ? new ProjectCollection(globalProperties) : null;
+        using var ownedCollection = projectCollection is null
+            ? new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default)
+            : null;
         var collection = projectCollection ?? ownedCollection!;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
