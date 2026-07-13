@@ -47,7 +47,7 @@
         },
         {
             "name": "aspire",
-            "defaultRemote": "https://github.com/dotnet/aspire",
+            "defaultRemote": "https://github.com/microsoft/aspire",
             "exclude": [
                 "src/Aspire.Dashboard/**/*",
                 "samples/**/*"
