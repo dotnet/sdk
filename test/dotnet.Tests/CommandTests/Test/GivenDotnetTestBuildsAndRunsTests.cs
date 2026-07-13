@@ -337,6 +337,37 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
+        public void RunMultipleTestProjectsWhereOneRanZeroTests_ShouldReturnExitCodeSuccess(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithZeroTestsAndPassingTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // One module matched no tests (its process returns exit code 8) while the other ran a passing
+                // test, so the whole run still executed one test and its verdict is a pass.
+                result.StdOut
+                    .Should().Contain("Exit code: 8")
+                    .And.Contain("Test run summary: Passed!")
+                    .And.Contain("total: 1")
+                    .And.Contain("succeeded: 1")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            // The empty module reports exit code 8 (ZeroTests) but is normalized to success at the aggregate
+            // level, and because the whole run executed at least one test the run-level zero-tests verdict does
+            // not apply either. The overall verdict is Success (microsoft/testfx#7457).
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
