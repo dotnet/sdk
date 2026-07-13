@@ -35,6 +35,7 @@
   <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
   <ItemGroup>
     <Compile Include="..\..\src\Cli\dotnet-aot\NativeEntryPoint.cs" Link="NativeEntryPoint.cs" />
+    <Compile Include="..\..\src\Cli\dotnet-aot\SdkRootLocator.cs" Link="SdkRootLocator.cs" />
   </ItemGroup>
 
   <!-- DotnetRootResolver from the dn project -->

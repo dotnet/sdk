@@ -60,6 +60,24 @@ function Invoke-GetDotnetupScript([string]$ScriptPath, [string]$InstallDir, [str
     if ($LASTEXITCODE -ne 0) { throw "$ErrorLabel exited with code $LASTEXITCODE." }
 }
 
+# Invokes a native command (e.g. the dotnetup executable)
+# Returns that process exit code WITHOUT letting a non-zero exit become a terminating error.
+# (This covers against $ErrorActionPreference and $PSNativeCommandUseErrorActionPreference)
+function Invoke-DotnetupNativeCommand([scriptblock]$Command) {
+    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    $ErrorActionPreference = 'Continue'
+    $PSNativeCommandUseErrorActionPreference = $false
+    try {
+        & $Command
+        return $LASTEXITCODE
+    }
+    catch {
+        Write-Host "dotnetup command failed: $($_.Exception.Message)" -ForegroundColor Yellow
+        if ($LASTEXITCODE -ne 0) { return $LASTEXITCODE }
+        return 1
+    }
+}
+
 # Downloads the public dotnetup installer from aka.ms
 # (https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.ps1) and runs it to install dotnetup into
 # $DotnetupDir. Throws on failure so callers can choose how to react.
