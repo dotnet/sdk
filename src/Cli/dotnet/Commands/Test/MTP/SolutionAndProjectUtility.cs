@@ -422,7 +422,8 @@ internal static class SolutionAndProjectUtility
             projectFilePath,
             isInteractive,
             msbuildArgs,
-            ImmutableDictionary<string, string>.Empty);
+            ImmutableDictionary<string, string>.Empty,
+            commandName: "dotnet test");
 
         lock (s_buildLock)
         {
