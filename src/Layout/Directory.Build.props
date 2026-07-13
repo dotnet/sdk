@@ -14,6 +14,31 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!--
+      Whether to publish the dotnet-aot NativeAOT shared library (see the PublishDotnetAot target
+      in redist/targets/GenerateLayout.targets). This is shared by that target and by the
+      dotnet-aot.csproj ProjectReference in redist.csproj so the two stay in sync.
+
+      It is published for supported win/linux/osx RIDs in these cases:
+        * native builds, where the target RID matches the build host. On win/osx that is an exact
+          TargetRid == HostRid comparison. On Linux, HostRid is the distro-specific RID (e.g.
+          azurelinux.3-x64) while TargetRid is the portable RID (e.g. linux-x64), so an exact
+          comparison fails even for a native build. Following the VMR/arcade convention, a Linux
+          build is treated as native when it isn't a cross-build (TargetArchitecture ==
+          BuildArchitecture) and the build host OS is Linux.
+        * Linux cross-builds, where NativeAOT targets another architecture from an x64 Linux host.
+          NativeAOT can cross-compile as long as a cross toolchain and target sysroot are available
+          (CrossBuild=true, with ROOTFS_DIR provided by the azurelinux cross-prereq build
+          containers). Cross-compilation across operating systems is not supported.
+    -->
+    <_DotnetAotTargetRidSupported Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">true</_DotnetAotTargetRidSupported>
+    <_DotnetAotIsLinuxNativeBuild Condition="'$(CrossBuild)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true' and $(TargetRid.StartsWith('linux')) and !$(TargetRid.StartsWith('linux-musl')) and $([MSBuild]::IsOSPlatform('LINUX')) and '$(TargetArchitecture)' == '$(BuildArchitecture)'">true</_DotnetAotIsLinuxNativeBuild>
+    <_DotnetAotIsLinuxCrossBuild Condition="'$(CrossBuild)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true' and $(TargetRid.StartsWith('linux'))">true</_DotnetAotIsLinuxCrossBuild>
+    <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == '' and '$(_DotnetAotTargetRidSupported)' == 'true' and ('$(TargetRid)' == '$(HostRid)' or '$(_DotnetAotIsLinuxNativeBuild)' == 'true' or '$(_DotnetAotIsLinuxCrossBuild)' == 'true')">true</_ShouldPublishDotnetAot>
+    <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == ''">false</_ShouldPublishDotnetAot>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <ArchiveExtension>.tar.gz</ArchiveExtension>
     <ArchiveExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.zip</ArchiveExtension>
 

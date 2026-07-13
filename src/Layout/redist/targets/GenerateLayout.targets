@@ -65,7 +65,7 @@
                    AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
                    IntermediateAssembly="%(_RoslynAppHost.FullPath)"
                    EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
-    
+
     <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
@@ -196,10 +196,10 @@
 
   <Target Name="PublishNetSdks" DependsOnTargets="PublishNETAnalyzers;PublishDotnetFormat;PublishBlazorWasmTools;PublishStaticWebAssetsTools;PublishRazorSdkTools">
     <ItemGroup>
-      <WebSdkProjectFile Include="$(RepoRoot)src\WebSdk\**\*.csproj" />
+      <_SdkProjectFile Include="$(RepoRoot)src\WebSdk\**\*.csproj;$(RepoRoot)src\WasmSdk\**\*.csproj" />
     </ItemGroup>
 
-    <MSBuild Projects="@(WebSdkProjectFile)" />
+    <MSBuild Projects="@(_SdkProjectFile)" />
 
     <PropertyGroup>
       <NETSdkSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk</NETSdkSourceRoot>
@@ -233,6 +233,18 @@
       <NETSdksContent Include="$(NETSdkStaticWebAssetsSourceRoot)\**\*.*"
                       DeploymentSubPath="Sdks\Microsoft.NET.Sdk.StaticWebAssets"/>
     </ItemGroup>
+
+    <!-- Fail loudly if an in-repo SDK's content has not been produced into its source root (for example because the
+         SDK's outer build ran after this copy). Otherwise the Copy below silently ships an SDK layout missing
+         Sdk.props, causing intermittent "Could not resolve SDK" failures downstream (https://github.com/dotnet/sdk/issues/51530). -->
+    <Error Condition="!Exists('$(NETSdkRazorSourceRoot)\Sdk\Sdk.props')"
+           Text="Razor SDK content is missing: '$(NETSdkRazorSourceRoot)\Sdk\Sdk.props' was not found. The Microsoft.NET.Sdk.Razor.Tasks outer build must complete before PublishNetSdks." />
+    <Error Condition="!Exists('$(NETSdkStaticWebAssetsSourceRoot)\Sdk\Sdk.props')"
+           Text="StaticWebAssets SDK content is missing: '$(NETSdkStaticWebAssetsSourceRoot)\Sdk\Sdk.props' was not found. The Microsoft.NET.Sdk.StaticWebAssets.Tasks outer build must complete before PublishNetSdks." />
+    <Error Condition="!Exists('$(NETSdkBlazorWasmSourceRoot)\Sdk\Sdk.props')"
+           Text="BlazorWebAssembly SDK content is missing: '$(NETSdkBlazorWasmSourceRoot)\Sdk\Sdk.props' was not found. The Microsoft.NET.Sdk.BlazorWebAssembly.Tasks outer build must complete before PublishNetSdks." />
+    <Error Condition="!Exists('$(NETSdkWasmSourceRoot)\Sdk\Sdk.props')"
+           Text="WebAssembly SDK content is missing: '$(NETSdkWasmSourceRoot)\Sdk\Sdk.props' was not found. The Microsoft.NET.Sdk.WebAssembly.Tasks outer build must complete before PublishNetSdks." />
 
     <Copy SourceFiles="@(NETSdksContent)"
           DestinationFiles="@(NETSdksContent->'$(OutputPath)%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')"
@@ -520,11 +532,13 @@
     them entirely in native code, falling back to the managed dotnet.dll for other commands.
     The output is placed next to dotnet.dll so it's packaged with the SDK.
 
-    Only runs for native builds (TargetRid == HostRid) on supported platforms.
-    Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
+    Runs for native builds (TargetRid == HostRid) on supported platforms, and for Linux
+    cross-builds (CrossBuild=true) where NativeAOT targets another architecture from an x64
+    Linux host using a cross toolchain and target sysroot (ROOTFS_DIR). See the
+    _ShouldPublishDotnetAot property in src/Layout/Directory.Build.props.
   -->
   <Target Name="PublishDotnetAot"
-          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))">
+          Condition="'$(_ShouldPublishDotnetAot)' == 'true'">
     <PropertyGroup>
       <!-- Define platform-specific native library naming -->
       <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
@@ -533,27 +547,51 @@
       <_DotnetAotNativeLibExtension Condition="'$(_DotnetAotNativeLibExtension)' == ''">.so</_DotnetAotNativeLibExtension>
       <_DotnetAotNativeLibName>$(_DotnetAotNativeLibPrefix)dotnet-aot$(_DotnetAotNativeLibExtension)</_DotnetAotNativeLibName>
 
-      <_DotnetAotPublishDir>$(ArtifactsBinDir)dotnet-aot-redist\$(Configuration)\$(SdkTargetFramework)\$(TargetRid)\publish\</_DotnetAotPublishDir>
+      <!--
+        Global properties for the dotnet-aot Publish below. _IsPublishing=true is always required
+        (see the note below). For Linux cross-builds we also forward the cross-compilation inputs:
+        the MSBuild task doesn't flow the outer build's global properties to the child project, so
+        CrossBuild and the target architecture/RID must be passed explicitly. The child then maps
+        SysRoot from the ROOTFS_DIR environment variable via LocateNativeCompiler.targets.
+      -->
+      <_DotnetAotPublishProperties>_IsPublishing=true</_DotnetAotPublishProperties>
+      <_DotnetAotPublishProperties Condition="'$(_DotnetAotIsLinuxCrossBuild)' == 'true'">$(_DotnetAotPublishProperties);CrossBuild=true;TargetArchitecture=$(TargetArchitecture);TargetRid=$(TargetRid)</_DotnetAotPublishProperties>
     </PropertyGroup>
 
     <!--
-      Publish via Exec in a separate process to avoid BuildManager caching/scheduling
-      interference in CI's multi-node parallel build context.
-      
-      The dotnet-aot project declares RuntimeIdentifier=$(TargetRid) so that centralized
-      NuGet restore (via sdk.slnx) generates the RID-specific target in project.assets.json.
-      Restore is skipped here since the initial restore is sufficient.
+      Publish the dotnet-aot project.  The project is configured with a RuntimeIdentifier
+      and with PublishAot=true, so this creates the NativeAOT library.  We pass
+      _IsPublishing=true as a global property because that's the property the SDK uses
+      to gate Publish-time behaviors (for example, suppressing apphost generation when
+      PublishAot is true); without it, running the Publish target directly is known to
+      produce subtly wrong behaviors.
+
+      Also call PublishItemsOutputGroup to retrieve the published file list, so we
+      don't have to hard-code or predict the publish output directory.
     -->
-    <Exec Command="&quot;$(DotNetTool)&quot; publish &quot;$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj&quot; --no-restore -c $(Configuration) -r $(TargetRid) -o &quot;$(_DotnetAotPublishDir)&quot;"
-          IgnoreStandardErrorWarningFormat="true" />
+    <MSBuild
+      Targets="Publish;PublishItemsOutputGroup"
+      Projects="$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj"
+      Properties="$(_DotnetAotPublishProperties)">
+      <Output TaskParameter="TargetOutputs" ItemName="_DotnetAotPublishedItems" />
+    </MSBuild>
 
-    <!-- Verify the native library was produced -->
-    <Error Condition="!Exists('$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)')"
-           Text="dotnet-aot native library not found at '$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)'. NativeAOT publish may have failed for RID '$(TargetRid)'." />
+    <!-- Match on %(TargetPath) so the macOS dSYM bundle's inner Mach-O
+         (libdotnet-aot.dylib.dSYM/Contents/Resources/DWARF/libdotnet-aot.dylib)
+         is not picked alongside the real dylib. -->
+    <ItemGroup>
+      <_DotnetAotNativeLib Include="@(_DotnetAotPublishedItems)"
+                           Condition="'%(TargetPath)' == '$(_DotnetAotNativeLibName)'" />
+    </ItemGroup>
 
-    <!-- Copy the native library to the SDK output directory -->
+    <Error Condition="'@(_DotnetAotNativeLib)' == ''"
+           Text="dotnet-aot native library '$(_DotnetAotNativeLibName)' was not produced by Publish for RID '$(TargetRid)'." />
+
+    <!-- Copy the native library to the SDK output directory.  Use the OutputPath
+         metadata, which is the absolute path of the published file (the item's
+         Identity is the source path, before Publish processed it). -->
     <Copy
-      SourceFiles="$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)"
+      SourceFiles="@(_DotnetAotNativeLib->'%(OutputPath)')"
       DestinationFolder="$(OutputPath)"
       SkipUnchangedFiles="true" />
   </Target>
@@ -569,6 +607,17 @@
     <!-- Make dotnet-aot native shared library executable (only if it exists for this RID) -->
     <Exec Command="chmod 755 $(OutputPath)$(_DotnetAotNativeLibName)"
           Condition="Exists('$(OutputPath)$(_DotnetAotNativeLibName)')" />
+    <!-- The 'aspnetcoretools' aggregate ships native AOT SDK tool executables
+         (dotnet-dev-certs, dotnet-user-jwts, dotnet-user-secrets). Their nupkg does
+         not carry the Unix execute bit, and the blanket 'chmod 644' above clears it,
+         so re-add execute permission; the SDK execs these tools directly. -->
+    <ItemGroup>
+      <_BundledAotToolExecutable Include="$(OutputPath)DotnetTools/aspnetcoretools/**/dotnet-*" />
+      <_BundledAotToolExecutable Remove="@(_BundledAotToolExecutable)"
+                                 Condition="'%(Extension)' != ''" />
+    </ItemGroup>
+    <Exec Command="chmod 755 '%(_BundledAotToolExecutable.FullPath)'"
+          Condition="'@(_BundledAotToolExecutable)' != ''" />
   </Target>
 
   <Target Name="DeleteSymbolsFromPublishDir" DependsOnTargets="GenerateCliRuntimeConfigurationFiles">

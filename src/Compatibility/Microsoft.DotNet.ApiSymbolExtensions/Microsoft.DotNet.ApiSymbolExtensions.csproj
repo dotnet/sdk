@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <!-- Disable transitive pinning, we shouldn't upgrade dependencies that are excluded for runtime and provided externally. -->
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
@@ -19,9 +19,5 @@
     <EmbeddedResource Update="Resources.resx" GenerateSource="True" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <Reference Include="System.IO.Compression" />
-    <Compile Include="$(RepoRoot)src\Common\NullableAttributes.cs" LinkBase="Common" />
-  </ItemGroup>
 
 </Project>

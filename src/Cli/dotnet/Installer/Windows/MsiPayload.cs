@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;

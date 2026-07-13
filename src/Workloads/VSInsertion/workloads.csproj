@@ -15,15 +15,8 @@
     <WorkloadPacksSource>$(WorkloadIntermediateOutputPath)packs</WorkloadPacksSource>
 
     <VSTemp>$(WorkloadIntermediateOutputPath)VS/</VSTemp>
-    <!-- Temp directory for light command layouts -->
-    <LightCommandObjDir>$(WorkloadIntermediateOutputPath)/LightCommandPackages</LightCommandObjDir>
-    <!-- Directory for the zipped up light command package -->
-    <LightCommandPackagesDir>$(ArtifactsNonShippingPackagesDir)</LightCommandPackagesDir>
 
     <RunAnalyzers>false</RunAnalyzers>
-    <!-- LGHT1105: Warning generated from MSI creation process. -->
-    <!-- See: https://github.com/orgs/wixtoolset/discussions/6715 -->
-    <NoWarn>$(NoWarn);LGHT1105</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,17 +25,36 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true'">
+    <PackageReference Include="vswhere" Version="$(VSWhereVersion)" IsImplicitlyDefined="true" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Workloads" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Signed.WiX" GeneratePathProperty="true" />
-    <PackageReference Include="MicroBuild.Plugins.SwixBuild.Dotnet" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Plugins.SwixBuild" GeneratePathProperty="true"/>
+
+    <!-- Acquire the WiX CLI -->
+    <!-- WiX toolset CLI is a tool package so we need to set ExcludeAssets. -->
+    <PackageReference Include="Microsoft.Wix" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Heat" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Util.wixext" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.UI.wixext" GeneratePathProperty="true" />
   </ItemGroup>
 
   <PropertyGroup>
-    <WixToolsetPath>$(PkgMicrosoft_Signed_Wix)\tools</WixToolsetPath>
-    <SwixPluginPath>$(PkgMicroBuild_Plugins_SwixBuild_Dotnet)</SwixPluginPath>
-    <SwixBuildTargets>$(SwixPluginPath)\build\MicroBuild.Plugins.SwixBuild.targets</SwixBuildTargets>
+    <SwixBuildTargets>$(PkgMicrosoft_VisualStudioEng_MicroBuild_Plugins_SwixBuild)\build\Microsoft.VisualStudioEng.MicroBuild.Plugins.SwixBuild.targets</SwixBuildTargets>
+
+    <WixExe>$(PkgMicrosoft_Wix)\tools\net6.0\any\wix.exe</WixExe>
+    <HeatExe>$(PkgMicrosoft_WixToolset_Heat)\tools\net472\x64\heat.exe</HeatExe>
+    <WixExtensionsDir>wixext6</WixExtensionsDir>
+    <WixUIExtensionDir>$(PkgMicrosoft_WixToolset_UI_wixext)\$(WixExtensionsDir)\</WixUIExtensionDir>
+    <WixDependencyExtensionDir>$(PkgMicrosoft_WixToolset_Dependency_wixext)\$(WixExtensionsDir)\</WixDependencyExtensionDir>
+    <WixUtilExtensionDir>$(PkgMicrosoft_WixToolset_Util_wixext)\$(WixExtensionsDir)\</WixUtilExtensionDir>
   </PropertyGroup>
+
+  <ItemGroup>
+    <WixExtensions Include="$(WixUIExtensionDir)\WixToolset.UI.wixext.dll" />
+    <WixExtensions Include="$(WixDependencyExtensionDir)\WixToolset.Dependency.wixext.dll" />
+    <WixExtensions Include="$(WixUtilExtensionDir)\WixToolset.Util.wixext.dll" />
+  </ItemGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
 
@@ -189,6 +201,7 @@
             _GenerateMsiVersionString;
             _CollectDownloadedWorkloadPacks;
             _CollectDownloadedWorkloadMsis;
+            _FindMSBuild;
             BuildWorkloadMsis"
           Condition="'$(BuildWorkloads)' == 'true'">
   </Target>
@@ -206,6 +219,20 @@
     <Copy SourceFiles="@(DownloadedWorkloadMsis)"
           DestinationFolder="$(ArtifactsShippingPackagesDir)"
           UseHardlinksIfPossible="true" />
+  </Target>
+
+  <Target Name="_FindMSBuild">
+    <PropertyGroup>
+      <VSWherePath>$([MSBuild]::NormalizePath('$(Pkgvswhere)','tools','vswhere.exe'))</VSWherePath>
+    </PropertyGroup>
+
+    <Exec Command="&quot;$(VSWherePath)&quot; -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild" ConsoleToMsBuild="true" StandardErrorImportance="high">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_VSInstallDir" />
+    </Exec>
+
+    <PropertyGroup>
+      <_DesktopMSBuildPath>$(_VSInstallDir)\MSBuild\Current\Bin\msbuild.exe</_DesktopMSBuildPath>
+    </PropertyGroup>
   </Target>
 
   <Target Name="BuildWorkloadMsis"
@@ -457,31 +484,35 @@
            Condition="'@(RuntimeManifestPackages)' == '' or '@(EmsdkManifestPackages)' == ''" />
 
     <CreateVisualStudioWorkload
-          BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
           AllowMissingPacks="True"
+          BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
           BaseOutputPath="$(WorkloadOutputPath)"
-          EnableSideBySideManifests="true"
           ComponentResources="@(RuntimeComponentResources)"
+          EnableSideBySideManifests="true"
+          HeatExe="$(HeatExe)"
+          ManifestMsiVersion="$(MsiVersion)"
           PackageSource="$(WorkloadPacksSource)"
           ShortNames="@(ShortNames)"
-          WorkloadManifestPackageFiles="@(RuntimeManifestPackages)"
-          WixToolsetPath="$(WixToolsetPath)"
-          ManifestMsiVersion="$(MsiVersion)">
+          WixExe="$(WixExe)"
+          WixExtensions="@(WixExtensions)"
+          WorkloadManifestPackageFiles="@(RuntimeManifestPackages)">
       <Output TaskParameter="SwixProjects" ItemName="RuntimeSwixProjects" />
       <Output TaskParameter="Msis" ItemName="RuntimeMsis" />
     </CreateVisualStudioWorkload>
 
     <CreateVisualStudioWorkload
-          BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
           AllowMissingPacks="True"
+          BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
           BaseOutputPath="$(WorkloadOutputPath)"
-          EnableSideBySideManifests="true"
           ComponentResources="@(EmsdkComponentResources)"
+          EnableSideBySideManifests="true"
+          HeatExe="$(HeatExe)"
+          ManifestMsiVersion="$(MsiVersion)"
           PackageSource="$(WorkloadPacksSource)"
           ShortNames="@(ShortNames)"
-          WorkloadManifestPackageFiles="@(EmsdkManifestPackages)"
-          WixToolsetPath="$(WixToolsetPath)"
-          ManifestMsiVersion="$(MsiVersion)">
+          WixExe="$(WixExe)"
+          WixExtensions="@(WixExtensions)"
+          WorkloadManifestPackageFiles="@(EmsdkManifestPackages)">
       <Output TaskParameter="SwixProjects" ItemName="EmsdkSwixProjects" />
       <Output TaskParameter="Msis" ItemName="EmsdkMsis" />
     </CreateVisualStudioWorkload>
@@ -514,8 +545,9 @@
       <PartitionedSwixProjects Include="@(SwixWorkloadPackProjects);@(SwixComponentsAndManifests);@(SwixPreviewComponentsAndManifests)" />
     </ItemGroup>
 
-    <!-- Can't build in parallel to the same output folder because of a shared file from the SWIX compiler. -->
-    <MSBuild Projects="@(PartitionedSwixProjects)" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=%(ManifestOutputPath)"/>
+    <!-- Can't build in parallel to the same output folder because of a shared file from the SWIX compiler. For now, this needs to build with .NET Framework copy
+         of MSBuild until VS releases an update SWIX toolset that uses a compatible task host factory. -->
+    <Exec Command="&quot;$(_DesktopMSBuildPath)&quot; %(PartitionedSwixProjects.Identity) /p:SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=%(ManifestOutputPath)"/>
 
     <!-- Create the zip files used for VSDROP creation. -->
     <ItemGroup>
@@ -542,8 +574,9 @@
       <Msis Include="@(EmsdkMsis)" />
     </ItemGroup>
 
-    <!-- Gather .wixobj files for post-build signing. We'll have to batch since we generated multiple MSIs in the previous step. -->
-    <MSBuild Projects="$(MSBuildProjectFile)" Properties="_WixObjDir=%(Msis.WixObj);_Msi=%(Msis.Identity)" Targets="CreateWixPack" />
+    <!-- Copy the generated wixpacks to the expected folder -->
+    <Copy SourceFiles="%(RuntimeMsis.WixPack)" DestinationFolder="$(ArtifactsNonShippingPackagesDir)" />
+    <Copy SourceFiles="%(EmsdkMsis.WixPack)" DestinationFolder="$(ArtifactsNonShippingPackagesDir)" />
 
     <!-- Build all the MSI payload packages for NuGet. -->
     <ItemGroup>
@@ -551,24 +584,6 @@
     </ItemGroup>
 
     <MSBuild Projects="@(MsiPackageProjects)" Properties="IsShippingPackage=true;IncludeSymbols=false" Targets="Restore;Pack" />
-  </Target>
-
-  <!-- Target to create a single wixpack for signing -->
-  <Target Name="CreateWixPack">
-    <ItemGroup>
-      <_WixObj Include="$(_WixObjDir)\**\*.wixobj" />
-    </ItemGroup>
-
-    <CreateLightCommandPackageDrop
-      LightCommandWorkingDir="$(LightCommandObjDir)"
-      OutputFolder="$(LightCommandPackagesDir)"
-      NoLogo="true"
-      Cultures="en-us"
-      InstallerFile="$(_Msi)"
-      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
-      WixSrcFiles="@(_WixObj)">
-      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
-    </CreateLightCommandPackageDrop>
   </Target>
 
   <!-- These are just individual targets for testing local builds. -->

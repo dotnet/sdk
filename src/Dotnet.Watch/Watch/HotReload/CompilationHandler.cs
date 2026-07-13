@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
@@ -64,6 +65,19 @@ internal sealed class CompilationHandler : IDisposable
         _context = context;
         Workspace = new HotReloadMSBuildWorkspace(context.Logger, projectFile => (instances: _projectInstances.GetValueOrDefault(projectFile, []), project: null));
         _hotReloadService = new HotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
+        EnableRoslynProjectLevelAnalysis();
+    }
+
+    // Workaround for https://github.com/dotnet/roslyn/issues/81728: Roslyn PR #81729 gated project-level
+    // Hot Reload analysis behind a flag that is only enabled in HotReloadService(HostWorkspaceServices,
+    // ImmutableArray<string>). dotnet-watch uses the other constructor, so we enable it via reflection.
+    private static void EnableRoslynProjectLevelAnalysis()
+    {
+        const string TypeName = "Microsoft.CodeAnalysis.EditAndContinue.AbstractEditAndContinueAnalyzer";
+        var type = AppDomain.CurrentDomain.GetAssemblies()
+            .Select(a => a.GetType(TypeName, throwOnError: false))
+            .FirstOrDefault(t => t != null);
+        type?.GetField("EnableProjectLevelAnalysis", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, true);
     }
 
     public void Dispose()

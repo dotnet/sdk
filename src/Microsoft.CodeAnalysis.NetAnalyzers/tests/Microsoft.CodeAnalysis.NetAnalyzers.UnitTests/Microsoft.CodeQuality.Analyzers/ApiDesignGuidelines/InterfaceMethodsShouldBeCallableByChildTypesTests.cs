@@ -12,6 +12,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class InterfaceMethodsShouldBeCallableByChildTypesTests
     {
         #region Verifiers
@@ -34,7 +35,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         #region CSharp
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -144,7 +145,7 @@ public class ImplementsGeneralThree : IGeneral
             CSharpResult(73, 9, "ImplementsGeneralThree", "IGeneral.get_Name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033NestedDiagnosticCasesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -209,7 +210,7 @@ public class NestedExplicitInterfaceImplementation
             CSharpResult(50, 13, "ImplementsNestedGeneral", "NestedExplicitInterfaceImplementation.INestedGeneral.remove_TheEvent"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033NoDiagnosticCasesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -357,7 +358,7 @@ public class NestedExplicitInterfaceImplementation
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033ExpressionBodiedMemberCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -388,7 +389,7 @@ public class ImplementsGeneralThree : IGeneral
             CSharpResult(21, 21, "ImplementsGeneralThree", "IGeneral.DoSomething"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033InterfaceWithDefaultImplementationsCSharpAsync()
         {
             await VerifyCS.Test.Create("""
@@ -423,10 +424,10 @@ public class ImplementsGeneralThree : IGeneral
                     object IGeneral.DoSomething() { return null; }
                 }
                 """,
-                LanguageVersion.CSharp8).RunAsync(TestContext.Current.CancellationToken);
+                LanguageVersion.CSharp8).RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033InterfaceWithExpressionBodiedDefaultImplementationsCSharpAsync()
         {
             await VerifyCS.Test.Create("""
@@ -468,14 +469,14 @@ public class ImplementsGeneralThree : IGeneral
                     string Name => "name";
                 }
                 """,
-                LanguageVersion.CSharp8).RunAsync(TestContext.Current.CancellationToken);
+                LanguageVersion.CSharp8).RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region VisualBasic
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -585,7 +586,7 @@ End Class
             BasicResult(74, 9, "ImplementsGeneralThree", "get_IGeneral_Name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033NestedDiagnosticCasesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -654,7 +655,7 @@ End Class
             BasicResult(50, 13, "ImplementsNestedGeneral", "remove_TheEvent"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033NoUnderlyingImplementationsDiagnosticsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

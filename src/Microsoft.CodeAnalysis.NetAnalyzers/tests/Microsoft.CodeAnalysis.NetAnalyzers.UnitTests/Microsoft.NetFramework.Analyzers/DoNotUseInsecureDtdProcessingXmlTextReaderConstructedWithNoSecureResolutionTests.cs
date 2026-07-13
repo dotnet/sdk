@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -27,7 +26,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not use banned APIs
 
         [WorkItem(998, "https://github.com/dotnet/roslyn-analyzers/issues/998")]
-        [Fact]
+        [TestMethod]
         public async Task StaticPropertyAssignmentShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -68,7 +67,7 @@ End Namespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -106,7 +105,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -153,7 +152,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -199,7 +198,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -246,7 +245,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderOnlySetResolverToSecureValueShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -286,7 +285,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetResolverToSecureValueInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -335,7 +334,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetResolverToSecureValueInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -383,7 +382,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetResolverToSecureValueInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -432,7 +431,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingToSecureValueShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -470,7 +469,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetDtdProcessingToSecureValueInTryBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -517,7 +516,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetDtdProcessingToSecureValueInCatchBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -563,7 +562,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetDtdProcessingToSecureValueInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -610,7 +609,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetResolverAndDtdProcessingToSecureValuesShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -649,7 +648,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetSetResolverAndDtdProcessingToSecureValueInTryBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -697,7 +696,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetSetResolverAndDtdProcessingToSecureValueInCatchBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -744,7 +743,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetSetResolverAndDtdProcessingToSecureValueInFinallyBlockShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -792,7 +791,7 @@ End Namespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetResolverAndDtdProcessingToSecureValuesInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -832,7 +831,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderOnlySetResolverToSecureValueInInitializerShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -874,7 +873,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingToSecureValueInInitializerShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -914,7 +913,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -946,7 +945,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldSetBothToSecureValuesInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -982,7 +981,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldOnlySetResolverToSecureValuesInInitializerShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1020,7 +1019,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldOnlySetDtdProcessingToSecureValuesInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1055,7 +1054,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructDefaultXmlTextReaderAsFieldSetBothToSecureValuesInMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1099,7 +1098,7 @@ End Namespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldOnlySetResolverToSecureValueInMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1140,7 +1139,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldOnlySetResolverToSecureValueInMethodInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1191,7 +1190,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldOnlySetResolverToSecureValueInMethodInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1238,7 +1237,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldOnlySetResolverToSecureValueInMethodInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1286,7 +1285,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderAsFieldOnlySetDtdProcessingToSecureValueInMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1327,7 +1326,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeWithNoSecureSettingsShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1369,7 +1368,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderCreatedAsTempNoSettingsShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1413,7 +1412,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingProhibitTargetFx451ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1438,7 +1437,7 @@ namespace TestNamespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingProhibitTargetFx46ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1482,7 +1481,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingProhibitTargetFx452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(

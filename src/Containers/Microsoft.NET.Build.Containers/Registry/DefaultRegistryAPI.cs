@@ -38,7 +38,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
     {
         HttpMessageHandler innerHandler = CreateHttpHandler(registryName, baseUri, isInsecureRegistry, logger);
 
-        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, innerHandler, logger, mode);
+        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, isInsecureRegistry, innerHandler, logger, mode);
 
         if (baseUri.IsAmazonECRRegistry())
         {
