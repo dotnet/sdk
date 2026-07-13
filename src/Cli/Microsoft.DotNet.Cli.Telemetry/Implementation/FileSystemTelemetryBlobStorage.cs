@@ -15,19 +15,26 @@ namespace Microsoft.DotNet.Cli.Telemetry.Implementation;
 /// </summary>
 internal sealed class FileSystemTelemetryBlobStorage : ITelemetryBlobStorage
 {
-    private readonly PersistentBlobProvider _provider;
+    // FileBlobProvider creates the storage directory in its constructor, so defer building it
+    // until telemetry is actually persisted or drained. Registering the exporter happens even
+    // when telemetry is opted out (the registration runs in a static constructor, before the
+    // per-invocation opt-out check), and merely registering it must not create the ~/.dotnet
+    // telemetry folder. Lazy<T> defaults to thread-safe (ExecutionAndPublication) initialization,
+    // which matters because the synchronous export path and the background drain can first touch
+    // the provider concurrently.
+    private readonly Lazy<PersistentBlobProvider> _provider;
 
     public FileSystemTelemetryBlobStorage(string storageDirectory)
     {
-        _provider = new FileBlobProvider(storageDirectory);
+        _provider = new Lazy<PersistentBlobProvider>(() => new FileBlobProvider(storageDirectory));
     }
 
     public bool TryPersist(byte[] data)
-        => _provider.TryCreateBlob(data.AsSpan(), out _);
+        => _provider.Value.TryCreateBlob(data.AsSpan(), out _);
 
     public IEnumerable<ITelemetryBlob> GetBlobs()
     {
-        foreach (var blob in _provider.GetBlobs())
+        foreach (var blob in _provider.Value.GetBlobs())
         {
             yield return new FileSystemTelemetryBlob(blob);
         }
