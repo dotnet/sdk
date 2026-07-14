@@ -1,0 +1,10 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+// xunit.v3.assert is available transitively (via Microsoft.NET.TestFramework),
+// which causes Assert and TestContext to be ambiguous. Pin to the MSTest types.
+global using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+global using TestContext = Microsoft.VisualStudio.TestTools.UnitTesting.TestContext;
+
+// Verify.XunitV3 is still available transitively; pin Verify to MSTest.
+global using Verifier = VerifyMSTest.Verifier;

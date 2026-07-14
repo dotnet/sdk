@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.Runtime.CompilerServices;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -24,6 +25,28 @@ internal partial class MicrosoftTestingPlatformTestCommand
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult, buildOptions.PathOptions);
 
+        // --list-devices and --list-tests describe incompatible behaviors: the former lists
+        // devices and exits without building, the latter discovers tests in built assemblies.
+        if (buildOptions.ListDevices && parseResult.HasOption(definition.ListTestsOption))
+        {
+            throw new GracefulException(CliCommandStrings.CmdListDevicesAndListTestsMutuallyExclusive);
+        }
+
+        // --list-devices and --device require a project to evaluate; --test-modules bypasses
+        // project evaluation entirely, so the combination is meaningless.
+        if (buildOptions.PathOptions.TestModules is not null
+            && (buildOptions.ListDevices || !string.IsNullOrWhiteSpace(buildOptions.Device)))
+        {
+            throw new GracefulException(CliCommandStrings.CmdDeviceOptionsRequireProject);
+        }
+
+        // --list-devices: list available devices for the project and exit early.
+        // Never builds, deploys, or runs tests.
+        if (buildOptions.ListDevices)
+        {
+            return HandleListDevices(buildOptions);
+        }
+
         // When --device is specified, force single target framework selection because
         // a device is platform-specific and we need to know which TFM was intended.
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -33,7 +56,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         ITestHandler testHandler = buildOptions.PathOptions.TestModules is { } testModules
             ? new TestModulesFilterHandler(testModules, parseResult)
-            : new MSBuildHandler(buildOptions);
+            : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions)
+                : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
 
         if (!testHandler.Initialize())
         {
@@ -48,10 +72,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
         int? exitCode = null;
         try
         {
-            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested);
+            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested, ctrlC);
             exitCode = testHandler.RunTestApplications(actionQueue);
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
@@ -113,10 +138,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
         });
 
-        Console.CancelKeyPress += (s, e) =>
-        {
-            output.StartCancelling();
-        };
+        // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
+        // a second press can force-kill running test app child processes and exit with
+        // ExitCode.TestSessionAborted (see issue https://github.com/dotnet/sdk/issues/50732).
 
         // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
         var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
@@ -140,6 +164,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// because a device is platform-specific. If -f/--framework wasn't provided, this method
     /// evaluates the project to get TargetFrameworks and prompts for selection.
     /// The selected device is also added to MSBuild args so the build sees it.
+    /// Solutions are rejected because each project may have its own device list, so
+    /// applying a single --device value across a solution is ambiguous.
     /// </summary>
     private static BuildOptions HandleDeviceWithTargetFrameworkSelection(BuildOptions buildOptions)
     {
@@ -147,22 +173,23 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
+        // Device selection requires a single project (each project may have its own
+        // device list). Reject solutions up front, regardless of whether -f/--framework
+        // was provided, so `--device` + `-f` + `--solution` fails the same as `--device`
+        // + `--solution` (which mirrors `--list-devices` + `--solution`).
+        if (!ValidationUtility.ValidateBuildPathOptions(buildOptions.PathOptions, out var projectPath, out bool isSolution))
+        {
+            throw new GracefulException(CliCommandStrings.CmdTestNoTestProjectsFound);
+        }
+
+        if (isSolution)
+        {
+            throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+        }
+
         // Check if TargetFramework is already specified via -f/--framework or -p:TargetFramework=
         if (!globalProperties.ContainsKey(ProjectProperties.TargetFramework))
         {
-            // Need to resolve the project to get TargetFrameworks
-            if (!ValidationUtility.ValidateBuildPathOptions(buildOptions.PathOptions, out var projectPath, out bool isSolution))
-            {
-                throw new GracefulException(CliCommandStrings.CmdTestNoTestProjectsFound);
-            }
-
-            if (isSolution)
-            {
-                // Device selection with solutions requires specifying a project and framework
-                throw new GracefulException(
-                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
-            }
-
             // Evaluate the project to get TargetFrameworks
             using var collection = new ProjectCollection(globalProperties);
             var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
@@ -184,7 +211,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                     .ToArray();
 
                 bool isInteractive = !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
-                if (!RunCommandSelector.TrySelectTargetFramework(frameworks, isInteractive, out string? selectedFramework))
+                if (!RunCommandSelector.TrySelectTargetFramework(frameworks, isInteractive, "dotnet test", out string? selectedFramework))
                 {
                     // Error already written to stderr by TrySelectTargetFramework
                     throw new GracefulException(
@@ -206,5 +233,72 @@ internal partial class MicrosoftTestingPlatformTestCommand
         {
             MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={buildOptions.Device}"]
         };
+    }
+
+    /// <summary>
+    /// Handles `dotnet test --list-devices`. Resolves the project, prompts for
+    /// target framework if multi-targeted, lists devices via
+    /// <see cref="RunCommandSelector.TrySelectDevice"/>, and exits without
+    /// building, deploying, or running tests.
+    /// </summary>
+    private static int HandleListDevices(BuildOptions buildOptions)
+    {
+        if (!ValidationUtility.ValidateBuildPathOptions(buildOptions.PathOptions, out var projectPath, out bool isSolution))
+        {
+            throw new GracefulException(CliCommandStrings.CmdTestNoTestProjectsFound);
+        }
+
+        if (isSolution)
+        {
+            // Listing devices across a solution is ambiguous: each project may have its own
+            // set of devices. Require the user to pick a specific project via --project.
+            throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+        }
+
+        bool isInteractive = !Console.IsOutputRedirected && !new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+
+        var standardArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
+
+        // Mirror the `dotnet run --list-devices` flow: a single RunCommandSelector
+        // handles both target framework selection and device listing, with
+        // InvalidateGlobalProperties between steps so the device list is computed
+        // for the selected framework.
+        using var selector = new RunCommandSelector(
+            projectPath,
+            isInteractive,
+            standardArgs,
+            ImmutableDictionary<string, string>.Empty,
+            commandName: "dotnet test");
+
+        // Step 1: Prompt for TargetFramework if the project is multi-targeted and -f wasn't provided.
+        if (!selector.TrySelectTargetFramework(out string? selectedFramework))
+        {
+            // Mirror `dotnet run --list-devices` (RunCommand.cs:164): the guidance has
+            // already been printed; `--list-devices` itself is not a build, so a missing
+            // framework selection is not a failure to exit non-zero on.
+            return ExitCode.Success;
+        }
+
+        if (selectedFramework is not null)
+        {
+            selector.InvalidateGlobalProperties(new Dictionary<string, string>
+            {
+                { ProjectProperties.TargetFramework, selectedFramework }
+            });
+        }
+
+        // Step 2: List devices. This calls ComputeAvailableDevices if the target exists;
+        // otherwise it silently no-ops (matches `dotnet run --list-devices`).
+        if (!selector.TrySelectDevice(
+            listDevices: true,
+            noRestore: buildOptions.HasNoRestore || buildOptions.HasNoBuild,
+            out _,
+            out _,
+            out _))
+        {
+            return ExitCode.GenericFailure;
+        }
+
+        return ExitCode.Success;
     }
 }

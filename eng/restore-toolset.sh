@@ -1,20 +1,7 @@
 #!/usr/bin/env bash
 
-# Detect native machine architecture, handling macOS Rosetta 2
-# where uname -m may report x86_64 on arm64 hardware.
-function GetNativeMachineArchitecture {
-  if [[ "$(uname)" == "Darwin" ]] && [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]]; then
-    echo "arm64"
-    return
-  fi
-  case "$(uname -m)" in
-    arm64|aarch64) echo "arm64" ;;
-    amd64|x86_64) echo "x64" ;;
-    armv*l) echo "arm" ;;
-    i[3-6]86) echo "x86" ;;
-    *) echo "x64" ;;
-  esac
-}
+# Shared dotnetup acquisition helpers (architecture detection, cache freshness, download).
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/dotnetup-shared.sh"
 
 function InitializeCustomSDKToolset {
   if [[ "$restore" != true ]]; then
@@ -78,6 +65,44 @@ function ReadVersionDetailsProperty {
   sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Version.Details.props" | head -n 1
 }
 
+# Maps a dotnetup component (aspnetcore/windowsdesktop/dotnet) to the name of
+# its shared-framework folder under <dotnet root>/shared.
+function GetSharedFrameworkName {
+  local component=$1
+  case "$component" in
+    aspnetcore) echo "Microsoft.AspNetCore.App" ;;
+    windowsdesktop) echo "Microsoft.WindowsDesktop.App" ;;
+    *) echo "Microsoft.NETCore.App" ;;
+  esac
+}
+
+# Returns the shared-framework directory for a component
+# (e.g. <dotnet root>/shared/Microsoft.AspNetCore.App).
+function GetSharedFrameworkPath {
+  local dotnet_root=$1
+  local component=$2
+  echo "$dotnet_root/shared/$(GetSharedFrameworkName "$component")"
+}
+
+# Returns success (0) if a shared framework matching $version (a major.minor
+# channel such as 6.0 or an exact version) is already present for $component.
+function IsSharedFrameworkInstalled {
+  local dotnet_root=$1
+  local component=$2
+  local version=$3
+  local fx_root
+  fx_root="$(GetSharedFrameworkPath "$dotnet_root" "$component")"
+
+  # Only a major.minor channel (e.g. 6.0) should match any patch via a glob. An
+  # exact version must match an exact folder so that, for example, 8.0.1 does not
+  # spuriously match an installed 8.0.10.
+  if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    compgen -G "$fx_root/$version*" > /dev/null 2>&1
+  else
+    [[ -d "$fx_root/$version" ]]
+  fi
+}
+
 # Installs additional shared frameworks for testing purposes.
 function InstallDotNetSharedFrameworks {
   local arch=$1
@@ -96,14 +121,7 @@ function InstallDotNetSharedFrameworks {
       version="${spec#*@}"
     fi
 
-    local shared_framework_name="Microsoft.NETCore.App"
-    if [[ "$component" == "aspnetcore" ]]; then
-      shared_framework_name="Microsoft.AspNetCore.App"
-    elif [[ "$component" == "windowsdesktop" ]]; then
-      shared_framework_name="Microsoft.WindowsDesktop.App"
-    fi
-
-    if ! compgen -G "$dotnet_root/shared/$shared_framework_name/$version*" > /dev/null; then
+    if ! IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version"; then
       specs_to_install+=("$spec")
     fi
   done
@@ -129,62 +147,16 @@ function InstallDotNetSharedFrameworks {
   local dotnetup_dir="$script_dir/dotnetup"
   local dotnetup_exe="$dotnetup_dir/dotnetup"
 
-  # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
-  local skip_download=false
-  if [[ -f "$dotnetup_exe" ]]; then
-    local current_time
-    current_time=$(date +%s)
-    local file_time
-    file_time=$(stat -c %Y "$dotnetup_exe" 2>/dev/null || stat -f %m "$dotnetup_exe" 2>/dev/null || echo 0)
-    local age_seconds=$((current_time - file_time))
-    if [[ $age_seconds -lt 86400 ]]; then
-      echo "dotnetup binary is less than 24 hours old; skipping re-download."
-      skip_download=true
-    fi
-  fi
-
-  if [[ "$skip_download" == true && -f "$dotnetup_exe" ]]; then
-    # dotnetup installs runtimes for its own process architecture, so a cached
-    # binary of the wrong architecture (e.g. an x64 dotnetup left on a reused
-    # arm64 agent, or one downloaded under Rosetta 2) would install the wrong
-    # runtimes. Verify the cached binary's actual architecture against the native
-    # architecture and re-download on mismatch rather than trusting uname.
-    local native_arch
-    native_arch="$(GetNativeMachineArchitecture)"
-    local cached_arch=""
-    if [[ "$(uname)" == "Darwin" ]]; then
-      if file "$dotnetup_exe" 2>/dev/null | grep -q 'arm64'; then
-        cached_arch="arm64"
-      elif file "$dotnetup_exe" 2>/dev/null | grep -q 'x86_64'; then
-        cached_arch="x64"
-      fi
-    fi
-    if [[ -n "$cached_arch" && "$cached_arch" != "$native_arch" ]]; then
-      echo "Cached dotnetup architecture ($cached_arch) does not match native architecture ($native_arch); re-downloading."
-      skip_download=false
-    fi
-  fi
-
-  if [[ "$skip_download" != true ]]; then
-    # Acquire the latest dotnetup daily build using the in-repo install script.
-    # build.sh runs under `set -e`; guard so we can emit a diagnostic.
-    if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
+  if ! ShouldUseCachedDotnetup "$dotnetup_exe"; then
+    if ! AcquireDotnetup "$dotnetup_dir"; then
       Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup; falling back to dotnet install script."
       InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$arch" "${specs_to_install[@]}"
       return
     fi
   fi
 
-  local restore_errexit=false
-  if [[ $- == *e* ]]; then
-    restore_errexit=true
-    set +e
-  fi
-  "$dotnetup_exe" runtime install "${specs_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
-  local lastexitcode=$?
-  if [[ "$restore_errexit" == true ]]; then
-    set -e
-  fi
+  RunWithoutErrexit "$dotnetup_exe" runtime install "${specs_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
+  local lastexitcode=$_RunWithoutErrexit
 
   if [[ $lastexitcode != 0 ]]; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install shared frameworks (${specs_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode'); falling back to dotnet install script."
@@ -202,13 +174,14 @@ function InstallDotNetSharedFrameworksWithInstallScript {
 
   for spec in "$@"; do
     local component="dotnet"
-    local install_version="$spec"
+    local version="$spec"
     if [[ "$spec" == *@* ]]; then
       component="${spec%@*}"
-      install_version="${spec#*@}"
+      version="${spec#*@}"
     fi
     # Map dotnetup channel (e.g. "9.0") to the specific version the install
     # script's --version parameter expects (e.g. "9.0.0").
+    local install_version="$version"
     if [[ "$install_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
       install_version="$install_version.0"
     fi
@@ -218,11 +191,27 @@ function InstallDotNetSharedFrameworksWithInstallScript {
       install_args+=(--architecture "$arch")
     fi
 
-    bash "$install_script" "${install_args[@]}"
-    local lastexitcode=$?
+    # Disable errexit around the install-script call so the exit-code and filesystem checks below always run.
+    RunWithoutErrexit bash "$install_script" "${install_args[@]}"
+    local lastexitcode=$_RunWithoutErrexit
+
+    # Ensure the download was actually successful to some degree.
+    local framework_installed=false
+    if IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version"; then
+      framework_installed=true
+    fi
+
+    # Promote a false success (exit 0 but nothing on disk) to a real failure.
+    if [[ $lastexitcode == 0 && "$framework_installed" != true ]]; then
+      lastexitcode=1
+    fi
 
     if [[ $lastexitcode != 0 ]]; then
-      echo "Failed to install shared framework spec '$spec' to '$dotnet_root' using dotnet install script for architecture '$arch' (exit code '$lastexitcode')."
+      local architecture_message=""
+      if [[ -n "$arch" ]]; then
+        architecture_message=" for architecture '$arch'"
+      fi
+      echo "Failed to install shared framework spec '$spec' to '$dotnet_root' using dotnet install script${architecture_message} (exit code '$lastexitcode', installed '$framework_installed')."
       ExitWithExitCode $lastexitcode
     fi
   done
@@ -267,10 +256,10 @@ function CleanOutStage0ToolsetsAndRuntimes {
   local dotnetSdkVersion=$_ReadGlobalVersion
   local dotnetRoot=$DOTNET_INSTALL_DIR
   local versionPath="$dotnetRoot/.version"
-  local majorVersion="${dotnetSdkVersion:0:1}"
-  local aspnetRuntimePath="$dotnetRoot/shared/Microsoft.AspNetCore.App/$majorVersion.*"
-  local coreRuntimePath="$dotnetRoot/shared/Microsoft.NETCore.App/$majorVersion.*"
-  local wdRuntimePath="$dotnetRoot/shared/Microsoft.WindowsDesktop.App/$majorVersion.*"
+  local majorVersion="${dotnetSdkVersion%%.*}"
+  local aspnetRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" aspnetcore)/$majorVersion.*"
+  local coreRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" dotnet)/$majorVersion.*"
+  local wdRuntimePath="$(GetSharedFrameworkPath "$dotnetRoot" windowsdesktop)/$majorVersion.*"
   local sdkPath="$dotnetRoot/sdk/*"
 
   if [ -f "$versionPath" ]; then

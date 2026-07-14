@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -14,16 +14,19 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
-    public class RunnableProjectGeneratorTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class RunnableProjectGeneratorTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
 
-        public RunnableProjectGeneratorTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
+        [TestMethod]
         public async Task CreateAsyncTest_GuidsMacroProcessingCaseSensitivity()
         {
             //
@@ -58,7 +61,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = environment.GetTempVirtualizedPath();
             string targetDir = environment.GetTempVirtualizedPath();
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
@@ -83,7 +86,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             foreach (string guidFormat in GuidMacroConfig.DefaultFormats.Select(c => c.ToString()))
             {
                 string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, contentFileNamePrefix + guidFormat));
-                Assert.True(
+                Assert.IsTrue(
                     Guid.TryParseExact(resultContent, guidFormat, out Guid resultGuid),
                     $"Expected the result conent ({resultContent}) to be parseable by Guid format '{guidFormat}'");
 
@@ -93,10 +96,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
                 else
                 {
-                    Assert.Equal(expectedResultGuid, resultGuid);
+                    Assert.AreEqual(expectedResultGuid, resultGuid);
                 }
             }
-            Assert.NotEqual(inputTestGuid, expectedResultGuid);
+            Assert.AreNotEqual(expectedResultGuid, inputTestGuid);
         }
 
         private const string TemplateConfigQuotelessLiteralsNotEnabled = /*lang=json*/ """
@@ -162,9 +165,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             """;
 
-        [Theory]
-        [InlineData(TemplateConfigQuotelessLiteralsNotEnabled, "UNKNOWN")]
-        [InlineData(TemplateConfigQuotelessLiteralsEnabled, "SECOND")]
+        [TestMethod]
+        [DataRow(TemplateConfigQuotelessLiteralsNotEnabled, "UNKNOWN")]
+        [DataRow(TemplateConfigQuotelessLiteralsEnabled, "SECOND")]
         public async Task CreateAsyncTest_ConditionWithUnquotedChoiceLiteral(string templateConfig, string expectedResult)
         {
             //
@@ -195,7 +198,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = environment.GetTempVirtualizedPath();
             string targetDir = environment.GetTempVirtualizedPath();
 
@@ -220,10 +223,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile")).Trim();
-            Assert.Equal(expectedResult, resultContent);
+            Assert.AreEqual(expectedResult, resultContent);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_MultiChoiceParamReplacingAndCondition()
         {
             //
@@ -295,7 +298,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = environment.GetTempVirtualizedPath();
             string targetDir = environment.GetTempVirtualizedPath();
 
@@ -320,10 +323,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_MultiChoiceParamAndConditionMacro()
         {
             //
@@ -442,7 +445,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = environment.GetTempVirtualizedPath();
             string targetDir = environment.GetTempVirtualizedPath();
 
@@ -467,10 +470,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateAsyncTest_MultiChoiceParamJoining()
         {
             //
@@ -555,7 +558,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environment = s_environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = environment.GetTempVirtualizedPath();
             string targetDir = environment.GetTempVirtualizedPath();
 
@@ -580,10 +583,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_CoaleseWithInvalidSetup()
         {
             //
@@ -630,7 +633,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
             // Dependencies preparation and mounting
             //
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true);
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true);
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
 
@@ -653,11 +656,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/templating/issues/4988")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/templating/issues/4988")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public async Task XMLConditionFailure()
         {
@@ -714,7 +718,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
             // Dependencies preparation and mounting
             //
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
 
@@ -739,11 +743,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile.md"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/templating/issues/4988")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/templating/issues/4988")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public async Task HashConditionFailure()
         {
@@ -800,7 +805,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
             // Dependencies preparation and mounting
             //
-            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string sourceBasePath = settings.GetTempVirtualizedPath();
             string targetDir = settings.GetTempVirtualizedPath();
 
@@ -824,7 +829,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile.yaml"));
-            Assert.Equal(expectedSnippet, resultContent);
+            Assert.AreEqual(expectedSnippet, resultContent);
         }
     }
 }

@@ -1458,6 +1458,17 @@ Copyright (c) .NET Foundation. All rights reserved.
        which cannot be done during evaluation.  -->
   <Target Name="ComputeRunArguments" />
 
+  <!-- Errors out for unsupported run scenarios (e.g. .NET Framework on non-Windows). -->
+  <Target Name="_CheckRunCommandSupported"
+          AfterTargets="ComputeRunArguments">
+    <NETSdkError Condition="'$(_IsExecutable)' == 'true'
+                            and '$(TargetFrameworkIdentifier)' == '.NETFramework'
+                            and '$(RunCommand)' == ''
+                            and !$([MSBuild]::IsOSPlatform('Windows'))"
+                 ResourceName="RunCommandRequiresWindowsForNetFramework"
+                 FormatArguments="$(MSBuildProjectName);$(NETCoreAppMaximumVersion)" />
+  </Target>
+
 
   <!-- Override MSBuild Run Target -->
   <Target Name="Run" DependsOnTargets="ComputeRunArguments">

@@ -14,6 +14,7 @@ using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
+    [TestClass]
     public class CSharpFileBuilderTests
     {
         class AllowAllFilter : ISymbolFilter
@@ -45,7 +46,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
 
             // compare SyntaxTree and not string representation
-            Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
+            Assert.IsTrue(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
         }
 
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
                 includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, additionalApiInclusionFilter: null, assemblyName, header);
 
-            Assert.Equal(expected.ReplaceLineEndings("\n"), resultedString.ReplaceLineEndings("\n"));
+            Assert.AreEqual(expected.ReplaceLineEndings("\n"), resultedString.ReplaceLineEndings("\n"));
         }
 
         private static string GenerateOutput(string original,
@@ -103,7 +104,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             return stringWriter.ToString();
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDefaultHeader()
         {
             RunTest(original: """
@@ -121,7 +122,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 header: null);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCustomHeader()
         {
             string customHeader = """
@@ -145,7 +146,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 header: customHeader);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGlobalNamespaceDeclaration()
         {
             RunTest(original: """
@@ -158,7 +159,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNamespaceDeclaration()
         {
             RunTest(original: """
@@ -174,7 +175,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestClassDeclaration()
         {
             RunTest(original: """
@@ -204,7 +205,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestStructDeclaration()
         {
             RunTest(original: """
@@ -300,7 +301,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRecordDeclaration()
         {
             RunTest(original: """
@@ -413,7 +414,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRecordStructDeclaration()
         {
             RunTest(original: """
@@ -633,7 +634,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInterfaceGeneration()
         {
             RunTest(original: """
@@ -664,7 +665,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestEnumGeneration()
         {
             RunTest(original: """
@@ -691,7 +692,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPropertyGeneration()
         {
             RunTest(original: """
@@ -720,7 +721,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAbstractPropertyGeneration()
         {
             RunTest(original: """
@@ -745,7 +746,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceImplementation()
         {
             RunTest(original: """
@@ -790,7 +791,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPartiallySpecifiedGenericClassGeneration()
         {
             RunTest(original: """
@@ -815,7 +816,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGenericClassWitConstraintsParameterGeneration()
         {
             RunTest(original: """
@@ -838,7 +839,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNotNullGenericConstraintGeneration()
         {
             RunTest(original: """
@@ -888,7 +889,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNotNullConstraintClauseOrdering()
         {
             RunTest(original: """
@@ -913,7 +914,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBlankLineGenerationBetweenTypes()
         {
             RunTestAndCompareOutput(original: """
@@ -971,7 +972,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceImplementationNotNullConstraint()
         {
             RunTest(original: """
@@ -1007,7 +1008,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBlankLineGenerationBetweenNestedTypeLikeMembers()
         {
             RunTestAndCompareOutput(original: """
@@ -1040,7 +1041,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAllowsRefStructGenericConstraintGeneration()
         {
             RunTest(original: """
@@ -1084,7 +1085,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPublicMembersGeneration()
         {
             RunTest(original: """
@@ -1134,7 +1135,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDelegateGeneration()
         {
             RunTest(original: """
@@ -1151,7 +1152,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAbstractEventGeneration()
         {
             RunTest(original: """
@@ -1184,7 +1185,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestEventGenerationOutput()
         {
             RunTestAndCompareOutput(original: """
@@ -1207,7 +1208,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceEventGeneration()
         {
             RunTest(original: """
@@ -1244,7 +1245,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceEventFromInternalInterfaceIsExcluded()
         {
             RunTest(original: """
@@ -1272,7 +1273,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceEventWithInaccessibleTypeArgumentIsExcluded()
         {
             RunTest(original: """
@@ -1306,7 +1307,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """,
                 includeInternalSymbols: false);
         }
-        [Fact]
+        [TestMethod]
         public void TestCustomAttributeGeneration()
         {
             RunTest(original: """
@@ -1376,7 +1377,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestFullyQualifiedNamesForDefaultEnumParameters()
         {
             RunTest(original: """
@@ -1422,7 +1423,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestCustomComparisonOperatorGeneration()
         {
             RunTest(original: """
@@ -1453,7 +1454,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNestedClassGeneration()
         {
             RunTest(original: """
@@ -1483,7 +1484,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 }
                 """);
         }
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceImplementationMethodGeneration()
         {
             RunTest(original: """
@@ -1506,7 +1507,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestNullabilityGeneration()
         {
             RunTest(original: """
@@ -1535,7 +1536,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExtensionMethodsGeneration()
         {
             RunTest(original: """
@@ -1558,7 +1559,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMethodsWithVariableNumberOfArgumentsGeneration()
         {
             RunTest(original: """
@@ -1581,7 +1582,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestConversionOperatorGeneration()
         {
             RunTest(original: """
@@ -1617,7 +1618,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDestructorGeneration()
         {
             RunTest(original: """
@@ -1640,7 +1641,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceImplementationPropertyGeneration()
         {
             RunTest(original: """
@@ -1679,7 +1680,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAccessibilityGenerationForPropertyAccessors()
         {
             RunTest(original: """
@@ -1702,7 +1703,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestConstantFieldGeneration()
         {
             RunTest(original: """
@@ -1726,7 +1727,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTypeParameterVarianceGeneration()
         {
             RunTest(original: """
@@ -1750,7 +1751,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void TestRefMembersGeneration()
         {
             RunTest(original: """
@@ -1782,7 +1783,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDefaultConstraintOnOverrideGeneration()
         {
             RunTest(original: """
@@ -1820,7 +1821,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForValueTypes()
         {
             RunTest(original: """
@@ -1846,7 +1847,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForReferenceTypes()
         {
             RunTest(original: """
@@ -1871,7 +1872,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForGenericTypes()
         {
             RunTest(original: """
@@ -1895,7 +1896,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForNestedGenericTypes()
         {
             RunTest(original: """
@@ -1923,7 +1924,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsAngleBrackets()
         {
             RunTest(original: """
@@ -1951,7 +1952,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestSynthesizePrivateFieldsForInaccessibleNestedGenericTypes()
         {
             RunTest(original: """
@@ -1981,7 +1982,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithoutExplicitDefault()
         {
             RunTest(original: """
@@ -2011,7 +2012,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithExplicitDefaultConstructor()
         {
             RunTest(original: """
@@ -2042,7 +2043,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalParameterlessConstructors()
         {
             RunTest(original: """
@@ -2076,7 +2077,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalParameterizedConstructors()
         {
             RunTest(original: """
@@ -2134,7 +2135,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalParameterizedConstructorsPreserveInternals()
         {
             RunTest(original: """
@@ -2200,7 +2201,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     includeInternalSymbols: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalConstructorCallingProtected()
         {
             RunTest(original: """
@@ -2234,7 +2235,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithoutDefaultConstructor()
         {
             RunTest(original: """
@@ -2275,7 +2276,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithMultipleNonDefaultConstructors()
         {
             RunTest(original: """
@@ -2320,7 +2321,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithAmbiguousNonDefaultConstructors()
         {
             RunTest(original: """
@@ -2357,7 +2358,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeWithAmbiguousNonDefaultConstructorsRegression31655()
         {
             RunTest(original: """
@@ -2404,7 +2405,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseTypeConstructorWithObsoleteAttribute()
         {
             RunTest(original: """
@@ -2441,7 +2442,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestObsoleteBaseTypeConstructorWithoutErrorParameter()
         {
             RunTest(original: """
@@ -2478,7 +2479,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestObsoleteBaseTypeConstructorWithoutMessageParameter()
         {
             RunTest(original: """
@@ -2515,7 +2516,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestFilterOutInternalExplicitInterfaceImplementation()
         {
             RunTest(original: """
@@ -2545,7 +2546,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestMethodsWithReferenceParameterGeneration()
         {
             RunTest(original: """
@@ -2569,7 +2570,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/74109")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn/issues/74109")]
         public void TestInterfaceWithOperatorGeneration()
         {
             RunTest(original: """
@@ -2593,7 +2594,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                  includeInternalSymbols: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/74109")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn/issues/74109")]
         public void TestInterfaceWithCheckedOperatorGeneration()
         {
             RunTest(original: """
@@ -2621,7 +2622,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                  includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUnsafeFieldGeneration()
         {
             RunTest(original: """
@@ -2650,7 +2651,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 allowUnsafe: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUnsafeMethodGeneration()
         {
             RunTest(original: """
@@ -2685,7 +2686,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 allowUnsafe: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUnsafeConstructorGeneration()
         {
             RunTest(original: """
@@ -2720,7 +2721,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 allowUnsafe: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestUnsafeBaseConstructorGeneration()
         {
             RunTest(original: """
@@ -2755,7 +2756,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 allowUnsafe: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalDefaultConstructorGeneration()
         {
             RunTest(original: """
@@ -2813,7 +2814,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPrivateDefaultConstructorGeneration()
         {
             RunTest(original: """
@@ -2848,7 +2849,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeEffectivelyPrivateSymbols: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalDefaultConstructorGenerationForGenericType()
         {
             RunTest(original: """
@@ -2882,7 +2883,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitParameterlessConstructorNotRemoved()
         {
             RunTest(original: """
@@ -2908,7 +2909,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestBaseClassWithExplicitDefaultConstructor()
         {
             RunTest(original: """
@@ -2939,7 +2940,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGenericBaseInterfaceWithInaccessibleTypeArguments()
         {
             RunTest(original: """
@@ -2984,7 +2985,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void NewKeywordWhenBaseMethodIsHidden()
         {
             RunTest(original: """
@@ -3135,9 +3136,9 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void TestAttributeWithInternalTypeArgumentOmitted(bool includeInternalSymbols)
         {
             string expected = includeInternalSymbols ? """
@@ -3200,7 +3201,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: includeInternalSymbols);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAttributesExcludedWithFilter()
         {
             RunTest(original: """
@@ -3241,7 +3242,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 excludedAttributeList: ["T:A.AnyTestAttribute"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGenericClassImplementsGenericInterface()
         {
             RunTest(original: """
@@ -3293,7 +3294,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestTypeForwardsToGenericTypesRegression31250()
         {
             RunTest(original: """
@@ -3339,7 +3340,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReservedAttributesAreOmitted()
         {
             RunTest(original: """
@@ -3373,7 +3374,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceIndexer()
         {
             RunTest(original: """
@@ -3411,7 +3412,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIndexerWithCustomName()
         {
             RunTest(original: """
@@ -3436,7 +3437,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIndexerWithDefaultNameDoesNotEmitIndexerNameAttribute()
         {
             RunTest(original: """
@@ -3459,7 +3460,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceIndexerWithCustomNameDoesNotEmitIndexerNameAttribute()
         {
             RunTest(original: """
@@ -3494,7 +3495,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestExplicitInterfaceNonGenericCollections()
         {
             RunTest(original: """
@@ -3572,7 +3573,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 includeInternalSymbols: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIncludeApiFileEmitsInternalOOBAttribute()
         {
             using TempDirectory root = new();
@@ -3651,7 +3652,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 additionalApiInclusionFilter: inclusionFilter);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestIncludeInternalCompilerAttributeByDocIdList()
         {
             ISymbolFilter inclusionFilter = new CompositeSymbolFilter(CompositeSymbolFilterMode.Or)
@@ -3675,7 +3676,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 additionalApiInclusionFilter: inclusionFilter);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestInternalOOBAttributeNotEmittedWithoutInclusionFilter()
         {
             RunTest(original: """

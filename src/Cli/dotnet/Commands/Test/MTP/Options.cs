@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal record TestOptions(bool IsHelp, bool IsDiscovery, IReadOnlyDictionary<string, string> EnvironmentVariables);
@@ -14,6 +16,7 @@ internal record BuildOptions(
     Utils.VerbosityOptions? Verbosity,
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
-    List<string> TestApplicationArguments,
+    ImmutableArray<string> TestApplicationArguments,
     IEnumerable<string> MSBuildArgs,
-    string? Device);
+    string? Device,
+    bool ListDevices);
