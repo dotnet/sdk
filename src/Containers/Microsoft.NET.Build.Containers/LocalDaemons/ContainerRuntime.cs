@@ -17,12 +17,15 @@ internal sealed class ContainerRuntime : ILocalRegistry
 
     public const string WslcCommand = "wslc";
 
+    public const string MacOSContainerCommand = "container";
+
     private const string FallbackCommands = $"{DockerCommand}/{PodmanCommand}";
 
     private readonly ILogger _logger;
     private readonly ContainerRuntimeOperations _operations;
     private readonly Func<bool> _isPodmanAlias;
     private readonly bool _isWindows;
+    private readonly bool _isMacOS;
     private IContainerRuntime? _runtime;
 
     public ContainerRuntime(string? command, ILoggerFactory loggerFactory)
@@ -31,7 +34,8 @@ internal sealed class ContainerRuntime : ILocalRegistry
             loggerFactory,
             ContainerRuntimeOperations.TryRunCommandAsync,
             DockerContainerRuntime.IsPodmanAlias,
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
     {
     }
 
@@ -41,7 +45,8 @@ internal sealed class ContainerRuntime : ILocalRegistry
             loggerFactory,
             ContainerRuntimeOperations.TryRunCommandAsync,
             DockerContainerRuntime.IsPodmanAlias,
-            probePlatformNativeCli && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            probePlatformNativeCli && RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+            probePlatformNativeCli && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
     {
     }
 
@@ -50,12 +55,14 @@ internal sealed class ContainerRuntime : ILocalRegistry
         ILoggerFactory loggerFactory,
         Func<string, string, CancellationToken, Task<bool>> tryRunCommand,
         Func<bool> isPodmanAlias,
-        bool isWindows)
+        bool isWindows,
+        bool isMacOS)
     {
         _logger = loggerFactory.CreateLogger<ContainerRuntime>();
         _operations = new ContainerRuntimeOperations(_logger, tryRunCommand);
         _isPodmanAlias = isPodmanAlias;
         _isWindows = isWindows;
+        _isMacOS = isMacOS;
         _runtime = command is null ? null : CreateRuntime(command);
     }
 
@@ -130,6 +137,7 @@ internal sealed class ContainerRuntime : ILocalRegistry
             DockerCommand => new DockerContainerRuntime(_operations, _logger),
             PodmanCommand => new PodmanContainerRuntime(_operations, _logger),
             WslcCommand => new WslcContainerRuntime(_operations, _logger),
+            MacOSContainerCommand => new MacOSContainerRuntime(_operations, _logger),
             _ => throw new ArgumentException($"{command} is an unknown command.")
         };
 
@@ -141,17 +149,23 @@ internal sealed class ContainerRuntime : ILocalRegistry
         }
 
         IContainerRuntime wslcRuntime = CreateRuntime(WslcCommand);
+        IContainerRuntime macOSContainerRuntime = CreateRuntime(MacOSContainerCommand);
         IContainerRuntime podmanRuntime = CreateRuntime(PodmanCommand);
         IContainerRuntime dockerRuntime = CreateRuntime(DockerCommand);
         Task<bool> wslcAvailable = _isWindows ? wslcRuntime.ProbeAsync(cancellationToken) : Task.FromResult(false);
+        Task<bool> macOSContainerAvailable = _isMacOS ? macOSContainerRuntime.ProbeAsync(cancellationToken) : Task.FromResult(false);
         Task<bool> podmanAvailable = podmanRuntime.ProbeAsync(cancellationToken);
         Task<bool> dockerAvailable = dockerRuntime.ProbeAsync(cancellationToken);
 
-        await Task.WhenAll(wslcAvailable, podmanAvailable, dockerAvailable).ConfigureAwait(false);
+        await Task.WhenAll(wslcAvailable, macOSContainerAvailable, podmanAvailable, dockerAvailable).ConfigureAwait(false);
 
         if (wslcAvailable.Result)
         {
             _runtime = wslcRuntime;
+        }
+        else if (macOSContainerAvailable.Result)
+        {
+            _runtime = macOSContainerRuntime;
         }
         else if (dockerAvailable.Result && podmanAvailable.Result && _isPodmanAlias())
         {
@@ -170,7 +184,11 @@ internal sealed class ContainerRuntime : ILocalRegistry
     }
 
     private string GetCommandsForCurrentPlatform()
-        => _isWindows ? $"{WslcCommand}/{FallbackCommands}" : FallbackCommands;
+        => _isWindows
+            ? $"{WslcCommand}/{FallbackCommands}"
+            : _isMacOS
+                ? $"{MacOSContainerCommand}/{FallbackCommands}"
+                : FallbackCommands;
 
     private NotImplementedException CreateRuntimeNotFoundException()
         => new(Resource.FormatString(Strings.ContainerRuntimeProcessCreationFailed, GetCommandsForCurrentPlatform()));

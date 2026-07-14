@@ -89,7 +89,7 @@
       <!-- An empty ContainerRegistry implies pushing to the local registry, putting this here for documentation purposes -->
       <!-- <ContainerRegistry></ContainerRegistry> -->
 
-      <!-- An empty LocalRegistry implies detecting the local registry. LocalRegistry can be set explicitly to Docker/Podman/Wslc. -->
+      <!-- An empty LocalRegistry implies detecting the local registry. LocalRegistry can be set explicitly to Docker/Podman/Wslc/MacOSContainer. -->
       <!-- <LocalRegistry></LocalRegistry> -->
 
       <!-- Compatibility: previous versions used ImageName, but the proper term is Repository. Keep using that if explicitly set. -->

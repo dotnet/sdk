@@ -49,6 +49,19 @@ public sealed class WslcAvailableCondition : ConditionBaseAttribute
     public override bool IsConditionMet => WslcCliStatus.IsAvailable;
 }
 
+public sealed class MacOSContainerAvailableCondition : ConditionBaseAttribute
+{
+    public MacOSContainerAvailableCondition()
+        : base(ConditionMode.Include)
+    {
+        IgnoreMessage = "This test requires macOS with an available container environment.";
+    }
+
+    public override string GroupName => nameof(MacOSContainerAvailableCondition);
+
+    public override bool IsConditionMet => MacOSContainerCliStatus.IsAvailable;
+}
+
 public sealed class ContainerdStoreUnavailableCondition : ConditionBaseAttribute
 {
     public ContainerdStoreUnavailableCondition()
@@ -91,6 +104,16 @@ internal static class WslcCliStatus
     private static readonly Lazy<bool> s_isAvailable = new(
         () => OperatingSystem.IsWindows()
               && new ContainerRuntime(ContainerRuntime.WslcCommand, new Microsoft.NET.TestFramework.TestLoggerFactory()).IsAvailable(),
+        LazyThreadSafetyMode.ExecutionAndPublication);
+
+    public static bool IsAvailable => s_isAvailable.Value;
+}
+
+internal static class MacOSContainerCliStatus
+{
+    private static readonly Lazy<bool> s_isAvailable = new(
+        () => OperatingSystem.IsMacOS()
+              && new ContainerRuntime(ContainerRuntime.MacOSContainerCommand, new Microsoft.NET.TestFramework.TestLoggerFactory()).IsAvailable(),
         LazyThreadSafetyMode.ExecutionAndPublication);
 
     public static bool IsAvailable => s_isAvailable.Value;

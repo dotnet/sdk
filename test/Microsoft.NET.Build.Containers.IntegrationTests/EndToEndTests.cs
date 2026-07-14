@@ -172,6 +172,39 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
+    [MacOSContainerAvailableCondition]
+    public void EndToEndWithMacOSContainerLocalLoad()
+    {
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
+
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        new DotnetCommand(
+            Log,
+            "publish",
+            "/t:PublishContainer",
+            "-f", _oldFramework,
+            "-r", "linux-arm64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            $"/p:LocalRegistry={KnownLocalRegistryTypes.MacOSContainer}",
+            "/p:EnableSdkContainerSupport=true",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new RunExeCommand(Log, ContainerRuntime.MacOSContainerCommand, "run", "--rm", $"{imageName}:{imageTag}")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+
+        newProjectDir.Delete(recursive: true);
+    }
+
+    [TestMethod]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {

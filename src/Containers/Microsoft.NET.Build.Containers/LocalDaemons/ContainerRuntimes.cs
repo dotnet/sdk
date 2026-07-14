@@ -369,3 +369,48 @@ internal sealed class WslcContainerRuntime(ContainerRuntimeOperations operations
             ContainerArchive.WriteMultiArchOciImageToStreamAsync,
             cancellationToken);
 }
+
+internal sealed class MacOSContainerRuntime(ContainerRuntimeOperations operations, ILogger logger) : ContainerRuntimeBase(operations, logger)
+{
+    protected override string Command => ContainerRuntime.MacOSContainerCommand;
+
+    // The executable can be installed while the macOS container services are stopped.
+    protected override string ProbeArguments => "system status";
+
+    /// <inheritdoc />
+    public override string GetManifestMediaType(string defaultManifestMediaType, KnownImageFormats? imageFormat)
+        => SchemaTypes.OciManifestV1;
+
+    /// <inheritdoc />
+    public override ContainerRuntimeKind GetTelemetryValue() => ContainerRuntimeKind.MacOSContainer;
+
+    /// <inheritdoc />
+    public override Task LoadAsync(
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+        => Operations.LoadFromFileAsync(
+            Command,
+            archivePath => ["image", "load", "--input", archivePath],
+            image,
+            sourceReference,
+            destinationReference,
+            ContainerArchive.WriteOciImageToStreamAsync,
+            cancellationToken);
+
+    /// <inheritdoc />
+    public override Task LoadAsync(
+        MultiArchImage image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+        => Operations.LoadFromFileAsync(
+            Command,
+            archivePath => ["image", "load", "--input", archivePath],
+            image,
+            sourceReference,
+            destinationReference,
+            ContainerArchive.WriteMultiArchOciImageToStreamAsync,
+            cancellationToken);
+}

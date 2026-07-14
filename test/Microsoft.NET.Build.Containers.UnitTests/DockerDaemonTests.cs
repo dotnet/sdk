@@ -54,13 +54,18 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow(true, true, true, true, false, (int)ContainerRuntimeKind.Wslc)]
-    [DataRow(false, true, true, false, false, (int)ContainerRuntimeKind.Docker)]
-    [DataRow(false, false, true, true, false, (int)ContainerRuntimeKind.Docker)]
-    [DataRow(false, false, true, true, true, (int)ContainerRuntimeKind.Podman)]
+    [DataRow(true, false, true, true, true, true, false, (int)ContainerRuntimeKind.Wslc)]
+    [DataRow(false, true, true, true, true, true, false, (int)ContainerRuntimeKind.MacOSContainer)]
+    [DataRow(false, true, false, false, true, true, false, (int)ContainerRuntimeKind.Docker)]
+    [DataRow(false, true, false, false, false, true, false, (int)ContainerRuntimeKind.Podman)]
+    [DataRow(false, false, true, true, true, false, false, (int)ContainerRuntimeKind.Docker)]
+    [DataRow(false, false, false, false, true, true, false, (int)ContainerRuntimeKind.Docker)]
+    [DataRow(false, false, false, false, true, true, true, (int)ContainerRuntimeKind.Podman)]
     public void Selects_preferred_available_command(
         bool isWindows,
+        bool isMacOS,
         bool wslcAvailable,
+        bool macOSContainerAvailable,
         bool dockerAvailable,
         bool podmanAvailable,
         bool isPodmanAlias,
@@ -70,11 +75,13 @@ public class DockerDaemonTests : IDisposable
             command => command switch
             {
                 ContainerRuntime.WslcCommand => wslcAvailable,
+                ContainerRuntime.MacOSContainerCommand => macOSContainerAvailable,
                 ContainerRuntime.DockerCommand => dockerAvailable,
                 ContainerRuntime.PodmanCommand => podmanAvailable,
                 _ => false
             },
             isWindows,
+            isMacOS,
             isPodmanAlias);
 
         Assert.AreEqual((ContainerRuntimeKind)expectedRuntime, runtime.GetTelemetryValue());
@@ -93,18 +100,45 @@ public class DockerDaemonTests : IDisposable
                 return Task.FromResult(command == ContainerRuntime.WslcCommand);
             },
             () => false,
-            isWindows: false);
+            isWindows: false,
+            isMacOS: false);
 
         Assert.AreEqual(ContainerRuntimeKind.Unknown, runtime.GetTelemetryValue());
         Assert.DoesNotContain(ContainerRuntime.WslcCommand, probedCommands);
     }
 
     [TestMethod]
-    public async Task Uses_wslc_specific_probe_command()
+    public void Does_not_probe_container_outside_macos()
+    {
+        var probedCommands = new System.Collections.Concurrent.ConcurrentBag<string>();
+        ContainerRuntime runtime = new(
+            command: null,
+            _loggerFactory,
+            (command, _, _) =>
+            {
+                probedCommands.Add(command);
+                return Task.FromResult(command == ContainerRuntime.MacOSContainerCommand);
+            },
+            () => false,
+            isWindows: false,
+            isMacOS: false);
+
+        Assert.AreEqual(ContainerRuntimeKind.Unknown, runtime.GetTelemetryValue());
+        Assert.DoesNotContain(ContainerRuntime.MacOSContainerCommand, probedCommands);
+    }
+
+    [TestMethod]
+    [DataRow(ContainerRuntime.WslcCommand, true, false, "image ls")]
+    [DataRow(ContainerRuntime.MacOSContainerCommand, false, true, "system status")]
+    public async Task Uses_platform_native_specific_commands(
+        string command,
+        bool isWindows,
+        bool isMacOS,
+        string expectedProbeArguments)
     {
         string? probedArguments = null;
         ContainerRuntime runtime = new(
-            ContainerRuntime.WslcCommand,
+            command,
             _loggerFactory,
             (_, arguments, _) =>
             {
@@ -112,14 +146,16 @@ public class DockerDaemonTests : IDisposable
                 return Task.FromResult(true);
             },
             () => false,
-            isWindows: true);
+            isWindows,
+            isMacOS);
 
         Assert.IsTrue(await runtime.IsAvailableAsync(default));
-        Assert.AreEqual("image ls", probedArguments);
+        Assert.AreEqual(expectedProbeArguments, probedArguments);
     }
 
     [TestMethod]
     [DataRow(KnownLocalRegistryTypes.Wslc, (int)ContainerRuntimeKind.Wslc)]
+    [DataRow(KnownLocalRegistryTypes.MacOSContainer, (int)ContainerRuntimeKind.MacOSContainer)]
     public void Creates_explicit_platform_native_registry(string registryType, int expectedRuntime)
     {
         ILocalRegistry registry = KnownLocalRegistryTypes.CreateLocalRegistry(registryType, _loggerFactory);
@@ -129,11 +165,26 @@ public class DockerDaemonTests : IDisposable
         Assert.Contains(registryType, KnownLocalRegistryTypes.SupportedLocalRegistryTypes);
     }
 
-    private ContainerRuntime CreateRuntime(Func<string, bool> isAvailable, bool isWindows, bool isPodmanAlias)
+    [TestMethod]
+    public void MacOSContainer_registry_forces_oci_image_format()
+    {
+        ILocalRegistry registry = KnownLocalRegistryTypes.CreateLocalRegistry(KnownLocalRegistryTypes.MacOSContainer, _loggerFactory);
+        DestinationImageReference destination = new(registry, "repository", ["tag"]);
+
+        Assert.AreEqual(
+            SchemaTypes.OciManifestV1,
+            ContainerHelpers.GetManifestMediaType(
+                SchemaTypes.DockerManifestV2,
+                KnownImageFormats.Docker,
+                destination));
+    }
+
+    private ContainerRuntime CreateRuntime(Func<string, bool> isAvailable, bool isWindows, bool isMacOS, bool isPodmanAlias)
         => new(
             command: null,
             _loggerFactory,
             (command, _, _) => Task.FromResult(isAvailable(command)),
             () => isPodmanAlias,
-            isWindows);
+            isWindows,
+            isMacOS);
 }

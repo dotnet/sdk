@@ -11,7 +11,9 @@ internal enum ContainerRuntimeKind
 
     Podman,
 
-    Wslc
+    Wslc,
+
+    MacOSContainer
 }
 
 /// <summary>
