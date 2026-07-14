@@ -110,8 +110,6 @@ Group files by area to guide how deeply to review each. The first five areas are
 | Compatibility tooling | `src/Compatibility/**` (ApiCompat/GenAPI) | Compiler/language semantic fidelity, diagnostics, generated reference output, framework variation |
 | Watch / Containers | `src/Dotnet.Watch/**`, `src/Containers/**` | Process lifetime, cancellation, file-system races, cleanup |
 | Analyzers | `src/Microsoft.CodeAnalysis.NetAnalyzers/**` | Roslyn diagnostic correctness across supported frameworks |
-| Localization | `**/*.resx`, `**/*.xlf` | `.resx` is the source of truth; `.xlf` must be regenerated via the `/t:UpdateXlf` target, never hand-edited (see conventions) |
-| Generated docs | `documentation/manpages/sdk/**` | Should never be manually edited — flag if hand-modified |
 | Build/Infra | `eng/**`, `Directory.Build.props`, `Directory.Build.targets`, `*.slnx` | Unintended side effects, breaking conditional logic |
 | Tests | `test/**` | Scenario-accurate regression coverage, target/platform gating, tests that would fail without the fix |
 
@@ -189,7 +187,8 @@ Only flag **actual problems**. Every comment must identify a concrete issue. Cat
 12. **Missing error handling at system boundaries** — unvalidated external input or missing null checks at public/internal API entry points. Do NOT flag null checks for parameters the type system already guarantees non-null.
 13. **Resource leaks** — `IDisposable` objects (e.g., `CancellationTokenSource`, `SemaphoreSlim`, process handles) created but never disposed, even if the pattern was moved from elsewhere.
 14. **Documentation & explanatory comments for non-obvious SDK behavior** — subtle target/property decisions, runtime mapping, or cross-repo ownership boundaries that a future maintainer cannot infer from types or names and that lack a durable comment; stale comments that contradict the code; workaround comments without a tracking link.
-15. **Repository convention violations** — the change breaks a rule documented in `.github/copilot-instructions.md` or the nearest area `AGENTS.md`. Read those files (they govern the directories being changed) and flag violations the build won't already catch — for example, hand-editing generated or regenerated files, or fixing behavior in this repo that another repo owns.
+15. **Repository convention violations** — the change breaks a rule documented in the [repository guardrails](../../copilot-instructions.md#guardrails) or the nearest area `AGENTS.md`. Read those files (they govern the directories being changed) and flag violations the build won't already catch — for example, hand-editing generated or regenerated files, or fixing behavior in this repo that another repo owns.
+16. **Stale AI context / instructions / docs** — the change makes something an AI- or contributor-facing artifact says no longer true: a documented command, file path or location, guardrail, build/test workflow, convention, or architecture description that the change has invalidated (for example, moving or renaming a file that a doc references), and that artifact wasn't updated in the same PR. Name the exact file — `.github/copilot-instructions.md`, any `AGENTS.md` in an affected subdirectory, a `.github/skills/*/SKILL.md`, a `.github/agents/*.agent.md`, or a file under `documentation/` — and the concrete drift. Don't flag internal changes that no artifact describes.
 
 ### What NOT to Flag
 

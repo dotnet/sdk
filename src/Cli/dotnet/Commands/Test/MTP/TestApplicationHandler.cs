@@ -289,8 +289,8 @@ internal sealed class TestApplicationHandler
                 ToOutcome(testResult.State),
                 testResult.Duration.HasValue ? TimeSpan.FromTicks(testResult.Duration.Value) : null,
                 exceptions: [.. (testResult.Exceptions ?? []).Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
-                expected: null,
-                actual: null,
+                expected: testResult.Expected,
+                actual: testResult.Actual,
                 standardOutput: testResult.StandardOutput,
                 errorOutput: testResult.ErrorOutput);
         }

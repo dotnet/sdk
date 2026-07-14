@@ -28,6 +28,7 @@ namespace Microsoft.NET.Build.Tests
         [OSCondition(OperatingSystems.Windows)]
         [DataRow("")]
         [DataRow("TestApp.")]
+        [Ignore("https://github.com/dotnet/sdk/issues/55263")]
         public void It_builds_deps_correctly_when_projects_do_not_get_restored(string prefix)
         {
             // NOTE the projects created by CreateTestProject:

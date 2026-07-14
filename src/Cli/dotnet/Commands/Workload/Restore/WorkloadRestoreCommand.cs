@@ -67,6 +67,7 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         return 0;
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     private List<WorkloadId> RunTargetToGetWorkloadIds(IEnumerable<string> allProjects)
     {
         const string GetRequiredWorkloadsTargetName = "_GetRequiredWorkloads";
