@@ -42,28 +42,22 @@ internal static class HostFxrPathResolver
             return string.Empty;
         }
 
-        // Pick the highest version directory. Directory names frequently include
-        // prerelease/build suffixes (e.g. "11.0.0-preview.6.26359.118"), which
-        // Version.TryParse cannot handle, so parse the numeric core for comparison.
+        // Match the native host's get_latest_fxr behavior: consider every valid
+        // semantic version, including prerelease versions, and select the highest.
+        // SDK and runtime roll-forward settings apply after hostfxr is loaded and
+        // do not affect hostfxr selection.
         string? latestFxr = getDirectories(fxrDir)
             .Select(path =>
             {
-                string name = Path.GetFileName(path);
-                int suffix = name.IndexOfAny(new[] { '-', '+' });
-                bool isStable = suffix < 0;
-                string core = isStable ? name : name.Substring(0, suffix);
+                HostFxrVersion.TryParse(Path.GetFileName(path), out HostFxrVersion? version);
                 return new
                 {
                     Path = path,
-                    Name = name,
-                    IsStable = isStable,
-                    Version = Version.TryParse(core, out Version? version) ? version : null
+                    Version = version
                 };
             })
             .Where(candidate => candidate.Version is not null)
             .OrderByDescending(candidate => candidate.Version)
-            .ThenByDescending(candidate => candidate.IsStable)
-            .ThenByDescending(candidate => candidate.Name, s_versionNameComparer)
             .Select(candidate => candidate.Path)
             .FirstOrDefault();
 
@@ -82,59 +76,191 @@ internal static class HostFxrPathResolver
         return fileExists(hostfxrPath) ? hostfxrPath : string.Empty;
     }
 
-    /// <summary>
-    ///  Orders version directory names so that numeric segments compare numerically
-    ///  (e.g. <c>preview.10</c> sorts after <c>preview.6</c>). A plain ordinal compare
-    ///  would place <c>preview.6</c> after <c>preview.10</c> because <c>'6' &gt; '1'</c>.
-    /// </summary>
-    private static readonly IComparer<string> s_versionNameComparer =
-        Comparer<string>.Create(CompareVersionNamesNumerically);
-
-    private static int CompareVersionNamesNumerically(string a, string b)
+    // Mirrors the SemVer parsing and precedence used by the native host's
+    // c_fx_ver_parse and c_fx_ver_compare functions.
+    private sealed class HostFxrVersion : IComparable<HostFxrVersion>
     {
-        int i = 0, j = 0;
-        while (i < a.Length && j < b.Length)
+        private readonly uint _major;
+        private readonly uint _minor;
+        private readonly uint _patch;
+        private readonly string[] _prereleaseIdentifiers;
+
+        private HostFxrVersion(uint major, uint minor, uint patch, string[] prereleaseIdentifiers)
         {
-            if (char.IsDigit(a[i]) && char.IsDigit(b[j]))
-            {
-                int startA = i, startB = j;
-                while (i < a.Length && char.IsDigit(a[i]))
-                {
-                    i++;
-                }
-                while (j < b.Length && char.IsDigit(b[j]))
-                {
-                    j++;
-                }
-
-                string numA = a.Substring(startA, i - startA).TrimStart('0');
-                string numB = b.Substring(startB, j - startB).TrimStart('0');
-
-                // Longer numeric run (ignoring leading zeros) is the larger number.
-                if (numA.Length != numB.Length)
-                {
-                    return numA.Length - numB.Length;
-                }
-
-                int ordinal = string.CompareOrdinal(numA, numB);
-                if (ordinal != 0)
-                {
-                    return ordinal;
-                }
-            }
-            else
-            {
-                int cmp = char.ToLowerInvariant(a[i]).CompareTo(char.ToLowerInvariant(b[j]));
-                if (cmp != 0)
-                {
-                    return cmp;
-                }
-                i++;
-                j++;
-            }
+            _major = major;
+            _minor = minor;
+            _patch = patch;
+            _prereleaseIdentifiers = prereleaseIdentifiers;
         }
 
-        // Whichever string still has characters left is the greater one.
-        return (a.Length - i) - (b.Length - j);
+        public int CompareTo(HostFxrVersion? other)
+        {
+            if (other is null)
+            {
+                return 1;
+            }
+
+            int comparison = _major.CompareTo(other._major);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            comparison = _minor.CompareTo(other._minor);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            comparison = _patch.CompareTo(other._patch);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            bool isPrerelease = _prereleaseIdentifiers.Length > 0;
+            bool otherIsPrerelease = other._prereleaseIdentifiers.Length > 0;
+            if (isPrerelease != otherIsPrerelease)
+            {
+                return isPrerelease ? -1 : 1;
+            }
+
+            int identifierCount = Math.Min(_prereleaseIdentifiers.Length, other._prereleaseIdentifiers.Length);
+            for (int i = 0; i < identifierCount; i++)
+            {
+                comparison = ComparePrereleaseIdentifiers(
+                    _prereleaseIdentifiers[i],
+                    other._prereleaseIdentifiers[i]);
+                if (comparison != 0)
+                {
+                    return comparison;
+                }
+            }
+
+            return _prereleaseIdentifiers.Length.CompareTo(other._prereleaseIdentifiers.Length);
+        }
+
+        internal static bool TryParse(string value, out HostFxrVersion? version)
+        {
+            version = null;
+
+            int buildSeparator = value.IndexOf('+');
+            if (buildSeparator >= 0)
+            {
+                if (!AreValidIdentifiers(value.Substring(buildSeparator + 1), allowLeadingZeros: true))
+                {
+                    return false;
+                }
+
+                value = value.Substring(0, buildSeparator);
+            }
+
+            string[] prereleaseIdentifiers = Array.Empty<string>();
+            int prereleaseSeparator = value.IndexOf('-');
+            if (prereleaseSeparator >= 0)
+            {
+                string prerelease = value.Substring(prereleaseSeparator + 1);
+                if (!AreValidIdentifiers(prerelease, allowLeadingZeros: false))
+                {
+                    return false;
+                }
+
+                prereleaseIdentifiers = prerelease.Split('.');
+                value = value.Substring(0, prereleaseSeparator);
+            }
+
+            string[] coreIdentifiers = value.Split('.');
+            if (coreIdentifiers.Length != 3
+                || !TryParseCoreIdentifier(coreIdentifiers[0], out uint major)
+                || !TryParseCoreIdentifier(coreIdentifiers[1], out uint minor)
+                || !TryParseCoreIdentifier(coreIdentifiers[2], out uint patch))
+            {
+                return false;
+            }
+
+            version = new HostFxrVersion(major, minor, patch, prereleaseIdentifiers);
+            return true;
+        }
+
+        private static bool TryParseCoreIdentifier(string value, out uint result)
+        {
+            result = 0;
+            return IsNumericIdentifier(value)
+                && (value.Length == 1 || value[0] != '0')
+                && uint.TryParse(value, out result);
+        }
+
+        private static bool AreValidIdentifiers(string value, bool allowLeadingZeros)
+        {
+            string[] identifiers = value.Split('.');
+            foreach (string identifier in identifiers)
+            {
+                if (identifier.Length == 0)
+                {
+                    return false;
+                }
+
+                bool isNumeric = true;
+                foreach (char character in identifier)
+                {
+                    if (!IsValidIdentifierCharacter(character))
+                    {
+                        return false;
+                    }
+
+                    isNumeric &= character is >= '0' and <= '9';
+                }
+
+                if (!allowLeadingZeros && isNumeric && identifier.Length > 1 && identifier[0] == '0')
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsValidIdentifierCharacter(char character) =>
+            character is >= '0' and <= '9'
+                or >= 'A' and <= 'Z'
+                or >= 'a' and <= 'z'
+                or '-';
+
+        private static bool IsNumericIdentifier(string value)
+        {
+            if (value.Length == 0)
+            {
+                return false;
+            }
+
+            foreach (char character in value)
+            {
+                if (character is < '0' or > '9')
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static int ComparePrereleaseIdentifiers(string left, string right)
+        {
+            bool leftIsNumeric = IsNumericIdentifier(left);
+            bool rightIsNumeric = IsNumericIdentifier(right);
+
+            if (leftIsNumeric && rightIsNumeric)
+            {
+                int comparison = left.Length.CompareTo(right.Length);
+                return comparison != 0 ? comparison : string.CompareOrdinal(left, right);
+            }
+
+            if (leftIsNumeric != rightIsNumeric)
+            {
+                return leftIsNumeric ? -1 : 1;
+            }
+
+            return string.CompareOrdinal(left, right);
+        }
     }
 }

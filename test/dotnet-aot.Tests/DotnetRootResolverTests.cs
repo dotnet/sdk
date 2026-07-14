@@ -242,6 +242,26 @@ public class DotnetRootResolverTests
     }
 
     [TestMethod]
+    public void ResolveHostfxrPath_TreatsBuildMetadataAsStable()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string stable = Path.Combine(fxrDir, "10.0.0+build.1");
+        string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
+        string expectedPath = Path.Combine(stable, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { preview, stable },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
     public void ResolveHostfxrPath_OrdersPrereleaseSegmentsNumerically()
     {
         // "preview.10" must sort after "preview.6"; a plain ordinal compare gets this wrong.
@@ -257,6 +277,47 @@ public class DotnetRootResolverTests
             isMacOS: false,
             directoryExists: _ => true,
             getDirectories: _ => new[] { preview6, preview10 },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_OrdersPrereleaseIdentifiersUsingAscii()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string upper = Path.Combine(fxrDir, "10.0.0-preview.A");
+        string lower = Path.Combine(fxrDir, "10.0.0-preview.a");
+        string expectedPath = Path.Combine(lower, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { upper, lower },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_SkipsInvalidSemanticVersions()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string twoPartVersion = Path.Combine(fxrDir, "99.0");
+        string leadingZero = Path.Combine(fxrDir, "98.0.0-preview.01");
+        string valid = Path.Combine(fxrDir, "10.0.0");
+        string expectedPath = Path.Combine(valid, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { twoPartVersion, leadingZero, valid },
             fileExists: _ => true);
 
         Assert.AreEqual(expectedPath, result);
