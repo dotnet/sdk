@@ -12,16 +12,17 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Tests.BuildServerTests
 {
+    [TestClass]
     public class VBCSCompilerServerTests
     {
-        [Fact]
+        [TestMethod]
         public void GivenAZeroExitShutdownDoesNotThrow()
         {
             var server = new VBCSCompilerServer(CreateCommandFactoryMock().Object);
             server.Shutdown();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenANonZeroExitCodeShutdownThrows()
         {
             const string ErrorMessage = "failed!";

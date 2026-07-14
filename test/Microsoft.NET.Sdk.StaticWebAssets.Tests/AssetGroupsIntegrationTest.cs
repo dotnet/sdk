@@ -1,17 +1,23 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO.Compression;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class AssetGroupsIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(AssetGroupsIntegrationTest))
+    [TestClass]
+    public class AssetGroupsIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => nameof(AssetGroupsIntegrationTest);
+        [TestMethod]
         public void Pack_NupkgContains_GroupedStaticWebAssets()
         {
             var packagePath = PackIdentityUILib("Pack_Nupkg");
@@ -43,7 +49,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Pack_PropsFile_ContainsAssetGroups_Metadata()
         {
             var packagePath = PackIdentityUILib("Pack_Props");
@@ -69,7 +75,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "V4 assets should have AssetGroups metadata with BootstrapVersion=V4");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_ConsumerDefault_ExcludesGroupedAssets()
         {
             var manifest = BuildConsumer("Build_Default", "IdentityUIConsumer");
@@ -89,7 +95,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 "V5 should be the default group — at least css/site.css and js/site.js expected");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_ConsumerV4_IncludesOnlyV4Assets()
         {
             var manifest = BuildConsumer("Build_V4", "IdentityUIConsumerV4");
@@ -121,7 +127,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     "file-only segment (~) should be excluded from endpoint routes"));
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_ConsumerV5_IncludesOnlyV5Assets()
         {
             var manifest = BuildConsumer("Build_V5", "IdentityUIConsumerV5");

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Nodes;
@@ -11,13 +11,23 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class PostActionTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class PostActionTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _environmentSettings;
 
-        public PostActionTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public PostActionTests()
         {
-            _environmentSettings = environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            _environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
         }
 
         private static JsonObject TestTemplateJson
@@ -143,11 +153,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        [Theory(DisplayName = nameof(TestPostActionConditioning))]
-        [InlineData(true, true, 2, new[] { "Action1", "Default instructions (action 1)" }, new[] { "Action2", "Default instructions (action 2)" })]
-        [InlineData(true, false, 1, new[] { "Action1", "Default instructions (action 1)" }, null)]
-        [InlineData(false, true, 1, new[] { "Action2", "Default instructions (action 2)" }, null)]
-        [InlineData(false, false, 0, null, null)]
+        [TestMethod]
+        [DataRow(true, true, 2, new[] { "Action1", "Default instructions (action 1)" }, new[] { "Action2", "Default instructions (action 2)" })]
+        [DataRow(true, false, 1, new[] { "Action1", "Default instructions (action 1)" }, null)]
+        [DataRow(false, true, 1, new[] { "Action2", "Default instructions (action 2)" }, null)]
+        [DataRow(false, false, 0, null, null)]
         public void TestPostActionConditioning(bool condition1, bool condition2, int expectedActionCount, string[]? firstResult, string[]? secondResult)
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
@@ -170,33 +180,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 vc,
                 renameGenerator);
 
-            Assert.Equal(expectedActionCount, postActions.Count);
+            Assert.HasCount(expectedActionCount, postActions);
             if (firstResult != null && firstResult.Length > 0)
             {
-                Assert.True(string.Equals(postActions[0].Description, firstResult[0]), $"expected '{firstResult[0]}', but got {postActions[0].Description}");
-                Assert.Equal(firstResult[1], postActions[0].ManualInstructions);
+                Assert.AreEqual(firstResult[0], postActions[0].Description);
+                Assert.AreEqual(firstResult[1], postActions[0].ManualInstructions);
             }
 
             if (secondResult != null && secondResult.Length > 0)
             {
-                Assert.True(string.Equals(postActions[1].Description, secondResult[0]), $"expected '{secondResult[0]}', but got {postActions[1].Description}");
-                Assert.Equal(secondResult[1], postActions[1].ManualInstructions);
+                Assert.AreEqual(secondResult[0], postActions[1].Description);
+                Assert.AreEqual(secondResult[1], postActions[1].ManualInstructions);
             }
         }
 
-        [Theory(DisplayName = nameof(TestPostActionInstructionsConditioning))]
-        [InlineData(true, true, 2, "Windows", "Windows instructions (action 1)", "Windows instructions (action 2)")]
-        [InlineData(true, true, 2, "Linux", "Linux instructions (action 1)", "Linux instructions (action 2)")]
-        [InlineData(true, true, 2, "Mac", "Mac instructions (action 1)", "Mac instructions (action 2)")]
-        [InlineData(true, true, 2, "BeOS", "Default instructions (action 1)", "Default instructions (action 2)")]
-        [InlineData(true, false, 1, "Windows", "Windows instructions (action 1)", null)]
-        [InlineData(true, false, 1, "Linux", "Linux instructions (action 1)", null)]
-        [InlineData(true, false, 1, "Mac", "Mac instructions (action 1)", null)]
-        [InlineData(true, false, 1, "BeOS", "Default instructions (action 1)", null)]
-        [InlineData(false, true, 1, "Windows", "Windows instructions (action 2)", null)]
-        [InlineData(false, true, 1, "Linux", "Linux instructions (action 2)", null)]
-        [InlineData(false, true, 1, "Mac", "Mac instructions (action 2)", null)]
-        [InlineData(false, true, 1, "BeOS", "Default instructions (action 2)", null)]
+        [TestMethod]
+        [DataRow(true, true, 2, "Windows", "Windows instructions (action 1)", "Windows instructions (action 2)")]
+        [DataRow(true, true, 2, "Linux", "Linux instructions (action 1)", "Linux instructions (action 2)")]
+        [DataRow(true, true, 2, "Mac", "Mac instructions (action 1)", "Mac instructions (action 2)")]
+        [DataRow(true, true, 2, "BeOS", "Default instructions (action 1)", "Default instructions (action 2)")]
+        [DataRow(true, false, 1, "Windows", "Windows instructions (action 1)", null)]
+        [DataRow(true, false, 1, "Linux", "Linux instructions (action 1)", null)]
+        [DataRow(true, false, 1, "Mac", "Mac instructions (action 1)", null)]
+        [DataRow(true, false, 1, "BeOS", "Default instructions (action 1)", null)]
+        [DataRow(false, true, 1, "Windows", "Windows instructions (action 2)", null)]
+        [DataRow(false, true, 1, "Linux", "Linux instructions (action 2)", null)]
+        [DataRow(false, true, 1, "Mac", "Mac instructions (action 2)", null)]
+        [DataRow(false, true, 1, "BeOS", "Default instructions (action 2)", null)]
         public void TestPostActionInstructionsConditioning(bool condition1, bool condition2, int expectedActionCount, string operatingSystemValue, string firstInstruction, string? secondInstruction)
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
@@ -220,20 +230,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 vc,
                 renameGenerator);
 
-            Assert.Equal(expectedActionCount, postActions.Count);
+            Assert.HasCount(expectedActionCount, postActions);
 
             if (!string.IsNullOrEmpty(firstInstruction))
             {
-                Assert.Equal(firstInstruction, postActions[0].ManualInstructions);
+                Assert.AreEqual(firstInstruction, postActions[0].ManualInstructions);
             }
 
             if (!string.IsNullOrEmpty(secondInstruction))
             {
-                Assert.Equal(secondInstruction, postActions[1].ManualInstructions);
+                Assert.AreEqual(secondInstruction, postActions[1].ManualInstructions);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPostActionInstructionsConditioning_BlankCondition()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
@@ -255,12 +265,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 vc,
                 renameGenerator);
 
-            Assert.Single(postActions);
+            Assert.ContainsSingle(postActions);
 
-            Assert.Equal("First instruction (action 3)", postActions[0].ManualInstructions);
+            Assert.AreEqual("First instruction (action 3)", postActions[0].ManualInstructions);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestPostActionInstructionsConditioning_LastTrueConditionWin()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
@@ -285,12 +295,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 vc,
                 renameGenerator);
 
-            Assert.Single(postActions);
+            Assert.ContainsSingle(postActions);
 
-            Assert.Equal("Windows-NET-C# instructions (action 4)", postActions[0].ManualInstructions);
+            Assert.AreEqual("Windows-NET-C# instructions (action 4)", postActions[0].ManualInstructions);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadFileRenameSettings()
         {
             string configString = /*lang=json*/ """
@@ -319,15 +329,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JExtensions.ParseJsonObject(configString));
 
-            Assert.Single(configModel.PostActionModels);
-            Assert.True(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
+            Assert.ContainsSingle(configModel.PostActionModels);
+            Assert.IsTrue(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
 
-            Assert.Equal("Foo", configModel.PostActionModels.Single().ApplyFileRenamesToArgs.Single());
+            Assert.AreEqual("Foo", configModel.PostActionModels.Single().ApplyFileRenamesToArgs.Single());
 
-            Assert.Empty(configModel.ValidationErrors);
+            Assert.IsEmpty(configModel.ValidationErrors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanAddWarningOnWrongFileRenameConfig()
         {
             string configString = /*lang=json*/ """
@@ -356,21 +366,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JExtensions.ParseJsonObject(configString));
 
-            Assert.Single(configModel.PostActionModels);
-            Assert.True(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
+            Assert.ContainsSingle(configModel.PostActionModels);
+            Assert.IsTrue(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
 
-            Assert.Equal("Baz", configModel.PostActionModels.Single().ApplyFileRenamesToArgs.Single());
+            Assert.AreEqual("Baz", configModel.PostActionModels.Single().ApplyFileRenamesToArgs.Single());
 
-            Assert.NotEmpty(configModel.ValidationErrors);
+            Assert.IsNotEmpty(configModel.ValidationErrors);
 
             IValidationEntry validationError = configModel.ValidationErrors.Single();
 
-            Assert.Equal(IValidationEntry.SeverityLevel.Warning, validationError.Severity);
-            Assert.Equal("CONFIG0204", validationError.Code);
-            Assert.Equal("The argument 'NotFoo' configured in 'applyFileRenamesToArgs' is not listed in 'args' and will be skipped for processing.", validationError.ErrorMessage);
+            Assert.AreEqual(IValidationEntry.SeverityLevel.Warning, validationError.Severity);
+            Assert.AreEqual("CONFIG0204", validationError.Code);
+            Assert.AreEqual("The argument 'NotFoo' configured in 'applyFileRenamesToArgs' is not listed in 'args' and will be skipped for processing.", validationError.ErrorMessage);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanApplyFileRenames()
         {
             string configString = /*lang=json*/ """
@@ -437,11 +447,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 vc,
                 renameGenerator);
 
-            IPostAction postAction = Assert.Single(postActions);
+            IPostAction postAction = Assert.ContainsSingle(postActions);
 
-            Assert.Equal("MyParam.Bar", postAction.Args["Foo"]);
-            Assert.Equal("MyProject.Blah", postAction.Args["Baz"]);
-            Assert.Equal("MyParam and MyProject should be changed.", postAction.ManualInstructions);
+            Assert.AreEqual("MyParam.Bar", postAction.Args["Foo"]);
+            Assert.AreEqual("MyProject.Blah", postAction.Args["Baz"]);
+            Assert.AreEqual("MyParam and MyProject should be changed.", postAction.ManualInstructions);
         }
     }
 }

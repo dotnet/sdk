@@ -85,12 +85,13 @@ namespace Microsoft.NET.TestFramework
         private void InitSdkVersion()
         {
             //  If using full framework MSBuild, then running a command tries to get the SdkVersion in order to set the
-            //  DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR environment variable.  So turn that off when getting the SDK version
-            //  in order to avoid stack overflow
-            string? oldFullFrameworkMSBuildPath = FullFrameworkMSBuildPath;
+            //  DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR environment variable.  So suppress that on this thread while we get
+            //  the SDK version, to avoid stack overflow. A thread-local flag is used here rather than mutating
+            //  FullFrameworkMSBuildPath on the shared singleton, so that other test threads running concurrently
+            //  don't observe a transient null and silently fall back to Core MSBuild.
+            _suppressFullFrameworkMSBuildPath = true;
             try
             {
-                FullFrameworkMSBuildPath = null;
                 var logger = new StringTestLogger();
                 var command = new DotnetCommand(logger, "--version")
                 {
@@ -108,9 +109,23 @@ namespace Microsoft.NET.TestFramework
             }
             finally
             {
-                FullFrameworkMSBuildPath = oldFullFrameworkMSBuildPath;
+                _suppressFullFrameworkMSBuildPath = false;
             }
         }
+
+        // Thread-local suppression so that the DotnetCommand spawned from InitSdkVersion doesn't recurse
+        // back into AddTestEnvironmentVariables → SdkVersion → InitSdkVersion. Tests on other threads
+        // continue to see the real FullFrameworkMSBuildPath value.
+        [ThreadStatic]
+        private static bool _suppressFullFrameworkMSBuildPath;
+
+        /// <summary>
+        /// Effective FullFrameworkMSBuildPath taking into account the thread-local suppression used by
+        /// <see cref="InitSdkVersion"/>. Use this in code paths that decide between desktop MSBuild and
+        /// Core MSBuild so the decision isn't perturbed by InitSdkVersion's recursion-breaking guard.
+        /// </summary>
+        private string? EffectiveFullFrameworkMSBuildPath =>
+            _suppressFullFrameworkMSBuildPath ? null : FullFrameworkMSBuildPath;
 
         private void InitMSBuildVersion()
         {
@@ -157,7 +172,7 @@ namespace Microsoft.NET.TestFramework
 
         public void AddTestEnvironmentVariables(IDictionary<string, string?> environment)
         {
-            if (ShouldUseFullFrameworkMSBuild)
+            if (!string.IsNullOrEmpty(EffectiveFullFrameworkMSBuildPath))
             {
                 string sdksPath = Path.Combine(DotNetRoot, "sdk", SdkVersion, "Sdks");
 
@@ -226,13 +241,11 @@ namespace Microsoft.NET.TestFramework
             SdkCommandSpec ret = new();
 
             //  Run tests on full framework MSBuild if environment variable is set pointing to it
-            if (ShouldUseFullFrameworkMSBuild)
+            string? fullFrameworkMSBuildPath = EffectiveFullFrameworkMSBuildPath;
+            if (!string.IsNullOrEmpty(fullFrameworkMSBuildPath))
             {
-                ret.FileName = FullFrameworkMSBuildPath;
+                ret.FileName = fullFrameworkMSBuildPath;
                 ret.Arguments = args.ToList();
-                // Don't propagate DOTNET_HOST_PATH to the msbuild process, to match behavior
-                // when running desktop msbuild outside of the test harness.
-                ret.Environment["DOTNET_HOST_PATH"] = string.Empty;
             }
             else
             {

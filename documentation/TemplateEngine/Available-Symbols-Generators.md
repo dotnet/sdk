@@ -130,7 +130,7 @@ In this sample three symbols are defined:
 
 ### Related
 
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CaseChangeMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CaseChangeMacro.cs)
 [`Sample`](https://github.com/dotnet/dotnet-template-samples/tree/master/11-change-string-casing)
 
 
@@ -179,7 +179,7 @@ In this sample three symbols are defined:
 ```
 
 ### Related
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CoalesceMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CoalesceMacro.cs)
 
 ## Constant
 
@@ -211,7 +211,7 @@ Uses constant value.
 
 ### Related
 
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/ConstantMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/ConstantMacro.cs)
 [`Sample`](https://github.com/dotnet/dotnet-template-samples/tree/master/13-constant-value)
 
 
@@ -264,7 +264,7 @@ In this sample `KestrelPortGenerated` is a symbol that return the number of an a
 ```
 
 ### Related
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/GeneratePortNumberMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/GeneratePortNumberMacro.cs)
 
 
 ## Guid
@@ -326,7 +326,7 @@ This sample creates different symbols showing the different formatting available
 ```
 
 ### Related 
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/GuidMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/GuidMacro.cs)
 [`Guid Format Documentation`](https://msdn.microsoft.com/en-us/library/97af8hh4(v=vs.110).aspx)
 [Guids section in `template.json`](Reference-for-template.json.md#guids)
 
@@ -358,7 +358,7 @@ In this sample a symbol is created showing the current data, and replacing any i
 ```
 
 ### Related
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/NowMacro.cs)   
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/NowMacro.cs)   
 [`DateTime.ToString documentation`](https://msdn.microsoft.com/en-us/library/zdtaw1bw(v=vs.110).aspx)     
 [`Sample`](https://github.com/dotnet/dotnet-template-samples/tree/master/10-symbol-from-date)   
 
@@ -390,7 +390,7 @@ This sample shows a symbol that generates a value from `0` to `10000` excluded, 
 ```
 
 ### Related 
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/RandomMacro.cs)    
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/RandomMacro.cs)    
 [`Sample`](https://github.com/dotnet/dotnet-template-samples/tree/master/12-random-number)
 
 
@@ -436,7 +436,7 @@ Defines a list of data manipulation steps based on regex expressions.
 ```
 
 ### Related
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/RegexMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/RegexMacro.cs)
 [`RegEx.Replace Documentation`](https://msdn.microsoft.com/en-us/library/xwewhkd1(v=vs.110).aspx)     
 
 ## RegexMatch
@@ -466,7 +466,7 @@ Tries to match regex pattern against value of source symbol and returns `true` i
 ```
 
 ### Related
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/RegexMatchMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/RegexMatchMacro.cs)
 [`Regex.IsMatch Documentation`](https://docs.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regex.ismatch)     
 
 ## Switch
@@ -519,7 +519,7 @@ This sample shows how to change the replacement value based on evaluating condit
 In this case, if the user enters the value `123` as the value of the parameter `test`, `abc` in the content will be replaced with `456`, if the user enters `789`, `abc` is replaced with `012` instead.
 
 ### Related
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/SwitchMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/SwitchMacro.cs)
 
 ## Join
 
@@ -654,4 +654,4 @@ This sample will expand and join values of `Platform` argument and replace `Supp
 ```
 
 ### Related
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/JoinMacro.cs)
+[`Implementation class`](../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/JoinMacro.cs)

@@ -1,22 +1,39 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="MSTest.Sdk" ToolsVersion="15.0">
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <OutputType>Exe</OutputType>
     <IsUnitTestProject>true</IsUnitTestProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="Verify.MSTest" />
     <PackageReference Include="Verify.DiffPlex" />
     <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
     <ProjectReference Include="$(TemplateEngSrcDir)Tools\Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
+  </ItemGroup>
+
+  <!-- Suppress xUnit compile-time types that leak transitively from TemplateVerifier/TestHelper.
+       Without ExcludeAssets="compile", Xunit.ITestOutputHelper and Xunit.TestContext would
+       conflict with Microsoft.NET.TestFramework.ITestOutputHelper and the MSTest TestContext. -->
+  <ItemGroup>
+    <PackageReference Include="xunit.abstractions" VersionOverride="2.0.3" ExcludeAssets="compile;build;contentfiles" />
+    <PackageReference Include="xunit.v3.common" VersionOverride="4.0.0-pre.81" ExcludeAssets="compile;build;contentfiles" />
+    <PackageReference Include="xunit.v3.assert" VersionOverride="4.0.0-pre.81" ExcludeAssets="compile;build;contentfiles" />
+    <PackageReference Include="xunit.v3.extensibility.core" ExcludeAssets="compile;build;contentfiles" />
+    <PackageReference Include="Verify.XunitV3" ExcludeAssets="compile;build;contentfiles" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Remove xUnit global usings injected transitively via Verify.XunitV3 / xunit packages -->
+    <Using Remove="Xunit" />
+    <Using Remove="VerifyXunit" />
+    <Using Remove="VerifyXunit.Verifier" />
   </ItemGroup>
 
   <ItemGroup>

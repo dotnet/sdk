@@ -12,16 +12,9 @@ namespace Microsoft.NET.Build.Tasks
         private readonly Func<string, string> _getEnvironmentVariable;
 
         /// <summary>
-        /// Creates an instance that reads environment variables from the process environment.
-        /// </summary>
-        public FrameworkReferenceResolver()
-            : this(Environment.GetEnvironmentVariable)
-        {
-        }
-
-        /// <summary>
         /// Creates an instance that reads environment variables via the supplied delegate.
-        /// Use this from MSBuild tasks to route reads through TaskEnvironment.
+        /// Use this from MSBuild tasks to route reads through TaskEnvironment so that
+        /// per-task isolated environment state (multithreaded mode) is honored.
         /// </summary>
         public FrameworkReferenceResolver(Func<string, string> getEnvironmentVariable)
         {

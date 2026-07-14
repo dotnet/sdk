@@ -125,6 +125,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_UpdatedHtmlStaticWebAssets)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+      AdditionalEndpointDefinitions="@(StaticWebAssetAdditionalEndpointDefinition)"
     >
       <Output TaskParameter="Endpoints" ItemName="_UpdatedHtmlStaticWebAssetsEndpoint" />
     </DefineStaticWebAssetEndpoints>
@@ -195,6 +196,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_UpdatedHtmlPublishStaticWebAssets)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+      AdditionalEndpointDefinitions="@(StaticWebAssetAdditionalEndpointDefinition)"
     >
       <Output TaskParameter="Endpoints" ItemName="_UpdatedHtmlPublishStaticWebAssetsEndpoint" />
     </DefineStaticWebAssetEndpoints>
