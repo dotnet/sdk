@@ -1,13 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class VanillaWasmTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
+    [TestClass]
+    public class VanillaWasmTests : BlazorWasmBaselineTests
     {
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
@@ -31,7 +35,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.js")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
         }
     }
 }

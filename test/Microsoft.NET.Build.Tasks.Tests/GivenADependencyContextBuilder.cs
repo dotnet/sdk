@@ -16,13 +16,14 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenADependencyContextBuilder
     {
         /// <summary>
         /// Tests that DependencyContextBuilder generates DependencyContexts correctly.
         /// </summary>
-        [Theory]
-        [MemberData(nameof(ProjectData))]
+        [TestMethod]
+        [DynamicData(nameof(ProjectData))]
         public void ItBuildsDependencyContextsFromProjectLockFiles(
             string mainProjectName,
             string mainProjectVersion,
@@ -171,7 +172,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesntCreateReferenceAssembliesWhenNoCompilationOptions()
         {
             DependencyContext dependencyContext = BuildDependencyContextWithReferenceAssemblies(useCompilationOptions: false);
@@ -188,7 +189,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesntCreateKeepUnneededRuntimeReferences()
         {
             DependencyContext dependencyContext = BuildDependencyContextWithReferenceAssemblies(useCompilationOptions: false);
@@ -197,7 +198,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             dependencyContext.RuntimeLibraries[0].Name.Should().Be("simple.dependencies"); // This is the entrypoint
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHandlesReferenceAndPackageReferenceNameCollisions()
         {
             DependencyContext dependencyContext = BuildDependencyContextWithReferenceAssemblies(useCompilationOptions: true);
@@ -211,6 +212,65 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Contain(c => c.Name == "System.Collections.NonGeneric.Reference" && c.Type == "referenceassembly");
             dependencyContext.CompileLibraries.Should()
                 .Contain(c => c.Name == "System.Collections.NonGeneric.Reference.Reference" && c.Type == "referenceassembly");
+        }
+
+        [TestMethod]
+        public void ItHandlesProjectNameMatchingDirectReferenceAssemblyName()
+        {
+            // Regression test: if the main project name matches a dependency reference assembly name
+            // (one not in _directReferences, so GetProjectDependencies() won't pre-register it),
+            // DependencyContextBuilder.Build should not throw "An item with the same key has already been added".
+            string mainProjectName = "simpleApp";
+            LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
+            LockFileLookup lockFileLookup = new(lockFile);
+
+            SingleProjectInfo mainProject = SingleProjectInfo.Create(
+                "/usr/Path",
+                mainProjectName,
+                ".dll",
+                "1.0.0",
+                new ITaskItem[] { });
+
+            // Create a dependency reference (ReferenceDependencyPaths) whose assembly name matches the project name.
+            // These are NOT processed by GetProjectDependencies(), so without the fix the project library and the
+            // dependency reference library both get the same name, causing ToDictionary to throw.
+            ITaskItem[] dependencyReferencePaths = new ITaskItem[]
+            {
+                new MockTaskItem(
+                    $"/usr/Path/{mainProjectName}.dll",
+                    new Dictionary<string, string>
+                    {
+                        { "CopyLocal", "true" },
+                        { "Version", "1.0.0" },
+                    }),
+            };
+
+            IEnumerable<ReferenceInfo> dependencyReferences =
+                ReferenceInfo.CreateDependencyReferenceInfos(
+                    dependencyReferencePaths,
+                    referenceSatellitePaths: new ITaskItem[] { },
+                    isRuntimeAssembly: _ => true);
+
+            ProjectContext projectContext = lockFile.CreateProjectContext(
+                FrameworkConstants.CommonFrameworks.Net10_0.GetShortFolderName(),
+                runtime: null,
+                platformLibraryName: Constants.DefaultPlatformLibrary,
+                runtimeFrameworks: null,
+                isSelfContained: false);
+
+            DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: lockFileLookup)
+                .WithDependencyReferences(dependencyReferences)
+                .Build();
+
+            // The project and reference should have distinct names - no duplicate key exception
+            var runtimeLibraryNames = dependencyContext.RuntimeLibraries.Select(l => l.Name).ToList();
+            runtimeLibraryNames.Should().OnlyHaveUniqueItems();
+
+            // The project library should keep the base name (since no NuGet package or direct ref conflicts it)
+            runtimeLibraryNames.Should().Contain(mainProjectName);
+
+            // The reference should have a disambiguated name
+            runtimeLibraryNames.Should().Contain($"{mainProjectName}.Reference");
         }
 
         // If an assembly is in withResources, it has to be a key in dependencies, even with an empty list.
@@ -287,9 +347,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Build();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void DirectReferenceToPackageWithNoAssets(bool dllReference)
         {
             DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources([], [], ["System.A"], dllReference);
@@ -297,9 +357,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             dependencyContext.RuntimeLibraries.Count.Should().Be(1);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void IndirectReferenceToPackageWithNoAssets(bool dllReference)
         {
             DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>() {
@@ -310,9 +370,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.A"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void PackageWithNoAssetsReferencesPackageWithNoAssets(bool dllReference)
         {
             DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>() {
@@ -323,9 +383,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             dependencyContext.RuntimeLibraries.Count.Should().Be(1);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void PackageWithNoAssetsReferencesPackageWithAssets(bool dllReference)
         {
             DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>() {
@@ -338,9 +398,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.B"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void PackageWithNoAssetsReferencesPackageReferencesByOtherPackage(bool dllReference)
         {
             DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>()
@@ -353,9 +413,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.B"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void PackageWithNoAssetsReferencesPackageWithAssetsWithOtherReferencer(bool dllReference)
         {
             DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>()
@@ -370,9 +430,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.B"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void TwoPackagesWithNoAssetsReferencePackageWithAssets(bool dllReference)
         {
             DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>()
@@ -473,7 +533,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     generateXmlDocumentation: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanGenerateTheRuntimeFallbackGraph()
         {
             string mainProjectName = "simple.dependencies";
@@ -527,7 +587,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             CheckRuntimeFallbacks("unrelated_os-unknown_arch", 0);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIncludesLocalPathForResolvedNuGetFiles()
         {
             string mainProjectName = "simple.dependencies";
@@ -643,7 +703,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 $"resource assemblies should have item with LocalPath={resourceWithCustomSubPath.PathInPackage} and Path={resourceWithCustomSubPath.DestinationSubPath}");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIncludesLocalPathForReferences()
         {
             string mainProjectName = "simple.dependencies";

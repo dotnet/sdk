@@ -1616,7 +1616,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project>
 
   <ItemGroup>
-@(BundledDotnetTools->HasMetadata('ObsoletesCliTool')->'    %3CBundledDotNetCliToolReference Include="%(ObsoletesCliTool)" /%3E','%0A')
+@(BundledDotnetTool->HasMetadata('ObsoletesCliTool')->'    %3CBundledDotNetCliToolReference Include="%(ObsoletesCliTool)" /%3E','%0A')
   </ItemGroup>
 
 </Project>

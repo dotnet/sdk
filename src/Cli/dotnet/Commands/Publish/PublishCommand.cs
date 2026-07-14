@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -10,6 +11,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Publish;
 
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class PublishCommand : RestoringCommand
 {
     private PublishCommand(
@@ -32,10 +34,6 @@ public class PublishCommand : RestoringCommand
 
         parseResult.HandleDebugSwitch();
         parseResult.ShowHelpOrErrorIfAppropriate();
-
-        string[] args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
-
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(definition.SelfContainedOption),
             parseResult.HasOption(definition.NoSelfContainedOption));
@@ -70,10 +68,10 @@ public class PublishCommand : RestoringCommand
             ],
             parseResult,
             msbuildPath,
-            transformer: (msbuildArgs) =>
+            transformer: (msbuildArgs, nonLoggerArgs) =>
             {
                 var options = new ReleasePropertyProjectLocator.DependentCommandOptions(
-                        nonBinLogArgs,
+                        nonLoggerArgs,
                         parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null,
                         parseResult.HasOption(definition.FrameworkOption) ? parseResult.GetValue(definition.FrameworkOption) : null
                     );

@@ -4,13 +4,13 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGenerateRuntimeConfigMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void ItWritesRuntimeConfigViaTaskEnvironment()
         {
             // Create a temp directory to act as a fake project dir (different from CWD).
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItBehavesSameWithEmptyAssetsFilePathInBothEnvironments()
         {
             // When AssetsFilePath = "", the task enters the else branch (not null)
@@ -75,13 +75,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var configRelativePath = Path.Combine("bin", "test.runtimeconfig.json");
                 Directory.CreateDirectory(Path.Combine(projectDir, "bin"));
 
-                // --- Multiprocess mode: CWD == projectDir ---
+                // --- Multi-process mode: CWD == projectDir; TaskEnvironment.Fallback reads live CWD ---
                 Directory.SetCurrentDirectory(projectDir);
-                var (mpResult, mpEngine, mpException) = RunTaskWithAssetsFilePath("", configRelativePath, projectDir);
+                var (mpResult, mpEngine, mpException) = RunTaskWithAssetsFilePath("", configRelativePath, projectDir, TaskEnvironment.Fallback);
 
-                // --- Multithreaded mode: CWD == otherDir ---
+                // --- Multi-threaded mode: CWD == otherDir; isolated TaskEnvironment carries projectDir ---
                 Directory.SetCurrentDirectory(otherDir);
-                var (mtResult, mtEngine, mtException) = RunTaskWithAssetsFilePath("", configRelativePath, projectDir);
+                var (mtResult, mtEngine, mtException) = RunTaskWithAssetsFilePath(
+                    "", configRelativePath, projectDir,
+                    TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir));
 
                 // Both should produce the same outcome
                 mpResult.Should().Be(mtResult,
@@ -117,14 +119,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         private static (bool? result, MockBuildEngine engine, Exception? exception) RunTaskWithAssetsFilePath(
-            string assetsFilePath, string configRelativePath, string projectDir)
+            string assetsFilePath, string configRelativePath, string projectDir, TaskEnvironment taskEnvironment)
         {
-            return RunTaskCore(projectDir, configRelativePath, assetsFilePath: assetsFilePath);
+            return RunTaskCore(projectDir, configRelativePath, taskEnvironment, assetsFilePath: assetsFilePath);
         }
 
         private static (bool? result, MockBuildEngine engine, Exception? exception) RunTaskCore(
             string projectDir,
             string? runtimeConfigPath,
+            TaskEnvironment taskEnvironment,
             string? assetsFilePath = null,
             string? runtimeConfigDevPath = null,
             string? userRuntimeConfig = null)
@@ -142,7 +145,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 IsSelfContained = false,
                 GenerateRuntimeConfigDevFile = false,
                 AssetsFilePath = assetsFilePath,
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                TaskEnvironment = taskEnvironment,
             };
             if (runtimeConfigDevPath != null)
             {
@@ -169,9 +172,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             return (result, engine, caught);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(null)]
         public void ItBehavesSameWithEmptyOrNullRuntimeConfigPathInBothEnvironments(string? runtimeConfigPath)
         {
             // WriteRuntimeConfig calls TaskEnvironment.GetAbsolutePath(RuntimeConfigPath).
@@ -184,13 +187,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var savedCwd = Directory.GetCurrentDirectory();
             try
             {
-                // --- Multiprocess mode: CWD == projectDir ---
+                // --- Multi-process mode: CWD == projectDir; TaskEnvironment.Fallback ---
                 Directory.SetCurrentDirectory(projectDir);
-                var (mpResult, mpEngine, mpException) = RunTaskCore(projectDir, runtimeConfigPath);
+                var (mpResult, mpEngine, mpException) = RunTaskCore(projectDir, runtimeConfigPath, TaskEnvironment.Fallback);
 
-                // --- Multithreaded mode: CWD == otherDir ---
+                // --- Multi-threaded mode: CWD == otherDir; isolated TaskEnvironment ---
                 Directory.SetCurrentDirectory(otherDir);
-                var (mtResult, mtEngine, mtException) = RunTaskCore(projectDir, runtimeConfigPath);
+                var (mtResult, mtEngine, mtException) = RunTaskCore(
+                    projectDir, runtimeConfigPath,
+                    TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir));
 
                 // Both should produce the same outcome
                 mpResult.Should().Be(mtResult,
@@ -227,7 +232,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void UserRuntimeConfigProducesSameOutputInBothEnvironments()
         {
             // AddUserRuntimeOptions calls TaskEnvironment.GetAbsolutePath(UserRuntimeConfig).
@@ -253,15 +258,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     Path.Combine(projectDir, userConfigRelativePath),
                     "{\"configProperties\":{\"TestProperty\":true}}");
 
-                // --- Multiprocess mode: CWD == projectDir ---
+                // --- Multi-process mode: CWD == projectDir; TaskEnvironment.Fallback ---
                 Directory.SetCurrentDirectory(projectDir);
                 var (mpResult, mpEngine, mpException) = RunTaskCore(
-                    projectDir, config1RelativePath, userRuntimeConfig: userConfigRelativePath);
+                    projectDir, config1RelativePath, TaskEnvironment.Fallback, userRuntimeConfig: userConfigRelativePath);
 
-                // --- Multithreaded mode: CWD == otherDir ---
+                // --- Multi-threaded mode: CWD == otherDir; isolated TaskEnvironment ---
                 Directory.SetCurrentDirectory(otherDir);
                 var (mtResult, mtEngine, mtException) = RunTaskCore(
-                    projectDir, config2RelativePath, userRuntimeConfig: userConfigRelativePath);
+                    projectDir, config2RelativePath,
+                    TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
+                    userRuntimeConfig: userConfigRelativePath);
 
                 // Both should succeed
                 mpResult.Should().Be(mtResult,
@@ -293,7 +300,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void UserRuntimeConfigWithNonexistentFileProducesSameOutputInBothEnvironments()
         {
             // When UserRuntimeConfig points to a file that doesn't exist,
@@ -314,15 +321,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 // Point to a file that does NOT exist under projectDir
                 var missingUserConfig = "does-not-exist.template.json";
 
-                // --- Multiprocess mode: CWD == projectDir ---
+                // --- Multi-process mode: CWD == projectDir; TaskEnvironment.Fallback ---
                 Directory.SetCurrentDirectory(projectDir);
                 var (mpResult, mpEngine, mpException) = RunTaskCore(
-                    projectDir, config1RelativePath, userRuntimeConfig: missingUserConfig);
+                    projectDir, config1RelativePath, TaskEnvironment.Fallback, userRuntimeConfig: missingUserConfig);
 
-                // --- Multithreaded mode: CWD == otherDir ---
+                // --- Multi-threaded mode: CWD == otherDir; isolated TaskEnvironment ---
                 Directory.SetCurrentDirectory(otherDir);
                 var (mtResult, mtEngine, mtException) = RunTaskCore(
-                    projectDir, config2RelativePath, userRuntimeConfig: missingUserConfig);
+                    projectDir, config2RelativePath,
+                    TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
+                    userRuntimeConfig: missingUserConfig);
 
                 mpResult.Should().Be(mtResult,
                     "task return value should be the same in both environments");

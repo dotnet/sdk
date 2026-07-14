@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
+[TestClass]
 public class DiffEventTests : DiffBaseTests
 {
-    [Fact]
+    [TestMethod]
     public Task EventAdd() => RunTestAsync(
         beforeCode: """
         using System;
@@ -38,7 +39,7 @@ public class DiffEventTests : DiffBaseTests
           }
         """);
 
-    [Fact]
+    [TestMethod]
     public Task EventChange() => RunTestAsync(
         beforeCode: """
         using System;
@@ -73,7 +74,7 @@ public class DiffEventTests : DiffBaseTests
           }
         """);
 
-    [Fact]
+    [TestMethod]
     public Task EventRemove() => RunTestAsync(
         beforeCode: """
         using System;
@@ -106,7 +107,7 @@ public class DiffEventTests : DiffBaseTests
           }
         """);
 
-    [Fact]
+    [TestMethod]
     public Task AbstractEvent() => RunTestAsync(
         beforeCode: """
         using System;
@@ -136,6 +137,43 @@ public class DiffEventTests : DiffBaseTests
               {
         +         public abstract event MyNamespace.MyClass.MyEventHandler MyEvent;
               }
+          }
+        """);
+
+    [TestMethod]
+    public Task ExplicitInterfaceEventAdd() => RunTestAsync(
+        beforeCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public interface IMyInterface
+            {
+                event EventHandler MyEvent;
+            }
+        }
+        """,
+        afterCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public interface IMyInterface
+            {
+                event EventHandler MyEvent;
+            }
+            public class MyClass : IMyInterface
+            {
+                event EventHandler IMyInterface.MyEvent { add { } remove { } }
+            }
+        }
+        """,
+        expectedCode: """
+          namespace MyNamespace
+          {
+        +     public class MyClass : MyNamespace.IMyInterface
+        +     {
+        +         event System.EventHandler MyNamespace.IMyInterface.MyEvent { add; remove; }
+        +         public MyClass();
+        +     }
           }
         """);
 }

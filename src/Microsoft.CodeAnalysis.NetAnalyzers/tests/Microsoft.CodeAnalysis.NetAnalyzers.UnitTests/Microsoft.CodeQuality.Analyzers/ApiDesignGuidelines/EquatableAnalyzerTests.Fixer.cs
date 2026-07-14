@@ -1,17 +1,17 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EquatableFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CodeFixForStructWithEqualsOverrideButNoIEquatableImplementationAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -46,7 +46,7 @@ struct S : IEquatable<S>
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CodeFixForStructWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -77,7 +77,7 @@ struct S : IEquatable<S>
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CodeFixForClassWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -108,7 +108,7 @@ class C : IEquatable<C>
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CodeFixForClassWithExplicitIEquatableImplementationAndNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -139,7 +139,7 @@ class C : IEquatable<C>
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CodeFixForStructWithExplicitIEquatableImplementationAndNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"

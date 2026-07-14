@@ -5,9 +5,10 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class SubcommandTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
+[TestClass]
+public class SubcommandTests : DotNetWatchTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task TestCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("XunitCore")
@@ -32,7 +33,7 @@ public class SubcommandTests(ITestOutputHelper output) : DotNetWatchTestBase(out
         await App.WaitUntilOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task TestCommand_MultiTargeting()
     {
         var testAsset = TestAssets.CopyTestAsset("XunitMulti")
@@ -44,7 +45,7 @@ public class SubcommandTests(ITestOutputHelper output) : DotNetWatchTestBase(out
         await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitFailTestNetCoreApp");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task BuildCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -61,7 +62,7 @@ public class SubcommandTests(ITestOutputHelper output) : DotNetWatchTestBase(out
         Assert.Contains("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MSBuildCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -78,7 +79,7 @@ public class SubcommandTests(ITestOutputHelper output) : DotNetWatchTestBase(out
         Assert.DoesNotContain("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PackCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -97,7 +98,7 @@ public class SubcommandTests(ITestOutputHelper output) : DotNetWatchTestBase(out
         Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PublishCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -114,7 +115,7 @@ public class SubcommandTests(ITestOutputHelper output) : DotNetWatchTestBase(out
         Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task FormatCommand()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")

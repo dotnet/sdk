@@ -3,17 +3,17 @@
 This folder contains samples of templates done for template engine.
 These templates are supported by `dotnet new` and Visual Studio. 
 For details, on how to configure the templates to be used in Visual Studio, refer to [this article]( https://aka.ms/netcore-templates).
-The other examples of complex templates can be found in [Microsoft.TemplateEngine.TestTemplates](https://github.com/dotnet/templating/tree/main/test/Microsoft.TemplateEngine.TestTemplates/test_templates) and [SDK.TestTemplates](https://github.com/dotnet/sdk/tree/main/src/Assets/TestPackages/dotnet-new/test_templates) repositories.
+The other examples of complex templates can be found in [Microsoft.TemplateEngine.TestTemplates](../../../test/TestAssets/TestPackages/TemplateEngine/test_templates) and [SDK.TestTemplates](../../../src/Assets/TestPackages/dotnet-new/test_templates) repositories.
 
 For more general info on the authoring, see:
 - [How to create custom templates](https://learn.microsoft.com/en-us/dotnet/core/tools/custom-templates)
-- [Template authoring docs in dotnet/templating Wiki](https://github.com/dotnet/templating/wiki)
+- [Template authoring docs](..)
 
 ## Contributing
 
-We would love community contributions here. Please feel free to open the PRs to add more examples or create an [issue](https://github.com/dotnet/templating/issues/new) requesting a new example.
+We would love community contributions here. Please feel free to open the PRs to add more examples or create an [issue](https://github.com/dotnet/sdk/issues/new) requesting a new example.
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for information on contributing to this project.
+See [CONTRIBUTING.md](../../../CONTRIBUTING.md) for information on contributing to this project.
 
 ## Template Content Repositories
 
