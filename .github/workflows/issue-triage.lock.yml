@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"ddc07be57020bd33cdd00e35240d705e8c77953e4390143ad1a009ab41549d10","body_hash":"9ec8eabb413bc98b87a7329dca64b2622e43444fccd8c08bf7c7de36b98fcaef","compiler_version":"v0.81.6","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.65"}}
-# gh-aw-manifest: {"version":1,"secrets":["GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/cache/save","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/checkout","sha":"9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0","version":"v7.0.0"},{"repo":"actions/checkout","sha":"df4cb1c069e1874edd31b4311f1884172cec0e10","version":"v6.0.3"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ba6380cc6e5be5d21677bebe04d52fb48e3abec7","version":"v0.81.6"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.11","digest":"sha256:979723c628182da7729333f2208bb249fd25ddee579645cf9a3892d681a929c7","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.11@sha256:979723c628182da7729333f2208bb249fd25ddee579645cf9a3892d681a929c7"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.11","digest":"sha256:807e4831999b44513b0a66e5859d478dc4da7ae74ab1918cec967d513f95bf9d","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.11@sha256:807e4831999b44513b0a66e5859d478dc4da7ae74ab1918cec967d513f95bf9d"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.11","digest":"sha256:ff27ea0525ad953a6adee28a5fbe9d2e22be47dbec755c15767af4ea3f91df7d","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.11@sha256:ff27ea0525ad953a6adee28a5fbe9d2e22be47dbec755c15767af4ea3f91df7d"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.30","digest":"sha256:35625d1a2269b1238606078c879f59a91cffc4ac33eb54bf39c6418822c1a8be","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.30@sha256:35625d1a2269b1238606078c879f59a91cffc4ac33eb54bf39c6418822c1a8be"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b","pinned_image":"ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b"},{"image":"ghcr.io/github/github-mcp-server:v1.4.0","digest":"sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036","pinned_image":"ghcr.io/github/github-mcp-server:v1.4.0@sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036"}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"5d9fa10b0257a5c2fdcbe383a7423e373fc8c57e6fe2f12741f031d9f6e46125","body_hash":"48c8c4df4292a6ffa5b96ab19cf9edfacbc3496f4665a4a661db8638b7589279","compiler_version":"v0.81.6","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.65"}}
+# gh-aw-manifest: {"version":1,"secrets":["CODEOWNERS_PAT_0","CODEOWNERS_PAT_1","CODEOWNERS_PAT_2","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/cache/save","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/checkout","sha":"9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0","version":"v7.0.0"},{"repo":"actions/checkout","sha":"df4cb1c069e1874edd31b4311f1884172cec0e10","version":"v6.0.3"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ba6380cc6e5be5d21677bebe04d52fb48e3abec7","version":"v0.81.6"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.11","digest":"sha256:979723c628182da7729333f2208bb249fd25ddee579645cf9a3892d681a929c7","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.11@sha256:979723c628182da7729333f2208bb249fd25ddee579645cf9a3892d681a929c7"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.11","digest":"sha256:807e4831999b44513b0a66e5859d478dc4da7ae74ab1918cec967d513f95bf9d","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.11@sha256:807e4831999b44513b0a66e5859d478dc4da7ae74ab1918cec967d513f95bf9d"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.11","digest":"sha256:ff27ea0525ad953a6adee28a5fbe9d2e22be47dbec755c15767af4ea3f91df7d","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.11@sha256:ff27ea0525ad953a6adee28a5fbe9d2e22be47dbec755c15767af4ea3f91df7d"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.30","digest":"sha256:35625d1a2269b1238606078c879f59a91cffc4ac33eb54bf39c6418822c1a8be","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.30@sha256:35625d1a2269b1238606078c879f59a91cffc4ac33eb54bf39c6418822c1a8be"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b","pinned_image":"ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b"},{"image":"ghcr.io/github/github-mcp-server:v1.4.0","digest":"sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036","pinned_image":"ghcr.io/github/github-mcp-server:v1.4.0@sha256:2afb26356481d1a350e14544a6e160f7f7ec1561a1ea309b823665abf0309036"}]}
 # This file was automatically generated by gh-aw (v0.81.6). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _      
@@ -25,7 +25,14 @@
 #
 # Triages opened dotnet/sdk issues by applying existing labels, requesting missing diagnostic information, and routing complete reports to CODEOWNERS with load balancing.
 #
+# Resolved workflow manifest:
+#   Imports:
+#     - shared/issue-triage-tools.md
+#
 # Secrets used:
+#   - CODEOWNERS_PAT_0
+#   - CODEOWNERS_PAT_1
+#   - CODEOWNERS_PAT_2
 #   - GH_AW_GITHUB_MCP_SERVER_TOKEN
 #   - GH_AW_GITHUB_TOKEN
 #   - GITHUB_TOKEN
@@ -35,6 +42,7 @@
 #   - actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
 #   - actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 #   - actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+#   - actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3 (source v6)
 #   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
 #   - actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -322,7 +330,6 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_ENGINE_ID: "copilot"
           GH_AW_EXPR_726AD1D2: ${{ github.event.issue.number || github.event.inputs.issue_number }}
-          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -398,7 +405,10 @@ jobs:
           retention-days: 1
 
   agent:
-    needs: activation
+    needs:
+      - activation
+      - codeowners_pat_pool
+      - routing_snapshot
     if: needs.activation.outputs.daily_ai_credits_exceeded != 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -524,17 +534,17 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_10a7bc82a7cf6483_EOF'
-          {"add_comment":{"max":1,"target":"*"},"add_labels":{"max":6,"target":"*"},"assign_to_user":{"max":3,"target":"*"},"create_report_incomplete_issue":{},"mentions":{"allowContext":true,"allowedCollaborators":true},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"},"remove_labels":{"allowed":["untriaged"],"target":"*"},"report_incomplete":{}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_10a7bc82a7cf6483_EOF
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_4ae176e58c849cfb_EOF'
+          {"add_comment":{"max":1,"target":"${{ github.event.issue.number || github.event.inputs.issue_number }}"},"add_labels":{"max":6,"target":"${{ github.event.issue.number || github.event.inputs.issue_number }}"},"assign_to_user":{"max":3,"target":"${{ github.event.issue.number || github.event.inputs.issue_number }}"},"create_report_incomplete_issue":{},"mentions":{"allowContext":true,"allowedCollaborators":true},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"},"remove_labels":{"allowed":["untriaged"],"target":"${{ github.event.issue.number || github.event.inputs.issue_number }}"},"report_incomplete":{}}
+          GH_AW_SAFE_OUTPUTS_CONFIG_4ae176e58c849cfb_EOF
       - name: Generate Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
             {
               "description_suffixes": {
-                "add_comment": " CONSTRAINTS: Maximum 1 comment(s) can be added. Target: *. Supports reply_to_id for discussion threading.",
-                "add_labels": " CONSTRAINTS: Maximum 6 label(s) can be added. Target: *.",
-                "remove_labels": " CONSTRAINTS: Only these labels can be removed: [untriaged]. Target: *."
+                "add_comment": " CONSTRAINTS: Maximum 1 comment(s) can be added. Target: ${{ github.event.issue.number || github.event.inputs.issue_number }}. Supports reply_to_id for discussion threading.",
+                "add_labels": " CONSTRAINTS: Maximum 6 label(s) can be added. Target: ${{ github.event.issue.number || github.event.inputs.issue_number }}.",
+                "remove_labels": " CONSTRAINTS: Only these labels can be removed: [untriaged]. Target: ${{ github.event.issue.number || github.event.inputs.issue_number }}."
               },
               "repo_params": {},
               "dynamic_tools": []
@@ -740,7 +750,7 @@ jobs:
           
           mkdir -p "$HOME/.copilot"
           GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
-          cat << GH_AW_MCP_CONFIG_6675e3ba93500a46_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
+          cat << GH_AW_MCP_CONFIG_60b235377d5b737f_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
           {
             "mcpServers": {
               "github": {
@@ -750,7 +760,7 @@ jobs:
                   "GITHUB_HOST": "${GITHUB_SERVER_URL}",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "issues,labels,repos,search"
+                  "GITHUB_TOOLSETS": "issues,labels"
                 },
                 "guard-policies": {
                   "allow-only": {
@@ -803,7 +813,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_6675e3ba93500a46_EOF
+          GH_AW_MCP_CONFIG_60b235377d5b737f_EOF
       - name: Mount MCP servers as CLIs
         id: mount-mcp-clis
         continue-on-error: true
@@ -1048,11 +1058,50 @@ jobs:
             /tmp/gh-aw/sandbox/firewall/awf-reflect.json
           if-no-files-found: ignore
 
+  codeowners_pat_pool:
+    name: Select CODEOWNERS PAT
+    needs: activation
+    runs-on: ubuntu-slim
+    environment: codeowners-pat-pool
+    outputs:
+      pat_number: ${{ steps.select.outputs.pat_number }}
+    steps:
+      - name: Configure GH_HOST for enterprise compatibility
+        id: ghes-host-config
+        shell: bash
+        run: | # zizmor: ignore[github-env] - GITHUB_SERVER_URL is set by GitHub Actions, not user input.
+          # Derive GH_HOST from GITHUB_SERVER_URL so the gh CLI targets the correct
+          # GitHub instance (GHES/GHEC). On github.com this is a harmless no-op.
+          GH_HOST="${GITHUB_SERVER_URL#https://}"
+          GH_HOST="${GH_HOST#http://}"
+          echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
+      - name: Select a configured PAT
+        id: select
+        run: |
+          configured=()
+          for index in 0 1 2; do
+            variable="CODEOWNERS_PAT_${index}"
+            if [ -n "${!variable}" ]; then configured+=("$index"); fi
+          done
+          if [ "${#configured[@]}" -eq 0 ]; then
+            echo "::error::No CODEOWNERS PAT is configured"
+            exit 1
+          fi
+          selected="${configured[$((RANDOM % ${#configured[@]}))]}"
+          echo "pat_number=$selected" >> "$GITHUB_OUTPUT"
+        env:
+          CODEOWNERS_PAT_0: ${{ secrets.CODEOWNERS_PAT_0 }}
+          CODEOWNERS_PAT_1: ${{ secrets.CODEOWNERS_PAT_1 }}
+          CODEOWNERS_PAT_2: ${{ secrets.CODEOWNERS_PAT_2 }}
+        shell: bash
+
   conclusion:
     needs:
       - activation
       - agent
+      - codeowners_pat_pool
       - detection
+      - routing_snapshot
       - safe_outputs
     if: >
       always() && (needs.agent.result != 'skipped' || needs.activation.outputs.lockdown_check_failed == 'true' ||
@@ -1571,6 +1620,91 @@ jobs:
         if: github.event_name == 'issues' && github.event.action == 'opened'
         run: sleep 120
 
+  routing_snapshot:
+    name: Build isolated routing snapshot
+    needs: codeowners_pat_pool
+    runs-on: ubuntu-latest
+    environment: codeowners-pat-pool
+    permissions:
+      contents: read
+
+    outputs:
+      snapshot: ${{ steps.output.outputs.snapshot }}
+    steps:
+      - name: Configure GH_HOST for enterprise compatibility
+        id: ghes-host-config
+        shell: bash
+        run: | # zizmor: ignore[github-env] - GITHUB_SERVER_URL is set by GitHub Actions, not user input.
+          # Derive GH_HOST from GITHUB_SERVER_URL so the gh CLI targets the correct
+          # GitHub instance (GHES/GHEC). On github.com this is a harmless no-op.
+          GH_HOST="${GITHUB_SERVER_URL#https://}"
+          GH_HOST="${GH_HOST#http://}"
+          echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
+      - name: Check out routing sources without credentials
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3 (source v6)
+        with:
+          persist-credentials: false
+      - name: Parse CODEOWNERS without an environment
+        run: |
+          mkdir -p "$RUNNER_TEMP/issue-triage/team-responses"
+          node_path="$(command -v node)"
+          env -i "$node_path" \
+            "$GITHUB_WORKSPACE/.github/workflows/scripts/issue-triage/parse-codeowners.js" \
+            "$GITHUB_WORKSPACE/CODEOWNERS" \
+            "$RUNNER_TEMP/issue-triage/routing.json" \
+            "$RUNNER_TEMP/issue-triage/teams.tsv"
+        shell: bash
+      - name: Fetch all CODEOWNERS team members
+        run: |
+          while IFS=$'\t' read -r index organization slug; do
+            [[ "$index" =~ ^[0-9]+$ ]]
+            [[ "$organization" =~ ^[A-Za-z0-9-]+$ ]]
+            [[ "$slug" =~ ^[A-Za-z0-9_.-]+$ ]]
+            gh api --paginate --slurp \
+              "orgs/$organization/teams/$slug/members?per_page=100" \
+              > "$RUNNER_TEMP/issue-triage/team-responses/team-$index.json"
+          done < "$RUNNER_TEMP/issue-triage/teams.tsv"
+        env:
+          GH_TOKEN: ${{ case(needs.codeowners_pat_pool.outputs.pat_number == '0', secrets.CODEOWNERS_PAT_0, needs.codeowners_pat_pool.outputs.pat_number == '1', secrets.CODEOWNERS_PAT_1, needs.codeowners_pat_pool.outputs.pat_number == '2', secrets.CODEOWNERS_PAT_2, 'NO CODEOWNERS PAT AVAILABLE') }}
+        shell: bash
+      - name: Validate members and generate load request without an environment
+        run: |
+          node_path="$(command -v node)"
+          env -i "$node_path" \
+            "$GITHUB_WORKSPACE/.github/workflows/scripts/issue-triage/parse-team-members.js" \
+            "$RUNNER_TEMP/issue-triage/routing.json" \
+            "$RUNNER_TEMP/issue-triage/team-responses" \
+            "$RUNNER_TEMP/issue-triage/expanded-routing.json" \
+            "$RUNNER_TEMP/issue-triage/load-request.json" \
+            "$GH_AW_GITHUB_REPOSITORY"
+        env:
+          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+      - name: Fetch candidate issue loads
+        run: gh api graphql --input "$RUNNER_TEMP/issue-triage/load-request.json" > "$RUNNER_TEMP/issue-triage/load-response.json"
+        env:
+          GH_TOKEN: ${{ case(needs.codeowners_pat_pool.outputs.pat_number == '0', secrets.CODEOWNERS_PAT_0, needs.codeowners_pat_pool.outputs.pat_number == '1', secrets.CODEOWNERS_PAT_1, needs.codeowners_pat_pool.outputs.pat_number == '2', secrets.CODEOWNERS_PAT_2, 'NO CODEOWNERS PAT AVAILABLE') }}
+        shell: bash
+      - name: Validate API response without an environment
+        run: |
+          node_path="$(command -v node)"
+          env -i "$node_path" \
+            "$GITHUB_WORKSPACE/.github/workflows/scripts/issue-triage/finalize-routing.js" \
+            "$RUNNER_TEMP/issue-triage/expanded-routing.json" \
+            "$RUNNER_TEMP/issue-triage/load-response.json" \
+            "$RUNNER_TEMP/issue-triage/snapshot.json"
+        shell: bash
+      - name: Publish sanitized routing snapshot
+        id: output
+        run: |
+          {
+            echo 'snapshot<<ROUTING_SNAPSHOT'
+            cat "$RUNNER_TEMP/issue-triage/snapshot.json"
+            echo
+            echo ROUTING_SNAPSHOT
+          } >> "$GITHUB_OUTPUT"
+        shell: bash
+
   safe_outputs:
     needs:
       - activation
@@ -1657,7 +1791,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"*\"},\"add_labels\":{\"max\":6,\"target\":\"*\"},\"assign_to_user\":{\"max\":3,\"target\":\"*\"},\"create_report_incomplete_issue\":{},\"mentions\":{\"allowContext\":true,\"allowedCollaborators\":true},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"},\"remove_labels\":{\"allowed\":[\"untriaged\"],\"target\":\"*\"},\"report_incomplete\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"${{ github.event.issue.number || github.event.inputs.issue_number }}\"},\"add_labels\":{\"max\":6,\"target\":\"${{ github.event.issue.number || github.event.inputs.issue_number }}\"},\"assign_to_user\":{\"max\":3,\"target\":\"${{ github.event.issue.number || github.event.inputs.issue_number }}\"},\"create_report_incomplete_issue\":{},\"mentions\":{\"allowContext\":true,\"allowedCollaborators\":true},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"},\"remove_labels\":{\"allowed\":[\"untriaged\"],\"target\":\"${{ github.event.issue.number || github.event.inputs.issue_number }}\"},\"report_incomplete\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
