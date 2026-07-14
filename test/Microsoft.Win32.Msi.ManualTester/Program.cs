@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Win32.Msi.Manual.Tests
+namespace Microsoft.Win32.Msi.ManualTester
 {
     /// <summary>
     /// Simple test application to illustrate basic MSI API calls and wiring up an external UI handler to
