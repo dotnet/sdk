@@ -23,9 +23,61 @@ For a high-level project description, build status, and contribution flow, see t
   SDKs, container publishing, file/format/watch tools, API compatibility tooling, and
   workload management.
 
-This repo does **not** own the .NET runtime, the C#/F#/VB compilers, MSBuild itself, NuGet,
-or the Visual Studio project system — those are separate repositories that flow in as
-dependencies. The full product (`dotnet/dotnet` VMR) composes this repo with those.
+### Repository boundaries and the VMR
+
+An SDK command or build can expose behavior implemented by another .NET repository. Find
+the component that defines the behavior before making a change; do not add an SDK
+workaround merely because the symptom appears through `dotnet`.
+
+| Repository | Ownership boundary |
+| --- | --- |
+| [`dotnet/sdk`](https://github.com/dotnet/sdk) | The managed `dotnet` CLI commands and their UX/orchestration; SDK MSBuild tasks, targets, and resolvers; the Template Engine libraries and tools under `src/TemplateEngine`; the `dotnet new` host under `src/Cli/Microsoft.TemplateEngine.Cli`; and common template content under `template_feed`. |
+| [`dotnet/runtime`](https://github.com/dotnet/runtime) | CLR and Mono, the base class libraries, the native `dotnet` host/muxer and apphost, runtime and reference packs, and runtime-owned deployment tooling such as NativeAOT and ILLink. SDK publish targets integrate with these artifacts but do not own their implementation. |
+| [`dotnet/roslyn`](https://github.com/dotnet/roslyn) | The C# and Visual Basic compilers, compiler server, compiler APIs, and compiler behavior such as language diagnostics and code generation. The SDK supplies inputs and ships Roslyn artifacts; SDK-generated defaults and command wiring remain SDK-owned. The F# compiler is in [`dotnet/fsharp`](https://github.com/dotnet/fsharp). |
+| [`dotnet/msbuild`](https://github.com/dotnet/msbuild) | The MSBuild engine, evaluation and execution semantics, logging, and core tasks and targets. SDK-specific `Microsoft.NET.*` tasks and targets remain in this repo. |
+| [`NuGet/NuGet.Client`](https://github.com/NuGet/NuGet.Client) | NuGet restore, package resolution, protocols, and related MSBuild tasks. SDK CLI wrappers and SDK-specific integration remain in this repo. |
+| [`dotnet/project-system`](https://github.com/dotnet/project-system) | Visual Studio-specific project-system behavior. |
+| [`dotnet/templating`](https://github.com/dotnet/templating) | Historical home of the Template Engine. Its source and development moved into `dotnet/sdk` in 2026; make current Template Engine changes in this repo. See the [Template Engine overview](../documentation/TemplateEngine/README.md). |
+| [`dotnet/dotnet`](https://github.com/dotnet/dotnet) | The Virtual Monolithic Repository (VMR): a synchronized mirror of product repositories plus the infrastructure for building and servicing the integrated .NET product. Product source is mirrored under `src/<repo>`; normal component development still belongs in the owning product repository. |
+
+Do not infer ownership from a diagnostic ID or generated code alone. Compiler diagnostics
+and compiler-emitted code belong to Roslyn, but analyzers and source generators belong to
+the repository that implements them, such as `dotnet/runtime` for runtime-library
+generators or `dotnet/sdk` for SDK analyzers.
+
+The standalone SDK build consumes most sibling components as packages or other build
+artifacts. Use these files to identify the exact implementation being consumed:
+
+- `eng/Version.Details.xml` records flowed dependency versions and source URI/commit.
+  Unified Build backflow commonly records `dotnet/dotnet` as the source for packages from
+  several product repositories; that does not transfer ownership to the VMR. When exact
+  source matters, inspect the corresponding `src/<repo>` directory at the recorded VMR
+  commit, for example `src/runtime`, `src/roslyn`, or `src/msbuild`.
+- `Directory.Packages.props` maps package IDs to version properties, while
+  `eng/Versions.props` contains manually maintained and compatibility-specific version
+  policy. Trace the package or assembly back to its product repository instead of
+  changing a version or copying upstream code as a substitute for fixing the owner.
+
+The VMR synchronizes product source in both directions through
+[code flow](https://github.com/dotnet/dotnet/blob/main/docs/Codeflow-PRs.md): forward flow
+moves product-repository changes into the VMR, and backflow returns VMR source changes and
+newly built dependencies to product repositories. Do not edit a mirrored VMR `src/*`
+directory for an ordinary component fix. Direct VMR changes are for VMR infrastructure,
+integration, servicing, or explicitly coordinated cross-repository work; follow the
+[VMR contribution guidance](https://github.com/dotnet/dotnet#contribution).
+Source-build is a validation mode, not an ownership boundary: component-specific
+source-build behavior belongs with that component, while whole-product source-build
+orchestration belongs in the VMR.
+
+For a cross-repository issue:
+
+1. Identify the executable, assembly, task, target, or package that implements the
+   behavior, and inspect the version actually consumed by this checkout.
+2. Put the semantic fix and its primary tests in the owning repository. Keep only genuine
+   SDK orchestration, defaults, compatibility, or integration changes in `dotnet/sdk`.
+3. If multiple components must change, keep each change and its tests with its owner, then
+   consume the flowed build. Validate the integrated VMR when the issue depends on an
+   exact component combination, source-build, or cross-repository target hooks.
 
 ### Architecture and major components
 
@@ -46,7 +98,7 @@ Major source areas under `src/`:
 | `Containers/` | `dotnet publish` container image support. |
 | `Dotnet.Watch/`, `Dotnet.Format/` | `dotnet watch` and `dotnet format` tools. |
 | `Compatibility/` | ApiCompat / GenAPI / package validation tooling. |
-| `TemplateEngine/` | CLI glue for the templating engine (engine itself is in `dotnet/templating`). |
+| `TemplateEngine/` | Template Engine libraries and authoring tools. The `dotnet new` CLI host is under `Cli/Microsoft.TemplateEngine.Cli`. |
 | `Workloads/`, `Microsoft.DotNet.TemplateLocator/` | Workload manifests/installation, and locating workload-provided template packs. |
 | `Layout/` | Composes the final redist `dotnet` layout. |
 
