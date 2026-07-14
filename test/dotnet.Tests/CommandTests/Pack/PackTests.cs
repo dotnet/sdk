@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Execute("--no-build");
 
             result.Should().Fail();
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().NotHaveStdOutContaining("Restore")
                     .And.HaveStdOutContaining("project.assets.json");
@@ -272,7 +272,7 @@ namespace Microsoft.DotNet.Pack.Tests
 
             result.Should().Pass();
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }

@@ -195,7 +195,7 @@ namespace Microsoft.NET.Build.Tests
         {
             if (!setInTargetframework)
             {
-                var sdkVersion = SemanticVersion.Parse(TestContext.Current.ToolsetUnderTest.SdkVersion);
+                var sdkVersion = SemanticVersion.Parse(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
                 if (new SemanticVersion(sdkVersion.Major, sdkVersion.Minor, sdkVersion.Patch) < new SemanticVersion(7, 0, 200))
                 {
                     //  Fixed in 7.0.200: https://github.com/dotnet/sdk/pull/29009

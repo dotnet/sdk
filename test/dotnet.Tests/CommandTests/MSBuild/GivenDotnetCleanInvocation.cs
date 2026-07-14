@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetCleanInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "--verbosity:normal", "--target:Clean", NugetInteractiveProperty];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "--verbosity:normal", "--target:Clean", NugetInteractiveProperty];
 
 
         private static readonly string WorkingDirectory =

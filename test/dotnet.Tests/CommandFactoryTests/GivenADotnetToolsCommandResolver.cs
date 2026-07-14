@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Tests
 
         public GivenADotnetToolsCommandResolver(ITestOutputHelper log) : base(log)
         {
-            var dotnetToolPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "DotnetTools");
+            var dotnetToolPath = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "DotnetTools");
             _dotnetToolsCommandResolver = new DotnetToolsCommandResolver(dotnetToolPath);
         }
 

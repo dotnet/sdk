@@ -27,3 +27,9 @@ public abstract class CommandBase
 
     public abstract int Execute();
 }
+
+public abstract class CommandBase<TDefinition>(ParseResult parseResult) : CommandBase(parseResult)
+    where TDefinition : Command
+{
+    protected TDefinition Definition { get; } = (TDefinition)parseResult.CommandResult.Command;
+}

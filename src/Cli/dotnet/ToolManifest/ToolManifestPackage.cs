@@ -10,7 +10,8 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolManifest;
 
-internal struct ToolManifestPackage(PackageId packagePackageId,
+internal readonly struct ToolManifestPackage(
+    PackageId packagePackageId,
     NuGetVersion version,
     ToolCommandName[] toolCommandNames,
     DirectoryPath firstEffectDirectory,
@@ -59,19 +60,11 @@ internal struct ToolManifestPackage(PackageId packagePackageId,
     }
 
     public override int GetHashCode()
-    {
-        return HashCode.Combine(PackageId, Version, CommandNames, RollForward);
-    }
+        => HashCode.Combine(PackageId, Version, CommandNames, RollForward);
 
-    public static bool operator ==(ToolManifestPackage tool1,
-        ToolManifestPackage tool2)
-    {
-        return tool1.Equals(tool2);
-    }
+    public static bool operator ==(ToolManifestPackage tool1, ToolManifestPackage tool2)
+        => tool1.Equals(tool2);
 
-    public static bool operator !=(ToolManifestPackage tool1,
-        ToolManifestPackage tool2)
-    {
-        return !(tool1 == tool2);
-    }
+    public static bool operator !=(ToolManifestPackage tool1, ToolManifestPackage tool2)
+        => !(tool1 == tool2);
 }

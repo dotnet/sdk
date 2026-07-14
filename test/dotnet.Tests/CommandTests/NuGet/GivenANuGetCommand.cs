@@ -137,6 +137,54 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         }
 
         [Fact]
+        public void ItHasAWhySubcommand_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var file = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(file, $"""
+                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
+                Console.WriteLine();
+                """);
+
+            new DotnetCommand(Log, "restore", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdErr();
+
+            new DotnetCommand(Log, "nuget", "why", "Program.cs", "newtonsoft.json")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining("has the following dependency");
+        }
+
+        [Fact]
+        public void ItHasAWhySubcommand_FileBasedApp_WithOptionsBeforePath()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var file = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(file, $"""
+                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
+                Console.WriteLine();
+                """);
+
+            new DotnetCommand(Log, "restore", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdErr();
+
+            new DotnetCommand(Log, "nuget", "why", "--framework", ToolsetInfo.CurrentTargetFramework, "Program.cs", "newtonsoft.json")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining("has the following dependency");
+        }
+
+        [Fact]
         public void ItCanUpdatePackages()
         {
             // Arrange
@@ -146,7 +194,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 .WithSource();
             var projectDirectory = testAsset.Path;
 
-            NuGetConfigWriter.Write(projectDirectory, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(projectDirectory, SdkTestContext.Current.TestPackages);
 
             new DotnetCommand(Log, "package", "add", "dotnet-hello@1.0.0")
                 .WithWorkingDirectory(projectDirectory)
@@ -179,6 +227,57 @@ namespace Microsoft.DotNet.Tools.Run.Tests
             var updatedVersion = NuGetVersion.Parse(updatedPackageVersionString);
 
             updatedVersion.Should().BeGreaterThan(v1);
+        }
+
+        [Fact]
+        public void ItCanUpdatePackages_FileBasedApp()
+        {
+            // Arrange
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var file = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(file, """
+                Console.WriteLine();
+                """);
+
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
+
+            new DotnetCommand(Log, "package", "add", "dotnet-hello@1.0.0", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            // Act
+            var commandResult = new DotnetCommand(Log, "package", "update", "dotnet-hello", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            // Assert
+            var listPackageCommandResult = new DotnetCommand(Log, "package", "list", "--format", "json", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+            listPackageCommandResult.Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            var updatedPackageVersionString = JObject.Parse(listPackageCommandResult.StdOut)
+                .SelectToken("$.projects[0].frameworks[0].topLevelPackages[?(@.id == 'dotnet-hello')].requestedVersion")
+                .ToString();
+
+            var v1 = NuGetVersion.Parse("1.0.0");
+            var updatedVersion = NuGetVersion.Parse(updatedPackageVersionString);
+
+            updatedVersion.Should().BeGreaterThan(v1);
+
+            File.ReadAllText(file).Should().Be($"""
+                #:package dotnet-hello@{updatedPackageVersionString}
+
+                Console.WriteLine();
+                """);
         }
     }
 }

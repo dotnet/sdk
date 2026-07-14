@@ -26,7 +26,7 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
@@ -110,7 +110,7 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
@@ -133,7 +133,7 @@ namespace Microsoft.NET.Restore.Tests
                 .CopyTestAsset("DesktopWpf")
                 .WithSource();
                 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var buildCommand = new BuildCommand(testAsset, relativePathToProject: "FxWpf")
             {

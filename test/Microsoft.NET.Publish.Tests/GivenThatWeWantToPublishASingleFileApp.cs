@@ -932,6 +932,7 @@ class C
                 IsExe = true,
             };
 
+            // SingleFile implies self-contained so we need to explicitly disable it to test this case.
             testProject.AdditionalProperties.Add("SelfContained", "false");
             testProject.AdditionalProperties.Add("EnableCompressionInSingleFile", "true");
 

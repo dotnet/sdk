@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             Directory.CreateDirectory("/tmp/folder/sub");
             var directory = Directory.GetCurrentDirectory();
-            var ridGraphPath = TestContext.GetRuntimeGraphFilePath();
+            var ridGraphPath = SdkTestContext.GetRuntimeGraphFilePath();
             try
             {
                 Directory.SetCurrentDirectory("/tmp/folder");

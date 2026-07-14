@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         public DotnetEnvironmentTestFixture()
         {
-            string dotnetRootUnderTest = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string dotnetRootUnderTest = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
             _originalPath = Environment.GetEnvironmentVariable(_PATH_VAR_NAME);
             Environment.SetEnvironmentVariable(_PATH_VAR_NAME, dotnetRootUnderTest + Path.PathSeparator + _originalPath);
         }
@@ -730,7 +730,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             WriteNugetConfigFile(fileSystem, nugetConfigPath, true);
 
-            var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+            var testRuntimeJsonPath = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
 
             var downloader = new ToolPackageDownloader(
                 store: store,
@@ -899,7 +899,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 store = storeAndQuery;
                 storeQuery = storeAndQuery;
                 downloader = new ToolPackageDownloaderMock2(storeAndQuery,
-                    runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                    runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
                     currentWorkingDirectory: root.Value,
                     fileSystem);
 
@@ -912,7 +912,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var toolPackageStore = new ToolPackageStoreAndQuery(toolsRoot);
                 store = toolPackageStore;
                 storeQuery = toolPackageStore;
-                var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                var testRuntimeJsonPath = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
                 downloader = new ToolPackageDownloader(store, testRuntimeJsonPath, root.Value);
                 uninstaller = new ToolPackageUninstaller(store);
             }
