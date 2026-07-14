@@ -511,6 +511,7 @@ internal static class SolutionAndProjectUtility
         return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
 
         [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+        [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
         static RunProperties DeployAndGetRunProperties(ProjectInstance project, FacadeLogger? logger)
         {
             // Build API cannot be called in parallel, even if the projects are different.
