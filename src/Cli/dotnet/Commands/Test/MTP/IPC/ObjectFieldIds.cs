@@ -105,6 +105,14 @@ internal static class FailedTestResultMessageFieldsId
     public const ushort StandardOutput = 7;
     public const ushort ErrorOutput = 8;
     public const ushort SessionUid = 9;
+
+    // Optional assertion diff fields. They carry the structured expected/actual values captured by
+    // assertion libraries (e.g. MSTest's Assert stores them on Exception.Data["assert.expected"] /
+    // ["assert.actual"]) so the SDK's TerminalTestReporter can render the same expected-vs-actual diff
+    // for multi-assembly `dotnet test` runs that it already renders for single-assembly runs. Added
+    // after SessionUid; older readers skip unrecognized field ids, so this stays backwards compatible.
+    public const ushort Expected = 10;
+    public const ushort Actual = 11;
 }
 
 internal static class ExceptionMessageFieldsId
@@ -161,3 +169,26 @@ internal static class TestInProgressMessageFieldsId
     public const ushort Uid = 1;
     public const ushort DisplayName = 2;
 }
+
+internal static class AzureDevOpsLogMessageFieldsId
+{
+    public const int MessagesSerializerId = 11;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort LogText = 3;
+}
+
+internal static class DisplayMessageFieldsId
+{
+    public const int MessagesSerializerId = 12;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort Level = 3;
+    public const ushort Text = 4;
+}
+
+// NOTE: Serializer ids 13 (WaitForServerControlRequest) and 14 (ServerControlMessage) exist upstream
+// in testfx but are intentionally not vendored here yet: they belong to the reverse server-control pipe
+// / server-initiated cancellation feature (protocol 1.4.0), which is out of scope for this contract.
