@@ -5,10 +5,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-// MSTest condition attributes for Docker availability gating, mirroring the companion
-// Microsoft.NET.Build.Containers.UnitTests project. Each invocation queries the docker CLI
-// on first use and caches the result in DockerCliStatus (file-scoped class) so it does not
-// pollute the rest of the namespace.
+// Availability probes can be expensive and may initialize a local container environment.
+// Cache each result for the lifetime of the test process.
 
 public sealed class DockerUnavailableCondition : ConditionBaseAttribute
 {
@@ -35,7 +33,7 @@ public sealed class PodmanCliCondition : ConditionBaseAttribute
 
     public override string GroupName => nameof(PodmanCliCondition);
 
-    public override bool IsConditionMet => DockerCliStatus.Command == DockerCli.PodmanCommand;
+    public override bool IsConditionMet => DockerCliStatus.Runtime == ContainerRuntimeKind.Podman;
 }
 
 public sealed class ContainerdStoreUnavailableCondition : ConditionBaseAttribute
@@ -50,8 +48,8 @@ public sealed class ContainerdStoreUnavailableCondition : ConditionBaseAttribute
 
     public override bool IsConditionMet
         => DockerCliStatus.IsAvailable
-           && DockerCliStatus.Command != DockerCli.PodmanCommand
-           && !DockerCli.IsContainerdStoreEnabledForDocker();
+           && DockerCliStatus.Runtime != ContainerRuntimeKind.Podman
+           && !DockerContainerRuntime.IsContainerdStoreEnabled();
 }
 
 public sealed class DockerSupportsArchCondition : ConditionBaseAttribute
@@ -75,20 +73,25 @@ public sealed class DockerSupportsArchCondition : ConditionBaseAttribute
            && DockerSupportsArchHelper.DaemonSupportsArch(_arch);
 }
 
-// tiny optimization - since there are many instances of these attributes we should only
-// query the daemon status once.
-static file class DockerCliStatus
+internal static class DockerCliStatus
 {
-    public static readonly bool IsAvailable;
-    public static readonly string? Command;
-    public static string LocalRegistry
-        => Command == DockerCli.PodmanCommand ? KnownLocalRegistryTypes.Podman
-                                              : KnownLocalRegistryTypes.Docker;
+    private static readonly Lazy<(bool IsAvailable, ContainerRuntimeKind Runtime)> s_status = new(
+        GetStatus,
+        LazyThreadSafetyMode.ExecutionAndPublication);
 
-    static DockerCliStatus()
+    public static bool IsAvailable => s_status.Value.IsAvailable;
+    public static ContainerRuntimeKind Runtime => s_status.Value.Runtime;
+    public static string LocalRegistry
+        => Runtime switch
+        {
+            ContainerRuntimeKind.Podman => KnownLocalRegistryTypes.Podman,
+            _ => KnownLocalRegistryTypes.Docker
+        };
+
+    private static (bool IsAvailable, ContainerRuntimeKind Runtime) GetStatus()
     {
-        DockerCli cli = new(new Microsoft.NET.TestFramework.TestLoggerFactory());
-        IsAvailable = cli.IsAvailable();
-        Command = cli.GetCommand();
+        ContainerRuntime runtime = new(new Microsoft.NET.TestFramework.TestLoggerFactory());
+        bool isAvailable = runtime.IsAvailable();
+        return (isAvailable, runtime.GetTelemetryValue());
     }
 }

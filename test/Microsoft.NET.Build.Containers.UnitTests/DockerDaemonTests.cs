@@ -34,7 +34,7 @@ public class DockerDaemonTests : IDisposable
         try
         {
             Environment.SetEnvironmentVariable("DOCKER_HOST", "tcp://123.123.123.123:12345");
-            var available = await new DockerCli(_loggerFactory).IsAvailableAsync(default).ConfigureAwait(false);
+            var available = await new ContainerRuntime(_loggerFactory).IsAvailableAsync(default).ConfigureAwait(false);
             Assert.IsFalse(available, "No daemon should be listening at that port");
         }
         finally
@@ -49,7 +49,37 @@ public class DockerDaemonTests : IDisposable
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task Can_detect_when_daemon_is_running()
     {
-        var available = await new DockerCli(_loggerFactory).IsAvailableAsync(default).ConfigureAwait(false);
+        var available = await new ContainerRuntime(_loggerFactory).IsAvailableAsync(default).ConfigureAwait(false);
         Assert.IsTrue(available, "Should have found a working daemon");
     }
+
+    [TestMethod]
+    [DataRow(true, false, false, (int)ContainerRuntimeKind.Docker)]
+    [DataRow(false, true, false, (int)ContainerRuntimeKind.Podman)]
+    [DataRow(true, true, false, (int)ContainerRuntimeKind.Docker)]
+    [DataRow(true, true, true, (int)ContainerRuntimeKind.Podman)]
+    public void Selects_preferred_available_command(
+        bool dockerAvailable,
+        bool podmanAvailable,
+        bool isPodmanAlias,
+        int expectedRuntime)
+    {
+        ContainerRuntime runtime = CreateRuntime(
+            command => command switch
+            {
+                ContainerRuntime.DockerCommand => dockerAvailable,
+                ContainerRuntime.PodmanCommand => podmanAvailable,
+                _ => false
+            },
+            isPodmanAlias);
+
+        Assert.AreEqual((ContainerRuntimeKind)expectedRuntime, runtime.GetTelemetryValue());
+    }
+
+    private ContainerRuntime CreateRuntime(Func<string, bool> isAvailable, bool isPodmanAlias)
+        => new(
+            command: null,
+            _loggerFactory,
+            (command, _, _) => Task.FromResult(isAvailable(command)),
+            () => isPodmanAlias);
 }

@@ -127,7 +127,7 @@ public class EndToEndTests : SdkTest, IDisposable
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net9ImageTag, null);
         var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { "latest", "1.0" });
 
-        await new DockerCli(LoggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new ContainerRuntime(LoggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         foreach (string tag in destinationReference.Tags)
@@ -1428,7 +1428,7 @@ public class EndToEndTests : SdkTest, IDisposable
         // Load the image into the local registry
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net9ImageTag, null);
         var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { rid });
-        await new DockerCli(LoggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new ContainerRuntime(LoggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         ContainerCli.RunCommand(

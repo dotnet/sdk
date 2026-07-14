@@ -26,23 +26,29 @@ public sealed class PodmanCliCondition : ConditionBaseAttribute
 
     public override string GroupName => nameof(PodmanCliCondition);
 
-    public override bool IsConditionMet => DockerCliStatus.Command == DockerCli.PodmanCommand;
+    public override bool IsConditionMet => DockerCliStatus.Runtime == ContainerRuntimeKind.Podman;
 }
 
-// tiny optimization - since there are many instances of this attribute we should only get
-// the daemon status once
-static file class DockerCliStatus
+// Cache the Docker/Podman probe for the lifetime of the test process.
+internal static class DockerCliStatus
 {
-    public static readonly bool IsAvailable;
-    public static readonly string? Command;
-    public static string LocalRegistry
-        => Command == DockerCli.PodmanCommand ? KnownLocalRegistryTypes.Podman
-                                              : KnownLocalRegistryTypes.Docker;
+    private static readonly Lazy<(bool IsAvailable, ContainerRuntimeKind Runtime)> s_status = new(
+        GetStatus,
+        LazyThreadSafetyMode.ExecutionAndPublication);
 
-    static DockerCliStatus()
+    public static bool IsAvailable => s_status.Value.IsAvailable;
+    public static ContainerRuntimeKind Runtime => s_status.Value.Runtime;
+    public static string LocalRegistry
+        => Runtime switch
+        {
+            ContainerRuntimeKind.Podman => KnownLocalRegistryTypes.Podman,
+            _ => KnownLocalRegistryTypes.Docker
+        };
+
+    private static (bool IsAvailable, ContainerRuntimeKind Runtime) GetStatus()
     {
-        DockerCli cli = new(new TestLoggerFactory());
-        IsAvailable = cli.IsAvailable();
-        Command = cli.GetCommand();
+        ContainerRuntime runtime = new(new TestLoggerFactory());
+        bool isAvailable = runtime.IsAvailable();
+        return (isAvailable, runtime.GetTelemetryValue());
     }
 }

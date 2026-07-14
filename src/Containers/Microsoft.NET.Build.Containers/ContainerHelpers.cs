@@ -180,6 +180,19 @@ public static class ContainerHelpers
         return null;
     }
 
+    internal static string GetManifestMediaType(
+        string defaultManifestMediaType,
+        KnownImageFormats? imageFormat,
+        DestinationImageReference destinationImageReference)
+    {
+        if (destinationImageReference.LocalRegistry is ContainerRuntime runtime)
+        {
+            return runtime.GetManifestMediaType(defaultManifestMediaType, imageFormat);
+        }
+
+        return ContainerRuntimeBase.GetDefaultManifestMediaType(defaultManifestMediaType, imageFormat);
+    }
+
     /// <summary>
     /// Parse a fully qualified container name (e.g. https://mcr.microsoft.com/dotnet/runtime:6.0)
     /// Note: Tag not required.

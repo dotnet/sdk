@@ -17,7 +17,7 @@ internal class Telemetry
     /// <param name="LocalPushType">If the new image is being stored in a local store of some kind, what kind of store is it?</param>
     private record class PublishTelemetryContext(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
     private enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, MCR, Other }
-    private enum LocalStorageType { Docker, Podman, Tarball }
+    private enum LocalStorageType { Docker, Podman, Tarball, Unknown }
 
     private readonly Microsoft.Build.Utilities.TaskLoggingHelper Log;
     private readonly PublishTelemetryContext Context;
@@ -49,10 +49,14 @@ internal class Telemetry
     private LocalStorageType GetLocalStorageType(ILocalRegistry r)
     {
         if (r is ArchiveFileRegistry) return LocalStorageType.Tarball;
-        var d = r as DockerCli;
-        System.Diagnostics.Debug.Assert(d != null, "Unknown local registry type");
-        if (d.GetCommand() == DockerCli.DockerCommand) return LocalStorageType.Docker;
-        else return LocalStorageType.Podman;
+        var runtime = r as ContainerRuntime;
+        System.Diagnostics.Debug.Assert(runtime != null, "Unknown local registry type");
+        return runtime.GetTelemetryValue() switch
+        {
+            ContainerRuntimeKind.Docker => LocalStorageType.Docker,
+            ContainerRuntimeKind.Podman => LocalStorageType.Podman,
+            _ => LocalStorageType.Unknown
+        };
     }
 
     private IDictionary<string, string?> ContextProperties() => new Dictionary<string, string?>
