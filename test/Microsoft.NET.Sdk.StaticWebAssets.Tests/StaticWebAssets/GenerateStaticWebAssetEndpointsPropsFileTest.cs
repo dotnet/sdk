@@ -171,11 +171,6 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
     [DataRow(" ")]
     public void Execute_RelativeTargetPropsFilePath_ResolvesAgainstProjectDirectory_NotProcessCurrentDirectory(string relativeTargetPropsFilePath)
     {
-        if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeTargetPropsFilePath))
-        {
-            return;
-        }
-
         WithDecoyCwdAndProjectDirectory((projectDir, spawnDir) =>
         {
             // Arrange
@@ -207,6 +202,13 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
                 PackagePathPrefix = "staticwebassets",
                 TargetPropsFilePath = relativeTargetPropsFilePath,
             };
+
+            if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeTargetPropsFilePath))
+            {
+                Action execute = () => task.Execute();
+                execute.Should().Throw<Exception>();
+                return;
+            }
 
             // Act
             var result = task.Execute();

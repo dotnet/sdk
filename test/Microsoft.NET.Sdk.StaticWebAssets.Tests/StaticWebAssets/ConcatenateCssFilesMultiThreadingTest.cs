@@ -21,11 +21,6 @@ public class ConcatenateCssFilesMultiThreadingTest
     [DataRow(" ")]
     public void ReadsInputsAndWritesBundleRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory(string relativeOutputFile)
     {
-        if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeOutputFile))
-        {
-            return;
-        }
-
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ConcatenateCssFilesMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");
         var spawnDir = Path.Combine(testRoot, "spawn");
@@ -54,6 +49,13 @@ public class ConcatenateCssFilesMultiThreadingTest
                 ScopedCssBundleBasePath = "/",
                 OutputFile = relativeOutputFile
             };
+
+            if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeOutputFile))
+            {
+                Action execute = () => task.Execute();
+                execute.Should().Throw<Exception>();
+                return;
+            }
 
             task.Execute().Should().BeTrue("the task must run to completion when TaskEnvironment.ProjectDirectory differs from the process CWD");
 

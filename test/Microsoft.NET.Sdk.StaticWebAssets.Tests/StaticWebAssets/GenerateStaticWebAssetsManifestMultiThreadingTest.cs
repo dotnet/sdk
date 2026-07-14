@@ -19,12 +19,6 @@ public class GenerateStaticWebAssetsManifestMultiThreadingTest
         string relativeManifestPath,
         string relativeManifestCacheFilePath)
     {
-        if (OperatingSystem.IsWindows() &&
-            (string.IsNullOrWhiteSpace(relativeManifestPath) || string.IsNullOrWhiteSpace(relativeManifestCacheFilePath)))
-        {
-            return;
-        }
-
         // Layout: place project and decoy in disjoint subtrees so that the same
         // relative path produces different absolute paths from each root.
         //   <testRoot>/project/output/   <-- TaskEnvironment.ProjectDirectory
@@ -62,6 +56,14 @@ public class GenerateStaticWebAssetsManifestMultiThreadingTest
                 ManifestPath = relativeManifestPath,
                 ManifestCacheFilePath = relativeManifestCacheFilePath,
             };
+
+            if (OperatingSystem.IsWindows() &&
+                (string.IsNullOrWhiteSpace(relativeManifestPath) || string.IsNullOrWhiteSpace(relativeManifestCacheFilePath)))
+            {
+                task.Execute().Should().BeFalse();
+                errorMessages.Should().NotBeEmpty();
+                return;
+            }
 
             task.Execute().Should().BeTrue(string.Join("; ", errorMessages));
 

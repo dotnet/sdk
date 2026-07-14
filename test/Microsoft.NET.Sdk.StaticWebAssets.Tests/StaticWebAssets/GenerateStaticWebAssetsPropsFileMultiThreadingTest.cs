@@ -18,11 +18,6 @@ public class GenerateStaticWebAssetsPropsFileMultiThreadingTest
     [DataRow(" ")]
     public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory(string relativeTargetPropsFilePath)
     {
-        if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeTargetPropsFilePath))
-        {
-            return;
-        }
-
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(GenerateStaticWebAssetsPropsFileMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");
         var spawnDir = Path.Combine(testRoot, "spawn");
@@ -67,6 +62,13 @@ public class GenerateStaticWebAssetsPropsFileMultiThreadingTest
                     }),
                 }
             };
+
+            if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeTargetPropsFilePath))
+            {
+                Action execute = () => task.Execute();
+                execute.Should().Throw<Exception>();
+                return;
+            }
 
             task.Execute().Should().BeTrue();
 
