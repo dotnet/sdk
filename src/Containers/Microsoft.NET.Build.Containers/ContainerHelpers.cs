@@ -8,6 +8,13 @@ using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
+
+internal enum KnownImageFormats
+{
+    OCI,
+    Docker
+}
+
 public static class ContainerHelpers
 {
     internal const string HostObjectUser = "DOTNET_CONTAINER_REGISTRY_UNAME";
@@ -154,6 +161,23 @@ public static class ContainerHelpers
     internal static bool IsValidEnvironmentVariable(string envVar)
     {
         return envVarRegex.IsMatch(envVar);
+    }
+
+    internal static int? TryParseUserId(string? containerUser)
+    {
+        if (containerUser is null)
+        {
+            return null;
+        }
+        if (int.TryParse(containerUser, out int userId))
+        {
+            return userId;
+        }
+        if (containerUser.Equals("root", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+        return null;
     }
 
     /// <summary>
