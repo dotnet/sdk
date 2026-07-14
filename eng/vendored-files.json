@@ -1,0 +1,519 @@
+{
+  "$comment": "Manifest of source files copied (vendored) from other repositories into dotnet/sdk. See eng/vendored-files.md. These files are the 'dotnet test' <-> Microsoft.Testing.Platform shared source (wire contract + terminal reporter); the source of truth is microsoft/testfx, which enumerates the same set via DotnetTestProtocolContract.props and TerminalReporterContract.props.",
+  "entries": [
+    {
+      "id": "dotnet-test-wire-contract-fieldids",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/IPC/ObjectFieldIds.cs",
+      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props).",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
+          "baseline_ref_sha": "59d0f9b9f8604e7f366b9ab340a5d194adf85544",
+          "baseline_blob_sha": "f964693792a513c07bef616e35d4754b79257edb",
+          "scope": "entire file; ids must match exactly"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-wire-contract-constants",
+      "local_path": "src/Cli/dotnet/Commands/Test/CliConstants.cs",
+      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, ProtocolConstants). Watch the upstream file for added/changed wire constants.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "145ed7b998f5a7dcc1d2388e650d2379227e7df3",
+          "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-reporter",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs",
+      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "992ddffeb9e28fe1526da63444f45dbb319e3871",
+          "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.ErroredAssemblies.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "9e805c0271f30b6ddf1c729dd286aab5956b52f4",
+          "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Formatting.ControlCharacters.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "76205cf8f8d0dc5fe48f49e060fe80c76631e910",
+          "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Formatting.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "e635002a2b75195d01327aad9508a023df0492fd",
+          "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Handshake.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "af07e4b686833a1b6fd09135db9fb0820bf97318",
+          "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Lifecycle.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "9e356aaa82691ef0b2143a92f13d114747fcd947",
+          "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Messaging.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "5807f3f16ce9304c1b0348b745e06bb7ac6c3839",
+          "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Summary.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "b03abc643e27c9c5b956b3aef96c32f469b18300",
+          "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.TestCompletion.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "7824a5b256401a784ccfb64b79a0512aba42f16d",
+          "scope": "reporter partial"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-ansicodes",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/AnsiCodes.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiCodes.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "634cbfae5834af1d5e181a9605c17e061aa104c1",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-ansidetector",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/AnsiDetector.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiDetector.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "07e0ea43228e1ac9314ecf679281e5714bef76ca",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-ansiterminal",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/AnsiTerminal.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminal.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "9f8920d5af4a6c33fbbaf2d4d4902ecd3d0429dc",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-ansiterminaltestprogressframe",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/AnsiTerminalTestProgressFrame.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "6a7b784d6b1eae9de031b57de801114548efc976",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-exceptionflattener",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/ExceptionFlattener.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/ExceptionFlattener.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "72938eee7845c8b150e3a7925ab7eb4db9b67e5c",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-fileutilities",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/FileUtilities.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/FileUtilities.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "f1084a2ff09382bd26479de00731b89824736f3a",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-humanreadabledurationformatter",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/HumanReadableDurationFormatter.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/HumanReadableDurationFormatter.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "8892f577d8d4fe399d79fedaa141108031e4550a",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-iterminal",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/ITerminal.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/ITerminal.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "75c07201db35a17fe286df1175efa87342f0ecdf",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-nativemethods",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/NativeMethods.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/NativeMethods.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "121d1cca743710bf2ffe5a1a8a9433526e691005",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-nonansiterminal",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/NonAnsiTerminal.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/NonAnsiTerminal.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "db8dfa4f6ff2bd84e810a3a67ae50ce81d930ddb",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-simpleansiterminal",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SimpleAnsiTerminal.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleAnsiTerminal.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "90f530c1b949b5c7f8cc5e629b37e5a8bdcc176e",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-simpleterminalbase",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SimpleTerminalBase.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleTerminalBase.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "d4d63f11a20f72f676a1378376fea41a9d1aa536",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-terminalcolor",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalColor.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalColor.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "ef36dc706786b8081dca5e088a2deba1463fcb83",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-terminaltestreporteroptions",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporterOptions.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporterOptions.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "a496e9600ded4666e298caa27bf6138914a09e87",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-testdetailstate",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestDetailState.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestDetailState.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "82564a8d1ae6337d144d7b5b27fe65baa5792303",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-testnoderesultsstate",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestNodeResultsState.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestNodeResultsState.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "b56f233d182ca8b09d798a0d33a25790385440b2",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-testoutcome",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestOutcome.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestOutcome.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "4bdf16f8259b2b6c8725867719077f5b625146fe",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-testprogressstate",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressState.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "ec860abdf7a1ae5d242101334f26c23809601e50",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-testprogressstateawareterminal",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressStateAwareTerminal.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressStateAwareTerminal.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "15498557b4e8be651940f93384507c7790379c62",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-testrunartifact",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestRunArtifact.cs",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestRunArtifact.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "62538d2cad82a449e3043e636e69c25eb64352ca",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-icolor",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/IColor.cs",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/IColor.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/IColor.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "bfd6173af166f6626846276bb90caeade2a8ac45",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-systemconsolecolor",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SystemConsoleColor.cs",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/SystemConsoleColor.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/SystemConsoleColor.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "e59363aa915e2c11b0c6936143ef8bd4198be467",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-targetframeworkparser",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TargetFrameworkParser.cs",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "cf30ee8ed5cd18cb7fdb29fdc1d5bbc23a6b3094",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-iconsole",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/IConsole.cs",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/Helpers/System/IConsole.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/IConsole.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "93a608d60be5697e956bb40225a8914e6232757d",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-istopwatch",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/IStopwatch.cs",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/Helpers/System/IStopwatch.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/IStopwatch.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "e85a0a5bd6272a6278503d61e4fbf3a161c05aac",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-systemconsole",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SystemConsole.cs",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/Helpers/System/SystemConsole.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/SystemConsole.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "93a13204eb4b3f10879fd383a8f2679f57d4b5af",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-systemstopwatch",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SystemStopwatch.cs",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/Helpers/System/SystemStopwatch.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/SystemStopwatch.cs",
+          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
+          "baseline_blob_sha": "7ce0c0b08a798fdb926c45c09c38c30e4a0e1d8c",
+          "scope": "entire file"
+        }
+      ]
+    }
+  ]
+}

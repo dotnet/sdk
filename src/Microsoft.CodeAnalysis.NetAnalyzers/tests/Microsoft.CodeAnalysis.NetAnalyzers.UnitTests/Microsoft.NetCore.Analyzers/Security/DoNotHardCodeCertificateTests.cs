@@ -4,16 +4,16 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.DoNotHardCodeCertificate, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotHardCodeCertificateTests : TaintedDataAnalyzerTestBase<DoNotHardCodeCertificate, DoNotHardCodeCertificate>
     {
         protected override DiagnosticDescriptor Rule => DoNotHardCodeCertificate.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Source_ContantByteArray_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -32,7 +32,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(string path)", "byte[]", "void TestClass.TestMethod(string path)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Source_ConvertFromBase64String_WithConstantString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -52,7 +52,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(string path)", "byte[] Convert.FromBase64String(string s)", "void TestClass.TestMethod(string path)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Source_ASCIIEncodingGetBytes_WithConstantString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -72,7 +72,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(string path)", "byte[] Encoding.GetBytes(string s)", "void TestClass.TestMethod(string path)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Source_EncodingUTF8GetBytes_WithConstantString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +92,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(string path)", "byte[] Encoding.GetBytes(string s)", "void TestClass.TestMethod(string path)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Source_ASCIIEncodingGetBytes_WithStringAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -112,7 +112,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 38, "X509Certificate.X509Certificate(string fileName)", "void TestClass.TestMethod(byte[] bytes, string path)", "string chars", "int ASCIIEncoding.GetBytes(string chars, int charIndex, int charCount, byte[] bytes, int byteIndex)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithStringAndSecureStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -132,7 +132,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(string fileName, SecureString password, X509KeyStorageFlags keyStorageFlags)", "void TestClass.TestMethod(string path, SecureString password, X509KeyStorageFlags keyStorageFlags)", "byte[]", "void TestClass.TestMethod(string path, SecureString password, X509KeyStorageFlags keyStorageFlags)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithByteArrayAndStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -151,7 +151,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] rawData, string password, X509KeyStorageFlags keyStorageFlags)", "void TestClass.TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)", "byte[]", "void TestClass.TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithStringAndStringParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -170,7 +170,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] rawData, string password)", "void TestClass.TestMethod(string path, string password)", "byte[]", "void TestClass.TestMethod(string path, string password)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithStringAndSecureStringParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -190,7 +190,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(byte[] rawData, SecureString password)", "void TestClass.TestMethod(string path, SecureString password)", "byte[]", "void TestClass.TestMethod(string path, SecureString password)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithStringAndStringAndX509KeyStorageFlagsParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -209,7 +209,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] rawData, string password, X509KeyStorageFlags keyStorageFlags)", "void TestClass.TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)", "byte[]", "void TestClass.TestMethod(string path, string password, X509KeyStorageFlags keyStorageFlags)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithByteArrayAndSecureStringParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -229,7 +229,7 @@ class TestClass
             GetCSharpResultAt(12, 9, 10, 24, "X509Certificate.X509Certificate(byte[] rawData, SecureString password)", "void TestClass.TestMethod(string path, SecureString password)", "byte[]", "void TestClass.TestMethod(string path, SecureString password)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithByteArrayParameter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -248,7 +248,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] data)", "void TestClass.TestMethod(string path, string password)", "byte[]", "void TestClass.TestMethod(string path, string password)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithByteArrayAndStringParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -267,7 +267,7 @@ class TestClass
             GetCSharpResultAt(11, 9, 9, 24, "X509Certificate.X509Certificate(byte[] rawData, string password)", "void TestClass.TestMethod(string path, string password)", "byte[]", "void TestClass.TestMethod(string path, string password)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_X509Certificates2_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -287,7 +287,7 @@ class TestClass
         }
 
         // For now, we didn't take serialization into consideration.
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_X509Certificate_WithSerializationInfoAndStreamingContextParameters_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -305,7 +305,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Source_NotContantByteArray_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -322,7 +322,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Source_ConvertFromBase64String_WithNotConstantString_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -341,7 +341,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_X509Certificate2_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -358,7 +358,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Source_ASCIIEncodingGetBytes_WithCharArrayAndInt32AndInt32AndByteArrayAndInt32Parameters_WithConstantCharArray_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -380,7 +380,7 @@ class TestClass
         }
 
         // Didn't find out what causes NRE.
-        [Fact, WorkItem(3012, "https://github.com/dotnet/roslyn-analyzers/issues/3012")]
+        [TestMethod, WorkItem(3012, "https://github.com/dotnet/roslyn-analyzers/issues/3012")]
         public async Task Test_ExampleCodeFromTheIssue_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -429,7 +429,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_NullCfg_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -1,10 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <IsUnitTestProject>true</IsUnitTestProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -16,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="FakeItEasy" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="Verify.MSTest" />
     <PackageReference Include="Verify.DiffPlex" />
     <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
     <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
@@ -24,9 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Cli\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" Aliases="global,TemplateEngineCli" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

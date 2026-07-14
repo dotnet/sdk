@@ -202,6 +202,26 @@
         <target state="translated">避免長度為零的陣列配置</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
+        <source>When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</source>
+        <target state="new">When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
+        <source>Use 'Regex.Match' and check 'Success'</source>
+        <target state="new">Use 'Regex.Match' and check 'Success'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
+        <source>Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</source>
+        <target state="new">Redundant call to 'Regex.IsMatch' before 'Regex.Match'. Use 'Regex.Match' and check 'Match.Success' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
+        <source>Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</source>
+        <target state="new">Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
         <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
@@ -603,12 +623,12 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
-        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
         <target state="translated">請使用建議的處置模式，確認會在所有路徑上，處置由 '{0}' 所建立的物件。在可能的情況下，請將建立包在 'using' 陳述式或 'using' 宣告內。否則，請使用 try-finally 模式，同時在 try 區域之前先宣告專用的區域變數，並在 'finally' 區域中的非 null 值上，設定無條件 Dispose 引動過程，比如 'x?.Dispose()'。如果 try 區域內已明確地處置了該物件，或是處置擁有權已轉移到另一個物件或方法，則請在這類作業之後，對區域變數指派 'null'，以避免在 'finally' 中發生雙重處置。</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
-        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
+        <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transferred to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
         <target state="translated">請使用建議的處置模式，確認會在所有例外狀況路徑上，處置由 '{0}' 所建立的物件。在可能的情況下，請將建立包在 'using' 陳述式或 'using' 宣告內。否則，請使用 try-finally 模式，同時在 try 區域之前先宣告專用的區域變數，並在 'finally' 區域中的非 null 值上，設定無條件 Dispose 引動過程，比如 'x?.Dispose()'。如果 try 區域內已明確地處置了該物件，或是處置擁有權已轉移到另一個物件或方法，則請在這類作業之後，對區域變數指派 'null'，以避免在 'finally' 中發生雙重處置。</target>
         <note />
       </trans-unit>

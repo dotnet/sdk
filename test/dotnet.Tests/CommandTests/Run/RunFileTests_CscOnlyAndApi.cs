@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -13,9 +13,10 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileTestBase(log)
+[TestClass]
+public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 {
-    [Fact]
+    [TestMethod]
     public void UpToDate()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -137,24 +138,57 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         Build(testInstance, BuildLevel.Csc);
     }
 
-    [Fact]
-    public void UpToDate_InvalidOptions()
+    /// <summary>
+    /// See <see href="https://github.com/dotnet/sdk/issues/55056"/>.
+    /// </summary>
+    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+    public void UpToDate_ArtifactsRelocated()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
-        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-build")
-            .WithWorkingDirectory(testInstance.Path)
+        var srcDir = Path.Join(testInstance.Path, "src");
+        var tmpDir1 = Path.Join(testInstance.Path, "tmp1");
+        var tmpDir2 = Path.Join(testInstance.Path, "tmp2");
+
+        Directory.CreateDirectory(srcDir);
+
+        var programFile = Path.Join(srcDir, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:property ImplicitUsings=disable
+            #:property GenerateAssemblyInfo=false
+            #:property GenerateTargetFrameworkAttribute=false
+            System.Console.WriteLine("hello");
+            """);
+
+        var expectedStdOut = "hello";
+
+        Directory.CreateDirectory(tmpDir1);
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable("TMP", tmpDir1)
+            .WithEnvironmentVariable("TMPDIR", tmpDir1)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir1)
+            .WithWorkingDirectory(srcDir)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--no-cache", "--no-build"));
+            .Should().Pass()
+            .And.HaveStdOut(expectedStdOut);
+
+        Directory.Move(tmpDir1, tmpDir2);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable("TMP", tmpDir2)
+            .WithEnvironmentVariable("TMPDIR", tmpDir2)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir2)
+            .WithWorkingDirectory(srcDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedStdOut);
     }
 
     /// <summary>
     /// <see cref="UpToDate"/> optimization should see through symlinks.
     /// See <see href="https://github.com/dotnet/sdk/issues/52063"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void UpToDate_SymbolicLink()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -189,7 +223,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Similar to <see cref="UpToDate_SymbolicLink"/> but with a chain of symlinks.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void UpToDate_SymbolicLink2()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -230,7 +264,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <see cref="UpToDate"/> optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
     /// See <see href="https://github.com/dotnet/sdk/issues/52057"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void UpToDate_ProjectReferences()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -288,7 +322,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <see cref="UpToDate"/> optimization currently does not support <c>#:ref</c> references and hence is disabled if those are present.
     /// Analogous to <see cref="UpToDate_ProjectReferences"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void UpToDate_RefDirectives()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -306,6 +340,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         File.WriteAllText(libPath, libCode);
 
         var programCode = """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine("Hello " + MyLib.Greeter.Greet());
             """;
@@ -334,7 +369,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// (We cannot test <see cref="CscOnly"/> because that optimization doesn't support neither <c>#:property</c> nor <c>#:sdk</c> which we need to enable default items.)
     /// See <see href="https://github.com/dotnet/sdk/issues/50912"/>.
     /// </summary>
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void UpToDate_DefaultItems(bool optOut)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -379,7 +414,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Similar to <see cref="UpToDate_DefaultItems"/> but for <c>.razor</c> files instead of <c>.resx</c> files.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void UpToDate_DefaultItems_Razor()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -407,7 +442,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOutContaining("error CS0246");
     }
 
-    [Fact]
+    [TestMethod]
     public void CscOnly()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -438,7 +473,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             """);
     }
 
-    [Fact]
+    [TestMethod]
     public void CscOnly_CompilationDiagnostics()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -474,7 +509,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Checks that the <c>DOTNET_ROOT</c> env var is set the same in csc mode as in msbuild mode.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_DotNetRoot()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -525,7 +560,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// like GlobalUsings.g.cs which are normally generated by MSBuild targets.
     /// This tests the SDK recreates the files when they are outdated.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_IntermediateFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -571,7 +606,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// If a file from a NuGet package (which would be used by CSC-only build) does not exist, full MSBuild should be used instead.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_NotRestored()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -611,7 +646,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void CscOnly_SpacesInPath()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -630,7 +665,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
     }
 
-    [Fact] // https://github.com/dotnet/sdk/issues/50778
+    [TestMethod] // https://github.com/dotnet/sdk/issues/50778
     public void CscOnly_Args()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -650,7 +685,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Combination of <see cref="UpToDate_SymbolicLink"/> and <see cref="CscOnly"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_SymbolicLink()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -686,7 +721,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// Tests an optimization which remembers CSC args from prior MSBuild runs and can skip subsequent MSBuild invocations and call CSC directly.
     /// This optimization kicks in when the file has some <c>#:</c> directives (then the simpler "hard-coded CSC args" optimization cannot be used).
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -744,7 +779,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_SpacesInPath()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -779,7 +814,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// When compilation fails, the obj dll should not be copied to bin directory.
     /// This prevents spurious errors if the dll file was not even produced by roslyn due to compilation errors.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_CompilationFailure_NoCopyToBin()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -827,7 +862,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_Args()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -865,7 +900,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// If hard links are enabled, the <c>bin/app.dll</c> and <c>obj/app.dll</c> files are going to be the same,
     /// so our "copy obj to bin" logic must account for that.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_HardLinks()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -894,7 +929,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Combination of <see cref="UpToDate_SymbolicLink"/> and <see cref="CscOnly_AfterMSBuild"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_SymbolicLink()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -928,7 +963,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Interaction of optimization <see cref="CscOnly_AfterMSBuild"/> and <c>Directory.Build.props</c> file.
     /// </summary>
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void CscOnly_AfterMSBuild_DirectoryBuildProps(bool touch1, bool touch2)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -980,7 +1015,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_ProjectReferences()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1040,7 +1075,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// This optimization currently does not support <c>#:ref</c> references and hence is disabled if those are present.
     /// Analogous to <see cref="CscOnly_AfterMSBuild_ProjectReferences"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_RefDirectives()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1058,6 +1093,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         File.WriteAllText(libPath, libCode);
 
         var programCode = """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine("Hello " + MyLib.Greeter.Greet());
             """;
@@ -1085,7 +1121,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// If users have more complex build customizations, they can opt out of the optimization.
     /// </summary>
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void CscOnly_AfterMSBuild_OptOut(bool canSkipMSBuild, bool inDirectoryBuildProps)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -1130,7 +1166,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_AuxiliaryFilesNotReused()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -1170,7 +1206,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// Verifies that <c>csc.rsp</c> is written to disk after a full MSBuild build,
     /// so that IDEs can read it to create a virtual project.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void MSBuild_WritesCscRsp()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -1198,7 +1234,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// Verifies that <c>csc.rsp</c> is written to disk after <c>dotnet build file.cs</c>,
     /// so that IDEs can read it to create a virtual project.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DotnetBuild_WritesCscRsp()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1227,7 +1263,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// Testing <see cref="CscOnly"/> optimization when the NuGet cache is cleared between builds.
     /// See <see href="https://github.com/dotnet/sdk/issues/45169"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_NuGetCacheCleared()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -1245,12 +1281,12 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         var packageDir = Path.Join(testInstance.Path, "packages");
         TestCommand CustomizeCommand(TestCommand command) => command.WithEnvironmentVariable("NUGET_PACKAGES", packageDir);
 
-        Assert.False(Directory.Exists(packageDir));
+        Assert.IsFalse(Directory.Exists(packageDir));
 
         // Ensure the packages exist first.
         Build(testInstance, BuildLevel.All, expectedOutput: "v1", customizeCommand: CustomizeCommand);
 
-        Assert.True(Directory.Exists(packageDir));
+        Assert.IsTrue(Directory.Exists(packageDir));
 
         // Now clear the build outputs (but not packages) to verify CSC is used even from "first run".
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
@@ -1265,17 +1301,17 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
         // Clear NuGet cache.
         Directory.Delete(packageDir, recursive: true);
-        Assert.False(Directory.Exists(packageDir));
+        Assert.IsFalse(Directory.Exists(packageDir));
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v3", customizeCommand: CustomizeCommand);
 
-        Assert.True(Directory.Exists(packageDir));
+        Assert.IsTrue(Directory.Exists(packageDir));
     }
 
     /// <summary>
     /// Combination of <see cref="CscOnly_NuGetCacheCleared"/> and <see cref="CscOnly_AfterMSBuild"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscOnly_AfterMSBuild_NuGetCacheCleared()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -1296,11 +1332,11 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         var packageDir = Path.Join(testInstance.Path, "packages");
         TestCommand CustomizeCommand(TestCommand command) => command.WithEnvironmentVariable("NUGET_PACKAGES", packageDir);
 
-        Assert.False(Directory.Exists(packageDir));
+        Assert.IsFalse(Directory.Exists(packageDir));
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1", customizeCommand: CustomizeCommand);
 
-        Assert.True(Directory.Exists(packageDir));
+        Assert.IsTrue(Directory.Exists(packageDir));
 
         code = code.Replace("v1", "v2");
         File.WriteAllText(programPath, code);
@@ -1312,11 +1348,11 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
         // Clear NuGet cache.
         Directory.Delete(packageDir, recursive: true);
-        Assert.False(Directory.Exists(packageDir));
+        Assert.IsFalse(Directory.Exists(packageDir));
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v3", customizeCommand: CustomizeCommand);
 
-        Assert.True(Directory.Exists(packageDir));
+        Assert.IsTrue(Directory.Exists(packageDir));
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);
@@ -1327,7 +1363,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// </summary>
     private const string nop = "";
 
-    [Fact]
+    [TestMethod]
     public void Api()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1362,7 +1398,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
-                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <OutputType>Exe</OutputType>
@@ -1412,7 +1448,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Directives should be evaluated before the project for run-api is constructed.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Api_Evaluation()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1447,7 +1483,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
-                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -1473,7 +1509,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                       </PropertyGroup>
 
                       <ItemGroup>
-                        <Compile Include="{bPath}" />
+                        <Compile Include="{bPath}" FileBasedProgramsFromIncludeDirective="true" />
                       </ItemGroup>
 
                       <ItemGroup>
@@ -1493,7 +1529,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void Api_Diagnostic_01()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1523,7 +1559,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
-                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -1568,7 +1604,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 """.ReplaceLineEndings(""));
     }
 
-    [Fact]
+    [TestMethod]
     public void Api_Diagnostic_02()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1598,7 +1634,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
-                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -1643,7 +1679,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 """.ReplaceLineEndings(""));
     }
 
-    [Fact]
+    [TestMethod]
     public void Api_Error()
     {
         new DotnetCommand(Log, "run-api")
@@ -1660,7 +1696,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOutContaining("Unknown2");
     }
 
-    [Fact]
+    [TestMethod]
     public void Api_RunCommand()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1687,7 +1723,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 """);
     }
 
-    [Fact]
+    [TestMethod]
     public void Api_VirtualProjectBuilder_CreateProjectRootElement()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1738,7 +1774,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
     }
 
-    [Theory, CombinatorialData]
+    [TestMethod, CombinatorialData]
     public void EntryPointFilePath(bool cscOnly)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
@@ -1763,7 +1799,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOut(prefix + $"EntryPointFilePath: {filePath}");
     }
 
-    [Fact]
+    [TestMethod]
     public void EntryPointFileDirectoryPath()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1779,7 +1815,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOut($"EntryPointFileDirectoryPath: {testInstance.Path}");
     }
 
-    [Fact]
+    [TestMethod]
     public void EntryPointFilePath_WithRelativePath()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1797,7 +1833,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOut($"EntryPointFilePath: {Path.GetFullPath(relativePath)}");
     }
 
-    [Fact]
+    [TestMethod]
     public void EntryPointFilePath_WithSpacesInPath()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1816,7 +1852,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOut($"EntryPointFilePath: {filePath}");
     }
 
-    [Fact]
+    [TestMethod]
     public void EntryPointFileDirectoryPath_WithDotSlash()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1833,7 +1869,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOut($"EntryPointFileDirectoryPath: {testInstance.Path}");
     }
 
-    [Fact]
+    [TestMethod]
     public void EntryPointFilePath_WithUnicodeCharacters()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1852,7 +1888,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOut($"EntryPointFilePath: {filePath}");
     }
 
-    [Fact]
+    [TestMethod]
     public void EntryPointFilePath_SymbolicLink()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1881,7 +1917,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOut($"EntryPointFilePath: {linkPath}");
     }
 
-    [Fact]
+    [TestMethod]
     public void MSBuildGet_Simple()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1897,21 +1933,21 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Check that <c>-get</c> commands work the same in project-based and file-based apps.
     /// </summary>
-    [Theory]
-    [InlineData(true, "build", "--getProperty:TargetFramework;Configuration")]
-    [InlineData(true, "build", "--getItem:MyItem", "--getProperty:MyProperty")]
-    [InlineData(true, "build", "--getItem:MyItem", "--getProperty:MyProperty", "-t:MyTarget")]
-    [InlineData(true, "build", "--getItem:MyItem", "--getProperty:MyProperty", "--getTargetResult:MyTarget")]
-    [InlineData(true, "build", "/getProperty:TargetFramework")]
-    [InlineData(true, "build", "/getProperty:TargetFramework", "-p:LangVersion=wrong")] // evaluated only, so no failure
-    [InlineData(false, "build", "/getProperty:TargetFramework", "-t:Build", "-p:LangVersion=wrong")] // fails with build error but still outputs info
-    [InlineData(true, "build", "-getProperty:Configuration", "-getResultOutputFile:out.txt")]
-    [InlineData(true, "build", "-getProperty:OutputType,Configuration", "-getResultOutputFile:out1.txt", "-getResultOutputFile:out2.txt")]
-    [InlineData(true, "run", "-getProperty:Configuration")] // not supported, the arg is passed through to the app
-    [InlineData(true, "restore", "-getProperty:Configuration")]
-    [InlineData(true, "publish", "-getProperty:OutputType", "-p:PublishAot=false")]
-    [InlineData(true, "pack", "-getProperty:OutputType", "-p:PublishAot=false")]
-    [InlineData(true, "clean", "-getProperty:Configuration")]
+    [TestMethod]
+    [DataRow(true, "build", "--getProperty:TargetFramework;Configuration")]
+    [DataRow(true, "build", "--getItem:MyItem", "--getProperty:MyProperty")]
+    [DataRow(true, "build", "--getItem:MyItem", "--getProperty:MyProperty", "-t:MyTarget")]
+    [DataRow(true, "build", "--getItem:MyItem", "--getProperty:MyProperty", "--getTargetResult:MyTarget")]
+    [DataRow(true, "build", "/getProperty:TargetFramework")]
+    [DataRow(true, "build", "/getProperty:TargetFramework", "-p:LangVersion=wrong")] // evaluated only, so no failure
+    [DataRow(false, "build", "/getProperty:TargetFramework", "-t:Build", "-p:LangVersion=wrong")] // fails with build error but still outputs info
+    [DataRow(true, "build", "-getProperty:Configuration", "-getResultOutputFile:out.txt")]
+    [DataRow(true, "build", "-getProperty:OutputType,Configuration", "-getResultOutputFile:out1.txt", "-getResultOutputFile:out2.txt")]
+    [DataRow(true, "run", "-getProperty:Configuration")] // not supported, the arg is passed through to the app
+    [DataRow(true, "restore", "-getProperty:Configuration")]
+    [DataRow(true, "publish", "-getProperty:OutputType", "-p:PublishAot=false")]
+    [DataRow(true, "pack", "-getProperty:OutputType", "-p:PublishAot=false")]
+    [DataRow(true, "clean", "-getProperty:Configuration")]
     public void MSBuildGet_Consistent(bool success, string subcommand, params string[] args)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1977,7 +2013,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// Without the fix (strong reference in <c>VirtualProjectBuilder._projectRootElement</c>),
     /// this fails with MSB4025 "The project file could not be loaded".
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void VirtualProject_SurvivesGCDuringRestore()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2020,7 +2056,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// Same as <see cref="VirtualProject_SurvivesGCDuringRestore"/> but for <c>#:ref</c> referenced projects.
     /// The referenced project's <see cref="ProjectRootElement"/> must also survive GC.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void VirtualProject_SurvivesGCDuringRestore_RefDirective()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2035,6 +2071,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:ref Lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
             """);
@@ -2075,7 +2112,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// Verifies that msbuild-based runs use CSC args equivalent to csc-only runs.
     /// Can regenerate CSC arguments template in <see cref="CSharpCompilerCommand"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void CscArguments()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
@@ -2495,10 +2532,10 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     /// <summary>
     /// Verifies that csc-only runs emit auxiliary files equivalent to msbuild-based runs.
     /// </summary>
-    [Theory]
-    [InlineData("Program.cs")]
-    [InlineData("test.cs")]
-    [InlineData("noext")]
+    [TestMethod]
+    [DataRow("Program.cs")]
+    [DataRow("test.cs")]
+    [DataRow("noext")]
     public void CscVsMSBuild(string fileName)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);

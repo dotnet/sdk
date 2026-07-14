@@ -1,14 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
 </Project>

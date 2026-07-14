@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareStaticMembersOnGenericTypesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotDeclareStaticMembersOnGenericTypesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1000_ShouldGenerateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1000_ShouldGenerateAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"Imports System
@@ -95,7 +95,7 @@ End Class",
     );
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisibleAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -133,7 +133,7 @@ End Class",
     );
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task Basic_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisibleAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"Imports System
@@ -165,7 +165,7 @@ Friend NotInheritable Class GenericType2(Of T)
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1000_ShouldNotGenerate_MemberIsNotPublicStaticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -260,7 +260,7 @@ public sealed class ClosedType : OpenType<String>
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1000_ShouldNotGenerate_MemberIsNotPublicStaticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -347,7 +347,7 @@ Public NotInheritable Class ClosedType
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1000_ShouldNotGenerate_ConversionOperatorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -359,7 +359,7 @@ public class Class1<T>
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1000_ShouldNotGenerate_ConversionOperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -375,7 +375,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1791, "https://github.com/dotnet/roslyn-analyzers/issues/1791")]
+        [TestMethod, WorkItem(1791, "https://github.com/dotnet/roslyn-analyzers/issues/1791")]
         public async Task CSharp_CA1000_ShouldNotGenerate_OperatorOverloadsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -429,7 +429,7 @@ public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<T
 ");
         }
 
-        [Fact, WorkItem(7126, "https://github.com/dotnet/roslyn-analyzers/issues/7126")]
+        [TestMethod, WorkItem(7126, "https://github.com/dotnet/roslyn-analyzers/issues/7126")]
         public async Task CSharp_CA1000_ShouldNotGenerate_VirtualMember()
         {
             string code = @"
@@ -448,7 +448,7 @@ public interface ITestInterface<T>
                     Sources = { code },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net60
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

@@ -8,14 +8,12 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class RuntimeIdentifiersTests : SdkTest
     {
-        public RuntimeIdentifiersTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
         //  Run on core MSBuild only as using a local packages folder hits long path issues on full MSBuild
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void BuildWithRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -73,7 +71,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void BuildWithUseCurrentRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -114,10 +112,11 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  Run on core MSBuild only as using a local packages folder hits long path issues on full MSBuild
-        [CoreMSBuildOnlyTheory]
-        [InlineData(false)]
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [DataRow(false)]
         //  "No build" scenario doesn't currently work: https://github.com/dotnet/sdk/issues/2956
-        //[InlineData(true)]
+        //[DataRow(true)]
         public void PublishWithRuntimeIdentifier(bool publishNoBuild)
         {
             var testProject = new TestProject()
@@ -183,10 +182,10 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Theory]
-        [InlineData(false, false)] // publish rid overrides rid in project file if publishing
-        [InlineData(true, false)] // publish rid doesnt override global rid
-        [InlineData(true, true)] // publish rid doesnt override global rid, even if global
+        [TestMethod]
+        [DataRow(false, false)] // publish rid overrides rid in project file if publishing
+        [DataRow(true, false)] // publish rid doesnt override global rid
+        [DataRow(true, true)] // publish rid doesnt override global rid, even if global
         public void PublishRuntimeIdentifierSetsRuntimeIdentifierAndDoesOrDoesntOverrideRID(bool runtimeIdentifierIsGlobal, bool publishRuntimeIdentifierIsGlobal)
         {
             string tfm = ToolsetInfo.CurrentTargetFramework;
@@ -223,10 +222,11 @@ namespace Microsoft.NET.Publish.Tests
             var properties = testProject.GetPropertyValues(testAsset.TestRoot, configuration: "Release", targetFramework: tfm);
             var finalRid = properties["RuntimeIdentifier"];
 
-            Assert.True(finalRid == expectedRid);
+            Assert.AreEqual(expectedRid, finalRid);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void PublishRuntimeIdentifierOverridesUseCurrentRuntime()
         {
             string tfm = ToolsetInfo.CurrentTargetFramework;
@@ -254,15 +254,15 @@ namespace Microsoft.NET.Publish.Tests
             var finalRid = properties["RuntimeIdentifier"];
             var ucrRid = properties["NETCoreSdkPortableRuntimeIdentifier"];
 
-            Assert.True(finalRid == publishRid);
-            Assert.True(ucrRid != finalRid);
+            Assert.AreEqual(publishRid, finalRid);
+            Assert.AreNotEqual(ucrRid, finalRid);
         }
 
-        [Theory]
-        [InlineData("PublishReadyToRun", false)] // R2R doesn't imply self-contained in 8 and above
-        [InlineData("PublishSingleFile", true)] // single-file implies self-contained
-        [InlineData("PublishTrimmed", true)] // trimming implies self-contained
-        [InlineData("PublishAot", true)] // AOT implies self-contained
+        [TestMethod]
+        [DataRow("PublishReadyToRun", false)] // R2R doesn't imply self-contained in 8 and above
+        [DataRow("PublishSingleFile", true)] // single-file implies self-contained
+        [DataRow("PublishTrimmed", true)] // trimming implies self-contained
+        [DataRow("PublishAot", true)] // AOT implies self-contained
         public void SomePublishPropertiesInferSelfContained(string property, bool expectedSelfContainedValue)
         {
             // Note: there is a bug with PublishAot I think where this test will fail for Aot if the testname is too long. Do not make it longer.
@@ -289,7 +289,7 @@ namespace Microsoft.NET.Publish.Tests
             bool.Parse(properties["SelfContained"]).Should().Be(expectedSelfContainedValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void ImplicitRuntimeIdentifierOptOutCorrectlyOptsOut()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -314,7 +314,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("NETSDK1191");
         }
 
-        [Fact]
+        [TestMethod]
         public void DuplicateRuntimeIdentifiers()
         {
             var testProject = new TestProject()
@@ -340,7 +340,7 @@ namespace Microsoft.NET.Publish.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishSuccessfullyWithRIDRequiringPropertyAndRuntimeIdentifiersNoRuntimeIdentifier()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -360,6 +360,86 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute()
                 .Should()
                 .Pass();
+        }
+
+        [TestMethod]
+        public void UseDefaultPublishRuntimeIdentifierFalsePreventsInference()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            // PublishSingleFile would normally trigger PublishRuntimeIdentifier inference
+            testProject.AdditionalProperties["PublishSingleFile"] = "true";
+            testProject.AdditionalProperties["UseDefaultPublishRuntimeIdentifier"] = "false";
+            testProject.RecordProperties("PublishRuntimeIdentifier");
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: ToolsetInfo.CurrentTargetFramework);
+            properties["PublishRuntimeIdentifier"].Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void PublishRuntimeIdentifierIsAppendedToRuntimeIdentifiersByDefault()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = "linux-x64";
+            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = "win-x64";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimeIdentifiers")
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var rids = getValuesCommand.GetValues();
+            rids.Should().Contain("linux-x64");
+            rids.Should().Contain("win-x64");
+        }
+
+        [TestMethod]
+        public void AppendPublishRuntimeIdentifierToRuntimeIdentifiersFalseOptOut()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = "linux-x64";
+            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["AppendPublishRuntimeIdentifierToRuntimeIdentifiers"] = "false";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimeIdentifiers")
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var rids = getValuesCommand.GetValues();
+            rids.Should().Equal(["linux-x64"]);
         }
     }
 }
