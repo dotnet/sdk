@@ -127,3 +127,16 @@
 .agents/ @mthalman @lbussell
 AGENTS.md @mthalman @lbussell
 SKILL.md @mthalman @lbussell
+
+# Area-dotnetup
+/.github/ISSUE_TEMPLATE/30_dotnetup.yml @dotnet/dotnetup
+/.vsts-dnup-ci.yml @dotnet/dotnetup
+/.vsts-dnup-pr.yml @dotnet/dotnetup
+/documentation/general/dotnetup/ @dotnet/dotnetup
+/dotnetup.slnf @dotnet/dotnetup
+/eng/dotnetup-shared.ps1 @dotnet/dotnetup
+/eng/dotnetup-shared.sh @dotnet/dotnetup
+/eng/pipelines/templates/jobs/dotnetup/ @dotnet/dotnetup
+/src/Installer/dotnetup/ @dotnet/dotnetup
+/src/Installer/dotnetup.Library/ @dotnet/dotnetup
+/test/dotnetup.Tests/ @dotnet/dotnetup
