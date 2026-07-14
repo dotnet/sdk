@@ -2,21 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.CommandUtils;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
+    [TestClass]
     public class ExportCommandFailureTests : IDisposable
     {
-        private readonly ITestOutputHelper _log;
-
         private readonly string _workingDirectory;
 
-        public ExportCommandFailureTests(ITestOutputHelper log)
-        {
-            _log = log;
+        public TestContext TestContext { get; set; } = null!;
 
+        private ILogger Log => new TestContextLogger(TestContext);
+
+        public ExportCommandFailureTests()
+        {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 
@@ -29,7 +30,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             Directory.Delete(_workingDirectory, true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PostActionsShouldHaveIds()
         {
             string json = @"{
@@ -46,7 +47,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 .And.HaveStdOutContaining("Json element 'postActions/0' must have a member 'id'.");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PostActionIdsAreUnique()
         {
             string json = @"{
@@ -67,7 +68,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 .And.HaveStdOutContaining(@"Each child of '//postActions' should have a unique id. Currently, the id 'postActions/postAction1' is shared by multiple children.");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SingleManualInstructionDoesntNeedId()
         {
             string json = @"{
@@ -89,7 +90,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 .And.HaveStdOutContaining("Localization files were successfully generated");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleManualInstructionShouldHaveIds()
         {
             string json = @"{
@@ -115,7 +116,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 .And.HaveStdOutContaining("Json element 'manualInstructions/0' must have a member 'id'.");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ManualInstructionIdsAreUnique()
         {
             string json = @"{
@@ -144,8 +145,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         private async Task<BasicCommand> CreateTemplateAndExport(string templateJsonContent)
         {
             string filePath = Path.Combine(_workingDirectory, Path.GetRandomFileName() + ".json");
-            await File.WriteAllTextAsync(filePath, templateJsonContent);
-            return new BasicCommand(_log, "dotnet", Path.GetFullPath("Microsoft.TemplateEngine.Authoring.CLI.dll"), "localize", "export", filePath);
+            await File.WriteAllTextAsync(filePath, templateJsonContent, TestContext.CancellationToken);
+            return new BasicCommand(Log, "dotnet", Path.GetFullPath("Microsoft.TemplateEngine.Authoring.CLI.dll"), "localize", "export", filePath);
         }
     }
 }

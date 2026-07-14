@@ -22,6 +22,13 @@
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
       <SharedFrameworkNameVersionPath>$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
+
+      <!-- The target OS to pass to crossgen2. Without it, crossgen2 defaults to the OS it is running
+           on, which produces images for the wrong OS when cross-compiling the SDK toolset (e.g.
+           building an OpenBSD SDK on a Linux host). crossgen2 only recognizes the base OS name, so
+           Linux flavors ('linux-musl', 'linux-bionic') must be normalized to 'linux'. -->
+      <_CrossgenTargetOS>$(TargetOS)</_CrossgenTargetOS>
+      <_CrossgenTargetOS Condition="$(TargetOS.StartsWith('linux'))">linux</_CrossgenTargetOS>
     </PropertyGroup>
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
@@ -63,7 +70,7 @@
       <RemainingFiles Remove="$(InstallerOutputDirectory)Sdks\**\*" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 
-      <!-- Removing Containers as containerize .DLLs and netframework components shouldn't be crossgenned. -->
+      <!-- Removing Containers as containerize .DLLs shouldn't be crossgenned. -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
@@ -178,36 +185,36 @@
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
         DestinationPath="%(RoslynTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(FSharpTargets.FullPath)"
         DestinationPath="%(FSharpTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(FSharpFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(RemainingTargets.FullPath)"
         DestinationPath="%(RemainingTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
 
     <Crossgen
         SourceAssembly="%(RazorToolTargets.FullPath)"
         DestinationPath="%(RazorToolTargets.FullPath)"
-        Architecture="$(TargetArchitecture)"
+        TargetArchitecture="$(TargetArchitecture)"
+        TargetOS="$(_CrossgenTargetOS)"
         CrossgenPath="$(CrossgenPath)"
-        ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RazorToolFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
@@ -219,11 +226,6 @@
     <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
     <Move SourceFiles="@(PdbsToMove)"
           DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
-    <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
-    <Exec Command="chmod 755 $(InstallerOutputDirectory)Roslyn/bincore/%(_RoslynAppHost.Filename)" Condition="'$(OSName)' != 'win'" />
-    <Exec Command="chmod 755 $(InstallerOutputDirectory)%(_MSBuildAppHost.Filename)" Condition="'$(OSName)' != 'win'" />
   </Target>
 
 </Project>

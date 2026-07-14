@@ -1,27 +1,32 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public partial class DotnetNewListTests : BaseIntegrationTest, IClassFixture<SharedHomeDirectory>
+    public partial class DotnetNewListTests : BaseIntegrationTest
     {
-        private readonly SharedHomeDirectory _sharedHome;
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
+        private static SharedHomeDirectory s_sharedHome = null!;
 
-        public DotnetNewListTests(SharedHomeDirectory sharedHome, ITestOutputHelper log) : base(log)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext ctx)
         {
-            _sharedHome = sharedHome;
-            _sharedHome.InstallPackage("Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0");
-            _log = log;
+            s_sharedHome = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
+            s_sharedHome.InstallPackage("Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0");
         }
 
-        [Theory]
-        [InlineData("--list c")]
-        [InlineData("-l c")]
-        [InlineData("list c")]
-        [InlineData("c --list")]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_sharedHome?.Dispose();
+
+        private SharedHomeDirectory _sharedHome => s_sharedHome;
+
+        [TestMethod]
+        [DataRow("--list c")]
+        [DataRow("-l c")]
+        [DataRow("list c")]
+        [DataRow("c --list")]
         public void BasicTest_WithNameCriteria(string command)
         {
             new DotnetNewCommand(_log, command.Split(" "))
@@ -37,10 +42,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching("Class Library\\s+classlib\\s+\\[C#\\],F#,VB\\s+Common/Library");
         }
 
-        [Theory]
-        [InlineData("--list --columns-all")]
-        [InlineData("--columns-all --list")]
-        [InlineData("list --columns-all")]
+        [TestMethod]
+        [DataRow("--list --columns-all")]
+        [DataRow("--columns-all --list")]
+        [DataRow("list --columns-all")]
         public void CanShowAllColumns(string command)
         {
             new DotnetNewCommand(_log, command.Split(" "))
@@ -53,11 +58,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching("Console App\\s+console\\s+\\[C#\\],F#,VB\\s+project\\s+Microsoft\\s+Common/Console");
         }
 
-        [Theory]
-        [InlineData("--list --tag Common")]
-        [InlineData("-l --tag Common")]
-        [InlineData("list --tag Common")]
-        [InlineData("--tag Common --list")]
+        [TestMethod]
+        [DataRow("--list --tag Common")]
+        [DataRow("-l --tag Common")]
+        [DataRow("list --tag Common")]
+        [DataRow("--tag Common --list")]
         public void CanFilterTags(string command)
         {
             new DotnetNewCommand(_log, command.Split(" "))
@@ -73,11 +78,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching("Class Library\\s+classlib\\s+\\[C#\\],F#,VB\\s+Common/Library");
         }
 
-        [Theory]
-        [InlineData("app --list --tag Common")]
-        [InlineData("app -l --tag Common")]
-        [InlineData("--list app --tag Common")]
-        [InlineData("list app --tag Common")]
+        [TestMethod]
+        [DataRow("app --list --tag Common")]
+        [DataRow("app -l --tag Common")]
+        [DataRow("--list app --tag Common")]
+        [DataRow("list app --tag Common")]
         public void CanFilterTags_WithNameCriteria(string command)
         {
             new DotnetNewCommand(_log, command.Split(" "))
@@ -93,7 +98,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutMatching("Class Library\\s+classlib\\s+\\[C#\\],F#,VB\\s+Common/Library");
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowMultipleShortNames()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -144,7 +149,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByChoiceParameter()
         {
@@ -224,7 +230,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByNonChoiceParameter()
         {
@@ -278,7 +285,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void IgnoresValueForNonChoiceParameter()
         {
@@ -332,7 +340,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByChoiceParameterWithValue()
         {
@@ -410,7 +419,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CannotListTemplatesWithUnknownParameter()
         {
@@ -452,7 +462,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CannotListTemplatesWithUnknownValueForChoiceParameter()
         {
@@ -486,7 +497,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CannotListTemplatesForInvalidFilters()
         {
@@ -519,7 +531,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining($"To search for the templates on NuGet.org, run:{Environment.NewLine}   dotnet new c --search");
         }
 
-        [Fact]
+        [TestMethod]
         public void TemplateGroupingTest()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -536,11 +548,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching("Basic FSharp +template-grouping +\\[C#],F# +item +Author1 +Test Asset +\\r?\\n +Q# +item,project +Author2 +Test Asset");
         }
 
-        [Theory]
-        [InlineData("author", "Author", "Microsoft")]
-        [InlineData("type", "Type", "")]
-        [InlineData("tags", "Tags", "Solution")]
-        [InlineData("language", "Language", "")]
+        [TestMethod]
+        [DataRow("author", "Author", "Microsoft")]
+        [DataRow("type", "Type", "")]
+        [DataRow("tags", "Tags", "Solution")]
+        [DataRow("language", "Language", "")]
         public void TemplateWithSpecifiedColumnOutput(string columnName, string columnHeader, string columnValue)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -564,10 +576,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching($"Solution File\\s+sln,solution\\s+{columnValue}");
         }
 
-        [Theory]
-        [InlineData("c --list", "--list c")]
-        [InlineData("c --list --language F#", "--list c --language F#")]
-        [InlineData("c --list --columns-all", "--list c --columns-all")]
+        [TestMethod]
+        [DataRow("c --list", "--list c")]
+        [DataRow("c --list --language F#", "--list c --language F#")]
+        [DataRow("c --list --columns-all", "--list c --columns-all")]
         public void CanFallbackToListOption(string command1, string command2)
         {
             CommandResult commandResult1 = new DotnetNewCommand(_log, command1.Split())
@@ -578,21 +590,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .WithCustomHive(_sharedHome.HomeDirectory)
                .Execute();
 
-            Assert.Equal(commandResult1.StdOut, commandResult2.StdOut);
+            Assert.AreEqual(commandResult1.StdOut, commandResult2.StdOut);
         }
 
-        [Theory]
-        [InlineData("--list foo --columns-all bar", "bar", "foo")]
-        [InlineData("list foo --columns-all bar", "bar", "foo")]
-        [InlineData("-l foo --columns-all bar", "bar", "foo")]
-        [InlineData("--list foo bar", "bar", "foo")]
-        [InlineData("list foo bar", "bar", "foo")]
-        [InlineData("foo --list bar", "foo", "bar")]
-        [InlineData("foo list bar", "foo", "bar")]
-        [InlineData("foo --list bar --language F#", "foo", "bar")]
-        [InlineData("foo --list --columns-all bar", "foo", "bar")]
-        [InlineData("foo --list --columns-all --framework net6.0 bar", "bar|net6.0|foo", "--framework")]
-        [InlineData("foo --list --columns-all -other-param --framework net6.0 bar", "bar|--framework|net6.0|foo", "-other-param")]
+        [TestMethod]
+        [DataRow("--list foo --columns-all bar", "bar", "foo")]
+        [DataRow("list foo --columns-all bar", "bar", "foo")]
+        [DataRow("-l foo --columns-all bar", "bar", "foo")]
+        [DataRow("--list foo bar", "bar", "foo")]
+        [DataRow("list foo bar", "bar", "foo")]
+        [DataRow("foo --list bar", "foo", "bar")]
+        [DataRow("foo list bar", "foo", "bar")]
+        [DataRow("foo --list bar --language F#", "foo", "bar")]
+        [DataRow("foo --list --columns-all bar", "foo", "bar")]
+        [DataRow("foo --list --columns-all --framework net6.0 bar", "bar|net6.0|foo", "--framework")]
+        [DataRow("foo --list --columns-all -other-param --framework net6.0 bar", "bar|--framework|net6.0|foo", "-other-param")]
         public void CannotShowListOnParseError(string command, string invalidArguments, string validArguments)
         {
             CommandResult commandResult = new DotnetNewCommand(_log, command.Split())

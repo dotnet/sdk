@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureRandomness,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseInsecureRandomnessTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Test_UsingMethodNext_OfRandom_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -42,7 +42,7 @@ End Class",
             GetBasicResultAt(7, 29, "Random"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_UsingMethodNextDouble_OfRandom_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -69,7 +69,7 @@ End Class",
             GetBasicResultAt(7, 29, "Random"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_UsingMethodGetHashCode_OfObject_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -94,7 +94,7 @@ class TestClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_UsingConstructor_OfRandom_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

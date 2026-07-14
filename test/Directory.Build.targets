@@ -4,21 +4,30 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <TestRunnerName>XUnitV3</TestRunnerName>
-    <OutputType>Exe</OutputType>
-    <!-- Set this to true for test project only because test assets contains .editorconfig file -->
-    <NoDefaultExcludes>true</NoDefaultExcludes>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+  <!-- FluentAssertions namespace is provided by the AwesomeAssertions package (kept by name
+       for backward compat) added below for MSTest.Sdk projects. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' OR '$(UsingMSTestSdk)' == 'true'">
     <Using Include="FluentAssertions" />
+  </ItemGroup>
+
+  <!-- Microsoft.NET.TestFramework helper namespaces are shared by every test project that
+       references the SDK test framework (the legacy Microsoft.NET.TestFramework or its MSTest
+       counterpart Microsoft.NET.TestFramework.MSTest). Detecting that ProjectReference lets us
+       declare these global usings once here instead of repeating them in each test csproj.
+       The two framework projects themselves reference neither and keep their own local usings,
+       and projects without the reference are skipped so the usings can't fail with CS0246. -->
+  <ItemGroup Condition="'@(ProjectReference->WithMetadataValue('Filename', 'Microsoft.NET.TestFramework'))' != '' OR '@(ProjectReference->WithMetadataValue('Filename', 'Microsoft.NET.TestFramework.MSTest'))' != ''">
     <Using Include="Microsoft.NET.TestFramework" />
     <Using Include="Microsoft.NET.TestFramework.Assertions" />
     <Using Include="Microsoft.NET.TestFramework.Commands" />
     <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
-    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- AwesomeAssertions package reference for MSTest.Sdk projects (provides the FluentAssertions
+       namespace used above). -->
+  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true'">
+    <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>
 
   <Import Project="..\Directory.Build.targets" />

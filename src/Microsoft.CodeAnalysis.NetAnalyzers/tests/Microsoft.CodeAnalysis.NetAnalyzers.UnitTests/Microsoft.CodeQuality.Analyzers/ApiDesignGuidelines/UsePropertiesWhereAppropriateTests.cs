@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UsePropertiesWhereAppropriateAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpUsePropertiesWhereAppropriateFixer>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UsePropertiesWhereAppropriateTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1024NoDiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -161,7 +161,7 @@ public class Class2
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1024DiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -202,7 +202,7 @@ public class Class
             GetCA1024CSharpResultAt(26, 16, "GetPinnableReference"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_CA1024NoDiagnosticCases_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -233,7 +233,7 @@ public class Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1024NoDiagnosticCasesAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -335,7 +335,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1024NoDiagnosticOnUnboundMethodCallerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -352,7 +352,7 @@ public class class1
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1024NoDiagnosticOnUnboundMethodCallerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -367,7 +367,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1024DiagnosticCasesAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -397,7 +397,7 @@ End Class
             GetCA1024BasicResultAt(17, 24, "GetFileNameProtected"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_CA1024NoDiagnosticCases_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -423,7 +423,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1551, "https://github.com/dotnet/roslyn-analyzers/issues/1551")]
+        [TestMethod, WorkItem(1551, "https://github.com/dotnet/roslyn-analyzers/issues/1551")]
         public async Task CA1024_ExplicitInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -442,7 +442,7 @@ public class Something : ISomething
 ");
         }
 
-        [Fact, WorkItem(1551, "https://github.com/dotnet/roslyn-analyzers/issues/1551")]
+        [TestMethod, WorkItem(1551, "https://github.com/dotnet/roslyn-analyzers/issues/1551")]
         public async Task CA1024_ImplicitInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -461,7 +461,7 @@ public class Something : ISomething
 ");
         }
 
-        [Fact, WorkItem(3877, "https://github.com/dotnet/roslyn-analyzers/issues/3877")]
+        [TestMethod, WorkItem(3877, "https://github.com/dotnet/roslyn-analyzers/issues/3877")]
         public async Task CA1024_ReturnsTask_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -500,7 +500,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        [TestMethod, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
         public async Task AwaiterPattern_INotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -517,7 +517,7 @@ public class DummyAwaiter : INotifyCompletion
 }");
         }
 
-        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        [TestMethod, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
         public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -535,7 +535,7 @@ public class DummyAwaiter : ICriticalNotifyCompletion
 }");
         }
 
-        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        [TestMethod, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
         public async Task AwaitablePattern_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -559,7 +559,7 @@ public class DummyAwaiter : INotifyCompletion
 }");
         }
 
-        [Fact, WorkItem(6031, "https://github.com/dotnet/roslyn-analyzers/issues/6031")]
+        [TestMethod, WorkItem(6031, "https://github.com/dotnet/roslyn-analyzers/issues/6031")]
         public async Task DllImportAttribute_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

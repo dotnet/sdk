@@ -8,8 +8,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ComputeReferenceStaticWebAssetItems : Task
+[MSBuildMultiThreadableTask]
+public class ComputeReferenceStaticWebAssetItems : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] Assets { get; set; }
 
@@ -28,6 +32,13 @@ public class ComputeReferenceStaticWebAssetItems : Task
 
     public bool MakeReferencedAssetOriginalItemSpecAbsolute { get; set; }
 
+    /// <summary>
+    /// Semicolon-separated glob patterns (e.g. <c>**/*.js;**/*.wasm</c>).
+    /// Assets whose <c>RelativePath</c> matches any pattern will have their
+    /// <c>SourceType</c> set to <c>Framework</c>.
+    /// </summary>
+    public string FrameworkPattern { get; set; }
+
     [Output]
     public ITaskItem[] StaticWebAssets { get; set; }
 
@@ -38,10 +49,14 @@ public class ComputeReferenceStaticWebAssetItems : Task
     {
         try
         {
-            var existingAssets = StaticWebAsset.AssetsByTargetPath(Assets, Source, AssetKind);
+            var existingAssets = StaticWebAsset.AssetsByTargetPath(Assets, Source, AssetKind, TaskEnvironment);
 
             var resultAssets = new List<StaticWebAsset>(existingAssets.Count);
             var groupSet = new HashSet<string>(StringComparer.Ordinal);
+
+            var frameworkMatcher = CreateFrameworkMatcher();
+            var matchContext = frameworkMatcher != null ? StaticWebAssetGlobMatcher.CreateMatchContext() : default;
+
             foreach (var kvp in existingAssets)
             {
                 var targetPath = kvp.Key;
@@ -55,13 +70,14 @@ public class ComputeReferenceStaticWebAssetItems : Task
                         {
                             if (ShouldIncludeAssetAsReference(groupedAsset, out var groupReason))
                             {
+                                ApplyFrameworkPattern(groupedAsset, frameworkMatcher, ref matchContext);
                                 if (UpdateSourceType && !StaticWebAsset.SourceTypes.IsFramework(groupedAsset.SourceType))
                                 {
                                     groupedAsset.SourceType = StaticWebAsset.SourceTypes.Project;
                                 }
                                 if (MakeReferencedAssetOriginalItemSpecAbsolute)
                                 {
-                                    groupedAsset.OriginalItemSpec = Path.GetFullPath(groupedAsset.OriginalItemSpec);
+                                    groupedAsset.OriginalItemSpec = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(groupedAsset.OriginalItemSpec));
                                 }
                                 resultAssets.Add(groupedAsset);
                             }
@@ -78,13 +94,14 @@ public class ComputeReferenceStaticWebAssetItems : Task
 
                 if (ShouldIncludeAssetAsReference(selected, out var reason))
                 {
+                    ApplyFrameworkPattern(selected, frameworkMatcher, ref matchContext);
                     if (UpdateSourceType && !StaticWebAsset.SourceTypes.IsFramework(selected.SourceType))
                     {
                         selected.SourceType = StaticWebAsset.SourceTypes.Project;
                     }
                     if (MakeReferencedAssetOriginalItemSpecAbsolute)
                     {
-                        selected.OriginalItemSpec = Path.GetFullPath(selected.OriginalItemSpec);
+                        selected.OriginalItemSpec = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(selected.OriginalItemSpec));
                     }
                     else
                     {
@@ -121,6 +138,53 @@ public class ComputeReferenceStaticWebAssetItems : Task
         }
 
         return !Log.HasLoggedErrors;
+    }
+
+    private StaticWebAssetGlobMatcher CreateFrameworkMatcher()
+    {
+        if (string.IsNullOrEmpty(FrameworkPattern))
+        {
+            return null;
+        }
+
+        var patterns = FrameworkPattern
+            .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => s.Length > 0)
+            .ToArray();
+
+        if (patterns.Length == 0)
+        {
+            return null;
+        }
+
+        return new StaticWebAssetGlobMatcherBuilder()
+            .AddIncludePatterns(patterns)
+            .Build();
+    }
+
+    private void ApplyFrameworkPattern(
+        StaticWebAsset asset,
+        StaticWebAssetGlobMatcher matcher,
+        ref StaticWebAssetGlobMatcher.MatchContext matchContext)
+    {
+        if (matcher == null || !asset.IsDiscovered())
+        {
+            return;
+        }
+
+        var relativePath = StaticWebAssetPathPattern.PathWithoutTokens(asset.RelativePath);
+        matchContext.SetPathAndReinitialize(relativePath.AsSpan());
+        var match = matcher.Match(matchContext);
+        if (match.IsMatch)
+        {
+            asset.SourceType = StaticWebAsset.SourceTypes.Framework;
+            Log.LogMessage(
+                MessageImportance.Low,
+                "Asset '{0}' with relative path '{1}' matched framework pattern. Updating SourceType to Framework.",
+                asset.Identity,
+                relativePath);
+        }
     }
 
     private bool ShouldIncludeAssetAsReference(StaticWebAsset candidate, out string reason)

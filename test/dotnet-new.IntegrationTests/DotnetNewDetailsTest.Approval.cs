@@ -7,12 +7,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public partial class DotnetNewDetailsTest : BaseIntegrationTest
     {
         private const string _nuGetPackageId = "Uno.ProjectTemplates.Dotnet";
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/templating/issues/6811")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/templating/issues/6811")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public Task CanDisplayDetails_RemotePackage_NuGetFeedWithVersion()
         {
@@ -28,7 +30,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanDisplayDetails_RemotePackage_NuGetFeedNoVersion()
         {
             var folder = CreateTemporaryFolder();
@@ -57,7 +59,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/templating/issues/6811")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/templating/issues/6811")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public Task CanDisplayDetails_RemotePackage_OtherFeedWithVersion()
         {
@@ -73,7 +76,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanDisplayDetails_RemotePackage_OtherFeedNoVersion()
         {
             string packageName = "Microsoft.Azure.WebJobs.ItemTemplates";
@@ -93,7 +96,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Be(latestVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanDisplayDetails_InstalledPackage_LocalPackage()
         {
             string packageLocation = PackTestNuGetPackage(_log);
@@ -121,7 +124,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .UniqueForOSPlatform();
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanDisplayDetails_InstalledPackage_NuGetFeed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -145,7 +148,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanDisplayDetails_InstalledPackage_OtherFeed()
         {
             string packageName = "Microsoft.Azure.WebJobs.ItemTemplates";
@@ -174,7 +177,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Be(latestVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanDisplayDetails_InstalledPackage_FolderInstallation()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
