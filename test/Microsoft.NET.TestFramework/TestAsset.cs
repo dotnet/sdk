@@ -102,7 +102,7 @@ namespace Microsoft.NET.TestFramework
 
             targetFramework ??= ToolsetInfo.CurrentTargetFramework;
 
-            var substitutions = new[]
+            var propertySubstitutions = new[]
             {
                 (propertyName: "TargetFramework", variableName: "CurrentTargetFramework", value: targetFramework),
                 (propertyName: "CurrentTargetFramework", variableName: "CurrentTargetFramework", value: targetFramework),
@@ -112,36 +112,46 @@ namespace Microsoft.NET.TestFramework
                 (propertyName: "RuntimeIdentifier", variableName: "LatestRuntimeIdentifiers", value: ToolsetInfo.LatestRuntimeIdentifiers)
             };
 
-            foreach (var (propertyName, variableName, value) in substitutions)
-            {
-                UpdateProjProperty(propertyName, variableName, value);
-            }
+            var packageVersionSubstitutions = (packageVersionPropertySubstitutions ?? ToolsetInfo.GetPackageVersionProperties()).ToArray();
 
-            foreach (var (propertyName, version) in packageVersionPropertySubstitutions ?? ToolsetInfo.GetPackageVersionProperties())
+            //  Apply every property and package-version substitution in a single load/mutate/save
+            //  pass per project file. Previously each substitution called WithProjectChanges
+            //  independently, reloading and rewriting every project file once per substitution
+            //  (~14 rewrites per file) during the setup of every test that calls WithSource.
+            WithProjectChanges(project =>
             {
-                ReplacePackageVersionVariable(propertyName, version);
-            }
+                foreach (var (propertyName, variableName, value) in propertySubstitutions)
+                {
+                    ApplyUpdateProjProperty(project, propertyName, variableName, value);
+                }
+
+                foreach (var (propertyName, version) in packageVersionSubstitutions)
+                {
+                    ApplyReplacePackageVersionVariable(project, propertyName, version);
+                }
+            });
 
             return this;
         }
 
         public TestAsset UpdateProjProperty(string propertyName, string variableName, string targetValue)
         {
-            return WithProjectChanges(
-            p =>
-            {
-                if (p.Root is not null)
-                {
-                    var ns = p.Root.Name.Namespace;
-                    var nodes = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).Concat(
-                                p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s"));
+            return WithProjectChanges(p => ApplyUpdateProjProperty(p, propertyName, variableName, targetValue));
+        }
 
-                    foreach (var node in nodes)
-                    {
-                        node.SetValue(node.Value.Replace($"$({variableName})", targetValue));
-                    }
+        private static void ApplyUpdateProjProperty(XDocument project, string propertyName, string variableName, string targetValue)
+        {
+            if (project.Root is not null)
+            {
+                var ns = project.Root.Name.Namespace;
+                var nodes = project.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).Concat(
+                            project.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s"));
+
+                foreach (var node in nodes)
+                {
+                    node.SetValue(node.Value.Replace($"$({variableName})", targetValue));
                 }
-            });
+            }
         }
 
         public TestAsset SetProjProperty(string propertyName, string value)
@@ -160,29 +170,31 @@ namespace Microsoft.NET.TestFramework
 
         public TestAsset ReplacePackageVersionVariable(string targetName, string targetValue)
         {
+            return WithProjectChanges(project => ApplyReplacePackageVersionVariable(project, targetName, targetValue));
+        }
+
+        private static void ApplyReplacePackageVersionVariable(XDocument project, string targetName, string targetValue)
+        {
             var elementsWithVersionAttribute = new[] { "PackageReference", "Package", "Sdk" };
 
-            return WithProjectChanges(project =>
+            if (project.Root is not null)
             {
-                if (project.Root is not null)
+                var ns = project.Root.Name.Namespace;
+                foreach (var elementName in elementsWithVersionAttribute)
                 {
-                    var ns = project.Root.Name.Namespace;
-                    foreach (var elementName in elementsWithVersionAttribute)
+                    var packageReferencesToUpdate =
+                        project.Root.Descendants(ns + elementName)
+                            .Select(p => p.Attribute("Version"))
+                            .Where(va => va is not null && va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
+                    foreach (var versionAttribute in packageReferencesToUpdate)
                     {
-                        var packageReferencesToUpdate =
-                            project.Root.Descendants(ns + elementName)
-                                .Select(p => p.Attribute("Version"))
-                                .Where(va => va is not null && va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
-                        foreach (var versionAttribute in packageReferencesToUpdate)
+                        if (versionAttribute is not null)
                         {
-                            if (versionAttribute is not null)
-                            {
-                                versionAttribute.Value = targetValue;
-                            }
+                            versionAttribute.Value = targetValue;
                         }
                     }
                 }
-            });
+            }
         }
 
         public TestAsset WithTargetFramework(string targetFramework, string? projectName = null)
