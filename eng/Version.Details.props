@@ -75,6 +75,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsObjectPoolPackageVersion>10.0.8</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftFSharpCompilerPackageVersion>15.2.400-servicing.26310.101</MicrosoftFSharpCompilerPackageVersion>
     <MicrosoftJSInteropPackageVersion>10.0.8</MicrosoftJSInteropPackageVersion>
+    <MicrosoftMcpServerProjectTemplates100PackageVersion>10.0.8</MicrosoftMcpServerProjectTemplates100PackageVersion>
     <MicrosoftNetCompilersToolsetPackageVersion>5.9.0-1.26310.101</MicrosoftNetCompilersToolsetPackageVersion>
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.9.0-1.26310.101</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftNETHostModelPackageVersion>10.0.8-servicing.26229.119</MicrosoftNETHostModelPackageVersion>
@@ -220,6 +221,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsObjectPoolVersion>$(MicrosoftExtensionsObjectPoolPackageVersion)</MicrosoftExtensionsObjectPoolVersion>
     <MicrosoftFSharpCompilerVersion>$(MicrosoftFSharpCompilerPackageVersion)</MicrosoftFSharpCompilerVersion>
     <MicrosoftJSInteropVersion>$(MicrosoftJSInteropPackageVersion)</MicrosoftJSInteropVersion>
+    <MicrosoftMcpServerProjectTemplates100Version>$(MicrosoftMcpServerProjectTemplates100PackageVersion)</MicrosoftMcpServerProjectTemplates100Version>
     <MicrosoftNetCompilersToolsetVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetCompilersToolsetVersion>
     <MicrosoftNetCompilersToolsetFrameworkVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</MicrosoftNetCompilersToolsetFrameworkVersion>
     <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>

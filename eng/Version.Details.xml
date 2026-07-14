@@ -354,6 +354,10 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>94ea82652cdd4e0f8046b5bd5becbd11461482ca</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.McpServer.ProjectTemplates.10.0" Version="10.0.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
+      <Sha>94ea82652cdd4e0f8046b5bd5becbd11461482ca</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.ObjectPool" Version="10.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>94ea82652cdd4e0f8046b5bd5becbd11461482ca</Sha>
