@@ -43,41 +43,11 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             ResolveCurrentInstallRootPath(foundDotnet),
             InstallerUtilities.GetDefaultInstallArchitecture());
 
-        // Use InstallRootManager to determine if the install is fully configured
-        if (OperatingSystem.IsWindows())
-        {
-            var installRootManager = new InstallRootManager(this);
-
-            // Check if user install root is fully configured
-            var userChanges = installRootManager.GetUserInstallRootChanges();
-            if (!userChanges.NeedsChange() && DotnetupUtilities.PathsEqual(currentInstallRoot.Path, userChanges.UserDotnetPath))
-            {
-                return new(currentInstallRoot, InstallType.User, IsFullyConfigured: true);
-            }
-
-            // Check if admin install root is fully configured
-            var adminChanges = installRootManager.GetAdminInstallRootChanges();
-            if (!adminChanges.NeedsChange())
-            {
-                return new(currentInstallRoot, InstallType.System, IsFullyConfigured: true);
-            }
-
-            // Not fully configured, but PATH resolves to dotnet
-            // Determine type based on location using registry-based detection
-            var programFilesDotnetPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
-            bool isAdminPath = programFilesDotnetPaths.Any(path =>
-                currentInstallRoot.Path.StartsWith(path, StringComparison.OrdinalIgnoreCase));
-
-            return new(currentInstallRoot, isAdminPath ? InstallType.System : InstallType.User, IsFullyConfigured: false);
-        }
-        else
-        {
-            // For non-Windows platforms, determine based on path location
-            bool isAdminInstall = InstallPathClassifier.IsAdminInstallPath(currentInstallRoot.Path);
-
-            // For now, we consider it fully configured if it's on PATH
-            return new(currentInstallRoot, isAdminInstall ? InstallType.System : InstallType.User, IsFullyConfigured: true);
-        }
+        // Classify the resolved dotnet by location. InstallPathClassifier.IsAdminInstallPath is the
+        // canonical "is this a system/admin-managed install?" check (Program Files on Windows; the
+        // standard /usr and /opt locations on Unix) used across dotnetup, so both platforms share it.
+        bool isAdminInstall = InstallPathClassifier.IsAdminInstallPath(currentInstallRoot.Path);
+        return new(currentInstallRoot, isAdminInstall ? InstallType.System : InstallType.User);
     }
 
     public string GetDefaultDotnetInstallPath()

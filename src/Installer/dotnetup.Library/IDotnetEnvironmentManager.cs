@@ -75,8 +75,7 @@ public class GlobalJsonInfo
 
 public record DotnetInstallRootConfiguration(
     DotnetInstallRoot InstallRoot,
-    InstallType InstallType,
-    bool IsFullyConfigured)
+    InstallType InstallType)
 {
     public string Path => InstallRoot.Path;
 }
