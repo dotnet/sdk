@@ -121,33 +121,103 @@ Choose only labels returned by the repository label list. Never invent a label.
 
 Recognize standard SDK concepts: project commands; MSBuild project files and targets; NuGet restore; workloads; templates; tools; trimming, Native AOT, single-file, and ReadyToRun publishing; source-build/VMR; Static Web Assets; Blazor; and Razor.
 
-### 4. Resolve owners from CODEOWNERS
+## Step 5: Owner Lookup and Routing
 
-Read the root `CODEOWNERS` file. For each selected `Area-X` label:
+All issues reaching this step have predicted labels and proceed through ownership routing
 
-1. Find the case-insensitive `# Area-X` section.
-2. Collect and de-duplicate owners from its path lines until the next `# Area-` section.
-3. Separate individual owners (`@login`) from team owners (`@dotnet/team`).
+Read the `.github/CODEOWNERS` file to look up owners for the predicted label combination
 
-If no area section matches, use the default team `@dotnet/dotnet-cli` for routing. Teams cannot be issue assignees.
+### CODEOWNERS Matching Rules
 
-### 5. Route and load-balance
+The CODEOWNERS file contains `# ServiceLabel:` entries that associate one or more labels with owners
 
-For each candidate individual, calculate the UTC date 14 days before the workflow run, format it as `YYYY-MM-DD`, and substitute it for `<cutoff-date>` in this search:
+```
+# ServiceLabel: %<Label1>
+# AzureSdkOwners:                       @owner1
 
-```text
-repo:${{ github.repository }} is:issue is:open assignee:<login> created:>=<cutoff-date>
+# ServiceLabel: %<Label1> %<Label2>
+# ServiceOwners:                        @svcowner1 @svcowner2
 ```
 
-Use the number of matching issues as the candidate's recent load. This measures open assigned issues created during the last 14 days; GitHub issue search cannot filter by assignment date.
+**Matching uses bottom-to-top scanning with first-match-wins semantics:**
 
-Then apply this decision:
+1. Start from the END of the CODEOWNERS file and scan each line upward
+2. For each `# ServiceLabel:` entry, check if ALL labels listed in it (after each `%`) are present in the issue's predicted labels
+3. STOP at the first entry where all its labels match — this is the matching entry
+4. Use the AzureSdkOwners and/or ServiceOwners from that entry and any adjacent owner lines
 
-- **Individual owners exist:** if the issue clearly maps to one path line in the area section, prefer an owner from that line. Otherwise assign the area's least-loaded owner. Choose a less-loaded alternate when the preferred owner's load is at least twice the alternate's load.
-- **Only team owners exist:** assign nobody and add `needs team triage`.
-- **No area or owner matched:** assign nobody and add `needs team triage`.
+**Why this matters:** The file is structured so that more specific multi-label entries appear AFTER less specific entries. In bottom-to-top scanning, entries closer to the end of the file are encountered first. Multi-label entries placed after a catch-all are encountered before it, correctly overriding the catch-all
 
-Assign at most one person per area and at most three people total. Never assign a login taken only from issue text. Record selected individual and team owners for the comment.
+The following simplified excerpt illustrates the structure:
+
+```
+# --- Client libraries section (earlier in file) ---
+
+# AzureSdkOwners:                   @jsquire
+# ServiceLabel: %Event Hubs
+# ServiceOwners:                    @axisc @hmlam
+
+# --- Management catch-all ---
+
+# ServiceLabel: %Mgmt
+# AzureSdkOwners:                   @ArthurMa1978
+
+# --- Management-specific overrides (after catch-all) ---
+
+# ServiceLabel: %ARM %Mgmt
+# ServiceOwners:                    @Azure/arm-sdk-owners
+
+# ServiceLabel: %ARM - Templates %Mgmt
+# ServiceOwners:                    @armleads-azure
+```
+
+**Example 1 — Predicted labels: "ARM" + "Mgmt"**
+
+Scan starts from end of file upward:
+1. `%ARM - Templates %Mgmt` — requires "ARM - Templates" AND "Mgmt"; issue has "ARM" not "ARM - Templates" → no match, continue
+2. `%ARM %Mgmt` — requires "ARM" AND "Mgmt"; issue has both → ALL labels match ✅ STOP
+
+The `%Mgmt` catch-all is never reached because the more specific `%ARM %Mgmt` entry was encountered first (it appears after the catch-all in the file)
+
+**Outcome:** Matches `%ARM %Mgmt`. ServiceOwners: @Azure/arm-sdk-owners, no AzureSdkOwners. Add "Service Attention" label, no assignment, no @mention. If the issue is also tagged with the "customer-reported" label, add the "needs-team-attention" label
+
+**Example 2 — Predicted labels: "Event Hubs" + "Client"**
+
+Scan starts from end of file upward:
+1. All management-specific entries — each requires "Mgmt" or a management service; issue has "Client" not "Mgmt" → no match for any, continue
+2. `%Mgmt` catch-all — requires "Mgmt"; issue has "Client" → no match, continue
+3. `%Event Hubs` — requires only "Event Hubs"; issue has "Event Hubs" → ALL labels match ✅ STOP
+
+**Outcome:** Matches `%Event Hubs`. AzureSdkOwners: @jsquire, ServiceOwners: @axisc @hmlam. Assign @jsquire, @mention @jsquire in Step 6 comment. If the issue is also tagged with the "customer-reported" label, add the "needs-team-attention" label
+
+Note: There is no `%Client` catch-all entry in CODEOWNERS, so "Client" as a category label does not contribute to CODEOWNERS matching. The service label drives the match
+
+### Owner Routing Flow
+
+```
+IF a matching ServiceLabel entry is found in CODEOWNERS:
+
+    IF AzureSdkOwners are listed for the matched entry:
+        IF a single AzureSdkOwner:
+            - Assign them to the issue using the `assign_to_user` tool
+        ELSE (multiple AzureSdkOwners):
+            - Pick one AzureSdkOwner at random and assign them using the `assign_to_user` tool
+
+        - IF the issue has the "customer-reported" label: Add the "needs-team-attention" label
+        - Record all AzureSdkOwners for Step 6
+
+    ELSE IF only ServiceOwners are listed (no AzureSdkOwners):
+        - Add the "Service Attention" label
+        - IF the issue has the "customer-reported" label: Add the "needs-team-attention" label
+        - Leave the issue unassigned
+        - Record all ServiceOwners for Step 6
+
+    ELSE (matched entry has neither AzureSdkOwners nor ServiceOwners):
+        - Add the "needs-team-triage" label
+
+ELSE (no ServiceLabel entry matches any of the issue's predicted labels):
+    - Add the "needs-team-triage" label
+```
 
 ### 6. Handle `untriaged`
 
