@@ -1,0 +1,96 @@
+name: 🐞 Bug report
+description: Create a report about something that is not working
+labels: ["untriaged"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We welcome bug reports! Please see our [guidance on writing a good bug report](https://github.com/dotnet/runtime/blob/main/CONTRIBUTING.md#writing-a-good-bug-report) for more information. This template will help us gather the information we need to help you.
+
+        **Please do not open issues on GitHub for anything you think might have a security implication.** Security issues and bugs should be reported privately to the Microsoft Security Response Center (MSRC), via the [MSRC Researcher Portal](https://msrc.microsoft.com/report/vulnerability/new). Reports via MSRC may qualify for the Microsoft .NET Bug Bounty. Details of the Microsoft .NET Bounty Program including terms and conditions are at [https://aka.ms/corebounty](https://aka.ms/corebounty).
+
+        For general questions, consider posting in [Discussions](https://github.com/dotnet/sdk/discussions) instead.
+
+  - type: textarea
+    id: describe-the-bug
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Description
+    validations:
+      required: true
+
+  - type: textarea
+    id: to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: |
+        We ❤ code! Provide clear, minimal steps to reproduce the issue.
+        You can paste code here, or link to a GitHub repo or [gist](https://gist.github.com/).
+        We may close this issue if we cannot reproduce the behavior or if the project you share with us is too complex
+      placeholder: Minimal Reproduction
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Please include any error messages, stack traces, screenshots, etc.
+      placeholder: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: regression
+    attributes:
+      label: Is this a regression?
+      description: Did this work in a previous version of the SDK? If you can try it out in a previous version, that will help us narrow down the problem.
+      placeholder: Did this work before?
+    validations:
+      required: false
+
+  - type: textarea
+    id: known-workarounds
+    attributes:
+      label: Are there any workarounds?
+      description: Please provide a description of any known workarounds.
+      placeholder: Is there a way to work around the issue?
+    validations:
+      required: false
+
+  - type: textarea
+    id: dotnet-info
+    attributes:
+      label: dotnet --info output
+      description: Please paste the full output of `dotnet --info`.
+      placeholder: output from `dotnet --info`
+      render: console
+    validations:
+      required: false
+
+  - type: input
+    id: ide
+    attributes:
+      label: IDE version
+      description: If you are using an IDE, tell us which one and what version.
+      placeholder: e.g. VS Code version X.Y.Z with C# DevKit version A.B.C
+    validations:
+      required: false
+
+  - type: textarea
+    id: configuration-other
+    attributes:
+      label: Other details
+      description: Please provide any other relevant details here.
+    validations:
+      required: false

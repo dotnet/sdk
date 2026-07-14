@@ -4,9 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 using NuGet.Versioning;
-#if NETFRAMEWORK
-using System.Linq;
-#endif
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 

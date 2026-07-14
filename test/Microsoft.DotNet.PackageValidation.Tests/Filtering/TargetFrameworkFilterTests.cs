@@ -6,58 +6,59 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
 {
+    [TestClass]
     public class TargetFrameworkFilterTests
     {
-        [Theory]
-        [InlineData("net8.0", "net8.0")]
-        [InlineData("net8.0", "net8.0", "net9.0")]
-        [InlineData("net8.0", "net8*")]
-        [InlineData("net80.0", "net8*")]
-        [InlineData("portable-net45+win8+wpa81+wp8", "portable-*")]
-        [InlineData("portable-net45+win8+wpa81+wp8", "portable*")]
+        [TestMethod]
+        [DataRow("net8.0", "net8.0")]
+        [DataRow("net8.0", "net8.0", "net9.0")]
+        [DataRow("net8.0", "net8*")]
+        [DataRow("net80.0", "net8*")]
+        [DataRow("portable-net45+win8+wpa81+wp8", "portable-*")]
+        [DataRow("portable-net45+win8+wpa81+wp8", "portable*")]
         public void IsExcluded_TargetFrameworkFound_ReturnsTrue(string targetFramework, params string[] excludedTargetFrameworks)
         {
             TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
-            Assert.True(targetFrameworkFilter.IsExcluded(targetFramework));
+            Assert.IsTrue(targetFrameworkFilter.IsExcluded(targetFramework));
         }
 
-        [Theory]
-        [InlineData("", "")]
-        [InlineData("net8.0", "*")]
-        [InlineData("net8.0", "net9.0")]
-        [InlineData("net7.0", "net8.0", "net9.0")]
+        [TestMethod]
+        [DataRow("", "")]
+        [DataRow("net8.0", "*")]
+        [DataRow("net8.0", "net9.0")]
+        [DataRow("net7.0", "net8.0", "net9.0")]
         public void IsExcluded_TargetFrameworkNotFound_ReturnsFalse(string targetFramework, params string[] excludedTargetFrameworks)
         {
             TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
-            Assert.False(targetFrameworkFilter.IsExcluded(targetFramework));
+            Assert.IsFalse(targetFrameworkFilter.IsExcluded(targetFramework));
         }
 
-        [Theory]
-        [InlineData("net8.0", "net8.0")]
-        [InlineData("net8.0", "net8.0", "net9.0")]
-        [InlineData("net8.0", "net8*")]
-        [InlineData("net80.0", "net8*")]
+        [TestMethod]
+        [DataRow("net8.0", "net8.0")]
+        [DataRow("net8.0", "net8.0", "net9.0")]
+        [DataRow("net8.0", "net8*")]
+        [DataRow("net80.0", "net8*")]
         public void IsExcluded_NuGetFrameworkFound_ReturnsTrue(string targetFramework, params string[] excludedTargetFrameworks)
         {
             TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
-            Assert.True(targetFrameworkFilter.IsExcluded(NuGetFramework.ParseFolder(targetFramework)));
+            Assert.IsTrue(targetFrameworkFilter.IsExcluded(NuGetFramework.ParseFolder(targetFramework)));
         }
 
-        [Theory]
-        [InlineData("", "")]
-        [InlineData("net8.0", "net9.0")]
-        [InlineData("net7.0", "net8.0", "net9.0")]
+        [TestMethod]
+        [DataRow("", "")]
+        [DataRow("net8.0", "net9.0")]
+        [DataRow("net7.0", "net8.0", "net9.0")]
         public void IsExcluded_NuGetFrameworkNotFound_ReturnsFalse(string targetFramework, params string[] excludedTargetFrameworks)
         {
             TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
-            Assert.False(targetFrameworkFilter.IsExcluded(NuGetFramework.ParseFolder(targetFramework)));
+            Assert.IsFalse(targetFrameworkFilter.IsExcluded(NuGetFramework.ParseFolder(targetFramework)));
         }
 
-        [Fact]
+        [TestMethod]
         public void FoundExcludedTargetFrameworks_FrameworksFound_ReturnsEqual()
         {
             string[] excludedTargetFrameworks = ["netstandard2.0", "net4*"];
@@ -66,13 +67,13 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
 
             foreach (string targetFramework in targetFrameworks)
             {
-                Assert.True(targetFrameworkFilter.IsExcluded(targetFramework));
+                Assert.IsTrue(targetFrameworkFilter.IsExcluded(targetFramework));
             }
 
-            Assert.Equal(targetFrameworks, targetFrameworkFilter.FoundExcludedTargetFrameworks);
+            Assert.AreSequenceEqual(targetFrameworks, targetFrameworkFilter.FoundExcludedTargetFrameworks);
         }
 
-        [Fact]
+        [TestMethod]
         public void FoundExcludedTargetFrameworks_FrameworksNotFound_ReturnsEmpty()
         {
             string[] excludedTargetFrameworks = ["netstandard2.0", "net4*"];
@@ -81,10 +82,10 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
 
             foreach (string targetFramework in targetFrameworks)
             {
-                Assert.False(targetFrameworkFilter.IsExcluded(targetFramework));
+                Assert.IsFalse(targetFrameworkFilter.IsExcluded(targetFramework));
             }
 
-            Assert.Empty(targetFrameworkFilter.FoundExcludedTargetFrameworks);
+            Assert.IsEmpty(targetFrameworkFilter.FoundExcludedTargetFrameworks);
         }
     }
 }

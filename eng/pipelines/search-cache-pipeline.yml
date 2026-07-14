@@ -49,33 +49,25 @@ extends:
           outputs:
           - output: pipelineArtifact
             targetPath: $(Build.ArtifactStagingDirectory)
-            artifactName: Test_LogResults
+            artifactName: BuildLogs
           - output: pipelineArtifact
             targetPath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
             artifactName: ArtifactsToPublish
 
         steps:
-        - script: $(Build.SourcesDirectory)/build.sh
-          displayName: Build
+        - script: >
+            $(Build.SourcesDirectory)/build.sh
+              --projects $(Build.SourcesDirectory)/src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
+              -bl
+          displayName: Build Cache Updater
 
         - task: CopyFiles@2
-          displayName: Gather Test Log and Results
+          displayName: Gather Build Logs
           inputs:
             SourceFolder: $(Build.SourcesDirectory)/artifacts
             Contents: |
               log/**/*
-              TestResults/**/*
             TargetFolder: $(Build.ArtifactStagingDirectory)
-          continueOnError: true
-          condition: always()
-
-        - task: PublishTestResults@2
-          displayName: Publish Test Results
-          inputs:
-            testResultsFormat: xUnit
-            testResultsFiles: '*.xml'
-            searchFolder: $(Build.SourcesDirectory)/artifacts/TestResults/Debug
-            mergeTestResults: true
           continueOnError: true
           condition: always()
 
@@ -138,7 +130,7 @@ extends:
           displayName: Install latest daily .NET version
 
         - bash: |
-            projectPath=$(Build.SourcesDirectory)/tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
+            projectPath=$(Build.SourcesDirectory)/src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
             netCurrent=$($(Build.SourcesDirectory)/.dotnet/dotnet msbuild $projectPath -getProperty:NetCurrent)
             echo "Resolved NetCurrent: $netCurrent"
             $(Build.SourcesDirectory)/.dotnet/dotnet run --no-build \

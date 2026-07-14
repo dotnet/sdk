@@ -3,11 +3,17 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Runtime.InteropServices;
+#if !CLI_AOT
+using Microsoft.DotNet.Cli.CommandLine;
+#endif
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
+#if !CLI_AOT
 using Microsoft.DotNet.Configurer;
+#endif
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli;
@@ -24,16 +30,19 @@ internal abstract class InvocableOptionAction(Option option) : SynchronousComman
     public Option Option { get; } = option;
 }
 
-internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(option)
+#if !CLI_AOT
+internal class HandleDiagnosticAction(Option<bool> option) : InvocableOptionAction(option)
 {
     public override bool Terminating => false;
 
+    // S.CL will always invoke this option action because:
+    // 1. A boolean option has a default value of `false`.
+    // 2. The option has Terminating set to `false`.
+    // When a default value exists (non-null) and the option is not terminating, the option action is always invoked.
     public override int Invoke(ParseResult parseResult)
     {
-        // Required because of: https://github.com/dotnet/command-line-api/pull/2708
-        // S.CL now always invokes non-terminating option actions for implicit (default-valued) options.
-        // Meaning, this action always runs independent of the option being provided or not.
-        if (parseResult.GetResult(Option) is not { } result || result.Implicit
+        // This check is necessary as per comment above.
+        if (!parseResult.HasOption(Option) || !parseResult.GetValue(option)
             // Only set verbose output on built-in commands.
             || !parseResult.IsDotnetBuiltInCommand())
         {
@@ -41,7 +50,7 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
         }
 
         // Determine whether the diagnostic option should be attached to the dotnet command or the subcommand.
-        if (DiagOptionPrecedesSubcommand(parseResult.Tokens.Select(t => t.Value), parseResult.RootSubCommandResult()))
+        if (OptionPrecedesSubcommand(parseResult.Tokens.Select(t => t.Value), parseResult.RootSubCommandResult()))
         {
             Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
             CommandLoggingContext.SetVerbose(true);
@@ -58,7 +67,7 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
         return 0;
     }
 
-    private static bool DiagOptionPrecedesSubcommand(IEnumerable<string> tokens, string subCommand)
+    private bool OptionPrecedesSubcommand(IEnumerable<string> tokens, string subCommand)
     {
         if (string.IsNullOrEmpty(subCommand))
         {
@@ -72,8 +81,7 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
                 return false;
             }
 
-            if (Parser.RootCommand.DiagOption.Name == token
-                || Parser.RootCommand.DiagOption.Aliases.Contains(token))
+            if (Option.Name == token || Option.Aliases.Contains(token))
             {
                 return true;
             }
@@ -82,6 +90,7 @@ internal class HandleDiagnosticAction(Option option) : InvocableOptionAction(opt
         return false;
     }
 }
+#endif
 
 internal class PrintHelpAction(Option option, HelpBuilder builder) : InvocableOptionAction(option)
 {
@@ -101,14 +110,17 @@ internal class PrintHelpAction(Option option, HelpBuilder builder) : InvocableOp
     }
 }
 
-internal class PrintVersionAction(Option option) : InvocableOptionAction(option)
+internal class PrintVersionAction(Option<bool> option) : InvocableOptionAction(option)
 {
     public override bool Terminating => true;
 
     public override int Invoke(ParseResult parseResult)
     {
-        // Only print for top-level commands.
-        if (!parseResult.IsTopLevelDotnetCommand())
+        // GetResult(Option) is { Implicit: false } is the AOT-friendly equivalent of parseResult.HasOption(Option);
+        // the HasOption extension lives in Microsoft.DotNet.Cli.CommandLine, which the AOT build doesn't reference.
+        if (parseResult.GetResult(Option) is not { Implicit: false } || !parseResult.GetValue(option)
+            // Only print for top-level commands.
+            || !parseResult.IsTopLevelDotnetCommand())
         {
             return 0;
         }
@@ -119,14 +131,15 @@ internal class PrintVersionAction(Option option) : InvocableOptionAction(option)
     }
 }
 
-internal class PrintInfoAction(Option option) : InvocableOptionAction(option)
+internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(option)
 {
     public override bool Terminating => true;
 
     public override int Invoke(ParseResult parseResult)
     {
-        // Only print for top-level commands.
-        if (!parseResult.IsTopLevelDotnetCommand())
+        if (parseResult.GetResult(Option) is not { Implicit: false } || !parseResult.GetValue(option)
+            // Only print for top-level commands.
+            || !parseResult.IsTopLevelDotnetCommand())
         {
             return 0;
         }
@@ -143,8 +156,20 @@ internal class PrintInfoAction(Option option) : InvocableOptionAction(option)
         Reporter.Output.WriteLine($" OS Name:     {RuntimeEnvironment.OperatingSystem}");
         Reporter.Output.WriteLine($" OS Version:  {RuntimeEnvironment.OperatingSystemVersion}");
         Reporter.Output.WriteLine($" OS Platform: {RuntimeEnvironment.OperatingSystemPlatform}");
+#if !CLI_AOT
         Reporter.Output.WriteLine($" RID:         {GetDisplayRid(versionFile)}");
+#else
+        // GetDisplayRid consults the shared framework's deps file, which isn't available in AOT.
+        Reporter.Output.WriteLine($" RID:         {RuntimeInformation.RuntimeIdentifier}");
+#endif
+#if CLI_AOT
+        // In the AOT bubble AppContext.BaseDirectory is the muxer/install root, so report the resolved
+        // versioned SDK directory instead. The managed CLI keeps AppContext.BaseDirectory - it is correct
+        // there and preserves the existing output (including its trailing directory separator).
+        Reporter.Output.WriteLine($" Base Path:   {SdkPaths.SdkDirectory}");
+#else
         Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
+#endif
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
         new WorkloadInfoHelper(isInteractive: false).ShowWorkloadsInfo(showVersion: false);
@@ -152,6 +177,7 @@ internal class PrintInfoAction(Option option) : InvocableOptionAction(option)
         return 0;
     }
 
+#if !CLI_AOT
     private static string? GetDisplayRid(DotnetVersionFile versionFile)
     {
         FrameworkDependencyFile fxDepsFile = new();
@@ -160,15 +186,29 @@ internal class PrintInfoAction(Option option) : InvocableOptionAction(option)
         // so the user knows which RID they should put in their "runtimes" section.
         return fxDepsFile.IsRuntimeSupported(currentRid) ? currentRid : versionFile.BuildRid;
     }
+#endif
 }
 
-internal class PrintCliSchemaAction(Option option) : InvocableOptionAction(option)
+internal class PrintCliSchemaAction(Option<bool> option) : InvocableOptionAction(option)
 {
     public override bool Terminating => true;
 
     public override int Invoke(ParseResult parseResult)
     {
-        CliSchema.PrintCliSchema(parseResult, parseResult.InvocationConfiguration.Output, Program.TelemetryInstance);
+        if (parseResult.GetResult(Option) is not { Implicit: false } || !parseResult.GetValue(option))
+        {
+            return 0;
+        }
+
+        CliSchema.PrintCliSchema(
+            parseResult,
+            parseResult.InvocationConfiguration.Output,
+#if CLI_AOT
+            telemetryClient: NativeEntryPoint.TelemetryClient
+#else
+            telemetryClient: Program.TelemetryInstance
+#endif
+        );
 
         return 0;
     }

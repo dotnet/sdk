@@ -5,6 +5,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -12,7 +13,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli;
 
-public static class SlnFileFactory
+public static partial class SlnFileFactory
 {
     public static readonly string[] DefaultPlatforms = new[] { "Any CPU", "x64", "x86" };
     public static readonly string[] DefaultBuildTypes = new[] { "Debug", "Release" };
@@ -94,7 +95,11 @@ public static class SlnFileFactory
                 AllowTrailingCommas = true,
                 CommentHandling = JsonCommentHandling.Skip
             };
-            JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath), options).RootElement;
+            string fileContent = File.ReadAllText(filteredSolutionPath);
+            // Fix unescaped backslashes for backward compatibility with .slnf files that contain
+            // Windows-style path separators without proper JSON escaping (e.g. "..\foo" instead of "..\\foo" or "../foo").
+            fileContent = FixInvalidJsonBackslashes(fileContent);
+            JsonElement root = JsonDocument.Parse(fileContent, options).RootElement;
             originalSolutionPath = Uri.UnescapeDataString(root.GetProperty("solution").GetProperty("path").GetString());
             // Normalize path separators to OS-specific for cross-platform compatibility
             originalSolutionPath = SlnfFileHelper.NormalizePathSeparatorsToOS(originalSolutionPath);
@@ -124,7 +129,7 @@ public static class SlnFileFactory
         }
 
         IEnumerable<SolutionProjectModel> projects = filteredSolutionProjectPaths
-            .Select(path => path.Replace('\\', Path.DirectorySeparatorChar))
+            .Select(path => SlnfFileHelper.NormalizePathSeparatorsToOS(path))
             .Select(path => Uri.UnescapeDataString(path))
             .Select(path => originalSolution.FindProject(path) ?? throw new GracefulException(
                     CliStrings.ProjectNotFoundInTheSolution,
@@ -140,5 +145,22 @@ public static class SlnFileFactory
         }
 
         return filteredSolution;
+    }
+
+    [GeneratedRegex(@"\\\\|\\(?!"")")]
+    private static partial Regex GetInvalidJsonBackslashRegex();
+
+    /// <summary>
+    /// Replaces unescaped backslashes in a JSON string with forward slashes, for backward compatibility
+    /// with .slnf files that were generated with Windows-style path separators without proper JSON escaping.
+    /// </summary>
+    private static string FixInvalidJsonBackslashes(string json)
+    {
+        // Replace any backslash that is not part of a JSON string delimiter escape (\" ) with a forward slash.
+        // We first match \\ (valid double-backslash) to preserve it, then replace any remaining single
+        // backslash (including those that look like JSON escapes: \b, \f, \n, \r, \t, \uXXXX) with /,
+        // since in a .slnf these are always Windows path separators, not control characters.
+        return GetInvalidJsonBackslashRegex().Replace(json, match =>
+            match.Value.Length == 2 ? match.Value : "/");
     }
 }

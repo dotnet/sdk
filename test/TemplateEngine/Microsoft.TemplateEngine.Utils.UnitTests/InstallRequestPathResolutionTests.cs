@@ -1,51 +1,68 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
-    public class InstallRequestPathResolutionTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class InstallRequestPathResolutionTests
     {
-        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
+        // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
+        // mirrors the per-class lifetime that xUnit's IClassFixture provides.
+        private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
+            new(() => new EnvironmentSettingsHelper());
 
-        public InstallRequestPathResolutionTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
+
+        [TestInitialize]
+        public void TestInitialize()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.Value.CreateEnvironment(
+                hostIdentifier: GetType().Name,
+                virtualize: true);
         }
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            if (s_environmentSettingsHelper.IsValueCreated)
+            {
+                s_environmentSettingsHelper.Value.Dispose();
+            }
+        }
+
+        [TestMethod]
         public void CanResolvePath()
         {
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Directory.GetCurrentDirectory(), _engineEnvironmentSettings);
-            Assert.Equal(Directory.GetCurrentDirectory(), installPath.Single());
+            Assert.AreEqual(Directory.GetCurrentDirectory(), installPath.Single());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanTrimTrailingSeparator()
         {
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar, _engineEnvironmentSettings);
-            Assert.Equal(Directory.GetCurrentDirectory(), installPath.Single());
+            Assert.AreEqual(Directory.GetCurrentDirectory(), installPath.Single());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanResolveCurrentPath()
         {
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(".", _engineEnvironmentSettings);
-            Assert.Equal(Directory.GetCurrentDirectory(), installPath.Single());
+            Assert.AreEqual(Directory.GetCurrentDirectory(), installPath.Single());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanResolveParentPath()
         {
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath("..", _engineEnvironmentSettings);
-            Assert.Equal(Path.GetDirectoryName(Directory.GetCurrentDirectory()), installPath.Single());
+            Assert.AreEqual(Path.GetDirectoryName(Directory.GetCurrentDirectory()), installPath.Single());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanResolveSubdirectories()
         {
             var testRootDir = TestUtils.CreateTemporaryFolder();
@@ -55,11 +72,11 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Path.Combine(testRootDir, "*"), _engineEnvironmentSettings);
 
-            Assert.Equal(3, installPath.Count());
+            Assert.HasCount(3, installPath);
             Assert.Contains(Path.Combine(testRootDir, "dir1"), installPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanResolveMaskedSubdirectories()
         {
             var testRootDir = TestUtils.CreateTemporaryFolder();
@@ -69,12 +86,12 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Path.Combine(testRootDir, "dir*"), _engineEnvironmentSettings);
 
-            Assert.Equal(2, installPath.Count());
+            Assert.HasCount(2, installPath);
             Assert.Contains(Path.Combine(testRootDir, "dir1"), installPath);
             Assert.Contains(Path.Combine(testRootDir, "dir33"), installPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanResolveMaskedFiles()
         {
             var testRootDir = TestUtils.CreateTemporaryFolder();
@@ -84,30 +101,30 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Path.Combine(testRootDir, "*.nupkg"), _engineEnvironmentSettings);
 
-            Assert.Equal(2, installPath.Count());
+            Assert.HasCount(2, installPath);
             Assert.Contains(Path.Combine(testRootDir, "1.nupkg"), installPath);
             Assert.Contains(Path.Combine(testRootDir, "2.nupkg"), installPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void CannotResolveInvalidPath()
         {
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath("|path|", _engineEnvironmentSettings);
-            Assert.Equal("|path|", installPath.Single());
+            Assert.AreEqual("|path|", installPath.Single());
         }
 
-        [Fact]
+        [TestMethod]
         public void CannotResolveNonExistingPath()
         {
-            Assert.False(File.Exists("path"));
+            Assert.IsFalse(File.Exists("path"));
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath("path", _engineEnvironmentSettings);
-            Assert.Equal("path", installPath.Single());
+            Assert.AreEqual("path", installPath.Single());
 
             installPath = InstallRequestPathResolution.ExpandMaskedPath("path\\", _engineEnvironmentSettings);
-            Assert.Equal("path\\", installPath.Single());
+            Assert.AreEqual("path\\", installPath.Single());
         }
 
-        [Fact]
+        [TestMethod]
         public void CannotResolveMaskedPathInFolder()
         {
             var testRootDir = TestUtils.CreateTemporaryFolder();
@@ -116,16 +133,16 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             File.Create(Path.Combine(testRootDir, "dir", "2.nupkg"));
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Path.Combine(testRootDir, "*", "*.nupkg"), _engineEnvironmentSettings);
-            Assert.Equal(Path.Combine(testRootDir, "*", "*.nupkg"), installPath.Single());
+            Assert.AreEqual(Path.Combine(testRootDir, "*", "*.nupkg"), installPath.Single());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanResolveParentOfRootFolder()
         {
             string dir = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C:\\" : "/";
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(dir + "..", _engineEnvironmentSettings);
-            Assert.Equal(dir, installPath.Single());
+            Assert.AreEqual(dir, installPath.Single());
         }
     }
 }

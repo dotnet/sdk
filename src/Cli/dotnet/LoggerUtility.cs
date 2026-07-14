@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 
@@ -61,21 +63,25 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
-    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
+    internal static void SeparateLoggerArguments(IEnumerable<string>? args, out ImmutableArray<string> loggerArgs, out ImmutableArray<string> nonLoggerArgs)
     {
-        binLogArgs = new List<string>();
-        nonBinLogArgs = new List<string>();
+        var loggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
+        var nonLoggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
+
         foreach (var arg in args ?? [])
         {
-            if (IsBinLogArgument(arg))
+            if (TryGetLoggerArgument(arg, out string? loggerArg))
             {
-                binLogArgs.Add(arg);
+                loggerArgsBuilder.Add(loggerArg);
             }
             else
             {
-                nonBinLogArgs.Add(arg);
+                nonLoggerArgsBuilder.Add(arg);
             }
         }
+
+        loggerArgs = loggerArgsBuilder.ToImmutable();
+        nonLoggerArgs = nonLoggerArgsBuilder.ToImmutable();
     }
 
     internal static bool IsBinLogArgument(string arg)
@@ -84,6 +90,99 @@ internal static class LoggerUtility
         return arg.StartsWith("/bl:", comp) || arg.Equals("/bl", comp)
             || arg.StartsWith("--binaryLogger:", comp) || arg.Equals("--binaryLogger", comp)
             || arg.StartsWith("-bl:", comp) || arg.Equals("-bl", comp);
+    }
+
+    internal static bool HasNoConsoleLoggerArgument(IEnumerable<string>? args) =>
+        args?.Any(IsNoConsoleLoggerArgument) == true;
+
+    private static bool IsNoConsoleLoggerArgument(string arg)
+    {
+        return TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue) &&
+            prefix is "-" or "/" &&
+            !hasValue &&
+            switchName.Equals("noConsoleLogger", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryGetLoggerArgument(string arg, [NotNullWhen(true)] out string? loggerArg)
+    {
+        loggerArg = arg;
+        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg))
+        {
+            return true;
+        }
+
+        if (!TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue))
+        {
+            loggerArg = null;
+            return false;
+        }
+
+        const StringComparison comp = StringComparison.OrdinalIgnoreCase;
+        if (switchName.Equals("tl", comp) || switchName.Equals("terminalLogger", comp) ||
+            switchName.Equals("ll", comp) || switchName.Equals("livelogger", comp))
+        {
+            if (!hasValue)
+            {
+                loggerArg = $"{prefix}{switchName}:auto";
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(switchValue) ||
+                !(switchValue.Equals("on", comp) ||
+                  switchValue.Equals("off", comp) ||
+                  switchValue.Equals("true", comp) ||
+                  switchValue.Equals("false", comp) ||
+                  switchValue.Equals("auto", comp)))
+            {
+                loggerArg = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        if (switchName.Equals("tlp", comp) || switchName.Equals("terminalLoggerParameters", comp) ||
+            switchName.Equals("clp", comp) || switchName.Equals("consoleLoggerParameters", comp))
+        {
+            if (hasValue && switchValue is not "")
+            {
+                return true;
+            }
+        }
+
+        loggerArg = null;
+        return false;
+    }
+
+    private static bool TryParseSwitch(string arg, [NotNullWhen(true)] out string? prefix, [NotNullWhen(true)] out string? switchName, out string? switchValue, out bool hasValue)
+    {
+        prefix = null;
+        switchName = null;
+        switchValue = null;
+        hasValue = false;
+
+        string value;
+        if (arg.StartsWith("--", StringComparison.Ordinal))
+        {
+            prefix = "--";
+            value = arg[2..];
+        }
+        else if (arg.StartsWith('-') || arg.StartsWith('/'))
+        {
+            prefix = arg[..1];
+            value = arg[1..];
+        }
+        else
+        {
+            return false;
+        }
+
+        var separatorIndex = value.IndexOf(':');
+        hasValue = separatorIndex >= 0;
+        switchName = hasValue ? value[..separatorIndex] : value;
+        switchValue = hasValue ? value[(separatorIndex + 1)..] : null;
+
+        return switchName.Length > 0;
     }
 }
 
