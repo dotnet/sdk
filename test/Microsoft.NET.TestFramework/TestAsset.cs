@@ -89,6 +89,12 @@ namespace Microsoft.NET.TestFramework
                                       return !IsInBinOrObjFolder(file);
                                   });
 
+            //  Project files (and .xml) are rewritten below with substitutions applied, so there is
+            //  no need to also File.Copy them first: copying would write the file only to have it
+            //  immediately overwritten by the substitution pass. Defer them and copy every other
+            //  source file verbatim.
+            var projectFilesToRewrite = new List<(string source, string destination)>();
+
             foreach (string srcFile in sourceFiles)
             {
                 string destFile = srcFile.Replace(_testAssetRoot ?? string.Empty, Path);
@@ -96,8 +102,12 @@ namespace Microsoft.NET.TestFramework
                 if (System.IO.Path.GetFileName(srcFile).EndsWith("proj") || System.IO.Path.GetFileName(srcFile).EndsWith("xml"))
                 {
                     _projectFiles.Add(destFile);
+                    projectFilesToRewrite.Add((srcFile, destFile));
                 }
-                File.Copy(srcFile, destFile, true);
+                else
+                {
+                    File.Copy(srcFile, destFile, true);
+                }
             }
 
             targetFramework ??= ToolsetInfo.CurrentTargetFramework;
@@ -115,11 +125,15 @@ namespace Microsoft.NET.TestFramework
             var packageVersionSubstitutions = (packageVersionPropertySubstitutions ?? ToolsetInfo.GetPackageVersionProperties()).ToArray();
 
             //  Apply every property and package-version substitution in a single load/mutate/save
-            //  pass per project file. Previously each substitution called WithProjectChanges
-            //  independently, reloading and rewriting every project file once per substitution
-            //  (~14 rewrites per file) during the setup of every test that calls WithSource.
-            WithProjectChanges(project =>
+            //  pass per project file, reading from the source and writing the result straight to the
+            //  destination. Previously each substitution called WithProjectChanges independently,
+            //  reloading and rewriting every project file once per substitution (~14 rewrites per
+            //  file, on top of the File.Copy above) during the setup of every test that uses
+            //  WithSource.
+            foreach (var (source, destination) in projectFilesToRewrite)
             {
+                var project = XDocument.Load(source);
+
                 foreach (var (propertyName, variableName, value) in propertySubstitutions)
                 {
                     ApplyUpdateProjProperty(project, propertyName, variableName, value);
@@ -129,7 +143,10 @@ namespace Microsoft.NET.TestFramework
                 {
                     ApplyReplacePackageVersionVariable(project, propertyName, version);
                 }
-            });
+
+                using var file = File.CreateText(destination);
+                project.Save(file);
+            }
 
             return this;
         }
