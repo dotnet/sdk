@@ -107,6 +107,7 @@ jobs:
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
+          ${{ parameters.osProperties }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
