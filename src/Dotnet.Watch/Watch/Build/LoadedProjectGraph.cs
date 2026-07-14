@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -39,6 +40,9 @@ internal sealed class LoadedProjectGraph(ProjectGraph graph, ProjectCollection c
         logger.LogError("Project '{ProjectPath}' not found in the project graph.", projectPath);
         return [];
     }
+
+    public ProjectGraphNode GetProjectNode(ProjectInstanceId projectId)
+        => _innerBuildNodes[projectId.ProjectPath].Single(n => n.ProjectInstance.GetTargetFramework() == projectId.TargetFramework);
 
     public ProjectGraphNode? TryGetProjectNode(string projectPath, string? targetFramework)
     {

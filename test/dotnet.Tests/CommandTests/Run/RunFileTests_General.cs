@@ -496,6 +496,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(appDir)
             .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
+                #!/usr/bin/env dotnet
                 #:ref $(MSBuildStartupDirectory)/../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
                 """)
@@ -505,7 +506,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
 
         // Relative paths are resolved from the isolated temp directory, hence they don't work.
 
-        var errorParts = DirectiveError("app.cs", 1, FileBasedProgramsResources.InvalidRefDirective,
+        var errorParts = DirectiveError("app.cs", 2, FileBasedProgramsResources.InvalidRefDirective,
             string.Format(FileBasedProgramsResources.CouldNotFindRefFile, "{}")).Split("{}");
         errorParts.Should().HaveCount(2);
 
@@ -513,6 +514,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(appDir)
             .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
+                #!/usr/bin/env dotnet
                 #:ref ../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
                 """)
