@@ -19,8 +19,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks;
 public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest
 {
     [TestMethod]
-    public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory()
+    [DataRow("output/props.xml")]
+    [DataRow(" ")]
+    public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory(string relativeBuildTargetPath)
     {
+        if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeBuildTargetPath))
+        {
+            return;
+        }
+
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");
         var spawnDir = Path.Combine(testRoot, "spawn");
@@ -40,15 +47,15 @@ public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest
                 BuildEngine = buildEngine.Object,
                 TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
                 PropsFileImport = "Microsoft.AspNetCore.StaticWebAssets.props",
-                BuildTargetPath = Path.Combine("output", "props.xml")
+                BuildTargetPath = relativeBuildTargetPath
             };
 
             task.Execute().Should().BeTrue();
 
-            var expectedPath = Path.Combine(projectDir, "output", "props.xml");
+            var expectedPath = Path.Combine(projectDir, relativeBuildTargetPath);
             File.Exists(expectedPath).Should().BeTrue("the file should be written under the project dir, not the process CWD");
 
-            var incorrectPath = Path.Combine(spawnDir, "output", "props.xml");
+            var incorrectPath = Path.Combine(spawnDir, relativeBuildTargetPath);
             File.Exists(incorrectPath).Should().BeFalse();
         }
         finally

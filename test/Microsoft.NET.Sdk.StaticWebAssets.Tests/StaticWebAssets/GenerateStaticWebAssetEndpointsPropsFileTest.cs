@@ -167,8 +167,15 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
     }
 
     [TestMethod]
-    public void Execute_RelativeTargetPropsFilePath_ResolvesAgainstProjectDirectory_NotProcessCurrentDirectory()
+    [DataRow("endpoints.props")]
+    [DataRow(" ")]
+    public void Execute_RelativeTargetPropsFilePath_ResolvesAgainstProjectDirectory_NotProcessCurrentDirectory(string relativeTargetPropsFilePath)
     {
+        if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeTargetPropsFilePath))
+        {
+            return;
+        }
+
         WithDecoyCwdAndProjectDirectory((projectDir, spawnDir) =>
         {
             // Arrange
@@ -198,7 +205,7 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
                         Path.Combine("wwwroot", "js", "sample.js"))
                 ],
                 PackagePathPrefix = "staticwebassets",
-                TargetPropsFilePath = "endpoints.props",
+                TargetPropsFilePath = relativeTargetPropsFilePath,
             };
 
             // Act
@@ -207,9 +214,9 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
             // Assert
             result.Should().BeTrue();
             errorMessages.Should().BeEmpty();
-            new FileInfo(Path.Combine(projectDir, "endpoints.props")).Should().Exist(
+            new FileInfo(Path.Combine(projectDir, relativeTargetPropsFilePath)).Should().Exist(
                 "a relative TargetPropsFilePath must be resolved against TaskEnvironment.ProjectDirectory, not the process CWD");
-            File.Exists(Path.Combine(spawnDir, "endpoints.props")).Should().BeFalse();
+            File.Exists(Path.Combine(spawnDir, relativeTargetPropsFilePath)).Should().BeFalse();
         });
     }
 

@@ -17,8 +17,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks;
 public class ConcatenateCssFilesMultiThreadingTest
 {
     [TestMethod]
-    public void ReadsInputsAndWritesBundleRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
+    [DataRow("obj/scoped.styles.css")]
+    [DataRow(" ")]
+    public void ReadsInputsAndWritesBundleRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory(string relativeOutputFile)
     {
+        if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeOutputFile))
+        {
+            return;
+        }
+
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ConcatenateCssFilesMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");
         var spawnDir = Path.Combine(testRoot, "spawn");
@@ -29,8 +36,6 @@ public class ConcatenateCssFilesMultiThreadingTest
         // ItemSpec. It must be resolved against TaskEnvironment.ProjectDirectory, not the process CWD.
         const string inputContents = ".counter { color: red; }";
         File.WriteAllText(Path.Combine(projectDir, "Counter.razor.rz.scp.css"), inputContents);
-
-        var relativeOutputFile = Path.Combine("obj", "scoped.styles.css");
 
         var originalCurrentDirectory = Directory.GetCurrentDirectory();
         try

@@ -95,7 +95,7 @@ public class ConcatenateCssFiles : Task, IMultiThreadableTask
 
         var content = builder.ToString();
 
-        string outputFile = string.IsNullOrWhiteSpace(OutputFile) ? OutputFile : TaskEnvironment.GetAbsolutePath(OutputFile);
+        string outputFile = string.IsNullOrEmpty(OutputFile) ? OutputFile : TaskEnvironment.GetAbsolutePath(OutputFile);
         if (!File.Exists(outputFile) || !SameContent(content, outputFile))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
