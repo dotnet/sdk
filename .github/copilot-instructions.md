@@ -115,7 +115,8 @@ manually edit:
 
 - **`.xlf` localization files.** Change the source `.resx` strings instead, then
   regenerate the `.xlf` with the `/t:UpdateXlf` MSBuild target. Correctly regenerated
-  entries have a state of `needs-review-translation` or `new`.
+  entries have a state of `needs-review-translation` or `new`. See
+  [Localization](../documentation/project-docs/Localization.md) for the full workflow.
 - **Generated man pages** under `documentation/manpages/sdk`. These are generated from
   documentation; change the upstream documentation in https://github.com/dotnet/docs instead.
 - **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
