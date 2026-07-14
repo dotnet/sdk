@@ -202,13 +202,11 @@ namespace Microsoft.NET.TestFramework
                     var packageReferencesToUpdate =
                         project.Root.Descendants(ns + elementName)
                             .Select(p => p.Attribute("Version"))
-                            .Where(va => va is not null && va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
+                            .OfType<XAttribute>()
+                            .Where(va => va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
                     foreach (var versionAttribute in packageReferencesToUpdate)
                     {
-                        if (versionAttribute is not null)
-                        {
-                            versionAttribute.Value = targetValue;
-                        }
+                        versionAttribute.Value = targetValue;
                     }
                 }
             }
