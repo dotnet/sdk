@@ -1,7 +1,7 @@
 ---
 emoji: 🏷️
 name: Issue Triage
-description: Triages opened dotnet/sdk issues by applying existing labels, requesting missing diagnostic information, and routing complete reports to CODEOWNERS with load balancing.
+description: Triages opened dotnet/sdk issues by applying existing labels, requesting missing diagnostic information, and routing complete reports through CODEOWNERS.
 on:
   issues:
     # vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS (default: 5000 AIC) helps limit triage of too many issues
@@ -121,110 +121,87 @@ Choose only labels returned by the repository label list. Never invent a label.
 
 Recognize standard SDK concepts: project commands; MSBuild project files and targets; NuGet restore; workloads; templates; tools; trimming, Native AOT, single-file, and ReadyToRun publishing; source-build/VMR; Static Web Assets; Blazor; and Razor.
 
-## Step 5: Owner Lookup and Routing
+### 4. Resolve owners and route from CODEOWNERS
 
-All issues reaching this step have predicted labels and proceed through ownership routing
+All complete issues reaching this step have selected `Area-*` labels and proceed through ownership routing.
 
-Read the `.github/CODEOWNERS` file to look up owners for the predicted label combination
+Read the repository's root `CODEOWNERS` file to look up owners for each selected `Area-*` label.
 
-### CODEOWNERS Matching Rules
+#### CODEOWNERS matching rules
 
-The CODEOWNERS file contains `# ServiceLabel:` entries that associate one or more labels with owners
+The root `CODEOWNERS` file contains `# Area-*` section headings that associate one or more area labels with the owners on the path lines that follow:
 
 ```
-# ServiceLabel: %<Label1>
-# AzureSdkOwners:                       @owner1
+# Area-WebSDK
+/src/WebSdk/ @vijayrkn
+/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/ @vijayrkn
 
-# ServiceLabel: %<Label1> %<Label2>
-# ServiceOwners:                        @svcowner1 @svcowner2
+# Area-ILLink Area-ReadyToRun
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets @dotnet/illink
 ```
+
+Owners come in two forms:
+
+- Individual owners use `@login` and can be assigned to an issue.
+- Team owners use `@dotnet/team` and cannot be issue assignees.
 
 **Matching uses bottom-to-top scanning with first-match-wins semantics:**
 
-1. Start from the END of the CODEOWNERS file and scan each line upward
-2. For each `# ServiceLabel:` entry, check if ALL labels listed in it (after each `%`) are present in the issue's predicted labels
-3. STOP at the first entry where all its labels match — this is the matching entry
-4. Use the AzureSdkOwners and/or ServiceOwners from that entry and any adjacent owner lines
+1. Resolve each selected `Area-*` label independently.
+2. Start from the END of `CODEOWNERS` and scan each line upward.
+3. For each heading containing one or more complete `Area-*` names, compare each name case-insensitively with the selected area label. A combined heading such as `# Area-ILLink Area-ReadyToRun` matches either named label.
+4. STOP at the first heading containing the selected area label. This is the matching section.
+5. From that heading, read downward and collect every owner on its path lines until the next heading containing `Area-*`. De-duplicate the owners, then separate individual owners from team owners.
 
-**Why this matters:** The file is structured so that more specific multi-label entries appear AFTER less specific entries. In bottom-to-top scanning, entries closer to the end of the file are encountered first. Multi-label entries placed after a catch-all are encountered before it, correctly overriding the catch-all
+**Why this matters:** A label may appear in more than one section. Starting from the end makes the later section win, preserving the Azure workflow's deterministic precedence instead of combining owners from competing sections.
 
-The following simplified excerpt illustrates the structure:
+**Example 1 — Selected label: `Area-Format`**
 
-```
-# --- Client libraries section (earlier in file) ---
+The scan finds the later `# Area-Format` section first and stops. The matching section owns `/src/BuiltInTools/dotnet-format` and lists only `@dotnet/roslyn-ide`, so leave the issue unassigned and add `needs team triage`. Do not continue to the earlier `# Area-Format` section.
 
-# AzureSdkOwners:                   @jsquire
-# ServiceLabel: %Event Hubs
-# ServiceOwners:                    @axisc @hmlam
+**Example 2 — Selected label: `Area-ILLink`**
 
-# --- Management catch-all ---
+The combined `# Area-ILLink Area-ReadyToRun` heading matches `Area-ILLink`. Its path lines list `@dotnet/illink` and `@dotnet/dotnet-cli`; because both are teams, leave the issue unassigned and add `needs team triage`.
 
-# ServiceLabel: %Mgmt
-# AzureSdkOwners:                   @ArthurMa1978
+If no section matches a selected area, use the repository's default team `@dotnet/dotnet-cli` for routing. Teams cannot be issue assignees.
 
-# --- Management-specific overrides (after catch-all) ---
-
-# ServiceLabel: %ARM %Mgmt
-# ServiceOwners:                    @Azure/arm-sdk-owners
-
-# ServiceLabel: %ARM - Templates %Mgmt
-# ServiceOwners:                    @armleads-azure
-```
-
-**Example 1 — Predicted labels: "ARM" + "Mgmt"**
-
-Scan starts from end of file upward:
-1. `%ARM - Templates %Mgmt` — requires "ARM - Templates" AND "Mgmt"; issue has "ARM" not "ARM - Templates" → no match, continue
-2. `%ARM %Mgmt` — requires "ARM" AND "Mgmt"; issue has both → ALL labels match ✅ STOP
-
-The `%Mgmt` catch-all is never reached because the more specific `%ARM %Mgmt` entry was encountered first (it appears after the catch-all in the file)
-
-**Outcome:** Matches `%ARM %Mgmt`. ServiceOwners: @Azure/arm-sdk-owners, no AzureSdkOwners. Add "Service Attention" label, no assignment, no @mention. If the issue is also tagged with the "customer-reported" label, add the "needs-team-attention" label
-
-**Example 2 — Predicted labels: "Event Hubs" + "Client"**
-
-Scan starts from end of file upward:
-1. All management-specific entries — each requires "Mgmt" or a management service; issue has "Client" not "Mgmt" → no match for any, continue
-2. `%Mgmt` catch-all — requires "Mgmt"; issue has "Client" → no match, continue
-3. `%Event Hubs` — requires only "Event Hubs"; issue has "Event Hubs" → ALL labels match ✅ STOP
-
-**Outcome:** Matches `%Event Hubs`. AzureSdkOwners: @jsquire, ServiceOwners: @axisc @hmlam. Assign @jsquire, @mention @jsquire in Step 6 comment. If the issue is also tagged with the "customer-reported" label, add the "needs-team-attention" label
-
-Note: There is no `%Client` catch-all entry in CODEOWNERS, so "Client" as a category label does not contribute to CODEOWNERS matching. The service label drives the match
-
-### Owner Routing Flow
+#### Owner routing flow
 
 ```
-IF a matching ServiceLabel entry is found in CODEOWNERS:
+IF a matching Area-* section is found:
 
-    IF AzureSdkOwners are listed for the matched entry:
-        IF a single AzureSdkOwner:
-            - Assign them to the issue using the `assign_to_user` tool
-        ELSE (multiple AzureSdkOwners):
-            - Pick one AzureSdkOwner at random and assign them using the `assign_to_user` tool
+  IF individual owners are listed in the matched section:
+    IF a single individual owner:
+      - Assign them to the issue using the `assign_to_user` tool.
+    ELSE (multiple individual owners):
+      - Pick one individual owner at random and assign them using the `assign_to_user` tool.
 
-        - IF the issue has the "customer-reported" label: Add the "needs-team-attention" label
-        - Record all AzureSdkOwners for Step 6
+    - Record all individual and team owners from the matched section for the triage comment.
 
-    ELSE IF only ServiceOwners are listed (no AzureSdkOwners):
-        - Add the "Service Attention" label
-        - IF the issue has the "customer-reported" label: Add the "needs-team-attention" label
-        - Leave the issue unassigned
-        - Record all ServiceOwners for Step 6
+  ELSE IF only team owners are listed:
+    - Add the `needs team triage` label.
+    - Leave the issue unassigned.
+    - Record all team owners from the matched section for the triage comment.
 
-    ELSE (matched entry has neither AzureSdkOwners nor ServiceOwners):
-        - Add the "needs-team-triage" label
+  ELSE (the matched section has no owners):
+    - Add the `needs team triage` label.
 
-ELSE (no ServiceLabel entry matches any of the issue's predicted labels):
-    - Add the "needs-team-triage" label
+ELSE (no Area-* section matches the selected label):
+  - Add the `needs team triage` label.
+  - Leave the issue unassigned.
+  - Record the default `@dotnet/dotnet-cli` team for the triage comment.
 ```
 
-### 6. Handle `untriaged`
+Resolve at most three selected areas. Assign at most one person per area and at most three people total. If the issue already has an assignee, do not add or replace assignees. Never assign a login taken only from issue text.
+
+Fold owner routing into the single triage comment in step 6; do not post a separate routing comment. Name assigned individuals and team owners, using code formatting for team handles unless a live mention is explicitly supported.
+
+### 5. Handle `untriaged`
 
 - Remove `untriaged` if an `Area-*` or type label was added, or an owner was assigned.
 - Otherwise leave `untriaged` in place.
 
-### 7. Verify, then write outputs
+### 6. Verify, then write outputs
 
 Before calling safe outputs, verify:
 
