@@ -180,24 +180,85 @@ public class DotnetRootResolverTests
     }
 
     [TestMethod]
-    public void ResolveHostfxrPath_SkipsPrereleaseDirectories()
+    public void ResolveHostfxrPath_FindsPrereleaseVersionDirectory()
     {
+        // On a preview-only install, host/fxr contains a single prerelease-named
+        // directory (e.g. "10.0.0-preview.5"). Version.TryParse can't parse that string,
+        // so the numeric core must be used instead of skipping the directory.
         string dotnetRoot = BuildPath(true, "dotnet");
         string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
         string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
-        string v900 = Path.Combine(fxrDir, "9.0.0");
-        string expectedPath = Path.Combine(v900, "hostfxr.dll");
+        string expectedPath = Path.Combine(preview, "hostfxr.dll");
 
-        // Version.TryParse fails for prerelease strings like "10.0.0-preview.5"
         string result = DotnetRootResolver.ResolveHostfxrPath(
             dotnetRoot: dotnetRoot,
             isWindows: true,
             isMacOS: false,
             directoryExists: _ => true,
-            getDirectories: _ => new[] { preview, v900 },
+            getDirectories: _ => new[] { preview },
             fileExists: _ => true);
 
-        // Should pick 9.0.0 since the preview dir is skipped
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_PicksHighestVersion_IncludingPrerelease()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string v900 = Path.Combine(fxrDir, "9.0.0");
+        string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
+        string expectedPath = Path.Combine(preview, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { v900, preview },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_PrefersStableOverPrereleaseOfSameCore()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string stable = Path.Combine(fxrDir, "10.0.0");
+        string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
+        string expectedPath = Path.Combine(stable, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { preview, stable },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_OrdersPrereleaseSegmentsNumerically()
+    {
+        // "preview.10" must sort after "preview.6"; a plain ordinal compare gets this wrong.
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string preview6 = Path.Combine(fxrDir, "10.0.0-preview.6");
+        string preview10 = Path.Combine(fxrDir, "10.0.0-preview.10");
+        string expectedPath = Path.Combine(preview10, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { preview6, preview10 },
+            fileExists: _ => true);
+
         Assert.AreEqual(expectedPath, result);
     }
 
