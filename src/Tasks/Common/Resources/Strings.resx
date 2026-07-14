@@ -1046,5 +1046,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</value>
     <comment>{StrBegins="NETSDK1242: "}</comment>
   </data>
-  <!-- The latest message added is MonoRuntimeNotSupportedForPlatform. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="RunCommandRequiresWindowsForNetFramework" xml:space="preserve">
+    <value>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</value>
+    <comment>{StrBegins="NETSDK1243: "}{Locked="{0}"}{Locked="{1}"}{Locked="TargetFramework"}{Locked="RunCommand"}</comment>
+  </data>
+  <!-- The latest message added is RunCommandRequiresWindowsForNetFramework. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

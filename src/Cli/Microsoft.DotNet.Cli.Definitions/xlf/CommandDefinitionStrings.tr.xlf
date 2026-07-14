@@ -748,6 +748,11 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
         <target state="translated">Uygulamayı çalıştırmak için kullanılacak cihaz kimliği.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescriptionForTest">
+        <source>The device identifier to use for running tests.</source>
+        <target state="new">The device identifier to use for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
         <target state="translated">CİHAZ</target>
@@ -776,6 +781,11 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
         <target state="translated">Uygulamayı çalıştırmak için kullanılabilir cihazları listeleyin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescriptionForTest">
+        <source>List available devices for running tests.</source>
+        <target state="new">List available devices for running tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">

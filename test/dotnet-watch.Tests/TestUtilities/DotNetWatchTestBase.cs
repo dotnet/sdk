@@ -69,11 +69,13 @@ public abstract partial class DotNetWatchTestBase
         => UpdateSourceFile(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)), testPath, testLine);
 
     /// <summary>
-    /// Replacement for <see cref="File.WriteAllText"/>, which fails to write to hidden file
+    /// Replacement for <see cref="File.WriteAllText"/>, which fails to write to hidden file.
+    /// Uses FileShare.Read so that dotnet-watch (via Roslyn workspace) can still read the file
+    /// while it's being written, avoiding IOException file-lock races.
     /// </summary>
     public static void WriteAllText(string path, string text)
     {
-        using var stream = File.Open(path, FileMode.OpenOrCreate);
+        using var stream = File.Open(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
 
         using (var writer = new StreamWriter(stream, Encoding.UTF8, leaveOpen: true))
         {

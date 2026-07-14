@@ -76,7 +76,15 @@ extends:
   parameters:
     containers:
       azureLinux30Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-build-amd64
+      # Cross-compilation prereq image (clang + /crossrootfs/arm64 sysroot) used by the Linux arm64
+      # AoT leg. NativeAOT cross-links dotnet-aot for linux-arm64 from an x64 host; the container
+      # provides the native toolchain + sysroot and sets ROOTFS_DIR, and the leg passes
+      # /p:CrossBuild=true so ILC emits --sysroot/--target.
+      azureLinuxCrossArm64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-cross-arm64
+        env:
+          ROOTFS_DIR: /crossrootfs/arm64
 
     sdl:
       sourceAnalysisPool:
@@ -165,6 +173,35 @@ extends:
               testRunnerAdditionalArguments: -class Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests
               publishXunitResults: true
 
+      ### AOT (win-arm64 cross-build) ###
+      # dotnet-aot is built with NativeAOT, which can cross-compile win-x64 -> win-arm64 (the MSVC
+      # arm64 linker and the RID-specific ILCompiler package handle the cross-link; no sysroot is
+      # required). This leg therefore BUILDS on the existing win-x64 pool with /p:CrossBuild=true and
+      # produces the dotnet-aot .dll plus its mstat/dgml size-analysis artifacts (that step is gated
+      # on runAoTTests). It is build-only (runTests: false): there is no wired windows arm64 Helix
+      # queue yet, so running the *.AoT.Tests on arm64 hardware is a follow-up pending a
+      # windows.11.arm64 queue. Runs for internal PRs and test builds.
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: windows.vs2022.amd64
+              os: windows
+            helixTargetQueue: windows.amd64.vs2026.pre.scout
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            populateInternalRuntimeVariables: true
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            windowsJobParameterSets:
+            - categoryName: AoT
+              runAoTTests: true
+              targetArchitecture: arm64
+              runtimeIdentifier: win-arm64
+              osProperties: /p:CrossBuild=true
+              runTests: false
+
       ############### LINUX ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
@@ -248,6 +285,37 @@ extends:
               osProperties: /p:OSName=linux-musl
               runTests: false
 
+      ### AOT (linux-arm64 cross-build) ###
+      # dotnet-aot is built with NativeAOT, which can cross-compile for linux-arm64 from an x64 host
+      # given a cross toolchain and target sysroot. This leg therefore runs on the regular x64 Linux
+      # pool inside the azurelinux cross-arm64 prereq container (which provides clang + the
+      # /crossrootfs/arm64 sysroot and sets ROOTFS_DIR) and passes /p:CrossBuild=true. Consistent
+      # with the other linux-arm64 legs, this only performs the build (the x64 AoT leg provides the
+      # running test coverage). Runs for internal PRs and test builds; official builds publish via
+      # the Official legs above and don't need it.
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: build.azurelinux.3.amd64
+              os: linux
+            helixTargetQueue: ubuntu.2204.amd64
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.
+            populateInternalRuntimeVariables: true
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            timeoutInMinutes: 90
+            linuxJobParameterSets:
+            - categoryName: AoT
+              container: azureLinuxCrossArm64
+              runAoTTests: true
+              targetArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
+              runTests: false
+
       ############### MACOS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
@@ -275,17 +343,20 @@ extends:
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
-      ### AOT (native arm64) ###
-      # The AoT leg builds dotnet-aot via NativeAOT, which cannot cross-compile, so it must
-      # run on native arm64 hardware (HostRid == TargetRid == osx-arm64) to produce the
-      # dotnet-aot .dylib and its mstat/dgml size-analysis output. Runs for internal PRs and
-      # test builds; official builds publish via the Official legs above and don't need it.
+      ### AOT (osx-arm64 cross-build) ###
+      # dotnet-aot is built with NativeAOT, which can cross-compile osx-x64 -> osx-arm64 (clang/link
+      # on macOS are multi-target and need no extra sysroot). This leg therefore BUILDS on the x64
+      # macOS pool (the Official osx-arm64 leg already cross-builds on macOS-latest/x64) with
+      # /p:CrossBuild=true. Because AoT tests are dispatched to Helix (runTests passes
+      # -test /p:CustomHelixTargetQueue=...), the *.AoT.Tests still execute on the osx.15.arm64
+      # Helix queue, so there is no macOS AoT test-coverage loss. Runs for internal PRs and test
+      # builds; official builds publish via the Official legs above and don't need it.
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
             pool:
               name: Azure Pipelines
-              vmImage: macOS-15-arm64
+              vmImage: macOS-latest
               os: macOS
             helixTargetQueue: osx.15.arm64
             oneESCompat:
@@ -298,6 +369,7 @@ extends:
               runAoTTests: true
               targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
+              osProperties: /p:CrossBuild=true
       ### ARM64 TESTBUILD ###
       - ${{ if and(or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')), eq(parameters.enableArm64Job, true)) }}:
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
