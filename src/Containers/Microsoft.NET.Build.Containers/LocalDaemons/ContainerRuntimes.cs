@@ -328,3 +328,44 @@ internal sealed class PodmanContainerRuntime(ContainerRuntimeOperations operatio
         }
     }
 }
+
+internal sealed class WslcContainerRuntime(ContainerRuntimeOperations operations, ILogger logger) : ContainerRuntimeBase(operations, logger)
+{
+    protected override string Command => ContainerRuntime.WslcCommand;
+
+    // Listing images verifies that WSLC can resolve and start its container session.
+    protected override string ProbeArguments => "image ls";
+
+    /// <inheritdoc />
+    public override ContainerRuntimeKind GetTelemetryValue() => ContainerRuntimeKind.Wslc;
+
+    /// <inheritdoc />
+    public override Task LoadAsync(
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+        => Operations.LoadFromFileAsync(
+            Command,
+            archivePath => ["image", "load", "--input", archivePath],
+            image,
+            sourceReference,
+            destinationReference,
+            ContainerArchive.WriteDockerImageToStreamAsync,
+            cancellationToken);
+
+    /// <inheritdoc />
+    public override Task LoadAsync(
+        MultiArchImage image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+        => Operations.LoadFromFileAsync(
+            Command,
+            archivePath => ["image", "load", "--input", archivePath],
+            image,
+            sourceReference,
+            destinationReference,
+            ContainerArchive.WriteMultiArchOciImageToStreamAsync,
+            cancellationToken);
+}

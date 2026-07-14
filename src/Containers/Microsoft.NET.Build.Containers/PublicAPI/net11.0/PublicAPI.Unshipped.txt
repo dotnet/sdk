@@ -1,5 +1,6 @@
 ﻿const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Docker = "Docker" -> string!
 const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Podman = "Podman" -> string!
+const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Wslc = "Wslc" -> string!
 Microsoft.NET.Build.Containers.BaseImageNotFoundException
 Microsoft.NET.Build.Containers.Constants
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputedContainerBaseImage.get -> string?

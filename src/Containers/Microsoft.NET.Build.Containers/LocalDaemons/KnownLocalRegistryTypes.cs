@@ -17,10 +17,13 @@ public static class KnownLocalRegistryTypes
     /// <summary>Bypasses runtime auto-detection and loads the image through Podman.</summary>
     public const string Podman = nameof(Podman);
 
+    /// <summary>Bypasses runtime auto-detection and loads the image through WSLC on Windows.</summary>
+    public const string Wslc = nameof(Wslc);
+
     /// <summary>
     /// Gets all values accepted by the <c>LocalRegistry</c> MSBuild property.
     /// </summary>
-    public static readonly string[] SupportedLocalRegistryTypes = [Docker, Podman];
+    public static readonly string[] SupportedLocalRegistryTypes = [Docker, Podman, Wslc];
 
     internal static ILocalRegistry CreateLocalRegistry(string? type, ILoggerFactory loggerFactory)
     {
@@ -33,6 +36,7 @@ public static class KnownLocalRegistryTypes
         {
             Podman => new ContainerRuntime(ContainerRuntime.PodmanCommand, loggerFactory),
             Docker => new ContainerRuntime(ContainerRuntime.DockerCommand, loggerFactory),
+            Wslc => new ContainerRuntime(ContainerRuntime.WslcCommand, loggerFactory),
             _ => throw new NotSupportedException(
                 Resource.FormatString(
                     nameof(Strings.UnknownLocalRegistryType),

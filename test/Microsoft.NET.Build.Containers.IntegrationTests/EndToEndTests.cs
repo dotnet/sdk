@@ -44,7 +44,7 @@ public class EndToEndTests : SdkTest, IDisposable
         FileInfo[] Files = d.GetFiles("*.csproj"); //Getting .csproj files
         string csprojFilename = Files[0].Name; // There is only one
         string text = File.ReadAllText(Path.Combine(path, csprojFilename));
-        text = text.Replace("net10.0", _oldFramework);
+        text = text.Replace(ToolsetInfo.CurrentTargetFramework, _oldFramework);
         File.WriteAllText(Path.Combine(path, csprojFilename), text);
     }
 
@@ -136,6 +136,39 @@ public class EndToEndTests : SdkTest, IDisposable
                 .Execute()
                 .Should().Pass();
         }
+    }
+
+    [TestMethod]
+    [WslcAvailableCondition]
+    public void EndToEndWithWslcLocalLoad()
+    {
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
+
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        new DotnetCommand(
+            Log,
+            "publish",
+            "/t:PublishContainer",
+            "-f", _oldFramework,
+            "-r", "linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            $"/p:LocalRegistry={KnownLocalRegistryTypes.Wslc}",
+            "/p:EnableSdkContainerSupport=true",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new RunExeCommand(Log, ContainerRuntime.WslcCommand, "run", "--rm", $"{imageName}:{imageTag}")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+
+        newProjectDir.Delete(recursive: true);
     }
 
     [TestMethod]

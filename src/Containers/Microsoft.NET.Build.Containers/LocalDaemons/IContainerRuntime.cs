@@ -9,7 +9,9 @@ internal enum ContainerRuntimeKind
 
     Docker,
 
-    Podman
+    Podman,
+
+    Wslc
 }
 
 /// <summary>

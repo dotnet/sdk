@@ -34,7 +34,7 @@ public class DockerDaemonTests : IDisposable
         try
         {
             Environment.SetEnvironmentVariable("DOCKER_HOST", "tcp://123.123.123.123:12345");
-            var available = await new ContainerRuntime(_loggerFactory).IsAvailableAsync(default).ConfigureAwait(false);
+            var available = await new ContainerRuntime(_loggerFactory, probePlatformNativeCli: false).IsAvailableAsync(default).ConfigureAwait(false);
             Assert.IsFalse(available, "No daemon should be listening at that port");
         }
         finally
@@ -49,16 +49,18 @@ public class DockerDaemonTests : IDisposable
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task Can_detect_when_daemon_is_running()
     {
-        var available = await new ContainerRuntime(_loggerFactory).IsAvailableAsync(default).ConfigureAwait(false);
+        var available = await new ContainerRuntime(_loggerFactory, probePlatformNativeCli: false).IsAvailableAsync(default).ConfigureAwait(false);
         Assert.IsTrue(available, "Should have found a working daemon");
     }
 
     [TestMethod]
-    [DataRow(true, false, false, (int)ContainerRuntimeKind.Docker)]
-    [DataRow(false, true, false, (int)ContainerRuntimeKind.Podman)]
-    [DataRow(true, true, false, (int)ContainerRuntimeKind.Docker)]
-    [DataRow(true, true, true, (int)ContainerRuntimeKind.Podman)]
+    [DataRow(true, true, true, true, false, (int)ContainerRuntimeKind.Wslc)]
+    [DataRow(false, true, true, false, false, (int)ContainerRuntimeKind.Docker)]
+    [DataRow(false, false, true, true, false, (int)ContainerRuntimeKind.Docker)]
+    [DataRow(false, false, true, true, true, (int)ContainerRuntimeKind.Podman)]
     public void Selects_preferred_available_command(
+        bool isWindows,
+        bool wslcAvailable,
         bool dockerAvailable,
         bool podmanAvailable,
         bool isPodmanAlias,
@@ -67,19 +69,71 @@ public class DockerDaemonTests : IDisposable
         ContainerRuntime runtime = CreateRuntime(
             command => command switch
             {
+                ContainerRuntime.WslcCommand => wslcAvailable,
                 ContainerRuntime.DockerCommand => dockerAvailable,
                 ContainerRuntime.PodmanCommand => podmanAvailable,
                 _ => false
             },
+            isWindows,
             isPodmanAlias);
 
         Assert.AreEqual((ContainerRuntimeKind)expectedRuntime, runtime.GetTelemetryValue());
     }
 
-    private ContainerRuntime CreateRuntime(Func<string, bool> isAvailable, bool isPodmanAlias)
+    [TestMethod]
+    public void Does_not_probe_wslc_outside_windows()
+    {
+        var probedCommands = new System.Collections.Concurrent.ConcurrentBag<string>();
+        ContainerRuntime runtime = new(
+            command: null,
+            _loggerFactory,
+            (command, _, _) =>
+            {
+                probedCommands.Add(command);
+                return Task.FromResult(command == ContainerRuntime.WslcCommand);
+            },
+            () => false,
+            isWindows: false);
+
+        Assert.AreEqual(ContainerRuntimeKind.Unknown, runtime.GetTelemetryValue());
+        Assert.DoesNotContain(ContainerRuntime.WslcCommand, probedCommands);
+    }
+
+    [TestMethod]
+    public async Task Uses_wslc_specific_probe_command()
+    {
+        string? probedArguments = null;
+        ContainerRuntime runtime = new(
+            ContainerRuntime.WslcCommand,
+            _loggerFactory,
+            (_, arguments, _) =>
+            {
+                probedArguments = arguments;
+                return Task.FromResult(true);
+            },
+            () => false,
+            isWindows: true);
+
+        Assert.IsTrue(await runtime.IsAvailableAsync(default));
+        Assert.AreEqual("image ls", probedArguments);
+    }
+
+    [TestMethod]
+    [DataRow(KnownLocalRegistryTypes.Wslc, (int)ContainerRuntimeKind.Wslc)]
+    public void Creates_explicit_platform_native_registry(string registryType, int expectedRuntime)
+    {
+        ILocalRegistry registry = KnownLocalRegistryTypes.CreateLocalRegistry(registryType, _loggerFactory);
+
+        ContainerRuntime runtime = (ContainerRuntime)registry;
+        Assert.AreEqual((ContainerRuntimeKind)expectedRuntime, runtime.GetTelemetryValue());
+        Assert.Contains(registryType, KnownLocalRegistryTypes.SupportedLocalRegistryTypes);
+    }
+
+    private ContainerRuntime CreateRuntime(Func<string, bool> isAvailable, bool isWindows, bool isPodmanAlias)
         => new(
             command: null,
             _loggerFactory,
             (command, _, _) => Task.FromResult(isAvailable(command)),
-            () => isPodmanAlias);
+            () => isPodmanAlias,
+            isWindows);
 }

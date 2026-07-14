@@ -36,6 +36,19 @@ public sealed class PodmanCliCondition : ConditionBaseAttribute
     public override bool IsConditionMet => DockerCliStatus.Runtime == ContainerRuntimeKind.Podman;
 }
 
+public sealed class WslcAvailableCondition : ConditionBaseAttribute
+{
+    public WslcAvailableCondition()
+        : base(ConditionMode.Include)
+    {
+        IgnoreMessage = "This test requires Windows with an available WSLC container environment.";
+    }
+
+    public override string GroupName => nameof(WslcAvailableCondition);
+
+    public override bool IsConditionMet => WslcCliStatus.IsAvailable;
+}
+
 public sealed class ContainerdStoreUnavailableCondition : ConditionBaseAttribute
 {
     public ContainerdStoreUnavailableCondition()
@@ -73,6 +86,16 @@ public sealed class DockerSupportsArchCondition : ConditionBaseAttribute
            && DockerSupportsArchHelper.DaemonSupportsArch(_arch);
 }
 
+internal static class WslcCliStatus
+{
+    private static readonly Lazy<bool> s_isAvailable = new(
+        () => OperatingSystem.IsWindows()
+              && new ContainerRuntime(ContainerRuntime.WslcCommand, new Microsoft.NET.TestFramework.TestLoggerFactory()).IsAvailable(),
+        LazyThreadSafetyMode.ExecutionAndPublication);
+
+    public static bool IsAvailable => s_isAvailable.Value;
+}
+
 internal static class DockerCliStatus
 {
     private static readonly Lazy<(bool IsAvailable, ContainerRuntimeKind Runtime)> s_status = new(
@@ -90,7 +113,7 @@ internal static class DockerCliStatus
 
     private static (bool IsAvailable, ContainerRuntimeKind Runtime) GetStatus()
     {
-        ContainerRuntime runtime = new(new Microsoft.NET.TestFramework.TestLoggerFactory());
+        ContainerRuntime runtime = new(new Microsoft.NET.TestFramework.TestLoggerFactory(), probePlatformNativeCli: false);
         bool isAvailable = runtime.IsAvailable();
         return (isAvailable, runtime.GetTelemetryValue());
     }
