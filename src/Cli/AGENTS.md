@@ -15,7 +15,9 @@ A `dotnet` command or option spans three cooperating projects:
 
 The same definition tree is parsed by both the managed and AOT hosts, so
 parser/option/description changes flow to AOT and `--help` automatically. Keep heavy
-deps out of `Definitions` and behind `#if !CLI_AOT` / `[RequiresDynamicCode]`.
+deps out of `Definitions`. In the managed CLI, code that isn't AOT-safe is excluded
+from the AOT build with `#if !CLI_AOT` (the AOT project links files from `dotnet` and
+compiles with `CLI_AOT` defined).
 
 ## Where things live
 
