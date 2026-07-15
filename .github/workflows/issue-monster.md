@@ -27,6 +27,11 @@ on:
           const { owner, repo } = context.repo;
           const MAX_ISSUES_WITH_BODY_CONTEXT = 8;
           const BODY_SNIPPET_MAX_LENGTH = 600;
+          // Cap how many issues we fetch full details for, and how many detail
+          // requests run at once, so a scheduled run does not fan out up to 100
+          // concurrent REST + GraphQL calls and trip GitHub secondary rate limiting.
+          const MAX_ISSUES_TO_INSPECT = 40;
+          const DETAIL_FETCH_CONCURRENCY = 5;
           const SERVICING_BRANCH_PATTERN = /^release\/\d{1,2}\.0\.[1-4]xx$/;
           const requestedBaseBranch = `${{ inputs.base_branch || 'auto' }}`.trim();
           const autoSelectBaseBranch = requestedBaseBranch === '' || requestedBaseBranch.toLowerCase() === 'auto';
@@ -175,8 +180,7 @@ on:
             // Fetch full details for each issue to get labels, assignees, sub-issues, and linked PRs
             // Track integrity-filtered issues to emit a diagnostic summary
             const integrityFilteredIssues = [];
-            const issuesWithDetails = (await Promise.all(
-              response.data.items.map(async (issue) => {
+            const fetchIssueDetails = async (issue) => {
                 // Fetch full issue details — some issues may be blocked by integrity policy
                 let fullIssue;
                 try {
@@ -264,8 +268,23 @@ on:
                   subIssuesCount,
                   linkedPRs
                 };
-              })
-            )).filter(Boolean); // Remove null entries (integrity-filtered or otherwise skipped)
+            };
+
+            // Only inspect the most recent candidates (search is sorted by created desc)
+            // to bound the total number of detail requests per run.
+            const issuesToInspect = response.data.items.slice(0, MAX_ISSUES_TO_INSPECT);
+            if (response.data.items.length > issuesToInspect.length) {
+              core.info(`Inspecting the ${issuesToInspect.length} most recent of ${response.data.items.length} matching issues to stay within rate limits`);
+            }
+
+            // Fetch details in bounded-concurrency batches rather than all at once.
+            const detailedIssues = [];
+            for (let batchStart = 0; batchStart < issuesToInspect.length; batchStart += DETAIL_FETCH_CONCURRENCY) {
+              const batch = issuesToInspect.slice(batchStart, batchStart + DETAIL_FETCH_CONCURRENCY);
+              const batchResults = await Promise.all(batch.map(fetchIssueDetails));
+              detailedIssues.push(...batchResults);
+            }
+            const issuesWithDetails = detailedIssues.filter(Boolean); // Remove null entries (integrity-filtered or otherwise skipped)
 
             // Emit diagnostic summary for integrity-filtered issues
             if (integrityFilteredIssues.length > 0) {
