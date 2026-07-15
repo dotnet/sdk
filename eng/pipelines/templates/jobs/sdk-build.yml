@@ -19,6 +19,11 @@ parameters:
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
+  # Runs the NativeAOT CLI tests (test/dotnet-aot.Tests) on the build agent after the build.
+  # These publish the test assembly as a NativeAOT binary and run it on the same architecture,
+  # validating the AOT CLI entry-point code under NativeAOT compilation. This is distinct from
+  # runAoTTests, which runs the Blazor WebAssembly AoT tests on Helix.
+  runNativeAotCliTests: false
   ### MSBUILD ###
   targetArchitecture: x64
   publishArgument: ''
@@ -102,6 +107,7 @@ jobs:
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
+          ${{ parameters.osProperties }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
@@ -183,6 +189,45 @@ jobs:
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
             TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
+
+    ############### NATIVE AOT CLI TESTS ###############
+    # Publishes test/dotnet-aot.Tests as a NativeAOT binary and runs it on the build agent.
+    # NativeAOT binaries must run on the same architecture they are built for, so the scripts
+    # auto-detect the agent's host RID (via .dotnet/dotnet --info) rather than using the build's
+    # target RID. On cross-architecture legs (e.g. the macOS leg cross-builds osx-arm64 on an
+    # x64 host) this runs the tests for the host architecture. Runs after the Helix queue step
+    # so it never prevents the broader Helix test submission.
+    - ${{ if eq(parameters.runNativeAotCliTests, true) }}:
+      - ${{ if eq(parameters.pool.os, 'windows') }}:
+        - powershell: |
+            test/dotnet-aot.Tests/run-aot-tests.ps1 `
+              -Configuration $(buildConfiguration) `
+              -Trx `
+              -ResultsDirectory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
+          displayName: 🟣 Run NativeAOT CLI Tests
+      - ${{ else }}:
+        - script: |
+            chmod +x test/dotnet-aot.Tests/run-aot-tests.sh
+            test/dotnet-aot.Tests/run-aot-tests.sh \
+              --configuration $(buildConfiguration) \
+              --trx \
+              --results-directory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
+          displayName: 🟣 Run NativeAOT CLI Tests
+          # The CLI's --cli-schema rendering evaluates a shell-completion default that requires
+          # SHELL to be set; the bare AzDO script task does not export it, so set it explicitly.
+          env:
+            SHELL: /bin/bash
+
+      - task: PublishTestResults@2
+        displayName: 🟣 Publish NativeAOT CLI Test Results
+        inputs:
+          testResultsFormat: VSTest
+          testResultsFiles: artifacts/TestResults/$(buildConfiguration)/dotnet-aot.Tests.trx
+          testRunTitle: NativeAOT CLI ($(System.PhaseName))
+          buildPlatform: ${{ parameters.targetArchitecture }}
+          buildConfiguration: $(buildConfiguration)
+        continueOnError: true
+        condition: always()
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:
