@@ -113,9 +113,9 @@ Follow these steps in order.
 
 ### 1. Read and check for prior triage
 
-Use the GitHub MCP `issue_read` tool to read the issue title, body, author, labels, assignees, and comments.
+Read the issue title, body, author, labels, assignees, and comments. Also list the repository's available labels.
 
-- If `issue_read` fails, retry that tool once. If both attempts fail because the GitHub tool, authentication, or repository is unavailable, call `report_incomplete` with the exact tool error and stop. Do not call `missing_data` for a tool or infrastructure failure.
+- If the read fails, retry once. Use `missing_data` only if both attempts fail to return a title and body.
 - If either a title or body is returned, treat the issue as readable; never report it as filtered, blocked, or missing.
 - If the issue already has an `Area-*` label and an assignee, or this workflow already posted a triage comment, call `noop` and stop.
 
