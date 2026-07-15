@@ -357,7 +357,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Arrange
             string sdkFeatureBand = "6.0.300";
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
             var emptyInstalledManifestsDir = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.200");
