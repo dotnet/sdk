@@ -177,12 +177,6 @@ static unsafe partial class NativeEntryPoint
             // can use it instead of re-probing PATH / environment for the dotnet installation.
             DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
 
-            // Try the AOT-compiled path for supported commands. This is enabled by default on all
-            // platforms. Users opt out by setting DOTNET_CLI_ENABLEAOT to a falsy value
-            // (false/0/no/off), which routes every invocation straight to the managed CLI below.
-            // (The command-line parsing crash that previously blocked macOS and Linux,
-            // https://github.com/dotnet/command-line-api/issues/2812, has been fixed upstream in
-            // https://github.com/dotnet/command-line-api/pull/2820 and flowed into the SDK.)
             if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: true))
             {
                 ParseResult? parseResult = null;
@@ -223,8 +217,6 @@ static unsafe partial class NativeEntryPoint
                                 exitCode = CommandInvocation.ExecuteInternalCommand(parseResult);
                                 success = true;
                                 aotHandledInProcess = true;
-                                // The built-in command ran in-process (no managed fallback), so emit the same
-                                // top-level parser telemetry the managed CLI sends from Program.ProcessArgsAndExecute.
                                 SendAotParserTelemetry(parseResult, globalJsonState);
                                 return exitCode;
                             }
@@ -278,8 +270,7 @@ static unsafe partial class NativeEntryPoint
         {
             if (aotHandledInProcess && TelemetryClient is Telemetry.TelemetryClient telemetryClient)
             {
-                // Mirror the managed CLI (Program.cs finally): synchronously record the command/finish
-                // telemetry event with the exit code before the activity stops.
+                // Mirror the managed CLI behavior for compat (Program.cs finally)
                 telemetryClient.ThreadBlockingTrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } });
             }
 
