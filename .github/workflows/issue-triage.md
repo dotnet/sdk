@@ -43,76 +43,8 @@ safe-outputs:
   mentions:
     allowed-collaborators: true
     allow-context: true
-    max: 100
+    max: 50
     allowed:
-      - "0101"
-      - "AbhitejJohn"
-      - "abonie"
-      - "agocke"
-      - "akhera99"
-      - "akoeplinger"
-      - "aortiz-msft"
-      - "azat-msft"
-      - "baronfel"
-      - "bartonjs"
-      - "brettfo"
-      - "cathysull"
-      - "chsienki"
-      - "dariatiurina"
-      - "davidwengier"
-      - "dibarbet"
-      - "donnie-msft"
-      - "dsplaisted"
-      - "dsyme"
-      - "dtivel"
-      - "DustinCampbell"
-      - "Evangelink"
-      - "genlu"
-      - "halter73"
-      - "ilonatommy"
-      - "JanKrivanek"
-      - "jaredpar"
-      - "jasonmalinowski"
-      - "javiercn"
-      - "jebriede"
-      - "jeffhandley"
-      - "jeffkl"
-      - "joeloff"
-      - "JoeRobich"
-      - "jozkee"
-      - "jtschuster"
-      - "kartheekp-ms"
-      - "krwq"
-      - "lbussell"
-      - "lewing"
-      - "MackinnonBuck"
-      - "maraf"
-      - "marcpopMSFT"
-      - "marek-safar"
-      - "martinrrm"
-      - "MichaelSimons"
-      - "MiYanni"
-      - "mthalman"
-      - "mwiemer-microsoft"
-      - "nagilson"
-      - "Nigusu-Allehu"
-      - "nkolev92"
-      - "nohwnd"
-      - "oroztocil"
-      - "pavelsavara"
-      - "peterwald"
-      - "radekdoulik"
-      - "rbhanda"
-      - "richlander"
-      - "sbomer"
-      - "T-Gro"
-      - "tannergooding"
-      - "vitek-karas"
-      - "vlada-shubina"
-      - "vzarytovskii"
-      - "webreidi"
-      - "wtgodbe"
-      - "zivkan"
       - "dotnet/area-infrastructure-libraries"
       - "dotnet/aspnet-blazor-eng"
       - "dotnet/dotnet-analyzers"
@@ -352,7 +284,8 @@ Fold owner routing into the single triage comment in step 6; do not post a separ
 
 ### 5. Handle `untriaged`
 
-- Remove `untriaged` if an `Area-*` or type label was added, or an owner was assigned.
+- If `untriaged` is currently present, remove it when an `Area-*` or type label was added, or an owner was assigned.
+- If `untriaged` is not present, do not call `remove_labels` for it and do not claim it was removed.
 - Otherwise leave `untriaged` in place.
 
 ### 6. Verify, then write outputs
