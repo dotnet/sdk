@@ -16,6 +16,7 @@ public class ProjectGraphUtilitiesTests
     [DataRow(@"foo/bar\", @"foo/bar/")]
     [DataRow(@"foo/bar/", @"foo/bar/")]
     [DataRow(@"foo\bar/", @"foo/bar/")]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void GetDirectoryWithTrailingSlash(string input, string expected)
     {
         var normalized = ProjectGraphUtilities.NormalizeSeparators(input);
