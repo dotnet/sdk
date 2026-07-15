@@ -355,12 +355,12 @@ This confidence value belongs in the comment; do not create or apply a repositor
 </details>
 
 <details open>
-<summary><strong>Confidence</strong></summary>
+<summary><strong><`🟩`, `🟨`, or `🟥`> Confidence</strong></summary>
 
-<`🟩 high`, `🟨 medium`, or `🟥 low`> — <brief reason for the confidence classification.>
+<`high`, `medium`, or `low`> — <brief reason for the confidence classification.>
 </details>
 ```
 
-Preserve the heading, blank lines, `<details open>` markup, bold field names, and field order. Keep only the field name inside each `<summary>`; Markdown formatting is unreliable there. Put every value in the details body, where GitHub renders Markdown. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review. Render every label as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added; Assignment includes an additional explanation only for a successful lower-load override. Do not mention unassigned individuals outside the code-formatted Assignment override explanation. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
+Preserve the heading, blank lines, `<details open>` markup, bold field names, and field order. Keep only the field name inside each `<summary>`, except that the Confidence summary starts with its classification emoji; Markdown formatting is unreliable there. Put every other value in the details body, where GitHub renders Markdown. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review. Render every label as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added; Assignment includes an additional explanation only for a successful lower-load override. Do not mention unassigned individuals outside the code-formatted Assignment override explanation. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.
