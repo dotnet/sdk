@@ -195,7 +195,7 @@ Owners come in two forms:
 
 #### Expanded team membership snapshot
 
-The following snapshot was retrieved from the `dotnet` GitHub organization on 2026-07-14. It includes members inherited through child teams. Use these usernames only to expand a team handle found in a matched CODEOWNERS section into individual assignment candidates. Keep the original team handle as the owning team.
+The following snapshot was retrieved from the `dotnet` GitHub organization on 2026-07-14. It includes members inherited through child teams. Use these usernames only to expand a team handle found in a matched CODEOWNERS section into individual assignment candidates. Retain the original team handle for the assignment output.
 
 
 | CODEOWNERS team | Expanded individual members, including child teams |
@@ -242,7 +242,7 @@ Build one de-duplicated individual candidate set from:
 - individual owners listed directly in all matched CODEOWNERS sections
 - individual members from the snapshot for every team owner in those matched sections
 
-Keep the original team handles separate as owning teams.
+Keep the original team handles separate from individual candidates.
 
 If there is more than one individual candidate:
 
@@ -263,22 +263,22 @@ IF one or more individual candidates are found directly or through the snapshot:
   - Apply the assignability preflight and sampled load-balancing rules.
   - If an assignable candidate is selected, assign exactly that individual using the `assign_to_user` tool.
   - Otherwise, add the `needs team triage` label and leave the issue unassigned.
-  - Record only the team owners from the matched sections for the triage comment. Do not mention unassigned individual candidates.
+  - Record only the team owners from the matched sections in the Assignment output. Do not mention unassigned individual candidates.
 
 ELSE IF team owners are listed but none can be expanded through the snapshot:
   - Add the `needs team triage` label.
   - Leave the issue unassigned.
-  - Record all team owners from the matched sections in **Owning Team**.
+  - Record all team owners from the matched sections in the Assignment output.
 
 ELSE (no Area-* section matches any selected label, or the matched sections have no owners):
   - Add the `needs team triage` label.
   - Leave the issue unassigned.
-  - Record the default `@dotnet/dotnet-cli` team in **Owning Team**.
+  - Record the default `@dotnet/dotnet-cli` team in the Assignment output.
 ```
 
 Resolve at most three selected areas. If the issue already has an assignee, do not add or replace assignees.
 
-Fold owner routing into the single triage comment in step 6; do not post a separate routing comment. The selected individual is shown only in **Assignment** and is notified by the assignment itself. Do not mention any other individual. In **Owning Team**, list only the matched team handle(s). Write team handles as raw @dotnet/team mentions.
+Fold owner routing into the single triage comment in step 6; do not post a separate routing comment. In **Assignment**, show the selected individual and the matched team handle(s) as `<@selected | @team handles>`. The selected individual is notified by the assignment itself. Do not mention any other individual. Write team handles as raw @dotnet/team mentions.
 
 ### 5. Handle `untriaged`
 
@@ -323,7 +323,7 @@ Classify confidence in the selected labels and routing as:
 <details open>
 <summary><strong>💻 Assignment</strong></summary>
 
-<@individual selected for assignment, or `none`>
+<@individual selected for assignment, or `none`> | <@team handles, or `none`>
 
 <details>
 <summary><strong>Load balancing</strong></summary>
@@ -333,18 +333,12 @@ Classify confidence in the selected labels and routing as:
 </details>
 
 <details open>
-<summary><strong>Owning Team</strong></summary>
-
-<@team handles, or `none`>
-</details>
-
-<details open>
 <summary><strong><`🟩`, `🟨`, or `🟥`> Confidence</strong></summary>
 
 <`high`, `medium`, or `low`>: <One sentence reason for the confidence classification of up to 25 words.>
 </details>
 ```
 
-Preserve the heading, blank lines, `<details open>` markup, bold field names, and field order. Keep only the field name inside each top-level `<summary>`, except that the Confidence summary starts with its classification emoji; Markdown formatting is unreliable there. Put assignment and owning-team handles only in their details bodies, never in a `<summary>`. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review. Put all labels on one line separated by one space, rendering each as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added. Assignment includes the nested **Load balancing** details subsection only for a successful lower-load override; otherwise omit the entire subsection. Do not mention unassigned individuals outside that code-formatted subsection. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
+Preserve the heading, blank lines, `<details open>` markup, bold field names, and field order. Keep only the field name inside each top-level `<summary>`, except that the Confidence summary starts with its classification emoji; Markdown formatting is unreliable there. Put assignment and team handles only in the Assignment details body, never in a `<summary>`. Use `none` rather than omitting either side of the Assignment separator. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review. Put all labels on one line separated by one space, rendering each as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added. Assignment includes the nested **Load balancing** details subsection only for a successful lower-load override; otherwise omit the entire subsection. Do not mention unassigned individuals outside that code-formatted subsection. Write team handles as raw mentions; safe outputs decides whether they can remain live.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.
