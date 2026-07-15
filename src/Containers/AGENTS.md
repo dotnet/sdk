@@ -16,8 +16,10 @@ feature (`Microsoft.NET.Build.Containers`).
 - **User-facing config is `Container*` MSBuild properties**
 - **Diagnostics use `CONTAINER####` codes** — a self-contained scheme, *not* the
   `NETSDK####` sequence from `src/Tasks`.
-- **Registry behavior is tuned via `DOTNET_CONTAINER_*` env vars**, each with a legacy
-  `SDK_CONTAINER_*` alias — keep both when adding one.
+- **Registry behavior is tuned via `DOTNET_CONTAINER_*` env vars.** Many (older) ones
+  also carry a legacy `SDK_CONTAINER_*` alias; newer ones (e.g. the push/pull
+  credentials, `DOTNET_CONTAINER_INSECURE_REGISTRIES`) are `DOTNET_CONTAINER_*`-only.
+  Check the existing constant before assuming an alias exists.
 
 ## Tests
 
