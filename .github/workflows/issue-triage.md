@@ -43,7 +43,25 @@ safe-outputs:
     create-issue: false
   report-incomplete:
     create-issue: false
-  mentions: true
+  mentions:
+    allowed-collaborators: true
+    allow-context: true
+    max: 50
+    allowed:
+      - dotnet/area-infrastructure-libraries
+      - dotnet/aspnet-blazor-eng
+      - dotnet/dotnet-analyzers
+      - dotnet/dotnet-cli
+      - dotnet/dotnet-testing-admin
+      - dotnet/dotnetup
+      - dotnet/fsharp
+      - dotnet/illink
+      - dotnet/net-sdk-workload-contributors
+      - dotnet/nuget-team
+      - dotnet/razor-tooling
+      - dotnet/roslyn-ide
+      - dotnet/sdk-container-builds-maintainers
+      - dotnet/templating-engine-maintainers
   add-labels:
     max: 6
     target: "${{ github.event.issue.number || github.event.inputs.issue_number }}"
