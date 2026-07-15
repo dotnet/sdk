@@ -61,7 +61,7 @@ internal static class ProjectGraphUtilities
     public static string GetAssemblyName(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetName);
 
-    private static string NormalizeSeparators(string path)
+    internal static string NormalizeSeparators(string path)
         => Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/');
 
     public static string? GetIntermediateOutputDirectory(this ProjectInstance project)
