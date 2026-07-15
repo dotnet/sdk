@@ -55,6 +55,7 @@ safe-outputs:
       - "dotnet/dotnetup"
       - "dotnet/fsharp"
       - "dotnet/illink"
+      - "dotnet/net-sdk-workload-contributors"
       - "dotnet/nuget-team"
       - "dotnet/razor-tooling"
       - "dotnet/roslyn-ide"
@@ -198,6 +199,7 @@ This is temporary instruction context, not a live membership lookup. Do not infe
 | `@dotnet/nuget-team` | `@nkolev92`, `@zivkan`, `@jebriede`, `@dtivel`, `@jeffkl`, `@martinrrm`, `@donnie-msft`, `@kartheekp-ms`, `@aortiz-msft`, `@Nigusu-Allehu` |
 | `@dotnet/fsharp` | `@0101`, `@brettfo`, `@vzarytovskii`, `@dsyme`, `@abonie`, `@T-Gro` |
 | `@dotnet/dotnet-testing-admin` | `@JanKrivanek`, `@nohwnd`, `@cathysull`, `@Evangelink`, `@azat-msft` |
+| `@dotnet/net-sdk-workload-contributors` | `@lewing`, `@dsplaisted`, `@rolfbjarne`, `@Redth`, `@steveisok`, `@baronfel`, `@jonathanpeppers`, `@joeloff`, `@marcpopMSFT`, `@MiYanni`, `@nagilson` |
 | `@dotnet/templating-engine-maintainers` | `@joeloff`, `@marcpopMSFT`, `@MiYanni` |
 | `@dotnet/illink` | `@marek-safar`, `@agocke`, `@sbomer`, `@vitek-karas`, `@jtschuster` |
 | `@dotnet/roslyn-ide` | `@peterwald`, `@jaredpar`, `@jasonmalinowski`, `@JoeRobich`, `@dibarbet`, `@AbhitejJohn`, `@akhera99`, `@webreidi`, `@mwiemer-microsoft` |
