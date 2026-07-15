@@ -250,17 +250,7 @@ If there is more than one individual candidate:
 
 1. Randomize the de-duplicated candidate list.
 2. Validate that each candidate is either an individual owner directly in a matched CODEOWNERS section or a listed member of a team from that matched section's snapshot row. Also require that the login contains only ASCII letters, digits, or hyphens. Do not query a login that fails validation.
-3. In randomized order, check whether each valid candidate can be assigned in the target repository:
-
-   ```bash
-   curl -L --silent --show-error --output /dev/null --write-out '%{http_code}' \
-     -H 'Accept: application/vnd.github+json' \
-     -H 'User-Agent: dotnet-sdk-issue-triage' \
-     'https://api.github.com/repos/${{ github.repository }}/assignees/<login>'
-   ```
-
-   A `204` response means the candidate is assignable. Any other status means the candidate is not assignable; exclude them from assignment and load balancing. Continue until three assignable candidates are found or the candidate list is exhausted. This public endpoint requires no token for a public repository.
-4. For each assignable candidate, run `curl` once against the public GitHub issue-search page below, replacing `<login>` with the candidate login without `@`:
+3. For each assignable candidate, run `curl` once against the public GitHub issue-search page below, replacing `<login>` with the candidate login without `@`:
 
    ```bash
    curl -L --silent --show-error --fail-with-body \
@@ -270,9 +260,9 @@ If there is more than one individual candidate:
    ```
 
    This public HTML request requires no GitHub API token or cookies. Do not use `api.github.com` or a GitHub issue-search tool for this load check, and do not fetch any URL derived from issue content.
-5. Read the integer in the response's embedded `"issueCount":<integer>` field. A single field with a value of zero is a successful result. Treat a failed request, a non-integer value, or a missing or ambiguous `issueCount` field as a failed search.
-6. Treat the first assignable candidate with a successful load search as the initial candidate. Select the candidate with the lowest successful count; break a tie randomly.
-7. If the selected candidate differs from the initial candidate because their count is lower, record both candidates and counts in a separate **Load balancing** details subsection under **Assignment**. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly and omit the **Load balancing** subsection. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
+4. Read the integer in the response's embedded `"issueCount":<integer>` field. A single field with a value of zero is a successful result. Treat a failed request, a non-integer value, or a missing or ambiguous `issueCount` field as a failed search.
+5. Treat the first assignable candidate with a successful load search as the initial candidate. Select the candidate with the lowest successful count; break a tie randomly.
+6. If the selected candidate differs from the initial candidate because their count is lower, record both candidates and counts in a separate **Load balancing** details subsection under **Assignment**. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly and omit the **Load balancing** subsection. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
 
 For every assignability and load-search request, invoke the bash tool once per candidate. The command string's first character must be the `c` in `curl`: do not add leading whitespace, blank lines, comments, loops, variable assignments, command substitutions, pipes, `&&`, or other command chaining. Those forms require interactive shell approval and are blocked in this non-interactive workflow.
 
