@@ -18,6 +18,22 @@ on:
       if: github.event_name == 'issues' && github.event.action == 'opened'
       run: sleep 120
   roles: all
+post-steps:
+  - name: Fail incomplete triage
+    if: always()
+    env:
+      GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
+    run: |
+      node - "$GH_AW_SAFE_OUTPUTS" <<'NODE'
+      const fs = require("fs");
+      const outputPath = process.argv[2];
+      if (!fs.existsSync(outputPath)) process.exit(0);
+      const incomplete = fs.readFileSync(outputPath, "utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse).some(({ type }) => type === "missing_data" || type === "report_incomplete");
+      if (incomplete) {
+        console.error("::error::Issue triage did not complete because required data or infrastructure was unavailable.");
+        process.exit(1);
+      }
+      NODE
 engine: copilot
 permissions:
   contents: read
@@ -41,6 +57,8 @@ safe-outputs:
     - "aka.ms"
     - "github.com"
   missing-tool:
+    create-issue: false
+  missing-data:
     create-issue: false
   report-incomplete:
     create-issue: false
@@ -95,9 +113,9 @@ Follow these steps in order.
 
 ### 1. Read and check for prior triage
 
-Read the issue title, body, author, labels, assignees, and comments. Also list the repository's available labels.
+Use the GitHub MCP `issue_read` tool to read the issue title, body, author, labels, assignees, and comments. Use the GitHub label-listing tool to list the repository's available labels. Do not use `gh`, `curl`, `wget`, Python networking, or other shell commands as fallbacks for these GitHub reads.
 
-- If the read fails, retry once. Use `missing_data` only if both attempts fail to return a title and body.
+- If `issue_read` fails, retry that tool once. If both attempts fail because the GitHub tool, authentication, or repository is unavailable, call `report_incomplete` with the exact tool error and stop. Do not call `missing_data` for a tool or infrastructure failure.
 - If either a title or body is returned, treat the issue as readable; never report it as filtered, blocked, or missing.
 - If the issue already has an `Area-*` label and an assignee, or this workflow already posted a triage comment, call `noop` and stop.
 
