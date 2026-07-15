@@ -317,7 +317,7 @@ Classify confidence in the selected labels and routing as:
 > Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit only this explanatory paragraph otherwise.
 - **💻 Assignment:** <@individual selected for assignment, or `none`> | <@team handles, or `none`>
 > Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.
-- **`🟩`, `🟨`, or `🟥` Confidence:** <`high`, `medium`, or `low`>: <One sentence reason for the confidence classification of up to 20 words.>
+- **`🟩`, `🟨`, or `🟥` Confidence:** <`high`, `medium`, or `low` (embed with `tick markers`)> - <One sentence reason for the confidence classification of up to 20 words.>
 
 ➡️ **Summary**: <One sentence of at most 30 words describing the reported problem or request.> <One sentence of at most 20 words suggesting how to follow up with this issue.>
 ```
