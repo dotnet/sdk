@@ -309,7 +309,7 @@ Classify confidence in the selected labels and routing as:
 ```markdown
 ## 🎯 Agentic Issue Triage
 
-*Summary:* <One sentence of at most 25 words describing the reported problem or request.>
+**Summary:** <One sentence of at most 30 words describing the reported problem or request.>
 
 <details open>
 <summary><strong>🏷️ Labels</strong></summary>
@@ -340,7 +340,7 @@ Classify confidence in the selected labels and routing as:
 <details open>
 <summary><strong><`🟩`, `🟨`, or `🟥`> Confidence</strong></summary>
 
-<`high`, `medium`, or `low`> — <brief reason for the confidence classification.>
+<`high`, `medium`, or `low`>: <One sentence reason for the confidence classification of up to 25 words.>
 </details>
 ```
 
