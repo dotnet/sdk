@@ -45,7 +45,6 @@ network:
     - github
     - aka.ms
 tools:
-  bash: ["curl:*"]
   web-fetch:
   github:
     toolsets: [issues, labels, repos, search]
