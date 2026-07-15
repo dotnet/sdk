@@ -343,6 +343,11 @@ public class NETFramework
                 TargetFrameworks = "net462",
             };
 
+            // The conflict-resolution packages this test references are intentionally old and
+            // trigger NuGet audit warnings, which break the "no warnings" assertions below. We
+            // don't want to maintain those dependencies, so disable auditing for this project.
+            project.AdditionalProperties["NuGetAudit"] = "false";
+
             project.SourceFiles[project.Name + ".cs"] = $@"
 using System;
 public static class {project.Name}
