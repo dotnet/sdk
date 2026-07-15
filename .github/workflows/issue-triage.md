@@ -298,7 +298,7 @@ Before calling safe outputs, verify:
 
 If verification fails, correct the planned outputs and verify again.
 
-Post one concise comment using the exact structure below; do not post a separate routing comment. The summary must be one sentence of at most 25 words describing the reported problem or request. Base it only on the issue content and do not add unverified claims.
+Post one concise comment using the exact structure below; do not post a separate routing comment. The summary must be one sentence of at most 30 words describing the reported problem or request. Base it only on the issue content and do not add unverified claims.
 
 Classify confidence in the selected labels and routing as:
 
@@ -309,35 +309,25 @@ Classify confidence in the selected labels and routing as:
 ```markdown
 ## 🎯 Agentic Issue Triage
 
-**Summary:** <One sentence of at most 30 words describing the reported problem or request.>
+<Include any additional comments or requests for the user, such as the @username ping for more information, a binlog, or any further information here.>
 
-<details open>
-<summary><strong>🏷️ Labels</strong></summary>
+**Triage Assessment:**
 
-<Applied, modified, and already-present relevant labels, or `none`. Put all label URLs on one line, separated by one space. Render each label as a bare GitHub label URL in the form https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>. Percent-encode the label name as a URL path segment, including spaces as `%20`. Do not wrap label URLs in backticks or Markdown link syntax.>
+- **🏷️ Labels:** Applied, modified, and already-present relevant labels, or `none`. Put all label URLs on this line, separated by one space. Render each label as a bare GitHub label URL in the form https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>. Percent-encode the label name as a URL path segment, including spaces as `%20`. Do not wrap label URLs in backticks or Markdown link syntax.
+> Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit only this explanatory paragraph otherwise.
+- **💻 Assignment:** <@individual selected for assignment, or `none`> | <@team handles, or `none`>
+> Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.
+- **`🟩`, `🟨`, or `🟥` Confidence:** <`high`, `medium`, or `low`>: <One sentence reason for the confidence classification of up to 20 words.>
 
-<Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit only this explanatory paragraph otherwise.>
-</details>
-
-<details open>
-<summary><strong>💻 Assignment</strong></summary>
-
-<@individual selected for assignment, or `none`> | <@team handles, or `none`>
-
-<details>
-<summary><strong>Load balancing</strong></summary>
-
-<Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.>
-</details>
-</details>
-
-<details open>
-<summary><strong><`🟩`, `🟨`, or `🟥`> Confidence</strong></summary>
-
-<`high`, `medium`, or `low`>: <One sentence reason for the confidence classification of up to 25 words.>
-</details>
+➡️ **Summary**: <One sentence of at most 30 words describing the reported problem or request.> <One sentence of at most 20 words suggesting how to follow up with this issue.>
 ```
 
-Preserve the heading, blank lines, `<details open>` markup, bold field names, and field order. Keep only the field name inside each top-level `<summary>`, except that the Confidence summary starts with its classification emoji; Markdown formatting is unreliable there. Put assignment and team handles only in the Assignment details body, never in a `<summary>`. Use `none` rather than omitting either side of the Assignment separator. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review. Put all labels on one line separated by one space, rendering each as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added. Assignment includes the nested **Load balancing** details subsection only for a successful lower-load override; otherwise omit the entire subsection. Do not mention unassigned individuals outside that code-formatted subsection. Write team handles as raw mentions; safe outputs decides whether they can remain live.
+Preserve the heading, blank lines, markup, bold field names, and field order. Keep only the field name inside each top-level `<summary>`, except that the Confidence summary starts with its classification emoji; Markdown formatting is unreliable there. Put assignment and team handles only in the Assignment line. Use `none` rather than omitting either side of the Assignment separator. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review.
+
+Put all labels on one line separated by one space, rendering each as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added.
+
+Assignment includes the nested **Load balancing** details subsection only for a successful lower-load override; otherwise omit the entire subsection. Do not mention unassigned individuals outside that code-formatted subsection.
+
+Write team handles as raw mentions; safe outputs decides whether they can remain live.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.
