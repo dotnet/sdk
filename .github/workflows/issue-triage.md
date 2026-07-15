@@ -38,7 +38,7 @@ tools:
 safe-outputs:
   report-failure-as-issue: false
   allowed-domains:
-    - "aka.ms/binlog"
+    - "aka.ms"
     - "github.com"
   missing-tool:
     create-issue: false
