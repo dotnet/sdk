@@ -36,6 +36,8 @@ tools:
     min-integrity: none
 safe-outputs:
   report-failure-as-issue: false
+  allowed-domains:
+    - "aka.ms"
   missing-tool:
     create-issue: false
   report-incomplete:
@@ -308,7 +310,7 @@ Classify confidence in the selected labels and routing as:
 
 - `high` when the issue directly identifies the component and the matching CODEOWNERS section is unambiguous
 - `medium` when the selected area is the strongest interpretation but another area is plausible
-- `low` when the issue provides weak or conflicting evidence, or nothing clearly matches
+- `low` when the issue provides weak or conflicting evidence, nothing clearly matches, or the report is incomplete
 
 This confidence value belongs in the comment; do not create or apply a repository confidence label.
 
@@ -317,29 +319,35 @@ This confidence value belongs in the comment; do not create or apply a repositor
 
 *Summary:* <One sentence of at most 25 words describing the reported problem or request.>
 
-<details>
-<summary><strong>🏷️ Labels:</strong> <applied, modified, and already-present relevant labels, or "none"></summary>
+<details open>
+<summary><strong>🏷️ Labels</strong></summary>
 
-<Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit this body entirely otherwise.>
+<Applied, modified, and already-present relevant labels, or `none`. Code-format every label name, for example `Area-Workloads`, `bug`, and `needs-info`.>
+
+<Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit only this explanatory paragraph otherwise.>
 </details>
 
-<details>
-<summary><strong>💻 Assignment:</strong> <@individual selected for assignment, or "none"></summary>
+<details open>
+<summary><strong>💻 Assignment</strong></summary>
 
-<Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format all handles in this detail to avoid additional mentions. Omit this body entirely otherwise.>
+<@individual selected for assignment, or `none`>
+
+<Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format all handles in this detail to avoid additional mentions. Omit only this explanatory paragraph otherwise.>
 </details>
 
-<details>
-<summary><strong>Owning Team:</strong> <@team handles, or "none"></summary>
+<details open>
+<summary><strong>Owning Team</strong></summary>
+
+<@team handles, or `none`>
 </details>
 
-<details>
-<summary><strong>Confidence:</strong> <`🟩 high`, `🟨 medium`, or `🟥 low`></summary>
+<details open>
+<summary><strong>Confidence</strong></summary>
 
-<Brief reason for the confidence classification.>
+<`🟩 high`, `🟨 medium`, or `🟥 low`> — <brief reason for the confidence classification.>
 </details>
 ```
 
-Preserve the heading, blank lines, details markup, bold field names, and field order. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels summary that `untriaged` remains for manual review. Labels has a body only when `needs-info` was added; Assignment has a body only for a successful lower-load override; Owning Team has no body. Do not mention unassigned individuals outside the code-formatted Assignment override explanation. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
+Preserve the heading, blank lines, `<details open>` markup, bold field names, and field order. Keep only the field name inside each `<summary>`; Markdown formatting is unreliable there. Put every value in the details body, where GitHub renders Markdown. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review. Code-format every label name. Labels includes an additional explanation only when `needs-info` was added; Assignment includes an additional explanation only for a successful lower-load override. Do not mention unassigned individuals outside the code-formatted Assignment override explanation. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.
