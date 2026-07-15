@@ -62,7 +62,7 @@ internal static class ProjectGraphUtilities
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetName);
 
     private static string NormalizeSeparators(string path)
-        => string.IsNullOrEmpty(path) || Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/');
+        => Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/');
 
     public static string? GetIntermediateOutputDirectory(this ProjectInstance project)
         => project.GetPropertyValue(PropertyNames.IntermediateOutputPath) is { Length: >0 } path ? Path.Combine(project.Directory, NormalizeSeparators(path)) : null;
