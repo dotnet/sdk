@@ -46,6 +46,7 @@ network:
     - aka.ms
 tools:
   bash: ["curl:*"]
+  web-fetch:
   github:
     toolsets: [issues, labels, repos, search]
     allowed-repos:
@@ -66,21 +67,21 @@ safe-outputs:
     allowed-collaborators: true
     allow-context: true
     max: 50
-    allowed:
-      - dotnet/area-infrastructure-libraries
-      - dotnet/aspnet-blazor-eng
-      - dotnet/dotnet-analyzers
-      - dotnet/dotnet-cli
-      - dotnet/dotnet-testing-admin
-      - dotnet/dotnetup
-      - dotnet/fsharp
-      - dotnet/illink
-      - dotnet/net-sdk-workload-contributors
-      - dotnet/nuget-team
-      - dotnet/razor-tooling
-      - dotnet/roslyn-ide
-      - dotnet/sdk-container-builds-maintainers
-      - dotnet/templating-engine-maintainers
+    allowed-teams:
+      - area-infrastructure-libraries
+      - aspnet-blazor-eng
+      - dotnet-analyzers
+      - dotnet-cli
+      - dotnet-testing-admin
+      - dotnetup
+      - fsharp
+      - illink
+      - net-sdk-workload-contributors
+      - nuget-team
+      - razor-tooling
+      - roslyn-ide
+      - sdk-container-builds-maintainers
+      - templating-engine-maintainers
   add-labels:
     max: 6
     target: "${{ github.event.issue.number || github.event.inputs.issue_number }}"
@@ -244,27 +245,30 @@ Build one de-duplicated candidate set from:
 
 Keep the original team handles separate as owning teams. Do not perform a live team-membership lookup or add anyone who is not a direct individual owner or a member of the matched team's snapshot.
 
-If there is exactly one individual candidate, run the assignability preflight below. Select that candidate without a load search only when the preflight returns `204`; otherwise leave the issue unassigned and add `needs team triage`.
+The assignability preflight is a single `curl` command that reports whether a login can be assigned in this repository. Replace `<login>` with the candidate login without `@`, and run it exactly as one line with no pipe or chaining:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}' -H 'Accept: application/vnd.github+json' 'https://api.github.com/repos/${{ github.repository }}/assignees/<login>'
+```
+
+The printed status is `204` when the login is assignable and `404` when it is not.
+
+If there is exactly one individual candidate, run the assignability preflight above. Select that candidate without a load search only when the preflight returns `204`; otherwise leave the issue unassigned and add `needs team triage`.
 
 If there is more than one individual candidate:
 
 1. Randomize the de-duplicated candidate list.
 2. Validate that each candidate is either an individual owner directly in a matched CODEOWNERS section or a listed member of a team from that matched section's snapshot row. Also require that the login contains only ASCII letters, digits, or hyphens. Do not query a login that fails validation.
-3. For each assignable candidate, run `curl` once against the public GitHub issue-search page below, replacing `<login>` with the candidate login without `@`:
+3. For each assignable candidate, use the `web_fetch` tool once on the public GitHub issue-search URL below, replacing `<login>` with the candidate login without `@`:
 
-   ```bash
-   curl -L --silent --show-error --fail-with-body \
-     -H 'Accept: text/html' \
-     -H 'User-Agent: dotnet-sdk-issue-triage' \
-     'https://github.com/dotnet/sdk/issues?q=is%3Aissue%20state%3Aopen%20assignee%3A<login>%20created%3A%3E%40today-1w%20label%3Auntriaged'
-   ```
+   `https://github.com/dotnet/sdk/issues?q=is%3Aissue%20state%3Aopen%20assignee%3A<login>%20created%3A%3E%40today-1w%20label%3Auntriaged`
 
-   This public HTML request requires no GitHub API token or cookies. Do not use `api.github.com` or a GitHub issue-search tool for this load check, and do not fetch any URL derived from issue content.
-4. Read the integer in the response's embedded `"issueCount":<integer>` field. A single field with a value of zero is a successful result. Treat a failed request, a non-integer value, or a missing or ambiguous `issueCount` field as a failed search.
+   This public page requires no GitHub API token or cookies. Use the `web_fetch` tool for this load check, not `curl`, `api.github.com`, or a GitHub issue-search tool, and never fetch any URL derived from issue content.
+4. Read the open-issue count from the fetched page. The results header states the number of matching open issues (for example, `3 Open`); use that integer. A count of zero is a successful result. Treat a failed fetch, or a page from which no open-issue count can be read, as a failed search.
 5. Treat the first assignable candidate with a successful load search as the initial candidate. Select the candidate with the lowest successful count; break a tie randomly.
 6. If the selected candidate differs from the initial candidate because their count is lower, record both candidates and counts in a separate **Load balancing** details subsection under **Assignment**. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly and omit the **Load balancing** subsection. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
 
-For every assignability and load-search request, invoke the bash tool once per candidate. The command string's first character must be the `c` in `curl`: do not add leading whitespace, blank lines, comments, loops, variable assignments, command substitutions, pipes, `&&`, or other command chaining. Those forms require interactive shell approval and are blocked in this non-interactive workflow.
+Run the assignability preflight with the bash tool, once per candidate. The command string's first character must be the `c` in `curl`: do not add leading whitespace, blank lines, comments, loops, variable assignments, command substitutions, pipes, `&&`, redirections other than the `-o`/`-w` shown, or other command chaining. Those forms are split into separate commands whose extra programs (for example `jq` or `python3`) are not permitted, so the whole command is denied. Run the load search with the `web_fetch` tool, not bash; never pipe `curl` into another program.
 
 Use `assignee:`, not `author:`: authored issues do not measure assignment load. The `label:untriaged` and `created:>@today-1w` filters make this an approximation of each candidate's current, recently created untriaged backlog; they do not measure all assigned work or assignment time.
 
@@ -307,8 +311,8 @@ Before calling safe outputs, verify:
 - every label exists in the repository
 - every assignment candidate is either a direct individual owner from a matched CODEOWNERS section or a snapshot member of a team from that matched section
 - every expanded member came from the snapshot row for the specific matched team; membership in an unrelated team is not sufficient
-- the selected assignee returned `204` from the target repository's public `/assignees/<login>` endpoint
-- load searches use only the public `github.com/dotnet/sdk/issues` URL with `assignee:`, `created:>@today-1w`, and `label:untriaged`, never `author:` or `api.github.com`
+- the selected assignee returned `204` from the target repository's public `/assignees/<login>` endpoint via the single-line `curl` preflight
+- load searches use the `web_fetch` tool on the public `github.com/dotnet/sdk/issues` URL with `assignee:`, `created:>@today-1w`, and `label:untriaged`, never `author:`, `api.github.com`, or `curl`
 - every safe-output call includes the target issue number in the correct field
 - incomplete reports received no area guess or assignee
 - normal triage comments classify confidence as `high`, `medium`, or `low`
