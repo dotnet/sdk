@@ -320,6 +320,8 @@ If there is more than one individual candidate:
 6. Treat the first assignable candidate with a successful load search as the initial candidate. Select the candidate with the lowest successful count; break a tie randomly.
 7. If the selected candidate differs from the initial candidate because their count is lower, record both candidates and counts for the Assignment details. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly and do not add Assignment details. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
 
+For every assignability and load-search request, invoke the bash tool once per candidate. The command string's first character must be the `c` in `curl`: do not add leading whitespace, blank lines, comments, loops, variable assignments, command substitutions, pipes, `&&`, or other command chaining. Those forms require interactive shell approval and are blocked in this non-interactive workflow.
+
 Use `assignee:`, not `author:`: authored issues do not measure assignment load. The `label:untriaged` and `created:>@today-1w` filters make this an approximation of each candidate's current, recently created untriaged backlog; they do not measure all assigned work or assignment time.
 
 Run at most three load searches and assign exactly one person total, even when the issue has multiple `Area-*` labels. This uses only direct individual owners and the temporary expanded membership snapshot, so it does not require organization-read tokens at runtime.
@@ -384,12 +386,14 @@ This confidence value belongs in the comment; do not create or apply a repositor
 
 <details>
 <summary><strong>🏷️ Labels:</strong> <applied, modified, and already-present relevant labels, or "none"></summary>
+
+<Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit this body entirely otherwise.>
 </details>
 
 <details>
 <summary><strong>💻 Assignment:</strong> <@individual selected for assignment, or "none"></summary>
 
-<Only when load balancing selected someone other than the initial candidate: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format all handles in this detail to avoid additional mentions. Omit this body entirely otherwise.>
+<Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format all handles in this detail to avoid additional mentions. Omit this body entirely otherwise.>
 </details>
 
 <details>
@@ -403,6 +407,6 @@ This confidence value belongs in the comment; do not create or apply a repositor
 </details>
 ```
 
-Preserve the heading, blank lines, details markup, bold field names, and field order. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels summary that `untriaged` remains for manual review. Labels and Owning Team details have no body. Assignment has a body only for a successful lower-load override; otherwise it has no body. Do not mention unassigned individuals outside the code-formatted Assignment override explanation. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
+Preserve the heading, blank lines, details markup, bold field names, and field order. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels summary that `untriaged` remains for manual review. Labels has a body only when `needs-info` was added; Assignment has a body only for a successful lower-load override; Owning Team has no body. Do not mention unassigned individuals outside the code-formatted Assignment override explanation. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.
