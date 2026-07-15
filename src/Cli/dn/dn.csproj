@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NuGet.Versioning" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(RepoRoot)src\Common\HostFxrPathResolver.cs" LinkBase="Common" />
   </ItemGroup>
 

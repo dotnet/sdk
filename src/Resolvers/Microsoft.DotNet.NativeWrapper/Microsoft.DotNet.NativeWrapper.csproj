@@ -15,10 +15,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <PackageReference Include="NuGet.Versioning" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Common\HostFxrPathResolver.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\HostFxrPathResolver.cs" LinkBase="Common" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>

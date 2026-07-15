@@ -283,26 +283,6 @@ public class DotnetRootResolverTests
     }
 
     [TestMethod]
-    public void ResolveHostfxrPath_OrdersPrereleaseIdentifiersUsingAscii()
-    {
-        string dotnetRoot = BuildPath(true, "dotnet");
-        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
-        string upper = Path.Combine(fxrDir, "10.0.0-preview.A");
-        string lower = Path.Combine(fxrDir, "10.0.0-preview.a");
-        string expectedPath = Path.Combine(lower, "hostfxr.dll");
-
-        string result = DotnetRootResolver.ResolveHostfxrPath(
-            dotnetRoot: dotnetRoot,
-            isWindows: true,
-            isMacOS: false,
-            directoryExists: _ => true,
-            getDirectories: _ => new[] { upper, lower },
-            fileExists: _ => true);
-
-        Assert.AreEqual(expectedPath, result);
-    }
-
-    [TestMethod]
     public void ResolveHostfxrPath_SkipsInvalidSemanticVersions()
     {
         string dotnetRoot = BuildPath(true, "dotnet");

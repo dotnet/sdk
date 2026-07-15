@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
 using Microsoft.DotNet.HostFxr;
 
 namespace Microsoft.DotNet.NativeWrapper
@@ -33,7 +34,6 @@ namespace Microsoft.DotNet.NativeWrapper
                 getDirectories,
                 fileExists);
 
-#if NET
         /// <summary>
         ///  Resolves the <c>hostfxr</c> path against the live filesystem, deriving the .NET
         ///  installation root from the current process (the running <c>dotnet</c> host).
@@ -46,6 +46,6 @@ namespace Microsoft.DotNet.NativeWrapper
                 directoryExists: Directory.Exists,
                 getDirectories: Directory.GetDirectories,
                 fileExists: File.Exists);
-#endif
     }
 }
+#endif
