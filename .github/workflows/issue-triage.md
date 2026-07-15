@@ -44,6 +44,7 @@ network:
     - defaults
     - github
     - aka.ms
+    - awmgmcpg # GitHub Agentic Workflows internal MCP gateway hostname
 tools:
   web-fetch:
   github:
