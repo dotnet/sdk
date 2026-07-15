@@ -30,6 +30,25 @@
     <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>
 
+  <!-- Turn off MSTest trace/console output capturing (captureTrace = false) for every MSTest.Sdk
+       test project. With capturing on (the default) messages from Console/Trace/Debug are buffered
+       and attached to the test result only once the test finishes; disabling it lets that output
+       flush continually while the test is still running, which makes hangs and long-running tests
+       easier to diagnose.
+
+       CaptureTraceOutput has no dedicated MSBuild property (unlike MSTestParallelizeScope), so it is
+       configured through the Microsoft.Testing.Platform testconfig.json file. Copying the single
+       shared test\testconfig.json into each test app's output as "<AssemblyName>.testconfig.json"
+       opts every project in from one place; MTP auto-discovers that file next to the test host.
+       Microsoft.Testing.Platform.MSBuild treats a CopyToOutputDirectory item whose TargetPath matches
+       "<AssemblyName>.testconfig.json" as user-owned, so its stale-cleanup targets leave ours in place. -->
+  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)testconfig.json"
+          CopyToOutputDirectory="PreserveNewest"
+          TargetPath="$(AssemblyName).testconfig.json"
+          Visible="false" />
+  </ItemGroup>
+
   <Import Project="..\Directory.Build.targets" />
 
 </Project>
