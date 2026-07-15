@@ -44,7 +44,6 @@ network:
     - defaults
     - github
     - aka.ms
-    - gh-aw
 tools:
   web-fetch:
   github:
