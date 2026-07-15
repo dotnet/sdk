@@ -20,18 +20,12 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 var hasConcreteIncludePaths = fileMatcher.Exclude.IsDefaultOrEmpty && AreAllFilePaths(fileMatcher.Include);
                 var filePaths = GetMatchingFilePaths(absoluteFolderPath, fileMatcher, hasConcreteIncludePaths);
 
-                // When formatting an explicit list of files that all live under the workspace
-                // folder there is no need to search the entire workspace for .editorconfig files.
-                // Only configs in the files' ancestor directories can apply to them. Included
-                // files resolving outside the workspace folder keep the original scan so their
-                // behavior is unchanged.
-                var folderPrefix = absoluteFolderPath.EndsWith(Path.DirectorySeparatorChar)
-                    ? absoluteFolderPath
-                    : absoluteFolderPath + Path.DirectorySeparatorChar;
-                var editorConfigPaths = hasConcreteIncludePaths
-                        && filePaths.All(filePath => filePath.StartsWith(folderPrefix, StringComparison.OrdinalIgnoreCase))
-                    ? EditorConfigFinder.GetEditorConfigPathsForFiles(filePaths)
-                    : EditorConfigFinder.GetEditorConfigPaths(folderPath);
+                // A non-global .editorconfig only affects files in its own directory subtree, so collect
+                // configs by walking up from each included file rather than scanning the whole workspace
+                // tree (which in large repos may contain sizable non-.NET subtrees such as node_modules).
+                // An .editorconfig marked is_global is not directory-scoped; one outside the walked
+                // ancestors would not be discovered (see PR notes).
+                var editorConfigPaths = EditorConfigFinder.GetEditorConfigPathsForFiles(filePaths);
 
                 var projectInfos = ImmutableArray.CreateBuilder<ProjectInfo>(ProjectLoaders.Length);
 
