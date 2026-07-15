@@ -67,7 +67,7 @@ safe-outputs:
     allowed-collaborators: true
     allow-context: true
     max: 50
-    allowed-teams:
+    allowed-teams: # Requires org level read scope on the PAT, otherwise a noop
       - area-infrastructure-libraries
       - aspnet-blazor-eng
       - dotnet-analyzers
