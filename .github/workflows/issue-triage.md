@@ -122,7 +122,7 @@ For an incomplete or nearly empty bug report:
 4. If an MSBuild-driven command (`build`, `restore`, `publish`, `pack`, or `test`, including Visual Studio equivalents) fails or behaves incorrectly and no binlog is attached, append this exact text to the comment:
 
   ```markdown
-  To help diagnose your problem, please collect and attach a binlog using the [binlog collection guide](https://aka.ms/binlog). Binary logs may contain paths, project and imported-file contents, and environment variables. Review the log and remove any sensitive or unwanted content before attaching it.
+  To help diagnose your problem, please collect and attach a binlog using the binlog collection guide at https://aka.ms/binlog. Binary logs may contain paths, project and imported-file contents, and environment variables. Review the log and remove any sensitive or unwanted content before attaching it.
   ```
 
   Do not request a binlog for installation, CLI parsing, or runtime-only failures.
@@ -253,7 +253,7 @@ If there is more than one individual candidate:
    This public HTML request requires no GitHub API token or cookies. Do not use `api.github.com` or a GitHub issue-search tool for this load check, and do not fetch any URL derived from issue content.
 5. Read the integer in the response's embedded `"issueCount":<integer>` field. A single field with a value of zero is a successful result. Treat a failed request, a non-integer value, or a missing or ambiguous `issueCount` field as a failed search.
 6. Treat the first assignable candidate with a successful load search as the initial candidate. Select the candidate with the lowest successful count; break a tie randomly.
-7. If the selected candidate differs from the initial candidate because their count is lower, record both candidates and counts for the Assignment details. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly and do not add Assignment details. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
+7. If the selected candidate differs from the initial candidate because their count is lower, record both candidates and counts in a separate **Load balancing** details subsection under **Assignment**. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly and omit the **Load balancing** subsection. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
 
 For every assignability and load-search request, invoke the bash tool once per candidate. The command string's first character must be the `c` in `curl`: do not add leading whitespace, blank lines, comments, loops, variable assignments, command substitutions, pipes, `&&`, or other command chaining. Those forms require interactive shell approval and are blocked in this non-interactive workflow.
 
@@ -323,7 +323,7 @@ This confidence value belongs in the comment; do not create or apply a repositor
 <details open>
 <summary><strong>🏷️ Labels</strong></summary>
 
-<Applied, modified, and already-present relevant labels, or `none`. Render each label as a bare GitHub label URL in the form https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>. Percent-encode the label name as a URL path segment, including spaces as `%20`. Do not wrap label URLs in backticks or Markdown link syntax.>
+<Applied, modified, and already-present relevant labels, or `none`. Put all label URLs on one line, separated by one space. Render each label as a bare GitHub label URL in the form https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>. Percent-encode the label name as a URL path segment, including spaces as `%20`. Do not wrap label URLs in backticks or Markdown link syntax.>
 
 <Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit only this explanatory paragraph otherwise.>
 </details>
@@ -333,7 +333,11 @@ This confidence value belongs in the comment; do not create or apply a repositor
 
 <@individual selected for assignment, or `none`>
 
-<Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format all handles in this detail to avoid additional mentions. Omit only this explanatory paragraph otherwise.>
+<details>
+<summary><strong>Load balancing</strong></summary>
+
+<Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.>
+</details>
 </details>
 
 <details open>
@@ -349,6 +353,6 @@ This confidence value belongs in the comment; do not create or apply a repositor
 </details>
 ```
 
-Preserve the heading, blank lines, `<details open>` markup, bold field names, and field order. Keep only the field name inside each `<summary>`, except that the Confidence summary starts with its classification emoji; Markdown formatting is unreliable there. Put every other value in the details body, where GitHub renders Markdown. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review. Render every label as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added; Assignment includes an additional explanation only for a successful lower-load override. Do not mention unassigned individuals outside the code-formatted Assignment override explanation. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
+Preserve the heading, blank lines, `<details open>` markup, bold field names, and field order. Keep only the field name inside each top-level `<summary>`, except that the Confidence summary starts with its classification emoji; Markdown formatting is unreliable there. Put assignment and owning-team handles only in their details bodies, never in a `<summary>`. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review. Put all labels on one line separated by one space, rendering each as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added. Assignment includes the nested **Load balancing** details subsection only for a successful lower-load override; otherwise omit the entire subsection. Do not mention unassigned individuals outside that code-formatted subsection. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.
