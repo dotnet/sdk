@@ -252,17 +252,20 @@ internal static class SolutionAndProjectUtility
         // evaluate each of them. This is done recursively so that nested traversal projects work as well.
         if (IsTraversalProject(projectInstance))
         {
-            // Track visited projects across the whole traversal graph so that a project referenced by
-            // multiple traversal projects (a "diamond") is only tested once, and to guard against cycles
-            // (a traversal project that transitively references itself).
+            // Track visited (project, configuration, platform) tuples across the whole traversal graph so
+            // that a project referenced by multiple traversal projects with the same configuration/platform
+            // (a "diamond") is only tested once, while the same project referenced with a *different*
+            // configuration/platform is still tested for each distinct combination. This also guards against
+            // cycles (a traversal project that transitively references itself).
             visitedTraversalProjects ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            visitedTraversalProjects.Add(Path.GetFullPath(projectFilePath));
+            visitedTraversalProjects.Add(GetTraversalVisitKey(Path.GetFullPath(projectFilePath), configuration, platform));
 
             foreach (var reference in GetTraversalReferencedProjects(projectInstance, configuration, platform))
             {
-                if (!visitedTraversalProjects.Add(reference.FullPath))
+                if (!visitedTraversalProjects.Add(GetTraversalVisitKey(reference.FullPath, reference.Configuration, reference.Platform)))
                 {
-                    // Already handled via another traversal path (diamond) or a cycle.
+                    // Already handled via another traversal path (diamond) or a cycle, with the same
+                    // configuration/platform combination.
                     continue;
                 }
 
@@ -348,6 +351,13 @@ internal static class SolutionAndProjectUtility
         => bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.IsTraversal), out bool isTraversal) && isTraversal;
 
     /// <summary>
+    /// Builds a stable key identifying a (project, configuration, platform) combination for
+    /// traversal-graph de-duplication and cycle detection.
+    /// </summary>
+    private static string GetTraversalVisitKey(string fullPath, string? configuration, string? platform)
+        => $"{fullPath}|{configuration}|{platform}";
+
+    /// <summary>
     /// Returns the projects a traversal project references. The globs and conditions in the traversal
     /// project are already expanded by MSBuild during evaluation, so the resolved <c>ProjectReference</c>
     /// items represent the effective set of projects to test. Per-reference <c>Configuration</c>/
@@ -360,6 +370,12 @@ internal static class SolutionAndProjectUtility
         string? inheritedConfiguration,
         string? inheritedPlatform)
     {
+        // Resolve reference paths relative to the traversal project's directory (not the process working
+        // directory). MSBuild's "FullPath" well-known metadata is normally already absolute, but resolving
+        // against the project directory explicitly keeps us correct even if a relative value is returned or
+        // the current directory differs from the project directory.
+        var projectDirectory = projectInstance.Directory;
+
         foreach (ProjectItemInstance projectReference in projectInstance.GetItems(ProjectProperties.ProjectReferenceItemName))
         {
             // "FullPath" is a well-known item metadata that MSBuild computes relative to the project directory.
@@ -373,7 +389,7 @@ internal static class SolutionAndProjectUtility
             var platformMetadata = projectReference.GetMetadataValue(ProjectProperties.Platform);
 
             yield return (
-                Path.GetFullPath(fullPath),
+                Path.GetFullPath(fullPath, projectDirectory),
                 string.IsNullOrEmpty(configurationMetadata) ? inheritedConfiguration : configurationMetadata,
                 string.IsNullOrEmpty(platformMetadata) ? inheritedPlatform : platformMetadata);
         }

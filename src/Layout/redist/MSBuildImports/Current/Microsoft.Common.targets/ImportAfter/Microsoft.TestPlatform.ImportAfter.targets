@@ -19,8 +19,23 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Condition="Exists('$(VSTestTargets)')" Project="$(VSTestTargets)" />
   <Target Name="_MTPBuild">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Condition="'$(IsTestingPlatformApplication)'=='true'" />
+
     <!-- Traversal projects (Microsoft.Build.Traversal) are containers that don't build themselves;
-         forward the MTP build to their referenced projects so the referenced test projects get built. -->
-    <MSBuild Projects="@(ProjectReference)" Targets="_MTPBuild" Condition="'$(IsTraversal)'=='true'" />
+         forward the MTP build to their referenced projects so the referenced test projects get built.
+         Per-reference Configuration/Platform metadata is forwarded as global properties so a reference
+         that pins a specific configuration/platform builds consistently with the dotnet test evaluation
+         logic (which reads the same metadata). The values are precomputed here so empty metadata does not
+         emit a "Configuration=" assignment that would clear the inherited global property; empty segments
+         and leading/trailing ';' in Properties are ignored by MSBuild. -->
+    <ItemGroup Condition="'$(IsTraversal)'=='true'">
+      <_MTPTraversalReference Include="@(ProjectReference)">
+        <_ConfigurationProperty Condition="'%(ProjectReference.Configuration)' != ''">Configuration=%(ProjectReference.Configuration)</_ConfigurationProperty>
+        <_PlatformProperty Condition="'%(ProjectReference.Platform)' != ''">Platform=%(ProjectReference.Platform)</_PlatformProperty>
+      </_MTPTraversalReference>
+    </ItemGroup>
+    <MSBuild Projects="@(_MTPTraversalReference)"
+             Targets="_MTPBuild"
+             Properties="%(_MTPTraversalReference._ConfigurationProperty);%(_MTPTraversalReference._PlatformProperty)"
+             Condition="'$(IsTraversal)'=='true'" />
   </Target>
 </Project>
