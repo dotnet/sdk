@@ -158,7 +158,7 @@ Choose only labels returned by the repository label list. Never invent a label.
 
    | Label | Apply when |
    |---|---|
-   | `cookie` | Bounded coding-agent work; no design decision required |
+  | `cookie` | Apply generously to concrete, bounded, low-risk work with a clear outcome and no apparent product or architectural decision. This includes localized implementation, documentation, test, build-target, or configuration fixes. Apply it alongside the normal area and type labels; when uncertain whether a complete issue is a cookie, apply it. |
    | `Test Debt` | Test gaps, disabled tests, flaky tests, or testing debt |
    | `performance` | Speed, memory, startup, or throughput is central |
     | `dotnetup` | The dotnetup issues are routed via release/dnup code; also apply `Area-dotnetup` for owner routing |
