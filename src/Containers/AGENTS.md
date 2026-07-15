@@ -24,6 +24,7 @@ feature (`Microsoft.NET.Build.Containers`).
 ## Tests
 
 - Unit: `test/Microsoft.NET.Build.Containers.UnitTests` (MSTest) — run everywhere.
-- Integration: `test/Microsoft.NET.Build.Containers.IntegrationTests` **require a
-  container daemon**; they skip when Docker/Podman is absent, so don't
-  rely on them running in every CI leg.
+- Integration: `test/Microsoft.NET.Build.Containers.IntegrationTests` — a mix. Tests
+  that need a runtime opt into `DockerUnavailableCondition` and skip when Docker/Podman
+  is absent (don't rely on those in every CI leg); others run in-process without a
+  container runtime dependency.
