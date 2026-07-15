@@ -47,7 +47,7 @@ network:
 tools:
   web-fetch:
   github:
-    toolsets: [issues, labels, repos, search]
+    toolsets: [context, issues, labels, repos, search]
     allowed-repos:
       - "${{ github.repository }}"
     min-integrity: none
