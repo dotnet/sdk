@@ -246,7 +246,7 @@ Keep the original team handles separate from individual candidates.
 If there is more than one individual candidate:
 
 1. Randomize the de-duplicated candidate list.
-2. For each assignable candidate, use the `web_fetch` tool once on the public GitHub issue-search URL below, replacing `<username>` with the candidate username without `@`:
+2. For each assignable candidate, use the `web-fetch` tool once on the public GitHub issue-search URL below, replacing `<username>` with the candidate username without `@`:
 
    `https://github.com/dotnet/sdk/issues?q=is%3Aissue%20state%3Aopen%20assignee%3A<username>%20created%3A%3E%40today-1w%20label%3Auntriaged`
 3. Read the open-issue count from the fetched page. The results header states the number of matching open issues (for example, `3 Open`); use that integer. A count of zero is a successful result. Treat a failed fetch, or a page from which no open-issue count can be read, as a failed search.
