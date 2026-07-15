@@ -147,6 +147,16 @@ Choose only labels returned by the repository label list. Never invent a label.
 
 Recognize standard SDK concepts: project commands; MSBuild project files and targets; NuGet restore; workloads; templates; tools; trimming, Native AOT, single-file, and ReadyToRun publishing; source-build/VMR; Static Web Assets; Blazor; and Razor.
 
+Use these distinctions for commonly confused areas:
+
+| Issue is primarily about | Primary area |
+|---|---|
+| Workload installation, update, repair, manifests, packs, or side-by-side SDK/Visual Studio workload state, including MAUI workloads | `Area-Workloads` |
+| `WasmSdk`, `wasm-tools`, browser/WASI platform recognition, Emscripten tooling, or WebAssembly workload build infrastructure | `Area-WasmSdk` |
+| Blazor WebAssembly, Razor SDK, or Static Web Assets behavior | `Area-AspNetCore` |
+
+Do not treat every issue mentioning MAUI or WASM as a workload issue. Choose the component causing the failure. The repository does not have an `Area-MAUI` label; use `Area-Workloads` only for SDK-owned MAUI workload machinery.
+
 Add at most six labels total during the run, including `needs-info` or `needs team triage`. When the limit would be exceeded, prioritize the primary area label, the type label, and required routing/status labels over optional special or additional area labels.
 
 ### 4. Resolve owners and route from CODEOWNERS

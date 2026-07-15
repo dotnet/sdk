@@ -27,7 +27,7 @@
 /test/TestAssets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
 /test/TestAssets/TestProjects/Razor*/ @dotnet/razor-tooling
 
-# Area-Wasm
+# Area-WasmSdk
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
