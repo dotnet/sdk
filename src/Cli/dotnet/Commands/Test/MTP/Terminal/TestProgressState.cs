@@ -44,7 +44,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public long Version { get; internal set; }
 
-    public List<(string? DisplayName, string? UID, string? FilePath, int? LineNumber)> DiscoveredTestNames { get; internal set; } = [];
+    public List<DiscoveredTestInfo> DiscoveredTestNames { get; internal set; } = [];
 
     public bool Success { get; internal set; }
 
@@ -124,10 +124,10 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         }, static @this => @this.FailedTests++);
     }
 
-    public void DiscoverTest(string? displayName, string? uid, string? filePath, int? lineNumber)
+    public void DiscoverTest(DiscoveredTestInfo test)
     {
         DiscoveredTests++;
-        DiscoveredTestNames.Add(new(displayName, uid, filePath, lineNumber));
+        DiscoveredTestNames.Add(test);
     }
 
     internal void NotifyHandshake(string instanceId)
@@ -159,3 +159,19 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         return index + 1;
     }
 }
+
+/// <summary>
+/// Rich information about a single discovered test node, as received over the 'dotnet test' IPC
+/// protocol (<c>DiscoveredTestMessage</c>). Carries every field the wire contract provides so the
+/// SDK can render both the human-readable and the machine-readable ('--list-tests json') output.
+/// </summary>
+internal sealed record DiscoveredTestInfo(
+    string? DisplayName,
+    string? Uid,
+    string? FilePath,
+    int? LineNumber,
+    string? Namespace,
+    string? TypeName,
+    string? MethodName,
+    string[] ParameterTypeFullNames,
+    (string Key, string Value)[] Traits);

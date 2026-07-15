@@ -220,10 +220,16 @@ internal sealed class TestApplicationHandler
         foreach (var test in discoveredTestMessages.DiscoveredMessages)
         {
             _output.TestDiscovered(_handshakeInfo.Value.ExecutionId,
-                ValidateRequiredMessageProperty(test.DisplayName, nameof(DiscoveredTestMessage.DisplayName), nameof(DiscoveredTestMessage)),
-                ValidateRequiredMessageProperty(test.Uid, nameof(DiscoveredTestMessage.Uid), nameof(DiscoveredTestMessage)),
-                test.FilePath,
-                test.LineNumber);
+                new DiscoveredTestInfo(
+                    ValidateRequiredMessageProperty(test.DisplayName, nameof(DiscoveredTestMessage.DisplayName), nameof(DiscoveredTestMessage)),
+                    ValidateRequiredMessageProperty(test.Uid, nameof(DiscoveredTestMessage.Uid), nameof(DiscoveredTestMessage)),
+                    test.FilePath,
+                    test.LineNumber,
+                    test.Namespace,
+                    test.TypeName,
+                    test.MethodName,
+                    test.ParameterTypeFullNames,
+                    [.. test.Traits.Select(t => (t.Key, t.Value))]));
         }
     }
 

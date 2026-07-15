@@ -59,7 +59,7 @@ public class TestApplicationHandlerTests : IDisposable
             TargetPath: targetPath,
             DotnetRootArchVariableName: null);
 
-        var testOptions = new TestOptions(IsHelp: false, IsDiscovery: false, EnvironmentVariables: new Dictionary<string, string>());
+        var testOptions = new TestOptions(IsHelp: false, IsDiscovery: false, ListTestsFormat: TestListFormat.Text, EnvironmentVariables: new Dictionary<string, string>());
 
         var handler = new TestApplicationHandler(reporter, module, testOptions);
 
@@ -324,7 +324,7 @@ public class TestApplicationHandlerTests : IDisposable
             TargetPath: TargetPath,
             DotnetRootArchVariableName: null);
 
-        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: isDiscovery, EnvironmentVariables: new Dictionary<string, string>());
+        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: isDiscovery, ListTestsFormat: TestListFormat.Text, EnvironmentVariables: new Dictionary<string, string>());
 
         return (new TestApplicationHandler(reporter, module, testOptions), reporter, capturingConsole);
     }

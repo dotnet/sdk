@@ -4,6 +4,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -25,6 +27,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
     internal const string SingleIndentation = "  ";
 
     internal const string DoubleIndentation = $"{SingleIndentation}{SingleIndentation}";
+
+    /// <summary>
+    /// Schema version of the '--list-tests json' output. Bump on breaking shape changes.
+    /// </summary>
+    private const string DiscoveryJsonVersion = "1.0";
 
     internal Func<IStopwatch> CreateStopwatch { get; set; } = SystemStopwatch.StartNew;
 
@@ -1007,10 +1014,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     internal void TestDiscovered(
         string executionId,
-        string? displayName,
-        string? uid,
-        string? filePath,
-        int? lineNumber)
+        DiscoveredTestInfo test)
     {
         if (!_isDiscovery)
         {
@@ -1023,12 +1027,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
-        asm.DiscoverTest(displayName, uid, filePath, lineNumber);
+        asm.DiscoverTest(test);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
     public void AppendTestDiscoverySummary(ITerminal terminal, int? exitCode)
     {
+        if (_options.ListTestsFormat == TestListFormat.Json)
+        {
+            AppendTestDiscoveryJson(terminal);
+            return;
+        }
+
         terminal.AppendLine();
 
         var assemblies = _assemblies.Select(asm => asm.Value).OrderBy(a => a.Assembly).Where(a => a is not null).ToList();
@@ -1042,20 +1052,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid, string? filePath, int? lineNumber) in assembly.DiscoveredTestNames)
+            foreach (DiscoveredTestInfo test in assembly.DiscoveredTestNames)
             {
-                if (displayName is not null)
+                if (test.DisplayName is not null)
                 {
                     terminal.Append(SingleIndentation);
-                    terminal.Append(displayName);
-                    if (!string.IsNullOrEmpty(filePath))
+                    terminal.Append(test.DisplayName);
+                    if (!string.IsNullOrEmpty(test.FilePath))
                     {
                         terminal.Append(" [");
-                        terminal.Append(filePath);
-                        if (lineNumber is > 0)
+                        terminal.Append(test.FilePath);
+                        if (test.LineNumber is > 0)
                         {
                             terminal.Append(':');
-                            terminal.Append(lineNumber.Value.ToString(CultureInfo.InvariantCulture));
+                            terminal.Append(test.LineNumber.Value.ToString(CultureInfo.InvariantCulture));
                         }
 
                         terminal.Append(']');
@@ -1088,6 +1098,90 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         AppendExitCodeAndUrl(terminal, exitCode, isRun: false);
+    }
+
+    private void AppendTestDiscoveryJson(ITerminal terminal)
+    {
+        var assemblies = _assemblies.Select(asm => asm.Value).Where(a => a is not null).OrderBy(a => a.Assembly).ToList();
+
+        using var buffer = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = true }))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("version", DiscoveryJsonVersion);
+            writer.WriteStartArray("testContainers");
+
+            foreach (TestProgressState assembly in assemblies)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("assemblyPath", assembly.Assembly);
+                WriteNullableString(writer, "targetFramework", assembly.TargetFramework);
+                WriteNullableString(writer, "architecture", assembly.Architecture);
+
+                writer.WriteStartArray("tests");
+                foreach (DiscoveredTestInfo test in assembly.DiscoveredTestNames)
+                {
+                    writer.WriteStartObject();
+                    WriteNullableString(writer, "uid", test.Uid);
+                    WriteNullableString(writer, "displayName", test.DisplayName);
+                    WriteNullableString(writer, "namespace", test.Namespace);
+                    WriteNullableString(writer, "typeName", test.TypeName);
+                    WriteNullableString(writer, "methodName", test.MethodName);
+
+                    writer.WriteStartArray("parameterTypeFullNames");
+                    foreach (string parameterTypeFullName in test.ParameterTypeFullNames)
+                    {
+                        writer.WriteStringValue(parameterTypeFullName);
+                    }
+
+                    writer.WriteEndArray();
+
+                    writer.WriteStartArray("traits");
+                    foreach ((string key, string value) in test.Traits)
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteString("key", key);
+                        writer.WriteString("value", value);
+                        writer.WriteEndObject();
+                    }
+
+                    writer.WriteEndArray();
+
+                    WriteNullableString(writer, "filePath", test.FilePath);
+                    if (test.LineNumber is { } lineNumber)
+                    {
+                        writer.WriteNumber("lineNumber", lineNumber);
+                    }
+                    else
+                    {
+                        writer.WriteNull("lineNumber");
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+
+        terminal.Append(Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length));
+        terminal.AppendLine();
+    }
+
+    private static void WriteNullableString(Utf8JsonWriter writer, string propertyName, string? value)
+    {
+        if (value is null)
+        {
+            writer.WriteNull(propertyName);
+        }
+        else
+        {
+            writer.WriteString(propertyName, value);
+        }
     }
 
     public void AssemblyDiscoveryCompleted(int testCount) =>

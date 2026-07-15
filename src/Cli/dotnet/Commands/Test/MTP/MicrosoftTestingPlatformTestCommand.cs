@@ -69,6 +69,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var testOptions = new TestOptions(
             IsHelp: isHelp,
             IsDiscovery: parseResult.HasOption(definition.ListTestsOption),
+            ListTestsFormat: GetListTestsFormat(parseResult, definition),
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
@@ -101,6 +102,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
         }
     }
 
+    private static TestListFormat GetListTestsFormat(ParseResult parseResult, TestCommandDefinition.MicrosoftTestingPlatform definition)
+    {
+        // '--list-tests' has ZeroOrOne arity. A bare '--list-tests' (no value) defaults to text.
+        // The accepted values are constrained to 'text'/'json' by the option definition.
+        string? value = parseResult.GetValue(definition.ListTestsOption);
+        return string.Equals(value, TestCommandDefinition.MicrosoftTestingPlatform.ListTestsFormatJson, StringComparison.Ordinal)
+            ? TestListFormat.Json
+            : TestListFormat.Text;
+    }
+
     private static TerminalTestReporter InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
@@ -109,6 +120,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var showPassedTests = parseResult.GetValue(definition.OutputOption) == OutputOptions.Detailed;
         var noProgress = parseResult.HasOption(definition.NoProgressOption);
         var noAnsi = parseResult.HasOption(definition.NoAnsiOption);
+
+        // When emitting machine-readable JSON discovery output, stdout must contain only the JSON
+        // document. Force off ANSI, progress rendering and the per-assembly "Discovering tests from..."
+        // banners so nothing else is interleaved with the JSON.
+        bool isJsonDiscovery = testOptions.IsDiscovery && testOptions.ListTestsFormat == TestListFormat.Json;
+        if (isJsonDiscovery)
+        {
+            noProgress = true;
+            noAnsi = true;
+        }
 
         // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
@@ -133,9 +154,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
             ShowProgress = !noProgress,
             ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
             AnsiMode = ansiMode,
-            ShowAssembly = true,
-            ShowAssemblyStartAndComplete = true,
+            ShowAssembly = !isJsonDiscovery,
+            ShowAssemblyStartAndComplete = !isJsonDiscovery,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
+            ListTestsFormat = testOptions.ListTestsFormat,
         });
 
         // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
