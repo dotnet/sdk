@@ -317,8 +317,8 @@ If there is more than one individual candidate:
 
    This public HTML request requires no GitHub API token or cookies. Do not use `api.github.com` or a GitHub issue-search tool for this load check, and do not fetch any URL derived from issue content.
 5. Read the integer in the response's embedded `"issueCount":<integer>` field. A single field with a value of zero is a successful result. Treat a failed request, a non-integer value, or a missing or ambiguous `issueCount` field as a failed search.
-6. Assign the candidate with the lowest successful count. Break a tie randomly.
-7. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
+6. Treat the first assignable candidate with a successful load search as the initial candidate. Select the candidate with the lowest successful count; break a tie randomly.
+7. If the selected candidate differs from the initial candidate because their count is lower, record both candidates and counts for the Assignment details. If some load searches fail, compare only candidates with successful searches. If all load searches fail, choose one assignable candidate randomly and do not add Assignment details. If no candidate is assignable, leave the issue unassigned and add `needs team triage`.
 
 Use `assignee:`, not `author:`: authored issues do not measure assignment load. The `label:untriaged` and `created:>@today-1w` filters make this an approximation of each candidate's current, recently created untriaged backlog; they do not measure all assigned work or assignment time.
 
@@ -382,9 +382,19 @@ This confidence value belongs in the comment; do not create or apply a repositor
 
 *Summary:* <One sentence of at most 25 words describing the reported problem or request.>
 
-- **🏷️ Labels:** <applied, modified, and already-present relevant labels, or "none">
-- **💻 Assignment:** <@individual selected for assignment, or "none">
-- **Owning Team:** <@team handles, or "none">
+<details>
+<summary><strong>🏷️ Labels:</strong> <applied, modified, and already-present relevant labels, or "none"></summary>
+</details>
+
+<details>
+<summary><strong>💻 Assignment:</strong> <@individual selected for assignment, or "none"></summary>
+
+<Only when load balancing selected someone other than the initial candidate: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format all handles in this detail to avoid additional mentions. Omit this body entirely otherwise.>
+</details>
+
+<details>
+<summary><strong>Owning Team:</strong> <@team handles, or "none"></summary>
+</details>
 
 <details>
 <summary><strong>Confidence:</strong> <`🟩 high`, `🟨 medium`, or `🟥 low`></summary>
@@ -393,6 +403,6 @@ This confidence value belongs in the comment; do not create or apply a repositor
 </details>
 ```
 
-Preserve the heading, blank lines, bullet indentation, details markup, bold field names, and field order. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the labels bullet that `untriaged` remains for manual review. Do not mention unassigned individuals. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
+Preserve the heading, blank lines, details markup, bold field names, and field order. Use `none` rather than omitting a field. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels summary that `untriaged` remains for manual review. Labels and Owning Team details have no body. Assignment has a body only for a successful lower-load override; otherwise it has no body. Do not mention unassigned individuals outside the code-formatted Assignment override explanation. Write owning team handles as raw mentions; safe outputs decides whether they can remain live.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.
