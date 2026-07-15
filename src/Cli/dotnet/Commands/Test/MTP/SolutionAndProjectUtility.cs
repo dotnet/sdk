@@ -240,7 +240,8 @@ internal static class SolutionAndProjectUtility
         EvaluationContext evaluationContext,
         BuildOptions buildOptions,
         string? configuration,
-        string? platform)
+        string? platform,
+        HashSet<string>? visitedTraversalProjects = null)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform);
@@ -251,9 +252,21 @@ internal static class SolutionAndProjectUtility
         // evaluate each of them. This is done recursively so that nested traversal projects work as well.
         if (IsTraversalProject(projectInstance))
         {
-            foreach (var referencedProjectFullPath in GetTraversalReferencedProjects(projectInstance))
+            // Track visited projects across the whole traversal graph so that a project referenced by
+            // multiple traversal projects (a "diamond") is only tested once, and to guard against cycles
+            // (a traversal project that transitively references itself).
+            visitedTraversalProjects ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            visitedTraversalProjects.Add(Path.GetFullPath(projectFilePath));
+
+            foreach (var reference in GetTraversalReferencedProjects(projectInstance, configuration, platform))
             {
-                projects.AddRange(GetProjectProperties(referencedProjectFullPath, projectCollection, evaluationContext, buildOptions, configuration, platform));
+                if (!visitedTraversalProjects.Add(reference.FullPath))
+                {
+                    // Already handled via another traversal path (diamond) or a cycle.
+                    continue;
+                }
+
+                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, reference.Configuration, reference.Platform, visitedTraversalProjects));
             }
 
             return projects;
@@ -335,21 +348,34 @@ internal static class SolutionAndProjectUtility
         => bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.IsTraversal), out bool isTraversal) && isTraversal;
 
     /// <summary>
-    /// Returns the full paths of the projects a traversal project references. The globs and
-    /// conditions in the traversal project are already expanded by MSBuild during evaluation, so the
-    /// resolved <c>ProjectReference</c> items represent the effective set of projects to test.
+    /// Returns the projects a traversal project references. The globs and conditions in the traversal
+    /// project are already expanded by MSBuild during evaluation, so the resolved <c>ProjectReference</c>
+    /// items represent the effective set of projects to test. Per-reference <c>Configuration</c>/
+    /// <c>Platform</c> metadata is honored when present (falling back to the values inherited from the
+    /// traversal project), mirroring how MSBuild lets a <c>ProjectReference</c> target a specific
+    /// configuration or platform.
     /// </summary>
-    private static IEnumerable<string> GetTraversalReferencedProjects(ProjectInstance projectInstance)
+    private static IEnumerable<(string FullPath, string? Configuration, string? Platform)> GetTraversalReferencedProjects(
+        ProjectInstance projectInstance,
+        string? inheritedConfiguration,
+        string? inheritedPlatform)
     {
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (ProjectItemInstance projectReference in projectInstance.GetItems(ProjectProperties.ProjectReferenceItemName))
         {
             // "FullPath" is a well-known item metadata that MSBuild computes relative to the project directory.
             var fullPath = projectReference.GetMetadataValue("FullPath");
-            if (!string.IsNullOrEmpty(fullPath) && seen.Add(fullPath))
+            if (string.IsNullOrEmpty(fullPath))
             {
-                yield return fullPath;
+                continue;
             }
+
+            var configurationMetadata = projectReference.GetMetadataValue(ProjectProperties.Configuration);
+            var platformMetadata = projectReference.GetMetadataValue(ProjectProperties.Platform);
+
+            yield return (
+                Path.GetFullPath(fullPath),
+                string.IsNullOrEmpty(configurationMetadata) ? inheritedConfiguration : configurationMetadata,
+                string.IsNullOrEmpty(platformMetadata) ? inheritedPlatform : platformMetadata);
         }
     }
 

@@ -441,6 +441,35 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
+        public void RunNestedTraversalProjectWithDiamond_ShouldRunSharedProjectOnce(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjectsNested", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Each test-host launch drops a uniquely-named marker file, giving a deterministic count of
+            // how many times each referenced project actually ran (robust to terminal progress re-rendering).
+            string markerDir = Path.Combine(testInstance.Path, "run-markers");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TRAVERSAL_MARKER_DIR", markerDir)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            // SharedTestProject is referenced by both the top-level dirs.proj and the nested sub\dirs.proj
+            // (a diamond). Cross-recursion de-duplication must ensure it is only run once, while the leaf
+            // project reachable only through the nested traversal must also run (proving recursion works).
+            int sharedRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "SharedTestProject-*.marker").Length : 0;
+            int leafRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "LeafTestProject-*.marker").Length : 0;
+
+            sharedRuns.Should().Be(1);
+            leafRuns.Should().Be(1);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
