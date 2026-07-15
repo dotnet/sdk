@@ -23,8 +23,9 @@ Reload).
   `Watch/AppModels/HotReloadAppModel.cs` — a mismatch makes the agent silently fail
   to load and breaks tests.
 - **Hot Reload protocol differs per app model.** .NET Core apps use a binary
-  named-pipe protocol; Blazor WASM uses JSON over WebSocket. Each `*AppModel` has its
-  own `IHotReloadClient`; a new app model needs its own protocol implementation.
+  named-pipe protocol; Blazor WASM uses JSON over WebSocket. Each protocol has its
+  own `HotReloadClient` subclass (e.g. `DefaultHotReloadClient`,
+  `WebAssemblyHotReloadClient`); a new app model may need its own implementation.
 - **`CompilationHandler` drives Roslyn** via
   `Microsoft.CodeAnalysis.ExternalAccess.HotReload`; unsupported edits fall
   back to a full rebuild + restart.
