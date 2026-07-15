@@ -245,6 +245,20 @@ internal static class SolutionAndProjectUtility
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform);
 
+        // Traversal projects (e.g. Microsoft.Build.Traversal "dirs.proj") are not test projects themselves.
+        // They act as a container that forwards build/test operations to their ProjectReference items.
+        // Special-case them the same way solutions are handled: expand into the referenced projects and
+        // evaluate each of them. This is done recursively so that nested traversal projects work as well.
+        if (IsTraversalProject(projectInstance))
+        {
+            foreach (var referencedProjectFullPath in GetTraversalReferencedProjects(projectInstance))
+            {
+                projects.AddRange(GetProjectProperties(referencedProjectFullPath, projectCollection, evaluationContext, buildOptions, configuration, platform));
+            }
+
+            return projects;
+        }
+
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
 
@@ -312,7 +326,34 @@ internal static class SolutionAndProjectUtility
     }
 
     /// <summary>
-    /// Performs device selection for each TFM BEFORE the build, so that device-provided
+    /// Determines whether the evaluated project is a traversal project (e.g. a
+    /// <c>Microsoft.Build.Traversal</c> "dirs.proj"). Traversal projects set the
+    /// <c>IsTraversal</c> property to <c>true</c> and merely forward operations to their
+    /// <c>ProjectReference</c> items rather than producing a test module of their own.
+    /// </summary>
+    private static bool IsTraversalProject(ProjectInstance projectInstance)
+        => bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.IsTraversal), out bool isTraversal) && isTraversal;
+
+    /// <summary>
+    /// Returns the full paths of the projects a traversal project references. The globs and
+    /// conditions in the traversal project are already expanded by MSBuild during evaluation, so the
+    /// resolved <c>ProjectReference</c> items represent the effective set of projects to test.
+    /// </summary>
+    private static IEnumerable<string> GetTraversalReferencedProjects(ProjectInstance projectInstance)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (ProjectItemInstance projectReference in projectInstance.GetItems(ProjectProperties.ProjectReferenceItemName))
+        {
+            // "FullPath" is a well-known item metadata that MSBuild computes relative to the project directory.
+            var fullPath = projectReference.GetMetadataValue("FullPath");
+            if (!string.IsNullOrEmpty(fullPath) && seen.Add(fullPath))
+            {
+                yield return fullPath;
+            }
+        }
+    }
+
+    /// <summary>
     /// RuntimeIdentifiers are included in the build. Returns a result with device mappings
     /// and TestTfmsInParallel setting, or null if no device selection is needed.
     /// When projectCollection/evaluationContext are provided, reuses them to avoid redundant evaluation.

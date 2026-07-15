@@ -113,4 +113,6 @@ internal static class ProjectProperties
     internal const string AppDesignerFolder = "AppDesignerFolder";
     internal const string TestTfmsInParallel = "TestTfmsInParallel";
     internal const string BuildInParallel = "BuildInParallel";
+    internal const string IsTraversal = "IsTraversal";
+    internal const string ProjectReferenceItemName = "ProjectReference";
 }

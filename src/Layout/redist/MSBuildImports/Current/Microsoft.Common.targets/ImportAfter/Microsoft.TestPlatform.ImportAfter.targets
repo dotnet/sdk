@@ -19,5 +19,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Condition="Exists('$(VSTestTargets)')" Project="$(VSTestTargets)" />
   <Target Name="_MTPBuild">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Condition="'$(IsTestingPlatformApplication)'=='true'" />
+    <!-- Traversal projects (Microsoft.Build.Traversal) are containers that don't build themselves;
+         forward the MTP build to their referenced projects so the referenced test projects get built. -->
+    <MSBuild Projects="@(ProjectReference)" Targets="_MTPBuild" Condition="'$(IsTraversal)'=='true'" />
   </Target>
 </Project>

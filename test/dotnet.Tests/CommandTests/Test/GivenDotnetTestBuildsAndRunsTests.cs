@@ -414,6 +414,33 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
+        public void RunTraversalProject_ShouldRunReferencedTestProjects(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // The traversal project itself is not a test project. It should expand to its referenced
+                // test projects, both of which run (and report zero tests via the dummy adapter).
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.Contain("total: 0")
+                    .And.Contain("succeeded: 0")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
