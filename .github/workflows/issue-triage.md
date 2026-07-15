@@ -36,6 +36,10 @@ tools:
     min-integrity: none
 safe-outputs:
   report-failure-as-issue: false
+  missing-tool:
+    create-issue: false
+  report-incomplete:
+    create-issue: false
   mentions:
     allowed-collaborators: true
     allow-context: true
@@ -52,6 +56,7 @@ safe-outputs:
     max: 1
     target: "${{ github.event.issue.number || github.event.inputs.issue_number }}"
   noop:
+    report-as-issue: false
 ---
 
 # Issue Triage
@@ -87,7 +92,7 @@ For an incomplete or nearly empty bug report:
 
 1. Add `needs-info`.
 2. Keep `untriaged`.
-3. Post one comment beginning with the author username from issue metadata:
+3. Post one comment beginning with the author username from issue metadata. The target issue author is allowed by safe outputs through the event context, including when they are not a repository collaborator:
 
    ```markdown
    @<author>, please provide: <specific missing items>.
@@ -96,7 +101,7 @@ For an incomplete or nearly empty bug report:
 4. If an MSBuild-driven command (`build`, `restore`, `publish`, `pack`, or `test`, including Visual Studio equivalents) fails or behaves incorrectly and no binlog is attached, append this exact text to the comment:
 
   ```markdown
-  To help diagnose your problem, please collect and attach a binlog using the [binlog collection guide](https://aka.ms/binlog). Binary logs may contain paths, project and imported-file contents, and environment variables. Review the log and remove anything needed before attaching it.
+  To help diagnose your problem, please collect and attach a binlog using the [binlog collection guide](https://aka.ms/binlog). Binary logs may contain paths, project and imported-file contents, and environment variables. Review the log and remove any sensitive or unwanted content before attaching it.
   ```
 
   Do not request a binlog for installation, CLI parsing, or runtime-only failures.
@@ -116,12 +121,14 @@ Choose only labels returned by the repository label list. Never invent a label.
    | `cookie` | Bounded coding-agent work; no design decision required |
    | `Test Debt` | Test gaps, disabled tests, flaky tests, or testing debt |
    | `performance` | Speed, memory, startup, or throughput is central |
-   | `dotnetup` | The dotnetup issues are routed via release/dnup code |
+    | `dotnetup` | The dotnetup issues are routed via release/dnup code; also apply `Area-dotnetup` for owner routing |
    | `breaking-change` | Existing users would experience a behavioral break |
    | `good first issue`, `help wanted` | Suitable for new or community contributors |
    | `backport` | Requests a servicing/release-branch port |
 
 Recognize standard SDK concepts: project commands; MSBuild project files and targets; NuGet restore; workloads; templates; tools; trimming, Native AOT, single-file, and ReadyToRun publishing; source-build/VMR; Static Web Assets; Blazor; and Razor.
+
+Add at most six labels total during the run, including `needs-info` or `needs team triage`. When the limit would be exceeded, prioritize the primary area label, the type label, and required routing/status labels over optional special or additional area labels.
 
 ### 4. Resolve owners and route from CODEOWNERS
 
@@ -175,7 +182,7 @@ This is temporary instruction context, not a live membership lookup. Do not infe
 2. Start from the END of `CODEOWNERS` and scan each line upward.
 3. For each heading containing one or more complete `Area-*` names, compare each name case-insensitively with the selected area label. A combined heading such as `# Area-ILLink Area-ReadyToRun` matches either named label.
 4. STOP at the first heading containing the selected area label. This is the matching section.
-5. From that heading, read downward and collect every owner on its path lines until the next heading containing `Area-*`. De-duplicate the owners, then separate individual owners from team owners.
+5. From that heading, read downward through blank lines and path lines. Collect every owner on those path lines, but STOP at the first subsequent comment line, whether or not that comment contains `Area-*`. This prevents unrelated sections such as `# AI` or compatibility ownership from being merged into the preceding area. De-duplicate the owners, then separate individual owners from team owners.
 
 **Why this matters:** A label may appear in more than one section. Starting from the end makes the later section win, preserving the Azure workflow's deterministic precedence instead of combining owners from competing sections.
 
@@ -243,7 +250,7 @@ ELSE (no Area-* section matches any selected label, or the matched sections have
 
 Resolve at most three selected areas. If the issue already has an assignee, do not add or replace assignees. Never search for, assign, or CC a login taken only from issue text.
 
-Fold owner routing into the single triage comment in step 6; do not post a separate routing comment. Assignment notifies the selected individual. In the **Owner routing** field, CC the other individual owners and team owners with live mentions when safe outputs permits them.
+Fold owner routing into the single triage comment in step 6; do not post a separate routing comment. Assignment notifies the selected individual. In the **Owner routing** field, write every individual CC as a raw `@username` mention without backticks; safe outputs will preserve verified collaborators in the target repository and neutralize anyone else. List owning team handles in code formatting for context; do not attempt a live `@dotnet/team` mention because team-handle authorization requires an organization membership lookup and token.
 
 ### 5. Handle `untriaged`
 
@@ -276,13 +283,13 @@ This confidence value belongs in the comment; do not create or apply a repositor
 **Triage summary:**
 
 - **🏷️ Labels:** <applied, modified, and already-present relevant labels, or "none">
-- **💻 Assignment:** <individual assignees, or "none">
+- **💻 Assignment requested:** <individual selected for assignment, or "none">. This reports the request, not its outcome; safe outputs applies the assignment after the comment content is generated.
 - **Owner routing:** <cc other individual owners and teams, or "none">
 - **Confidence:** <`🟩 high`, `🟨 medium`, or `🟥 low`> — <brief reason>
 
 ⭐ <One or two sentences describing the reported problem or request and whether it is actionable.>
 ```
 
-Preserve the heading, blank lines, bullet indentation, bold field names, and field order. Use `none` rather than omitting a field. If nothing matched, state in the labels bullet that `untriaged` remains for manual review. Use live mentions for CCs when safe outputs permits them; otherwise format the handles as code.
+Preserve the heading, blank lines, bullet indentation, bold field names, and field order. Use `none` rather than omitting a field. If nothing matched, state in the labels bullet that `untriaged` remains for manual review. Individual CCs must be raw mentions without backticks so safe outputs can preserve verified collaborators; team handles must be code-formatted context rather than live mentions.
 
 Call `noop` only when step 1 finds prior triage or the issue cannot be analyzed from its available content. Do not call `noop` after any other safe output.
