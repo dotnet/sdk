@@ -103,6 +103,25 @@ Canonical scenarios:
 - For fast inner-loop runs of `dotnet.Tests` without a full rebuild, use the
   `incremental-test` skill.
 
+## Guardrails
+
+These are hard boundaries for agents working in this repo. Treat them as "must not" rules.
+
+### Do not hand-edit generated files
+
+Some files are produced by tooling and are overwritten the next time the build or a
+generation step runs. Editing them by hand causes drift and merge conflicts. Never
+manually edit:
+
+- **`.xlf` localization files.** Change the source `.resx` strings instead, then
+  regenerate the `.xlf` with the `/t:UpdateXlf` MSBuild target. Correctly regenerated
+  entries have a state of `needs-review-translation` or `new`. See
+  [Localization](../documentation/project-docs/Localization.md) for the full workflow.
+- **Generated man pages** under `documentation/manpages/sdk`. These are generated from
+  documentation; change the upstream documentation in https://github.com/dotnet/docs instead.
+- **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
+- More broadly, any file marked `linguist-generated=true` in `.gitattributes`.
+
 ## Coding Style
 
 - Code should match the style of the file it's in.
@@ -133,16 +152,16 @@ Canonical scenarios:
 
 ## Localization
 
-- Avoid modifying .xlf files and instead prompt the user to update them using the `/t:UpdateXlf` target on MSBuild. Correctly automatically modified .xlf files have elements with state `needs-review-translation` or `new`.
 - Consider localizing strings in .resx files when possible.
 - When adding a new NETSDK error message in `src/Tasks/Common/Resources/Strings.resx`, assign the next available NETSDK code, append the entry at the end of the file, and update the trailing "latest message added" guard comment.
 
-## Documentation
+## Keeping AI context and docs in sync
 
-- Do not manually edit files under documentation/manpages/sdk as these are generated based on documentation and should not be manually modified.
+Before you consider a change complete, ask: **does this change require updates to AI context, instructions, docs, commands, tests, or workflow guidance — and if so, make those updates in the same PR.** When your change alters something a contributor-facing or AI-facing artifact describes, update that artifact in the same change rather than leaving it stale. Check whether any of the following now describe out-of-date behavior:
 
-## External Dependencies
+- `.github/copilot-instructions.md` (this file) and any `AGENTS.md` in the affected subdirectories — repository conventions, guardrails, build/test recipes, and architecture claims.
+- `.github/skills/*/SKILL.md` and `.github/agents/*.agent.md` — agent workflow guidance and skills.
+- `documentation/` — developer guide and area-specific docs.
+- Command help/usage text, error messages, and localized `.resx` strings that documentation or instructions reference.
 
-- Changes that require modifications to the dotnet/templating repository (Microsoft.TemplateEngine packages) should be made directly in that repository, not worked around in this repo.
-- The dotnet/templating repository owns the TemplateEngine.Edge, TemplateEngine.Abstractions, and related packages.
-- If a change requires updates to template engine behavior or formatting (e.g., DisplayName properties), file an issue in dotnet/templating and make the changes there rather than adding workarounds in this SDK repository.
+If the change is genuinely internal and unobservable to users, contributors, or agents, no artifact update is needed — but make that a deliberate call, not an oversight.

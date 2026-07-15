@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     /// <summary>
     /// MSBuild custom task to create HelixWorkItems given test project publish information
     /// </summary>
-    public class SDKCustomCreateTestWorkItemsWithTestExclusion : Build.Utilities.Task
+    public class CreateHelixTestWorkItems : Build.Utilities.Task
     {
         /// <summary>
         /// An array of test project workitems containing the following metadata:
@@ -177,9 +177,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             bool isMTPProject = string.Equals(isMTPProjectMetadata, "true", StringComparison.OrdinalIgnoreCase);
 
             // True when the Microsoft.Testing.Extensions.TrxReport extension is loaded on the
-            // project. MSTest.Sdk enables it by default; xUnit v3 MTP projects do not bundle
-            // it unless added explicitly. Passing '--report-trx' to an MTP host without the
-            // extension fails with an 'unknown argument' error, so only emit it when known safe.
+            // project. MSTest.Sdk enables it by default. Passing '--report-trx' to an MTP host
+            // without the extension fails with an 'unknown argument' error, so only emit it when
+            // known safe.
             testProject.TryGetMetadata("EnableTrxReport", out string enableTrxReportMetadata);
             bool enableTrxReport = string.Equals(enableTrxReportMetadata, "true", StringComparison.OrdinalIgnoreCase);
 
@@ -232,13 +232,18 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                 var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
 
-                // xUnit v3 tests run out-of-process: the VSTest adapter launches the AppHost executable.
-                // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive,
-                // so we need to restore it before running.
+                // Test executables run out-of-process (MTP hosts are launched directly; the legacy
+                // VSTest path launches the AppHost executable). On POSIX, the execute bit is lost
+                // when the Helix SDK packages the payload as a zip archive, so restore it before running.
                 string exeName = Path.GetFileNameWithoutExtension(assemblyName);
                 string chmodPrefix = IsPosixShell ? $"chmod +x {exeName} && " : "";
                 // On macOS, ad-hoc sign the test exe with get-task-allow entitlement so createdump can attach via task_for_pid for crash dumps.
                 string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && " : "";
+
+                // blame-hang-timeout / hangdump-timeout is set to a % of the Helix work item timeout so
+                // that a hang dump can be captured and the results written before Helix hard-kills the
+                // process. Shared by both the MTP (--hangdump) and legacy VSTest (--blame-hang) branches.
+                var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
 
                 string command;
                 if (isMTPProject)
@@ -254,12 +259,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     //   --results-directory     same as VSTest
                     //   --report-trx            replaces '--logger trx' -- only emitted when the
                     //                           Microsoft.Testing.Extensions.TrxReport extension is
-                    //                           loaded (always true for MSTest.Sdk default profile;
-                    //                           not bundled with xUnit v3 MTP)
+                    //                           loaded (always true for MSTest.Sdk default profile)
                     //   --diagnostic            replaces VSTest '-d <log>'
-                    // Note: --logger "console;verbosity=detailed" and --blame-hang* have no direct MTP
-                    // equivalent in the MSTest.Sdk default extension set; the Helix work-item timeout
-                    // (TestWorkItemTimeout / HELIX_WORK_ITEM_TIMEOUT) still terminates runaway runs.
+                    //   --crashdump             captures a dump if the test host crashes
+                    //   --hangdump              captures a dump if the run stops making progress
+                    // Note: --logger "console;verbosity=detailed" has no direct MTP equivalent in the
+                    // MSTest.Sdk default extension set; the Helix work-item timeout (TestWorkItemTimeout
+                    // / HELIX_WORK_ITEM_TIMEOUT) still terminates runaway runs.
                     // Carry over the same execution-directory / MSBuild SDK resolver environment
                     // variables that the 'dotnet test' path sets via '-e'. They are required for
                     // macOS workitem-directory execution (DOTNET_SDK_TEST_EXECUTION_DIRECTORY) and
@@ -295,6 +301,15 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     // See https://github.com/dotnet/sdk/issues/54963.
                     string ignoreZeroTestsArg = "--ignore-exit-code 8";
 
+                    // Capture a crash dump on test-host crash and a hang dump when the run stops making
+                    // progress. --hangdump-timeout is a % of the work item timeout (see blameHangTimeout
+                    // above) so the dump is written before Helix hard-kills the work item. The dump files
+                    // land in the results directory and are copied to HELIX_WORKITEM_UPLOAD_ROOT by the
+                    // HelixPostCommands *.dmp glob in UnitTests.proj. Enabled repo-wide via
+                    // EnableMicrosoftTestingExtensions{Crash,Hang}Dump in test/Directory.Build.props.
+                    // --crashdump is recognized (and silently no-ops) on the .NET Framework MTP hosts.
+                    string dumpArgs = $"--crashdump --hangdump --hangdump-timeout {blameHangTimeout.TotalMinutes:0}m";
+
                     // .NET Framework apphosts (TargetPath is the '.exe') run directly; .NET (Core)
                     // assemblies (TargetPath is the '.dll') run via 'dotnet exec'.
                     string mtpLauncher = runtimeTargetFrameworkParsed.Framework == ".NETFramework"
@@ -302,13 +317,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                         : $"{driver} exec {assemblyName}";
 
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{envPrefix}{mtpLauncher} " +
-                              $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg} {ignoreZeroTestsArg}";
+                              $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg} {dumpArgs} {ignoreZeroTestsArg}";
                 }
                 else
                 {
-                    // blame-hang-timeout is set to a % of the Helix work item timeout so that blame can
-                    // collect hang dumps and write the TRX file before Helix hard-kills the process.
-                    var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                               $"{(TestArguments != null ? " " + TestArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {arguments}";
                 }

@@ -289,6 +289,40 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        public void It_does_not_build_project_references_when_no_build_is_requested()
+        {
+            var referencedProject = new TestProject()
+            {
+                Name = "ReferencedProject",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            var referencingProject = new TestProject()
+            {
+                Name = "ReferencingProject",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            referencingProject.ReferencedProjects.Add(referencedProject);
+
+            var testAsset = TestAssetsManager.CreateTestProject(referencingProject);
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            var resolveReferencesCommand = new MSBuildCommand(Log, "ResolveReferences", buildCommand.FullPathProjectFile);
+
+            resolveReferencesCommand
+                .Execute("/p:NoBuild=true")
+                .Should()
+                .Pass();
+
+            resolveReferencesCommand
+                .Execute("/p:NoBuild=true", "/p:BuildProjectReferences=true")
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1085");
+        }
+
+        [TestMethod]
         public void It_conditionally_references_project_based_on_tfm()
         {
             var testProjectA = new TestProject()

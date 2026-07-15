@@ -23,15 +23,6 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
 
     <!--
-      DRAFT: consuming the source-only Microsoft.Testing.Platform.Internal.DotnetTest package compiles the shared
-      terminal-reporter source into THIS assembly. A few of its platform abstractions (IConsole/IStopwatch/IColor/
-      SystemConsole/SystemConsoleColor/SystemStopwatch) are NOT [Microsoft.CodeAnalysis.Embedded], so a consumer that
-      also transitively sees Microsoft.Testing.Platform gets benign CS0436 'type conflicts with imported type'
-      warnings (the locally-compiled copy wins). TreatWarningsAsErrors=true in this repo turns those into errors, so
-      they must be suppressed. See the package PACKAGE.md. -->
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
-
-    <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
       https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
     -->
@@ -88,15 +79,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
-    <!--
-      DRAFT: source-only package that supplies the 'dotnet test' <-> Microsoft.Testing.Platform wire contract
-      (IPC/ObjectFieldIds.cs + Constants.cs) and the terminal reporter as compiled source, replacing the files
-      hand-copied under Commands/Test/MTP/. The package's source lives in the Microsoft.Testing.Platform.IPC and
-      Microsoft.Testing.Platform.OutputDevice.Terminal namespaces, so consuming code under
-      Microsoft.DotNet.Cli.Commands.Test.* must be re-pointed to those namespaces (see PR description for the full
-      reconciliation list). It ships on the Microsoft.Testing.Platform preview train and must flow via darc once
-      testfx publishes it (see Directory.Packages.props). -->
-    <PackageReference Include="Microsoft.Testing.Platform.Internal.DotnetTest" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.Build" />
@@ -106,11 +88,7 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(TargetOS)' == 'windows'">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBA. -->
-    <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" PrivateAssets="all" Condition="'$(TargetOS)' == 'windows'" />
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
 
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />

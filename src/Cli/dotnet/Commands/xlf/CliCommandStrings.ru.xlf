@@ -92,6 +92,16 @@
         <target state="translated">Построитель .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsRequireProject">
+        <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
+        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
+        <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
+        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
         <target state="new">No test projects were found.</target>
@@ -3187,6 +3197,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">Запуск модульных тестов с помощью средства, указанного в проекте .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Обнаружение тестов завершено с кодом выхода неудачного состояния: {0} (сведения: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">Обнаружены тесты ({0}) в сборках ({1})</target>
@@ -3201,6 +3216,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">Целевая платформа для выполнения тестов. Целевая платформа также должна быть указана в файле проекта.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Выполнение теста завершено с кодом выхода неудачного состояния: {0} (сведения: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
