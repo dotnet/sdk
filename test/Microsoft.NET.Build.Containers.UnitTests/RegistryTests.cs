@@ -552,7 +552,10 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        // The digest must be the actual SHA-256 of the response bytes so that the internal
+        // branch's CopyToAndVerifyAsync digest validation passes after the download succeeds.
+        var responseBytes = new byte[] { 1, 2, 3 };
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -560,7 +563,7 @@ public class RegistryTests : IDisposable
             .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken))
             .ThrowsAsync(new Exception("Simulated failure 1")) // First attempt fails
             .ThrowsAsync(new Exception("Simulated failure 2")) // Second attempt fails
-            .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 })); // Third attempt succeeds
+            .ReturnsAsync(new MemoryStream(responseBytes)); // Third attempt succeeds
 
         Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
 
@@ -592,7 +595,7 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_ThrowsAfterMaxRetries));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
