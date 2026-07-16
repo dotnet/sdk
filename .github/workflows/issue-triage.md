@@ -166,6 +166,7 @@ Choose only labels returned by the repository label list. Never invent a label.
    | `breaking-change` | Existing users would experience a behavioral break |
    | `good first issue`, `help wanted` | Suitable for new or community contributors |
    | `backport` | Requests a servicing/release-branch port |
+   | `needs team triage` | A complex request that involves product or behavioral design decisions that likely require team conversation and alignment |
 
 Recognize standard SDK area groups and concepts: project commands; MSBuild project files and targets; NuGet; workloads; templates; tools; trimming, Native AOT, single-file, and ReadyToRun publishing; source-build/VMR; Static Web Assets; Blazor; WebAssembly; MAUI; vs-test; ASP .NET Core; Infrastructure; dotnet format; .NET Tools; Roslyn; VS (Visual Studio); ClickOnce; dotnet test; dotnet watch; containers; SC.L (system command line library); .NET templates or dotnet new; and Razor.
 
