@@ -170,6 +170,27 @@ Choose only labels returned by the repository label list. Never invent a label.
 
 Recognize standard SDK area groups and concepts: project commands; MSBuild project files and targets; NuGet; workloads; templates; tools; trimming, Native AOT, single-file, and ReadyToRun publishing; source-build/VMR; Static Web Assets; Blazor; WebAssembly; MAUI; vs-test; ASP .NET Core; Infrastructure; dotnet format; .NET Tools; Roslyn; VS (Visual Studio); ClickOnce; dotnet test; dotnet watch; containers; SC.L (system command line library); .NET templates or dotnet new; and Razor.
 
+### 4. Determine potential duplicates or related issues
+
+Search for issues that are either the same root technical cause (aka, a duplicate issue), or for issues that seem related.
+
+Duplicate Issues:
+If the issue contains an error message that appears in other issues, they are likely (but not always) to be connected.
+If you think an issue may be a duplicate, inspect the reproduction steps and see if there's any linked similarity:
+- The version or branch that has the problem is the same
+- The OS or Architecture seems to correlate
+- The time of the reports seem to correlate (e.g. a regression)
+
+If the reproduction steps are different, that does not mean the issue is not a duplicate.
+The Area label being similar should not have a large impact on whether the issue is seen as a duplicate; a bug may appear in several different area groups.
+A bug in one area group may actually cause a bug in another area.
+
+Related Issues:
+If the error or problem is manifesting differently, requires different reproduction steps but contains a similar root problem, these issues may be related.
+
+
+If you identify any such issue and have strong confidence in their similarity, record the issue number precisely to report later. Record at most 2 similar issues.
+
 ### 4. Resolve owners and route from CODEOWNERS
 
 All complete issues reaching this step have selected `Area-*` labels and proceed through ownership routing.
@@ -320,6 +341,9 @@ Classify confidence in the selected labels and routing as:
 - **💻 Assignment:** <@individual selected for assignment, or `none`> | <@team handles, or `none`>
 > Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.
 - **`🟩`, `🟨`, or `🟥` Confidence:** <`high`, `medium`, or `low` (embed with `tick markers`)> - <One sentence reason for the confidence classification of up to 20 words.>
+
+> Only when you have high confidence in step 4. from earlier that you found duplicate or related issues should you include this text. **Similar issues**: https://github.com/${{ github.repository }}/<issue_number> (`duplicate`, or `potentially related`)
+> Link directly with at most 2 issue urls in one line,  separated by a space as `%20` and labled with the classification such as (`duplicate`) after each url. Replace issue_number with the record number from earlier. Omit this paragraph otherwise.
 
 ➡️ **Summary**: <One sentence of at most 30 words describing the reported problem or request.> <One sentence of at most 20 words suggesting how to follow up with this issue.>
 ```
