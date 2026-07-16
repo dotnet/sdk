@@ -6,6 +6,7 @@ using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers;
@@ -257,10 +258,30 @@ internal sealed class Registry
         cancellationToken.ThrowIfCancellationRequested();
         string localPath = ContentStore.PathForDescriptor(descriptor);
 
-        if (File.Exists(localPath))
+        try
         {
-            // Assume file is up to date and just return it
+            var fileStream = File.OpenRead(localPath);
+
+            var actualHash = SHA256.HashData(fileStream);
+            var expectedHash = DigestUtils.GetEncodedValue(descriptor.Digest);
+            InvalidDigestException.ThrowIfMismatched(expectedHash, actualHash);
+
             return localPath;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // Cache miss
+        }
+        catch (FileNotFoundException)
+        {
+            // Cache miss
+        }
+        catch (InvalidDigestException exception)
+        {
+            // Incorrect digest
+            _logger.LogTrace(
+                "Digest validation failed for cached blob {1} ({2}), redownloading from registry.",
+                localPath, exception.Message);
         }
 
         // No local copy, so download one
@@ -269,7 +290,9 @@ internal sealed class Registry
         string tempTarballPath = ContentStore.GetTempFile();
         using (FileStream fs = File.Create(tempTarballPath))
         {
-            await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+            await responseStream
+                .CopyToAndVerifyAsync(fs, descriptor.Digest, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -319,7 +342,7 @@ internal sealed class Registry
             // manual because ACR throws an error with the .NET type {"Range":"bytes 0-84521/*","Reason":"the Content-Range header format is invalid"}
             //    content.Headers.Add("Content-Range", $"0-{contents.Length - 1}");
             Debug.Assert(content.Headers.TryAddWithoutValidation("Content-Range", $"{chunkStart}-{chunkStart + bytesRead - 1}"));
-            
+
             NextChunkUploadInformation nextChunk = await _registryAPI.Blob.Upload.UploadChunkAsync(patchUri, content, cancellationToken).ConfigureAwait(false);
             patchUri = nextChunk.UploadUri;
 
