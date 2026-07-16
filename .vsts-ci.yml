@@ -59,6 +59,15 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
   parameters:
+    ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      settings:
+        networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3
+    ${{ else }}:
+      # Internal PR builds run under the 1ES Unofficial template. They restore from
+      # public feeds (nuget.org, npm, yarn), so network isolation is not applicable
+      # and is disabled to avoid spurious CFS clean violations.
+      settings:
+        networkIsolationMode: None
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
