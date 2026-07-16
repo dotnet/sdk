@@ -195,7 +195,13 @@ extends:
             populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             windowsJobParameterSets:
+            # TEMPORARILY DISABLED (disableJob: true): the win-arm64 NativeAOT cross-link fails with
+            # 'LNK1322: cannot avoid potential ARM hazard (Cortex-A53 MPCore processor bug #843419)'
+            # because the ILCompiler-produced object isn't split into per-function sections, so the
+            # MSVC arm64 linker cannot apply the erratum fixup. This leg has never passed. Re-enable
+            # once the ILCompiler fix lands.
             - categoryName: AoT
+              disableJob: true
               runAoTTests: true
               targetArchitecture: arm64
               runtimeIdentifier: win-arm64

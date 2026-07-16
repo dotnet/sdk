@@ -75,6 +75,7 @@ namespace Microsoft.NET.Build.Tests
                 "1.pdb",
                 "1.deps.json",
                 "1.runtimeconfig.json",
+                "1.runtimeconfig.dev.json",
                  $"1{EnvironmentInfo.ExecutableExtension}"
             };
 
@@ -164,6 +165,7 @@ namespace Microsoft.NET.Build.Tests
                 "1.pdb",
                 "1.deps.json",
                 "1.runtimeconfig.json",
+                "1.runtimeconfig.dev.json",
                 "2.dll",
                 "2.pdb",
                 $"1{EnvironmentInfo.ExecutableExtension}",
