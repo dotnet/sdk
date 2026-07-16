@@ -7,7 +7,7 @@ on:
     # vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS (default: 5000 AIC) helps limit triage of too many issues
     types: [opened]
     lock-for-agent: true
-  workflow_dispatch:
+  workflow_dispatch: # Admin rights are enforced even with roles: all, which is needed to allow triage of issues from all issue writers (https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow) + verified manually
     inputs:
       issue_number:
         description: "Issue number to triage (manual run)"
