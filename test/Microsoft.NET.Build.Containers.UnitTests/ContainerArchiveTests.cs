@@ -20,4 +20,23 @@ public class ContainerArchiveTests
         await Assert.ThrowsExactlyAsync<NotSupportedException>(
             () => ContainerArchive.WriteImageToStreamAsync(image, default, default, Stream.Null, default));
     }
+
+    [TestMethod]
+    [DataRow(SchemaTypes.DockerManifestV2)]
+    [DataRow(SchemaTypes.OciManifestV1)]
+    public async Task Requires_image_sha(string manifestMediaType)
+    {
+        BuiltImage image = new()
+        {
+            Config = string.Empty,
+            Manifest = string.Empty,
+            ManifestDigest = "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            ManifestMediaType = manifestMediaType,
+            Layers = []
+        };
+
+        InvalidOperationException exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => ContainerArchive.WriteImageToStreamAsync(image, default, default, Stream.Null, default));
+        Assert.Contains("image SHA", exception.Message);
+    }
 }

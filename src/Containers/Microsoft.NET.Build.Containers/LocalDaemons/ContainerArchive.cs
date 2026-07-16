@@ -50,7 +50,7 @@ internal static class ContainerArchive
         await WriteImageLayers(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
             .ConfigureAwait(false);
 
-        string configTarballPath = $"{image.ImageSha!}.json";
+        string configTarballPath = $"{GetRequiredImageSha(image)}.json";
         await WriteImageConfig(writer, image, configTarballPath, cancellationToken).ConfigureAwait(false);
         await WriteManifestForDockerImage(writer, destinationReference, configTarballPath, layerTarballPaths, cancellationToken)
             .ConfigureAwait(false);
@@ -213,9 +213,12 @@ internal static class ContainerArchive
     {
         await WriteImageLayers(writer, image, sourceReference, d => $"{BlobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
             .ConfigureAwait(false);
-        await WriteImageConfig(writer, image, $"{BlobsPath}/{image.ImageSha!}", cancellationToken).ConfigureAwait(false);
+        await WriteImageConfig(writer, image, $"{BlobsPath}/{GetRequiredImageSha(image)}", cancellationToken).ConfigureAwait(false);
         await WriteManifestForOciImage(writer, image, cancellationToken).ConfigureAwait(false);
     }
+
+    private static string GetRequiredImageSha(BuiltImage image)
+        => image.ImageSha ?? throw new InvalidOperationException("An image SHA is required to create a local container archive.");
 
     private static async Task WriteIndexJsonForMultiArchOciImage(
         TarWriter writer,
