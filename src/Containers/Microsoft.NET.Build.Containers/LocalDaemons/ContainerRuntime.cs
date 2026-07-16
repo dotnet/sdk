@@ -20,12 +20,14 @@ internal sealed class ContainerRuntime : ILocalRegistry
     public const string MacOSContainerCommand = "container";
 
     private const string FallbackCommands = $"{DockerCommand}/{PodmanCommand}";
+    private static readonly TimeSpan s_defaultProbeTimeout = TimeSpan.FromSeconds(5);
 
     private readonly ILogger _logger;
     private readonly ContainerRuntimeOperations _operations;
     private readonly Func<bool> _isPodmanAlias;
     private readonly bool _isWindows;
     private readonly bool _isMacOS;
+    private readonly TimeSpan _probeTimeout;
     private IContainerRuntime? _runtime;
 
     public ContainerRuntime(string? command, ILoggerFactory loggerFactory)
@@ -35,7 +37,8 @@ internal sealed class ContainerRuntime : ILocalRegistry
             ContainerRuntimeOperations.TryRunCommandAsync,
             DockerContainerRuntime.IsPodmanAlias,
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+            s_defaultProbeTimeout)
     {
     }
 
@@ -46,7 +49,8 @@ internal sealed class ContainerRuntime : ILocalRegistry
             ContainerRuntimeOperations.TryRunCommandAsync,
             DockerContainerRuntime.IsPodmanAlias,
             probePlatformNativeCli && RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
-            probePlatformNativeCli && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            probePlatformNativeCli && RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+            s_defaultProbeTimeout)
     {
     }
 
@@ -56,13 +60,15 @@ internal sealed class ContainerRuntime : ILocalRegistry
         Func<string, string, CancellationToken, Task<bool>> tryRunCommand,
         Func<bool> isPodmanAlias,
         bool isWindows,
-        bool isMacOS)
+        bool isMacOS,
+        TimeSpan? probeTimeout = null)
     {
         _logger = loggerFactory.CreateLogger<ContainerRuntime>();
         _operations = new ContainerRuntimeOperations(_logger, tryRunCommand);
         _isPodmanAlias = isPodmanAlias;
         _isWindows = isWindows;
         _isMacOS = isMacOS;
+        _probeTimeout = probeTimeout ?? s_defaultProbeTimeout;
         _runtime = command is null ? null : CreateRuntime(command);
     }
 
@@ -148,26 +154,25 @@ internal sealed class ContainerRuntime : ILocalRegistry
             return _runtime;
         }
 
-        IContainerRuntime wslcRuntime = CreateRuntime(WslcCommand);
-        IContainerRuntime macOSContainerRuntime = CreateRuntime(MacOSContainerCommand);
+        IContainerRuntime? platformNativeRuntime = _isWindows
+            ? CreateRuntime(WslcCommand)
+            : _isMacOS
+                ? CreateRuntime(MacOSContainerCommand)
+                : null;
+        if (platformNativeRuntime is not null &&
+            await ProbeAsync(platformNativeRuntime, cancellationToken).ConfigureAwait(false))
+        {
+            return _runtime = platformNativeRuntime;
+        }
+
         IContainerRuntime podmanRuntime = CreateRuntime(PodmanCommand);
         IContainerRuntime dockerRuntime = CreateRuntime(DockerCommand);
-        Task<bool> wslcAvailable = _isWindows ? wslcRuntime.ProbeAsync(cancellationToken) : Task.FromResult(false);
-        Task<bool> macOSContainerAvailable = _isMacOS ? macOSContainerRuntime.ProbeAsync(cancellationToken) : Task.FromResult(false);
-        Task<bool> podmanAvailable = podmanRuntime.ProbeAsync(cancellationToken);
-        Task<bool> dockerAvailable = dockerRuntime.ProbeAsync(cancellationToken);
+        Task<bool> podmanAvailable = ProbeAsync(podmanRuntime, cancellationToken);
+        Task<bool> dockerAvailable = ProbeAsync(dockerRuntime, cancellationToken);
 
-        await Task.WhenAll(wslcAvailable, macOSContainerAvailable, podmanAvailable, dockerAvailable).ConfigureAwait(false);
+        await Task.WhenAll(podmanAvailable, dockerAvailable).ConfigureAwait(false);
 
-        if (wslcAvailable.Result)
-        {
-            _runtime = wslcRuntime;
-        }
-        else if (macOSContainerAvailable.Result)
-        {
-            _runtime = macOSContainerRuntime;
-        }
-        else if (dockerAvailable.Result && podmanAvailable.Result && _isPodmanAlias())
+        if (dockerAvailable.Result && podmanAvailable.Result && _isPodmanAlias())
         {
             _runtime = podmanRuntime;
         }
@@ -181,6 +186,20 @@ internal sealed class ContainerRuntime : ILocalRegistry
         }
 
         return _runtime;
+    }
+
+    private async Task<bool> ProbeAsync(IContainerRuntime runtime, CancellationToken cancellationToken)
+    {
+        using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(_probeTimeout);
+        try
+        {
+            return await runtime.ProbeAsync(timeout.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
     }
 
     private string GetCommandsForCurrentPlatform()

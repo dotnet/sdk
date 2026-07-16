@@ -88,6 +88,45 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
+    public void Stops_probing_after_platform_native_runtime_succeeds()
+    {
+        var probedCommands = new List<string>();
+        ContainerRuntime runtime = new(
+            command: null,
+            _loggerFactory,
+            (command, _, _) =>
+            {
+                probedCommands.Add(command);
+                return Task.FromResult(true);
+            },
+            () => false,
+            isWindows: true,
+            isMacOS: false);
+
+        Assert.AreEqual(ContainerRuntimeKind.Wslc, runtime.GetTelemetryValue());
+        Assert.AreSequenceEqual(new[] { ContainerRuntime.WslcCommand }, probedCommands);
+    }
+
+    [TestMethod]
+    public async Task Times_out_runtime_probes()
+    {
+        ContainerRuntime runtime = new(
+            command: null,
+            _loggerFactory,
+            async (_, _, cancellationToken) =>
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                return true;
+            },
+            () => false,
+            isWindows: false,
+            isMacOS: false,
+            probeTimeout: TimeSpan.FromMilliseconds(10));
+
+        Assert.IsFalse(await runtime.IsAvailableAsync(default));
+    }
+
+    [TestMethod]
     public void Does_not_probe_wslc_outside_windows()
     {
         var probedCommands = new System.Collections.Concurrent.ConcurrentBag<string>();
