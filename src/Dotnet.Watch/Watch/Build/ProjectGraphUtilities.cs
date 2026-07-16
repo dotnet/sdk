@@ -58,8 +58,8 @@ internal static class ProjectGraphUtilities
     public static string? GetOutputDirectory(this ProjectInstance project)
         => project.GetPropertyValue(PropertyNames.TargetPath) is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(project.Directory, path)) : null;
 
-    public static string GetAssemblyName(this ProjectGraphNode projectNode)
-        => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetName);
+    public static string GetAssemblyName(this ProjectInstance project)
+        => project.GetPropertyValue(PropertyNames.TargetName);
 
     public static string? GetIntermediateOutputDirectory(this ProjectInstance project)
         => project.GetPropertyValue(PropertyNames.IntermediateOutputPath) is { Length: >0 } path ? Path.Combine(project.Directory, path) : null;
