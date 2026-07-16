@@ -162,12 +162,13 @@ internal static class ContainerArchive
             tagsNode.Add($"{destinationReference.Repository}:{tag}");
         }
 
-        JsonNode manifestNode = new JsonArray(new JsonObject
-        {
-            { "Config", configTarballPath },
-            { "RepoTags", tagsNode },
-            { "Layers", layerTarballPaths }
-        });
+        JsonNode manifestNode = new JsonArray(
+            new JsonObject
+            {
+                { "Config", configTarballPath },
+                { "RepoTags", tagsNode },
+                { "Layers", layerTarballPaths }
+            });
 
         cancellationToken.ThrowIfCancellationRequested();
         using MemoryStream manifestStream = new(Encoding.UTF8.GetBytes(manifestNode.ToJsonString()));
