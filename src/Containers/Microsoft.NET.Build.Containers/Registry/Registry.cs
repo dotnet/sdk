@@ -434,7 +434,7 @@ internal sealed class Registry
         {
             // Incorrect digest
             _logger.LogTrace(
-                "Digest validation failed for cached blob {1} ({2}), redownloading from registry.",
+                "Digest validation failed for cached blob {Path} ({Error}), redownloading from registry.",
                 localPath, exception.Message);
         }
 
