@@ -6,6 +6,7 @@ on:
   issues:
     # vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS (default: 5000 AIC) helps limit triage of too many issues
     types: [opened]
+    lock-for-agent: true
   workflow_dispatch:
     inputs:
       issue_number:
