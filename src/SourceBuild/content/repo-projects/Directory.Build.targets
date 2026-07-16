@@ -309,7 +309,6 @@
     <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
     <WritePackageVersionsProps KnownPackages="@(_DependencyProducedPackage->WithMetadataValue('ReferenceOnly', 'false'))"
                                ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
-                               AdditionalDependencies="@(PackageVersionPropsAdditionalDependency)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
                                OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
