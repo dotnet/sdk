@@ -154,7 +154,7 @@ For an incomplete or nearly empty bug report:
 
 Choose only labels returned by the repository label list. Never invent a label.
 
-1. Apply one primary `Area-*` label. Add no more than two additional `Area-*` labels, and only when the issue genuinely spans separate components. `CODEOWNERS` section headings (`# Area-<Name>`) are the source of truth for area names.
+1. Apply one primary `Area-*` label. Add no more than two additional `Area-*` labels, and only when the issue genuinely spans separate components. `CODEOWNERS` section headings (`# Area-<Name>`) are the source of truth for area names. Dotnetup is the sole exception: apply its existing `dotnetup` special label and route it through the `# dotnetup` CODEOWNERS section without inventing an `Area-dotnetup` label.
 2. Apply one type label when clear: `Bug`, `enhancement`, `Feature Request`, `question`, `documentation`, or `Task`.
 3. Apply any clearly justified special labels:
 
@@ -201,7 +201,7 @@ Only record a match when its classification is strongly supported. This workflow
 
 All complete issues reaching this step have selected `Area-*` labels and proceed through ownership routing.
 
-Read the repository's root `CODEOWNERS` file to look up owners for each selected `Area-*` label.
+Read the repository's root `CODEOWNERS` file to look up owners for each selected `Area-*` label. When the `dotnetup` special label is selected, also look up its owners in the `# dotnetup` section using the same section-boundary and owner-collection rules.
 
 #### CODEOWNERS matching rules
 
@@ -331,7 +331,7 @@ Before calling safe outputs, verify:
 
 If verification fails, correct the planned outputs and verify again.
 
-Post one concise comment using the exact structure below; do not post a separate routing comment. The summary must be one sentence of at most 30 words describing the reported problem or request. Base it only on the issue content and do not add unverified claims.
+Post one concise comment using the exact structure below; do not post a separate routing comment. The summary must contain two sentences: at most 30 words describing the reported problem or request, then at most 20 words suggesting follow-up. Base it only on the issue content and do not add unverified claims.
 
 Classify confidence in the selected labels and routing as:
 
@@ -358,7 +358,7 @@ Classify confidence in the selected labels and routing as:
 ➡️ **Summary**: <One sentence of at most 30 words describing the reported problem or request.> <One sentence of at most 20 words suggesting how to follow up with this issue.>
 ```
 
-Preserve the heading, blank lines, markup, bold field names, and field order. Render the Confidence emoji as plain text inside the bold field name; never wrap the emoji in backticks. Put assignment and team handles only in the Assignment line. Use `none` rather than omitting either side of the Assignment separator. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review.
+Preserve the heading, blank lines, markup, bold field names, and field order. Render the Confidence emoji as plain text inside the bold field name; never wrap the emoji in backticks. Put assignment and team handles only in the Assignment line. Use `none` rather than omitting either side of the Assignment separator. Keep the summary to the two sentences and word limits specified in the template. If nothing matched, state in the Labels body that `untriaged` remains for manual review.
 
 Put all labels on one line separated by one space, rendering each as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added.
 
