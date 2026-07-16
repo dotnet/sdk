@@ -118,7 +118,7 @@ extends:
         parameters:
           pool:
             name: $(DncEngInternalBuildPool)
-            image: windows.vs2022.amd64
+            image: windows.vs2026.amd64
             os: windows
           helixTargetQueue: windows.amd64.vs2026.pre.scout
           oneESCompat:
