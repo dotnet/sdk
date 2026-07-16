@@ -239,6 +239,7 @@ internal static class SolutionAndProjectUtility
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
         BuildOptions buildOptions,
+        FacadeLogger? logger,
         string? configuration,
         string? platform,
         HashSet<string>? visitedTraversalProjects = null)
@@ -282,7 +283,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+            if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
             }
@@ -310,7 +311,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                     }
@@ -324,7 +325,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
                     {
                         innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
@@ -404,7 +405,8 @@ internal static class SolutionAndProjectUtility
         string projectFilePath,
         BuildOptions buildOptions,
         ProjectCollection? projectCollection = null,
-        EvaluationContext? evaluationContext = null)
+        EvaluationContext? evaluationContext = null,
+        FacadeLogger? logger = null)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -423,7 +425,9 @@ internal static class SolutionAndProjectUtility
         }
 
         // Create a ProjectCollection if one wasn't provided
-        using var ownedCollection = projectCollection is null ? new ProjectCollection(globalProperties) : null;
+        using var ownedCollection = projectCollection is null
+            ? new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default)
+            : null;
         var collection = projectCollection ?? ownedCollection!;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
@@ -470,7 +474,7 @@ internal static class SolutionAndProjectUtility
         var devicesByTfm = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
         foreach (var framework in frameworks)
         {
-            var (device, rid) = SelectDeviceForTfm(projectFilePath, buildOptions, framework, isInteractive);
+            var (device, rid) = SelectDeviceForTfm(projectFilePath, buildOptions, framework, isInteractive, logger);
             devicesByTfm[framework] = (device, rid);
         }
 
@@ -491,7 +495,8 @@ internal static class SolutionAndProjectUtility
         string projectFilePath,
         BuildOptions buildOptions,
         string? tfm,
-        bool isInteractive)
+        bool isInteractive,
+        FacadeLogger? logger)
     {
         var msbuildArgsToAppend = buildOptions.MSBuildArgs;
         if (!string.IsNullOrEmpty(tfm))
@@ -506,7 +511,8 @@ internal static class SolutionAndProjectUtility
             isInteractive,
             msbuildArgs,
             ImmutableDictionary<string, string>.Empty,
-            commandName: "dotnet test");
+            commandName: "dotnet test",
+            logger);
 
         lock (s_buildLock)
         {
@@ -526,7 +532,10 @@ internal static class SolutionAndProjectUtility
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    private static TestModule? GetModuleFromProject(ProjectInstance project, BuildOptions buildOptions)
+    private static TestModule? GetModuleFromProject(
+        ProjectInstance project,
+        BuildOptions buildOptions,
+        FacadeLogger? logger)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -544,7 +553,7 @@ internal static class SolutionAndProjectUtility
         RunProperties runProperties;
         if (isTestingPlatformApplication)
         {
-            runProperties = GetRunProperties(project);
+            runProperties = DeployAndGetRunProperties(project, logger);
 
             // dotnet run throws the same if RunCommand is null or empty.
             // In dotnet test, we are additionally checking that RunCommand is not dll.
@@ -586,7 +595,7 @@ internal static class SolutionAndProjectUtility
 
         [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
-        static RunProperties GetRunProperties(ProjectInstance project)
+        static RunProperties DeployAndGetRunProperties(ProjectInstance project, FacadeLogger? logger)
         {
             // Build API cannot be called in parallel, even if the projects are different.
             // Otherwise, BuildManager in MSBuild will fail:
@@ -594,7 +603,14 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
-                if (!project.Build(s_computeRunArgumentsTarget, loggers: null))
+                var loggers = logger is null ? null : new[] { logger };
+                if (project.Targets.ContainsKey(Constants.DeployToDevice) &&
+                    !project.Build([Constants.DeployToDevice], loggers))
+                {
+                    throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                }
+
+                if (!project.Build(s_computeRunArgumentsTarget, loggers))
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
                 }
