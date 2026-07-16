@@ -32,7 +32,7 @@ internal static class ContainerArchive
         }
         else
         {
-            throw new ArgumentException(Resource.FormatString(nameof(Strings.UnsupportedMediaTypeForTarball), image.ManifestMediaType));
+            throw new NotSupportedException(Resource.FormatString(nameof(Strings.UnsupportedMediaTypeForTarball), image.ManifestMediaType));
         }
     }
 
