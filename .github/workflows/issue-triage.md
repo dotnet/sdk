@@ -147,7 +147,8 @@ For an incomplete or nearly empty bug report:
 
   Do not request a binlog for installation, CLI parsing, or runtime-only failures.
 
-5. Do not guess an area or assign anyone. Stop.
+5. Before stopping, briefly perform the bounded duplicate and related-issue search in step 4. Include any strongly supported matches in the same comment using the **Similar issues** output format from step 7.
+6. Do not guess an area or assign anyone. Stop after posting the comment; do not continue to labeling or ownership routing.
 
 ### 3. Select existing labels
 
@@ -172,26 +173,27 @@ Recognize standard SDK area groups and concepts: project commands; MSBuild proje
 
 ### 4. Determine potential duplicates or related issues
 
-Search for issues that are either the same root technical cause (aka, a duplicate issue), or for issues that seem related.
+Search both open and closed issues for reports of the same defect or a meaningfully related problem. Exclude the current issue. Run at most three searches, using these approaches in order when applicable:
 
-Duplicate Issues:
-If the issue contains an error message that appears in other issues, they are likely (but not always) to be connected.
-If you think an issue may be a duplicate, inspect the reproduction steps and see if there's any linked similarity:
-- The version or branch that has the problem is the same
-- The OS or Architecture seems to correlate
-- The time of the reports seem to correlate (e.g. a regression)
+1. Exact distinctive error text.
+2. Primary command or component plus the observed behavior.
+3. Key reproduction terms plus the SDK version, operating system, architecture, or platform.
 
-If the reproduction steps are different, that does not mean the issue is not a duplicate.
-The Area label being similar should not have a large impact on whether the issue is seen as a duplicate; a bug may appear in several different area groups.
-A bug in one area group may actually cause a bug in another area.
+Inspect the title and body of each candidate issue before classifying it; do not rely only on search-result snippets. Record at most two strongly supported matches, de-duplicated by issue number.
 
-Related Issues:
-If the error or problem is manifesting differently, requires different reproduction steps but contains a similar root problem, these issues may be related.
+#### Duplicate issues
 
+Classify a candidate as `duplicate` only when it reports the same observable failure under substantially matching conditions and there is strong evidence that both reports track the same underlying defect. Matching error text, area labels, versions, operating systems, architectures, or report timing are supporting signals, but no single signal is sufficient. Generic error text alone is not sufficient.
 
-If you identify any such issue and have strong confidence in their similarity, record the issue number precisely to report later. Record at most 2 similar issues.
+Different reproduction steps require stronger evidence of a shared underlying defect. Similar Area labels should have little weight because a defect in one area can surface in another.
 
-### 4. Resolve owners and route from CODEOWNERS
+#### Related issues
+
+Classify a candidate as `potentially related` when it has a meaningful shared mechanism, regression window, diagnostic, component, or symptom, but the available evidence is not strong enough to call it a duplicate.
+
+Only record a match when its classification is strongly supported. This workflow reports candidates for maintainers to assess; it does not close the current issue or mark it as a confirmed duplicate.
+
+### 5. Resolve owners and route from CODEOWNERS
 
 All complete issues reaching this step have selected `Area-*` labels and proceed through ownership routing.
 
@@ -300,15 +302,15 @@ ELSE (no Area-* section matches any selected label, or the matched sections have
 
 Resolve at most three selected areas. If the issue already has an assignee, do not add or replace assignees.
 
-Fold owner routing into the single triage comment in step 6; do not post a separate routing comment. In **Assignment**, show the selected individual and the matched team handle(s) as `<@selected | @team handles>`. The selected individual is notified by the assignment itself. Do not mention any other individual. Write team handles as raw @dotnet/team mentions.
+Fold owner routing into the single triage comment in step 7; do not post a separate routing comment. In **Assignment**, show the selected individual and the matched team handle(s) as `<@selected | @team handles>`. The selected individual is notified by the assignment itself. Do not mention any other individual. Write team handles as raw @dotnet/team mentions.
 
-### 5. Handle `untriaged`
+### 6. Handle `untriaged`
 
 - If `untriaged` is currently present, remove it when an `Area-*` or type label was added, or an owner was assigned.
 - If `untriaged` is not present, do not call `remove_labels` for it and do not claim it was removed.
 - Otherwise leave `untriaged` in place.
 
-### 6. Verify, then write outputs
+### 7. Verify, then write outputs
 
 Before calling safe outputs, verify:
 
@@ -342,8 +344,8 @@ Classify confidence in the selected labels and routing as:
 > Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.
 - **`🟩`, `🟨`, or `🟥` Confidence:** <`high`, `medium`, or `low` (embed with `tick markers`)> - <One sentence reason for the confidence classification of up to 20 words.>
 
-> Only when you have high confidence in step 4. from earlier that you found duplicate or related issues should you include this text. **Similar issues**: https://github.com/${{ github.repository }}/<issue_number> (`duplicate`, or `potentially related`)
-> Link directly with at most 2 issue urls in one line,  separated by a space as `%20` and labled with the classification such as (`duplicate`) after each url. Replace issue_number with the record number from earlier. Omit this paragraph otherwise.
+> Include only when step 4 found one or two strongly supported matches. **Similar issues:** https://github.com/${{ github.repository }}/issues/<issue_number> (`duplicate`) https://github.com/${{ github.repository }}/issues/<issue_number> (`potentially related`)
+> Link at most two issues on this single line, separated by one space. Replace each `<issue_number>` with the recorded issue number and put its classification immediately after its URL. Omit this line when step 4 found no strongly supported match.
 
 ➡️ **Summary**: <One sentence of at most 30 words describing the reported problem or request.> <One sentence of at most 20 words suggesting how to follow up with this issue.>
 ```
