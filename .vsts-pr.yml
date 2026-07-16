@@ -65,6 +65,33 @@ stages:
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
+  ### AoT (win-arm64 cross-build) ###
+  # dotnet-aot is built with NativeAOT, which can cross-compile win-x64 -> win-arm64 (the MSVC arm64
+  # linker and the RID-specific ILCompiler package handle the cross-link; no sysroot is required).
+  # This leg BUILDS on the win-x64 pool with /p:CrossBuild=true and produces the dotnet-aot .dll plus
+  # its mstat/dgml size-analysis artifacts (that step is gated on the AoT category). It is build-only
+  # (runTests: false): there is no wired windows arm64 Helix queue yet, so running the *.AoT.Tests on
+  # arm64 hardware is a follow-up pending a windows.11.arm64 queue.
+  # TEMPORARILY DISABLED (disableJob: true): the win-arm64 NativeAOT cross-link fails with
+  # 'LNK1322: cannot avoid potential ARM hazard (Cortex-A53 MPCore processor bug #843419)' because
+  # the ILCompiler-produced object isn't split into per-function sections, so the MSVC arm64 linker
+  # cannot apply the erratum fixup. This leg has never passed. Re-enable once the ILCompiler fix lands.
+  # Tracked by dotnet/sdk#55298.
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+    parameters:
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals windows.vs2022.amd64.open
+        os: windows
+      helixTargetQueue: windows.amd64.vs2026.pre.scout.open
+      windowsJobParameterSets:
+      - categoryName: AoT
+        disableJob: true
+        targetArchitecture: arm64
+        runtimeIdentifier: win-arm64
+        osProperties: /p:CrossBuild=true
+        runTests: false
+
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
@@ -92,7 +119,6 @@ stages:
       linuxJobParameterSets:
       - categoryName: AoT
         container: azureLinuxCrossArm64
-        runAoTTests: true
         targetArchitecture: arm64
         runtimeIdentifier: linux-arm64
         osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
@@ -106,12 +132,16 @@ stages:
         vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.15.arm64.open
-  ### AoT (native arm64) ###
+  ### AoT (osx-arm64 cross-build) ###
+  # dotnet-aot is built with NativeAOT, which can cross-compile osx-x64 -> osx-arm64 (clang/link on
+  # macOS are multi-target and need no extra sysroot). This leg BUILDS on the x64 macOS pool with
+  # /p:CrossBuild=true; because AoT tests are dispatched to Helix, the *.AoT.Tests still run on the
+  # osx.15.arm64 Helix queue, so there is no macOS AoT test-coverage loss.
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
         name: Azure Pipelines
-        vmImage: macOS-15-arm64
+        vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.15.arm64.open
       macOSJobParameterSets:
@@ -119,6 +149,7 @@ stages:
         runAoTTests: true
         targetArchitecture: arm64
         runtimeIdentifier: osx-arm64
+        osProperties: /p:CrossBuild=true
   ### x64 (CI only) ###
   - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
