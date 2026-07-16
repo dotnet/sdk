@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.CommandLine;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Definition;
@@ -77,8 +76,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var testOptions = new TestOptions(
             IsHelp: isHelp,
-            IsDiscovery: parseResult.HasOption(definition.ListTestsOption),
-            EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
+            IsDiscovery: parseResult.HasOption(definition.ListTestsOption));
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
@@ -278,7 +276,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             projectPath,
             isInteractive,
             standardArgs,
-            ImmutableDictionary<string, string>.Empty,
+            buildOptions.EnvironmentVariables,
             commandName: "dotnet test",
             logger);
 

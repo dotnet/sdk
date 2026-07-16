@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Definition;
@@ -427,7 +426,7 @@ internal static class SolutionAndProjectUtility
             projectFilePath,
             isInteractive,
             msbuildArgs,
-            ImmutableDictionary<string, string>.Empty,
+            buildOptions.EnvironmentVariables,
             commandName: "dotnet test",
             logger);
 
@@ -468,9 +467,14 @@ internal static class SolutionAndProjectUtility
 
         // Only get run properties if IsTestingPlatformApplication is true
         RunProperties runProperties;
+        IReadOnlyDictionary<string, string> runtimeEnvironmentVariables;
         if (isTestingPlatformApplication)
         {
-            runProperties = DeployAndGetRunProperties(project, logger);
+            runProperties = DeployAndGetRunProperties(
+                project,
+                logger,
+                buildOptions.EnvironmentVariables,
+                out runtimeEnvironmentVariables);
 
             // dotnet run throws the same if RunCommand is null or empty.
             // In dotnet test, we are additionally checking that RunCommand is not dll.
@@ -493,6 +497,7 @@ internal static class SolutionAndProjectUtility
                 project.GetPropertyValue(ProjectProperties.TargetPath),
                 null,
                 null);
+            runtimeEnvironmentVariables = buildOptions.EnvironmentVariables;
         }
 
         // TODO: Support --launch-profile and pass it here.
@@ -508,12 +513,22 @@ internal static class SolutionAndProjectUtility
             rootVariableName = null;
         }
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName, runtimeEnvironmentVariables);
 
         [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
-        static RunProperties DeployAndGetRunProperties(ProjectInstance project, FacadeLogger? logger)
+        static RunProperties DeployAndGetRunProperties(
+            ProjectInstance project,
+            FacadeLogger? logger,
+            IReadOnlyDictionary<string, string> environmentVariables,
+            out IReadOnlyDictionary<string, string> runtimeEnvironmentVariables)
         {
+            bool hasRuntimeEnvironmentVariableSupport = EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project);
+            if (hasRuntimeEnvironmentVariableSupport)
+            {
+                EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
+            }
+
             // Build API cannot be called in parallel, even if the projects are different.
             // Otherwise, BuildManager in MSBuild will fail:
             // System.InvalidOperationException: The operation cannot be completed because a build is already in progress.
@@ -533,6 +548,9 @@ internal static class SolutionAndProjectUtility
                 }
             }
 
+            runtimeEnvironmentVariables = hasRuntimeEnvironmentVariableSupport
+                ? EnvironmentVariablesToMSBuild.ReadFromItems(project)
+                : environmentVariables;
             return RunProperties.FromProject(project);
         }
     }

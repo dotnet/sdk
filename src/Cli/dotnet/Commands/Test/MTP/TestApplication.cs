@@ -184,8 +184,9 @@ internal sealed class TestApplication(
             }
         }
 
-        // Env variables specified on command line override those specified in launch profile:
-        foreach (var (name, value) in TestOptions.EnvironmentVariables)
+        // Command-line variables (including changes made by opted-in MSBuild targets)
+        // override variables specified in the launch profile.
+        foreach (var (name, value) in Module.EnvironmentVariables)
         {
             processStartInfo.Environment[name] = value;
         }
