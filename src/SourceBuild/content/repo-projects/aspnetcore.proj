@@ -57,4 +57,9 @@
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisCommonVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <!-- This dependency is declared through eng/Versions.props rather than Version.Details.xml. -->
+    <PackageVersionPropsAdditionalDependency Include="System.IdentityModel.Tokens.Jwt" />
+  </ItemGroup>
+
 </Project>

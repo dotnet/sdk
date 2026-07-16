@@ -72,6 +72,13 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         public ITaskItem[] ExtraProperties { get; set; }
 
         /// <summary>
+        /// Additional package dependencies to include when using DependenciesOnly version flow.
+        ///
+        /// %(Identity): Package identity.
+        /// </summary>
+        public ITaskItem[] AdditionalDependencies { get; set; }
+
+        /// <summary>
         /// Indicates which properties will be written into the Version props file.
         /// If AllPackages (Default), all packages from previously built repos will be written.
         /// If DependenciesOnly, then only those packages appearing as dependencies in
@@ -199,6 +206,9 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 {
                     return false;
                 }
+
+                dependencies.UnionWith((AdditionalDependencies ?? Array.Empty<ITaskItem>())
+                    .Select(item => item.ItemSpec));
 
                 packageElementsToWrite = FilterNonDependencies(packageElementsToWrite, dependencies);
             }
