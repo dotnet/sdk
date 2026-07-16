@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -54,7 +52,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
+                var iAsyncDisposable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIAsyncDisposable);
                 var configuredAsyncDisposable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredAsyncDisposable);
+
+                var iAsyncEnumerable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIAsyncEnumerable1);
                 var configuredAsyncEnumerable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredCancelableAsyncEnumerable);
 
                 context.RegisterOperationBlockStartAction(context =>
@@ -75,27 +76,33 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         }
 
                         context.RegisterOperationAction(context => AnalyzeAwaitOperation(context, taskTypes), OperationKind.Await);
-                        if (configuredAsyncDisposable is not null)
+
+                        if (iAsyncDisposable is not null && configuredAsyncDisposable is not null)
                         {
-                            context.RegisterOperationAction(context => AnalyzeUsingOperation(context, configuredAsyncDisposable), OperationKind.Using);
-                            context.RegisterOperationAction(context => AnalyzeUsingDeclarationOperation(context, configuredAsyncDisposable), OperationKind.UsingDeclaration);
+                            context.RegisterOperationAction(context => AnalyzeUsingOperation(context, iAsyncDisposable, configuredAsyncDisposable), OperationKind.Using);
+                            context.RegisterOperationAction(context => AnalyzeUsingDeclarationOperation(context, iAsyncDisposable, configuredAsyncDisposable), OperationKind.UsingDeclaration);
                         }
 
-                        if (configuredAsyncEnumerable is not null)
+                        if (iAsyncEnumerable is not null && configuredAsyncEnumerable is not null)
                         {
-                            context.RegisterOperationAction(ctx => AnalyzeAwaitForEachLoopOperation(ctx, configuredAsyncEnumerable), OperationKind.Loop);
+                            context.RegisterOperationAction(ctx => AnalyzeAwaitForEachLoopOperation(ctx, iAsyncEnumerable, configuredAsyncEnumerable), OperationKind.Loop);
                         }
                     }
                 });
             });
         }
 
-        private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncEnumerable)
+        private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol iAsyncEnumerable, INamedTypeSymbol configuredAsyncEnumerable)
         {
-            if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: not null } forEachOperation
-                && !forEachOperation.Collection.Type.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
+            if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: not null } forEachOperation)
             {
-                context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
+                var collectionTypeOriginalDefinition = forEachOperation.Collection.Type.OriginalDefinition;
+
+                if (!collectionTypeOriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default) &&
+                    context.Compilation.ClassifyCommonConversion(collectionTypeOriginalDefinition, iAsyncEnumerable) is { Exists: true, IsImplicit: true })
+                {
+                    context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
+                }
             }
         }
 
@@ -111,7 +118,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static void AnalyzeUsingOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncDisposable)
+        private static void AnalyzeUsingOperation(OperationAnalysisContext context, INamedTypeSymbol iAsyncDisposable, INamedTypeSymbol configuredAsyncDisposable)
         {
             var usingExpression = (IUsingOperation)context.Operation;
             if (!usingExpression.IsAsynchronous)
@@ -121,12 +128,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             if (usingExpression.Resources is IVariableDeclarationGroupOperation variableDeclarationGroup)
             {
+                var compilation = context.Compilation;
+
                 foreach (var declaration in variableDeclarationGroup.Declarations)
                 {
                     foreach (var declarator in declaration.Declarators)
                     {
-                        // Get the type of the expression being awaited and check it's a task type.
-                        if (declarator.Symbol.Type != configuredAsyncDisposable)
+                        var declaratorSymbolType = declarator.Symbol.Type;
+
+                        if (!declaratorSymbolType.Equals(configuredAsyncDisposable, SymbolEqualityComparer.Default) &&
+                            compilation.ClassifyCommonConversion(declaratorSymbolType, iAsyncDisposable) is { Exists: true, IsImplicit: true })
                         {
                             var reportingOperation = declarator.Initializer?.Value ?? declarator;
                             context.ReportDiagnostic(reportingOperation.CreateDiagnostic(Rule));
@@ -136,7 +147,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static void AnalyzeUsingDeclarationOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncDisposable)
+        private static void AnalyzeUsingDeclarationOperation(OperationAnalysisContext context, INamedTypeSymbol iAsyncDisposable, INamedTypeSymbol configuredAsyncDisposable)
         {
             var usingExpression = (IUsingDeclarationOperation)context.Operation;
             if (!usingExpression.IsAsynchronous)
@@ -144,12 +155,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
+            var compilation = context.Compilation;
+
             foreach (var declaration in usingExpression.DeclarationGroup.Declarations)
             {
                 foreach (var declarator in declaration.Declarators)
                 {
-                    // Get the type of the expression being awaited and check it's a task type.
-                    if (declarator.Symbol.Type != configuredAsyncDisposable)
+                    var declaratorSymbolType = declarator.Symbol.Type;
+
+                    if (!declaratorSymbolType.Equals(configuredAsyncDisposable, SymbolEqualityComparer.Default) &&
+                        compilation.ClassifyCommonConversion(declaratorSymbolType, iAsyncDisposable) is { Exists: true, IsImplicit: true })
                     {
                         var reportingOperation = declarator.Initializer?.Value ?? declarator;
                         context.ReportDiagnostic(reportingOperation.CreateDiagnostic(Rule));
