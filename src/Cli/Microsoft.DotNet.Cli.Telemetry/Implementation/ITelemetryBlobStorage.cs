@@ -33,6 +33,9 @@ internal interface ITelemetryBlob
     /// <summary>Reads the persisted bytes.</summary>
     bool TryRead(out byte[]? data);
 
+    /// <summary>Releases the lease so a later drain can retry the blob.</summary>
+    bool TryRelease();
+
     /// <summary>Deletes the blob (called after a successful upload).</summary>
     bool TryDelete();
 }

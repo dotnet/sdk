@@ -46,6 +46,31 @@ internal sealed class FileSystemTelemetryBlobStorage : ITelemetryBlobStorage
 
         public bool TryRead(out byte[]? data) => blob.TryRead(out data);
 
+        public bool TryRelease()
+        {
+            if (blob is not FileBlob { FullPath: var lockedPath }
+                || !lockedPath.EndsWith(".lock", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var atSignIndex = lockedPath.LastIndexOf('@');
+            if (atSignIndex < 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                File.Move(lockedPath, lockedPath[..atSignIndex]);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public bool TryDelete() => blob.TryDelete();
     }
 }

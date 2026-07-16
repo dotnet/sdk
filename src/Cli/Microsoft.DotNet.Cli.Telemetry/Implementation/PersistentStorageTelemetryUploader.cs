@@ -59,10 +59,12 @@ internal sealed class PersistentStorageTelemetryUploader
                 break;
             }
 
+            var leased = false;
+            var deleted = false;
             try
             {
                 // Leasing is an atomic rename, so only one process uploads a given blob.
-                if (!blob.TryLease(_leasePeriodMilliseconds))
+                if (!(leased = blob.TryLease(_leasePeriodMilliseconds)))
                 {
                     continue;
                 }
@@ -70,7 +72,7 @@ internal sealed class PersistentStorageTelemetryUploader
                 if (!blob.TryRead(out var data) || data is null || data.Length == 0)
                 {
                     // Unreadable or empty blob: discard it so it doesn't linger forever.
-                    blob.TryDelete();
+                    deleted = blob.TryDelete();
                     continue;
                 }
 
@@ -90,11 +92,11 @@ internal sealed class PersistentStorageTelemetryUploader
                         {
                             (retriableRemainders ??= []).Add(remainder);
                         }
-                        blob.TryDelete();
+                        deleted = blob.TryDelete();
                         break;
 
                     case TelemetryUploadOutcome.Accepted:
-                        blob.TryDelete();
+                        deleted = blob.TryDelete();
                         break;
 
                     case TelemetryUploadOutcome.Rejected:
@@ -113,6 +115,13 @@ internal sealed class PersistentStorageTelemetryUploader
             {
                 // Swallow per-blob failures and keep going; the blob is retried later.
                 Debug.Fail(e.ToString());
+            }
+            finally
+            {
+                if (leased && !deleted)
+                {
+                    blob.TryRelease();
+                }
             }
         }
 

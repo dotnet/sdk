@@ -46,6 +46,21 @@ public class PersistentStorageTelemetryUploaderTests
 
         transport.UploadCount.Should().Be(1);
         storage.Blobs.Single().Deleted.Should().BeFalse("failed uploads must be retried later");
+        storage.Blobs.Single().Released.Should().BeTrue("failed uploads must be available to a later drain");
+    }
+
+    [TestMethod]
+    public async Task ItReleasesLeaseWhenUploadIsCancelled()
+    {
+        var blob = new FakeBlob([1, 2, 3]);
+        var storage = new FakeBlobStorage(blob);
+        using var cancellationSource = new CancellationTokenSource();
+        var uploader = new PersistentStorageTelemetryUploader(storage, new CancellingTransport(cancellationSource));
+
+        await uploader.DrainAsync(cancellationSource.Token);
+
+        blob.Deleted.Should().BeFalse();
+        blob.Released.Should().BeTrue("cancelled uploads must leave the blob available to a later drain");
     }
 
     [TestMethod]
@@ -113,6 +128,7 @@ public class PersistentStorageTelemetryUploaderTests
     {
         public bool CanLease { get; set; } = true;
         public bool Leased { get; private set; }
+        public bool Released { get; private set; }
         public bool Deleted { get; private set; }
         public byte[]? Data => data;
 
@@ -133,6 +149,12 @@ public class PersistentStorageTelemetryUploaderTests
             return data is not null;
         }
 
+        public bool TryRelease()
+        {
+            Released = true;
+            return true;
+        }
+
         public bool TryDelete()
         {
             Deleted = true;
@@ -148,6 +170,15 @@ public class PersistentStorageTelemetryUploaderTests
         {
             UploadCount++;
             return Task.FromResult(result);
+        }
+    }
+
+    private sealed class CancellingTransport(CancellationTokenSource cancellationSource) : ITelemetryUploadTransport
+    {
+        public Task<TelemetryUploadResult> TryUploadAsync(byte[] payload, CancellationToken cancellationToken)
+        {
+            cancellationSource.Cancel();
+            return Task.FromCanceled<TelemetryUploadResult>(cancellationToken);
         }
     }
 }

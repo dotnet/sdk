@@ -65,4 +65,28 @@ public class FileSystemTelemetryBlobStorageTests
             }
         }
     }
+
+    [TestMethod]
+    public void ReleasingLeaseMakesBlobAvailableToAnotherDrain()
+    {
+        var directory = NewNonexistentDirectory();
+        try
+        {
+            var storage = new FileSystemTelemetryBlobStorage(directory);
+            storage.TryPersist([1, 2, 3]).Should().BeTrue();
+
+            var blob = storage.GetBlobs().Single();
+            blob.TryLease(30_000).Should().BeTrue();
+            blob.TryRelease().Should().BeTrue();
+
+            storage.GetBlobs().Should().ContainSingle();
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
 }

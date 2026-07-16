@@ -257,10 +257,11 @@ public class TelemetryClient : ITelemetryClient
         }
         else
         {
-            // Locally, persisted-storage exporters write synchronously as spans end. A brief
-            // flush ensures in-flight batches are handed to the exporter before exit.
-            s_tracerProvider?.ForceFlush(timeoutMilliseconds: 10);
-            s_metricsProvider?.ForceFlush(timeoutMilliseconds: 10);
+            // Locally, persisted-storage exporters write synchronously as spans end. A bounded
+            // shutdown also cancels any background drain so it can release its active lease
+            // before exit.
+            s_tracerProvider?.Shutdown(timeoutMilliseconds: 10);
+            s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
         }
     }
 
