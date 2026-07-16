@@ -173,11 +173,13 @@ Recognize standard SDK area groups and concepts: project commands; MSBuild proje
 
 ### 4. Determine potential duplicates or related issues
 
-Search both open and closed issues for reports of the same defect or a meaningfully related problem. Exclude the current issue. Run at most three searches, using these approaches in order when applicable:
+Search both open and closed issues for reports of the same defect or a meaningfully related problem. Exclude the current issue. Attempt at least two and at most three distinct `search_issues` calls. Each failed call counts as an attempt; after a failed call, continue with the next distinct query instead of retrying the same query.
 
 1. Exact distinctive error text.
-2. Primary command or component plus the observed behavior.
-3. Key reproduction terms plus the SDK version, operating system, architecture, or platform.
+2. The reported failure mechanism plus the command or reproduction conditions. When the issue identifies a plausible mechanism, make this a cross-surface query: omit error codes, component names, area names, task names, and file or assembly names that could differ in another manifestation of the same defect.
+3. Key reproduction terms plus the SDK version, operating system, architecture, or platform. Use this only when it is meaningfully different from the first two queries.
+
+Do not spend every query on variants of the same error code, component, or artifact name. If a query returns only the current issue or no useful candidates, broaden the next query by removing those surface-specific terms. For example, when an issue says parallel builds invoke a single-target project with different global `TargetFramework` values into the same intermediate output path, search those mechanism and concurrency terms without `MSB4018`, `MSB3894`, ApiCompat, GenAPI, task names, or DLL names.
 
 Inspect the title and body of each candidate issue before classifying it; do not rely only on search-result snippets. Record at most two strongly supported matches, de-duplicated by issue number.
 
@@ -186,6 +188,8 @@ Inspect the title and body of each candidate issue before classifying it; do not
 Classify a candidate as `duplicate` only when it reports the same observable failure under substantially matching conditions and there is strong evidence that both reports track the same underlying defect. Matching error text, area labels, versions, operating systems, architectures, or report timing are supporting signals, but no single signal is sufficient. Generic error text alone is not sufficient.
 
 Different reproduction steps require stronger evidence of a shared underlying defect. Similar Area labels should have little weight because a defect in one area can surface in another.
+
+Different error codes, components, files, tasks, or Area labels do not rule out a duplicate. When both reports explicitly describe the same causal chain and concurrency or state conditions, treat that as strong shared-defect evidence even when the observable failures differ. If the shared mechanism is clear but the evidence does not establish one underlying defect, classify the candidate as `potentially related` rather than omitting it.
 
 #### Related issues
 
@@ -315,6 +319,8 @@ Fold owner routing into the single triage comment in step 7; do not post a separ
 Before calling safe outputs, verify:
 
 - every label exists in the repository
+- step 4 attempted at least two distinct issue searches, including a cross-surface mechanism query whenever the report identifies a plausible mechanism
+- a search that returned only the current issue or no useful candidates was followed by a broader query without the same surface-specific error, component, or artifact terms
 - every assignment candidate is either a direct individual owner from a matched CODEOWNERS section or a snapshot member of a team from that matched section
 - every expanded member came from the snapshot row for the specific matched team; membership in an unrelated team is not sufficient
 - every safe-output call includes the target issue number in the correct field
