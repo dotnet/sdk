@@ -173,7 +173,7 @@ Recognize standard SDK area groups and concepts: project commands; MSBuild proje
 
 ### 4. Determine potential duplicates or related issues
 
-Search both open and closed issues for reports of the same defect or a meaningfully related problem. Exclude the current issue. Attempt at least two and at most three distinct `search_issues` calls. Each failed call counts as an attempt; after a failed call, continue with the next distinct query instead of retrying the same query.
+Search both open and closed issues for reports of the same defect or a meaningfully related problem. Exclude the current issue. Before searching, set `search_attempt_count` to zero. Immediately before every `search_issues` call, increment it. Never call `search_issues` when the count is three. Attempt at least two distinct calls unless a rate limit or circuit breaker prevents further searches. Every failed call consumes one attempt. Never retry a failed query, and never retry any search after a rate-limit or circuit-breaker error; continue triage with the results already obtained.
 
 1. Exact distinctive error text.
 2. The reported failure mechanism plus the command or reproduction conditions. When the issue identifies a plausible mechanism, make this a short, high-recall cross-surface query: use one or two distinctive phrases copied verbatim from the issue, with Markdown punctuation removed, plus at most one unquoted condition term. GitHub combines unquoted search terms with AND, so do not build a long list of mechanism synonyms or paraphrases. Omit error codes, component names, area names, task names, and file or assembly names that could differ in another manifestation of the same defect.
@@ -319,6 +319,7 @@ Fold owner routing into the single triage comment in step 7; do not post a separ
 Before calling safe outputs, verify:
 
 - every label exists in the repository
+- no more than three total `search_issues` calls were made, counting failed calls, and no query was retried
 - step 4 attempted at least two distinct issue searches, including a cross-surface mechanism query whenever the report identifies a plausible mechanism
 - a mechanism search that returned only the current issue or no useful candidates was followed, while search budget remained, by a shorter mechanism query using verbatim phrases and fewer terms
 - every assignment candidate is either a direct individual owner from a matched CODEOWNERS section or a snapshot member of a team from that matched section
