@@ -75,6 +75,10 @@
                                       Condition="'$(SourceBuildTestsLicenseScanIgnorePatterns)' != ''">
         <Value>$(SourceBuildTestsLicenseScanIgnorePatterns)</Value>
       </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).LicenseScanProcessCount"
+                                      Condition="'$(SourceBuildTestsLicenseScanProcessCount)' != ''">
+        <Value>$(SourceBuildTestsLicenseScanProcessCount)</Value>
+      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).MsftSdkTarballPath">
         <Value>$(MsftSdkTarballPath)</Value>
       </RuntimeHostConfigurationOption>
