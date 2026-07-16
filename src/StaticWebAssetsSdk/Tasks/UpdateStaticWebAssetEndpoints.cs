@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // This will remove the updated endpoints from the original list and add the updated ones back in. Including any endpoint that might
 // have been removed because it had the same route as one of the updated endpoints.
 
+[MSBuildMultiThreadableTask]
 public class UpdateStaticWebAssetEndpoints : Task
 {
     [Required] public ITaskItem[] EndpointsToUpdate { get; set; }

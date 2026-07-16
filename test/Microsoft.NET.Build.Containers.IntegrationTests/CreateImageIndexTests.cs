@@ -12,7 +12,6 @@ using Task = System.Threading.Tasks.Task;
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
 [TestClass]
-[DoNotParallelize]
 public class CreateImageIndexTests : SdkTest
 {
     [TestMethod]

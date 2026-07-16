@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
+
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AssemblyName>dotnet-aot</AssemblyName>
@@ -42,15 +44,16 @@
       the assets file only has the TFM target and Publish fails with NETSDK1047.
       Conditioned to platforms where NativeAOT publish is supported.
     -->
-    <RuntimeIdentifier Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">$(TargetRid)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(NativeAotSupported)' == 'true'">$(TargetRid)</RuntimeIdentifier>
+    <UseCommonLocateNativeCompilerTarget Condition="'$(NativeAotSupported)' == 'true' and !$(TargetRid.StartsWith('win'))">true</UseCommonLocateNativeCompilerTarget>
   </PropertyGroup>
 
   <Import Project="AotSourceFiles.props" />
 
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
+    <Compile Include="SdkRootLocator.cs" />
     <Compile Include="ManagedHost.cs" />
-    <Compile Include="..\dotnet\Program.cs" Link="Program.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,6 +64,9 @@
     <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" GlobalPropertiesToRemove="PublishDir">
       <Aliases>global,NativeWrapper,DotNetNativeWrapper</Aliases>
     </ProjectReference>
+    <!-- Lean (Releases + System.Text.Json) reader providing SdkFeatureBand / WorkloadInstallType for
+         the in-process, read-only workload install detection (WorkloadInstallDetector). -->
+    <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" GlobalPropertiesToRemove="PublishDir" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,13 +82,32 @@
   </ItemGroup>
 
   <!--
+    Select the System.Text.Json source-generated deserialization path in the NuGet client
+    libraries (NuGet.Packaging, NuGet.ProjectModel, NuGet.Configuration, etc.) instead of the
+    reflection-based Newtonsoft.Json path, which is not trim- or AOT-safe.
+
+    NuGet defines this as a [FeatureSwitchDefinition], so Trim="true" tells the trimmer/ILC the
+    value is a compile-time constant. That lets it dead-code-eliminate the Newtonsoft.Json branch
+    and avoid IL2026/IL2104/IL3050/IL3053 warnings when publishing this AOT binary.
+  -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="NuGet.UseSystemTextJsonDeserialization"
+                                    Value="true"
+                                    Trim="true" />
+  </ItemGroup>
+
+  <!--
     On Apple platforms, NativeAOT unconditionally statically links libSystem.Security.Cryptography.Native.Apple.a
     into every output, including NativeLib=Shared (dylib). This static archive contains Swift binding classes
     (HashBox, X25519KeyBox) that register with the ObjC runtime. When the host process also has these classes
     (from the shared framework's copy of the same library), macOS emits duplicate class warnings to stderr,
     which breaks tests that assert stderr is empty.
 
-    Since the AOT CLI does not use any cryptographic APIs, we can safely remove this native library from linking.
+    The AOT CLI DOES use cryptography during first-run (ASP.NET Core developer-certificate generation), but it
+    does not need this archive statically linked: because the CLI is loaded as a shared library (NativeLib=Shared)
+    by a full .NET host, its crypto P/Invokes resolve dynamically against the host's already-loaded copy of
+    libSystem.Security.Cryptography.Native.Apple.dylib. Removing the static archive (and its DirectPInvoke) therefore
+    keeps cert generation working while avoiding the duplicate ObjC class registration and its stderr warnings.
 
     This is a workaround for a NativeAOT issue tracked at https://github.com/dotnet/runtime/issues/128867
     ("Two CLR-based apps cannot coexist on Apple platforms"). Once that is fixed (e.g. by guarding the
@@ -95,5 +120,8 @@
       <DirectPInvoke Remove="System.Security.Cryptography.Native.Apple" />
     </ItemGroup>
   </Target>
+
+  <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"
+      Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'" />
 
 </Project>

@@ -11,14 +11,31 @@ namespace dotnet.Tests
     {
         [TestMethod]
         [DataRow("-tl", "-tl:auto")]
+        [DataRow("--tl", "--tl:auto")]
         [DataRow("/tl", "/tl:auto")]
-        [DataRow("--terminalLogger", "--terminalLogger:auto")]
         [DataRow("-tl:off", "-tl:off")]
         [DataRow("-TL:off", "-TL:off")]
+        [DataRow("-TL:Off", "-TL:Off")]
+        [DataRow("--tl:off", "--tl:off")]
+        [DataRow("/tl:on", "/tl:on")]
         [DataRow("/tl:off", "/tl:off")]
+        [DataRow("-terminallogger", "-terminallogger:auto")]
+        [DataRow("--terminalLogger", "--terminalLogger:auto")]
+        [DataRow("/terminallogger", "/terminallogger:auto")]
+        [DataRow("-terminallogger:auto", "-terminallogger:auto")]
+        [DataRow("--TerminalLogger:on", "--TerminalLogger:on")]
         [DataRow("--terminalLogger:off", "--terminalLogger:off")]
+        [DataRow("-ll", "-ll:auto")]
+        [DataRow("--ll:off", "--ll:off")]
+        [DataRow("/ll", "/ll:auto")]
+        [DataRow("-livelogger", "-livelogger:auto")]
+        [DataRow("--livelogger:off", "--livelogger:off")]
+        [DataRow("-tlp:default=true", "-tlp:default=true")]
+        [DataRow("--tlp:default=auto", "--tlp:default=auto")]
         [DataRow("-tlp:verbosity=quiet", "-tlp:verbosity=quiet")]
         [DataRow("/tlp:DISABLENODEDISPLAY", "/tlp:DISABLENODEDISPLAY")]
+        [DataRow("-terminalloggerparameters:default=true", "-terminalloggerparameters:default=true")]
+        [DataRow("--terminalLoggerParameters:default=true", "--terminalLoggerParameters:default=true")]
         [DataRow("--terminalLoggerParameters:verbosity=quiet", "--terminalLoggerParameters:verbosity=quiet")]
         [DataRow("-clp:NoSummary", "-clp:NoSummary")]
         [DataRow("--consoleLoggerParameters:NoSummary", "--consoleLoggerParameters:NoSummary")]
@@ -40,56 +57,19 @@ namespace dotnet.Tests
         [DataRow("-noconsolelogger:false")]
         [DataRow("--noconsolelogger")]
         [DataRow("--unknownLogger:off")]
-        public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
-        {
-            LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
-
-            loggerArgs.Should().BeEmpty();
-            nonLoggerArgs.Should().Equal(arg);
-        }
-
-        [TestMethod]
-        [DataRow("-tl")]
-        [DataRow("--tl")]
-        [DataRow("/tl")]
-        [DataRow("-tl:off")]
-        [DataRow("--tl:off")]
-        [DataRow("/tl:on")]
-        [DataRow("-TL:Off")]
-        [DataRow("-terminallogger")]
-        [DataRow("--terminalLogger")]
-        [DataRow("/terminallogger")]
-        [DataRow("-terminallogger:auto")]
-        [DataRow("--TerminalLogger:on")]
-        [DataRow("-ll")]
-        [DataRow("--ll:off")]
-        [DataRow("/ll")]
-        [DataRow("-livelogger")]
-        [DataRow("--livelogger:off")]
-        [DataRow("-tlp:default=true")]
-        [DataRow("--tlp:default=auto")]
-        [DataRow("/tlp:DISABLENODEDISPLAY")]
-        [DataRow("-terminalloggerparameters:default=true")]
-        [DataRow("--terminalLoggerParameters:default=true")]
-        public void IsTerminalLoggerArgument_RecognizesTerminalLoggerArguments(string arg)
-        {
-            LoggerUtility.IsTerminalLoggerArgument(arg).Should().BeTrue();
-        }
-
-        [TestMethod]
         [DataRow("--no-build")]
-        [DataRow("-bl")]
-        [DataRow("--binaryLogger")]
-        [DataRow("-bl:foo.binlog")]
         [DataRow("-tlapropertythatstartslikethis")]
         [DataRow("--tlpwithnocolon")]
         [DataRow("--terminallogger-something")]
         [DataRow("-llextra")]
         [DataRow("foo.csproj")]
         [DataRow("")]
-        public void IsTerminalLoggerArgument_RejectsNonTerminalLoggerArguments(string arg)
+        public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
         {
-            LoggerUtility.IsTerminalLoggerArgument(arg).Should().BeFalse();
+            LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
+
+            loggerArgs.Should().BeEmpty();
+            nonLoggerArgs.Should().Equal(arg);
         }
 
         [TestMethod]

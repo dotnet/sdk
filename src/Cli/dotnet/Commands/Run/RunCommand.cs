@@ -143,11 +143,6 @@ public class RunCommand
 
     public int Execute()
     {
-        if (NoBuild && NoCache)
-        {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOptionName, RunCommandDefinition.NoBuildOptionName);
-        }
-
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
         FacadeLogger? logger = ProjectFileFullPath is not null
@@ -157,7 +152,7 @@ public class RunCommand
         {
             // Pre-run evaluation: Handle target framework and device selection for project-based scenarios
             using var selector = ProjectFileFullPath is not null
-                ? new RunCommandSelector(ProjectFileFullPath, Interactive, MSBuildArgs, EnvironmentVariables, logger)
+                ? new RunCommandSelector(ProjectFileFullPath, Interactive, MSBuildArgs, EnvironmentVariables, commandName: "dotnet run", logger)
                 : null;
             if (selector is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded(selector))
             {
@@ -179,6 +174,7 @@ public class RunCommand
 
             Func<ProjectCollection, ProjectInstance>? projectFactory = null;
             RunProperties? cachedRunProperties = null;
+            bool runPropertiesFromEvaluation = false;
             VirtualProjectBuildingCommand? projectBuilder = null;
             if (ShouldBuild)
             {
@@ -188,6 +184,7 @@ public class RunCommand
                 }
 
                 EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder, selector?.IntermediateOutputPath, selector?.HasRuntimeEnvironmentVariableSupport ?? false);
+                runPropertiesFromEvaluation = projectBuilder?.LastBuild.Level == BuildLevel.All;
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
             {
@@ -197,9 +194,10 @@ public class RunCommand
                 projectBuilder = CreateProjectBuilder();
                 projectBuilder.MarkArtifactsFolderUsed();
 
-                var cacheEntry = projectBuilder.GetPreviousCacheEntry();
-                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : projectBuilder.CreateProjectInstance;
-                cachedRunProperties = cacheEntry?.Run;
+                Reporter.Verbose.WriteLine("Checking changes for run properties");
+                var buildLevel = projectBuilder.GetBuildLevel(out var cache);
+                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
+                cachedRunProperties = buildLevel != BuildLevel.All ? cache?.PreviousEntry?.Run : null;
             }
 
             // Deploy step: Call DeployToDevice target if available
@@ -213,7 +211,7 @@ public class RunCommand
                 }
             }
 
-            var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, logger);
+            var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger);
 
             // Send telemetry about the run operation
             SendRunTelemetry(launchProfileParseResult.Profile, projectBuilder);
@@ -235,11 +233,11 @@ public class RunCommand
         }
     }
 
-    internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
+    internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, bool runPropertiesFromEvaluation, FacadeLogger? logger)
         => launchSettings switch
         {
-            null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties, logger),
-            ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties, logger),
+            null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger),
+            ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger),
             ExecutableLaunchProfile executableSettings => GetTargetCommandForExecutable(executableSettings),
             _ => throw new InvalidOperationException()
         };
@@ -359,7 +357,7 @@ public class RunCommand
         }
 
         // Use RunCommandSelector to handle multi-target selection (or single framework selection)
-        if (RunCommandSelector.TrySelectTargetFramework(frameworks, Interactive, out string? selectedFramework))
+        if (RunCommandSelector.TrySelectTargetFramework(frameworks, Interactive, "dotnet run", out string? selectedFramework))
         {
             ApplySelectedFramework(selectedFramework);
             return true;
@@ -406,12 +404,12 @@ public class RunCommand
         var command = CommandFactoryUsingResolver.Create(commandSpec)
             .WorkingDirectory(workingDirectory);
 
-        SetEnvironmentVariables(command, launchSettings);
+        SetEnvironmentVariables(command, launchSettings, EnvironmentVariables);
 
         return command;
     }
 
-    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings)
+    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings, IReadOnlyDictionary<string, string> environmentVariables)
     {
         // Handle Project-specific settings
         if (launchSettings is ProjectLaunchProfile projectSettings)
@@ -432,8 +430,10 @@ public class RunCommand
             }
         }
 
-        // Env variables specified on command line override those specified in launch profile:
-        foreach (var (name, value) in EnvironmentVariables)
+        // Env variables specified on command line (or, for opted-in projects, the final
+        // @(RuntimeEnvironmentVariable) item group after ComputeRunArguments) override those
+        // specified in the launch profile:
+        foreach (var (name, value) in environmentVariables)
         {
             command.EnvironmentVariable(name, value);
         }
@@ -562,14 +562,15 @@ public class RunCommand
         }
     }
 
-    private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
+    private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, bool runPropertiesFromEvaluation, FacadeLogger? logger)
     {
         ICommand command;
+        IReadOnlyDictionary<string, string> runtimeEnvironmentVariables = EnvironmentVariables;
         if (cachedRunProperties != null)
         {
             // We can skip project evaluation if we already evaluated the project during virtual build
             // or we have cached run properties in previous run (and this is a --no-build or skip-msbuild run).
-            Reporter.Verbose.WriteLine("Getting target command: from cache.");
+            Reporter.Verbose.WriteLine($"Getting target command: from {(runPropertiesFromEvaluation ? "previous evaluation" : "cache")}.");
             command = CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
         }
         else if (projectFactory is null && ProjectFileFullPath is null)
@@ -585,11 +586,12 @@ public class RunCommand
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
 
             ProjectInstance project;
+            bool hasRuntimeEnvironmentVariableSupport;
             try
             {
                 project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
                 ValidatePreconditions(project);
-                InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
+                hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
             }
             finally
             {
@@ -597,9 +599,16 @@ public class RunCommand
 
             var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
             command = CreateCommandFromRunProperties(runProperties);
+
+            // For opted-in projects, honor any additions/changes that MSBuild targets (e.g. ComputeRunArguments)
+            // made to the @(RuntimeEnvironmentVariable) item group, rather than only the original -e values.
+            if (hasRuntimeEnvironmentVariableSupport)
+            {
+                runtimeEnvironmentVariables = EnvironmentVariablesToMSBuild.ReadFromItems(project);
+            }
         }
 
-        SetEnvironmentVariables(command, launchSettings);
+        SetEnvironmentVariables(command, launchSettings, runtimeEnvironmentVariables);
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
@@ -681,11 +690,12 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
+        [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
+        static bool InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
         {
             // Only add environment variables as MSBuild items if the project has opted in via capability
-            if (project.GetItems(Constants.ProjectCapability)
-                .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase)))
+            bool hasRuntimeEnvironmentVariableSupport = EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project);
+            if (hasRuntimeEnvironmentVariableSupport)
             {
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
@@ -707,6 +717,8 @@ public class RunCommand
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }
+
+            return hasRuntimeEnvironmentVariableSupport;
         }
     }
 

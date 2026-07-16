@@ -7,7 +7,6 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class FirstLowerCaseInvariantValueFormTests
     {
         [TestMethod]

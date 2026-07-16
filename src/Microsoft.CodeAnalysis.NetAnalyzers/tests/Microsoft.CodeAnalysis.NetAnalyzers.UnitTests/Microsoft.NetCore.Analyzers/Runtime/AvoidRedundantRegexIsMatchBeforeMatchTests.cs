@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AvoidRedundantRegexIsMatchBeforeMatch,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpAvoidRedundantRegexIsMatchBeforeMatchFixer>;
@@ -14,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class AvoidRedundantRegexIsMatchBeforeMatchTests
     {
         /// <summary>
@@ -27,12 +27,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 LanguageVersion = LanguageVersion.CSharp9,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         #region Diagnostic tests — should flag
 
-        [Fact]
+        [TestMethod]
         public async Task StaticIsMatchThenMatch_Flags()
         {
             var source = """
@@ -65,7 +65,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InstanceIsMatchThenMatch_Flags()
         {
             var source = """
@@ -100,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StaticWithOptions_Flags()
         {
             var source = """
@@ -133,7 +133,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StaticWithOptionsAndTimeout_Flags()
         {
             // Timeout overload: all four arguments (input, pattern, options, timeout) must be preserved.
@@ -171,7 +171,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchUsedInlineWithGroupsAccess_FlagsButNoFix()
         {
             // Real-world pattern: regex.Match(x).Groups[1].Value
@@ -196,7 +196,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInExpressionStatement_FlagsAndFix()
         {
             // Match is assigned to an existing variable declared immediately before the if.
@@ -231,7 +231,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchWithVarDeclaration_Flags()
         {
             var source = """
@@ -264,7 +264,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadonlyFieldAsReceiver_Flags()
         {
             var source = """
@@ -301,7 +301,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterAsInput_Flags()
         {
             var source = """
@@ -334,7 +334,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstantPatternString_Flags()
         {
             var source = """
@@ -367,7 +367,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchWithOtherStatementsInBody_Flags()
         {
             // Match is not the first statement — diagnostic fires but fixer
@@ -392,7 +392,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InstanceWithStartAtParameter_Flags()
         {
             var source = """
@@ -431,7 +431,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region No-diagnostic tests — should NOT flag
 
-        [Fact]
+        [TestMethod]
         public async Task DifferentInputVariables_NoDiagnostic()
         {
             var source = """
@@ -451,7 +451,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DifferentPatterns_NoDiagnostic()
         {
             // Real-world false positive: different IsMatch and Match patterns on same input.
@@ -472,7 +472,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DifferentRegexInstances_NoDiagnostic()
         {
             var source = """
@@ -494,7 +494,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DifferentOptions_NoDiagnostic()
         {
             var source = """
@@ -514,7 +514,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StaticIsMatchInstanceMatch_NoDiagnostic()
         {
             var source = """
@@ -535,7 +535,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NegatedIsMatch_NoDiagnostic()
         {
             // Inverted form (`!Regex.IsMatch(...)`) is intentionally not handled.
@@ -558,7 +558,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInElseBranch_NoDiagnostic()
         {
             var source = """
@@ -581,7 +581,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideLambda_NoDiagnostic()
         {
             // The Match call is inside a lambda — different scope.
@@ -606,7 +606,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideLocalFunction_NoDiagnostic()
         {
             var source = """
@@ -629,7 +629,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MutableFieldReceiver_NoDiagnostic()
         {
             // Non-readonly field — could be reassigned between calls.
@@ -652,7 +652,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MutableFieldAsArgument_NoDiagnostic()
         {
             // Field used as argument is not readonly — could be mutated.
@@ -675,7 +675,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DifferentOverloads_NoDiagnostic()
         {
             // IsMatch with 2 args (input, pattern), Match with 3 args (input, pattern, options)
@@ -696,7 +696,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PropertyAsArgument_NoDiagnostic()
         {
             // Property access is not stable — could have side effects.
@@ -719,7 +719,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MethodCallAsArgument_NoDiagnostic()
         {
             // Method call result is not stable.
@@ -742,7 +742,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchNotInWhenTrue_NoDiagnostic()
         {
             // No Match call at all in the if body.
@@ -764,7 +764,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotIsMatchCondition_NoDiagnostic()
         {
             // Condition is Regex.Match, not IsMatch.
@@ -785,7 +785,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInNestedIfBody_NoDiagnostic()
         {
             // Match is in a nested if block, not a direct child.
@@ -809,7 +809,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoRegexType_NoDiagnostic()
         {
             // When Regex type is not available.
@@ -824,7 +824,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InterveningLocalReassignment_NoDiagnostic()
         {
             // Local is reassigned between IsMatch and Match — values may differ.
@@ -846,7 +846,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InterveningParameterReassignment_NoDiagnostic()
         {
             // Parameter is reassigned between IsMatch and Match.
@@ -869,7 +869,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InterveningReceiverReassignment_NoDiagnostic()
         {
             // Instance receiver is reassigned between IsMatch and Match.
@@ -892,7 +892,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadonlyFieldReceiverReassigned_NoDiagnostic()
         {
             // Receiver is local.ReadonlyField — reassigning the local between IsMatch
@@ -924,7 +924,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadonlyFieldArgumentReassigned_NoDiagnostic()
         {
             // Argument is local.ReadonlyField — reassigning the local between
@@ -956,7 +956,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanOverloadIsMatch_NoDiagnostic()
         {
             // ReadOnlySpan<char> overloads of IsMatch have no corresponding
@@ -981,14 +981,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestCode = source,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region Diagnostic but no fix
 
-        [Fact]
+        [TestMethod]
         public async Task MatchNotFirstStatement_DiagnosticButNoFix()
         {
             // Match is not the first statement — diagnostic fires but fixer
@@ -1013,7 +1013,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ElseBranchNameConflict_DiagnosticButNoFix()
         {
             // Else branch declares a variable with the same name as the Match
@@ -1045,7 +1045,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Real-world pattern variants
 
-        [Fact]
+        [TestMethod]
         public async Task RealWorld_MatchUsedForGroupsInline()
         {
             // Real-world pattern: inline Groups access on Match result.
@@ -1072,7 +1072,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RealWorld_MultiplePairsWithDifferentPatterns_NoDiagnostic()
         {
             // Real-world pattern: multiple IsMatch/Match pairs but with different patterns.
@@ -1098,7 +1098,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RealWorld_ElseIfChainWithIsMatchThenMatch_Flags()
         {
             // Real-world pattern: else-if chain where each branch
@@ -1154,7 +1154,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RealWorld_IsMatchThenMatchInsideLoop_Flags()
         {
             // Real-world pattern: IsMatch/Match pair inside a foreach loop body.
@@ -1198,7 +1198,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RealWorld_ConstStringFieldPattern_Flags()
         {
             // Real-world pattern: const string fields used as regex pattern arg.
@@ -1246,7 +1246,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region VB tests — analyzer only (no fixer)
 
-        [Fact]
+        [TestMethod]
         public async Task VB_StaticIsMatchThenMatch_Flags()
         {
             var source = """
@@ -1263,7 +1263,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_DifferentInputs_NoDiagnostic()
         {
             var source = """
@@ -1284,7 +1284,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Edge cases
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleMatchCallsInBody_FlagsFirst()
         {
             // Only the first matching Match call should be included in the diagnostic.
@@ -1321,7 +1321,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchReturnedFromIfBody_FlagsButNoFix()
         {
             var source = """
@@ -1343,7 +1343,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInSingleStatementIfBody_Flags()
         {
             // No braces around if body.
@@ -1362,7 +1362,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StaticReadonlyFieldReceiver_Flags()
         {
             var source = """
@@ -1399,7 +1399,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParameterAsRegexReceiver_Flags()
         {
             var source = """
@@ -1432,7 +1432,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IsMatchWithAdditionalConjunction_NoDiagnostic()
         {
             // Condition is IsMatch && something — not a simple IsMatch call.
@@ -1453,7 +1453,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstFieldReceiver_Flags()
         {
             // const string used for pattern — equivalent.
@@ -1491,7 +1491,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadonlyFieldAsPatternArgument_Flags()
         {
             var source = """
@@ -1528,7 +1528,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArgumentsSameOrder_Diagnostic()
         {
             // Named arguments in same order as parameters — should still match.
@@ -1562,7 +1562,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArgumentsReordered_Diagnostic()
         {
             // Named arguments reordered between IsMatch and Match — same values, different order.
@@ -1596,7 +1596,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArgumentsDifferentValues_NoDiagnostic()
         {
             // Named arguments with same names but different values — should NOT match.
@@ -1621,7 +1621,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Regression tests for mutation and control-flow edge cases
 
-        [Fact]
+        [TestMethod]
         public async Task InterveningRefMutation_NoDiagnostic()
         {
             var source = """
@@ -1644,7 +1644,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InterveningOutMutation_NoDiagnostic()
         {
             var source = """
@@ -1667,7 +1667,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NameConflictAfterIfStatement_DiagnosticButNoFix()
         {
             // The conflicting 'int m' must be in a sibling block so the original
@@ -1694,7 +1694,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NameConflictWithPatternInElse_DiagnosticButNoFix()
         {
             var source = """
@@ -1717,7 +1717,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NameConflictWithForeachInElse_DiagnosticButNoFix()
         {
             var source = """
@@ -1742,7 +1742,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeclaredAsGroupType_DiagnosticButNoFix()
         {
             var source = """
@@ -1762,7 +1762,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeclaredAsObjectType_DiagnosticButNoFix()
         {
             var source = """
@@ -1782,7 +1782,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeclaredAsExactMatchType_FixOffered()
         {
             var source = """
@@ -1815,7 +1815,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParenthesizedCondition_Diagnostic()
         {
             // Parenthesized IsMatch condition: if ((Regex.IsMatch(input, pattern)))
@@ -1849,7 +1849,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeconstructionForeachNameCollision_ElseBranch_DiagnosticNoFix()
         {
             // Deconstruction foreach in else branch with conflicting variable name
@@ -1875,7 +1875,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonBlockParent_DiagnosticNoFix()
         {
             // If statement whose parent is not a block (e.g., switch section)
@@ -1906,7 +1906,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Coalesce and deconstruction write tests
 
-        [Fact]
+        [TestMethod]
         public async Task InterveningCoalesceAssignment_NoDiagnostic()
         {
             var source = """
@@ -1930,10 +1930,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestCode = source,
                 LanguageVersion = LanguageVersion.CSharp9,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InterveningDeconstructionAssignment_NoDiagnostic()
         {
             var source = """
@@ -1960,7 +1960,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Non-block write and lambda parameter conflict tests
 
-        [Fact]
+        [TestMethod]
         public async Task SingleStatementBody_WriteToTrackedSymbol_NoDiagnostic()
         {
             var source = """
@@ -1979,7 +1979,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LambdaParameterConflictsWithMatchVariable_NoFix()
         {
             // Fixer should not offer fix because 'm' is used as a lambda parameter in else branch
@@ -2006,7 +2006,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunctionParameterConflictsWithMatchVariable_NoFix()
         {
             var source = """
@@ -2036,7 +2036,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Parenthesized argument tests
 
-        [Fact]
+        [TestMethod]
         public async Task ParenthesizedArguments_MatchesDiagnostic()
         {
             string source = """
@@ -2067,7 +2067,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MismatchedParentheses_StillMatchesDiagnostic()
         {
             string source = """
@@ -2098,7 +2098,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParenthesizedArgument_InterveningReassignment_NoDiagnostic()
         {
             string source = """
@@ -2118,7 +2118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ParenthesizedAssignmentTarget_WriteDetected_NoDiagnostic()
         {
             string source = """
@@ -2138,7 +2138,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConditionalAccessWhenNotNull_MatchInArgument_Diagnostic()
         {
             string source = """
@@ -2164,7 +2164,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Pre-declaration assignment pattern tests
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_FixRemovesDeclaration()
         {
             string source = """
@@ -2198,7 +2198,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_NoInitializer_FixRemovesDeclaration()
         {
             string source = """
@@ -2232,7 +2232,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_DefaultInitializer_FixRemovesDeclaration()
         {
             string source = """
@@ -2266,7 +2266,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_UsedAfterIf_DiagnosticButNoFix()
         {
             string source = """
@@ -2288,7 +2288,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_NonNullInitializer_DiagnosticButNoFix()
         {
             string source = """
@@ -2310,7 +2310,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_NotImmediatelyBeforeIf_DiagnosticButNoFix()
         {
             string source = """
@@ -2333,7 +2333,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_SingleStatementBody_NoBraces_DiagnosticButNoFix()
         {
             string source = """
@@ -2352,7 +2352,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_UsedInElse_DiagnosticButNoFix()
         {
             string source = """
@@ -2383,7 +2383,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Additional regression tests
 
-        [Fact]
+        [TestMethod]
         public async Task TernaryConditional_NoDiagnostic()
         {
             // IConditionalOperation also fires for `?:` (and VB `If(...)`),
@@ -2402,7 +2402,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_TernaryIfExpression_NoDiagnostic()
         {
             // VB `If(cond, a, b)` is also IConditionalOperation; analyzer must skip it.
@@ -2418,7 +2418,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideObjectCreation_Diagnostic()
         {
             // Locks in coverage for IObjectCreationOperation.
@@ -2442,7 +2442,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideTuple_Diagnostic()
         {
             // Locks in coverage for ITupleOperation.
@@ -2464,7 +2464,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideInterpolatedString_Diagnostic()
         {
             // Locks in coverage for IInterpolatedStringOperation.
@@ -2486,7 +2486,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideCoalesce_Diagnostic()
         {
             // Locks in coverage for ICoalesceOperation.
@@ -2508,7 +2508,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideBinaryComparison_Diagnostic()
         {
             // Locks in coverage for IBinaryOperation.
@@ -2530,7 +2530,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideUnaryNot_Diagnostic()
         {
             // Locks in coverage for IUnaryOperation.
@@ -2552,7 +2552,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StructInstanceMethod_ThisReassignedBeforeMatch_NoDiagnostic()
         {
             // `this` is reassignable inside a struct's instance methods, so
@@ -2587,7 +2587,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ClassInstanceMethod_StillFlags()
         {
             // Sanity check that the struct-only restriction in Comment 3 didn't
@@ -2626,7 +2626,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_UnrelatedMemberAccessAfter_FixOffered()
         {
             // `something.m` after the if is a member access, not a reference to the
@@ -2668,7 +2668,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixerStripsTrivia_DocumentsBehavior()
         {
             // The fixer intentionally clears trailing trivia from the original
@@ -2705,7 +2705,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_NamedArgumentLabelMatchesName_FixOffered()
         {
             // `m: 1` after the if is a named-argument label, not a reference to the
@@ -2747,7 +2747,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MatchInsideObjectInitializer_Diagnostic()
         {
             // Match call inside an object initializer
@@ -2773,7 +2773,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateLocalFunctionWithWrite_StillFlags()
         {
             // A local function declared between IsMatch and Match contains a
@@ -2800,7 +2800,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PreDeclaredAssignment_DefaultTypeExpressionInitializer_FixOffered()
         {
             // `Match m = default(Match);` is a constant-default initializer,
@@ -2837,7 +2837,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LinqQueryRangeVariableAfterIf_NoFix()
         {
             // A subsequent LINQ query that already binds `m` (via

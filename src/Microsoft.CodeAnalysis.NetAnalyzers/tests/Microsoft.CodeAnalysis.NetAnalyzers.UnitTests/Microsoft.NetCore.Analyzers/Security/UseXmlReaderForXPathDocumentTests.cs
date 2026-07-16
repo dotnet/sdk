@@ -3,16 +3,16 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseXmlReaderForXPathDocument,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class UseXmlReaderForXPathDocumentTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestStreamParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -30,7 +30,7 @@ class TestClass
             GetCSharpResultAt(10, 19, "XPathDocument", "XPathDocument"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStringParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -47,7 +47,7 @@ class TestClass
             GetCSharpResultAt(9, 19, "XPathDocument", "XPathDocument"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStringAndXmlSpaceParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -65,7 +65,7 @@ class TestClass
             GetCSharpResultAt(10, 19, "XPathDocument", "XPathDocument"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTextReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -83,7 +83,7 @@ class TestClass
             GetCSharpResultAt(10, 19, "XPathDocument", "XPathDocument"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -100,7 +100,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestXmlReaderAndXmlSpaceParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
