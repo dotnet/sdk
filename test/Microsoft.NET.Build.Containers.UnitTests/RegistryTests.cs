@@ -652,6 +652,7 @@ public class RegistryTests : IDisposable
             mockRegistryAPI.Verify(
                 api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, CancellationToken.None),
                 Times.Exactly(5));
+            Assert.IsEmpty(Directory.EnumerateFiles(ContentStore.TempPath));
         }
         finally
         {
