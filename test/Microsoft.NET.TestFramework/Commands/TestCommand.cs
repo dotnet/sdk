@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -139,29 +139,17 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
-            var spec = CreateCommandSpec(args);
-
-            var command = spec
+            var command = CreateCommandSpec(args)
                 .ToCommand(_doNotEscapeArguments)
                 .CaptureStdOut()
                 .CaptureStdErr();
 
-            command.OnOutputLine(line =>
+            if (CommandOutputHandler != null)
             {
-                Log.WriteLine($"》{line}");
-                CommandOutputHandler?.Invoke(line);
-            });
+                command.OnOutputLine(CommandOutputHandler);
+            }
 
-            command.OnErrorLine(line =>
-            {
-                Log.WriteLine($"❌{line}");
-            });
-
-            var display = $"dotnet {string.Join(" ", spec.Arguments)}";
-
-            Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);
-            Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
 
             // By default, cap how much of the (potentially enormous) command output is echoed to the test
             // log so a single very verbose command (e.g. `dotnet test -v diag`) can't flush hundreds of
