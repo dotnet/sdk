@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsTestProject>true</IsTestProject>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
