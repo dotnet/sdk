@@ -9,10 +9,24 @@ using Microsoft.NET.Build.Containers.Resources;
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
-/// Serializes built images into archive formats accepted by local container runtimes.
+/// Produces importable Docker or OCI tar streams for local runtimes that load images from files or standard input.
 /// </summary>
+/// <remarks>
+/// OCI archives use the
+/// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#content">required image-layout content</see>
+/// and may be transported as tar archives as described by the
+/// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#oci-image-layout-specification">OCI Image Layout Specification</see>.
+/// Docker archives use Moby's de facto archive contract: the
+/// <see href="https://github.com/moby/moby/blob/c5b47383f5108b7a0c05b4334ef31644158553cf/daemon/internal/image/tarexport/tarexport.go#L15-L26"><c>manifest.json</c> schema</see>
+/// identifies the configuration, tags, and ordered layer paths consumed by the
+/// <see href="https://github.com/moby/moby/blob/c5b47383f5108b7a0c05b4334ef31644158553cf/daemon/internal/image/tarexport/load.go#L57-L130">Moby archive loader</see>.
+/// </remarks>
 internal static class ContainerArchive
 {
+    /// <summary>
+    /// The SDK emits SHA-256 descriptors, whose content is stored beneath <c>blobs/sha256/&lt;encoded&gt;</c> as required by the
+    /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#blobs">OCI blobs layout</see>.
+    /// </summary>
     private const string BlobsPath = "blobs/sha256";
 
     public static async Task WriteImageToStreamAsync(
@@ -131,6 +145,10 @@ internal static class ContainerArchive
         await writer.WriteEntryAsync(configEntry, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Records archive entry paths using the fields interpreted by Moby's
+    /// <see href="https://github.com/moby/moby/blob/c5b47383f5108b7a0c05b4334ef31644158553cf/daemon/internal/image/tarexport/tarexport.go#L20-L26"><c>manifestItem</c> contract</see>.
+    /// </summary>
     private static async Task WriteManifestForDockerImage(
         TarWriter writer,
         DestinationImageReference destinationReference,
@@ -160,6 +178,10 @@ internal static class ContainerArchive
         await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Writes the required layout marker and version defined by the
+    /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#oci-layout-file"><c>oci-layout</c> file specification</see>.
+    /// </summary>
     private static async Task WriteOciLayout(TarWriter writer, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -171,6 +193,10 @@ internal static class ContainerArchive
         await writer.WriteEntryAsync(layoutEntry, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Stores the image manifest at the content-addressed path prescribed by the
+    /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#blobs">OCI blobs layout</see>.
+    /// </summary>
     private static async Task WriteManifestForOciImage(TarWriter writer, BuiltImage image, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -183,6 +209,10 @@ internal static class ContainerArchive
         await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Creates the required image-layout entry point defined by the
+    /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#indexjson-file"><c>index.json</c> file specification</see>.
+    /// </summary>
     private static async Task WriteIndexJsonForOciImage(
         TarWriter writer,
         BuiltImage image,
@@ -205,6 +235,10 @@ internal static class ContainerArchive
         await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Places layers, configuration, and the manifest in the content-addressed
+    /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#blobs">OCI blobs layout</see>.
+    /// </summary>
     private static async Task WriteOciImageToBlobs(
         TarWriter writer,
         BuiltImage image,
@@ -220,6 +254,10 @@ internal static class ContainerArchive
     private static string GetRequiredImageSha(BuiltImage image)
         => image.ImageSha ?? throw new InvalidOperationException("An image SHA is required to create a local container archive.");
 
+    /// <summary>
+    /// Makes the multi-platform image index discoverable through the required
+    /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#indexjson-file"><c>index.json</c> entry point</see>.
+    /// </summary>
     private static async Task WriteIndexJsonForMultiArchOciImage(
         TarWriter writer,
         MultiArchImage multiArchImage,
