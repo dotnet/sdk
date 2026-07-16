@@ -178,7 +178,7 @@ extends:
       # arm64 linker and the RID-specific ILCompiler package handle the cross-link; no sysroot is
       # required). This leg therefore BUILDS on the existing win-x64 pool with /p:CrossBuild=true and
       # produces the dotnet-aot .dll plus its mstat/dgml size-analysis artifacts (that step is gated
-      # on runAoTTests). It is build-only (runTests: false): there is no wired windows arm64 Helix
+      # on the AoT category). It is build-only (runTests: false): there is no wired windows arm64 Helix
       # queue yet, so running the *.AoT.Tests on arm64 hardware is a follow-up pending a
       # windows.11.arm64 queue. Runs for internal PRs and test builds.
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
@@ -199,10 +199,9 @@ extends:
             # 'LNK1322: cannot avoid potential ARM hazard (Cortex-A53 MPCore processor bug #843419)'
             # because the ILCompiler-produced object isn't split into per-function sections, so the
             # MSVC arm64 linker cannot apply the erratum fixup. This leg has never passed. Re-enable
-            # once the ILCompiler fix lands.
+            # once the ILCompiler fix lands. Tracked by dotnet/sdk#55298.
             - categoryName: AoT
               disableJob: true
-              runAoTTests: true
               targetArchitecture: arm64
               runtimeIdentifier: win-arm64
               osProperties: /p:CrossBuild=true
@@ -316,7 +315,6 @@ extends:
             linuxJobParameterSets:
             - categoryName: AoT
               container: azureLinuxCrossArm64
-              runAoTTests: true
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
