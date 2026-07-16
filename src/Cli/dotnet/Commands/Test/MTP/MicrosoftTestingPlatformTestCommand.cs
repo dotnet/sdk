@@ -40,28 +40,37 @@ internal partial class MicrosoftTestingPlatformTestCommand
             throw new GracefulException(CliCommandStrings.CmdDeviceOptionsRequireProject);
         }
 
-        // --list-devices: list available devices for the project and exit early.
-        // Never builds, deploys, or runs tests.
-        if (buildOptions.ListDevices)
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], "dotnet-test");
+        ITestHandler testHandler;
+        try
         {
-            return HandleListDevices(buildOptions);
+            // --list-devices: list available devices for the project and exit early.
+            // Never builds, deploys, or runs tests.
+            if (buildOptions.ListDevices)
+            {
+                return HandleListDevices(buildOptions, logger);
+            }
+
+            // When --device is specified, force single target framework selection because
+            // a device is platform-specific and we need to know which TFM was intended.
+            if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+            {
+                buildOptions = HandleDeviceWithTargetFrameworkSelection(buildOptions, logger);
+            }
+
+            testHandler = buildOptions.PathOptions.TestModules is { } testModules
+                ? new TestModulesFilterHandler(testModules, parseResult)
+                : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions, logger)
+                    : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
+
+            if (!testHandler.Initialize())
+            {
+                return ExitCode.GenericFailure;
+            }
         }
-
-        // When --device is specified, force single target framework selection because
-        // a device is platform-specific and we need to know which TFM was intended.
-        if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+        finally
         {
-            buildOptions = HandleDeviceWithTargetFrameworkSelection(buildOptions);
-        }
-
-        ITestHandler testHandler = buildOptions.PathOptions.TestModules is { } testModules
-            ? new TestModulesFilterHandler(testModules, parseResult)
-            : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions)
-                : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
-
-        if (!testHandler.Initialize())
-        {
-            return ExitCode.GenericFailure;
+            logger?.ReallyShutdown();
         }
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
@@ -167,7 +176,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// Solutions are rejected because each project may have its own device list, so
     /// applying a single --device value across a solution is ambiguous.
     /// </summary>
-    private static BuildOptions HandleDeviceWithTargetFrameworkSelection(BuildOptions buildOptions)
+    private static BuildOptions HandleDeviceWithTargetFrameworkSelection(BuildOptions buildOptions, FacadeLogger? logger)
     {
         var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
 
@@ -191,7 +200,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
         if (!globalProperties.ContainsKey(ProjectProperties.TargetFramework))
         {
             // Evaluate the project to get TargetFrameworks
-            using var collection = new ProjectCollection(globalProperties);
+            using var collection = new ProjectCollection(
+                globalProperties,
+                logger is null ? null : [logger],
+                ToolsetDefinitionLocations.Default);
             var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
             {
                 GlobalProperties = globalProperties,
@@ -241,7 +253,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// <see cref="RunCommandSelector.TrySelectDevice"/>, and exits without
     /// building, deploying, or running tests.
     /// </summary>
-    private static int HandleListDevices(BuildOptions buildOptions)
+    private static int HandleListDevices(BuildOptions buildOptions, FacadeLogger? logger)
     {
         if (!ValidationUtility.ValidateBuildPathOptions(buildOptions.PathOptions, out var projectPath, out bool isSolution))
         {
@@ -258,7 +270,6 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool isInteractive = !Console.IsOutputRedirected && !new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
 
         var standardArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
-
         // Mirror the `dotnet run --list-devices` flow: a single RunCommandSelector
         // handles both target framework selection and device listing, with
         // InvalidateGlobalProperties between steps so the device list is computed
@@ -268,7 +279,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
             isInteractive,
             standardArgs,
             ImmutableDictionary<string, string>.Empty,
-            commandName: "dotnet test");
+            commandName: "dotnet test",
+            logger);
 
         // Step 1: Prompt for TargetFramework if the project is multi-targeted and -f wasn't provided.
         if (!selector.TrySelectTargetFramework(out string? selectedFramework))
