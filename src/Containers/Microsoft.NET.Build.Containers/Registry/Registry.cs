@@ -414,7 +414,7 @@ internal sealed class Registry
 
         try
         {
-            var fileStream = File.OpenRead(localPath);
+            using var fileStream = File.OpenRead(localPath);
 
             var actualHash = SHA256.HashData(fileStream);
             var expectedHash = DigestUtils.GetEncodedValue(descriptor.Digest);
