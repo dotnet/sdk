@@ -350,7 +350,7 @@ Classify confidence in the selected labels and routing as:
 > Only when `needs-info` was added: briefly state which required information is missing and why the report is not yet actionable. Omit only this explanatory paragraph otherwise.
 - **💻 Assignment:** <@individual selected for assignment, or `none`> | <@team handles, or `none`>
 > Only when load balancing selected someone other than the initial candidate because their count was lower: `@initial` had <N> recently created open untriaged issues assigned in the past week; `@selected` had <M>, so `@selected` was selected. Code-format both handles to avoid additional mentions. Omit this entire nested details subsection otherwise.
-- **`🟩`, `🟨`, or `🟥` Confidence:** <`high`, `medium`, or `low` (embed with `tick markers`)> - <One sentence reason for the confidence classification of up to 20 words.>
+- **<🟩, 🟨, or 🟥> Confidence:** <`high`, `medium`, or `low` (embed with `tick markers`)> - <One sentence reason for the confidence classification of up to 20 words.>
 
 > Include only when step 4 found one or two strongly supported matches. **Similar issues:** https://github.com/${{ github.repository }}/issues/<issue_number> (`duplicate`) https://github.com/${{ github.repository }}/issues/<issue_number> (`potentially related`)
 > Link at most two issues on this single line, separated by one space. Replace each `<issue_number>` with the recorded issue number and put its classification immediately after its URL. Omit this line when step 4 found no strongly supported match.
@@ -358,7 +358,7 @@ Classify confidence in the selected labels and routing as:
 ➡️ **Summary**: <One sentence of at most 30 words describing the reported problem or request.> <One sentence of at most 20 words suggesting how to follow up with this issue.>
 ```
 
-Preserve the heading, blank lines, markup, bold field names, and field order. Keep only the field name inside each top-level `<summary>`, except that the Confidence summary starts with its classification emoji; Markdown formatting is unreliable there. Put assignment and team handles only in the Assignment line. Use `none` rather than omitting either side of the Assignment separator. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review.
+Preserve the heading, blank lines, markup, bold field names, and field order. Render the Confidence emoji as plain text inside the bold field name; never wrap the emoji in backticks. Put assignment and team handles only in the Assignment line. Use `none` rather than omitting either side of the Assignment separator. Keep the summary to one sentence of at most 25 words. If nothing matched, state in the Labels body that `untriaged` remains for manual review.
 
 Put all labels on one line separated by one space, rendering each as a bare `https://github.com/${{ github.repository }}/labels/<URL-encoded-label-name>` URL without backticks or Markdown link syntax so GitHub can render its native label reference. Labels includes an additional explanation only when `needs-info` was added.
 
