@@ -18,11 +18,14 @@ parameters:
   timeoutInMinutes: ''
   ### ENV VARS ###
   testFullMSBuild: false
+  # Enables the Blazor WebAssembly AoT tests (test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests)
+  # on Helix via the RunAoTTests env var.
   runAoTTests: false
   # Runs the NativeAOT CLI tests (test/dotnet-aot.Tests) on the build agent after the build.
   # These publish the test assembly as a NativeAOT binary and run it on the same architecture,
-  # validating the AOT CLI entry-point code under NativeAOT compilation. This is distinct from
-  # runAoTTests, which runs the Blazor WebAssembly AoT tests on Helix.
+  # validating the AOT CLI entry-point code under NativeAOT compilation. Only enabled where the
+  # agent architecture matches the target (the produced native binary must run on the agent);
+  # cross-arch AoT legs leave it false.
   runNativeAotCliTests: false
   ### MSBUILD ###
   targetArchitecture: x64
@@ -273,10 +276,11 @@ jobs:
       continueOnError: true
       condition: always()
 
-    # Only the AoT legs publish the dotnet-aot NativeAOT library, so only they produce
-    # the size-analysis files. Gate these steps so they don't run (and upload empty
-    # artifacts) on non-AoT legs like the TestBuild/FullFramework jobs.
-    - ${{ if eq(parameters.runAoTTests, true) }}:
+    # Only the AoT legs build the dotnet-aot NativeAOT library, so only they produce the
+    # size-analysis files. Gate on the AoT category so these steps run on every AoT leg (including
+    # the build-only cross-arch legs) and never upload empty artifacts on non-AoT legs like the
+    # TestBuild/FullFramework jobs.
+    - ${{ if eq(parameters.categoryName, 'AoT') }}:
       - task: CopyFiles@2
         displayName: 🟣 Copy NativeAOT Size Analysis Files
         inputs:
