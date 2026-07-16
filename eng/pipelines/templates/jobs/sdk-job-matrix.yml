@@ -6,6 +6,7 @@ parameters:
   windowsJobParameterSets:
   - categoryName: TestBuild
     publishRetryConfig: true
+    runNativeAotCliTests: true
   - categoryName: FullFramework
     testFullMSBuild: true
   - categoryName: AoT
@@ -14,12 +15,20 @@ parameters:
   linuxJobParameterSets:
   - categoryName: TestBuild
     osProperties: $(linuxOsglibcProperties)
+    runNativeAotCliTests: true
   - categoryName: TestBuild
     targetArchitecture: arm64
     runtimeIdentifier: linux-arm64
     osProperties: $(linuxOsglibcProperties)
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
+  # The x64 AoT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
+  # build dotnet-aot via NativeAOT (producing the .so and its mstat/dgml size-analysis output) and
+  # run the *.AoT.Tests.csproj test projects. linux-arm64 AoT is covered by a separate cross-build
+  # leg (see .vsts-pr.yml / .vsts-ci.yml).
+  - categoryName: AoT
+    runAoTTests: true
+    osProperties: $(linuxOsglibcProperties)
   - categoryName: ContainerBased
     container: azureLinux30Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
@@ -31,6 +40,7 @@ parameters:
   - categoryName: TestBuild
     targetArchitecture: arm64
     runtimeIdentifier: osx-arm64
+    runNativeAotCliTests: true
 
 jobs:
 ### ONELOCBUILD ###

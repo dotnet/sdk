@@ -289,8 +289,8 @@ internal sealed class TestApplicationHandler
                 ToOutcome(testResult.State),
                 testResult.Duration.HasValue ? TimeSpan.FromTicks(testResult.Duration.Value) : null,
                 exceptions: [.. (testResult.Exceptions ?? []).Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
-                expected: null,
-                actual: null,
+                expected: testResult.Expected,
+                actual: testResult.Actual,
                 standardOutput: testResult.StandardOutput,
                 errorOutput: testResult.ErrorOutput);
         }
@@ -433,6 +433,60 @@ internal sealed class TestApplicationHandler
             }
         }
     }
+
+    internal void OnAzureDevOpsLogReceived(AzureDevOpsLogMessage azureDevOpsLogMessage)
+    {
+        LogAzureDevOpsLog(azureDevOpsLogMessage);
+
+        // These messages carry verbatim Azure DevOps logging commands (e.g. ##[group] / ##[endgroup] / ##vso[...])
+        // that must reach the terminal unchanged so the AzDO agent can render them. They are informational and are
+        // not tied to a session, so - unlike the test-result handlers - we do not require a handshake and we are
+        // lenient about missing/empty content (we simply skip it) instead of failing the run.
+        if (!string.IsNullOrEmpty(azureDevOpsLogMessage.LogText))
+        {
+            // WriteMessage appends the payload verbatim without a trailing newline (the process-output streaming
+            // path supplies its own newlines). An Azure DevOps logging command must sit on its own line to be
+            // recognized, so terminate the line here without otherwise altering the payload.
+            _output.WriteMessage(EnsureTrailingNewLine(azureDevOpsLogMessage.LogText));
+        }
+    }
+
+    internal void OnDisplayMessageReceived(DisplayMessage displayMessage)
+    {
+        LogDisplayMessage(displayMessage);
+
+        // Generic host diagnostics (hang/crash dump, retry summaries, extension/framework warnings and errors)
+        // forwarded outside of test results. They are informational and not tied to a session, so we do not require
+        // a handshake and we stay lenient about missing content.
+        if (string.IsNullOrEmpty(displayMessage.Text))
+        {
+            return;
+        }
+
+        switch (displayMessage.Level)
+        {
+            case DisplayMessageLevels.Warning:
+                // WriteWarningMessage/WriteErrorMessage terminate the line themselves (AppendLine).
+                _output.WriteWarningMessage(displayMessage.Text);
+                break;
+
+            case DisplayMessageLevels.Error:
+                _output.WriteErrorMessage(displayMessage.Text);
+                break;
+
+            default:
+                // The information path uses the verbatim WriteMessage, which does not append a newline, so
+                // terminate the line here to keep it from running together with subsequent terminal output.
+                _output.WriteMessage(EnsureTrailingNewLine(displayMessage.Text));
+                break;
+        }
+    }
+
+    // WriteMessage writes text verbatim (no trailing newline). Forwarded host messages arrive as individual
+    // lines without a terminator, so ensure one is present - but leave already-terminated payloads untouched
+    // to avoid introducing blank lines.
+    private static string EnsureTrailingNewLine(string text)
+        => text.EndsWith('\n') ? text : text + Environment.NewLine;
 
     private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionStart(string sessionUid)
     {
@@ -650,6 +704,37 @@ internal sealed class TestApplicationHandler
         logMessageBuilder.AppendLine($"TestSessionEvent.SessionType: {testSessionEvent.SessionType}");
         logMessageBuilder.AppendLine($"TestSessionEvent.SessionUid: {testSessionEvent.SessionUid}");
         logMessageBuilder.AppendLine($"TestSessionEvent.ExecutionId: {testSessionEvent.ExecutionId}");
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogAzureDevOpsLog(AzureDevOpsLogMessage azureDevOpsLogMessage)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.ExecutionId: {azureDevOpsLogMessage.ExecutionId}");
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.InstanceId: {azureDevOpsLogMessage.InstanceId}");
+        logMessageBuilder.AppendLine($"AzureDevOpsLogMessage.LogText: {azureDevOpsLogMessage.LogText}");
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogDisplayMessage(DisplayMessage displayMessage)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"DisplayMessage.ExecutionId: {displayMessage.ExecutionId}");
+        logMessageBuilder.AppendLine($"DisplayMessage.InstanceId: {displayMessage.InstanceId}");
+        logMessageBuilder.AppendLine($"DisplayMessage.Level: {displayMessage.Level}");
+        logMessageBuilder.AppendLine($"DisplayMessage.Text: {displayMessage.Text}");
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 }

@@ -453,6 +453,12 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
     <value>Specify either the project, solution, directory, or test modules option.</value>
   </data>
+  <data name="CmdListDevicesAndListTestsMutuallyExclusive" xml:space="preserve">
+    <value>The '--list-devices' and '--list-tests' options cannot be used together.</value>
+  </data>
+  <data name="CmdDeviceOptionsRequireProject" xml:space="preserve">
+    <value>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</value>
+  </data>
   <data name="CmdMultipleProjectOrSolutionFilesErrorDescription" xml:space="preserve">
     <value>Specify which project or solution file to use because this folder contains more than one project or solution file.</value>
   </data>
