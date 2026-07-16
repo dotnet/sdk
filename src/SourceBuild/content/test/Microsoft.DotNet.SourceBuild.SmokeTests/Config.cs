@@ -23,6 +23,8 @@ internal static class Config
     public static bool ExcludeOmniSharpTests => bool.TryParse((string)AppContext.GetData(ConfigSwitchPrefix + nameof(ExcludeOmniSharpTests))!, out bool excludeOmniSharpTests) && excludeOmniSharpTests;
     public static string? LicenseScanPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(LicenseScanPath))!;
     public static string? LicenseScanIgnorePatterns => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(LicenseScanIgnorePatterns))!;
+    public static int? LicenseScanProcessCount =>
+        int.TryParse((string?)AppContext.GetData(ConfigSwitchPrefix + nameof(LicenseScanProcessCount)), out int processCount) ? processCount : null;
     public static string? MsftSdkTarballPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(MsftSdkTarballPath))!;
     public static string? PoisonReportPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(PoisonReportPath))!;
     public static string? PrereqsPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(PrereqsPath))!;
