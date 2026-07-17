@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  Path construction uses Path.Combine for cross-platform compatibility.
 /// </summary>
 [TestClass]
-public class DotnetRootResolverTests
+public partial class DotnetRootResolverTests
 {
     // Helper to build platform-appropriate paths for test inputs/outputs.
     // When isWindows=true, uses a Windows-style root; otherwise Unix-style.

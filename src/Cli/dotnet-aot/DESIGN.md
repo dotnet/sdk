@@ -10,9 +10,27 @@ function — see
 [dotnet/runtime#126171](https://github.com/dotnet/runtime/issues/126171). The
 muxer looks for `dotnet-aot` in the resolved SDK directory and, when found,
 calls `dotnet_execute` directly. `dn.exe` follows the same contract and serves
-as a local development and testing entry point. The AOT fast path is gated
-behind `DOTNET_CLI_ENABLEAOT=true`; when the variable is unset or false, the
-bridge falls through to the managed CLI immediately.
+as a local development and testing entry point. The AOT fast path is enabled by
+default on all platforms (see [Opting out](#opting-out-dotnet_cli_enableaot));
+setting `DOTNET_CLI_ENABLEAOT=false` (or `0`/`no`/`off`) opts out, and the bridge
+falls through to the managed CLI immediately.
+
+## Opting out (`DOTNET_CLI_ENABLEAOT`)
+
+The AOT command-handling fast path is **enabled by default on all platforms**. The
+fast path is designed to be behaviorally identical to the managed CLI, transparently
+deferring to it for anything it cannot handle, so it should require no action from users.
+
+If you need to bypass the AOT path entirely — for example to diagnose a suspected parity
+issue — set the `DOTNET_CLI_ENABLEAOT` environment variable to a falsy value before
+invoking `dotnet`:
+
+- Disable: `false`, `0`, `no`, or `off`
+- Enable: `true`, `1`, `yes`, or `on`
+- Unset (default): enabled
+
+When disabled, every invocation is routed straight to the managed CLI, exactly as it
+behaved before the AOT fast path was enabled by default.
 
 ## Motivation
 
@@ -48,7 +66,7 @@ graph TD
 
     subgraph L2["Layer 2 · dotnet-aot.dll  (Native AOT Shared Library)"]
         Entry["NativeEntryPoint.Execute()"]
-        AotCheck{"DOTNET_CLI_ENABLEAOT<br/>enabled?"}
+        AotCheck{"DOTNET_CLI_ENABLEAOT<br/>not disabled?"}
         Parse["Parser.Parse(args)"]
         Fast{"Command handled<br/>by AOT path?"}
         Invoke["Parser.Invoke()"]
@@ -94,7 +112,8 @@ A NativeAOT shared library (`NativeLib=Shared`) that exports a single
 `[UnmanagedCallersOnly]` entry point: `dotnet_execute`. This layer contains
 the dual-path dispatch logic.
 
-**Fast path** — When `DOTNET_CLI_ENABLEAOT=true`, the AOT bridge builds the
+**Fast path** — Unless `DOTNET_CLI_ENABLEAOT` is explicitly disabled, the AOT
+bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
 can run entirely in AOT (`--version`, `--info`, and the AOT-capable `sln`
@@ -120,7 +139,8 @@ its full resolver set, deferral produces identical user-facing behavior. Out-of-
 process invocation only happens after a non-null spec, so a command is never
 executed twice.
 
-**Slow path** — When `DOTNET_CLI_ENABLEAOT` is not set or the AOT bridge does
+**Slow path** — When `DOTNET_CLI_ENABLEAOT` is disabled (`false`/`0`/`no`/`off`)
+or the AOT bridge does
 not handle the command, the bridge calls `ManagedHost.RunApp()`, which uses the
 hostfxr native hosting APIs (`hostfxr_initialize_for_dotnet_command_line` /
 `hostfxr_set_runtime_property_value` / `hostfxr_run_app`) to bootstrap CoreCLR
@@ -138,17 +158,23 @@ sequenceDiagram
     participant cli as dotnet.dll (Layer 3)
 
     dn->>aot: dotnet_execute(hostPath, dotnetRoot, sdkDir, hostfxrPath, argc, argv)
-    aot->>aot: Parser.Parse(args)
 
-    alt DOTNET_CLI_ENABLEAOT=true and built-in command handled by AOT
-        aot->>aot: Parser.Invoke(parseResult)
-        aot-->>dn: exit code
-    else External command that resolves in AOT (tool / PATH / app-base)
-        aot->>aot: TryInvokeExternalCommand → TryResolveCommandSpec
-        aot->>tool: Command.Execute() (out of process)
-        tool-->>aot: exit code
-        aot-->>dn: exit code
-    else Command not handled, unresolved, file-based app, or AOT disabled
+    alt DOTNET_CLI_ENABLEAOT enabled (default)
+        aot->>aot: Parser.Parse(args)
+        alt Built-in command handled by AOT
+            aot->>aot: Parser.Invoke(parseResult)
+            aot-->>dn: exit code
+        else External command that resolves in AOT (tool / PATH / app-base)
+            aot->>aot: TryInvokeExternalCommand → TryResolveCommandSpec
+            aot->>tool: Command.Execute() (out of process)
+            tool-->>aot: exit code
+            aot-->>dn: exit code
+        else Command not handled, unresolved, or file-based app
+            aot->>cli: ManagedHost.RunApp(args) → managed fallback (see below)
+            cli-->>aot: exit code
+            aot-->>dn: exit code
+        end
+    else DOTNET_CLI_ENABLEAOT disabled (opt-out)
         aot->>hfxr: hostfxr_initialize_for_dotnet_command_line(args, host_path, dotnet_root)
         aot->>hfxr: hostfxr_set_runtime_property_value(handle, "HOSTFXR_PATH", hostfxrPath)
         aot->>hfxr: hostfxr_run_app(handle)

@@ -140,6 +140,37 @@ device selection:
   single target framework. If that framework provides
   `ComputeAvailableDevices`, the user may be prompted for a device.
 
+* **Build per target framework** — the selected `$(Device)` and any
+  `$(RuntimeIdentifier)` supplied by `ComputeAvailableDevices` are passed
+  to the build for that target framework.
+
+* **Deploy per target framework** — after a successful build and before
+  computing the test application's run arguments, `dotnet test` calls
+  `DeployToDevice` when the target exists.
+
+  * `DeployToDevice` receives the selected `$(Device)`,
+    `$(TargetFramework)`, and `$(RuntimeIdentifier)` as global
+    properties.
+
+  * Deployment still runs with `--no-build`, because the user may select
+    a different device for an existing build.
+
+  * If `DeployToDevice` does not exist, deployment is skipped.
+
+  * If `DeployToDevice` fails, `dotnet test` exits with an error and does
+    not invoke `ComputeRunArguments` or start the test application.
+
+* **`ComputeRunArguments` per target framework** — after deployment,
+  `dotnet test` calls `ComputeRunArguments` with the same device,
+  target framework, and runtime identifier. The resulting
+  `$(RunCommand)` and `$(RunArguments)` are used to start the test
+  application.
+
+* **Solutions** — automatic device selection and deployment happen for
+  each test project and target framework in a solution. An explicit
+  `--device` is rejected with `--solution`; use `--project` because a
+  device identifier is project- and platform-specific.
+
 * **`--list-devices`** works the same as with `dotnet run`.
 
 * **`-e` / `--environment`** — `dotnet test` already supports `-e` to
@@ -271,17 +302,25 @@ invoking the target.
 
 ## Binary Logs for Device Selection
 
-When using `-bl` with `dotnet run`, all MSBuild operations are logged to a single
-binlog file: device selection, build, deploy, and run argument computation.
+When using `-bl` with `dotnet run`, all in-process MSBuild operations are
+logged to a single binlog file: device selection, deploy, and run argument
+computation.
 
 File naming for `dotnet run` binlogs:
 
 * `-bl:filename.binlog` creates `filename-dotnet-run.binlog`
 * `-bl` creates `msbuild-dotnet-run.binlog`
 
-Note: The build step may also create `msbuild.binlog` separately. Use
-`--no-build` with `-bl` to only capture run-specific MSBuild
-operations.
+`dotnet test` uses the same behavior for its in-process operations,
+including per-project and per-target-framework device selection,
+deployment, and run argument computation:
+
+* `-bl:filename.binlog` creates `filename-dotnet-test.binlog`
+* `-bl` creates `msbuild-dotnet-test.binlog`
+
+The out-of-process build step may also create `msbuild.binlog`
+separately. Use `--no-build` with `-bl` to capture only the in-process
+run or test operations.
 
 ## What about Launch Profiles?
 
