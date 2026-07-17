@@ -6,11 +6,20 @@
          verticals that are built in the first build pass. -->
     <TargetFrameworks Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">$(ResolverTargetFramework)</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <IsPackable>true</IsPackable>
+    <IsPackable Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">false</IsPackable>
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
     <AssemblyVersion Condition="'$(TargetFramework)' == 'net472'">5.0.100.0</AssemblyVersion>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
+
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">
     <ItemGroup>
