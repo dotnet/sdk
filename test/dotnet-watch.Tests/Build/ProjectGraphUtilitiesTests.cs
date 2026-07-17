@@ -16,63 +16,59 @@ public class ProjectGraphUtilitiesTests
     private TestAssetsManager TestAssets => field ??= new(Output);
 
     [TestMethod]
-    [DataRow(@"foo\", @"foo/")]
-    [DataRow(@"foo\bar", @"foo/bar")]
-    [DataRow(@"foo/bar", @"foo/bar")]
-    [DataRow(@"foo\bar\", @"foo/bar/")]
-    [DataRow(@"foo/bar\", @"foo/bar/")]
-    [DataRow(@"foo/bar/", @"foo/bar/")]
-    [DataRow(@"foo\bar/", @"foo/bar/")]
+    [DataRow(@"a\b/c", "a/b/c", "a/b")]
+    [DataRow(@"a\b/c/", "a/b/c/", "a/b/c")]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    public void NormalizeSeparatorsInIntermediateOutputDirectory(string input, string expected)
+    public void NormalizeSeparatorsWhenReadingOutputDirectoryInPosixSystems(string input, string expectedIntermediatePath, string expectedOutputPath)
     {
-
         var project = new TestProject("A");
         var testAsset = TestAssets.CreateTestProject(project);
         var projectPath = Path.Combine(testAsset.TestRoot, "A", "A.csproj");
 
         var projectInstance = new ProjectInstance(
             projectFile: projectPath,
-            globalProperties: new Dictionary<string, string> { [PropertyNames.IntermediateOutputPath] = input },
+            globalProperties: new Dictionary<string, string>
+            {
+                [PropertyNames.IntermediateOutputPath] = input,
+                [PropertyNames.TargetPath] = input
+            },
             toolsVersion: "Current"
         );
-        Assert.AreEqual(Path.Combine(testAsset.TestRoot, "A", expected), projectInstance.GetIntermediateOutputDirectory());
+        Assert.AreEqual(Path.Combine(testAsset.TestRoot, "A", expectedIntermediatePath), projectInstance.GetIntermediateOutputDirectory());
+        Assert.AreEqual(Path.Combine(testAsset.TestRoot, "A", expectedOutputPath), projectInstance.GetOutputDirectory());
     }
 
     [TestMethod]
-    [DataRow("foo", "")]
-    [DataRow(@"foo\", @"foo")]
-    [DataRow(@"foo/", @"foo")]
-    [DataRow(@"foo\bar", @"foo")]
-    [DataRow(@"foo/bar", @"foo")]
-    [DataRow(@"foo\bar\", @"foo/bar")]
-    [DataRow(@"foo/bar\", @"foo/bar")]
-    [DataRow(@"foo/bar/", @"foo/bar")]
-    [DataRow(@"foo\bar/", @"foo/bar")]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    public void NormalizeSeparatorsInOutputDirectory(string input, string expected)
+    [DataRow(@"a\b/c", @"a\b/c", @"a\b")]
+    [DataRow(@"a\b/c/", @"a\b/c/", @"a\b/c")]
+    [OSCondition(OperatingSystems.Linux)]
+    public void ShouldNotNormalizeSeparatorsInWindows(string input, string expectedIntermediatePath, string expectedOutputPath)
     {
-
         var project = new TestProject("A");
         var testAsset = TestAssets.CreateTestProject(project);
         var projectPath = Path.Combine(testAsset.TestRoot, "A", "A.csproj");
 
         var projectInstance = new ProjectInstance(
             projectFile: projectPath,
-            globalProperties: new Dictionary<string, string> { [PropertyNames.TargetPath] = input },
+            globalProperties: new Dictionary<string, string>
+            {
+                [PropertyNames.IntermediateOutputPath] = input,
+                [PropertyNames.TargetPath] = input
+            },
             toolsVersion: "Current"
         );
-        Assert.AreEqual(Path.Combine(testAsset.TestRoot, "A", expected), projectInstance.GetOutputDirectory());
+        Assert.AreEqual(Path.Combine(testAsset.TestRoot, "A", expectedIntermediatePath), projectInstance.GetIntermediateOutputDirectory());
+        Assert.AreEqual(Path.Combine(testAsset.TestRoot, "A", expectedOutputPath), projectInstance.GetOutputDirectory());
     }
 
     [TestMethod]
     [DataRow(
         @"bin\Debug//**;bin\/**;bin\Debug/linux-x64/publish//**;**/*.user",
         new string[] {
-        "bin\\Debug//**",
-        "bin\\/**",
-        "bin\\Debug/linux-x64/publish//**",
-        "**/*.user",
+        @"bin\Debug//**",
+        @"bin\/**",
+        @"bin\Debug/linux-x64/publish//**",
+        @"**/*.user",
     })]
     public void DefaultItemExcludesDontNeedNormalization(string input, string[] expected)
     {
