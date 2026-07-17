@@ -825,6 +825,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFrameworkVersion
             };
             libraryProject.AdditionalProperties["NoWarn"] = "NETSDK1138";
+            libraryProject.AdditionalProperties["NuGetAudit"] = "false";
             libraryProject.SourceFiles["Class.cs"] = @"
 public class LibraryClass{}
 ";
@@ -835,6 +836,7 @@ public class LibraryClass{}
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
+            testProject.AdditionalProperties["NuGetAudit"] = "false";
 
             testProject.ReferencedProjects.Add(libraryProject);
             testProject.SourceFiles["Program.cs"] = @"
