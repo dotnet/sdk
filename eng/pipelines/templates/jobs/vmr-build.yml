@@ -118,8 +118,6 @@ jobs:
     condition: succeededOrFailed()
     dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}_${{ parameters.architecture }}
   variables:
-  - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-    - group: AzureDevOps-Artifact-Feeds-Pats
   - ${{ if and(not(parameters.isBuiltFromVmr), eq(variables['System.TeamProject'], 'internal'), not(startswith(parameters.vmrBranch, 'internal/release/')), ne(variables['Build.Reason'], 'PullRequest')) }}:
     - group: DotNetBot-GitHub
   - ${{ else }}:
@@ -412,7 +410,12 @@ jobs:
             filePath: $(sourcesPath)/src/sdk/eng/common/SetupNugetSources.sh
             arguments: $(sourcesPath)/src/sdk/NuGet.config $Token
           env:
-            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+            # The smoke tests restore from internal darc-int feeds while running inside a container, so the
+            # Azure Artifacts credential provider on the host agent is unreachable. Instead, embed a valid
+            # credential directly into the test NuGet.config. The dn-bot-dnceng-artifact-feeds-rw PAT has been
+            # retired in favor of PAT-less auth, so use the pipeline's OAuth token, which is the same identity
+            # a service-connection-less NuGetAuthenticate uses to authenticate to these dnceng/internal feeds.
+            Token: $(System.AccessToken)
 
         - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
           displayName: Copy Test NuGet Config for Smoke Tests
