@@ -2322,13 +2322,15 @@ internal sealed class FSharpHotReloadService
                 var updatedMethods = updatedMethodsEnumerable == null
                     ? ImmutableArray<int>.Empty
                     : updatedMethodsEnumerable.Cast<object>().Select(Convert.ToInt32).ToImmutableArray();
+                var requiredCapabilities = GetRequiredCapabilities(deltaType, delta);
 
                 if (_trace)
                 {
                     _logger.LogDebug(
-                        "F# managed delta token summary: UpdatedTypes=[{UpdatedTypes}], UpdatedMethods=[{UpdatedMethods}].",
+                        "F# managed delta token summary: UpdatedTypes=[{UpdatedTypes}], UpdatedMethods=[{UpdatedMethods}], RequiredCapabilities=[{RequiredCapabilities}].",
                         FormatTokenSet(updatedTypes),
-                        FormatTokenSet(updatedMethods));
+                        FormatTokenSet(updatedMethods),
+                        string.Join(", ", requiredCapabilities));
                 }
 
                 return new HotReloadManagedCodeUpdate(
@@ -2337,13 +2339,33 @@ internal sealed class FSharpHotReloadService
                     ImmutableArray.CreateRange(il),
                     ImmutableArray.CreateRange(pdb),
                     updatedTypes,
-                    ImmutableArray<string>.Empty);
+                    requiredCapabilities);
             }
             catch (Exception ex)
             {
                 _logger.LogDebug("Failed to materialize F# managed update payload: {Message}", ex.Message);
                 return null;
             }
+        }
+
+        private static ImmutableArray<string> GetRequiredCapabilities(Type deltaType, object delta)
+        {
+            // Older FCS builds predate the public RequiredCapabilities property. Baseline is
+            // the conservative Roslyn-compatible requirement for their method-body deltas.
+            if (deltaType.GetProperty("RequiredCapabilities")?.GetValue(delta) is not IEnumerable values)
+            {
+                return ["Baseline"];
+            }
+
+            var capabilities = values
+                .Cast<object>()
+                .Select(static value => value?.ToString())
+                .Where(static value => !string.IsNullOrWhiteSpace(value))
+                .Select(static value => value!)
+                .Distinct(StringComparer.Ordinal)
+                .ToImmutableArray();
+
+            return capabilities.IsEmpty ? ["Baseline"] : capabilities;
         }
 
         public void TryEndSession()

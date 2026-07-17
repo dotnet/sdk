@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Reflection;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -59,6 +60,32 @@ public class FSharpReflectionHostTests
         Assert.AreEqual(cancellationSource.Token, (CancellationToken)arguments[1]!);
     }
 
+    [TestMethod]
+    public void GetRequiredCapabilities_ReadsExactValuesAndFallsBackToBaseline()
+    {
+        var assembly = typeof(MessageDescriptor).Assembly;
+        var serviceType = assembly.GetType("Microsoft.DotNet.Watch.FSharpHotReloadService", throwOnError: true)!;
+        var reflectionHostType = serviceType.GetNestedType("FSharpReflectionHost", BindingFlags.NonPublic)!;
+        var getRequiredCapabilities = reflectionHostType.GetMethod(
+            "GetRequiredCapabilities",
+            BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        var exactDelta = new DeltaWithRequiredCapabilities(
+            ["Baseline", "GenericUpdateMethod", "GenericUpdateMethod"]);
+        var exact = (ImmutableArray<string>)getRequiredCapabilities.Invoke(
+            null,
+            [exactDelta.GetType(), exactDelta])!;
+        var legacyDelta = new LegacyDelta();
+        var legacy = (ImmutableArray<string>)getRequiredCapabilities.Invoke(
+            null,
+            [legacyDelta.GetType(), legacyDelta])!;
+
+        Assert.AreSequenceEqual(
+            new[] { "Baseline", "GenericUpdateMethod" },
+            exact.ToArray());
+        Assert.AreSequenceEqual(new[] { "Baseline" }, legacy.ToArray());
+    }
+
     private sealed class StaticAccessorOption
     {
         private StaticAccessorOption(bool isSome, object? value)
@@ -77,5 +104,11 @@ public class FSharpReflectionHostTests
         public static bool get_IsSome(StaticAccessorOption option) => option._isSome;
 
         public static object? get_Value(StaticAccessorOption option) => option._value;
+    }
+
+    private sealed record DeltaWithRequiredCapabilities(string[] RequiredCapabilities);
+
+    private sealed class LegacyDelta
+    {
     }
 }
