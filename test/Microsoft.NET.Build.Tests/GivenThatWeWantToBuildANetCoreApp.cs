@@ -1009,7 +1009,7 @@ class Program
         {
             var packageProject = CreateProjectWithRidAssets(targetFramework, rids, addLibAssets, addNativeAssets);
 
-            // Identifer based on test inputs to create test assets that are unique for each test case
+            // Identifier based on test inputs to create test assets that are unique for each test case
             string assetIdentifier = $"{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
 
             var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(packageProject, assetIdentifier));

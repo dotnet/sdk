@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
     // if concurrency is required.
     internal class ShadowCopyManager : IDisposable
     {
-        // Note that this class uses the *existance* of the Mutex to lock a directory.
+        // Note that this class uses the *existence* of the Mutex to lock a directory.
         //
         // Nothing in this code actually ever acquires the Mutex, we just try to see if it exists
         // already.

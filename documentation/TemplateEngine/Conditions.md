@@ -223,7 +223,7 @@ Usage can then look as following:
 
 **Input** - currently only other parameter symbols from the template configuration are supported within the parameter conditions. Any other variables are not bound and replaced (they are considered part of literal string).
 
-**Evaluation order** - Dependencies between parameters are detected and evaluation is performed in order that guarantees that all dependencies are evaluated prior their dependant (see [Topological Sorting](https://en.wikipedia.org/wiki/Topological_sorting) for details).
+**Evaluation order** - Dependencies between parameters are detected and evaluation is performed in order that guarantees that all dependencies are evaluated prior their dependent (see [Topological Sorting](https://en.wikipedia.org/wiki/Topological_sorting) for details).
 
  In case of cyclic dependency the evaluation proceeds only if current input values of parameters do not lead to nondeterministic result (and the cycle is indicated in warning log message). That means order of evaluation or number of reevaluations should not have impact on the result of evaluation. Otherwise an error is reported, indicating the cycle.
 
