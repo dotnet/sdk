@@ -873,7 +873,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.Append(CliCommandStrings.ExitCode);
         terminal.Append(": ");
         terminal.AppendLine(exitCode?.ToString(CultureInfo.CurrentCulture) ?? "<null>");
-        AppendOutputWhenPresent(CliCommandStrings.StandardOutput, outputData);
+        AppendOutputWhenPresent(CliCommandStrings.StandardOutput, TruncateOutputForSummary(outputData));
         AppendOutputWhenPresent(CliCommandStrings.StandardError, errorData);
 
         void AppendOutputWhenPresent(string description, string? output)
@@ -883,6 +883,48 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 AppendIndentedLine(terminal, $"{description}: {output}", SingleIndentation);
             }
         }
+    }
+
+    // A test host that exits with a failure often prints its entire command-line help — hundreds of
+    // lines — to standard output. The classic case is an invalid argument (e.g. an unexpected value
+    // for a known option): the platform reports the error on the first few lines and then dumps the
+    // full usage, which buries the actual error in noise. Keep the beginning (where the real error
+    // is) and the end (where trailing diagnostics tend to be) and collapse the middle so the error
+    // stays easy to find. See https://github.com/dotnet/sdk/issues/52297.
+    private const int StandardOutputSummaryHeadLines = 30;
+    private const int StandardOutputSummaryTailLines = 10;
+    private const int StandardOutputSummaryMaxLines = StandardOutputSummaryHeadLines + StandardOutputSummaryTailLines;
+
+    internal static string? TruncateOutputForSummary(string? output)
+    {
+        if (string.IsNullOrWhiteSpace(output))
+        {
+            return output;
+        }
+
+        string[] lines = output.Split(NewLineStrings, StringSplitOptions.None);
+        if (lines.Length <= StandardOutputSummaryMaxLines)
+        {
+            return output;
+        }
+
+        int omitted = lines.Length - StandardOutputSummaryMaxLines;
+        var builder = new StringBuilder();
+        for (int i = 0; i < StandardOutputSummaryHeadLines; i++)
+        {
+            builder.AppendLine(lines[i]);
+        }
+
+        builder.AppendLine(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.TestApplicationOutputTruncated, omitted));
+
+        for (int i = lines.Length - StandardOutputSummaryTailLines; i < lines.Length; i++)
+        {
+            builder.AppendLine(lines[i]);
+        }
+
+        // Drop the trailing newline so the value flows through AppendIndentedLine the same way an
+        // untruncated payload would.
+        return builder.ToString().TrimEnd('\r', '\n');
     }
 
     private static string? NormalizeSpecialCharacters(string? text)
