@@ -340,7 +340,7 @@ Classify confidence in the selected labels and routing as:
 - `low` when the issue provides weak or conflicting evidence, nothing clearly matches, or the report is incomplete
 
 ```markdown
-## 🎯 Agentic Issue Triage
+### 🎯 Agentic Issue Triage
 
 <Include any additional comments or requests for the user, such as the @username ping for more information, a binlog, or any further information here.>
 
