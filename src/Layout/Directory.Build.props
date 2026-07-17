@@ -25,8 +25,9 @@
       natively (targeting the host architecture) or cross-compiling to another architecture of the
       *same* OS. Cross-compilation across operating systems is not supported. We therefore publish
       for supported Windows, Linux, and macOS RIDs whenever the target OS equals the build host OS.
-      PortableTargetRid is used for platform checks because Source Build can use a distro-specific
-      TargetRid (for example, azurelinux.3-x64) while its portable parent is linux-x64:
+      TargetOS and HostOS are used for platform checks because Source Build can use a
+      distro-specific TargetRid (for example, azurelinux.3-x64); OSName distinguishes
+      linux-musl targets, which are excluded below:
         * native builds, where the target architecture matches the build host architecture
           (TargetArchitecture == BuildArchitecture). TargetArchitecture vs BuildArchitecture is
           the canonical native-vs-cross signal across all platforms.
@@ -35,8 +36,9 @@
           systems: win-x64 -> win-arm64 and osx-x64 -> osx-arm64 (clang/link are multi-target and
           need no extra sysroot), and Linux via the azurelinux cross-prereq containers, which
           provide a cross toolchain and target sysroot (CrossBuild=true with ROOTFS_DIR). The cross
-          inputs (CrossBuild/TargetArchitecture/TargetRid) are forwarded to the child dotnet-aot
-          Publish in GenerateLayout.targets; ROOTFS_DIR flows via the environment on Linux.
+          child dotnet-aot Publish inherits TargetArchitecture and TargetRid as global properties;
+          GenerateLayout.targets adds CrossBuild=true, while ROOTFS_DIR flows via the environment
+          on Linux.
     -->
     <_DotnetAotTargetOSSupported Condition="'$(TargetOS)' == 'windows' or '$(TargetOS)' == 'linux' or '$(TargetOS)' == 'osx'">true</_DotnetAotTargetOSSupported>
 
