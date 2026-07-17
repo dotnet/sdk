@@ -37,9 +37,7 @@ post-steps:
         process.exit(1);
       }
       NODE
-engine:
-  id: copilot
-  model: gpt-5.6-luna?effort=high
+engine: copilot
 permissions:
   contents: read
   issues: read
