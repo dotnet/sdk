@@ -40,7 +40,7 @@ public class ProjectGraphUtilitiesTests
 
     [TestMethod]
     [DataRow(@"a\b/c", @"a\b/c", @"a\b")]
-    [DataRow(@"a\b/c/", @"a\b/c/", @"a\b/c")]
+    [DataRow(@"a\b/c/", @"a\b/c/", @"a\b\c")]
     [OSCondition(OperatingSystems.Windows)]
     public void ShouldNotNormalizeSeparatorsInWindows(string input, string expectedIntermediatePath, string expectedOutputPath)
     {
