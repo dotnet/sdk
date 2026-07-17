@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidPropertySelfAssignment,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
 {
+    [TestClass]
     public class AvoidPropertySelfAssignmentTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpAssignmentInConstructorWithNoArgumentsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -31,7 +31,7 @@ class C
             GetCSharpResultAt(7, 13, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpAssignmentInConstructorUsingThisWithNoArgumentsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -47,7 +47,7 @@ class C
             GetCSharpResultAt(7, 18, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpAssignmentInConstructorWithSimilarArgumentAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -63,7 +63,7 @@ class C
             GetCSharpResultAt(7, 13, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpAssignmentInMethodWithoutArgumentsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -79,7 +79,7 @@ class C
             GetCSharpResultAt(7, 13, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpAssignmentInMethodWithSimilarArgumentNameAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -95,7 +95,7 @@ class C
             GetCSharpResultAt(7, 13, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpAdditionAssignmentOperatorDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -110,7 +110,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNormalPropertyAssignmentDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -125,7 +125,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNormalAssignmentOfTwoDifferentPropertiesDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -141,7 +141,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNormalVariableAssignmentDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -156,7 +156,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNormalAssignmentWithTwoDifferentInstancesDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -177,7 +177,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIndexerAssignmentDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -196,7 +196,7 @@ internal class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIndexerAssignmentWithSameConstantIndexCausesDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -214,7 +214,7 @@ internal class A
             GetCSharpResultAt(9, 19, "this[]"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIndexerAssignmentWithSameLocalReferenceIndexCausesDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -233,7 +233,7 @@ internal class A
             GetCSharpResultAt(10, 23, "this[]"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIndexerAssignmentWithSameParameterReferenceIndexCausesDiagnosticToAppearAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -251,7 +251,7 @@ internal class A
             GetCSharpResultAt(9, 23, "this[]"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbAssignmentInConstructorWithNoArgumentsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -266,7 +266,7 @@ End Class
             GetBasicResultAt(6, 15, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbAssignmentInConstructorUsingThisWithNoArgumentsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -281,7 +281,7 @@ End Class
             GetBasicResultAt(6, 18, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbAssignmentInConstructorWithSimilarArgumentAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -296,7 +296,7 @@ End Class
             GetBasicResultAt(6, 15, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbAssignmentInMethodWithoutArgumentsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -311,7 +311,7 @@ End Class
             GetBasicResultAt(6, 15, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbAssignmentInMethodWithSimilarArgumentNameAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -326,7 +326,7 @@ End Class
             GetBasicResultAt(6, 15, "P"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbAdditionAssignmentOperatorDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -340,7 +340,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbNormalPropertyAssignmentDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -354,7 +354,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbNormalAssignmentOfTwoDifferentPropertiesDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -369,7 +369,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbNormalVariableAssignmentDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -383,7 +383,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VbNormalAssignmentWithTwoDifferentInstancesDoesNotCauseDiagnosticToAppearAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

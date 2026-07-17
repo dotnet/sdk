@@ -319,6 +319,14 @@ internal sealed class TestApplication(
                         OnSessionEvent(sessionEvent);
                         break;
 
+                    case AzureDevOpsLogMessage azureDevOpsLogMessage:
+                        OnAzureDevOpsLogMessage(azureDevOpsLogMessage);
+                        break;
+
+                    case DisplayMessage displayMessage:
+                        OnDisplayMessage(displayMessage);
+                        break;
+
                     // If we don't recognize the message, log and skip it
                     case UnknownMessage unknownMessage:
                         Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
@@ -452,6 +460,12 @@ internal sealed class TestApplication(
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
         => _handler.OnSessionEventReceived(sessionEvent);
+
+    private void OnAzureDevOpsLogMessage(AzureDevOpsLogMessage azureDevOpsLogMessage)
+        => _handler.OnAzureDevOpsLogReceived(azureDevOpsLogMessage);
+
+    private void OnDisplayMessage(DisplayMessage displayMessage)
+        => _handler.OnDisplayMessageReceived(displayMessage);
 
     private sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
     {

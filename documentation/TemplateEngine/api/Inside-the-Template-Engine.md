@@ -36,8 +36,7 @@ managing file system and logging. Host may also provide default parameter
 values for templates via `TryGetHostParamDefault` method.
 
 Applications using template engine are often called “hosts”.
-dotnet/templating repo is managing one of such hosts: dotnet new CLI, which is
-part of .NET SDK.
+The .NET SDK includes one such host: the dotnet new CLI.
 
 Main host properties:
 

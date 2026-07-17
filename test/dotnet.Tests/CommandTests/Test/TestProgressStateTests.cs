@@ -41,11 +41,50 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(1);
     }
 
+    [TestMethod]
+    public void ExplicitAttemptNumber_AllowsMultipleInstancesInSameAttempt()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.NotifyHandshake("shard-a", attemptNumber: 1);
+        state.NotifyHandshake("shard-b", attemptNumber: 1);
+
+        Parallel.For(0, 100, i =>
+        {
+            string instanceId = i % 2 == 0 ? "shard-a" : "shard-b";
+            state.ReportPassingTest($"test-{i}", instanceId);
+        });
+
+        state.TryCount.Should().Be(1);
+        state.PassedTests.Should().Be(100);
+        state.TotalTests.Should().Be(100);
+        state.GetAttemptNumber("shard-a").Should().Be(1);
+        state.GetAttemptNumber("shard-b").Should().Be(1);
+    }
+
+    [TestMethod]
+    public void ExplicitAttemptNumber_ReplacesPreviousAttemptResults()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.NotifyHandshake("attempt-1-shard", attemptNumber: 1);
+        state.ReportFailedTest("flaky-test", "attempt-1-shard");
+        state.NotifyHandshake("attempt-2-shard", attemptNumber: 2);
+        state.ReportPassingTest("flaky-test", "attempt-2-shard");
+
+        state.TryCount.Should().Be(2);
+        state.RetriedFailedTests.Should().Be(1);
+        state.FailedTests.Should().Be(0);
+        state.PassedTests.Should().Be(1);
+    }
+
     /// <summary>
     /// Tests that reporting a skipped test with a previously seen instance after retry throws.
     /// </summary>
     [TestMethod]
-    public void ReportSkippedTest_RepeatedInstanceAfterRetry_ThrowsInvalidOperationException()
+    public void ReportSkippedTest_RepeatedInstanceAfterRetry_ThrowsUnreachableException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
@@ -108,10 +147,10 @@ public class TestProgressStateTests
     }
 
     /// <summary>
-    /// Tests that reusing an old instance ID after a retry throws an InvalidOperationException.
+    /// Tests that reusing an old instance ID after a retry throws an UnreachableException.
     /// </summary>
     [TestMethod]
-    public void ReportFailedTest_ReusingOldInstanceId_ThrowsInvalidOperationException()
+    public void ReportFailedTest_ReusingOldInstanceId_ThrowsUnreachableException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);

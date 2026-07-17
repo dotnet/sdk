@@ -175,6 +175,7 @@ namespace Microsoft.NET.TestFramework.Commands
             }
 
             return !NuGetTransientErrorDetector.IsTransientError(result.StdOut)
+                && !NuGetTransientErrorDetector.IsTransientError(result.StdErr)
                 && !TransientSdkResolutionErrorDetector.IsTransientError(result.StdOut);
         }
 

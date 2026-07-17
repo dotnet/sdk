@@ -126,13 +126,8 @@ public class EvaluationTests
     }
 
     [TestMethod]
-    [DataRow(true, true)]
-    [DataRow(true, false)]
-    [DataRow(true, null)]
-    [DataRow(false, true)]
-    [DataRow(false, false)]
-    [DataRow(false, null)]
-    public async Task StaticAssets(bool isWeb, bool? enableStaticWebAssets)
+    [CombinatorialData]
+    public async Task StaticAssets(bool isWeb, [CombinatorialValues(true, false, null)] bool? enableStaticWebAssets)
     {
         var project = new TestProject("Project1")
         {
@@ -223,10 +218,7 @@ public class EvaluationTests
             new("Project1/wwwroot/js/site.js", "js/site.js"),
             new("RCL/Code.cs"),
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
-            new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/EmbeddedAttribute.cs", graphOnly: true),
             new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.AssemblyInfo.cs", graphOnly: true),
-            new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.GlobalUsings.g.cs", graphOnly: true),
-            new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/ValidatableTypeAttribute.cs", graphOnly: true),
             new("RCL/Page1.razor"),
             new("RCL/Page1.razor.css"),
             new("RCL/Page2.cshtml"),
@@ -316,8 +308,7 @@ public class EvaluationTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task SingleTargetRoot_MultiTargetedDependency(bool specifyTargetFramework)
     {
         var project2 = new TestProject("Project2")

@@ -14,16 +14,12 @@ using Moq;
 namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
 {
     [TestClass]
-    // These tests mutate the process-global static Microsoft.DotNet.Cli.Utils.Reporter via
-    // Reporter.SetError, so they cannot run in parallel with each other (MSTest defaults to
-    // method-level parallelism in this repo).
-    [DoNotParallelize]
     public class AddJsonPropertyPostActionTests
     {
         // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
         // mirrors the per-class lifetime that xUnit's IClassFixture provides.
         private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
-            new(() => new EnvironmentSettingsHelper(NullMessageSink.Instance));
+            new(() => new EnvironmentSettingsHelper());
 
         private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
 

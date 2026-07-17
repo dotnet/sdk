@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DefineAccessorsForAttributeArgumentsFixer>;
@@ -17,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     {
         #region No Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_NoDiagnostic_GeneralTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -65,7 +64,7 @@ public sealed class PositionalArgWithSetterTestAttribute : Attribute
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_NoDiagnostic_GeneralTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -116,7 +115,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_NoDiagnostic_GetterVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -318,7 +317,7 @@ internal sealed class PublicGetterInternalAttribute : Attribute   //Good
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_NoDiagnostic_GetterVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -529,7 +528,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_NoDiagnostic_SetterVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -605,7 +604,7 @@ public sealed class InternalSetterAttribute : Attribute
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_NoDiagnostic_SetterVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -691,7 +690,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_NoDiagnostic_ConstructorVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -962,7 +961,7 @@ public class ProtectedInternalConstructorPublicGetterAttribute : Attribute
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_NoDiagnostic_ConstructorVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1242,7 +1241,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_NoDiagnostic_NestedVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1332,7 +1331,7 @@ internal class InternalContainerClass
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_NoDiagnostic_NestedVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1422,7 +1421,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_NoDiagnostic_InheritanceTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1538,7 +1537,7 @@ public sealed class GenericNestedCovariantParameterAttribute : Attribute
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_NoDiagnostic_InheritanceTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1660,7 +1659,7 @@ End Class
 
         #region Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_GeneralTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1724,7 +1723,7 @@ public sealed class ArgWithSetterTestAttribute : Attribute
             GetCA1019CSharpRemoveSetterResultAt(46, 9, "Name", "name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_GeneralTestWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1788,7 +1787,7 @@ public sealed class ArgWithSetterTestAttribute : Attribute
             GetCA1019CSharpRemoveSetterResultAt(46, 9, "Name", "name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_GeneralTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1856,7 +1855,7 @@ End Class
             GetCA1019BasicRemoveSetterResultAt(45, 3, "Name", "name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_GeneralTestWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1924,7 +1923,7 @@ End Class
             GetCA1019BasicRemoveSetterResultAt(45, 3, "Name", "name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_IncreaseVisibility_GetterVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2049,7 +2048,7 @@ public sealed class PrivateGetterAttribute : Attribute   //Bad
             GetCA1019CSharpIncreaseVisibilityResultAt(111, 9, "Name", "name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_IncreaseVisibility_GetterVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -2192,7 +2191,7 @@ End Class
             GetCA1019BasicIncreaseVisibilityResultAt(126, 11, "Name", "name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_IncreaseVisibility_NestedVisibilityTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2297,7 +2296,7 @@ public partial class PublicContainerClass
             GetCA1019CSharpIncreaseVisibilityResultAt(90, 13, "Name", "name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_IncreaseVisibility_NestedVisibilityTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -2405,7 +2404,7 @@ End Class
             GetCA1019BasicIncreaseVisibilityResultAt(89, 4, "Name", "name"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1019_RemoveSetter_InheritanceTestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2578,7 +2577,7 @@ public sealed class GenericContravariantParameterAttribute : Attribute
             GetCA1019CSharpDefaultResultAt(148, 69, "data", "GenericContravariantParameterAttribute"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_CA1019_RemoveSetter_InheritanceTestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
