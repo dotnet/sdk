@@ -25,11 +25,12 @@ internal enum FSharpManagedUpdateStatus
 
 internal readonly record struct FSharpManagedUpdate(string ProjectPath, HotReloadManagedCodeUpdate Update);
 
+internal readonly record struct FSharpManagedUpdateIssue(string ProjectPath, string? Message);
+
 internal readonly record struct FSharpManagedUpdateResult(
     FSharpManagedUpdateStatus Status,
     ImmutableArray<FSharpManagedUpdate> Updates,
-    string? ProjectPath,
-    string? Message);
+    ImmutableArray<FSharpManagedUpdateIssue> Issues);
 
 internal sealed class FSharpHotReloadService
 {
@@ -97,6 +98,9 @@ internal sealed class FSharpHotReloadService
         _disabled = IsDisabled();
         _getCapabilities = getCapabilities;
     }
+
+    /// <summary>True when the F# bridge owns F# source updates instead of the stock restart path.</summary>
+    public bool IsEnabled => !_disabled;
 
     private ImmutableArray<string> GetRuntimeCapabilities()
     {
@@ -196,7 +200,7 @@ internal sealed class FSharpHotReloadService
                     continue;
                 }
 
-                if (!EnsureSession(sessionHost, projectInfo, out _, out var status, out var message))
+                if (!EnsureSession(sessionHost, projectInfo, cancellationToken, out _, out var status, out var message))
                 {
                     if (_trace)
                     {
@@ -218,7 +222,7 @@ internal sealed class FSharpHotReloadService
             var projectInfo = _projects.Values.First();
             if (TryGetHost(projectInfo, out var host, out var hostError))
             {
-                if (!EnsureSession(host, projectInfo, out _, out var status, out var message))
+                if (!EnsureSession(host, projectInfo, cancellationToken, out _, out var status, out var message))
                 {
                     if (_trace)
                     {
@@ -299,12 +303,23 @@ internal sealed class FSharpHotReloadService
             return false;
         }
 
+        // Project files and other configuration inputs must stay visible to the stock watch
+        // pipeline so they trigger rebuild/restart semantics. Claim only file kinds this bridge
+        // can actually invalidate and classify.
+        if (!IsSupportedChangedFile(changedFile.Item.FilePath))
+        {
+            return false;
+        }
+
         var containingProjectPaths = changedFile.Item.ContainingProjectPaths;
         return containingProjectPaths.Count > 0 &&
                containingProjectPaths.All(containingProjectPath =>
                    _projects.Keys.Any(knownProject =>
                        PathUtilities.OSSpecificPathComparer.Equals(knownProject.ProjectPath, containingProjectPath)));
     }
+
+    private static bool IsSupportedChangedFile(string filePath)
+        => IsFSharpSourcePath(filePath) || IsManagedDependencyCandidatePath(filePath);
 
     /// <summary>
     /// Commits ALL pending F# project updates staged by the last successful emit. dotnet-watch
@@ -352,32 +367,73 @@ internal sealed class FSharpHotReloadService
     {
         if (_disabled)
         {
-            return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.NoChanges, [], null, null);
+            return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.NoChanges, [], []);
         }
 
-        var changedProject = TryGetChangedRunningFSharpProject(changedFiles, runningProjects);
-        if (changedProject == null)
+        var changedProjects = GetChangedFSharpProjects(changedFiles, runningProjects);
+        if (changedProjects.IsEmpty)
         {
             if (_trace)
             {
                 _logger.LogDebug("No running F# project matched the current file changes.");
             }
 
-            return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.NoChanges, [], null, null);
+            return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.NoChanges, [], []);
         }
 
-        if (!_projects.TryGetValue(changedProject.Value, out var projectInfo))
+        var updates = ImmutableArray.CreateBuilder<FSharpManagedUpdate>();
+        var issues = ImmutableArray.CreateBuilder<FSharpManagedUpdateIssue>();
+
+        foreach (var changedProject in changedProjects)
         {
-            if (_trace)
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!_projects.TryGetValue(changedProject, out var projectInfo))
             {
-                _logger.LogDebug(
-                    "Changed F# project '{ProjectPath}' is not present in the current project graph snapshot.",
-                    changedProject.Value.ProjectPath);
+                if (_trace)
+                {
+                    _logger.LogDebug(
+                        "Changed F# project '{ProjectPath}' is not present in the current project graph snapshot.",
+                        changedProject.ProjectPath);
+                }
+
+                continue;
             }
 
-            return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.NoChanges, [], null, null);
+            var projectResult = TryEmitProjectUpdate(
+                projectInfo,
+                changedFiles,
+                cancellationToken,
+                allowSessionReset: updates.Count == 0);
+
+            if (projectResult.Status == FSharpManagedUpdateStatus.Blocked)
+            {
+                // A session commit/discard is solution-wide. If any project is blocked, discard
+                // deltas already staged for other projects and leave Roslyn to do the same.
+                DiscardUpdates();
+                return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.Blocked, [], projectResult.Issues);
+            }
+
+            updates.AddRange(projectResult.Updates);
+            issues.AddRange(projectResult.Issues);
         }
 
+        var status =
+            issues.Count > 0
+                ? FSharpManagedUpdateStatus.RestartRequired
+                : updates.Count > 0
+                    ? FSharpManagedUpdateStatus.ReadyToApply
+                    : FSharpManagedUpdateStatus.NoChanges;
+
+        return new FSharpManagedUpdateResult(status, updates.ToImmutable(), issues.ToImmutable());
+    }
+
+    private FSharpManagedUpdateResult TryEmitProjectUpdate(
+        FSharpProjectInfo projectInfo,
+        IReadOnlyList<ChangedFile> changedFiles,
+        CancellationToken cancellationToken,
+        bool allowSessionReset)
+    {
         if (!TryGetHost(projectInfo, out var host, out var hostError))
         {
             _logger.LogDebug(
@@ -388,19 +444,24 @@ internal sealed class FSharpHotReloadService
             return new FSharpManagedUpdateResult(
                 FSharpManagedUpdateStatus.RestartRequired,
                 [],
-                projectInfo.ProjectPath,
-                hostError);
+                [new FSharpManagedUpdateIssue(projectInfo.ProjectPath, hostError)]);
         }
 
-        if (!EnsureSession(host, projectInfo, out var projectInput, out var ensureStatus, out var ensureMessage))
+        if (!EnsureSession(host, projectInfo, cancellationToken, out var projectInput, out var ensureStatus, out var ensureMessage))
         {
-            return new FSharpManagedUpdateResult(ensureStatus, [], projectInfo.ProjectPath, ensureMessage);
+            return new FSharpManagedUpdateResult(
+                ensureStatus,
+                [],
+                [new FSharpManagedUpdateIssue(projectInfo.ProjectPath, ensureMessage)]);
         }
 
         var moduleIdBeforeCompile = TryGetModuleVersionId(projectInfo.TargetPath);
         if (!TryCompileProjectOutput(projectInfo, out var compileMessage))
         {
-            return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.Blocked, [], projectInfo.ProjectPath, compileMessage);
+            return new FSharpManagedUpdateResult(
+                FSharpManagedUpdateStatus.Blocked,
+                [],
+                [new FSharpManagedUpdateIssue(projectInfo.ProjectPath, compileMessage)]);
         }
 
         var changedSourceFiles = GetChangedSourceFilesForProject(changedFiles, projectInfo.ProjectId);
@@ -429,8 +490,7 @@ internal sealed class FSharpHotReloadService
             return new FSharpManagedUpdateResult(
                 FSharpManagedUpdateStatus.RestartRequired,
                 [],
-                projectInfo.ProjectPath,
-                refreshMessage);
+                [new FSharpManagedUpdateIssue(projectInfo.ProjectPath, refreshMessage)]);
         }
 
         projectInput = refreshedProjectInput;
@@ -449,7 +509,10 @@ internal sealed class FSharpHotReloadService
         if (targetModuleId == null)
         {
             var message = $"Unable to read module id from '{projectInfo.TargetPath}'.";
-            return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.RestartRequired, [], projectInfo.ProjectPath, message);
+            return new FSharpManagedUpdateResult(
+                FSharpManagedUpdateStatus.RestartRequired,
+                [],
+                [new FSharpManagedUpdateIssue(projectInfo.ProjectPath, message)]);
         }
 
         if (_trace)
@@ -491,7 +554,7 @@ internal sealed class FSharpHotReloadService
         {
             var mappedStatus = MapErrorStatus(emit.ErrorCase);
 
-            if (emit.ErrorCase == "NoActiveSession")
+            if (emit.ErrorCase == "NoActiveSession" && allowSessionReset)
             {
                 if (_trace)
                 {
@@ -499,7 +562,7 @@ internal sealed class FSharpHotReloadService
                 }
 
                 EndSession();
-                if (EnsureSession(host, projectInfo, out projectInput, out var retryStatus, out var retryMessage))
+                if (EnsureSession(host, projectInfo, cancellationToken, out projectInput, out var retryStatus, out var retryMessage))
                 {
                     emit = EmitDeltaCore(host, projectInput!, cancellationToken);
                     if (emit.IsSuccess)
@@ -513,7 +576,10 @@ internal sealed class FSharpHotReloadService
                 }
                 else
                 {
-                    return new FSharpManagedUpdateResult(retryStatus, [], projectInfo.ProjectPath, retryMessage);
+                    return new FSharpManagedUpdateResult(
+                        retryStatus,
+                        [],
+                        [new FSharpManagedUpdateIssue(projectInfo.ProjectPath, retryMessage)]);
                 }
             }
 
@@ -542,7 +608,7 @@ internal sealed class FSharpHotReloadService
 
                 // Roslyn parity: source edits with insignificant/no semantic changes stay in NoChangesToApply
                 // and should not force restart/rebuild of the running process.
-                return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.NoChanges, [], null, null);
+                return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.NoChanges, [], []);
             }
 
             if (mappedStatus == FSharpManagedUpdateStatus.Blocked)
@@ -588,7 +654,10 @@ internal sealed class FSharpHotReloadService
                 _sessionObjectProjects = _sessionObjectProjects.Remove(projectInfo.ProjectId);
             }
 
-            return new FSharpManagedUpdateResult(mappedStatus, [], projectInfo.ProjectPath, emit.ErrorText);
+            return new FSharpManagedUpdateResult(
+                mappedStatus,
+                [],
+                [new FSharpManagedUpdateIssue(projectInfo.ProjectPath, emit.ErrorText)]);
         }
 
         var update = host.CreateManagedUpdate(targetModuleId.Value, emit.Value!);
@@ -597,8 +666,7 @@ internal sealed class FSharpHotReloadService
             return new FSharpManagedUpdateResult(
                 FSharpManagedUpdateStatus.RestartRequired,
                 [],
-                projectInfo.ProjectPath,
-                "Unable to decode F# delta payload.");
+                [new FSharpManagedUpdateIssue(projectInfo.ProjectPath, "Unable to decode F# delta payload.")]);
         }
 
         if (_trace)
@@ -616,12 +684,11 @@ internal sealed class FSharpHotReloadService
         return new FSharpManagedUpdateResult(
             FSharpManagedUpdateStatus.ReadyToApply,
             [new FSharpManagedUpdate(projectInfo.ProjectPath, update.Value)],
-            projectInfo.ProjectPath,
-            null);
+            []);
     }
 #pragma warning restore CS1998
 
-    private ProjectInstanceId? TryGetChangedRunningFSharpProject(
+    private ImmutableArray<ProjectInstanceId> GetChangedFSharpProjects(
         IReadOnlyList<ChangedFile> changedFiles,
         ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects)
     {
@@ -631,63 +698,53 @@ internal sealed class FSharpHotReloadService
         // project, so it keeps the running-projects-only matching.
         var includeNonRunningProjects = _host?.SupportsSessionObject == true;
 
-        foreach (var file in changedFiles)
+        var matchedProjects = ImmutableArray.CreateBuilder<ProjectInstanceId>();
+
+        foreach (var projectInfo in _projects.Values
+                     .OrderBy(static project => project.ProjectPath, StringComparer.Ordinal)
+                     .ThenBy(static project => project.TargetFramework, StringComparer.OrdinalIgnoreCase))
         {
-            var filePath = file.Item.FilePath;
-            var isSourceChange = IsFSharpSourcePath(filePath);
-            var isDependencyChange = IsManagedDependencyCandidatePath(filePath);
-
-            if (_trace)
-            {
-                _logger.LogDebug(
-                    "F# changed file candidate '{FilePath}': source={IsSourceChange}, dependency={IsDependencyChange}, containingProjects=[{ContainingProjects}].",
-                    filePath,
-                    isSourceChange,
-                    isDependencyChange,
-                    string.Join(", ", file.Item.ContainingProjectPaths));
-            }
-
-            if (!isSourceChange && !isDependencyChange)
+            if (!includeNonRunningProjects && !runningProjects.ContainsKey(projectInfo.ProjectPath))
             {
                 continue;
             }
 
-            if (TryMatchRunningProjectByContainingPaths(file.Item.ContainingProjectPaths, runningProjects, includeNonRunningProjects, out var containingProject))
+            var matched = changedFiles.Any(file =>
             {
-                return containingProject;
-            }
-
-            if (isDependencyChange &&
-                TryMatchRunningProjectByDependencyPath(filePath, runningProjects, includeNonRunningProjects, out var dependencyProject))
-            {
-                if (_trace)
+                var filePath = file.Item.FilePath;
+                var isSourceChange = IsFSharpSourcePath(filePath);
+                var isDependencyChange = IsManagedDependencyCandidatePath(filePath);
+                if (!isSourceChange && !isDependencyChange)
                 {
-                    _logger.LogDebug(
-                        "F# dependency change '{FilePath}' matched project '{ProjectPath}' via command-line dependency mapping.",
-                        filePath,
-                        dependencyProject.ProjectPath);
+                    return false;
                 }
 
-                return dependencyProject;
-            }
+                var containingProjectMatch = file.Item.ContainingProjectPaths.Any(path =>
+                    PathUtilities.OSSpecificPathComparer.Equals(path, projectInfo.ProjectPath));
+                var dependencyMatch = isDependencyChange && IsCommandLineDependencyPath(filePath, projectInfo);
+                var directoryFallbackMatch = IsFileWithinProjectDirectory(filePath, projectInfo.ProjectPath);
 
-            if ((isSourceChange || isDependencyChange) &&
-                TryMatchRunningProjectByPath(filePath, runningProjects, includeNonRunningProjects, out var fallbackProject))
-            {
-                if (_trace)
+                if (_trace && (containingProjectMatch || dependencyMatch || directoryFallbackMatch))
                 {
                     _logger.LogDebug(
-                        "F# changed file '{FilePath}' matched project '{ProjectPath}' using path fallback ({ChangeKind}).",
+                        "F# changed file '{FilePath}' matched project '{ProjectPath}' (containing={ContainingMatch}, dependency={DependencyMatch}, directory={DirectoryMatch}).",
                         filePath,
-                        fallbackProject.ProjectPath,
-                        isSourceChange ? "source" : "dependency");
+                        projectInfo.ProjectPath,
+                        containingProjectMatch,
+                        dependencyMatch,
+                        directoryFallbackMatch);
                 }
 
-                return fallbackProject;
+                return containingProjectMatch || dependencyMatch || directoryFallbackMatch;
+            });
+
+            if (matched)
+            {
+                matchedProjects.Add(projectInfo.ProjectId);
             }
         }
 
-        if (_trace)
+        if (_trace && matchedProjects.Count == 0)
         {
             var candidateFiles = changedFiles
                 .Where(file =>
@@ -708,100 +765,7 @@ internal sealed class FSharpHotReloadService
             }
         }
 
-        return null;
-    }
-
-    private bool TryMatchRunningProjectByContainingPaths(
-        IReadOnlyList<string> containingProjectPaths,
-        ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects,
-        bool includeNonRunningProjects,
-        out ProjectInstanceId projectId)
-    {
-        projectId = default;
-
-        foreach (var containingProjectPath in containingProjectPaths)
-        {
-            if (!includeNonRunningProjects && !runningProjects.ContainsKey(containingProjectPath))
-            {
-                continue;
-            }
-
-            foreach (var knownProject in _projects.Keys)
-            {
-                if (PathUtilities.OSSpecificPathComparer.Equals(knownProject.ProjectPath, containingProjectPath))
-                {
-                    projectId = knownProject;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private bool TryMatchRunningProjectByDependencyPath(
-        string filePath,
-        ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects,
-        bool includeNonRunningProjects,
-        out ProjectInstanceId projectId)
-    {
-        projectId = default;
-
-        if (!TryNormalizeFullPath(filePath, out var normalizedFilePath))
-        {
-            return false;
-        }
-
-        foreach (var projectInfo in _projects.Values)
-        {
-            if (!includeNonRunningProjects && !runningProjects.ContainsKey(projectInfo.ProjectPath))
-            {
-                continue;
-            }
-
-            if (IsCommandLineDependencyPath(normalizedFilePath, projectInfo))
-            {
-                projectId = projectInfo.ProjectId;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool TryMatchRunningProjectByPath(
-        string filePath,
-        ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects,
-        bool includeNonRunningProjects,
-        out ProjectInstanceId projectId)
-    {
-        projectId = default;
-
-        string normalizedFilePath;
-        try
-        {
-            normalizedFilePath = Path.GetFullPath(filePath);
-        }
-        catch
-        {
-            return false;
-        }
-
-        foreach (var knownProject in _projects.Keys)
-        {
-            if (!includeNonRunningProjects && !runningProjects.ContainsKey(knownProject.ProjectPath))
-            {
-                continue;
-            }
-
-            if (IsFileWithinProjectDirectory(normalizedFilePath, knownProject.ProjectPath))
-            {
-                projectId = knownProject;
-                return true;
-            }
-        }
-
-        return false;
+        return matchedProjects.ToImmutable();
     }
 
     private ImmutableArray<string> GetChangedDependencyFilesForProject(
@@ -901,11 +865,17 @@ internal sealed class FSharpHotReloadService
     /// ONE session is created on first use and the project is added to it; the legacy checker
     /// surface keeps its single-active-project switching behavior unchanged.
     /// </summary>
-    private bool EnsureSession(FSharpReflectionHost host, FSharpProjectInfo projectInfo, out object? projectInput, out FSharpManagedUpdateStatus status, out string? message)
+    private bool EnsureSession(
+        FSharpReflectionHost host,
+        FSharpProjectInfo projectInfo,
+        CancellationToken cancellationToken,
+        out object? projectInput,
+        out FSharpManagedUpdateStatus status,
+        out string? message)
     {
         if (host.SupportsSessionObject)
         {
-            return EnsureSessionObject(host, projectInfo, out projectInput, out status, out message);
+            return EnsureSessionObject(host, projectInfo, cancellationToken, out projectInput, out status, out message);
         }
 
         projectInput = null;
@@ -956,7 +926,7 @@ internal sealed class FSharpHotReloadService
             return false;
         }
 
-        var start = host.StartSession(projectInput!, currentCapabilities, CancellationToken.None);
+        var start = host.StartSession(projectInput!, currentCapabilities, cancellationToken);
         if (!start.IsSuccess)
         {
             status = MapErrorStatus(start.ErrorCase);
@@ -983,7 +953,13 @@ internal sealed class FSharpHotReloadService
     /// the first time the project is seen. Never switches sessions between projects — every
     /// tracked project keeps its own committed baseline and generation chain inside the session.
     /// </summary>
-    private bool EnsureSessionObject(FSharpReflectionHost host, FSharpProjectInfo projectInfo, out object? projectInput, out FSharpManagedUpdateStatus status, out string? message)
+    private bool EnsureSessionObject(
+        FSharpReflectionHost host,
+        FSharpProjectInfo projectInfo,
+        CancellationToken cancellationToken,
+        out object? projectInput,
+        out FSharpManagedUpdateStatus status,
+        out string? message)
     {
         projectInput = null;
         status = FSharpManagedUpdateStatus.NoChanges;
@@ -1044,7 +1020,7 @@ internal sealed class FSharpHotReloadService
             // edited sources happens after EnsureSession), and at generation 0 the intermediate
             // assembly is a byte copy of the bin output the running process loaded, so the baseline
             // matches the loaded module.
-            var add = host.SessionAddProject(_sessionObject!, projectInput!, projectInfo.IntermediateAssemblyPath, CancellationToken.None);
+            var add = host.SessionAddProject(_sessionObject!, projectInput!, projectInfo.IntermediateAssemblyPath, cancellationToken);
             if (!add.IsSuccess)
             {
                 status = MapErrorStatus(add.ErrorCase);
@@ -2401,7 +2377,9 @@ internal sealed class FSharpHotReloadService
 
                 var asyncResultType = method.ReturnType.GetGenericArguments().Single();
                 var runSync = _runSynchronously.MakeGenericMethod(asyncResultType);
-                var result = runSync.Invoke(null, [asyncComputation, null, null])
+                var runSyncParameters = runSync.GetParameters();
+                var cancellationOption = CreateFSharpOptionSome(runSyncParameters[2].ParameterType, cancellationToken);
+                var result = runSync.Invoke(null, [asyncComputation, null, cancellationOption])
                     ?? throw new InvalidOperationException($"{method.Name} returned null result.");
 
                 var tag = (int)(result.GetType().GetProperty("Tag")?.GetValue(result) ?? -1);
@@ -2622,6 +2600,11 @@ internal sealed class FSharpHotReloadService
                argumentType.IsAssignableFrom(typeof(string[]));
 
         private static object? CreateFSharpOptionSomeStringSequence(Type optionType, string[] value)
+            => optionType.GetGenericArguments() is [var argumentType]
+                ? optionType.GetMethod("Some", BindingFlags.Public | BindingFlags.Static, [argumentType])?.Invoke(null, [value])
+                : null;
+
+        private static object? CreateFSharpOptionSome(Type optionType, object value)
             => optionType.GetGenericArguments() is [var argumentType]
                 ? optionType.GetMethod("Some", BindingFlags.Public | BindingFlags.Static, [argumentType])?.Invoke(null, [value])
                 : null;

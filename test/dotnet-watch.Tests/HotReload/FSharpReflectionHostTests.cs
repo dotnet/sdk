@@ -33,6 +33,32 @@ public class FSharpReflectionHostTests
         Assert.IsNull(noneArgs[1]);
     }
 
+    [TestMethod]
+    public void CreateFSharpOptionSome_PreservesCancellationToken()
+    {
+        var assembly = typeof(MessageDescriptor).Assembly;
+        var serviceType = assembly.GetType("Microsoft.DotNet.Watch.FSharpHotReloadService", throwOnError: true)!;
+        var reflectionHostType = serviceType.GetNestedType("FSharpReflectionHost", BindingFlags.NonPublic)!;
+        var createSome = reflectionHostType.GetMethod("CreateFSharpOptionSome", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var tryGetOptionValue = reflectionHostType.GetMethod("TryGetFSharpOptionValue", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        var fsharpCorePath = Path.Combine(
+            SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+            "FSharp",
+            "FSharp.Core.dll");
+        var fsharpCore = Assembly.LoadFrom(fsharpCorePath);
+        var optionType = fsharpCore.GetType("Microsoft.FSharp.Core.FSharpOption`1", throwOnError: true)!
+            .MakeGenericType(typeof(CancellationToken));
+        using var cancellationSource = new CancellationTokenSource();
+
+        var option = createSome.Invoke(null, [optionType, cancellationSource.Token]);
+        var arguments = new object?[] { option, null };
+
+        Assert.IsNotNull(option);
+        Assert.IsTrue((bool)tryGetOptionValue.Invoke(null, arguments)!);
+        Assert.AreEqual(cancellationSource.Token, (CancellationToken)arguments[1]!);
+    }
+
     private sealed class StaticAccessorOption
     {
         private StaticAccessorOption(bool isSome, object? value)

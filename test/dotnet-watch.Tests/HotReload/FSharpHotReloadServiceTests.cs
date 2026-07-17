@@ -29,7 +29,7 @@ public class FSharpHotReloadServiceTests
     }
 
     [TestMethod]
-    public void TryGetChangedRunningFSharpProject_MatchesDependencyByProjectDirectoryFallback()
+    public void GetChangedFSharpProjects_MatchesDependencyByProjectDirectoryFallback()
     {
         var projectDirectory = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests");
         var projectPath = Path.Combine(projectDirectory, "TestApp.fsproj");
@@ -57,18 +57,17 @@ public class FSharpHotReloadServiceTests
         var runningProjects = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty.Add(projectPath, []);
 
         var method = typeof(FSharpHotReloadService).GetMethod(
-            "TryGetChangedRunningFSharpProject",
+            "GetChangedFSharpProjects",
             BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-        var result = method.Invoke(service, [changedFiles, runningProjects]);
+        var result = (ImmutableArray<ProjectInstanceId>)method.Invoke(service, [changedFiles, runningProjects])!;
 
-        Assert.IsNotNull(result);
-        Assert.IsInstanceOfType(result, typeof(ProjectInstanceId));
-        Assert.AreEqual(projectId, (ProjectInstanceId)result!);
+        Assert.HasCount(1, result);
+        Assert.AreEqual(projectId, result[0]);
     }
 
     [TestMethod]
-    public void TryGetChangedRunningFSharpProject_MatchesCommandLineDependencyOutsideProjectDirectory()
+    public void GetChangedFSharpProjects_MatchesCommandLineDependencyOutsideProjectDirectory()
     {
         var projectDirectory = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests-cmdline");
         var projectPath = Path.Combine(projectDirectory, "TestApp.fsproj");
@@ -105,18 +104,17 @@ public class FSharpHotReloadServiceTests
         var runningProjects = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty.Add(projectPath, []);
 
         var method = typeof(FSharpHotReloadService).GetMethod(
-            "TryGetChangedRunningFSharpProject",
+            "GetChangedFSharpProjects",
             BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-        var result = method.Invoke(service, [changedFiles, runningProjects]);
+        var result = (ImmutableArray<ProjectInstanceId>)method.Invoke(service, [changedFiles, runningProjects])!;
 
-        Assert.IsNotNull(result);
-        Assert.IsInstanceOfType(result, typeof(ProjectInstanceId));
-        Assert.AreEqual(projectId, (ProjectInstanceId)result!);
+        Assert.HasCount(1, result);
+        Assert.AreEqual(projectId, result[0]);
     }
 
     [TestMethod]
-    public void TryGetChangedRunningFSharpProject_IgnoresEditorTempFiles()
+    public void GetChangedFSharpProjects_IgnoresEditorTempFiles()
     {
         var projectDirectory = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests-temp");
         var projectPath = Path.Combine(projectDirectory, "TestApp.fsproj");
@@ -144,12 +142,59 @@ public class FSharpHotReloadServiceTests
         var runningProjects = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty.Add(projectPath, []);
 
         var method = typeof(FSharpHotReloadService).GetMethod(
-            "TryGetChangedRunningFSharpProject",
+            "GetChangedFSharpProjects",
             BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-        var result = method.Invoke(service, [changedFiles, runningProjects]);
+        var result = (ImmutableArray<ProjectInstanceId>)method.Invoke(service, [changedFiles, runningProjects])!;
 
-        Assert.IsNull(result);
+        Assert.IsTrue(result.IsEmpty);
+    }
+
+    [TestMethod]
+    public void GetChangedFSharpProjects_ReturnsEveryAffectedProjectInBatch()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests-batch");
+        var appPath = Path.Combine(root, "App", "App.fsproj");
+        var libPath = Path.Combine(root, "Lib", "Lib.fsproj");
+        var appId = new ProjectInstanceId(appPath, "net10.0");
+        var libId = new ProjectInstanceId(libPath, "net10.0");
+
+        var projects = ImmutableDictionary<ProjectInstanceId, FSharpProjectInfo>.Empty
+            .Add(appId, new FSharpProjectInfo(appId, appPath, "net10.0", Path.ChangeExtension(appPath, ".dll"), "fsc.dll", []))
+            .Add(libId, new FSharpProjectInfo(libId, libPath, "net10.0", Path.ChangeExtension(libPath, ".dll"), "fsc.dll", []));
+
+        var service = new FSharpHotReloadService(NullLogger.Instance);
+        typeof(FSharpHotReloadService).GetField("_projects", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(service, projects);
+
+        var changedFiles = new List<ChangedFile>
+        {
+            new(new FileItem { FilePath = Path.Combine(root, "App", "Program.fs"), ContainingProjectPaths = [appPath] }, ChangeKind.Update),
+            new(new FileItem { FilePath = Path.Combine(root, "Lib", "Lib.fs"), ContainingProjectPaths = [libPath] }, ChangeKind.Update),
+        };
+        var runningProjects = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty
+            .Add(appPath, [])
+            .Add(libPath, []);
+
+        var method = typeof(FSharpHotReloadService).GetMethod(
+            "GetChangedFSharpProjects",
+            BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var result = (ImmutableArray<ProjectInstanceId>)method.Invoke(service, [changedFiles, runningProjects])!;
+
+        Assert.AreSequenceEqual(new[] { appId, libId }, result);
+    }
+
+    [TestMethod]
+    [DataRow("Program.fs", true)]
+    [DataRow("payload.txt", true)]
+    [DataRow("Project.fsproj", false)]
+    [DataRow("Directory.Build.props", false)]
+    public void IsSupportedChangedFile_LeavesProjectConfigurationOnRestartPath(string fileName, bool expected)
+    {
+        var method = typeof(FSharpHotReloadService).GetMethod(
+            "IsSupportedChangedFile",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+
+        Assert.AreEqual(expected, (bool)method.Invoke(null, [Path.Combine("/tmp", fileName)])!);
     }
 
     [TestMethod]
@@ -194,7 +239,7 @@ public class FSharpHotReloadServiceTests
             // Disabled: the service behaves as if no F# projects exist.
             Assert.AreEqual(FSharpManagedUpdateStatus.NoChanges, result.Status);
             Assert.IsTrue(result.Updates.IsEmpty);
-            Assert.IsNull(result.ProjectPath);
+            Assert.IsTrue(result.Issues.IsEmpty);
             Assert.IsFalse(service.OwnsChangedFile(changedFile));
         }
         finally

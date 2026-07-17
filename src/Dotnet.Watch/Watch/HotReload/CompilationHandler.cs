@@ -365,7 +365,7 @@ internal sealed class CompilationHandler : IDisposable
             // F#-owned running projects must not be handed to the Roslyn update service: it has no EnC
             // support for them and would demand a restart (ENC1009) even when the F# compiler service
             // produced an applicable delta. Their updates flow exclusively through _fsharpHotReloadService.
-            where runningProject != null && IsRoslynManagedProject(project)
+            where runningProject != null && ShouldRoslynProcessProject(project)
             let autoRestartProject = autoRestart || runningProject.ProjectNode.IsAutoRestartEnabled()
             select (project.Id, info: new HotReloadService.RunningProjectInfo() { RestartWhenChangesHaveNoEffect = autoRestartProject }))
             .ToImmutableDictionary(e => e.Id, e => e.info);
@@ -375,14 +375,18 @@ internal sealed class CompilationHandler : IDisposable
         // F# projects are not represented in the Roslyn solution; their updates are emitted by the F# compiler service.
         var fsharpResult = await _fsharpHotReloadService.TryEmitUpdatesAsync(changedFiles, runningProjects, cancellationToken);
 
-        if (fsharpResult.Status == FSharpManagedUpdateStatus.RestartRequired &&
-            !string.IsNullOrEmpty(fsharpResult.Message) &&
-            Logger.IsEnabled(LogLevel.Debug))
+        if (fsharpResult.Status == FSharpManagedUpdateStatus.RestartRequired && Logger.IsEnabled(LogLevel.Debug))
         {
-            Logger.LogDebug(
-                "F# managed update fallback reason for '{ProjectPath}': {Message}",
-                fsharpResult.ProjectPath,
-                fsharpResult.Message);
+            foreach (var issue in fsharpResult.Issues)
+            {
+                if (!string.IsNullOrEmpty(issue.Message))
+                {
+                    Logger.LogDebug(
+                        "F# managed update fallback reason for '{ProjectPath}': {Message}",
+                        issue.ProjectPath,
+                        issue.Message);
+                }
+            }
         }
 
         await DisplayResultsAsync(updates, currentSolution, runningProjectInfos, cancellationToken);
@@ -392,21 +396,21 @@ internal sealed class CompilationHandler : IDisposable
             // If Hot Reload is blocked (due to compilation error) we ignore the current
             // changes and await the next file change.
 
-            // Note: CommitUpdate/DiscardUpdate is not expected to be called.
-
-            // A successful F# emit stages a pending update in the compiler-service session;
-            // it will not be applied, so drop it.
-            if (fsharpResult.Status == FSharpManagedUpdateStatus.ReadyToApply)
+            // Either service might have staged an update before the other reported a blocking
+            // compilation error. Neither update may be retained because this iteration applies
+            // nothing.
+            if (updates.Status == HotReloadService.Status.ReadyToApply)
             {
-                _fsharpHotReloadService.DiscardUpdates();
+                _hotReloadService.DiscardUpdate();
             }
 
+            _fsharpHotReloadService.DiscardUpdates();
             return;
         }
 
         var roslynHasUpdates = updates.Status == HotReloadService.Status.ReadyToApply;
-        var fsharpHasUpdates = fsharpResult.Status == FSharpManagedUpdateStatus.ReadyToApply;
-        if (!roslynHasUpdates && !fsharpHasUpdates && fsharpResult.Status != FSharpManagedUpdateStatus.RestartRequired)
+        var fsharpHasUpdates = !fsharpResult.Updates.IsEmpty;
+        if (!roslynHasUpdates && !fsharpHasUpdates && fsharpResult.Issues.IsEmpty)
         {
             Logger.Log(MessageDescriptor.NoManagedCodeChangesToApply);
 
@@ -414,10 +418,29 @@ internal sealed class CompilationHandler : IDisposable
             return;
         }
 
+        var fsharpRestartProjectPaths = fsharpResult.Issues
+            .SelectMany(issue => GetFSharpRestartProjectPaths(issue.ProjectPath, projectGraph))
+            .Distinct(PathUtilities.OSSpecificPathComparer)
+            .ToImmutableArray();
+
         var projectsToPromptForRestart =
             (from projectId in updates.ProjectsToRestart.Keys
              where !runningProjectInfos[projectId].RestartWhenChangesHaveNoEffect // equivallent to auto-restart
              select currentSolution.GetProject(projectId)!.Name).ToList();
+
+        if (!autoRestart)
+        {
+            foreach (var projectPath in fsharpRestartProjectPaths)
+            {
+                if (runningProjects.TryGetValue(projectPath, out var runningInstances) &&
+                    runningInstances.Any(static project => !project.ProjectNode.IsAutoRestartEnabled()))
+                {
+                    projectsToPromptForRestart.Add(Path.GetFileNameWithoutExtension(projectPath));
+                }
+            }
+        }
+
+        projectsToPromptForRestart = projectsToPromptForRestart.Distinct(StringComparer.Ordinal).ToList();
 
         if (projectsToPromptForRestart.Any() &&
             !await restartPrompt.Invoke(projectsToPromptForRestart, cancellationToken))
@@ -450,18 +473,21 @@ internal sealed class CompilationHandler : IDisposable
         var projectsToRebuild = updates.ProjectsToRebuild.Select(id => currentSolution.GetProject(id)!.FilePath!).ToImmutableArray();
         var restartProjectPaths = updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!).ToImmutableArray();
 
-        if (fsharpResult.Status == FSharpManagedUpdateStatus.RestartRequired && fsharpResult.ProjectPath != null)
+        if (!fsharpResult.Issues.IsEmpty)
         {
-            // F# rude edits (changes the compiler service can't apply as a delta) fall back to rebuild + restart.
-            var fsharpRestartProjectPaths = GetFSharpRestartProjectPaths(fsharpResult.ProjectPath, projectGraph);
-            Logger.LogTrace(
-                "F# restart-required project '{ProjectPath}' maps to restart project path(s): {RestartProjectPaths}",
-                fsharpResult.ProjectPath,
-                string.Join(", ", fsharpRestartProjectPaths));
-
-            if (!projectsToRebuild.Contains(fsharpResult.ProjectPath, PathUtilities.OSSpecificPathComparer))
+            // F# rude edits fall back to rebuilding every changed project and restarting every
+            // running ancestor. A single watch batch may contain multiple independent F# edits.
+            foreach (var issue in fsharpResult.Issues)
             {
-                projectsToRebuild = projectsToRebuild.Add(fsharpResult.ProjectPath);
+                Logger.LogTrace(
+                    "F# restart-required project '{ProjectPath}' maps to restart project path(s): {RestartProjectPaths}",
+                    issue.ProjectPath,
+                    string.Join(", ", GetFSharpRestartProjectPaths(issue.ProjectPath, projectGraph)));
+
+                if (!projectsToRebuild.Contains(issue.ProjectPath, PathUtilities.OSSpecificPathComparer))
+                {
+                    projectsToRebuild = projectsToRebuild.Add(issue.ProjectPath);
+                }
             }
 
             foreach (var restartProjectPath in fsharpRestartProjectPaths)
@@ -906,7 +932,7 @@ internal sealed class CompilationHandler : IDisposable
             return;
         }
 
-        HashSet<ProjectInstance>? failedApplicationProjectInstances = null; 
+        HashSet<ProjectInstance>? failedApplicationProjectInstances = null;
         if (projectInstancesToRegenerate.Count > 0)
         {
             Logger.LogDebug("Regenerating scoped CSS bundles.");
@@ -1091,8 +1117,9 @@ internal sealed class CompilationHandler : IDisposable
         return projectsWithPath.Where(p => string.Equals(p.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static bool IsRoslynManagedProject(Project project)
-        => project.Language is LanguageNames.CSharp or LanguageNames.VisualBasic;
+    private bool ShouldRoslynProcessProject(Project project)
+        => project.Language is LanguageNames.CSharp or LanguageNames.VisualBasic ||
+           (!_fsharpHotReloadService.IsEnabled && string.Equals(project.Language, "F#", StringComparison.OrdinalIgnoreCase));
 
     private static IEnumerable<RunningProject> GetCorrespondingRunningProjects(ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects, ProjectInstance project)
     {
