@@ -101,7 +101,7 @@ public class BuildProjects
 
         Assert.IsTrue(result.Success);
 
-        AssertEx.SequenceEqual([$"build {project1} -p A=1"], context.BuildInvocations);
+        AssertEx.SequenceEqual([$"build {project1} /p:DotNetWatchBuild=true -p A=1"], context.BuildInvocations);
     }
 
     [TestMethod]
@@ -137,8 +137,8 @@ public class BuildProjects
 
         AssertEx.SequenceEqual(
         [
-            $"restore {project1} -p A=1 -consoleLoggerParameters:NoSummary",
-            $"build {project1} -p A=1 --framework net9.0 --no-restore"
+            $"restore {project1} /p:DotNetWatchBuild=true -p A=1 -consoleLoggerParameters:NoSummary",
+            $"build {project1} /p:DotNetWatchBuild=true -p A=1 --framework net9.0 --no-restore"
         ], context.BuildInvocations);
     }
 
@@ -165,7 +165,7 @@ public class BuildProjects
 
         Assert.IsTrue(result.Success);
 
-        AssertEx.SequenceEqual(["build <solution> -p A=1"], context.BuildInvocations);
+        AssertEx.SequenceEqual(["build <solution> /p:DotNetWatchBuild=true -p A=1"], context.BuildInvocations);
     }
 
     [TestMethod]
@@ -194,7 +194,7 @@ public class BuildProjects
 
         Assert.IsTrue(result.Success);
 
-        AssertEx.SequenceEqual([$"build {file1} -p A=1"], context.BuildInvocations);
+        AssertEx.SequenceEqual([$"build {file1} /p:DotNetWatchBuild=true -p A=1"], context.BuildInvocations);
     }
 
     [TestMethod]
@@ -224,7 +224,7 @@ public class BuildProjects
 
         Assert.IsTrue(result.Success);
 
-        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
+        AssertEx.SequenceEqual([$"build {file1} /p:DotNetWatchBuild=true -p A=1 --framework net9.0"], context.BuildInvocations);
     }
 
     [TestMethod]
@@ -264,7 +264,7 @@ public class BuildProjects
         else
         {
             Assert.IsTrue(result.Success);
-            AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
+            AssertEx.SequenceEqual([$"build {file1} /p:DotNetWatchBuild=true -p A=1 --framework net9.0"], context.BuildInvocations);
         }
     }
 
@@ -294,7 +294,7 @@ public class BuildProjects
 
         Assert.IsTrue(result.Success);
 
-        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net8.0"], context.BuildInvocations);
+        AssertEx.SequenceEqual([$"build {file1} /p:DotNetWatchBuild=true -p A=1 --framework net8.0"], context.BuildInvocations);
     }
 
     [TestMethod]
@@ -322,8 +322,8 @@ public class BuildProjects
 
         AssertEx.SequenceEqual(
         [
-            $"build {file1} -p A=1",
-            $"build {file2} -p A=1"
+            $"build {file1} /p:DotNetWatchBuild=true -p A=1",
+            $"build {file2} /p:DotNetWatchBuild=true -p A=1"
         ], context.BuildInvocations);
     }
 
@@ -354,9 +354,9 @@ public class BuildProjects
 
         AssertEx.SequenceEqual(
         [
-            $"build {project1} -p A=1",
-            $"build {file1} -p A=1",
-            $"build {file2} -p A=1"
+            $"build {project1} /p:DotNetWatchBuild=true -p A=1",
+            $"build {file1} /p:DotNetWatchBuild=true -p A=1",
+            $"build {file2} /p:DotNetWatchBuild=true -p A=1"
         ], context.BuildInvocations);
     }
 
@@ -389,9 +389,9 @@ public class BuildProjects
 
         AssertEx.SequenceEqual(
         [
-            "build <solution> -p A=1",
-            $"build {file1} -p A=1",
-            $"build {file2} -p A=1"
+            "build <solution> /p:DotNetWatchBuild=true -p A=1",
+            $"build {file1} /p:DotNetWatchBuild=true -p A=1",
+            $"build {file2} /p:DotNetWatchBuild=true -p A=1"
         ], context.BuildInvocations);
     }
 
@@ -427,15 +427,15 @@ public class BuildProjects
             },
             deviceSelector: null,
             CancellationToken.None);
-        
+
         Assert.IsTrue(result.Success);
         Assert.IsNotNull(result.ProjectGraph);
         Assert.AreEqual(expectedTfm, result.MainProjectTargetFramework);
 
         AssertEx.SequenceEqual(
         [
-            $"restore {project1} -p A=1 -consoleLoggerParameters:NoSummary",
-            $"build {project1} -p A=1 --framework {expectedTfm} --no-restore"
+            $"restore {project1} /p:DotNetWatchBuild=true -p A=1 -consoleLoggerParameters:NoSummary",
+            $"build {project1} /p:DotNetWatchBuild=true -p A=1 --framework {expectedTfm} --no-restore"
         ], context.BuildInvocations);
     }
 
@@ -476,7 +476,7 @@ public class BuildProjects
 
         AssertEx.SequenceEqual(
         [
-            $"build {project1} -p A=1 --framework net9.0"
+            $"build {project1} /p:DotNetWatchBuild=true -p A=1 --framework net9.0"
         ], context.BuildInvocations);
     }
 
@@ -517,7 +517,7 @@ public class BuildProjects
 
         AssertEx.SequenceEqual(
         [
-            $"build {project1} -p A=1"
+            $"build {project1} /p:DotNetWatchBuild=true -p A=1"
         ], context.BuildInvocations);
     }
 }

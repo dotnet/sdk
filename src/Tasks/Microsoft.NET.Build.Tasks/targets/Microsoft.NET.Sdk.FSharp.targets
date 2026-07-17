@@ -34,7 +34,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     VS debugger behavior for F# projects. Setting SupportsHotReload=false always disables the
     capability, matching the C#/VB opt-out.
   -->
-  <ItemGroup Condition="'$(SupportsHotReload)' != 'false' AND ('$(DotNetWatchBuild)' == 'true' OR '$(SupportsHotReload)' == 'true') AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">
+  <PropertyGroup>
+    <_FSharpHotReloadEnabled Condition="'$(SupportsHotReload)' != 'false' AND ('$(DotNetWatchBuild)' == 'true' OR '$(SupportsHotReload)' == 'true') AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">true</_FSharpHotReloadEnabled>
+
+    <!-- The disk build and the in-memory FCS session must use the same lowering mode. Otherwise
+         the runtime can accept a delta whose method tokens do not update the loaded baseline. -->
+    <OtherFlags Condition="'$(_FSharpHotReloadEnabled)' == 'true'">$(OtherFlags) --test:HotReloadDeltas</OtherFlags>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_FSharpHotReloadEnabled)' == 'true'">
     <ProjectCapability Include="SupportsHotReload" />
   </ItemGroup>
 

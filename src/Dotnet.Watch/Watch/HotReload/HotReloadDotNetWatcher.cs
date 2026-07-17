@@ -1241,7 +1241,10 @@ internal sealed class HotReloadDotNetWatcher
         var arguments = new List<string>
         {
             action is BuildAction.RestoreOnly ? "restore" : "build",
-            path
+            path,
+            // Keep command-line builds consistent with the design-time graph and honor the
+            // documented dotnet-watch extensibility contract.
+            $"/p:{PropertyNames.DotNetWatchBuild}=true"
         };
 
         arguments.AddRange(_context.BuildArguments);

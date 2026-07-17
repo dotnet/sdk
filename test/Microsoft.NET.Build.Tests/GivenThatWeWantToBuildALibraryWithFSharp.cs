@@ -244,6 +244,25 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        public void It_sets_the_hot_reload_compiler_flag_under_dotnet_watch()
+        {
+            var otherFlags = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "OtherFlags",
+                msbuildArgs: new[] { "/p:DotNetWatchBuild=true" },
+                valueType: GetValuesCommand.ValueType.Property,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            string.Join(" ", otherFlags).Should().Contain("--test:HotReloadDeltas");
+        }
+
+        [TestMethod]
         public void It_does_not_set_SupportsHotReload_capability_outside_dotnet_watch()
         {
             // ProjectCapabilities are read by other hosts such as Visual Studio, which has no
@@ -262,6 +281,24 @@ namespace Microsoft.NET.Build.Tests
                 targetFramework: "net6.0");
 
             projectCapabilities.Should().NotContain("SupportsHotReload");
+        }
+
+        [TestMethod]
+        public void It_does_not_set_the_hot_reload_compiler_flag_outside_dotnet_watch()
+        {
+            var otherFlags = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "OtherFlags",
+                valueType: GetValuesCommand.ValueType.Property,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            string.Join(" ", otherFlags).Should().NotContain("--test:HotReloadDeltas");
         }
 
         [TestMethod]

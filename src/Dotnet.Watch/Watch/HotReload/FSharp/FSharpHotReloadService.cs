@@ -1382,6 +1382,9 @@ internal sealed class FSharpHotReloadService
             startInfo.ArgumentList.Add("-nologo");
             startInfo.ArgumentList.Add("-consoleLoggerParameters:NoSummary;Verbosity=minimal");
             startInfo.ArgumentList.Add("-p:NuGetInteractive=true");
+            // The initial watch build and every forced compile must use identical F# lowering;
+            // Microsoft.NET.Sdk.FSharp.targets adds the hot reload compiler flag for this build.
+            startInfo.ArgumentList.Add($"-p:{PropertyNames.DotNetWatchBuild}=true");
 
             using var process = Process.Start(startInfo);
             if (process == null)
