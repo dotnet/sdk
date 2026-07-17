@@ -63,6 +63,7 @@
     <OpenTelemetryDotnetPackageVersion>1.16.0</OpenTelemetryDotnetPackageVersion>
     <OpenTelemetryDotnetContribPackageVersion>1.15.1</OpenTelemetryDotnetContribPackageVersion>
     <OpenTelemetryInstrumentationHttpPackageVersion>1.16.0</OpenTelemetryInstrumentationHttpPackageVersion>
+    <OpenTelemetryPersistentStoragePackageVersion>1.1.0</OpenTelemetryPersistentStoragePackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="MicroBuild.Core version">
