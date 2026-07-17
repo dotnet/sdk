@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Watch
                     builder.Configure(app =>
                     {
                         app.UseWebSockets();
-                        app.Run(WebSocketRequestAsync);
+                        app.Run(context => WebSocketRequestAsync(context, allowedHosts: autoReloadWebSocketHostName != null ? [hostName] : [hostName, "localhost"]));
                     });
                 })
                 .Build();
@@ -159,11 +159,19 @@ namespace Microsoft.DotNet.Watch
             ];
         }
 
-        private async Task WebSocketRequestAsync(HttpContext context)
+        private async Task WebSocketRequestAsync(HttpContext context, ImmutableArray<string> allowedHosts)
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+
+            // check the domain of the Origin header:
+            if (!Uri.TryCreate(context.Request.Headers.Origin.FirstOrDefault(), UriKind.Absolute, out var originUri) ||
+                !allowedHosts.Contains(originUri.Host, StringComparer.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;
             }
 
