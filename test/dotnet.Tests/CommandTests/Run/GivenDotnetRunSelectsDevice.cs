@@ -519,7 +519,6 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             });
 
         // Verify no props file was created (since opt-in is false)
-        string tempPropsFile = Path.Combine(testInstance.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "dotnet-run-env.props");
         var build = BinaryLog.ReadBuild(buildBinlogPath);
         var propsFile = build.SourceFiles?.FirstOrDefault(f => f.FullPath.EndsWith("dotnet-run-env.props", StringComparison.OrdinalIgnoreCase));
         propsFile.Should().BeNull("dotnet-run-env.props should NOT be created when not opted in");
