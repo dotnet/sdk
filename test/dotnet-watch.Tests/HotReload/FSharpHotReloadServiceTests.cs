@@ -11,6 +11,18 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 public class FSharpHotReloadServiceTests
 {
     [TestMethod]
+    public void RudeEditHelpLink_PointsToFSharpDiagnosticReference()
+    {
+        var field = typeof(FSharpHotReloadService).GetField(
+            "RudeEditHelpLink",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+
+        Assert.AreEqual(
+            "https://github.com/dotnet/fsharp/blob/main/docs/hot-reload-rude-edits.md",
+            field.GetRawConstantValue());
+    }
+
+    [TestMethod]
     [DataRow("/tmp/Program.fs", false)]
     [DataRow("/tmp/Program.fsi", false)]
     [DataRow("/tmp/Project.fsproj", false)]

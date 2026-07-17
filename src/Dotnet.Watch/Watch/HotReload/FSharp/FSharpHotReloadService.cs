@@ -34,6 +34,8 @@ internal readonly record struct FSharpManagedUpdateResult(
 
 internal sealed class FSharpHotReloadService
 {
+    private const string RudeEditHelpLink = "https://github.com/dotnet/fsharp/blob/main/docs/hot-reload-rude-edits.md";
+
     private readonly ILogger _logger;
     private readonly bool _trace;
 
@@ -626,7 +628,10 @@ internal sealed class FSharpHotReloadService
                 // C# path reports rude edits rather than silently restarting.
                 if (!string.IsNullOrEmpty(emit.ErrorText))
                 {
-                    _logger.LogWarning("F# hot reload cannot apply the edit; a restart is required: {Message}", emit.ErrorText);
+                    _logger.LogWarning(
+                        "F# hot reload cannot apply the edit; a restart is required: {Message} Learn more: {HelpLink}",
+                        emit.ErrorText,
+                        RudeEditHelpLink);
                 }
                 else
                 {
