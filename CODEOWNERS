@@ -8,6 +8,15 @@
 # review when someone opens a pull request.
 # Issue/PR labels to use are listed before each section
 
+# Area-CLI
+/src/Cli/ @dotnet/dotnet-cli
+/test/dotnet.Tests/ @dotnet/dotnet-cli
+
+# Area-NetSDK
+/src/Tasks/Microsoft.NET.Build.Tasks/ @dotnet/dotnet-cli
+/test/Microsoft.NET.Build.Tests/ @dotnet/dotnet-cli
+/test/Microsoft.NET.Publish.Tests/ @dotnet/dotnet-cli
+
 # Area-WebSDK
 /src/WebSdk/ @vijayrkn
 /test/Microsoft.NET.Sdk.Publish.Tasks.Tests/ @vijayrkn
@@ -27,7 +36,21 @@
 /test/TestAssets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
 /test/TestAssets/TestProjects/Razor*/ @dotnet/razor-tooling
 
-# Area-Wasm
+# Area-StaticWebAssets
+/src/StaticWebAssetsSdk/ @dotnet/aspnet-blazor-eng
+/test/Microsoft.NET.Sdk.StaticWebAssets.Tests/ @dotnet/aspnet-blazor-eng
+
+# Area-Workloads
+/src/Cli/Microsoft.DotNet.Cli.Definitions/Commands/Workload/ @dotnet/net-sdk-workload-contributors
+/src/Cli/dotnet/Commands/Workload/ @dotnet/net-sdk-workload-contributors
+/src/Resolvers/Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver/ @dotnet/net-sdk-workload-contributors
+/src/Resolvers/Microsoft.NET.Sdk.WorkloadManifestReader/ @dotnet/net-sdk-workload-contributors
+/src/Workloads/ @dotnet/net-sdk-workload-contributors
+/test/dotnet.Tests/CommandTests/Workload/ @dotnet/net-sdk-workload-contributors
+/test/Microsoft.NET.Sdk.WorkloadManifestReader.Tests/ @dotnet/net-sdk-workload-contributors
+/test/TestAssets/TestWorkloads/ @dotnet/net-sdk-workload-contributors
+
+# Area-WasmSdk
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
@@ -127,3 +150,16 @@
 .agents/ @mthalman @lbussell
 AGENTS.md @mthalman @lbussell
 SKILL.md @mthalman @lbussell
+
+# Area-dotnetup
+/.github/ISSUE_TEMPLATE/30_dotnetup.yml @dotnet/dotnetup
+/.vsts-dnup-ci.yml @dotnet/dotnetup
+/.vsts-dnup-pr.yml @dotnet/dotnetup
+/documentation/general/dotnetup/ @dotnet/dotnetup
+/dotnetup.slnf @dotnet/dotnetup
+/eng/dotnetup-shared.ps1 @dotnet/dotnetup
+/eng/dotnetup-shared.sh @dotnet/dotnetup
+/eng/pipelines/templates/jobs/dotnetup/ @dotnet/dotnetup
+/src/Installer/dotnetup/ @dotnet/dotnetup
+/src/Installer/dotnetup.Library/ @dotnet/dotnetup
+/test/dotnetup.Tests/ @dotnet/dotnetup
