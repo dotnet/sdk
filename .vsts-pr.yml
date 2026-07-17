@@ -61,7 +61,7 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
@@ -72,21 +72,16 @@ stages:
   # its mstat/dgml size-analysis artifacts (that step is gated on the AoT category). It is build-only
   # (runTests: false): there is no wired windows arm64 Helix queue yet, so running the *.AoT.Tests on
   # arm64 hardware is a follow-up pending a windows.11.arm64 queue.
-  # TEMPORARILY DISABLED (disableJob: true): the win-arm64 NativeAOT cross-link fails with
-  # 'LNK1322: cannot avoid potential ARM hazard (Cortex-A53 MPCore processor bug #843419)' because
-  # the ILCompiler-produced object isn't split into per-function sections, so the MSVC arm64 linker
-  # cannot apply the erratum fixup. This leg has never passed. Re-enable once the ILCompiler fix lands.
-  # Tracked by dotnet/sdk#55298.
+  # The VS 2026 build image is required for the arm64 linker used by this cross-build.
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
       windowsJobParameterSets:
       - categoryName: AoT
-        disableJob: true
         targetArchitecture: arm64
         runtimeIdentifier: win-arm64
         osProperties: /p:CrossBuild=true
