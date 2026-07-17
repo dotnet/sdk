@@ -52,29 +52,11 @@
       Declare RuntimeIdentifier so that centralized NuGet restore (via sdk.slnx) generates
       the RID-specific target (e.g. net11.0/win-x64) in project.assets.json. Without this,
       the assets file only has the TFM target and Publish fails with NETSDK1047.
-
-      Source Build can use a distro-specific TargetRid that isn't in the portable RID graph.
-      Publish against its portable parent while selecting the distro-specific runtime packs below.
+      Conditioned to platforms where NativeAOT publish is supported.
     -->
-    <RuntimeIdentifier Condition="'$(NativeAotSupported)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(TargetRid)</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(NativeAotSupported)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'">$(PortableTargetRid)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(NativeAotSupported)' == 'true'">$(TargetRid)</RuntimeIdentifier>
     <UseCommonLocateNativeCompilerTarget Condition="'$(NativeAotSupported)' == 'true' and !$(TargetRid.StartsWith('win'))">true</UseCommonLocateNativeCompilerTarget>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(NativeAotSupported)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'">
-    <!--
-      The Source Build runtime packs contain assets for TargetRid, but the application publish uses
-      PortableTargetRid. Map that portable RID to the exact source-built packages without requiring
-      the legacy RID graph.
-    -->
-    <KnownFrameworkReference Update="Microsoft.NETCore.App">
-      <RuntimePackNamePatterns>Microsoft.NETCore.App.Runtime.$(TargetRid)</RuntimePackNamePatterns>
-      <RuntimePackRuntimeIdentifiers>$(PortableTargetRid)</RuntimePackRuntimeIdentifiers>
-    </KnownFrameworkReference>
-    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler">
-      <ILCompilerRuntimePackNamePattern>Microsoft.NETCore.App.Runtime.NativeAOT.$(TargetRid)</ILCompilerRuntimePackNamePattern>
-    </KnownILCompilerPack>
-  </ItemGroup>
 
   <Import Project="AotSourceFiles.props" />
 
