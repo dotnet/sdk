@@ -43,11 +43,15 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             ResolveCurrentInstallRootPath(foundDotnet),
             InstallerUtilities.GetDefaultInstallArchitecture());
 
-        // Classify the resolved dotnet by location. InstallPathClassifier.IsAdminInstallPath is the
-        // canonical "is this a system/admin-managed install?" check (Program Files on Windows; the
-        // standard /usr and /opt locations on Unix) used across dotnetup, so both platforms share it.
-        bool isAdminInstall = InstallPathClassifier.IsAdminInstallPath(currentInstallRoot.Path);
-        return new(currentInstallRoot, isAdminInstall ? InstallType.System : InstallType.User);
+        // Report whether the resolved dotnet is a dotnetup-managed hive — an install dotnetup owns
+        // and may run or uninstall from — rather than classifying it as "system vs user". A dotnet
+        // that merely lives in a user-writable location (e.g. a hand-extracted C:\dotnet on PATH) is
+        // NOT dotnetup's and must not be treated as such. Today the only supported hive is the
+        // default install path; configurable hives are tracked in
+        // https://github.com/dotnet/sdk/issues/55346, at which point this check would also consult
+        // the persisted root.
+        bool isDotnetupHive = DotnetupUtilities.PathsEqual(currentInstallRoot.Path, GetDefaultDotnetInstallPath());
+        return new(currentInstallRoot, isDotnetupHive);
     }
 
     public string GetDefaultDotnetInstallPath()

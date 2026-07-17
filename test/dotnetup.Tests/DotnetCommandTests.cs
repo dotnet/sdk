@@ -150,9 +150,9 @@ public class DotnetCommandTests
     }
 
     [TestMethod]
-    public void DotnetCommand_UsesConfiguredInstallType_WhenUserInstall()
+    public void DotnetCommand_UsesConfiguredPath_WhenDotnetupHive()
     {
-        // Arrange - two paths: a configured user install path and a default path
+        // Arrange - two paths: a configured dotnetup hive path and a default path
         var userDir = Directory.CreateTempSubdirectory("dotnetup-user-test");
         var defaultDir = Directory.CreateTempSubdirectory("dotnetup-default-test");
         try
@@ -164,13 +164,13 @@ public class DotnetCommandTests
                 defaultInstallPath: defaultDir.FullName,
                 configuredRoot: new DotnetInstallRootConfiguration(
                     new DotnetInstallRoot(userDir.FullName, InstallArchitecture.x64),
-                    InstallType.User));
+                    IsDotnetupHive: true));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
             var command = new TestableDotnetCommand(parseResult, mock);
             var exitCode = command.Execute();
 
-            // Should succeed because it used the configured user path, not the default
+            // Should succeed because it used the configured hive path, not the default
             exitCode.Should().Be(0);
         }
         finally
@@ -206,9 +206,10 @@ public class DotnetCommandTests
     }
 
     [TestMethod]
-    public void DotnetCommand_FallsBackToDefault_WhenAdminInstall()
+    public void DotnetCommand_FallsBackToDefault_WhenNotDotnetupHive()
     {
-        // Arrange - configured install is Admin, not User; should fall back to default
+        // Arrange - configured install is not a dotnetup hive (e.g. an admin or loose install);
+        // should fall back to default
         var adminDir = Directory.CreateTempSubdirectory("dotnetup-admin-test");
         var defaultDir = Directory.CreateTempSubdirectory("dotnetup-default-test");
         try
@@ -220,7 +221,7 @@ public class DotnetCommandTests
                 defaultInstallPath: defaultDir.FullName,
                 configuredRoot: new DotnetInstallRootConfiguration(
                     new DotnetInstallRoot(adminDir.FullName, InstallArchitecture.x64),
-                    InstallType.System));
+                    IsDotnetupHive: false));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
             var command = new TestableDotnetCommand(parseResult, mock);

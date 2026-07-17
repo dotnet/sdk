@@ -446,9 +446,10 @@ internal class InitWorkflows
             return [];
         }
 
-        // Find the system install path for display purposes
+        // Find the system install path for display purposes. Whether the dotnet winning on PATH is
+        // a dotnetup hive is irrelevant here; we want its location only when it is a system install.
         var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
-        string systemPath = currentInstall?.InstallType == InstallType.System
+        string systemPath = currentInstall is not null && InstallPathClassifier.IsAdminInstallPath(currentInstall.Path)
             ? currentInstall.Path
             : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
 

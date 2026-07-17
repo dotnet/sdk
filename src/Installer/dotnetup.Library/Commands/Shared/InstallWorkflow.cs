@@ -338,7 +338,7 @@ internal class InstallWorkflow
         _command.SetCommandTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
         _command.SetCommandTag(TelemetryTagNames.InstallPathExplicit, (explicitInstallPath is not null).ToString());
         _command.SetCommandTag(TelemetryTagNames.InstallHasGlobalJson, (globalJson?.GlobalJsonPath is not null).ToString());
-        _command.SetCommandTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
+        _command.SetCommandTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot is null ? "none" : InstallPathClassifier.ClassifyInstallPath(currentInstallRoot.Path));
         _command.SetCommandTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
         _command.SetCommandTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
         _command.SetCommandTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());

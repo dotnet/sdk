@@ -65,7 +65,7 @@ internal class DotnetCommand : CommandBase
     private string ResolveDotnetPath()
     {
         var configuredRoot = _dotnetEnvironment.GetCurrentPathConfiguration();
-        if (configuredRoot is not null && configuredRoot.InstallType == InstallType.User)
+        if (configuredRoot is { IsDotnetupHive: true })
         {
             return configuredRoot.Path;
         }
