@@ -9,7 +9,7 @@ using Microsoft.NET.TestFramework;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
-/// Covers <see cref="InitWorkflowDefaults.GetDefaultPathPreference"/>'s no-shell isolation
+/// Covers <see cref="InitWorkflowDefaults.GetDefaultAccessMode"/>'s no-shell isolation
 /// fallback, which depends on the <c>SHELL</c> environment variable on non-Windows. These tests
 /// mutate <c>SHELL</c>, so they run in a serialized collection to avoid races with other tests.
 /// </summary>
@@ -23,11 +23,11 @@ public class InitWorkflowShellFallbackTests
     /// the default falls back to isolation mode rather than terminal-profile mode.
     /// </summary>
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
-    public void GetDefaultPathPreference_FallsBackToIsolation_WhenShellUnsupported()
+    public void GetDefaultAccessMode_FallsBackToIsolation_WhenShellUnsupported()
     {
         RunWithShell("/nonexistent/not-a-real-shell", () =>
-            InitWorkflowDefaults.GetDefaultPathPreference(shellProvider: null)
-                .Should().Be(PathPreference.DotnetupDotnet));
+            InitWorkflowDefaults.GetDefaultAccessMode(shellProvider: null)
+                .Should().Be(DotnetAccessMode.None));
     }
 
     /// <summary>
@@ -36,11 +36,11 @@ public class InitWorkflowShellFallbackTests
     /// detection rather than being a constant.
     /// </summary>
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
-    public void GetDefaultPathPreference_ReturnsShellProfile_WhenShellSupported()
+    public void GetDefaultAccessMode_ReturnsShellProfile_WhenShellSupported()
     {
         RunWithShell("/bin/bash", () =>
-            InitWorkflowDefaults.GetDefaultPathPreference(shellProvider: null)
-                .Should().Be(PathPreference.ShellProfile));
+            InitWorkflowDefaults.GetDefaultAccessMode(shellProvider: null)
+                .Should().Be(DotnetAccessMode.Shell));
     }
 
     private static void RunWithShell(string shellValue, Action assert)

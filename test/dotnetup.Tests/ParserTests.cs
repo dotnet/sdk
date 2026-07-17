@@ -10,7 +10,7 @@ public class ParserTests
 {
     public static IEnumerable<object[]> ShellOverrideCommandArgs =>
     [
-        [new[] { "defaultinstall", "user", "--shell", "bash" }],
+        [new[] { "env", "set", "shell", "--shell", "bash" }],
         [new[] { "init", "--shell", "bash" }]
     ];
 
@@ -136,15 +136,88 @@ public class ParserTests
     }
 
     [TestMethod]
-    public void Parser_ShouldParseDefaultInstallCommand()
+    public void Parser_ShouldParseEnvSetCommand()
     {
-        // Arrange
-        var args = new[] { "defaultinstall", "user" };
+        var args = new[] { "env", "set", "shell" };
 
-        // Act
         var parseResult = Parser.Parse(args);
 
-        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Parser_ShouldParseEnvShowCommand()
+    {
+        var args = new[] { "env", "show" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Parser_ShouldParseEnvScriptCommand()
+    {
+        var args = new[] { "env", "script" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Parser_ShouldParseEnvScriptSelectionFlags()
+    {
+        string[][] variants =
+        [
+            ["env", "script", "--shell", "bash", "--dotnet"],
+            ["env", "script", "--shell", "bash", "--dotnetup"],
+            ["env", "script", "--shell", "bash", "--dotnet", "--dotnetup"],
+            ["env", "script", "--shell", "bash", "--dotnetup-only"],
+        ];
+
+        foreach (var args in variants)
+        {
+            Parser.Parse(args).Errors.Should().BeEmpty($"'{string.Join(' ', args)}' should parse");
+        }
+    }
+
+    [TestMethod]
+    public void Parser_ShouldParseEnvSetAndClearVariants()
+    {
+        string[][] variants =
+        [
+            ["env", "set", "shell", "--dotnetup-on-path", "false"],
+            ["env", "set", "--dotnetup-on-path", "true", "--shell", "bash"],
+            ["env", "clear", "--shell", "bash"],
+        ];
+
+        foreach (var args in variants)
+        {
+            Parser.Parse(args).Errors.Should().BeEmpty($"'{string.Join(' ', args)}' should parse");
+        }
+    }
+
+    [TestMethod]
+    public void Parser_EnvSet_RejectsInvalidDotnetupOnPathValue()
+    {
+        var args = new[] { "env", "set", "shell", "--dotnetup-on-path", "maybe" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().NotBeEmpty();
+    }
+
+    [TestMethod]
+    public void Parser_ShouldStillParsePrintEnvScriptAlias()
+    {
+        var args = new[] { "print-env-script" };
+
+        var parseResult = Parser.Parse(args);
+
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
     }

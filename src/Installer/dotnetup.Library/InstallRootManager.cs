@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -64,9 +65,14 @@ internal class InstallRootManager
 
         // When no dotnet is installed in Program Files, there is no admin path to reference or modify.
         string primaryProgramFilesDotnetPath = programFilesDotnetPaths.FirstOrDefault() ?? string.Empty;
-        bool needToModifyAdminPath = !string.IsNullOrEmpty(primaryProgramFilesDotnetPath)
-            && !WindowsPathHelper.SplitPath(WindowsPathHelper.ReadAdminPath(expand: true))
-                .Contains(primaryProgramFilesDotnetPath, StringComparer.OrdinalIgnoreCase);
+
+        // Use PathContainsDotnet, as that handles differences in trailing directory separators
+        // GetProgramFilesDotnetPaths trims the trailing separator while the .NET installer writes
+        // the system PATH entry *with* one (e.g. "C:\Program Files\dotnet\")
+        bool needToModifyAdminPath = programFilesDotnetPaths.Count > 0
+            && !WindowsPathHelper.PathContainsDotnet(
+                WindowsPathHelper.SplitPath(WindowsPathHelper.ReadAdminPath(expand: true)),
+                programFilesDotnetPaths);
 
         // Get the user dotnet installation path
         string userDotnetPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
@@ -91,80 +97,70 @@ internal class InstallRootManager
     }
 
     /// <summary>
-    /// Applies the user install root configuration.
-    /// Returns true if successful, false if elevation was cancelled.
+    /// Applies the user install root configuration. Throws
+    /// <see cref="DotnetInstallException"/> if the user declines an elevation prompt.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public static bool ApplyUserInstallRoot(UserInstallRootChanges changes, Action<string> writeOutput, Action<string> writeError)
+    public static void ApplyUserInstallRoot(UserInstallRootChanges changes, Action<string> writeOutput)
     {
         if (changes.NeedsRemoveAdminPath)
         {
-            if (!RemoveAdminPathIfNeeded(changes.FoundAdminDotnetPaths!, writeOutput, writeError))
-            {
-                return false; // Elevation was cancelled
-            }
+            RemoveAdminPathIfNeeded(changes.FoundAdminDotnetPaths!, writeOutput);
         }
 
         if (changes.NeedsAddToUserPath)
         {
-            writeOutput($"Adding {changes.UserDotnetPath} to user PATH.");
+            writeOutput($"Adding {Highlight(changes.UserDotnetPath)} to user PATH.");
             WindowsPathHelper.WriteUserPath(changes.NewUserPath!);
         }
 
         if (changes.NeedsSetDotnetRoot)
         {
-            writeOutput($"Setting DOTNET_ROOT to {changes.UserDotnetPath}");
+            writeOutput($"Setting {Highlight("DOTNET_ROOT")} to {Highlight(changes.UserDotnetPath)}");
             Environment.SetEnvironmentVariable("DOTNET_ROOT", changes.UserDotnetPath, EnvironmentVariableTarget.User);
         }
-
-        return true;
     }
 
     /// <summary>
-    /// Applies the admin install root configuration.
-    /// Returns true if successful, false if elevation was cancelled.
+    /// Applies the admin install root configuration. Throws
+    /// <see cref="DotnetInstallException"/> if the user declines an elevation prompt.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public static bool ApplyAdminInstallRoot(AdminInstallRootChanges changes, Action<string> writeOutput, Action<string> writeError)
+    public static void ApplyAdminInstallRoot(AdminInstallRootChanges changes, Action<string> writeOutput)
     {
         if (changes.NeedsModifyAdminPath)
         {
-            if (!AddAdminPathIfNeeded(changes.ProgramFilesDotnetPath, writeOutput, writeError))
-            {
-                return false; // Elevation was cancelled
-            }
+            AddAdminPathIfNeeded(changes.ProgramFilesDotnetPath, writeOutput);
         }
 
         if (changes.NeedsModifyUserPath)
         {
-            writeOutput($"Removing {changes.UserDotnetPath} from user PATH.");
+            writeOutput($"Removing {Highlight(changes.UserDotnetPath)} from user PATH.");
             WindowsPathHelper.WriteUserPath(changes.NewUserPath!);
         }
 
         if (changes.NeedsUnsetDotnetRoot)
         {
-            writeOutput("Unsetting DOTNET_ROOT environment variable.");
+            writeOutput($"Removing {Highlight("DOTNET_ROOT")} environment variable.");
             Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
         }
-
-        return true;
     }
 
     [SupportedOSPlatform("windows")]
-    private static bool RemoveAdminPathIfNeeded(List<string> foundDotnetPaths, Action<string> writeOutput, Action<string> writeError)
+    private static void RemoveAdminPathIfNeeded(List<string> foundDotnetPaths, Action<string> writeOutput)
     {
         if (Environment.IsPrivilegedProcess)
         {
             if (foundDotnetPaths.Count == 1)
             {
-                writeOutput($"Removing {foundDotnetPaths[0]} from system PATH.");
+                writeOutput($"Removing {Highlight(foundDotnetPaths[0])} from system PATH.");
             }
             else
             {
                 writeOutput("Removing the following dotnet paths from system PATH:");
                 foreach (var path in foundDotnetPaths)
                 {
-                    writeOutput($"  - {path}");
+                    writeOutput($"  - {Highlight(path)}");
                 }
             }
 
@@ -177,52 +173,42 @@ internal class InstallRootManager
             // Not elevated, shell out to elevated process
             if (foundDotnetPaths.Count == 1)
             {
-                writeOutput($"Launching elevated process to remove {foundDotnetPaths[0]} from system PATH.");
+                writeOutput($"Launching elevated process to remove {Highlight(foundDotnetPaths[0])} from system PATH.");
             }
             else
             {
                 writeOutput("Launching elevated process to remove the following dotnet paths from system PATH:");
                 foreach (var path in foundDotnetPaths)
                 {
-                    writeOutput($"  - {path}");
+                    writeOutput($"  - {Highlight(path)}");
                 }
             }
 
-            bool succeeded = WindowsPathHelper.StartElevatedProcess("removedotnet");
-            if (!succeeded)
-            {
-                writeError("Warning: Elevation was cancelled. System PATH was not modified.");
-                return false;
-            }
+            WindowsPathHelper.StartElevatedProcess("removedotnet");
         }
-
-        return true;
     }
 
     [SupportedOSPlatform("windows")]
-    private static bool AddAdminPathIfNeeded(string programFilesDotnetPath, Action<string> writeOutput, Action<string> writeError)
+    private static void AddAdminPathIfNeeded(string programFilesDotnetPath, Action<string> writeOutput)
     {
         if (Environment.IsPrivilegedProcess)
         {
             // We're already elevated, modify the admin PATH directly
-            writeOutput($"Adding {programFilesDotnetPath} to system PATH.");
+            writeOutput($"Adding {Highlight(programFilesDotnetPath)} to system PATH.");
             using var pathHelper = new WindowsPathHelper();
             pathHelper.AddDotnetToAdminPath();
         }
         else
         {
             // Not elevated, shell out to elevated process
-            writeOutput($"Launching elevated process to add {programFilesDotnetPath} to system PATH.");
-            bool succeeded = WindowsPathHelper.StartElevatedProcess("adddotnet");
-            if (!succeeded)
-            {
-                writeError("Warning: Elevation was cancelled. System PATH was not modified.");
-                return false;
-            }
+            writeOutput($"Launching elevated process to add {Highlight(programFilesDotnetPath)} to system PATH.");
+            WindowsPathHelper.StartElevatedProcess("adddotnet");
         }
-
-        return true;
     }
+
+    // Colors a path or environment-variable name with the theme accent, escaping any markup so
+    // it renders correctly when the output is written with AnsiConsole.MarkupLine.
+    private static string Highlight(string value) => DotnetupTheme.Accent(value.EscapeMarkup());
 }
 
 /// <summary>

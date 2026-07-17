@@ -339,8 +339,8 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
         if (resolvedCommandPath != null)
         {
-            var resolvedDir = Path.GetDirectoryName(resolvedCommandPath);
-            var normalizedResolvedDir = Path.TrimEndingDirectorySeparator(resolvedDir ?? string.Empty);
+            var normalizedResolvedDir = Path.TrimEndingDirectorySeparator(
+                ExecutablePathResolver.ResolveRealDirectory(resolvedCommandPath) ?? string.Empty);
 
             if (normalizedResolvedDir.Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase))
             {
@@ -529,11 +529,11 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Starts an elevated process with the given arguments.
+    /// Starts an elevated process to modify the system PATH and waits for it to complete.
     /// </summary>
-    /// <returns>True if the process succeeded (exit code 0), false if elevation was cancelled.</returns>
+    /// <exception cref="DotnetInstallException">Thrown when the user declines the UAC elevation prompt.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the process cannot be started or returns a non-zero exit code.</exception>
-    public static bool StartElevatedProcess(string operation)
+    public static void StartElevatedProcess(string operation)
     {
         var processPath = Environment.ProcessPath;
         if (string.IsNullOrEmpty(processPath))
@@ -560,7 +560,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
                 WindowStyle = ProcessWindowStyle.Hidden
             };
 
-            return RunElevatedProcessCore(startInfo);
+            RunElevatedProcessCore(startInfo);
         }
         finally
         {
@@ -582,8 +582,8 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// Starts the elevated process described by <paramref name="startInfo"/>, waits for it to exit,
     /// and validates the exit code.
     /// </summary>
-    /// <returns>True on success; false if the user cancelled the UAC prompt.</returns>
-    private static bool RunElevatedProcessCore(ProcessStartInfo startInfo)
+    /// <exception cref="DotnetInstallException">Thrown when the user cancels the UAC prompt.</exception>
+    private static void RunElevatedProcessCore(ProcessStartInfo startInfo)
     {
         try
         {
@@ -608,8 +608,6 @@ internal sealed partial class WindowsPathHelper : IDisposable
                 throw new InvalidOperationException(
                     $"Elevated process returned exit code {process.ExitCode}");
             }
-
-            return true;
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
@@ -617,7 +615,11 @@ internal sealed partial class WindowsPathHelper : IDisposable
             // ERROR_CANCELLED = 1223
             if (ex.NativeErrorCode == 1223)
             {
-                return false;
+                // Surface the declined prompt as a clean, user-category error (no stack trace)
+                // instead of returning a status that every caller would have to re-wrap.
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.PermissionDenied,
+                    Strings.EnvElevationCancelled);
             }
             throw;
         }

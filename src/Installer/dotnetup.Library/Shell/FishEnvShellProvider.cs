@@ -42,15 +42,12 @@ public class FishEnvShellProvider : IEnvShellProvider
         return [Path.Combine(configurationDirectory, "dotnetup.fish")];
     }
 
-    public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
+    public string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
     {
-        var flags = ShellProviderHelpers.GetCommandFlags(dotnetupOnly, dotnetInstallPath, ShellProviderHelpers.EscapeFishPath);
+        var flags = ShellProviderHelpers.GetCommandFlags(includeDotnet, includeDotnetup, dotnetInstallPath, ShellProviderHelpers.EscapeFishPath);
         return ShellProviderHelpers.BuildFishProfileEntry(dotnetupPath, ArgumentName, flags);
     }
 
-    public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
-    {
-        var flags = ShellProviderHelpers.GetCommandFlags(dotnetupOnly, dotnetInstallPath, ShellProviderHelpers.EscapeFishPath);
-        return ShellProviderHelpers.BuildFishActivationCommand(dotnetupPath, ArgumentName, flags);
-    }
+    public string GenerateActivationCommand(string dotnetupPath)
+        => ShellProviderHelpers.BuildFishActivationCommand(dotnetupPath);
 }
