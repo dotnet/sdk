@@ -256,7 +256,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
         bool allTestsWereSkipped = totalTests == 0 || totalTests == totalSkippedTests;
         bool anyTestFailed = totalFailedTests > 0;
-        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success) || HasHandshakeFailure;
+        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success && a.ProcessExitCode != ExitCode.ZeroTests) || HasHandshakeFailure;
         bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
         terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
 
@@ -321,12 +321,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
         int retried = _assemblies.Values.Sum(t => t.RetriedFailedTests);
 
-        // If the process exited with non-zero exit code (t.Success is false)
-        // And also we didn't receive any failed tests, we consider these as errors.
+        // If the process exited with a non-zero exit code (t.Success is false)
+        // and we didn't receive any failed tests, we consider it an error. ZeroTests is excluded
+        // because its verdict is decided from the whole-run totals.
         // In addition, failing to handshake is also considered as an error.
         // Note: In case of handshake failure, we shouldn't add any entries to _assemblies dictionary.
         // So, this line cannot be double-counting handshake failures twice.
-        int error = _assemblies.Values.Count(t => !t.Success && t.FailedTests == 0) + _handshakeFailuresCount;
+        int error = _assemblies.Values.Count(t => !t.Success && t.ProcessExitCode != ExitCode.ZeroTests && t.FailedTests == 0) + _handshakeFailuresCount;
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
@@ -831,6 +832,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
+        assemblyRun.ProcessExitCode = exitCode;
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 

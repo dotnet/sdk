@@ -20,6 +20,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
     private int _tryCount;
     private TestNodeResultsState? _testNodeResultsState;
     private bool _success;
+    private int? _processExitCode;
 
     public string Assembly { get; } = assembly;
 
@@ -140,6 +141,25 @@ internal sealed class TestProgressState(long id, string assembly, string? target
             lock (_lock)
             {
                 _success = value;
+            }
+        }
+    }
+
+    public int? ProcessExitCode
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _processExitCode;
+            }
+        }
+
+        internal set
+        {
+            lock (_lock)
+            {
+                _processExitCode = value;
             }
         }
     }

@@ -4,6 +4,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -145,6 +146,41 @@ public class TerminalTestReporterTests
 
         GetAssemblySummaryLine(output, assemblyA).Should().Contain("[+2/x1/?0]");
         GetAssemblySummaryLine(output, assemblyB).Should().Contain("[+5/x0/?2]");
+    }
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithZeroTestsAndPassingAssemblies_PrintsPassedSummary()
+    {
+        var capturingConsole = new CapturingConsole();
+
+        var options = new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = false,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 2, isDiscovery: false, isHelp: false, isRetry: false);
+
+        const string emptyAssembly = "/repo/bin/Debug/net9.0/Empty.Tests.dll";
+        const string passingAssembly = "/repo/bin/Debug/net9.0/Passing.Tests.dll";
+
+        reporter.AssemblyRunStarted(emptyAssembly, "net9.0", "x64", executionId: "exec-empty", instanceId: "inst-empty");
+        reporter.AssemblyRunStarted(passingAssembly, "net9.0", "x64", executionId: "exec-passing", instanceId: "inst-passing");
+        ReportTest(reporter, passingAssembly, executionId: "exec-passing", instanceId: "inst-passing", testUid: "pass-1", TestOutcome.Passed);
+
+        reporter.AssemblyRunCompleted(executionId: "exec-empty", exitCode: ExitCodes.ZeroTests, outputData: null, errorData: null);
+        reporter.AssemblyRunCompleted(executionId: "exec-passing", exitCode: ExitCodes.Success, outputData: null, errorData: null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: ExitCodes.Success);
+
+        string output = capturingConsole.GetOutput();
+
+        GetAssemblySummaryLine(output, emptyAssembly).Should().Contain("Zero tests ran");
+        output.Should().Contain("Test run summary: Passed!")
+            .And.NotContain("error: 1");
     }
 
     /// <summary>
