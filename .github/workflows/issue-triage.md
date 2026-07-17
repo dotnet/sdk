@@ -142,7 +142,7 @@ For an incomplete or nearly empty bug report:
 4. If an MSBuild-driven command (`build`, `restore`, `publish`, `pack`, or `test`, including Visual Studio equivalents) fails or behaves incorrectly and no binlog is attached, append this exact text to the comment, while replacing the target issue author value:
 
   ```markdown
-  <@author>, To help diagnose your problem, please collect and attach a binlog using the [binlog collection guide](https://aka.ms/binlog). Binary logs may contain paths, project and imported-file contents, and environment variables. Review the log and remove any sensitive or unwanted content before attaching it.
+  @<author>, To help diagnose your problem, please collect and attach a binlog using the [binlog collection guide](https://aka.ms/binlog). Binary logs may contain paths, project and imported-file contents, and environment variables. Review the log and remove any sensitive or unwanted content before attaching it.
   ```
 
   Do not request a binlog for installation, CLI parsing, or runtime-only failures.
