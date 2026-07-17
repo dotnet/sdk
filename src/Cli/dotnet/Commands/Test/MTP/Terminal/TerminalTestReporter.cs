@@ -30,6 +30,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     internal Func<IStopwatch> CreateStopwatch { get; set; } = SystemStopwatch.StartNew;
 
     private readonly ConcurrentDictionary<string, TestProgressState> _assemblies = new();
+    private readonly Lock _assembliesLock = new();
 
     private readonly List<TestRunArtifact> _artifacts = [];
 
@@ -119,9 +120,24 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
+        => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, attemptNumber: null);
+
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId, int attemptNumber)
+        => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, (int?)attemptNumber);
+
+    private void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId, int? attemptNumber)
     {
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        assemblyRun.NotifyHandshake(instanceId);
+        if (attemptNumber.HasValue)
+        {
+            assemblyRun.NotifyHandshake(instanceId, attemptNumber.Value);
+        }
+        else
+        {
+            assemblyRun.NotifyHandshake(instanceId);
+        }
+
+        int currentAttemptNumber = assemblyRun.GetAttemptNumber(instanceId);
 
         // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
         // Not good enough for general use, because we want to show (try 1) even on the first try, but this will at
@@ -135,7 +151,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 if (_isRetry)
                 {
                     terminal.SetColor(TerminalColor.DarkGray);
-                    terminal.Append($"({string.Format(CliCommandStrings.Try, assemblyRun.TryCount)}) ");
+                    terminal.Append($"({string.Format(CliCommandStrings.Try, currentAttemptNumber)}) ");
                     terminal.ResetColor();
                 }
 
@@ -149,15 +165,26 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string executionId)
     {
-        return _assemblies.GetOrAdd(executionId, _ =>
+        if (_assemblies.TryGetValue(executionId, out TestProgressState? result))
         {
-            IStopwatch sw = CreateStopwatch();
-            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw, _isDiscovery);
-            int slotIndex = _terminalWithProgress.AddWorker(assemblyRun);
-            assemblyRun.SlotIndex = slotIndex;
+            return result;
+        }
 
-            return assemblyRun;
-        });
+        lock (_assembliesLock)
+        {
+            if (_assemblies.TryGetValue(executionId, out result))
+            {
+                return result;
+            }
+
+            IStopwatch sw = CreateStopwatch();
+            result = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw, _isDiscovery);
+            int slotIndex = _terminalWithProgress.AddWorker(result);
+            result.SlotIndex = slotIndex;
+            _assemblies[executionId] = result;
+
+            return result;
+        }
     }
 
     public void TestExecutionCompleted(DateTimeOffset endTime, int? exitCode)
@@ -465,8 +492,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? errorOutput)
     {
         TestProgressState asm = _assemblies[executionId];
-        var attempt = asm.TryCount;
-
         if (_showActiveTests)
         {
             asm.TestNodeResultsState?.RemoveRunningTestNode(instanceId, testNodeUid);
@@ -488,6 +513,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 break;
         }
 
+        int attempt = asm.GetAttemptNumber(instanceId);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || _options.ShowPassedTests)
         {
@@ -1081,11 +1107,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         foreach (TestProgressState assembly in assemblies)
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTestNames.Count));
+            List<(string? DisplayName, string? UID, string? FilePath, int? LineNumber)> discoveredTestNames = assembly.DiscoveredTestNames;
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, discoveredTestNames.Count));
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid, string? filePath, int? lineNumber) in assembly.DiscoveredTestNames)
+            foreach ((string? displayName, string? uid, string? filePath, int? lineNumber) in discoveredTestNames)
             {
                 if (displayName is not null)
                 {
@@ -1171,8 +1198,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (_showActiveTests)
         {
-            asm.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
-            asm.TestNodeResultsState.AddRunningTestNode(
+            TestNodeResultsState testNodeResultsState = asm.GetOrCreateTestNodeResultsState(
+                () => new(Interlocked.Increment(ref _counter)));
+            testNodeResultsState.AddRunningTestNode(
                 Interlocked.Increment(ref _counter), instanceId, testNodeUid, displayName, CreateStopwatch());
         }
 
