@@ -160,6 +160,37 @@ manually edit:
 - **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
 - More broadly, any file marked `linguist-generated=true` in `.gitattributes`.
 
+## External Dependencies
+
+Adding or updating a dependency is a repo-wide compatibility and supply-chain change,
+not just a project-file edit. Prefer the BCL, existing repository code, or a
+dependency already in use. Add a new dependency only at the narrowest necessary scope.
+
+- **Approved feeds:** Use only the restore sources in the root
+  [`NuGet.config`](../NuGet.config). For normal repository dependencies, do not add
+  ad hoc feeds just to make restore succeed. Do not edit automation-managed feed blocks.
+- **Version policy:** Central package management is enabled in
+  [`Directory.Build.props`](../Directory.Build.props).
+  - Omit `Version` from normal project `PackageReference` items and change the declaration
+    in [`Directory.Packages.props`](../Directory.Packages.props) or its imported owner
+    instead.
+  - Locate the existing `PackageVersion` and update its actual owner: literal versions in
+    `Directory.Packages.props` are managed there, property-backed manual versions live in
+    [`eng/Versions.props`](../eng/Versions.props) or
+    [`eng/ManualVersions.props`](../eng/ManualVersions.props), and packages listed in
+    [`eng/dependabot/Packages.props`](../eng/dependabot/Packages.props) are updated by
+    Dependabot.
+  - For dependencies represented in
+    [`eng/Version.Details.xml`](../eng/Version.Details.xml), use the Darc/Maestro
+    dependency-flow workflow so the manifest, generated properties, and feeds stay in
+    sync; never hand-edit the generated
+    [`eng/Version.Details.props`](../eng/Version.Details.props).
+- **Security:** Local restores enable NuGet Audit for all dependencies at low severity
+  or higher in [`Directory.Build.props`](../Directory.Build.props), using the audit
+  source in [`NuGet.config`](../NuGet.config). Treat `NU19xx` findings as actionable:
+  update or remove the affected package rather than suppressing the warning or weakening
+  audit settings.
+
 ## Coding Style
 
 - Code should match the style of the file it's in.
