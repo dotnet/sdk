@@ -151,7 +151,7 @@
 AGENTS.md @mthalman @lbussell
 SKILL.md @mthalman @lbussell
 
-# dotnetup
+# Area-dotnetup
 /.github/ISSUE_TEMPLATE/30_dotnetup.yml @dotnet/dotnetup
 /.vsts-dnup-ci.yml @dotnet/dotnetup
 /.vsts-dnup-pr.yml @dotnet/dotnetup

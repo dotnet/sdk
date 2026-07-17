@@ -20,6 +20,8 @@ on:
       run: sleep 120
   roles: all
 post-steps:
+  # missing_data and report_incomplete should make triage visibly fail, but the
+  # safe-output settings below intentionally suppress follow-up issue creation.
   - name: Fail incomplete triage
     if: always()
     env:
@@ -35,7 +37,9 @@ post-steps:
         process.exit(1);
       }
       NODE
-engine: copilot
+engine:
+  id: copilot
+  model: gpt-5.6-luna?effort=high
 permissions:
   contents: read
   issues: read
@@ -154,20 +158,19 @@ For an incomplete or nearly empty bug report:
 
 Choose only labels returned by the repository label list. Never invent a label.
 
-1. Apply one primary `Area-*` label. Add no more than two additional `Area-*` labels, and only when the issue genuinely spans separate components. `CODEOWNERS` section headings (`# Area-<Name>`) are the source of truth for area names. Dotnetup is the sole exception: apply its existing `dotnetup` special label and route it through the `# dotnetup` CODEOWNERS section without inventing an `Area-dotnetup` label.
+1. Apply exactly one `Area-*` label. `CODEOWNERS` section headings (`# Area-<Name>`) are the source of truth for area names.
 2. Apply one type label when clear: `Bug`, `enhancement`, `Feature Request`, `question`, `documentation`, or `Task`.
 3. Apply any clearly justified special labels:
 
-   | Label | Apply when |
-   |---|---|
-  | `cookie` | Apply generously to concrete, bounded, low-risk work with a clear outcome and no apparent product or architectural decision. This includes localized bug fixes, documentation, test, build-target, or configuration fixes. For issues that can be fixed with a minimal subset of changes: good first issues; minor performance improvements; well-defined refactors; or technical debt fixes are also good candidates. Apply it alongside the normal area and type labels; when uncertain whether a complete issue is a cookie, apply it. |
-   | `Test Debt` | Test gaps, disabled tests, flaky tests, or testing debt |
-   | `performance` | Speed, memory, startup, or throughput is central |
-    | `dotnetup` | The dotnetup issues are routed via release/dnup code |
-   | `breaking-change` | Existing users would experience a behavioral break |
-   | `good first issue`, `help wanted` | Suitable for new or community contributors |
-   | `backport` | Requests a servicing/release-branch port |
-   | `needs team triage` | A complex request that involves product or behavioral design decisions that likely require team conversation and alignment |
+  Label | Apply when
+  ---|---
+  `cookie` | Apply generously to concrete, bounded, low-risk work with a clear outcome and no apparent product or architectural decision. This includes localized bug fixes, documentation, test, build-target, or configuration fixes. For issues that can be fixed with a minimal subset of changes: good first issues; minor performance improvements; well-defined refactors; or technical debt fixes are also good candidates. Apply it alongside the normal area and type labels; when uncertain whether a complete issue is a cookie, apply it.
+  `Test Debt` | Test gaps, disabled tests, flaky tests, or testing debt
+  `performance` | Speed, memory, startup, or throughput is central
+  `breaking-change` | Existing users would experience a behavioral break
+  `good first issue`, `help wanted` | Suitable for new or community contributors
+  `backport` | Requests a servicing/release-branch port
+  `needs team triage` | A complex request that involves product or behavioral design decisions that likely require team conversation and alignment
 
 Recognize standard SDK area groups and concepts: project commands; MSBuild project files and targets; NuGet; workloads; templates; tools; trimming, Native AOT, single-file, and ReadyToRun publishing; source-build/VMR; Static Web Assets; Blazor; WebAssembly; MAUI; vs-test; ASP .NET Core; Infrastructure; dotnet format; .NET Tools; Roslyn; VS (Visual Studio); ClickOnce; dotnet test; dotnet watch; containers; SC.L (system command line library); .NET templates or dotnet new; and Razor.
 
@@ -199,9 +202,9 @@ Only record a match when its classification is strongly supported. This workflow
 
 ### 5. Resolve owners and route from CODEOWNERS
 
-All complete issues reaching this step have selected `Area-*` labels and proceed through ownership routing.
+All complete issues reaching this step have selected one `Area-*` label and proceed through ownership routing.
 
-Read the repository's root `CODEOWNERS` file to look up owners for each selected `Area-*` label. When the `dotnetup` special label is selected, also look up its owners in the `# dotnetup` section using the same section-boundary and owner-collection rules.
+Read the repository's root `CODEOWNERS` file to look up owners for the selected `Area-*` label.
 
 #### CODEOWNERS matching rules
 
@@ -225,23 +228,22 @@ Owners come in two forms:
 
 The following snapshot was retrieved from the `dotnet` GitHub organization on 2026-07-14. It includes members inherited through child teams. Use these usernames only to expand a team handle found in a matched CODEOWNERS section into individual assignment candidates. Retain the original team handle for the assignment output.
 
-
-| CODEOWNERS team | Expanded individual members, including child teams |
-|---|---|
-| `@dotnet/dotnet-cli` | `@dsplaisted`, `@baronfel`, `@richlander`, `@joeloff`, `@MichaelSimons`, `@marcpopMSFT`, `@wtgodbe`, `@mthalman`, `@MiYanni`, `@nagilson`, `@lbussell`, `@vlada-shubina` |
-| `@dotnet/dotnetup` | `@dsplaisted`, `@marcpopMSFT`, `@nagilson` |
-| `@dotnet/aspnet-blazor-eng` | `@lewing`, `@halter73`, `@pavelsavara`, `@akoeplinger`, `@radekdoulik`, `@javiercn`, `@maraf`, `@MackinnonBuck`, `@ilonatommy`, `@oroztocil`, `@dariatiurina` |
-| `@dotnet/razor-tooling` | `@DustinCampbell`, `@davidwengier`, `@chsienki`, `@webreidi` |
-| `@dotnet/nuget-team` | `@nkolev92`, `@zivkan`, `@jebriede`, `@dtivel`, `@jeffkl`, `@martinrrm`, `@donnie-msft`, `@kartheekp-ms`, `@aortiz-msft`, `@Nigusu-Allehu` |
-| `@dotnet/fsharp` | `@0101`, `@brettfo`, `@vzarytovskii`, `@dsyme`, `@abonie`, `@T-Gro` |
-| `@dotnet/dotnet-testing-admin` | `@JanKrivanek`, `@nohwnd`, `@cathysull`, `@Evangelink`, `@azat-msft` |
-| `@dotnet/net-sdk-workload-contributors` | `@lewing`, `@dsplaisted`, `@rolfbjarne`, `@Redth`, `@steveisok`, `@baronfel`, `@jonathanpeppers`, `@joeloff`, `@marcpopMSFT`, `@MiYanni`, `@nagilson` |
-| `@dotnet/templating-engine-maintainers` | `@joeloff`, `@marcpopMSFT`, `@MiYanni` |
-| `@dotnet/illink` | `@marek-safar`, `@agocke`, `@sbomer`, `@vitek-karas`, `@jtschuster` |
-| `@dotnet/roslyn-ide` | `@peterwald`, `@jaredpar`, `@jasonmalinowski`, `@JoeRobich`, `@dibarbet`, `@AbhitejJohn`, `@akhera99`, `@webreidi`, `@mwiemer-microsoft` |
-| `@dotnet/area-infrastructure-libraries` | `@jeffhandley` |
-| `@dotnet/sdk-container-builds-maintainers` | `@baronfel`, `@mthalman`, `@MiYanni`, `@rbhanda`, `@lbussell` |
-| `@dotnet/dotnet-analyzers` | `@jaredpar`, `@krwq`, `@genlu`, `@jeffhandley`, `@tannergooding`, `@bartonjs`, `@Evangelink`, `@jozkee` |
+CODEOWNERS team | Expanded individual members, including child teams
+---|---
+`@dotnet/dotnet-cli` | `@dsplaisted`, `@baronfel`, `@richlander`, `@joeloff`, `@MichaelSimons`, `@marcpopMSFT`, `@wtgodbe`, `@mthalman`, `@MiYanni`, `@nagilson`, `@lbussell`, `@vlada-shubina`
+`@dotnet/dotnetup` | `@dsplaisted`, `@marcpopMSFT`, `@nagilson`
+`@dotnet/aspnet-blazor-eng` | `@lewing`, `@halter73`, `@pavelsavara`, `@akoeplinger`, `@radekdoulik`, `@javiercn`, `@maraf`, `@MackinnonBuck`, `@ilonatommy`, `@oroztocil`, `@dariatiurina`
+`@dotnet/razor-tooling` | `@DustinCampbell`, `@davidwengier`, `@chsienki`, `@webreidi`
+`@dotnet/nuget-team` | `@nkolev92`, `@zivkan`, `@jebriede`, `@dtivel`, `@jeffkl`, `@martinrrm`, `@donnie-msft`, `@kartheekp-ms`, `@aortiz-msft`, `@Nigusu-Allehu`
+`@dotnet/fsharp` | `@0101`, `@brettfo`, `@vzarytovskii`, `@dsyme`, `@abonie`, `@T-Gro`
+`@dotnet/dotnet-testing-admin` | `@JanKrivanek`, `@nohwnd`, `@cathysull`, `@Evangelink`, `@azat-msft`
+`@dotnet/net-sdk-workload-contributors` | `@lewing`, `@dsplaisted`, `@rolfbjarne`, `@Redth`, `@steveisok`, `@baronfel`, `@jonathanpeppers`, `@joeloff`, `@marcpopMSFT`, `@MiYanni`, `@nagilson`
+`@dotnet/templating-engine-maintainers` | `@joeloff`, `@marcpopMSFT`, `@MiYanni`
+`@dotnet/illink` | `@marek-safar`, `@agocke`, `@sbomer`, `@vitek-karas`, `@jtschuster`
+`@dotnet/roslyn-ide` | `@peterwald`, `@jaredpar`, `@jasonmalinowski`, `@JoeRobich`, `@dibarbet`, `@AbhitejJohn`, `@akhera99`, `@webreidi`, `@mwiemer-microsoft`
+`@dotnet/area-infrastructure-libraries` | `@jeffhandley`
+`@dotnet/sdk-container-builds-maintainers` | `@baronfel`, `@mthalman`, `@MiYanni`, `@rbhanda`, `@lbussell`
+`@dotnet/dotnet-analyzers` | `@jaredpar`, `@krwq`, `@genlu`, `@jeffhandley`, `@tannergooding`, `@bartonjs`, `@Evangelink`, `@jozkee`
 
 **Matching uses bottom-to-top scanning with first-match-wins semantics:**
 
