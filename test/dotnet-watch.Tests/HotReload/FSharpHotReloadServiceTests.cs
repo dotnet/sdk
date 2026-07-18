@@ -196,6 +196,42 @@ public class FSharpHotReloadServiceTests
     }
 
     [TestMethod]
+    public async Task TryEmitUpdatesAsync_BridgeUnavailableReportsReferencedProjectForRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests-missing-bridge");
+        var appPath = Path.Combine(root, "App", "App.fsproj");
+        var libPath = Path.Combine(root, "Lib", "Lib.fsproj");
+        var libId = new ProjectInstanceId(libPath, "net10.0");
+        var libInfo = new FSharpProjectInfo(
+            libId,
+            libPath,
+            "net10.0",
+            Path.Combine(root, "Lib", "bin", "Debug", "net10.0", "Lib.dll"),
+            Path.Combine(root, "missing", "FSharp.Compiler.Service.dll"),
+            []);
+
+        var service = new FSharpHotReloadService(NullLogger.Instance);
+        typeof(FSharpHotReloadService).GetField("_projects", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(service, ImmutableDictionary<ProjectInstanceId, FSharpProjectInfo>.Empty.Add(libId, libInfo));
+
+        var changedFile = new ChangedFile(
+            new FileItem
+            {
+                FilePath = Path.Combine(root, "Lib", "Lib.fs"),
+                ContainingProjectPaths = [libPath],
+            },
+            ChangeKind.Update);
+        var runningProjects = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty.Add(appPath, []);
+
+        var result = await service.TryEmitUpdatesAsync([changedFile], runningProjects, CancellationToken.None);
+
+        Assert.AreEqual(FSharpManagedUpdateStatus.RestartRequired, result.Status);
+        Assert.IsTrue(result.Updates.IsEmpty);
+        Assert.HasCount(1, result.Issues);
+        Assert.AreEqual(libPath, result.Issues[0].ProjectPath);
+    }
+
+    [TestMethod]
     [DataRow("Program.fs", true)]
     [DataRow("payload.txt", true)]
     [DataRow("Project.fsproj", false)]

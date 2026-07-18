@@ -699,9 +699,11 @@ internal sealed class FSharpHotReloadService
     {
         // The session object emits per-project deltas, so an edit to an F# library that is
         // loaded into a running process (but is not itself a running project) is matched to the
-        // library project itself. The legacy single-session surface can only target the running
-        // project, so it keeps the running-projects-only matching.
-        var includeNonRunningProjects = _host?.SupportsSessionObject == true;
+        // library project itself. A missing host must also report the library so the fallback
+        // path can rebuild it and restart its running ancestors. The legacy single-session
+        // surface can only target the running project, so it keeps running-projects-only
+        // matching once that surface has been identified successfully.
+        var includeNonRunningProjects = _host == null || _host.SupportsSessionObject;
 
         var matchedProjects = ImmutableArray.CreateBuilder<ProjectInstanceId>();
 
