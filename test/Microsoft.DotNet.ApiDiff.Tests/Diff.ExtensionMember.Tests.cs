@@ -562,4 +562,51 @@ public class DiffExtensionMemberTests : DiffBaseTests
                     }
                 }
               """);
+
+    [TestMethod]
+    public Task SettableExtensionPropertyAndIndexerAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension(int[] values)
+                      {
+                          public int First
+                          {
+                              get => values[0];
+                              set => values[0] = value;
+                          }
+
+                          public int this[int index]
+                          {
+                              get => values[index];
+                              set => values[index] = value;
+                          }
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension(int[] values)
+              +         {
+              +             public int First { get; set; }
+              +             public int this[int index] { get { } set { } }
+              +         }
+                    }
+                }
+              """,
+        usePreviewLanguageVersion: true);
 }

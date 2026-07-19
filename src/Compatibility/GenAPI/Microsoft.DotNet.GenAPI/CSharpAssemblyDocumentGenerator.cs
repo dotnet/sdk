@@ -341,18 +341,23 @@ public sealed class CSharpAssemblyDocumentGenerator
     {
         IMethodSymbol? accessor = isSetter ? extensionProperty.SetMethod : extensionProperty.GetMethod;
         int receiverParameterCount = extensionProperty.IsStatic ? 0 : 1;
+        int indexerParameterCount = extensionProperty.Parameters.Length;
         int valueParameterCount = isSetter ? 1 : 0;
         if (accessor is null ||
             implementation.Name != accessor.Name ||
             implementation.Arity != extensionBlock.Arity ||
-            implementation.Parameters.Length != receiverParameterCount + valueParameterCount)
+            implementation.Parameters.Length != receiverParameterCount + indexerParameterCount + valueParameterCount)
         {
             return false;
         }
 
-        return isSetter
+        bool hasMatchingIndexerParameters = extensionProperty.Parameters
+            .Zip(implementation.Parameters.Skip(receiverParameterCount))
+            .All(static parameters => HasMatchingType(parameters.First.Type, parameters.Second.Type));
+
+        return hasMatchingIndexerParameters && (isSetter
             ? implementation.ReturnsVoid && HasMatchingType(implementation.Parameters[^1].Type, extensionProperty.Type)
-            : HasMatchingType(implementation.ReturnType, extensionProperty.Type);
+            : HasMatchingType(implementation.ReturnType, extensionProperty.Type));
     }
 
     private static bool HasMatchingType(ITypeSymbol first, ITypeSymbol second) =>
