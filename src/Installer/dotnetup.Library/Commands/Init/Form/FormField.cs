@@ -15,7 +15,9 @@ internal sealed class FormField
         string label,
         IReadOnlyList<FieldChoice> choices,
         int defaultIndex,
+        string? description = null,
         bool inlineHelp = false,
+        bool summaryShowsDescription = false,
         Func<bool>? isVisible = null)
     {
         if (choices.Count == 0)
@@ -32,7 +34,9 @@ internal sealed class FormField
         Choices = choices;
         DefaultIndex = defaultIndex;
         SelectedIndex = defaultIndex;
+        Description = description;
         InlineHelp = inlineHelp;
+        SummaryShowsDescription = summaryShowsDescription;
         _isVisible = isVisible;
     }
 
@@ -45,6 +49,19 @@ internal sealed class FormField
 
     /// <summary>The field label shown to the left of the value (e.g. "SDK Channel").</summary>
     public string Label { get; }
+
+    /// <summary>
+    /// An optional one-line explanation of what the field means, shown while the field is focused
+    /// (e.g. explaining what a channel is). Null when the field needs no extra explanation.
+    /// </summary>
+    public string? Description { get; }
+
+    /// <summary>
+    /// When true, the summary (browse) line shows the field <see cref="Description"/> (the concept)
+    /// rather than the selected option's help — used for fields whose value is self-explanatory but
+    /// whose concept is not (e.g. SDK Channel).
+    /// </summary>
+    public bool SummaryShowsDescription { get; }
 
     /// <summary>
     /// When true, each choice's (short) help text is rendered on the same line as the choice in the

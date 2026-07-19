@@ -37,12 +37,15 @@ internal static class InteractiveFormSelector
     // Fallback console height used when the real height is unavailable (redirected output).
     private const int FallbackWindowHeight = 24;
 
-    // Approximate fixed rows consumed by the header (banner + subtitle + question + spacing) and
-    // footer (Accept row + spacing + legend), used to budget the editing choice window's height.
-    private const int HeaderFooterOverhead = 10;
+    // Approximate fixed rows consumed by the header (banner panel + subtitle + the install-location
+    // line + spacing).
+    private const int HeaderRows = 8;
 
-    // Rows reserved within an open field for its label row plus the selected choice's derived info
-    // and the scroll indicators, so those never push the highlighted choice out of view.
+    // Fixed rows consumed by the footer (the question line + Accept row + spacing + legend).
+    private const int FooterRows = 4;
+
+    // Rows reserved within an open field for the up/down scroll indicators plus its label row and
+    // trailing blank, so those never push the highlighted choice out of view.
     private const int OpenFieldReservedRows = 4;
 
     // Smallest choice window we will ever show, even in a very short terminal.
@@ -196,21 +199,32 @@ internal static class InteractiveFormSelector
         ThemeColors theme = DotnetupTheme.Current;
         IReadOnlyList<FormField> fields = state.VisibleFields;
         int labelWidth = MaxLabelWidth(fields);
+        int windowHeight = SafeWindowHeight();
+
+        // Prefer the richer view — every field showing its help and derived info — whenever the
+        // console is tall enough for it. Fall back to detail for only the focused field (and scroll
+        // windows while editing) when vertical space is tight (e.g. a small embedded terminal).
+        bool showAllDetail = EstimateFullDetailHeight(fields) <= windowHeight;
 
         var rows = new List<IRenderable>
         {
-            DotnetBotBanner.BuildPanel(),
-            Text.Empty,
             new Markup($"[bold {theme.Brand}]{model.Subtitle.EscapeMarkup()}[/]"),
-            new Markup($"[white]{model.Question.EscapeMarkup()}[/]"),
+            Text.Empty,
+            new Markup(string.Format(
+                CultureInfo.InvariantCulture,
+                "[{0}]dotnetup will install .NET SDKs and runtimes in [/][{1}]{2}[/][{0}].[/]",
+                theme.Dim,
+                theme.Accent,
+                model.InstallPath.EscapeMarkup())),
             Text.Empty,
         };
 
         for (int i = 0; i < fields.Count; i++)
         {
-            AppendField(rows, model, state, fields[i], i, fields.Count, labelWidth, showArrow, theme);
+            AppendField(rows, model, state, fields[i], i, showAllDetail, windowHeight, labelWidth, showArrow, theme);
         }
 
+        rows.Add(new Markup($"[white]{model.Question.EscapeMarkup()}[/]"));
         rows.Add(BuildAcceptRow(state.IsAcceptFocused, showArrow, theme));
         rows.Add(Text.Empty);
         rows.Add(BuildLegend(state, theme));
@@ -218,36 +232,74 @@ internal static class InteractiveFormSelector
         return new Rows(rows);
     }
 
-    // Appends a field's row plus, only for the focused field, its detail. A collapsed (non-focused)
-    // field shows just "label  value" so the form stays short. The field being edited expands to a
-    // windowed choice list instead of the selected value's detail.
+    // Estimates the row count of the browse view when every field shows its summary detail, used to
+    // decide whether the console is tall enough for the rich layout.
+    private static int EstimateFullDetailHeight(IReadOnlyList<FormField> fields)
+    {
+        int height = HeaderRows + FooterRows;
+        foreach (FormField field in fields)
+        {
+            height += BrowseFieldRows(field);
+        }
+
+        return height;
+    }
+
+    // Rows a field occupies in the summary (browse) view: its label+value row, its one browse line
+    // (the field description or the selected option's help), and a trailing blank.
+    private static int BrowseFieldRows(FormField field)
+    {
+        string? browseLine = field.SummaryShowsDescription ? field.Description : field.Selected.HelperText;
+        int rows = 1;
+        if (!string.IsNullOrEmpty(browseLine))
+        {
+            rows += 1;
+        }
+
+        return rows + 1;
+    }
+
+    // Appends a field's row plus its detail. At the summary level a field shows its broad
+    // description and a one-line selection summary; the full breakdown appears only when the field
+    // is expanded. In the rich layout every field shows its summary detail; in the compact layout
+    // only the focused field does, so the form fits a short terminal.
     private static void AppendField(
         List<IRenderable> rows,
         InitFormModel model,
         FormSelectorState state,
         FormField field,
         int index,
-        int visibleFieldCount,
+        bool showAllDetail,
+        int windowHeight,
         int labelWidth,
         bool showArrow,
         ThemeColors theme)
     {
         bool focused = state.FocusedRow == index;
         bool editing = focused && state.Mode != FormMode.Form;
+        bool showFieldInfo = focused || showAllDetail;
 
         rows.Add(BuildFieldRow(field, labelWidth, focused, editing, showArrow, theme));
 
         if (editing)
         {
-            AppendChoiceWindow(rows, model, field, state, visibleFieldCount, showArrow, theme);
+            // Broad explanation of the field as context above its choices.
+            if (field.Description is not null)
+            {
+                rows.Add(Indent(HelpMarkup(field.Description, theme), FieldIndent));
+            }
+
+            AppendChoiceWindow(rows, model, state, field, showAllDetail, windowHeight, showArrow, theme);
         }
-        else if (focused)
+        else if (showFieldInfo)
         {
-            // Only the focused field shows its selected value's help and derived info; collapsed
-            // fields stay a single line so the whole form fits in a short terminal.
-            FieldDetail detail = model.BuildDetail(field, field.SelectedIndex);
-            rows.Add(Indent(HelpMarkup(detail.HelperText, theme), FieldIndent));
-            AppendDerived(rows, detail.Lines, FieldIndent, theme);
+            // Summary line: the field description for concept fields (e.g. SDK Channel), otherwise
+            // the selected option's own help — the same text shown for that option when expanded.
+            string? browseLine = field.SummaryShowsDescription ? field.Description : field.Selected.HelperText;
+            if (!string.IsNullOrEmpty(browseLine))
+            {
+                rows.Add(Indent(HelpMarkup(browseLine, theme), FieldIndent));
+            }
         }
 
         rows.Add(Text.Empty);
@@ -259,14 +311,15 @@ internal static class InteractiveFormSelector
     private static void AppendChoiceWindow(
         List<IRenderable> rows,
         InitFormModel model,
-        FormField field,
         FormSelectorState state,
-        int visibleFieldCount,
+        FormField field,
+        bool showAllDetail,
+        int windowHeight,
         bool showArrow,
         ThemeColors theme)
     {
         int count = field.Choices.Count;
-        int windowSize = ComputeChoiceWindow(field, visibleFieldCount);
+        int windowSize = ComputeChoiceWindow(model, state, field, showAllDetail, windowHeight);
         int offset = ComputeWindowOffset(state.EditChoiceIndex, count, windowSize);
         int alignWidth = field.InlineHelp ? InlineHelpColumnWidth(field) : 0;
 
@@ -299,18 +352,44 @@ internal static class InteractiveFormSelector
     }
 
     // How many choices to show at once while editing, budgeted from the console height so the open
-    // field (plus header, footer, and the collapsed other fields) fits without overflowing.
-    private static int ComputeChoiceWindow(FormField field, int visibleFieldCount)
+    // field (plus header, footer, the selected choice's derived info, and the other fields — which
+    // may themselves be showing detail in the rich layout) fits without overflowing.
+    private static int ComputeChoiceWindow(InitFormModel model, FormSelectorState state, FormField editedField, bool showAllDetail, int windowHeight)
     {
-        int height = SafeWindowHeight();
-        int collapsedOtherFields = Math.Max(0, visibleFieldCount - 1);
-        int budget = height - HeaderFooterOverhead - collapsedOtherFields - OpenFieldReservedRows;
+        int overhead = HeaderRows + FooterRows + OpenFieldReservedRows;
+
+        // The edited field's description (shown while focused) also consumes a row.
+        if (editedField.Description is not null)
+        {
+            overhead += 1;
+        }
+
+        // The selected choice's derived info renders inside the window region.
+        overhead += model.BuildDetail(editedField, state.EditChoiceIndex).Lines.Count;
+
+        // The other visible fields stay collapsed to a single line, unless the rich layout is
+        // showing their summary detail too.
+        foreach (FormField other in state.VisibleFields)
+        {
+            if (ReferenceEquals(other, editedField))
+            {
+                continue;
+            }
+
+            overhead += showAllDetail ? BrowseFieldRows(other) : 2;
+        }
+
+        int budget = windowHeight - overhead;
 
         // A non-inline choice occupies two rows (title + help); an inline-help choice occupies one.
-        int rowsPerChoice = field.InlineHelp ? 1 : 2;
+        int rowsPerChoice = editedField.InlineHelp ? 1 : 2;
         int maxChoices = budget / rowsPerChoice;
 
-        return Math.Clamp(maxChoices, MinChoiceWindow, field.Choices.Count);
+        // Never fewer than MinChoiceWindow choices, but also never more than the field actually has
+        // (which can itself be fewer than MinChoiceWindow, e.g. a two-choice yes/no field).
+        int count = editedField.Choices.Count;
+        int lower = Math.Min(MinChoiceWindow, count);
+        return Math.Clamp(maxChoices, lower, count);
     }
 
     // Keeps the highlighted choice within the window, clamped to the list bounds.
@@ -344,7 +423,8 @@ internal static class InteractiveFormSelector
     {
         string arrow = focused && showArrow ? "> " : "  ";
         string label = field.Label.PadRight(labelWidth);
-        string labelStyle = focused ? "white bold" : "white";
+        // Green marks the focused row (consistent with the Accept action and the highlighted choice).
+        string labelStyle = focused ? $"{theme.Success} bold" : "white";
 
         if (editing)
         {
@@ -356,6 +436,8 @@ internal static class InteractiveFormSelector
                 label.EscapeMarkup()));
         }
 
+        // The current value is shown in the accent color, or yellow when changed from the default so
+        // it's easy to spot what you've adjusted.
         string valueColor = field.IsChangedFromDefault ? theme.Warning : theme.Accent;
         return new Markup(string.Format(
             CultureInfo.InvariantCulture,
@@ -422,7 +504,8 @@ internal static class InteractiveFormSelector
     {
         FieldChoice choice = field.Choices[index];
         string suffix = index == field.DefaultIndex ? DefaultSuffix : string.Empty;
-        string titleStyle = selected ? $"{theme.Accent} bold" : "white";
+        // Green marks the highlighted choice, consistent with the focused row and the Accept action.
+        string titleStyle = selected ? $"{theme.Success} bold" : "white";
         string arrow = selected && showArrow ? "> " : "  ";
 
         string tail = string.Empty;

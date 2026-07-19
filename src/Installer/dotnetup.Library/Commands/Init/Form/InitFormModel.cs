@@ -4,6 +4,7 @@
 using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 
@@ -37,6 +38,7 @@ internal sealed class InitFormModel
     private readonly IReadOnlyList<MigrationWorkflow.MigrationSelection> _migrations;
 
     private readonly string _installPath;
+    private readonly IReadOnlyList<string> _profilePaths;
 
     private InitFormModel(
         IReadOnlyList<FormField> fields,
@@ -48,7 +50,8 @@ internal sealed class InitFormModel
         IReadOnlyList<DotnetAccessMode> accessModes,
         FormField? migrateField,
         IReadOnlyList<MigrationWorkflow.MigrationSelection> migrations,
-        string installPath)
+        string installPath,
+        IReadOnlyList<string> profilePaths)
     {
         Fields = fields;
         _channelField = channelField;
@@ -60,6 +63,7 @@ internal sealed class InitFormModel
         _migrateField = migrateField;
         _migrations = migrations;
         _installPath = installPath;
+        _profilePaths = profilePaths;
     }
 
     /// <summary>Short line under the banner.</summary>
@@ -95,6 +99,9 @@ internal sealed class InitFormModel
     /// <summary>Whether the user chose to migrate existing system installs.</summary>
     public bool MigrateSelected() => _migrateField is not null && _migrateField.SelectedIndex == YesIndex;
 
+    /// <summary>Where dotnetup installs .NET; shown once at the top of the form.</summary>
+    public string InstallPath => _installPath;
+
     /// <summary>
     /// Computes the detail (help text + derived info lines) for the given field's value at
     /// <paramref name="choiceIndex"/>. Used both while browsing (the selected value) and while
@@ -114,7 +121,7 @@ internal sealed class InitFormModel
         }
         else if (ReferenceEquals(field, _accessModeField))
         {
-            lines.Add(new DetailLine("Installs to:", _installPath));
+            lines.AddRange(BuildAccessModeLines(_accessModes[choiceIndex]));
         }
         else if (_migrateField is not null && ReferenceEquals(field, _migrateField) && choiceIndex == YesIndex)
         {
@@ -122,6 +129,54 @@ internal sealed class InitFormModel
         }
 
         return new FieldDetail(helper, lines);
+    }
+
+    // The concrete artifacts an access mode produces (the shell profile it edits, the env vars and
+    // system-PATH changes it makes). Prose is left to the option's help text; these are just facts,
+    // shown beneath the highlighted option when the field is expanded.
+    private List<DetailLine> BuildAccessModeLines(DotnetAccessMode mode)
+    {
+        switch (mode)
+        {
+            case DotnetAccessMode.None:
+                return [];
+
+            case DotnetAccessMode.Shell:
+            {
+                var lines = new List<DetailLine>
+                {
+                    new("Only applications launched from the shell use dotnetup's installs."),
+                };
+                AddProfileLines(lines);
+                return lines;
+            }
+
+            case DotnetAccessMode.Everywhere:
+            {
+                var lines = new List<DetailLine>();
+                AddProfileLines(lines);
+                lines.Add(new DetailLine("Sets user PATH and DOTNET_ROOT."));
+                lines.Add(new DetailLine("Removes Program Files\\dotnet from the system PATH."));
+                return lines;
+            }
+
+            default:
+                return [];
+        }
+    }
+
+    private void AddProfileLines(List<DetailLine> lines)
+    {
+        if (_profilePaths.Count == 0)
+        {
+            lines.Add(new DetailLine("Edits your shell profile."));
+            return;
+        }
+
+        foreach (string profilePath in _profilePaths)
+        {
+            lines.Add(new DetailLine("Edits:", profilePath));
+        }
     }
 
     private List<DetailLine> BuildMigrationLines()
@@ -150,9 +205,10 @@ internal sealed class InitFormModel
     /// <summary>
     /// Builds the form from the resolved <paramref name="plan"/>: an SDK channel field, a single
     /// access-mode field (its choices vary by platform), and — only when there are candidates — a
-    /// migrate field.
+    /// migrate field. The <paramref name="shellProvider"/> supplies the profile file(s) shown in the
+    /// access-mode detail; it may be null when no supported shell is detected.
     /// </summary>
-    public static InitFormModel Create(WalkthroughPlan plan)
+    public static InitFormModel Create(WalkthroughPlan plan, IEnvShellProvider? shellProvider)
     {
         (FormField channelField, IReadOnlyList<string?> channelTokens, int globalJsonChannelIndex) =
             BuildChannelField(plan.ChannelDisplay);
@@ -178,7 +234,8 @@ internal sealed class InitFormModel
             accessModes,
             migrateField,
             plan.Migrations,
-            plan.InstallRoot.Path);
+            plan.InstallRoot.Path,
+            shellProvider?.GetProfilePaths() ?? []);
     }
 
     private static (FormField Field, IReadOnlyList<string?> Tokens, int GlobalJsonIndex) BuildChannelField(
@@ -207,13 +264,19 @@ internal sealed class InitFormModel
         tokens.Add(ChannelVersionResolver.DailyChannel);
         choices.Add(new FieldChoice(InitWorkflows.NoneChannel, "Pick what to install later"));
         tokens.Add(InitWorkflows.NoneChannel);
-        choices.Add(new FieldChoice("<other>", "Type your own, e.g. 8.0.4xx", IsCustomInput: true));
+        choices.Add(new FieldChoice("<other>", "Type your own, e.g. 10.0.1xx", IsCustomInput: true));
         tokens.Add(null);
 
         // The recommended default is listed first (the global.json channel when present, else "latest").
         int defaultIndex = 0;
 
-        var field = new FormField("SDK Channel", choices, defaultIndex, inlineHelp: true);
+        var field = new FormField(
+            "SDK Channel",
+            choices,
+            defaultIndex,
+            description: "Determines which version of .NET to install and how it stays updated \u2014 'latest', 'lts', 'preview', 'daily', or a version like '10.0'.",
+            inlineHelp: true,
+            summaryShowsDescription: true);
         return (field, tokens, globalJsonIndex);
     }
 
@@ -224,29 +287,40 @@ internal sealed class InitFormModel
         var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
         var choices = new List<FieldChoice>
         {
-            new(DotnetAccessModeDisplay.GetName(DotnetAccessMode.None), Strings.PathDescriptionNone),
-            new(DotnetAccessModeDisplay.GetName(DotnetAccessMode.Shell), isWindows ? Strings.PathDescriptionShell : Strings.PathDescriptionShellBase),
+            new(AccessModeTitle(DotnetAccessMode.None), "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected."),
+            new(AccessModeTitle(DotnetAccessMode.Shell), "Configure the current shell profile to use installs managed by dotnetup."),
         };
 
         if (isWindows)
         {
             modes.Add(DotnetAccessMode.Everywhere);
-            choices.Add(new FieldChoice(DotnetAccessModeDisplay.GetName(DotnetAccessMode.Everywhere), Strings.PathDescriptionEverywhere));
+            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), "Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation)."));
         }
 
         int defaultIndex = Math.Max(0, modes.IndexOf(recommended));
-        var field = new FormField("Access mode", choices, defaultIndex);
+        var field = new FormField(
+            "Environment setup",
+            choices,
+            defaultIndex,
+            description: "Controls where the dotnet you install is available.");
         return (field, modes);
     }
+
+    // The access-mode value shown to the user, capitalized (None / Shell / Everywhere), matching the
+    // 'dotnetup env' vocabulary.
+    private static string AccessModeTitle(DotnetAccessMode mode) => mode.ToString();
 
     private static FormField BuildMigrateField()
     {
         var choices = new List<FieldChoice>
         {
-            new("Yes", "Bring your existing system-wide SDKs and runtimes under dotnetup's management so they are updated and cleaned up together."),
-            new("No", "Leave existing system-wide .NET installs untouched. dotnetup manages only what it installs."),
+            new("Yes", "Install the SDK and runtime versions you already have system-wide, so those versions stay available."),
+            new("No", "Don't install any additional .NET SDKs or runtimes."),
         };
 
-        return new FormField("Migrate system installs", choices, defaultIndex: YesIndex);
+        return new FormField(
+            "Migrate system installs",
+            choices,
+            defaultIndex: YesIndex);
     }
 }

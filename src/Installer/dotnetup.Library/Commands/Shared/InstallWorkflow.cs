@@ -42,7 +42,8 @@ internal class InstallWorkflow
     /// </summary>
     public void Execute(MinimalInstallSpec[] componentSpecs)
     {
-        bool runOnboarding = ShouldRunFirstUseOnboarding(_command.Interactive, _command.InstallPath, _command.MigrateFromSystem);
+        bool runOnboarding = ShouldRunFirstUseOnboarding(_command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
+            && !InitWorkflows.HasLocalSdkPathGlobalJson();
         bool promptForStarterChannel = ShouldPromptForStarterChannel(runOnboarding, componentSpecs);
         List<ResolvedInstallRequest> requests;
 

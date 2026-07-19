@@ -47,12 +47,26 @@ internal class InitWorkflows
         InstallCommand command,
         List<ResolvedInstallRequest>? requests = null)
     {
+        // When a nearby global.json pins a local SDK via "sdk.paths", dotnetup is not the
+        // environment owner for this directory: skip onboarding (the form, access-mode setup, and
+        // migration) so we don't point the environment at a repo-local path or migrate system
+        // installs. 'dotnetup install' can still install .NET to that path. Dry-run ignores
+        // global.json entirely so the form can be previewed from any directory.
+        if (!command.DryRun && HasLocalSdkPathGlobalJson())
+        {
+            SpectreAnsiConsole.MarkupLine(
+                $"[{DotnetupTheme.Current.Dim}]A global.json here specifies a local .NET SDK path, so dotnetup left your environment unchanged. Use 'dotnetup install' to install .NET to that path.[/]");
+            return [];
+        }
+
         ShowBanner();
 
         // Resolve the recommended setup. This is side-effect-free: it performs no version
         // resolution, writes no output, and does not throw on an unresolvable channel, so simply
-        // viewing the form or choosing to exit never triggers an install or a download.
-        WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughPlan(command, requests, _dotnetEnvironment);
+        // viewing the form or choosing to exit never triggers an install or a download. Dry-run
+        // ignores global.json so the preview reflects a normal directory.
+        WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughPlan(
+            command, requests, _dotnetEnvironment, ignoreGlobalJson: command.DryRun);
 
         DotnetAccessMode? previousAccessMode = DotnetupConfig.ReadAccessMode();
 
@@ -93,7 +107,7 @@ internal class InitWorkflows
                 Migrate: false);
         }
 
-        InitFormModel model = InitFormModel.Create(plan);
+        InitFormModel model = InitFormModel.Create(plan, command.ShellProvider ?? ShellDetection.GetCurrentShellProvider());
         if (!InteractiveFormSelector.Show(model))
         {
             return null;
@@ -156,9 +170,9 @@ internal class InitWorkflows
             : "No";
 
         PrintPreviewLine("SDK channel", channelText, accent);
-        PrintPreviewLine("Access mode", DotnetAccessModeDisplay.GetName(outcome.AccessMode), accent);
+        PrintPreviewLine("Environment setup", outcome.AccessMode.ToString(), accent);
         PrintPreviewLine("Migrate system installs", migrateText, accent);
-        PrintPreviewLine("Installs to", plan.InstallRoot.Path, accent);
+        PrintPreviewLine("Installs in", plan.InstallRoot.Path, accent);
     }
 
     private static void PrintPreviewLine(string label, string value, string accent)
@@ -575,6 +589,13 @@ internal class InitWorkflows
                 installPath.EscapeMarkup()));
         }
     }
+
+    /// <summary>
+    /// True when a nearby global.json pins a local SDK via "sdk.paths". In that case dotnetup is not
+    /// the environment owner for the directory, so first-run onboarding is skipped.
+    /// </summary>
+    internal static bool HasLocalSdkPathGlobalJson()
+        => GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory).SdkPath is not null;
 
     private static void ShowBanner()
     {

@@ -26,11 +26,16 @@ internal static class InitWorkflowDefaults
     public static WalkthroughPlan ResolveWalkthroughPlan(
         InstallCommand command,
         List<ResolvedInstallRequest>? preResolvedRequests,
-        IDotnetEnvironmentManager dotnetEnvironment)
+        IDotnetEnvironmentManager dotnetEnvironment,
+        bool ignoreGlobalJson = false)
     {
         IEnvShellProvider? shellProvider = command.ShellProvider ?? ShellDetection.GetCurrentShellProvider();
         DotnetAccessMode accessMode = GetDefaultAccessMode(shellProvider);
-        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        // Dry-run previews the form as it would look in an ordinary directory, so global.json (which
+        // could pin a local install path or channel) is ignored.
+        var globalJson = ignoreGlobalJson
+            ? new GlobalJsonInfo()
+            : GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
             command.InstallPath, globalJson);
 
