@@ -197,11 +197,18 @@ public class InitWorkflowTests : IDisposable
 
     // ── GetDefaultAccessMode ──
 
-    [TestMethod]
-    public void GetDefaultAccessMode_ReturnsShell_WhenShellProviderIsAvailable()
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
+    public void GetDefaultAccessMode_ReturnsShell_WhenShellProviderIsAvailableOnNonWindows()
     {
         InitWorkflowDefaults.GetDefaultAccessMode(new BashEnvShellProvider())
             .Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void GetDefaultAccessMode_ReturnsEverywhere_WhenShellProviderIsAvailableOnWindows()
+    {
+        InitWorkflowDefaults.GetDefaultAccessMode(new BashEnvShellProvider())
+            .Should().Be(DotnetAccessMode.Everywhere);
     }
 
     // The no-shell isolation fallback (which reads the SHELL environment variable) is covered

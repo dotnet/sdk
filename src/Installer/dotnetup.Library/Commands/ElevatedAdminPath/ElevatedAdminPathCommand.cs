@@ -10,11 +10,13 @@ internal class ElevatedAdminPathCommand : CommandBase
 {
     private readonly string _operation;
     private readonly string _outputFile;
+    private readonly string? _dotnetDir;
 
     public ElevatedAdminPathCommand(ParseResult result) : base(result)
     {
         _operation = result.GetValue(ElevatedAdminPathCommandParser.OperationArgument)!;
         _outputFile = result.GetValue(ElevatedAdminPathCommandParser.OutputFile)!;
+        _dotnetDir = result.GetValue(ElevatedAdminPathCommandParser.DotnetDir);
     }
 
     private void Log(string message)
@@ -50,8 +52,8 @@ internal class ElevatedAdminPathCommand : CommandBase
             // SetExitCode is the documented escape hatch for forwarding cases.
             SetExitCode(_operation.ToLowerInvariant() switch
             {
-                "removedotnet" => RemoveDotnet(),
-                "adddotnet" => AddDotnet(),
+                "insertdotnet" => InsertDotnet(_dotnetDir!),
+                "removedotnet" => RemoveDotnet(_dotnetDir!),
                 _ => throw new InvalidOperationException($"Unknown operation: {_operation}")
             });
         }
@@ -66,16 +68,16 @@ internal class ElevatedAdminPathCommand : CommandBase
     }
 
     [SupportedOSPlatform("windows")]
-    private static int RemoveDotnet()
+    private static int InsertDotnet(string dotnetDir)
     {
         using var pathHelper = new WindowsPathHelper();
-        return pathHelper.RemoveDotnetFromAdminPath();
+        return pathHelper.InsertDotnetIntoSystemPath(dotnetDir);
     }
 
     [SupportedOSPlatform("windows")]
-    private static int AddDotnet()
+    private static int RemoveDotnet(string dotnetDir)
     {
         using var pathHelper = new WindowsPathHelper();
-        return pathHelper.AddDotnetToAdminPath();
+        return pathHelper.RemoveDotnetFromSystemPath(dotnetDir);
     }
 }

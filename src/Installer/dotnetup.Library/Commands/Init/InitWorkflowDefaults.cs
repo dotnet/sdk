@@ -82,12 +82,22 @@ internal static class InitWorkflowDefaults
     }
 
     /// <summary>
-    /// Returns the recommended access mode without prompting: terminal-profile mode when a
-    /// supported shell is available, otherwise isolation mode. This is the value shown in the
-    /// summary and used by the "proceed with defaults" branch.
+    /// Returns the recommended access mode without prompting. On Windows this is everywhere mode;
+    /// otherwise it is terminal-profile mode when a supported shell is available, and isolation mode
+    /// when it is not. This is the value shown in the summary and used by the "proceed with
+    /// defaults" branch.
     /// </summary>
     public static DotnetAccessMode GetDefaultAccessMode(IEnvShellProvider? shellProvider = null)
     {
+        // On Windows, everywhere mode is the default: it inserts the user (dotnetup) dotnet
+        // directory into the system PATH ahead of any machine-wide install, so every application
+        // resolves the dotnetup .NET, not just shells that load the profile. This does not depend
+        // on shell detection, so it takes precedence over the no-shell fallback below.
+        if (OperatingSystem.IsWindows())
+        {
+            return DotnetAccessMode.Everywhere;
+        }
+
         if ((shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
         {
             return DotnetAccessMode.None;

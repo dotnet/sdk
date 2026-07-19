@@ -125,7 +125,12 @@ public class ParserTests
     public void Parser_ShouldParseElevatedAdminPathCommand()
     {
         // Arrange
-        var args = new[] { "elevatedadminpath", "removedotnet", @"C:\Users\User\AppData\Local\Temp\dotnetup_elevated\output.txt" };
+        var args = new[]
+        {
+            "elevatedadminpath", "removedotnet",
+            @"C:\Users\User\AppData\Local\Temp\dotnetup_elevated\output.txt",
+            "--dotnet-dir", @"C:\Users\User\AppData\Local\dotnet"
+        };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -133,6 +138,24 @@ public class ParserTests
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Parser_ElevatedAdminPathCommand_RequiresDotnetDir()
+    {
+        // Arrange - omit the required --dotnet-dir option
+        var args = new[]
+        {
+            "elevatedadminpath", "insertdotnet",
+            @"C:\Users\User\AppData\Local\Temp\dotnetup_elevated\output.txt"
+        };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
     }
 
     [TestMethod]

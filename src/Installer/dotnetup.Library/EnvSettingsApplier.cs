@@ -18,7 +18,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 ///   <item>The managed profile block wires dotnet iff <c>env ∈ {Shell, All}</c> and adds the
 ///     dotnetup directory iff <c>dotnetupOnPath</c>. When it would wire neither, the block is
 ///     removed.</item>
-///   <item>On Windows, <c>All</c> additionally writes user-scope env-var PATH/DOTNET_ROOT, and
+///   <item>On Windows, <c>All</c> additionally writes the user dotnet directory to the system
+///     PATH (ahead of the machine-wide install) and sets user-scope DOTNET_ROOT, and
 ///     <c>dotnetupOnPath</c> additionally writes the dotnetup directory to the user PATH (so
 ///     cmd.exe and GUI apps see it).</item>
 /// </list>
@@ -59,8 +60,8 @@ internal static class EnvSettingsApplier
         // 1. Windows dotnet env-var wiring (PATH + DOTNET_ROOT): apply it when we now want it,
         //    otherwise remove an observed wiring when we no longer do. These are the two mutually
         //    exclusive branches of the same decision. ApplyEnvironmentModifications(InstallType.System)
-        //    is the inverse of (InstallType.User): it removes the user dotnet from user PATH, restores
-        //    the Program Files dotnet to system PATH, and unsets the user-scope DOTNET_ROOT. The apply
+        //    is the inverse of (InstallType.User): it removes the user dotnet directory from the system
+        //    PATH and unsets the user-scope DOTNET_ROOT. The apply
         //    path is idempotent (each change is gated), so re-applying an already-correct state — e.g.
         //    re-syncing after a system installer clobbered PATH — is safe.
         if (nowWritesDotnetEnvVars)
