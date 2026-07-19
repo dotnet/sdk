@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
@@ -48,71 +49,126 @@ internal class InitWorkflows
     {
         ShowBanner();
 
-        // Resolve the recommended setup for the summary. This is side-effect-free: it performs no
-        // version resolution, writes no output, and does not throw on an unresolvable channel, so
-        // simply viewing the summary or choosing to exit never triggers an install or a download.
+        // Resolve the recommended setup. This is side-effect-free: it performs no version
+        // resolution, writes no output, and does not throw on an unresolvable channel, so simply
+        // viewing the form or choosing to exit never triggers an install or a download.
         WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughPlan(command, requests, _dotnetEnvironment);
 
         DotnetAccessMode? previousAccessMode = DotnetupConfig.ReadAccessMode();
 
-        WalkthroughSelection? selection = ResolveWalkthroughSelection(command, requests, plan, previousAccessMode);
-        if (selection is null)
+        // Show the interactive form (or, non-interactively, take the recommended defaults) and read
+        // back the user's raw choices without resolving any install requests yet.
+        FormOutcome? outcome = ResolveFormOutcome(command, plan);
+        if (outcome is null)
         {
             return []; // User chose to exit without changes.
         }
 
+        if (command.DryRun)
+        {
+            PrintDryRunPreview(plan, outcome);
+            return [];
+        }
+
+        WalkthroughSelection selection = BuildSelection(command, requests, plan, outcome);
         return ExecuteWalkthroughSelection(command, selection, plan.InstallRoot, previousAccessMode);
     }
 
     /// <summary>
-    /// Shows the summary selector (when interactive) and resolves the user's choice into a
-    /// <see cref="WalkthroughSelection"/>, resolving the concrete install requests only for the
-    /// branches that actually install. Returns null when the user chooses to exit. In
-    /// non-interactive sessions the historical behavior is preserved: the recommended setup is
-    /// applied silently and nothing is migrated.
+    /// Runs the interactive init form (when interactive) and reads the user's choices into a
+    /// <see cref="FormOutcome"/>, or returns null when the user exits. In non-interactive sessions
+    /// the recommended setup is used without prompting and nothing is migrated, preserving the
+    /// historical behavior.
     /// </summary>
-    private WalkthroughSelection? ResolveWalkthroughSelection(
-        InstallCommand command,
-        List<ResolvedInstallRequest>? requests,
-        WalkthroughPlan plan,
-        DotnetAccessMode? previousAccessMode)
+    private static FormOutcome? ResolveFormOutcome(InstallCommand command, WalkthroughPlan plan)
     {
-        bool interactiveSummary = command.Interactive && !Console.IsInputRedirected;
-        if (!interactiveSummary)
+        bool interactive = command.Interactive && !Console.IsInputRedirected;
+        if (!interactive)
         {
-            return new WalkthroughSelection(
-                InitWorkflowDefaults.ResolveDefaultRequests(command, requests), plan.AccessMode, []);
+            return new FormOutcome(
+                SkipInstall: false,
+                Channel: null,
+                ChannelChanged: false,
+                AccessMode: plan.AccessMode,
+                Migrate: false);
         }
 
-        WalkthroughDecision decision = WalkthroughSummary.Show(plan, previousAccessMode);
-        return decision switch
+        InitFormModel model = InitFormModel.Create(plan);
+        if (!InteractiveFormSelector.Show(model))
         {
-            WalkthroughDecision.Exit => null,
-            WalkthroughDecision.Proceed => new WalkthroughSelection(
-                InitWorkflowDefaults.ResolveDefaultRequests(command, requests), plan.AccessMode, plan.Migrations),
-            _ => ResolveCustomizedSelection(command, requests, plan),
-        };
+            return null;
+        }
+
+        string? channel = model.SelectedChannel();
+        return new FormOutcome(
+            SkipInstall: channel is null,
+            Channel: channel,
+            ChannelChanged: model.ChannelChangedFromDefault,
+            AccessMode: model.SelectedAccessMode(),
+            Migrate: model.MigrateSelected());
     }
 
     /// <summary>
-    /// Runs the existing step-by-step walkthrough (channel, mode, and migration prompts).
+    /// Turns the user's <see cref="FormOutcome"/> into a <see cref="WalkthroughSelection"/>,
+    /// resolving concrete install requests only now (this may resolve versions / hit the network),
+    /// which is why dry-run stops before this step.
     /// </summary>
-    private WalkthroughSelection ResolveCustomizedSelection(
+    private static WalkthroughSelection BuildSelection(
         InstallCommand command,
         List<ResolvedInstallRequest>? requests,
-        WalkthroughPlan plan)
+        WalkthroughPlan plan,
+        FormOutcome outcome)
     {
-        List<ResolvedInstallRequest> effectiveRequests = ResolveWalkthroughRequests(command, requests);
-        DotnetAccessMode accessMode = GetInitAccessMode(command.Interactive, command.ShellProvider);
-        List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
-            _dotnetEnvironment,
-            accessMode,
-            GetInstallRootOrDefault(effectiveRequests, plan.InstallRoot),
-            GetManifestPath(effectiveRequests),
-            effectiveRequests,
-            command.Interactive);
+        List<ResolvedInstallRequest> effectiveRequests;
+        if (outcome.SkipInstall)
+        {
+            effectiveRequests = [];
+        }
+        else if (!outcome.ChannelChanged)
+        {
+            effectiveRequests = InitWorkflowDefaults.ResolveDefaultRequests(command, requests);
+        }
+        else
+        {
+            effectiveRequests = InitWorkflowDefaults.GenerateSdkInstallRequests(command, outcome.Channel);
+        }
 
-        return new WalkthroughSelection(effectiveRequests, accessMode, toMigrate);
+        List<MigrationWorkflow.MigrationSelection> migrations = outcome.Migrate ? plan.Migrations : [];
+        return new WalkthroughSelection(effectiveRequests, outcome.AccessMode, migrations);
+    }
+
+    /// <summary>
+    /// Prints what the accepted settings would do, without installing or changing the environment.
+    /// Kept network-free: it echoes the chosen channel rather than resolving a concrete version.
+    /// </summary>
+    private static void PrintDryRunPreview(WalkthroughPlan plan, FormOutcome outcome)
+    {
+        string dim = DotnetupTheme.Current.Dim;
+        string accent = DotnetupTheme.Current.Accent;
+
+        SpectreAnsiConsole.MarkupLine($"[{dim}](dry run \u2014 no changes were made to your machine)[/]");
+
+        string channelText = outcome.SkipInstall
+            ? "none (skip install)"
+            : outcome.Channel ?? plan.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
+        string migrateText = outcome.Migrate
+            ? string.Format(CultureInfo.InvariantCulture, "Yes ({0} install(s))", plan.Migrations.Count)
+            : "No";
+
+        PrintPreviewLine("SDK channel", channelText, accent);
+        PrintPreviewLine("Access mode", DotnetAccessModeDisplay.GetName(outcome.AccessMode), accent);
+        PrintPreviewLine("Migrate system installs", migrateText, accent);
+        PrintPreviewLine("Installs to", plan.InstallRoot.Path, accent);
+    }
+
+    private static void PrintPreviewLine(string label, string value, string accent)
+    {
+        SpectreAnsiConsole.MarkupLine(string.Format(
+            CultureInfo.InvariantCulture,
+            "  [white]{0}:[/]  [{1}]{2}[/]",
+            label.EscapeMarkup(),
+            accent,
+            value.EscapeMarkup()));
     }
 
     /// <summary>
