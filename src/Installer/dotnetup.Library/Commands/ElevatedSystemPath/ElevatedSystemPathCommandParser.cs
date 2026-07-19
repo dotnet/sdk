@@ -3,9 +3,9 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedSystemPath;
 
-internal static class ElevatedAdminPathCommandParser
+internal static class ElevatedSystemPathCommandParser
 {
     public static readonly Argument<string> OperationArgument = new("operation")
     {
@@ -30,23 +30,23 @@ internal static class ElevatedAdminPathCommandParser
         Required = true,
     };
 
-    private static readonly Command s_elevatedAdminPathCommand = ConstructCommand();
+    private static readonly Command s_elevatedSystemPathCommand = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return s_elevatedAdminPathCommand;
+        return s_elevatedSystemPathCommand;
     }
 
     private static Command ConstructCommand()
     {
-        Command command = new("elevatedadminpath", "Modifies the machine-wide admin PATH (requires elevated privileges)");
+        Command command = new("elevatedsystempath", "Modifies the machine-wide system PATH (requires elevated privileges)");
         command.Hidden = true;
 
         command.Arguments.Add(OperationArgument);
         command.Arguments.Add(OutputFile);
         command.Options.Add(DotnetDir);
 
-        command.SetAction(parseResult => new ElevatedAdminPathCommand(parseResult).Execute());
+        command.SetAction(parseResult => new ElevatedSystemPathCommand(parseResult).Execute());
 
         return command;
     }

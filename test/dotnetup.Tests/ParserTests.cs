@@ -122,12 +122,12 @@ public class ParserTests
     }
 
     [TestMethod]
-    public void Parser_ShouldParseElevatedAdminPathCommand()
+    public void Parser_ShouldParseElevatedSystemPathCommand()
     {
         // Arrange
         var args = new[]
         {
-            "elevatedadminpath", "removedotnet",
+            "elevatedsystempath", "removedotnet",
             @"C:\Users\User\AppData\Local\Temp\dotnetup_elevated\output.txt",
             "--dotnet-dir", @"C:\Users\User\AppData\Local\dotnet"
         };
@@ -141,12 +141,12 @@ public class ParserTests
     }
 
     [TestMethod]
-    public void Parser_ElevatedAdminPathCommand_RequiresDotnetDir()
+    public void Parser_ElevatedSystemPathCommand_RequiresDotnetDir()
     {
         // Arrange - omit the required --dotnet-dir option
         var args = new[]
         {
-            "elevatedadminpath", "insertdotnet",
+            "elevatedsystempath", "insertdotnet",
             @"C:\Users\User\AppData\Local\Temp\dotnetup_elevated\output.txt"
         };
 

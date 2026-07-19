@@ -259,9 +259,9 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                     break;
 
                 case InstallType.System:
-                    var adminChanges = installRootManager.GetAdminInstallRootChanges();
-                    InstallRootManager.ApplyAdminInstallRoot(
-                        adminChanges,
+                    var systemChanges = installRootManager.GetSystemInstallRootChanges();
+                    InstallRootManager.ApplySystemInstallRoot(
+                        systemChanges,
                         AnsiConsole.MarkupLine);
                     break;
 

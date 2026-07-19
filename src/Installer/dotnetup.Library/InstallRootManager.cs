@@ -7,7 +7,7 @@ using Spectre.Console;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Manages the dotnet installation root configuration, including switching between user and admin installations.
+/// Manages the dotnet installation root configuration, including switching between user and system installations.
 /// </summary>
 internal class InstallRootManager
 {
@@ -57,13 +57,13 @@ internal class InstallRootManager
     }
 
     /// <summary>
-    /// Gets the changes needed to configure admin install root.
+    /// Gets the changes needed to configure system install root.
     /// </summary>
-    public AdminInstallRootChanges GetAdminInstallRootChanges()
+    public SystemInstallRootChanges GetSystemInstallRootChanges()
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException("Admin install root configuration is only supported on Windows.");
+            throw new PlatformNotSupportedException("System install root configuration is only supported on Windows.");
         }
 
         // Get the user (dotnetup) dotnet installation path
@@ -80,7 +80,7 @@ internal class InstallRootManager
 
         bool needToUnsetDotnetRoot = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_ROOT", EnvironmentVariableTarget.User));
 
-        return new AdminInstallRootChanges(
+        return new SystemInstallRootChanges(
             needToRemoveUserDotnetFromSystemPath,
             needToUnsetDotnetRoot,
             userDotnetPath);
@@ -106,11 +106,11 @@ internal class InstallRootManager
     }
 
     /// <summary>
-    /// Applies the admin install root configuration. Throws
+    /// Applies the system install root configuration. Throws
     /// <see cref="DotnetInstallException"/> if the user declines an elevation prompt.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public static void ApplyAdminInstallRoot(AdminInstallRootChanges changes, Action<string> writeOutput)
+    public static void ApplySystemInstallRoot(SystemInstallRootChanges changes, Action<string> writeOutput)
     {
         if (changes.NeedsRemoveUserDotnetFromSystemPath)
         {
@@ -187,15 +187,15 @@ internal record UserInstallRootChanges(
 }
 
 /// <summary>
-/// Represents the changes needed to configure admin install root.
+/// Represents the changes needed to configure system install root.
 /// </summary>
-internal record AdminInstallRootChanges(
+internal record SystemInstallRootChanges(
     bool NeedsRemoveUserDotnetFromSystemPath,
     bool NeedsUnsetDotnetRoot,
     string UserDotnetPath)
 {
     /// <summary>
-    /// Checks if any changes are needed to configure admin install root.
+    /// Checks if any changes are needed to configure system install root.
     /// </summary>
     public bool NeedsChange() => NeedsRemoveUserDotnetFromSystemPath || NeedsUnsetDotnetRoot;
 }

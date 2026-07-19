@@ -578,7 +578,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
         try
         {
-            string arguments = $"elevatedadminpath {operation} \"{outputFilePath}\" --dotnet-dir \"{dotnetDir}\"";
+            string arguments = $"elevatedsystempath {operation} \"{outputFilePath}\" --dotnet-dir \"{dotnetDir}\"";
 
             var startInfo = new ProcessStartInfo
             {

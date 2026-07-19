@@ -39,10 +39,10 @@ internal sealed class EnvironmentStateInspector : IEnvironmentStateInspector
         {
             var installRootManager = new InstallRootManager(_environment);
 
-            // Residual dotnet wiring exists exactly when switching to the admin/system state would
+            // Residual dotnet wiring exists exactly when switching to the system state would
             // still need to change something (remove the user dotnet from the system PATH, or unset
             // DOTNET_ROOT).
-            dotnetUserEnvVarsPresent = installRootManager.GetAdminInstallRootChanges().NeedsChange();
+            dotnetUserEnvVarsPresent = installRootManager.GetSystemInstallRootChanges().NeedsChange();
 
             // Fully wired as 'full' when configuring the user install root would be a no-op.
             dotnetUserEnvVarsComplete = !installRootManager.GetUserInstallRootChanges().NeedsChange();

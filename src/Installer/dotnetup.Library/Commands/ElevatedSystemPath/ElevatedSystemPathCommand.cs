@@ -4,19 +4,19 @@
 using System.CommandLine;
 using System.Runtime.Versioning;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedSystemPath;
 
-internal class ElevatedAdminPathCommand : CommandBase
+internal class ElevatedSystemPathCommand : CommandBase
 {
     private readonly string _operation;
     private readonly string _outputFile;
     private readonly string? _dotnetDir;
 
-    public ElevatedAdminPathCommand(ParseResult result) : base(result)
+    public ElevatedSystemPathCommand(ParseResult result) : base(result)
     {
-        _operation = result.GetValue(ElevatedAdminPathCommandParser.OperationArgument)!;
-        _outputFile = result.GetValue(ElevatedAdminPathCommandParser.OutputFile)!;
-        _dotnetDir = result.GetValue(ElevatedAdminPathCommandParser.DotnetDir);
+        _operation = result.GetValue(ElevatedSystemPathCommandParser.OperationArgument)!;
+        _outputFile = result.GetValue(ElevatedSystemPathCommandParser.OutputFile)!;
+        _dotnetDir = result.GetValue(ElevatedSystemPathCommandParser.DotnetDir);
     }
 
     private void Log(string message)
@@ -25,14 +25,14 @@ internal class ElevatedAdminPathCommand : CommandBase
         File.AppendAllText(_outputFile, message + Environment.NewLine);
     }
 
-    protected override string GetCommandName() => "elevatedadminpath";
+    protected override string GetCommandName() => "elevatedsystempath";
 
     protected override void ExecuteCore()
     {
         // This command only works on Windows
         if (!OperatingSystem.IsWindows())
         {
-            const string message = "The elevatedadminpath command is only supported on Windows.";
+            const string message = "The elevatedsystempath command is only supported on Windows.";
             Log("Error: " + message);
             throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, message);
         }
