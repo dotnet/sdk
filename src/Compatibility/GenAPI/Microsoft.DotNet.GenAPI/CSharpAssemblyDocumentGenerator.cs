@@ -280,7 +280,7 @@ public sealed class CSharpAssemblyDocumentGenerator
         return namedTypeNode;
     }
 
-    private static bool IsExtensionBlockImplementation(ISymbol member, IEnumerable<INamedTypeSymbol> extensionBlocks)
+    private bool IsExtensionBlockImplementation(ISymbol member, IEnumerable<INamedTypeSymbol> extensionBlocks)
     {
         if (member is not IMethodSymbol implementation)
         {
@@ -292,25 +292,19 @@ public sealed class CSharpAssemblyDocumentGenerator
             foreach (ISymbol extensionMember in extensionBlock.GetMembers())
             {
                 if (extensionMember is IMethodSymbol extensionMethod &&
-                    implementation.Name == extensionMethod.Name &&
-                    implementation.Arity == extensionBlock.Arity + extensionMethod.Arity &&
-                    implementation.Parameters.Length == extensionMethod.Parameters.Length + (extensionMethod.IsStatic ? 0 : 1))
+                    IsMatchingExtensionMethod(implementation, extensionMethod, extensionBlock))
                 {
                     return true;
                 }
 
                 if (extensionMember is IPropertySymbol extensionProperty &&
-                    implementation.Name == extensionProperty.GetMethod?.Name &&
-                    implementation.Arity == extensionBlock.Arity &&
-                    implementation.Parameters.Length == (extensionProperty.IsStatic ? 0 : 1))
+                    IsMatchingExtensionPropertyAccessor(implementation, extensionProperty, extensionBlock, isSetter: false))
                 {
                     return true;
                 }
 
                 if (extensionMember is IPropertySymbol propertyWithSetter &&
-                    implementation.Name == propertyWithSetter.SetMethod?.Name &&
-                    implementation.Arity == extensionBlock.Arity &&
-                    implementation.Parameters.Length == (propertyWithSetter.IsStatic ? 1 : 2))
+                    IsMatchingExtensionPropertyAccessor(implementation, propertyWithSetter, extensionBlock, isSetter: true))
                 {
                     return true;
                 }
@@ -319,6 +313,51 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         return false;
     }
+
+    private bool IsMatchingExtensionMethod(
+        IMethodSymbol implementation,
+        IMethodSymbol extensionMethod,
+        INamedTypeSymbol extensionBlock)
+    {
+        int receiverParameterCount = extensionMethod.IsStatic ? 0 : 1;
+        if (implementation.Name != extensionMethod.Name ||
+            implementation.Arity != extensionBlock.Arity + extensionMethod.Arity ||
+            implementation.Parameters.Length != extensionMethod.Parameters.Length + receiverParameterCount ||
+            !HasMatchingType(implementation.ReturnType, extensionMethod.ReturnType))
+        {
+            return false;
+        }
+
+        return extensionMethod.Parameters
+            .Zip(implementation.Parameters.Skip(receiverParameterCount))
+            .All(static parameters => HasMatchingType(parameters.First.Type, parameters.Second.Type));
+    }
+
+    private bool IsMatchingExtensionPropertyAccessor(
+        IMethodSymbol implementation,
+        IPropertySymbol extensionProperty,
+        INamedTypeSymbol extensionBlock,
+        bool isSetter)
+    {
+        IMethodSymbol? accessor = isSetter ? extensionProperty.SetMethod : extensionProperty.GetMethod;
+        int receiverParameterCount = extensionProperty.IsStatic ? 0 : 1;
+        int valueParameterCount = isSetter ? 1 : 0;
+        if (accessor is null ||
+            implementation.Name != accessor.Name ||
+            implementation.Arity != extensionBlock.Arity ||
+            implementation.Parameters.Length != receiverParameterCount + valueParameterCount)
+        {
+            return false;
+        }
+
+        return isSetter
+            ? implementation.ReturnsVoid && HasMatchingType(implementation.Parameters[^1].Type, extensionProperty.Type)
+            : HasMatchingType(implementation.ReturnType, extensionProperty.Type);
+    }
+
+    private static bool HasMatchingType(ITypeSymbol first, ITypeSymbol second) =>
+        SymbolEqualityComparer.Default.Equals(first, second) ||
+        first.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == second.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
     private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
     {

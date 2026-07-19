@@ -524,4 +524,42 @@ public class DiffExtensionMemberTests : DiffBaseTests
                     }
                 }
               """);
+
+    [TestMethod]
+    public Task ExtensionBlockDoesNotHideStaticOverloads() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      public static void Foo(int value) { }
+
+                      extension(int)
+                      {
+                          public static void Foo(bool value) { }
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         public static void Foo(int value);
+              +         extension(int)
+              +         {
+              +             public static void Foo(bool value);
+              +         }
+                    }
+                }
+              """);
 }
