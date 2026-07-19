@@ -25,8 +25,6 @@ internal class InitWorkflows
     /// <summary>Sentinel channel value indicating the user wants to skip the initial install.</summary>
     internal const string NoneChannel = "none";
 
-    private sealed record ChannelExample(string Channel, string Description, string? ResolvedVersion);
-
     public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment, ChannelVersionResolver channelVersionResolver)
     {
         _dotnetEnvironment = dotnetEnvironment;
@@ -256,26 +254,6 @@ internal class InitWorkflows
         return effectiveRequests;
     }
 
-    private List<ResolvedInstallRequest> ResolveWalkthroughRequests(
-        InstallCommand command,
-        List<ResolvedInstallRequest>? requests)
-    {
-        if (requests is not null)
-        {
-            return requests;
-        }
-
-        // Step 0: Explain channels and let the user pick one
-        string selectedChannel = PromptChannel();
-        if (selectedChannel == NoneChannel)
-        {
-            return [];
-        }
-
-        // Generate the install request via the workflow (handles path resolution, global.json, validation)
-        return InitWorkflowDefaults.GenerateSdkInstallRequests(command, selectedChannel);
-    }
-
     /// <summary>
     /// Returns the first request's install root when any requests exist, otherwise the fallback.
     /// </summary>
@@ -340,127 +318,7 @@ internal class InitWorkflows
     internal static void DisplayEnvironmentSetupProgress(IAnsiConsole console)
         => console.MarkupLine("Setting up your environment.");
 
-    private static DotnetAccessMode GetInitAccessMode(bool interactive, IEnvShellProvider? shellProvider = null)
-    {
-        if (!interactive)
-        {
-            return InitWorkflowDefaults.GetDefaultAccessMode(shellProvider);
-        }
-
-        if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
-                $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{ShellDetection.GetCurrentShellDisplayName().EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile unless you specify one with --shell."));
-            return DotnetAccessMode.None;
-        }
-
-        return ValidateAccessMode(PromptAccessMode());
-    }
-
-    private static DotnetAccessMode ValidateAccessMode(DotnetAccessMode accessMode)
-    {
-        if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(accessMode))
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.PlatformNotSupported,
-                Strings.PathReplacementModeUnixError);
-        }
-
-        return accessMode;
-    }
-
     // ── Prompt Functions ──
-
-    /// <summary>
-    /// Explains how dotnetup channels work and lets the user pick a channel.
-    /// Builds example channels dynamically from the release manifest and shows
-    /// what each one currently resolves to.
-    /// </summary>
-    private string PromptChannel()
-    {
-        string brand = DotnetupTheme.Current.Brand;
-        string dim = DotnetupTheme.Current.Dim;
-
-        // The summary screen already greeted the user before reaching this customize prompt.
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "dotnetup updates and groups installations using [{0} bold]dotnetup channels[/].",
-            brand));
-
-        var globalJsonInfo = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        if (globalJsonInfo.GlobalJsonPath is not null)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "[{0}]Channels may be implied from your global.json at [{1}]{2}[/].[/]",
-                dim,
-                brand,
-                globalJsonInfo.GlobalJsonPath.EscapeMarkup()));
-        }
-
-        var examples = BuildChannelExamples();
-
-        var prompt = new SelectionPrompt<ChannelExample>()
-            .Title(string.Format(CultureInfo.InvariantCulture, "[bold]Select an example channel to get started:[/] [{0}](Enter to confirm)[/]", dim))
-            .PageSize(5)
-            .HighlightStyle(Style.Parse(brand))
-            .MoreChoicesText(string.Format(CultureInfo.InvariantCulture, "[{0}](use {1}{2} arrows)[/]", dim, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow))
-            .UseConverter(ex => FormatChannelExample(ex, brand, dim));
-
-        prompt.AddChoices(examples);
-
-        if (Console.IsInputRedirected)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "[{0}]Using default channel: [{1}]latest[/][/]",
-                dim, brand));
-            return ChannelVersionResolver.LatestChannel;
-        }
-
-        var selected = SpectreAnsiConsole.Prompt(prompt);
-        SpectreAnsiConsole.WriteLine();
-        return selected.Channel;
-    }
-
-    /// <summary>
-    /// Prompts the user to choose how they want to access the dotnetup-managed dotnet
-    /// using an interactive selector that shows all options with descriptions and tooltips.
-    /// </summary>
-    internal static DotnetAccessMode PromptAccessMode()
-    {
-        bool isWindows = OperatingSystem.IsWindows();
-
-        string isolationTooltip = string.Format(
-            CultureInfo.InvariantCulture,
-            Strings.PathTooltipNone,
-            isWindows ? "Program Files" : "/usr/local");
-
-        string terminalTooltip = isWindows
-            ? Strings.PathTooltipShell + " " + Strings.PathTooltipShellWindowsNote
-            : Strings.PathTooltipShell;
-
-        var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
-        var options = new List<SelectableOption>
-        {
-            new(Strings.AccessModeNone, Strings.PathDescriptionNone, isolationTooltip),
-            new(Strings.AccessModeShell, isWindows ? Strings.PathDescriptionShell : Strings.PathDescriptionShellBase, terminalTooltip),
-        };
-
-        if (isWindows)
-        {
-            modes.Add(DotnetAccessMode.Everywhere);
-            options.Add(new(Strings.AccessModeEverywhere, Strings.PathDescriptionEverywhere, Strings.PathTooltipEverywhere));
-        }
-
-        // Highlight the recommended mode by default so the customize prompt agrees with the summary
-        // (e.g. Everywhere on Windows), rather than always defaulting to a fixed option.
-        int defaultIndex = Math.Max(0, modes.IndexOf(InitWorkflowDefaults.GetDefaultAccessMode()));
-
-        int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex);
-
-        return modes[selected];
-    }
 
     /// <summary>
     /// Prompts the user about migrating system installs into the dotnetup-managed directory.
@@ -601,74 +459,6 @@ internal class InitWorkflows
     {
         SpectreAnsiConsole.Write(DotnetBotBanner.BuildPanel());
         SpectreAnsiConsole.WriteLine();
-    }
-
-    /// <summary>
-    /// Builds a list of example channels with descriptions and resolved versions.
-    /// Uses the release manifest to find the latest major version dynamically.
-    /// </summary>
-    private List<ChannelExample> BuildChannelExamples()
-    {
-        var resolver = _channelVersionResolver;
-
-        var latestResolved = resolver.GetLatestVersionForChannel(
-            new UpdateChannel(ChannelVersionResolver.LatestChannel), InstallComponent.SDK);
-        string? ltsVersion = resolver.GetLatestVersionForChannel(
-            new UpdateChannel(ChannelVersionResolver.LtsChannel), InstallComponent.SDK)?.ToString();
-        string? previewVersion = resolver.GetLatestVersionForChannel(
-            new UpdateChannel(ChannelVersionResolver.PreviewChannel), InstallComponent.SDK)?.ToString();
-
-        var examples = new List<ChannelExample>
-        {
-            new(ChannelVersionResolver.LatestChannel, "Latest stable release", latestResolved?.ToString()),
-            new(NoneChannel, "I'll tell you what to install later.", null),
-            new(ChannelVersionResolver.LtsChannel, "Long Term Support", ltsVersion),
-            new(ChannelVersionResolver.PreviewChannel, "Latest preview", previewVersion),
-            // Daily resolves against the blob feed, so we don't pre-resolve a version here to avoid
-            // a slow/failing network call during the prompt; it is shown without a resolved version.
-            new(ChannelVersionResolver.DailyChannel, "Latest unsigned daily build", null),
-        };
-
-        if (latestResolved is not null)
-        {
-            string latestVersion = latestResolved.ToString();
-            string majorMinor = FormattableString.Invariant($"{latestResolved.Major}.{latestResolved.Minor}");
-            string featureBand = FormattableString.Invariant($"{latestResolved.Major}.{latestResolved.Minor}.{latestResolved.SdkFeatureBand / 100}xx");
-
-            examples.Add(new(majorMinor, "Major.Minor channel", latestVersion));
-            examples.Add(new(featureBand, "SDK feature band", latestVersion));
-            examples.Add(new(latestVersion, "Explicit version", latestVersion));
-        }
-
-        return examples;
-    }
-
-    private static string FormatChannelExample(ChannelExample ex, string brand, string dim)
-    {
-        // The "none" sentinel and the daily channel carry no pre-resolved version, so they render
-        // as channel + description without a "→ version" (or "no version available") suffix.
-        if (ex.Channel is NoneChannel or ChannelVersionResolver.DailyChannel)
-        {
-            return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]  [{2}]{3}[/]",
-                brand,
-                ex.Channel.EscapeMarkup().PadRight(12),
-                dim,
-                ex.Description.EscapeMarkup());
-        }
-
-        string resolved = ex.ResolvedVersion is not null
-            ? string.Format(CultureInfo.InvariantCulture, "[{0}] {1} {2}[/]", dim, Constants.Symbols.RightArrow, ex.ResolvedVersion)
-            : string.Format(CultureInfo.InvariantCulture, "[{0}] (no version available)[/]", dim);
-        string suggested = ex.Channel == ChannelVersionResolver.LatestChannel
-            ? " [white](suggested)[/]"
-            : "";
-        return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]{2}  [{3}]{4}[/] {5}",
-            brand,
-            ex.Channel.EscapeMarkup().PadRight(12),
-            suggested,
-            dim,
-            ex.Description.EscapeMarkup(),
-            resolved);
     }
 
     /// <summary>
