@@ -198,4 +198,330 @@ public class DiffExtensionMemberTests : DiffBaseTests
                     }
                 }
               """);
+
+    [TestMethod]
+    public Task ExtensionMembersForDifferentTargetTypesAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension(int value)
+                      {
+                          public int Increment() => value + 1;
+                      }
+
+                      extension(string text)
+                      {
+                          public int Length() => text.Length;
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension(string text)
+              +         {
+              +             public int Length();
+              +         }
+              +         extension(int value)
+              +         {
+              +             public int Increment();
+              +         }
+                    }
+                }
+              """);
+
+    [TestMethod]
+    public Task ExtensionMembersForSameTargetTypeInSeparateBlocksAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension(int value)
+                      {
+                          public int Increment() => value + 1;
+                      }
+
+                      extension(int number)
+                      {
+                          public int Double() => number * 2;
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension(int number)
+              +         {
+              +             public int Double();
+              +         }
+              +         extension(int value)
+              +         {
+              +             public int Increment();
+              +         }
+                    }
+                }
+              """);
+
+    [TestMethod]
+    public Task ExtensionMembersWithAlternatingTargetTypesAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension(int first)
+                      {
+                          public int Increment() => first + 1;
+                      }
+
+                      extension(string text)
+                      {
+                          public int Length() => text.Length;
+                      }
+
+                      extension(int second)
+                      {
+                          public int Double() => second * 2;
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension(string text)
+              +         {
+              +             public int Length();
+              +         }
+              +         extension(int second)
+              +         {
+              +             public int Double();
+              +         }
+              +         extension(int first)
+              +         {
+              +             public int Increment();
+              +         }
+                    }
+                }
+              """);
+
+    [TestMethod]
+    public Task GenericStaticExtensionMemberAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension<T>(T)
+                      {
+                          public static TResult Create<TResult>(TResult value) => value;
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension<T>(T)
+              +         {
+              +             public static TResult Create<TResult>(TResult value);
+              +         }
+                    }
+                }
+              """);
+
+    [TestMethod]
+    public Task GenericInstanceExtensionMemberAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension<T>(T value)
+                      {
+                          public TResult Convert<TResult>(TResult result) => result;
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension<T>(T value)
+              +         {
+              +             public TResult Convert<TResult>(TResult result);
+              +         }
+                    }
+                }
+              """);
+
+    [TestMethod]
+    public Task ConstrainedGenericInstanceExtensionMemberAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension<T>(T value)
+                          where T : class
+                      {
+                          public TResult Convert<TResult>(TResult result)
+                              where TResult : class
+                              => result;
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension<T>(T value)
+              +             where T : class
+              +         {
+              +             public TResult Convert<TResult>(TResult result)
+              +                 where TResult : class;
+              +         }
+                    }
+                }
+              """);
+
+    [TestMethod]
+    public Task GenericStaticExtensionMemberWithTypeLevelGenericAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension<T>(T)
+                      {
+                          public static T Default() => throw new System.NotImplementedException();
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension<T>(T)
+              +         {
+              +             public static T Default();
+              +         }
+                    }
+                }
+              """);
+
+    [TestMethod]
+    public Task ConstrainedGenericStaticExtensionMemberAdd() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension<T>(T)
+                          where T : class
+                      {
+                          public static TResult Create<TResult>(TResult value)
+                              where TResult : class
+                              => value;
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         extension<T>(T)
+              +             where T : class
+              +         {
+              +             public static TResult Create<TResult>(TResult value)
+              +                 where TResult : class;
+              +         }
+                    }
+                }
+              """);
 }
