@@ -661,8 +661,9 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     }
 
     private static bool IsEnumMemberOrHasPublicOrProtectedModifierOrIsDestructor(MemberDeclarationSyntax m) =>
-        // Destructors don't have visibility modifiers so they're special-cased
-        m is ExtensionBlockDeclarationSyntax ||
+        // Extension blocks don't have visibility modifiers, so only include a block with visible members.
+        m is ExtensionBlockDeclarationSyntax extensionBlock && GetMembersOfType<MemberDeclarationSyntax>(extensionBlock).Any() ||
+        // Destructors don't have visibility modifiers so they're special-cased.
         m.Modifiers.Any(SyntaxKind.PublicKeyword) || m.Modifiers.Any(SyntaxKind.ProtectedKeyword) ||
         // Enum member declarations don't have any modifiers
         m is EnumMemberDeclarationSyntax ||

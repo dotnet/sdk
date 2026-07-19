@@ -331,7 +331,7 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         return extensionMethod.Parameters
             .Zip(implementation.Parameters.Skip(receiverParameterCount))
-            .All(static parameters => HasMatchingType(parameters.First.Type, parameters.Second.Type));
+            .All(static parameters => HasMatchingParameter(parameters.First, parameters.Second));
     }
 
     private bool IsMatchingExtensionPropertyAccessor(
@@ -342,23 +342,21 @@ public sealed class CSharpAssemblyDocumentGenerator
     {
         IMethodSymbol? accessor = isSetter ? extensionProperty.SetMethod : extensionProperty.GetMethod;
         int receiverParameterCount = extensionProperty.IsStatic ? 0 : 1;
-        int indexerParameterCount = extensionProperty.Parameters.Length;
-        int valueParameterCount = isSetter ? 1 : 0;
         if (accessor is null ||
             implementation.Name != accessor.Name ||
             implementation.Arity != extensionBlock.Arity ||
-            implementation.Parameters.Length != receiverParameterCount + indexerParameterCount + valueParameterCount ||
+            implementation.Parameters.Length != receiverParameterCount + accessor.Parameters.Length ||
             !HasMatchingReceiver(implementation, extensionBlock, receiverParameterCount))
         {
             return false;
         }
 
-        bool hasMatchingIndexerParameters = extensionProperty.Parameters
+        bool hasMatchingParameters = accessor.Parameters
             .Zip(implementation.Parameters.Skip(receiverParameterCount))
-            .All(static parameters => HasMatchingType(parameters.First.Type, parameters.Second.Type));
+            .All(static parameters => HasMatchingParameter(parameters.First, parameters.Second));
 
-        return hasMatchingIndexerParameters && (isSetter
-            ? implementation.ReturnsVoid && HasMatchingType(implementation.Parameters[^1].Type, extensionProperty.Type)
+        return hasMatchingParameters && (isSetter
+            ? implementation.ReturnsVoid
             : HasMatchingType(implementation.ReturnType, extensionProperty.Type));
     }
 
@@ -374,8 +372,32 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         return _syntaxGenerator.Declaration(extensionBlock) is ExtensionBlockDeclarationSyntax { ParameterList.Parameters: [var receiver] } &&
             receiver.Type is not null &&
+            GetRefKind(receiver) == implementation.Parameters[0].RefKind &&
             SyntaxFactory.AreEquivalent(receiver.Type, _syntaxGenerator.TypeExpression(implementation.Parameters[0].Type));
     }
+
+    private static RefKind GetRefKind(ParameterSyntax parameter)
+    {
+        if (parameter.Modifiers.Any(SyntaxKind.OutKeyword))
+        {
+            return RefKind.Out;
+        }
+
+        if (parameter.Modifiers.Any(SyntaxKind.InKeyword))
+        {
+            return RefKind.In;
+        }
+
+        if (parameter.Modifiers.Any(SyntaxKind.RefKeyword))
+        {
+            return parameter.Modifiers.Any(SyntaxKind.ReadOnlyKeyword) ? RefKind.RefReadOnly : RefKind.Ref;
+        }
+
+        return RefKind.None;
+    }
+
+    private static bool HasMatchingParameter(IParameterSymbol first, IParameterSymbol second) =>
+        first.RefKind == second.RefKind && HasMatchingType(first.Type, second.Type);
 
     private static bool HasMatchingType(ITypeSymbol first, ITypeSymbol second) =>
         SymbolEqualityComparer.Default.Equals(first, second) ||

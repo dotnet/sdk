@@ -647,4 +647,104 @@ public class DiffExtensionMemberTests : DiffBaseTests
                     }
                 }
               """);
+
+    [TestMethod]
+    public Task NonPublicExtensionMembersAreExcluded() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      extension(int value)
+                      {
+                          internal int Increment() => value + 1;
+                      }
+                  }
+              }
+              """,
+        expectedCode: "");
+
+    [TestMethod]
+    public Task ExtensionBlockDoesNotHideRefOverloads() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      public static void Update(ref int value) { }
+
+                      extension(int)
+                      {
+                          public static void Update(int value) { }
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         public static void Update(ref int value);
+              +         extension(int)
+              +         {
+              +             public static void Update(int value);
+              +         }
+                    }
+                }
+              """);
+
+    [TestMethod]
+    public Task RefExtensionReceiverDoesNotHideValueOverloads() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      public static void Increment(int value) { }
+
+                      extension(ref int value)
+                      {
+                          public void Increment() => value++;
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         public static void Increment(int value);
+              +         extension(ref int value)
+              +         {
+              +             public void Increment();
+              +         }
+                    }
+                }
+              """);
 }
