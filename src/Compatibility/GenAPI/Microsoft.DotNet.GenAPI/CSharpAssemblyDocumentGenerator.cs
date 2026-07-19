@@ -323,7 +323,8 @@ public sealed class CSharpAssemblyDocumentGenerator
         if (implementation.Name != extensionMethod.Name ||
             implementation.Arity != extensionBlock.Arity + extensionMethod.Arity ||
             implementation.Parameters.Length != extensionMethod.Parameters.Length + receiverParameterCount ||
-            !HasMatchingType(implementation.ReturnType, extensionMethod.ReturnType))
+        !HasMatchingType(implementation.ReturnType, extensionMethod.ReturnType) ||
+        !HasMatchingReceiver(implementation, extensionBlock, receiverParameterCount))
         {
             return false;
         }
@@ -346,7 +347,8 @@ public sealed class CSharpAssemblyDocumentGenerator
         if (accessor is null ||
             implementation.Name != accessor.Name ||
             implementation.Arity != extensionBlock.Arity ||
-            implementation.Parameters.Length != receiverParameterCount + indexerParameterCount + valueParameterCount)
+            implementation.Parameters.Length != receiverParameterCount + indexerParameterCount + valueParameterCount ||
+            !HasMatchingReceiver(implementation, extensionBlock, receiverParameterCount))
         {
             return false;
         }
@@ -358,6 +360,21 @@ public sealed class CSharpAssemblyDocumentGenerator
         return hasMatchingIndexerParameters && (isSetter
             ? implementation.ReturnsVoid && HasMatchingType(implementation.Parameters[^1].Type, extensionProperty.Type)
             : HasMatchingType(implementation.ReturnType, extensionProperty.Type));
+    }
+
+    private bool HasMatchingReceiver(
+        IMethodSymbol implementation,
+        INamedTypeSymbol extensionBlock,
+        int receiverParameterCount)
+    {
+        if (receiverParameterCount == 0)
+        {
+            return true;
+        }
+
+        return _syntaxGenerator.Declaration(extensionBlock) is ExtensionBlockDeclarationSyntax { ParameterList.Parameters: [var receiver] } &&
+            receiver.Type is not null &&
+            SyntaxFactory.AreEquivalent(receiver.Type, _syntaxGenerator.TypeExpression(implementation.Parameters[0].Type));
     }
 
     private static bool HasMatchingType(ITypeSymbol first, ITypeSymbol second) =>

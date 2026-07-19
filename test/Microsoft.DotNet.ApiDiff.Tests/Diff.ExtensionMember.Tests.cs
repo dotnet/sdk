@@ -609,4 +609,42 @@ public class DiffExtensionMemberTests : DiffBaseTests
                 }
               """,
         usePreviewLanguageVersion: true);
+
+    [TestMethod]
+    public Task ExtensionPropertyDoesNotHideAccessorNamedMethods() => RunTestAsync(
+        beforeCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                  }
+              }
+              """,
+        afterCode: """
+              namespace MyNamespace
+              {
+                  public static class MyExtensions
+                  {
+                      public static int get_First(string value) => value.Length;
+
+                      extension(int[] values)
+                      {
+                          public int First => values[0];
+                      }
+                  }
+              }
+              """,
+        expectedCode: """
+                namespace MyNamespace
+                {
+                    public static class MyExtensions
+                    {
+              +         public static int get_First(string value);
+              +         extension(int[] values)
+              +         {
+              +             public int First { get; }
+              +         }
+                    }
+                }
+              """);
 }
