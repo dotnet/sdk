@@ -145,7 +145,7 @@ internal sealed class InitFormModel
             {
                 var lines = new List<DetailLine>
                 {
-                    new("Only applications launched from the shell use dotnetup's installs."),
+                    new("Only applications launched from the shell use dotnetup's .NET installs."),
                 };
                 AddProfileLines(lines);
                 return lines;
@@ -155,8 +155,8 @@ internal sealed class InitFormModel
             {
                 var lines = new List<DetailLine>();
                 AddProfileLines(lines);
-                lines.Add(new DetailLine("Sets user PATH and DOTNET_ROOT."));
-                lines.Add(new DetailLine("Removes Program Files\\dotnet from the system PATH."));
+                lines.Add(new DetailLine("Adds dotnetup's .NET to the system PATH, ahead of any machine-wide install."));
+                lines.Add(new DetailLine("Sets DOTNET_ROOT."));
                 return lines;
             }
 
@@ -288,7 +288,7 @@ internal sealed class InitFormModel
         var choices = new List<FieldChoice>
         {
             new(AccessModeTitle(DotnetAccessMode.None), "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected."),
-            new(AccessModeTitle(DotnetAccessMode.Shell), "Configure the current shell profile to use installs managed by dotnetup."),
+            new(AccessModeTitle(DotnetAccessMode.Shell), "Configure your shell profile so shell sessions use dotnetup's .NET installs."),
         };
 
         if (isWindows)
