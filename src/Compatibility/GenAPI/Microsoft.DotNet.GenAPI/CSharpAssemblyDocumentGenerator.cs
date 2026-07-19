@@ -197,7 +197,10 @@ public sealed class CSharpAssemblyDocumentGenerator
 
     private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
     {
-        IEnumerable<ISymbol> members = namedType.GetMembers().Where(_options.SymbolFilter.Include);
+        INamedTypeSymbol[] extensionBlocks = [.. namedType.GetTypeMembers().Where(static type => string.IsNullOrEmpty(type.Name))];
+        IEnumerable<ISymbol> members = namedType.GetMembers()
+            .Where(_options.SymbolFilter.Include)
+            .Where(member => !IsExtensionBlockImplementation(member, extensionBlocks));
 
         // If it's a value type
         if (namedType.TypeKind == TypeKind.Struct)
@@ -275,6 +278,46 @@ public sealed class CSharpAssemblyDocumentGenerator
         }
 
         return namedTypeNode;
+    }
+
+    private static bool IsExtensionBlockImplementation(ISymbol member, IEnumerable<INamedTypeSymbol> extensionBlocks)
+    {
+        if (member is not IMethodSymbol implementation)
+        {
+            return false;
+        }
+
+        foreach (INamedTypeSymbol extensionBlock in extensionBlocks)
+        {
+            foreach (ISymbol extensionMember in extensionBlock.GetMembers())
+            {
+                if (extensionMember is IMethodSymbol extensionMethod &&
+                    implementation.Name == extensionMethod.Name &&
+                    implementation.Arity == extensionBlock.Arity + extensionMethod.Arity &&
+                    implementation.Parameters.Length == extensionMethod.Parameters.Length + (extensionMethod.IsStatic ? 0 : 1))
+                {
+                    return true;
+                }
+
+                if (extensionMember is IPropertySymbol extensionProperty &&
+                    implementation.Name == extensionProperty.GetMethod?.Name &&
+                    implementation.Arity == extensionBlock.Arity &&
+                    implementation.Parameters.Length == (extensionProperty.IsStatic ? 0 : 1))
+                {
+                    return true;
+                }
+
+                if (extensionMember is IPropertySymbol propertyWithSetter &&
+                    implementation.Name == propertyWithSetter.SetMethod?.Name &&
+                    implementation.Arity == extensionBlock.Arity &&
+                    implementation.Parameters.Length == (propertyWithSetter.IsStatic ? 1 : 2))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
