@@ -147,6 +147,39 @@ public class TerminalTestReporterTests
         GetAssemblySummaryLine(output, assemblyB).Should().Contain("[+5/x0/?2]");
     }
 
+    [TestMethod]
+    public void TestExecutionCompleted_WithZeroTestsAndPassingAssemblies_PrintsPassedSummary()
+    {
+        var capturingConsole = new CapturingConsole();
+
+        var options = new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = false,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 2, isDiscovery: false, isHelp: false, isRetry: false);
+
+        const string emptyAssembly = "/repo/bin/Debug/net9.0/Empty.Tests.dll";
+        const string passingAssembly = "/repo/bin/Debug/net9.0/Passing.Tests.dll";
+
+        reporter.AssemblyRunStarted(emptyAssembly, "net9.0", "x64", executionId: "exec-empty", instanceId: "inst-empty");
+        reporter.AssemblyRunStarted(passingAssembly, "net9.0", "x64", executionId: "exec-passing", instanceId: "inst-passing");
+        ReportTest(reporter, passingAssembly, executionId: "exec-passing", instanceId: "inst-passing", testUid: "passing-1", TestOutcome.Passed);
+
+        reporter.AssemblyRunCompleted(executionId: "exec-empty", exitCode: ExitCode.ZeroTests, outputData: null, errorData: null);
+        reporter.AssemblyRunCompleted(executionId: "exec-passing", exitCode: ExitCode.Success, outputData: null, errorData: null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: ExitCode.Success);
+
+        string output = StripAnsi(capturingConsole.GetOutput());
+        output.Should().Contain("Test run summary: Passed!");
+        output.Should().NotContain("error:");
+    }
+
     /// <summary>
     /// When an assembly's tests were retried, the per-assembly summary should append a
     /// "/r{N}" segment to the compact counts block so users can tell the final counts came from retries.

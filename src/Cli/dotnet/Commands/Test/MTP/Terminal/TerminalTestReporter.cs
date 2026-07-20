@@ -831,7 +831,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
+        assemblyRun.Success = (exitCode == ExitCode.Success || exitCode == ExitCode.ZeroTests)
+            && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
         _terminalWithProgress.RemoveWorker(assemblyRun.SlotIndex);
