@@ -11,7 +11,7 @@
 //   dotnet run EvaluateConditionalTestScopes.cs -- --repo-root <path> [--target-branch <branch>] [--build-reason <reason>] [--output-variable <name>]
 //
 // When --target-branch is not provided, no scopes are skipped (safe default for local dev).
-// Changed files are determined via `git diff --name-only origin/<target-branch>...HEAD`.
+// Changed files are determined via `git diff --name-only --no-renames origin/<target-branch>...HEAD`.
 //
 // Output variable format (set via ##vso when running in Azure Pipelines):
 //   - Empty string: no scopes skipped, all tests run.
@@ -185,7 +185,7 @@ static List<string> GetChangedFiles(string? targetBranch, string repoRoot)
             targetBranch = targetBranch["refs/heads/".Length..];
         }
 
-        var psi = new ProcessStartInfo("git", ["diff", "--name-only", $"origin/{targetBranch}...HEAD"])
+        var psi = new ProcessStartInfo("git", ["diff", "--name-only", "--no-renames", $"origin/{targetBranch}...HEAD"])
         {
             WorkingDirectory = repoRoot,
             RedirectStandardOutput = true,
