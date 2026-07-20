@@ -201,10 +201,20 @@ dependency already in use. Add a new dependency only at the narrowest necessary 
 - Do not allow unused `using` directives to be committed.
 - Use `#if NET` blocks for .NET Core specific code, and `#if NETFRAMEWORK` for .NET Framework specific code.
 
+### Target framework properties
+
+Never hardcode a TFM (`net8.0`, `net9.0`, etc.) in a `.csproj` file. Use the appropriate
+property:
+
+| Context | Property | Defined in |
+| --- | --- | --- |
+| Source projects and test projects (.NET) | `$(SdkTargetFramework)` | Root `Directory.Build.props` (equals `$(NetCurrent)` from Arcade) |
+| Multi-targeting with .NET Framework | Match the pattern used by peer projects in the same area. Some areas use Arcade properties (`$(NetFrameworkToolCurrent)`, `$(NetMinimum)`); others hardcode `net472`. |
+| Test asset projects (`test/TestAssets/`) | `$(CurrentTargetFramework)` | Substituted at test runtime by `TestAssetsManager` via `ToolsetInfo.CurrentTargetFramework` |
+
 ## Testing
 
 - Large changes should always include test changes.
-- When creating new test projects in test/TestAssets/TestProjects, always use `$(CurrentTargetFramework)` for the `<TargetFramework>` property instead of hard-coding a specific version like `net8.0`.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
 - To run tests in this repo (after a full build, invoke the repo-local bootstrap SDK directly):
   - For MSTest-style projects: `./.dotnet/dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
