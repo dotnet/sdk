@@ -110,6 +110,61 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItPassesEnvironmentVariablesToBuildDeployAndRunArgumentsTargets()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "EnvironmentVariables")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework", ToolsetInfo.CurrentTargetFramework,
+                "--device", "test-device-1",
+                "-e", "FOO=BAR",
+                "-p:ModifyRuntimeEnvironmentVariable=true",
+                "-bl");
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining("Runtime environment variables: FOO=modified-by-target, INJECTED=injected-by-target");
+
+        string buildBinlogPath = Path.Combine(testInstance.Path, "msbuild.binlog");
+        string testBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog");
+
+        AssertTargetInBinlog(
+            buildBinlogPath,
+            "_LogRuntimeEnvironmentVariableDuringBuild",
+            targets => targets.SelectMany(target => target.FindChildrenRecursive<Message>())
+                .Should().Contain(message =>
+                    message.Text != null &&
+                    message.Text.Contains("FOO=BAR", StringComparison.Ordinal)));
+        AssertTargetInBinlog(
+            testBinlogPath,
+            "DeployToDevice",
+            targets => targets.SelectMany(target => target.FindChildrenRecursive<Message>())
+                .Should().Contain(message =>
+                    message.Text != null &&
+                    message.Text.Contains("FOO=BAR", StringComparison.Ordinal)));
+        AssertTargetInBinlog(
+            testBinlogPath,
+            "_LogRuntimeEnvironmentVariableDuringComputeRunArguments",
+            targets => targets.SelectMany(target => target.FindChildrenRecursive<Message>())
+                .Should().Contain(message =>
+                    message.Text != null &&
+                    message.Text.Contains("FOO=modified-by-target", StringComparison.Ordinal) &&
+                    message.Text.Contains("INJECTED=injected-by-target", StringComparison.Ordinal)));
+
+        var build = BinaryLog.ReadBuild(buildBinlogPath);
+        build.SourceFiles.Should().Contain(file =>
+            file.FullPath.EndsWith("dotnet-test-env.props", StringComparison.OrdinalIgnoreCase));
+        File.Exists(Path.Combine(
+            testInstance.Path,
+            "obj",
+            "Debug",
+            ToolsetInfo.CurrentTargetFramework,
+            "dotnet-test-env.props")).Should().BeFalse();
+    }
+
+    [TestMethod]
     public void ItDoesNotPromptForDeviceWhenComputeAvailableDevicesTargetDoesNotExist()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests")

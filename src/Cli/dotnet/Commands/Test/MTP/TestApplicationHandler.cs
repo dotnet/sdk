@@ -82,12 +82,28 @@ internal sealed class TestApplicationHandler
 
         if (hostType == "TestHost")
         {
+            int? attemptNumber = null;
+            // Invalid values fall back to legacy instance-based inference. Testfx normalizes malformed
+            // environment values to attempt 1 before sending them, and older hosts omit this property.
+            if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.AttemptNumber, out string? attemptNumberValue) &&
+                int.TryParse(attemptNumberValue, out int parsedAttemptNumber) &&
+                parsedAttemptNumber > 0)
+            {
+                attemptNumber = parsedAttemptNumber;
+            }
+
             _receivedTestHostHandshake = true;
-            // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
-            // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
-            // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
+            // Only test hosts represent an assembly attempt. Controllers and orchestrators must not
+            // register runs, otherwise retries are counted and start messages are rendered twice.
             var handshakeInfo = _handshakeInfo.Value;
-            _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
+            if (attemptNumber.HasValue)
+            {
+                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!, attemptNumber.Value);
+            }
+            else
+            {
+                _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
+            }
         }
 
         // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
@@ -182,6 +198,7 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.InstanceId => nameof(HandshakeMessagePropertyNames.InstanceId),
             HandshakeMessagePropertyNames.IsIDE => nameof(HandshakeMessagePropertyNames.IsIDE),
             HandshakeMessagePropertyNames.ExecutionMode => nameof(HandshakeMessagePropertyNames.ExecutionMode),
+            HandshakeMessagePropertyNames.AttemptNumber => nameof(HandshakeMessagePropertyNames.AttemptNumber),
             _ => string.Empty,
         };
 
@@ -665,7 +682,7 @@ internal sealed class TestApplicationHandler
         {
             logMessageBuilder.AppendLine($"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
                 $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
-                $"{fileArtifactMessage.SessionUid}");
+                $"{fileArtifactMessage.SessionUid}, {fileArtifactMessage.Kind}");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());

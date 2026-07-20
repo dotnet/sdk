@@ -18,7 +18,7 @@ internal enum TestListFormat
     Json,
 }
 
-internal record TestOptions(bool IsHelp, bool IsDiscovery, TestListFormat ListTestsFormat, IReadOnlyDictionary<string, string> EnvironmentVariables);
+internal record TestOptions(bool IsHelp, bool IsDiscovery, TestListFormat ListTestsFormat);
 
 internal record PathOptions(string? ProjectOrSolutionPath, string? SolutionPath, string? TestModules, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
 
@@ -32,4 +32,5 @@ internal record BuildOptions(
     ImmutableArray<string> TestApplicationArguments,
     IEnumerable<string> MSBuildArgs,
     string? Device,
-    bool ListDevices);
+    bool ListDevices,
+    IReadOnlyDictionary<string, string> EnvironmentVariables);
