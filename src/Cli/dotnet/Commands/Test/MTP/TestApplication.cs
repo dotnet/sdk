@@ -25,6 +25,12 @@ internal sealed class TestApplication(
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
     private const int LiveOutputTailLineCount = 200;
 
+    // Deterministic TRX name requested from standalone wasm test hosts. A fixed, host-controlled
+    // basename lets dotnet test (and a bridge host copying the file back) agree on the artifact
+    // without trusting a device/VFS directory listing.
+    private const string WasmTestTrxFileName = "blazor-wasm.trx";
+    private const string WasmDefaultResultsDirectoryName = "TestResults";
+
     private readonly Lock _requestLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
@@ -243,7 +249,13 @@ internal sealed class TestApplication(
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
-        if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
+        // Wasm hosts have no live pipe; they report through an on-disk TRX. Ensure a results
+        // directory is always set for them (default it when the user didn't pass one) so the host
+        // that writes the TRX and dotnet test that reads it back agree on the location.
+        string? resultsDirectoryPath = GetStandaloneResultsDirectory(
+            _buildOptions.PathOptions.ResultsDirectoryPath, LaunchTestHostStandalone, Directory.GetCurrentDirectory());
+
+        if (resultsDirectoryPath is not null)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
@@ -264,15 +276,28 @@ internal sealed class TestApplication(
         }
 
         // Server mode makes the test host connect back to our named pipe. On wasm runtimes the
-        // sandbox can't open a pipe, so we skip these options and run the host standalone
-        // (results come from the process exit code and stdout). See LaunchTestHostStandalone.
-        if (!LaunchTestHostStandalone)
-        {
-            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
-        }
+        // sandbox can't open a pipe, so we skip those options and run the host standalone, asking
+        // it to write an on-disk TRX instead. A bridge host / runner copies that TRX back to the
+        // results directory, and dotnet test reads results from it. This assumes the test project
+        // includes the Microsoft.Testing.Extensions.TrxReport extension (MSTest.Sdk does by
+        // default). See LaunchTestHostStandalone.
+        builder.Append($" {GetHostModeArguments(LaunchTestHostStandalone, _pipeName, WasmTestTrxFileName)}");
 
         return builder.ToString();
     }
+
+    // Resolves the results directory to pass to the host. Wasm hosts always need one (they report
+    // via an on-disk TRX), so default it when the user didn't pass one; non-wasm hosts keep the
+    // existing behavior of only setting it when explicitly requested.
+    internal static string? GetStandaloneResultsDirectory(string? userResultsDirectory, bool launchStandalone, string currentDirectory) =>
+        userResultsDirectory ?? (launchStandalone ? Path.Combine(currentDirectory, WasmDefaultResultsDirectoryName) : null);
+
+    // Trailing host arguments that depend on run mode: standalone (wasm) hosts are asked to write
+    // an on-disk TRX; all others get the server-mode named-pipe options.
+    internal static string GetHostModeArguments(bool launchStandalone, string pipeName, string trxFileName) =>
+        launchStandalone
+            ? $"{CliConstants.ReportTrxOptionKey} {CliConstants.ReportTrxFileNameOptionKey} {ArgumentEscaper.EscapeSingleArg(trxFileName)}"
+            : $"{CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}";
 
     private async Task WaitConnectionAsync(CancellationToken token)
     {
