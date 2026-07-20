@@ -144,6 +144,8 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         }
     }
 
+    public int? ExitCode { get; internal set; }
+
     public bool IsDiscovery { get; } = isDiscovery;
 
     public int TryCount

@@ -459,16 +459,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// </summary>
     private static void AppendAssemblyResult(ITerminal terminal, TestProgressState state)
     {
-        if (!state.Success)
+        if (state.ExitCode == ExitCode.ZeroTests)
         {
             terminal.SetColor(TerminalColor.DarkRed);
-            // If the build failed, we print one of three red strings.
-            string text = (state.FailedTests > 0, state.TotalTests == 0) switch
-            {
-                (true, _) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, state.FailedTests),
-                (false, true) => CliCommandStrings.ZeroTestsRan,
-                (false, false) => CliCommandStrings.FailedLowercase,
-            };
+            terminal.Append(CliCommandStrings.ZeroTestsRan);
+            terminal.ResetColor();
+        }
+        else if (!state.Success)
+        {
+            terminal.SetColor(TerminalColor.DarkRed);
+            string text = state.FailedTests > 0
+                ? string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, state.FailedTests)
+                : CliCommandStrings.FailedLowercase;
             terminal.Append(text);
             terminal.ResetColor();
         }
@@ -837,7 +839,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
+        assemblyRun.ExitCode = exitCode;
+        assemblyRun.Success = (exitCode == ExitCode.Success || exitCode == ExitCode.ZeroTests)
+            && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
         _terminalWithProgress.RemoveWorker(assemblyRun.SlotIndex);
