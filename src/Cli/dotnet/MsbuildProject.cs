@@ -9,7 +9,9 @@ using Microsoft.DotNet.ProjectTools;
 
 #if !CLI_AOT
 using Microsoft.Build.Construction;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
@@ -40,6 +42,7 @@ internal class MsbuildProject
     private List<NuGetFramework> _cachedTfms = null;
     private IEnumerable<string> cachedRuntimeIdentifiers;
     private IEnumerable<string> cachedConfigurations;
+    private ProjectInstance _cachedEvaluatedProject;
     private readonly bool _interactive = false;
 
     private MsbuildProject(ProjectCollection projects, ProjectRootElement project, bool interactive)
@@ -153,7 +156,7 @@ internal class MsbuildProject
 
     public IEnumerable<string> GetConfigurations()
     {
-        return cachedConfigurations ??= GetEvaluatedProject().GetConfigurations();
+        return cachedConfigurations ??= GetEvaluatedProject().GetPropertyCommaSeparatedValues("Configurations");
     }
 
     public bool CanWorkOnFramework(NuGetFramework framework)
@@ -182,29 +185,37 @@ internal class MsbuildProject
         return false;
     }
 
-    private Project GetEvaluatedProject()
+    private ProjectInstance GetEvaluatedProject()
     {
+        // Reuse a single evaluation across the RID/TFM/Configuration getters. A ProjectInstance is a
+        // standalone snapshot that is never stored in the ProjectCollection's loaded-project cache, so
+        // (unlike a cached Project) it can never be silently re-evaluated to Full by a later LoadProject.
+        if (_cachedEvaluatedProject is not null)
+        {
+            return _cachedEvaluatedProject;
+        }
+
         try
         {
-            Project project;
+            // Only evaluated properties (RuntimeIdentifier(s), TargetFramework(s), Configurations) are read
+            // from the returned instance, never items or targets, so stop after the Properties pass instead
+            // of running a full evaluation.
+            var options = new ProjectOptions
+            {
+                ProjectCollection = _projects,
+                EvaluationStage = ProjectEvaluationStage.Properties,
+            };
             if (_interactive)
             {
                 // NuGet need this environment variable to call plugin dll
                 Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
                 // Even during evaluation time, the SDK resolver may need to output auth instructions, so set a logger.
                 _projects.RegisterLogger(new ConsoleLogger(LoggerVerbosity.Minimal));
-                project = _projects.LoadProject(
-                    ProjectRootElement.FullPath,
-                    new Dictionary<string, string>
-                    { ["NuGetInteractive"] = "true" },
-                    null);
-            }
-            else
-            {
-                project = _projects.LoadProject(ProjectRootElement.FullPath);
+                options.GlobalProperties = new Dictionary<string, string>
+                { ["NuGetInteractive"] = "true" };
             }
 
-            return project;
+            return _cachedEvaluatedProject = ProjectInstance.FromFile(ProjectRootElement.FullPath, options);
         }
         catch (InvalidProjectFileException e)
         {

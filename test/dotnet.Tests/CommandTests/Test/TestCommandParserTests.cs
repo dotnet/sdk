@@ -105,6 +105,44 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow("text")]
+        [DataRow("json")]
+        public void MTPCommandAcceptsListTestsFormatValue(string format)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", format]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.HasOption(command.ListTestsOption).Should().BeTrue();
+            parseResult.GetValue(command.ListTestsOption).Should().Be(format);
+        }
+
+        [TestMethod]
+        public void MTPCommandAcceptsBareListTestsWithoutValue()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", "-c", "Release"]);
+
+            // A bare '--list-tests' (followed by another option) has no value; discovery defaults to text.
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.HasOption(command.ListTestsOption).Should().BeTrue();
+            parseResult.GetValue(command.ListTestsOption).Should().BeNull();
+        }
+
+        [TestMethod]
+        [DataRow("foo")]
+        [DataRow("JSON")]
+        [DataRow("TEXT")]
+        public void MTPCommandRejectsInvalidListTestsFormatValue(string format)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", format]);
+
+            // Accepted values are constrained to the lowercase 'text'/'json' keys matching MTP.
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
         public void DllDetectionShouldExcludeRunArgumentsAndGlobalProperties()
         {
             var parseResult = Parser.Parse("""test -p:"RunConfig=abd.dll" -- RunConfig=abd.dll -p:"RunConfig=abd.dll" --results-directory hey.dll""");

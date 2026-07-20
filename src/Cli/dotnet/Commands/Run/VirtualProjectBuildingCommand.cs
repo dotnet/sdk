@@ -167,6 +167,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
 #if !CLI_AOT
+    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
     public override int Execute()
     {

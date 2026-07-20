@@ -3157,6 +3157,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">Bu komut için NuGet paketlerini indirmek ve ayıklamak üzere geçici bir dizin belirtin (güvenli olmalıdır).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputTruncated">
+        <source>... output truncated, {0} lines omitted ...</source>
+        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <note>{0} is the number of output lines that were omitted from the summary.</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Testleri Microsoft Testplatform bandını görüntülemeden çalıştır</target>
