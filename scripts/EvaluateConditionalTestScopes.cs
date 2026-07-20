@@ -50,7 +50,10 @@ var globalTriggerPaths = (doc.Descendants("GlobalTriggerPaths").FirstOrDefault()
     .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 // Validate configuration
-ValidateConfiguration(repoRoot, scopes, globalTriggerPaths);
+if (!ValidateConfiguration(repoRoot, scopes, globalTriggerPaths))
+{
+    return 1;
+}
 
 bool isCI = buildReason is not "" and not "PullRequest";
 
@@ -231,16 +234,16 @@ static string? GetArg(string name)
     return null;
 }
 
-static void ValidateConfiguration(string repoRoot, List<XElement> scopes, string[] globalTriggerPaths)
+static bool ValidateConfiguration(string repoRoot, List<XElement> scopes, string[] globalTriggerPaths)
 {
-    var warnings = new List<string>();
+    var errors = new List<string>();
 
     foreach (var scope in scopes)
     {
         var scopeName = scope.Attribute("Include")?.Value;
         if (string.IsNullOrWhiteSpace(scopeName))
         {
-            warnings.Add("ConditionalTestScope is missing a name (Include attribute).");
+            errors.Add("ConditionalTestScope is missing a name (Include attribute).");
             continue;
         }
 
@@ -253,50 +256,52 @@ static void ValidateConfiguration(string repoRoot, List<XElement> scopes, string
         var mechanism = scope.Element("Mechanism")?.Value;
         if (string.IsNullOrWhiteSpace(mechanism))
         {
-            warnings.Add($"Scope '{scopeName}' is missing required <Mechanism> element.");
+            errors.Add($"Scope '{scopeName}' is missing required <Mechanism> element.");
         }
         if (triggerPaths.Length == 0)
         {
-            warnings.Add($"Scope '{scopeName}' is missing required <TriggerPaths> element or has no paths defined.");
+            errors.Add($"Scope '{scopeName}' is missing required <TriggerPaths> element or has no paths defined.");
         }
         if (string.Equals(mechanism, "project", StringComparison.OrdinalIgnoreCase) && testProjects.Length == 0)
         {
-            warnings.Add($"Scope '{scopeName}' uses Mechanism=project but is missing <TestProjects> or has no paths defined.");
+            errors.Add($"Scope '{scopeName}' uses Mechanism=project but is missing <TestProjects> or has no paths defined.");
         }
 
-        // Warn on unrecognized child elements (catches typos like <TriggerPath> instead of <TriggerPaths>)
+        // Flag unrecognized child elements (catches typos like <TriggerPath> instead of <TriggerPaths>)
         var knownElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { "Mechanism", "TestProjects", "TriggerPaths", "RunAlways" };
         foreach (var element in scope.Elements())
         {
             if (!knownElements.Contains(element.Name.LocalName))
             {
-                warnings.Add($"Scope '{scopeName}' has unrecognized element <{element.Name.LocalName}>. Known elements: {string.Join(", ", knownElements)}.");
+                errors.Add($"Scope '{scopeName}' has unrecognized element <{element.Name.LocalName}>. Known elements: {string.Join(", ", knownElements)}.");
             }
         }
 
         foreach (var pattern in triggerPaths)
         {
-            ValidatePatternBaseDir(repoRoot, pattern, $"scope '{scopeName}' TriggerPaths", warnings);
+            ValidatePatternBaseDir(repoRoot, pattern, $"scope '{scopeName}' TriggerPaths", errors);
         }
         foreach (var pattern in testProjects)
         {
-            ValidatePatternBaseDir(repoRoot, pattern, $"scope '{scopeName}' TestProjects", warnings);
+            ValidatePatternBaseDir(repoRoot, pattern, $"scope '{scopeName}' TestProjects", errors);
         }
     }
 
     foreach (var pattern in globalTriggerPaths)
     {
-        ValidatePatternBaseDir(repoRoot, pattern, "GlobalTriggerPaths", warnings);
+        ValidatePatternBaseDir(repoRoot, pattern, "GlobalTriggerPaths", errors);
     }
 
-    foreach (var warning in warnings)
+    foreach (var error in errors)
     {
-        Console.WriteLine($"##[warning]{warning}");
+        Console.WriteLine($"##[error]{error}");
     }
+
+    return errors.Count == 0;
 }
 
-static void ValidatePatternBaseDir(string repoRoot, string pattern, string context, List<string> warnings)
+static void ValidatePatternBaseDir(string repoRoot, string pattern, string context, List<string> errors)
 {
     var normalized = pattern.Replace('\\', '/');
     var firstWildcard = normalized.IndexOfAny(['*', '?']);
@@ -306,7 +311,7 @@ static void ValidatePatternBaseDir(string repoRoot, string pattern, string conte
         var fullPath = Path.Combine(repoRoot, normalized.Replace('/', Path.DirectorySeparatorChar));
         if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
         {
-            warnings.Add($"{context}: '{pattern}' does not exist in the repo.");
+            errors.Add($"{context}: '{pattern}' does not exist in the repo.");
         }
         return;
     }
@@ -321,6 +326,6 @@ static void ValidatePatternBaseDir(string repoRoot, string pattern, string conte
     var fullBaseDir = Path.Combine(repoRoot, baseDir.Replace('/', Path.DirectorySeparatorChar));
     if (!Directory.Exists(fullBaseDir))
     {
-        warnings.Add($"{context}: '{pattern}' — base directory '{baseDir}' does not exist in the repo.");
+        errors.Add($"{context}: '{pattern}' — base directory '{baseDir}' does not exist in the repo.");
     }
 }
