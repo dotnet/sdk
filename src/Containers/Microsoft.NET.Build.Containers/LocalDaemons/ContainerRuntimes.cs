@@ -360,7 +360,10 @@ internal sealed class WslcContainerRuntime(ContainerRuntimeOperations operations
         SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken)
-        => throw new DockerLoadException(Strings.ImageLoadFailed_WslcMultiArchUnsupported);
+    {
+        // Track WSLC support for importing multi-architecture images at https://github.com/microsoft/WSL/issues/41123.
+        throw new DockerLoadException(Strings.ImageLoadFailed_WslcMultiArchUnsupported);
+    }
 }
 
 internal sealed class MacOSContainerRuntime(ContainerRuntimeOperations operations, ILogger logger) : ContainerRuntimeBase(operations, logger)
