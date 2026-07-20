@@ -269,7 +269,7 @@ internal static class SolutionAndProjectUtility
                     continue;
                 }
 
-                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, reference.Configuration, reference.Platform, visitedTraversalProjects));
+                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, logger, reference.Configuration, reference.Platform, visitedTraversalProjects));
             }
 
             return projects;
