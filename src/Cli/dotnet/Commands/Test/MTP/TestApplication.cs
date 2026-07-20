@@ -50,6 +50,23 @@ internal sealed class TestApplication(
         _negotiatedProtocolVersion is { } negotiatedProtocolVersion &&
         negotiatedProtocolVersion.CompareTo(ProtocolVersion_1_1) >= 0;
 
+    // Microsoft.Testing.Platform's server mode (the "--server dotnettestcli --dotnet-test-pipe"
+    // options) requires the test host to connect back to a named pipe. On wasm runtimes
+    // (browser/wasi) the sandbox cannot open a named pipe, so requesting server mode makes the
+    // host throw PlatformNotSupportedException before any test runs (see
+    // microsoft/testfx DotnetTestConnection, which hard-instantiates a NamedPipeClient). For
+    // these modules we launch the host standalone and rely on its process exit code (and the
+    // streamed stdout tail) instead of the live pipe.
+    // TODO: when a bridge host (e.g. the Blazor Gateway) fronts the wasm app and can relay the
+    // pipe, gate this on a host-declared capability instead of the runtime identifier so server
+    // mode (and live per-test reporting) can be re-enabled.
+    private bool LaunchTestHostStandalone => IsWasmRuntimeIdentifier(Module.RunProperties.RuntimeIdentifier);
+
+    internal static bool IsWasmRuntimeIdentifier(string? runtimeIdentifier) =>
+        runtimeIdentifier is not null &&
+        (runtimeIdentifier.StartsWith("browser", StringComparison.OrdinalIgnoreCase) ||
+         runtimeIdentifier.StartsWith("wasi", StringComparison.OrdinalIgnoreCase));
+
     public async Task<int> RunAsync(CtrlCCancellationManager ctrlC)
     {
         if (Interlocked.Exchange(ref _hasRun, 1) != 0)
@@ -61,7 +78,12 @@ internal sealed class TestApplication(
 
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
+
+        // Standalone wasm hosts never connect back (server mode is not requested for them), so
+        // don't spin up a named-pipe server that nobody will connect to.
+        var testAppPipeConnectionLoop = LaunchTestHostStandalone
+            ? Task.CompletedTask
+            : Task.Run(async () => await WaitConnectionAsync(cancellationToken));
 
         Process? process = null;
         try
@@ -241,7 +263,13 @@ internal sealed class TestApplication(
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
+        // Server mode makes the test host connect back to our named pipe. On wasm runtimes the
+        // sandbox can't open a pipe, so we skip these options and run the host standalone
+        // (results come from the process exit code and stdout). See LaunchTestHostStandalone.
+        if (!LaunchTestHostStandalone)
+        {
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
+        }
 
         return builder.ToString();
     }
