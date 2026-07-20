@@ -18,12 +18,6 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 var absoluteFolderPath = Path.GetFullPath(folderPath, Directory.GetCurrentDirectory());
 
                 var filePaths = GetMatchingFilePaths(absoluteFolderPath, fileMatcher);
-
-                // A non-global .editorconfig only affects files in its own directory subtree, so collect
-                // configs by walking up from each included file rather than scanning the whole workspace
-                // tree (which in large repos may contain sizable non-.NET subtrees such as node_modules).
-                // An .editorconfig marked is_global is not directory-scoped; one outside the walked
-                // ancestors would not be discovered (see PR notes).
                 var editorConfigPaths = EditorConfigFinder.GetEditorConfigPathsForFiles(filePaths);
 
                 var projectInfos = ImmutableArray.CreateBuilder<ProjectInfo>(ProjectLoaders.Length);
