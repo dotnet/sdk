@@ -163,7 +163,7 @@
     <value>Arguments to forward to dotnet.</value>
   </data>
   <data name="DotnetCommandDotnetNotFound" xml:space="preserve">
-    <value>Error: dotnet executable not found at '{0}'.</value>
+    <value>dotnet executable not found at '{0}'.</value>
   </data>
   <data name="DotnetCommandInstallFirst" xml:space="preserve">
     <value>Run 'dotnetup install' to install a .NET SDK first.</value>

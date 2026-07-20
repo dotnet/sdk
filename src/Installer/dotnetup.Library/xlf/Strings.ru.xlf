@@ -28,8 +28,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DotnetCommandDotnetNotFound">
-        <source>Error: dotnet executable not found at '{0}'.</source>
-        <target state="new">Error: dotnet executable not found at '{0}'.</target>
+        <source>dotnet executable not found at '{0}'.</source>
+        <target state="new">dotnet executable not found at '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetCommandDotnetStartFailed">

@@ -121,10 +121,21 @@ internal static class DotnetupPaths
     /// Gets the default dotnet install path managed by dotnetup.
     /// This is the user-local dotnet root (e.g. %LOCALAPPDATA%\dotnet on Windows).
     /// </summary>
+    /// <remarks>
+    /// Can be overridden via DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH environment variable.
+    /// </remarks>
     public static string DefaultDotnetInstallPath
     {
         get
         {
+            // Allow override for testing — lets tests point the managed hive at a temp directory
+            // without touching the real user profile.
+            var overridePath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH");
+            if (!string.IsNullOrEmpty(overridePath))
+            {
+                return overridePath;
+            }
+
             var baseDir = GetBaseDirectory();
             if (string.IsNullOrEmpty(baseDir))
             {
