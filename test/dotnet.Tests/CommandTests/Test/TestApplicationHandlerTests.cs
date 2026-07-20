@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -57,9 +58,10 @@ public class TestApplicationHandlerTests : IDisposable
             IsTestingPlatformApplication: true,
             LaunchSettings: null,
             TargetPath: targetPath,
-            DotnetRootArchVariableName: null);
+            DotnetRootArchVariableName: null,
+            EnvironmentVariables: new Dictionary<string, string>());
 
-        var testOptions = new TestOptions(IsHelp: false, IsDiscovery: false, EnvironmentVariables: new Dictionary<string, string>());
+        var testOptions = new TestOptions(IsHelp: false, IsDiscovery: false, ListTestsFormat: TestListFormat.Text);
 
         var handler = new TestApplicationHandler(reporter, module, testOptions);
 
@@ -133,6 +135,25 @@ public class TestApplicationHandlerTests : IDisposable
 
         accepted.Should().BeTrue();
         reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void OnHandshakeReceived_WithExplicitAttemptNumber_UsesReportedAttempt()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            showAssembly: true);
+
+        var handshake = BuildHandshake(
+            executionMode: HandshakeMessageExecutionModes.Run,
+            attemptNumber: 3);
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().Contain("(try 3)");
     }
 
     /// <summary>
@@ -297,7 +318,7 @@ public class TestApplicationHandlerTests : IDisposable
     private const string ProjectPath = "/repo/MyTest.csproj";
     private const string TargetFramework = "net9.0";
 
-    private (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(bool isHelp, bool isDiscovery)
+    private (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(bool isHelp, bool isDiscovery, bool showAssembly = false)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -305,6 +326,8 @@ public class TestApplicationHandlerTests : IDisposable
         {
             AnsiMode = AnsiMode.SimpleAnsi,
             ShowProgress = false,
+            ShowAssembly = showAssembly,
+            ShowAssemblyStartAndComplete = showAssembly,
         };
 
         var reporter = new TerminalTestReporter(capturingConsole, reporterOptions);
@@ -322,14 +345,15 @@ public class TestApplicationHandlerTests : IDisposable
             IsTestingPlatformApplication: true,
             LaunchSettings: null,
             TargetPath: TargetPath,
-            DotnetRootArchVariableName: null);
+            DotnetRootArchVariableName: null,
+            EnvironmentVariables: new Dictionary<string, string>());
 
-        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: isDiscovery, EnvironmentVariables: new Dictionary<string, string>());
+        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: isDiscovery, ListTestsFormat: TestListFormat.Text);
 
         return (new TestApplicationHandler(reporter, module, testOptions), reporter, capturingConsole);
     }
 
-    private static HandshakeMessage BuildHandshake(string? executionMode, string hostType = "TestHost", bool includeInstanceId = true)
+    private static HandshakeMessage BuildHandshake(string? executionMode, string hostType = "TestHost", bool includeInstanceId = true, int? attemptNumber = null)
     {
         var properties = new Dictionary<byte, string>
         {
@@ -351,6 +375,11 @@ public class TestApplicationHandlerTests : IDisposable
         if (executionMode is not null)
         {
             properties[HandshakeMessagePropertyNames.ExecutionMode] = executionMode;
+        }
+
+        if (attemptNumber.HasValue)
+        {
+            properties[HandshakeMessagePropertyNames.AttemptNumber] = attemptNumber.Value.ToString(CultureInfo.InvariantCulture);
         }
 
         return new HandshakeMessage(properties);
