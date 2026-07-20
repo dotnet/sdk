@@ -249,6 +249,32 @@ static void ValidateConfiguration(string repoRoot, List<XElement> scopes, string
         var testProjects = (scope.Element("TestProjects")?.Value ?? "")
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+        // Validate required metadata elements exist
+        var mechanism = scope.Element("Mechanism")?.Value;
+        if (string.IsNullOrWhiteSpace(mechanism))
+        {
+            warnings.Add($"Scope '{scopeName}' is missing required <Mechanism> element.");
+        }
+        if (triggerPaths.Length == 0)
+        {
+            warnings.Add($"Scope '{scopeName}' is missing required <TriggerPaths> element or has no paths defined.");
+        }
+        if (string.Equals(mechanism, "project", StringComparison.OrdinalIgnoreCase) && testProjects.Length == 0)
+        {
+            warnings.Add($"Scope '{scopeName}' uses Mechanism=project but is missing <TestProjects> or has no paths defined.");
+        }
+
+        // Warn on unrecognized child elements (catches typos like <TriggerPath> instead of <TriggerPaths>)
+        var knownElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "Mechanism", "TestProjects", "TriggerPaths", "RunAlways" };
+        foreach (var element in scope.Elements())
+        {
+            if (!knownElements.Contains(element.Name.LocalName))
+            {
+                warnings.Add($"Scope '{scopeName}' has unrecognized element <{element.Name.LocalName}>. Known elements: {string.Join(", ", knownElements)}.");
+            }
+        }
+
         foreach (var pattern in triggerPaths)
         {
             ValidatePatternBaseDir(repoRoot, pattern, $"scope '{scopeName}' TriggerPaths", warnings);
