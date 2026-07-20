@@ -74,14 +74,14 @@
 /test/dotnet-fsi.Tests @dotnet/fsharp
 
 # Area-DotNet Test
-/src/Cli/dotnet/Commands/Test @dotnet/dotnet-testing-admin
-/src/Cli/dotnet/Commands/VSTest @dotnet/dotnet-testing-admin
-/test/dotnet.Tests/CommandTests/Test @dotnet/dotnet-testing-admin
-/test/dotnet.Tests/CommandTests/VSTest @dotnet/dotnet-testing-admin
-/test/dotnet-new.IntegrationTests @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/MSTest* @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/NUnit* @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing-admin
+/src/Cli/dotnet/Commands/Test @dotnet/dotnet-testing
+/src/Cli/dotnet/Commands/VSTest @dotnet/dotnet-testing
+/test/dotnet.Tests/CommandTests/Test @dotnet/dotnet-testing
+/test/dotnet.Tests/CommandTests/VSTest @dotnet/dotnet-testing
+/test/dotnet-new.IntegrationTests @dotnet/dotnet-testing
+/template_feed/Microsoft.DotNet.Common.*/content/MSTest* @dotnet/dotnet-testing
+/template_feed/Microsoft.DotNet.Common.*/content/NUnit* @dotnet/dotnet-testing
+/template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing
 
 # Area-Templates
 /src/Cli/dotnet/Commands/New @dotnet/templating-engine-maintainers
