@@ -188,7 +188,7 @@
     <comment>Hint appended after the recommended mode name in the init summary, e.g. "Terminal Mode (Suggested)".</comment>
   </data>
   <data name="AccessModeEverywhere" xml:space="preserve">
-    <value>Replacement Mode</value>
+    <value>Everywhere Mode</value>
   </data>
   <data name="PathGuidanceNone" xml:space="preserve">
     <value>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</value>
@@ -209,7 +209,7 @@
     <value>Configure the current shell profile to use installs managed by dotnetup.</value>
   </data>
   <data name="PathDescriptionEverywhere" xml:space="preserve">
-    <value>The system will be configured to use dotnetup installs over any other installs.</value>
+    <value>Add dotnetup's .NET to the system PATH, ahead of any machine-wide install, so every application uses it. Requires elevation.</value>
   </data>
   <data name="PathTooltipNone" xml:space="preserve">
     <value>Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</value>
@@ -221,10 +221,10 @@
     <value>Only PowerShell will work in this mode. CMD has no profile file.</value>
   </data>
   <data name="PathTooltipEverywhere" xml:space="preserve">
-    <value>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</value>
+    <value>Recommended if you want all applications, debuggers, and IDEs — not just terminals launched from your shell — to use dotnetup's .NET installs. Requires administrator privileges to update the system PATH; any existing machine-wide install stays on the PATH behind it.</value>
   </data>
   <data name="PathReplacementModeUnixError" xml:space="preserve">
-    <value>Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</value>
+    <value>Everywhere Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</value>
   </data>
   <data name="HelpOptionsTitle" xml:space="preserve">
     <value>Options:</value>

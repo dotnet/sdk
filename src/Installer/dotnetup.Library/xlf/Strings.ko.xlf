@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="ko" original="../Strings.resx">
     <body>
       <trans-unit id="AccessModeEverywhere">
-        <source>Replacement Mode</source>
-        <target state="new">Replacement Mode</target>
+        <source>Everywhere Mode</source>
+        <target state="new">Everywhere Mode</target>
         <note />
       </trans-unit>
       <trans-unit id="AccessModeNone">
@@ -392,8 +392,8 @@ Or open a new terminal.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathDescriptionEverywhere">
-        <source>The system will be configured to use dotnetup installs over any other installs.</source>
-        <target state="new">The system will be configured to use dotnetup installs over any other installs.</target>
+        <source>Add dotnetup's .NET to the system PATH, ahead of any machine-wide install, so every application uses it. Requires elevation.</source>
+        <target state="new">Add dotnetup's .NET to the system PATH, ahead of any machine-wide install, so every application uses it. Requires elevation.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathDescriptionNone">
@@ -432,13 +432,13 @@ Or open a new terminal.</target>
         <note>Hint appended after the recommended mode name in the init summary, e.g. "Terminal Mode (Suggested)".</note>
       </trans-unit>
       <trans-unit id="PathReplacementModeUnixError">
-        <source>Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</source>
-        <target state="new">Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</target>
+        <source>Everywhere Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</source>
+        <target state="new">Everywhere Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathTooltipEverywhere">
-        <source>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</source>
-        <target state="new">Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</target>
+        <source>Recommended if you want all applications, debuggers, and IDEs — not just terminals launched from your shell — to use dotnetup's .NET installs. Requires administrator privileges to update the system PATH; any existing machine-wide install stays on the PATH behind it.</source>
+        <target state="new">Recommended if you want all applications, debuggers, and IDEs — not just terminals launched from your shell — to use dotnetup's .NET installs. Requires administrator privileges to update the system PATH; any existing machine-wide install stays on the PATH behind it.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathTooltipNone">
