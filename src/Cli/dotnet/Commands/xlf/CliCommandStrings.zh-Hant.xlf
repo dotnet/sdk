@@ -92,6 +92,16 @@
         <target state="translated">.NET 產生器</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsRequireProject">
+        <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
+        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
+        <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
+        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
         <target state="new">No test projects were found.</target>
@@ -3147,6 +3157,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">指定此命令的暫存目錄，以下載並解壓縮 NuGet 套件 (必須為安全)。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputTruncated">
+        <source>... output truncated, {0} lines omitted ...</source>
+        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <note>{0} is the number of output lines that were omitted from the summary.</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">執行測試，但不顯示 Microsoft Testplatform 橫幅</target>
@@ -3187,6 +3202,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">使用 .NET 專案中指定的測試執行器，執行單元測試。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">測試探索已完成，未成功的結束代碼為: {0} (請參閱: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">在 {1} 組件中找到 {0} 個測試。</target>
@@ -3201,6 +3221,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">要為其執行測試的目標架構。該目標架構必須在專案檔中指定。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">測試執行已完成，未成功的結束代碼為: {0} (請參閱: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

@@ -92,6 +92,16 @@
         <target state="translated">.NET-Generator</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsRequireProject">
+        <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
+        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
+        <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
+        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
         <target state="new">No test projects were found.</target>
@@ -3147,6 +3157,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">Geben Sie ein temporäres Verzeichnis für diesen Befehl zum Herunterladen und Extrahieren von NuGet-Paketen an (muss sicher sein).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputTruncated">
+        <source>... output truncated, {0} lines omitted ...</source>
+        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <note>{0} is the number of output lines that were omitted from the summary.</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Test(s) ohne Anzeige des Microsoft-Testplattformbanners ausführen</target>
@@ -3187,6 +3202,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">Hiermit werden mithilfe des im .NET-Projekt angegebenen Test Runners Komponententests ausgeführt.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Die Testermittlung wurde mit einem nicht erfolgreichen Exitcode abgeschlossen: {0} (siehe: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">Ermittelte {0} Tests in {1} Assemblys.</target>
@@ -3201,6 +3221,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">Das Zielframework für den Testlauf. Das Zielframework muss auch in der Projektdatei angegeben werden.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Der Testlauf wurde mit einem nicht erfolgreichen Exitcode abgeschlossen: {0} (siehe: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal sealed class AwaitableProcess : IAsyncDisposable
     {
-        // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
+        // cancel just before we hit timeout used on CI (TestWorkItemTimeout value in test/UnitTests.proj)
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
             ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(10);
 

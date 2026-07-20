@@ -9,8 +9,7 @@ using System.Threading;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
-using Microsoft.Testing.Platform.IPC;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
 
@@ -185,8 +184,9 @@ internal sealed class TestApplication(
             }
         }
 
-        // Env variables specified on command line override those specified in launch profile:
-        foreach (var (name, value) in TestOptions.EnvironmentVariables)
+        // Command-line variables (including changes made by opted-in MSBuild targets)
+        // override variables specified in the launch profile.
+        foreach (var (name, value) in Module.EnvironmentVariables)
         {
             processStartInfo.Environment[name] = value;
         }
@@ -318,6 +318,14 @@ internal sealed class TestApplication(
 
                     case TestSessionEvent sessionEvent:
                         OnSessionEvent(sessionEvent);
+                        break;
+
+                    case AzureDevOpsLogMessage azureDevOpsLogMessage:
+                        OnAzureDevOpsLogMessage(azureDevOpsLogMessage);
+                        break;
+
+                    case DisplayMessage displayMessage:
+                        OnDisplayMessage(displayMessage);
                         break;
 
                     // If we don't recognize the message, log and skip it
@@ -453,6 +461,12 @@ internal sealed class TestApplication(
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
         => _handler.OnSessionEventReceived(sessionEvent);
+
+    private void OnAzureDevOpsLogMessage(AzureDevOpsLogMessage azureDevOpsLogMessage)
+        => _handler.OnAzureDevOpsLogReceived(azureDevOpsLogMessage);
+
+    private void OnDisplayMessage(DisplayMessage displayMessage)
+        => _handler.OnDisplayMessageReceived(displayMessage);
 
     private sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
     {

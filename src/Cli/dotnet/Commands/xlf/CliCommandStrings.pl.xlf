@@ -92,6 +92,16 @@
         <target state="translated">Konstruktor platformy .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsRequireProject">
+        <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
+        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
+        <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
+        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
         <target state="new">No test projects were found.</target>
@@ -3147,6 +3157,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Określ katalog tymczasowy dla tego polecenia, aby pobrać i wyodrębnić pakiety NuGet (musi być bezpieczny).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputTruncated">
+        <source>... output truncated, {0} lines omitted ...</source>
+        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <note>{0} is the number of output lines that were omitted from the summary.</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Uruchom testy bez wyświetlania baneru platformy testowej firmy Microsoft</target>
@@ -3187,6 +3202,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Uruchom testy jednostkowe przy użyciu modułu uruchamiającego testy określonego w projekcie platformy .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Odnajdywanie testów zostało ukończone z kodem zakończenia bez powodzenia: {0} (zobacz: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">Odnaleziono testy ({0}) w zestawach {1}.</target>
@@ -3201,6 +3221,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">Platforma docelowa, dla której mają być uruchamiane testy. Platforma docelowa musi być również określona w pliku projektu.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Przebieg testu został ukończony z kodem zakończenia bez powodzenia: {0} (zobacz: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

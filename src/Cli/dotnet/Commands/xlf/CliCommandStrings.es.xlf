@@ -92,6 +92,16 @@
         <target state="translated">Generador para .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsRequireProject">
+        <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
+        <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListDevicesAndListTestsMutuallyExclusive">
+        <source>The '--list-devices' and '--list-tests' options cannot be used together.</source>
+        <target state="new">The '--list-devices' and '--list-tests' options cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdTestNoTestProjectsFound">
         <source>No test projects were found.</source>
         <target state="new">No test projects were found.</target>
@@ -3147,6 +3157,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">Especifique un directorio temporal para que este comando descargue y extraiga paquetes NuGet (debe ser seguro).</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestApplicationOutputTruncated">
+        <source>... output truncated, {0} lines omitted ...</source>
+        <target state="new">... output truncated, {0} lines omitted ...</target>
+        <note>{0} is the number of output lines that were omitted from the summary.</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Ejecutar pruebas, sin mostrar la pancarta de Microsoft Testplatform</target>
@@ -3187,6 +3202,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">Ejecuta pruebas unitarias usando el ejecutor de pruebas especificado en un proyecto de .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Detección de pruebas completada con código de salida no correcto: {0} (vea: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="translated">{0} pruebas detectadas en {1} ensamblados.</target>
@@ -3201,6 +3221,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">La plataforma de destino para la que se ejecutan pruebas. La plataforma de destino se debe especificar en el archivo de proyecto.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="translated">Serie de pruebas completada con código de salida incorrecto: {0} (consulte: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

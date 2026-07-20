@@ -1,10 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-
-using Microsoft.Testing.Platform.IPC;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
@@ -49,6 +47,10 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
     |---FileArtifactMessageList[0].SessionUid Id---| (2 bytes)
     |---FileArtifactMessageList[0].SessionUid Size---| (4 bytes)
     |---FileArtifactMessageList[0].SessionUid Value---| (n bytes)
+
+    |---FileArtifactMessageList[0].Kind Id---| (2 bytes)
+    |---FileArtifactMessageList[0].Kind Size---| (4 bytes)
+    |---FileArtifactMessageList[0].Kind Value---| (n bytes)
 */
 
 internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPipeSerializer
@@ -99,7 +101,7 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
         int length = ReadInt(stream);
         for (int i = 0; i < length; i++)
         {
-            string? fullPath = null, displayName = null, description = null, testUid = null, testDisplayName = null, sessionUid = null;
+            string? fullPath = null, displayName = null, description = null, testUid = null, testDisplayName = null, sessionUid = null, kind = null;
 
             int fieldCount = ReadUShort(stream);
 
@@ -134,13 +136,17 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
                         sessionUid = ReadStringValue(stream, fieldSize);
                         break;
 
+                    case FileArtifactMessageFieldsId.Kind:
+                        kind = ReadStringValue(stream, fieldSize);
+                        break;
+
                     default:
                         SetPosition(stream, stream.Position + fieldSize);
                         break;
                 }
             }
 
-            fileArtifactMessages.Add(new FileArtifactMessage(fullPath, displayName, description, testUid, testDisplayName, sessionUid));
+            fileArtifactMessages.Add(new FileArtifactMessage(fullPath, displayName, description, testUid, testDisplayName, sessionUid, kind));
         }
 
         return fileArtifactMessages;
@@ -184,6 +190,7 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
             WriteField(stream, FileArtifactMessageFieldsId.TestUid, fileArtifactMessage.TestUid);
             WriteField(stream, FileArtifactMessageFieldsId.TestDisplayName, fileArtifactMessage.TestDisplayName);
             WriteField(stream, FileArtifactMessageFieldsId.SessionUid, fileArtifactMessage.SessionUid);
+            WriteField(stream, FileArtifactMessageFieldsId.Kind, fileArtifactMessage.Kind);
         }
 
         // NOTE: We are able to seek only if we are using a MemoryStream
@@ -202,5 +209,6 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
         (fileArtifactMessage.Description is null ? 0 : 1) +
         (fileArtifactMessage.TestUid is null ? 0 : 1) +
         (fileArtifactMessage.TestDisplayName is null ? 0 : 1) +
-        (fileArtifactMessage.SessionUid is null ? 0 : 1));
+        (fileArtifactMessage.SessionUid is null ? 0 : 1) +
+        (fileArtifactMessage.Kind is null ? 0 : 1));
 }

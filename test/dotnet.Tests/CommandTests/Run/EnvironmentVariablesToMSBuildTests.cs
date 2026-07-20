@@ -138,6 +138,48 @@ public sealed class EnvironmentVariablesToMSBuildTests
         EnvironmentVariablesToMSBuild.ReadFromItems(project).Should().BeEquivalentTo(environmentVariables);
     }
 
+    [TestMethod]
+    public void CreatePropsFile_WritesWellFormedEnvironmentVariableItems()
+    {
+        string testDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        string? propsFile = null;
+
+        try
+        {
+            propsFile = EnvironmentVariablesToMSBuild.CreatePropsFile(
+                Path.Combine(testDirectory, "TestProject.csproj"),
+                new Dictionary<string, string>
+                {
+                    ["FOO"] = "BAR",
+                    ["ANOTHER"] = "VALUE",
+                },
+                "dotnet-test-env.props");
+
+            propsFile.Should().NotBeNull();
+            var document = new XmlDocument();
+            document.Load(propsFile!);
+
+            document.SelectNodes($"/Project/ItemGroup/{Constants.RuntimeEnvironmentVariable}")!
+                .Cast<XmlElement>()
+                .Select(element => new KeyValuePair<string, string>(
+                    element.GetAttribute("Include"),
+                    element.GetAttribute("Value")))
+                .Should().BeEquivalentTo(new Dictionary<string, string>
+                {
+                    ["FOO"] = "BAR",
+                    ["ANOTHER"] = "VALUE",
+                });
+        }
+        finally
+        {
+            EnvironmentVariablesToMSBuild.DeletePropsFile(propsFile);
+            if (Directory.Exists(testDirectory))
+            {
+                Directory.Delete(testDirectory, recursive: true);
+            }
+        }
+    }
+
     private static ProjectInstance CreateProjectInstance(string projectXml)
     {
         var collection = new ProjectCollection();

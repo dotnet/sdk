@@ -196,10 +196,10 @@
 
   <Target Name="PublishNetSdks" DependsOnTargets="PublishNETAnalyzers;PublishDotnetFormat;PublishBlazorWasmTools;PublishStaticWebAssetsTools;PublishRazorSdkTools">
     <ItemGroup>
-      <WebSdkProjectFile Include="$(RepoRoot)src\WebSdk\**\*.csproj" />
+      <_SdkProjectFile Include="$(RepoRoot)src\WebSdk\**\*.csproj;$(RepoRoot)src\WasmSdk\**\*.csproj" />
     </ItemGroup>
 
-    <MSBuild Projects="@(WebSdkProjectFile)" />
+    <MSBuild Projects="@(_SdkProjectFile)" />
 
     <PropertyGroup>
       <NETSdkSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk</NETSdkSourceRoot>
@@ -532,11 +532,14 @@
     them entirely in native code, falling back to the managed dotnet.dll for other commands.
     The output is placed next to dotnet.dll so it's packaged with the SDK.
 
-    Only runs for native builds (TargetRid == HostRid) on supported platforms.
-    Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
+    Runs for native builds (target OS/arch match the build host) on supported platforms, and for
+    same-OS cross-arch builds where NativeAOT targets a different architecture from the build host
+    (win-x64 -> win-arm64, osx-x64 -> osx-arm64, and Linux via the azurelinux cross containers that
+    provide a cross toolchain and target sysroot via ROOTFS_DIR). See the _ShouldPublishDotnetAot
+    property in src/Layout/Directory.Build.props.
   -->
   <Target Name="PublishDotnetAot"
-          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))">
+          Condition="'$(_ShouldPublishDotnetAot)' == 'true'">
     <PropertyGroup>
       <!-- Define platform-specific native library naming -->
       <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
@@ -544,6 +547,17 @@
       <_DotnetAotNativeLibExtension Condition="'$(OSName)' == 'osx'">.dylib</_DotnetAotNativeLibExtension>
       <_DotnetAotNativeLibExtension Condition="'$(_DotnetAotNativeLibExtension)' == ''">.so</_DotnetAotNativeLibExtension>
       <_DotnetAotNativeLibName>$(_DotnetAotNativeLibPrefix)dotnet-aot$(_DotnetAotNativeLibExtension)</_DotnetAotNativeLibName>
+
+      <!--
+        Global properties for the dotnet-aot Publish below. _IsPublishing=true is always required
+        (see the note below). For same-OS cross-arch builds (win/osx/linux) we also forward the
+        cross-compilation inputs: the MSBuild task doesn't flow the outer build's global properties
+        to the child project, so CrossBuild and the target architecture/RID must be passed
+        explicitly. On Linux the child then maps SysRoot from the ROOTFS_DIR environment variable
+        via LocateNativeCompiler.targets; on Windows/macOS no sysroot is needed.
+      -->
+      <_DotnetAotPublishProperties>_IsPublishing=true</_DotnetAotPublishProperties>
+      <_DotnetAotPublishProperties Condition="'$(_DotnetAotIsCrossBuild)' == 'true'">$(_DotnetAotPublishProperties);CrossBuild=true;TargetArchitecture=$(TargetArchitecture);TargetRid=$(TargetRid)</_DotnetAotPublishProperties>
     </PropertyGroup>
 
     <!--
@@ -560,7 +574,7 @@
     <MSBuild
       Targets="Publish;PublishItemsOutputGroup"
       Projects="$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj"
-      Properties="_IsPublishing=true">
+      Properties="$(_DotnetAotPublishProperties)">
       <Output TaskParameter="TargetOutputs" ItemName="_DotnetAotPublishedItems" />
     </MSBuild>
 
@@ -595,6 +609,17 @@
     <!-- Make dotnet-aot native shared library executable (only if it exists for this RID) -->
     <Exec Command="chmod 755 $(OutputPath)$(_DotnetAotNativeLibName)"
           Condition="Exists('$(OutputPath)$(_DotnetAotNativeLibName)')" />
+    <!-- The 'aspnetcoretools' aggregate ships native AOT SDK tool executables
+         (dotnet-dev-certs, dotnet-user-jwts, dotnet-user-secrets). Their nupkg does
+         not carry the Unix execute bit, and the blanket 'chmod 644' above clears it,
+         so re-add execute permission; the SDK execs these tools directly. -->
+    <ItemGroup>
+      <_BundledAotToolExecutable Include="$(OutputPath)DotnetTools/aspnetcoretools/**/dotnet-*" />
+      <_BundledAotToolExecutable Remove="@(_BundledAotToolExecutable)"
+                                 Condition="'%(Extension)' != ''" />
+    </ItemGroup>
+    <Exec Command="chmod 755 '%(_BundledAotToolExecutable.FullPath)'"
+          Condition="'@(_BundledAotToolExecutable)' != ''" />
   </Target>
 
   <Target Name="DeleteSymbolsFromPublishDir" DependsOnTargets="GenerateCliRuntimeConfigurationFiles">

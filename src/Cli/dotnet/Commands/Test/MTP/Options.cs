@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal record TestOptions(bool IsHelp, bool IsDiscovery, IReadOnlyDictionary<string, string> EnvironmentVariables);
+internal record TestOptions(bool IsHelp, bool IsDiscovery);
 
 internal record PathOptions(string? ProjectOrSolutionPath, string? SolutionPath, string? TestModules, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
 
@@ -18,4 +18,6 @@ internal record BuildOptions(
     bool NoLaunchProfileArguments,
     ImmutableArray<string> TestApplicationArguments,
     IEnumerable<string> MSBuildArgs,
-    string? Device);
+    string? Device,
+    bool ListDevices,
+    IReadOnlyDictionary<string, string> EnvironmentVariables);
