@@ -177,6 +177,7 @@ public class TerminalTestReporterTests
 
         string output = StripAnsi(capturingConsole.GetOutput());
         output.Should().Contain("Test run summary: Passed!");
+        GetAssemblySummaryLine(output, emptyAssembly).Should().Contain("Zero tests ran");
         output.Should().NotContain("error:");
     }
 
