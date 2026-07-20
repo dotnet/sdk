@@ -14,58 +14,96 @@ For a high-level project description, build status, and contribution flow, see t
 [README](../README.md). For the canonical build/test/debug walkthrough, see the
 [Developer Guide](../documentation/project-docs/developer-guide.md).
 
+### Grounding architecture and product claims
+
+Treat this overview as an index, not as independent evidence. In plans, reviews,
+root-cause analyses, and AI-facing documentation:
+
+- Verify important architecture, product behavior, and ownership claims against primary
+  sources and link the nearest evidence: code or project files for current behavior, and an
+  ADR, design document, issue, or PR for decisions and history.
+- Prefer repository-relative links for in-repo evidence and link the narrowest durable
+  source. Do not cite this overview to support itself.
+- When a cited in-repo source is relevant to the task, inspect it before relying on the
+  claim; do not assume the link target's contents are already in context.
+- Identify inference explicitly and cite its inputs. If sources disagree or evidence is
+  incomplete, state the uncertainty instead of turning synthesis into fact; update stale
+  context in the same change.
+
 ### What the SDK does
 
 - Provides the `dotnet` command-line driver (`dotnet build`, `restore`, `publish`, `test`,
-  `run`, `watch`, etc.).
-- Ships the MSBuild logic that turns a `.csproj`/`.fsproj`/`.vbproj` into a build.
+  `run`, `watch`, etc.); see the [managed entry point](../src/Cli/dotnet/Program.cs) and
+  [registered command tree](../src/Cli/dotnet/Parser.cs).
+- Ships the MSBuild logic that turns a `.csproj`/`.fsproj`/`.vbproj` into a build; see the
+  [SDK entry points](../src/Tasks/Microsoft.NET.Build.Tasks/sdk/) and
+  [tasks and targets](../src/Tasks/Microsoft.NET.Build.Tasks/).
 - Bundles related toolsets: project/item templates, Razor/Blazor/Web/Static Web Assets
   SDKs, container publishing, file/format/watch tools, API compatibility tooling, and
-  workload management.
+  workload management. The final SDK layout is assembled by the
+  [`redist` project](../src/Layout/redist/redist.csproj) and its
+  [layout targets](../src/Layout/redist/targets/Directory.Build.targets); in-box project
+  and item template sources live in [`template_feed`](../template_feed/).
 
-This repo does **not** own the .NET runtime, the C#/F#/VB compilers, MSBuild itself, NuGet,
-or the Visual Studio project system — those are separate repositories that flow in as
-dependencies. The full product (`dotnet/dotnet` VMR) composes this repo with those.
+Do not assume a product change belongs in this repo. The
+[runtime](https://github.com/dotnet/runtime),
+[C# and Visual Basic compilers](https://github.com/dotnet/roslyn),
+[F# compiler](https://github.com/dotnet/fsharp),
+[MSBuild](https://github.com/dotnet/msbuild), [NuGet](https://github.com/NuGet/NuGet.Client), and
+[Visual Studio project system](https://github.com/dotnet/project-system) are owned in
+their linked repositories. The
+[dotnet/dotnet VMR](https://github.com/dotnet/dotnet/blob/main/README.md) brings component
+source together to build the full .NET SDK.
 
 ### Architecture and major components
 
-The CLI is a generic driver. A `dotnet <command>` is resolved in one of two ways: in-box
-commands implemented in `dotnet.dll` (e.g. `build`, `restore`, `test`), or executables named
-`dotnet-<command>` found on the `PATH`, including installed global tools (`dotnet foo` runs
-`dotnet-foo`). The "build" commands (`build`/`restore`/`publish`/`pack`) are thin CLI
-wrappers that invoke MSBuild against the SDK targets.
+The managed CLI dispatches commands registered in
+[`Parser.cs`](../src/Cli/dotnet/Parser.cs). Unmatched input goes through external command
+resolution and then file-based app fallback, as implemented by
+[`Program.cs`](../src/Cli/dotnet/Program.cs).
 
-Major source areas under `src/`:
+Major source areas under [`src/`](../src/):
 
 | Area | Purpose |
 | --- | --- |
-| `Cli/` | The `dotnet` driver, command implementations, and CLI utilities. `Cli/dotnet` is the entry point. |
-| `Tasks/` | MSBuild tasks & targets — the heart of the build logic. `Microsoft.NET.Build.Tasks` is the primary SDK tasks assembly. |
-| `Resolvers/` | MSBuild SDK resolvers (how `<Project Sdk="...">` and workloads are located). |
-| `RazorSdk/`, `BlazorWasmSdk/`, `WasmSdk/`, `WebSdk/`, `StaticWebAssetsSdk/` | Web/Razor/Blazor/Static Web Assets build SDKs. |
-| `Containers/` | `dotnet publish` container image support. |
-| `Dotnet.Watch/`, `Dotnet.Format/` | `dotnet watch` and `dotnet format` tools. |
-| `Compatibility/` | ApiCompat / GenAPI / package validation tooling. |
-| `TemplateEngine/` | CLI glue for the templating engine (engine itself is in `dotnet/templating`). |
-| `Workloads/`, `Microsoft.DotNet.TemplateLocator/` | Workload manifests/installation, and locating workload-provided template packs. |
-| `Layout/` | Composes the final redist `dotnet` layout. |
+| [`Cli/`](../src/Cli/) | The `dotnet` driver, command implementations, and CLI utilities. [`Cli/dotnet/Program.cs`](../src/Cli/dotnet/Program.cs) is the managed entry point. |
+| [`Tasks/`](../src/Tasks/) | MSBuild tasks and targets. [`Microsoft.NET.Build.Tasks`](../src/Tasks/Microsoft.NET.Build.Tasks/) contains the primary SDK task assembly and SDK imports. |
+| [`Resolvers/`](../src/Resolvers/) | MSBuild SDK resolvers, including SDK and workload resolution. |
+| [`RazorSdk/`](../src/RazorSdk/), [`BlazorWasmSdk/`](../src/BlazorWasmSdk/), [`WasmSdk/`](../src/WasmSdk/), [`WebSdk/`](../src/WebSdk/), [`StaticWebAssetsSdk/`](../src/StaticWebAssetsSdk/) | Web, Razor, Blazor, WebAssembly, and Static Web Assets build SDKs. |
+| [`Containers/`](../src/Containers/) | `dotnet publish` container image support. |
+| [`Dotnet.Watch/`](../src/Dotnet.Watch/), [`Dotnet.Format/`](../src/Dotnet.Format/) | `dotnet watch` and `dotnet format` tools. |
+| [`Compatibility/`](../src/Compatibility/) | ApiCompat, GenAPI, API diff, and package validation tooling. |
+| [`TemplateEngine/`](../src/TemplateEngine/) | Template engine libraries and authoring/discovery tools; see the [Template Engine overview](../documentation/TemplateEngine/README.md). |
+| [`Workloads/`](../src/Workloads/), [`Microsoft.DotNet.TemplateLocator/`](../src/Microsoft.DotNet.TemplateLocator/) | Workload manifests and installation, plus workload-provided template pack location. |
+| [`Layout/`](../src/Layout/) | Composes the final `dotnet` layout through [`redist.csproj`](../src/Layout/redist/redist.csproj). |
 
 ### Key files and directories
 
-- `build.cmd` / `build.sh` — primary top-level build entry point (Arcade-based).
-  `test.cmd` / `test.sh` and `restore.cmd` / `restore.sh` are thin wrappers that forward
-  to it.
-- `sdk.slnx` — the full solution. Filtered solutions exist for focused work:
-  `cli.slnf`, `tasks.slnf`, `containers.slnf`, `TemplateEngine.slnf`, `source-build.slnf`.
-- `global.json` — pins the bootstrap SDK and Arcade versions used to build the repo.
-- `Directory.Build.props` / `Directory.Build.targets` / `Directory.Packages.props` — repo-wide
-  MSBuild settings and central package version management.
-- `eng/` — Arcade build infrastructure, versioning (`eng/Versions.props`), and the
+- [`build.cmd`](../build.cmd) / [`build.sh`](../build.sh) — primary top-level build entry
+  point (Arcade-based). [`test.cmd`](../test.cmd) / [`test.sh`](../test.sh) and
+  [`restore.cmd`](../restore.cmd) / [`restore.sh`](../restore.sh) are thin wrappers that
+  forward to it.
+- [`sdk.slnx`](../sdk.slnx) — the full solution. Filtered solutions exist for focused work:
+  [`cli.slnf`](../cli.slnf), [`tasks.slnf`](../tasks.slnf),
+  [`containers.slnf`](../containers.slnf), [`TemplateEngine.slnf`](../TemplateEngine.slnf),
+  and [`source-build.slnf`](../source-build.slnf).
+- [`global.json`](../global.json) — pins the bootstrap SDK and Arcade versions used to build
+  the repo.
+- [`Directory.Build.props`](../Directory.Build.props) /
+  [`Directory.Build.targets`](../Directory.Build.targets) /
+  [`Directory.Packages.props`](../Directory.Packages.props) — repo-wide MSBuild settings and
+  central package version management.
+- [`eng/`](../eng/) — Arcade build infrastructure, versioning
+  ([`eng/Versions.props`](../eng/Versions.props)), and the
   `dogfood` scripts.
-- `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default) — the built SDK; `.dotnet/dotnet` is the bootstrap SDK.
-- `documentation/` — project docs, including the developer guide and area-specific guides.
-- `template_feed/` — the in-box project/item templates.
-- `test/` — test projects and `test/TestAssets/TestProjects` test inputs.
+- `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default) — the built SDK;
+  `.dotnet/dotnet` is the bootstrap SDK. See the
+  [Developer Guide](../documentation/project-docs/developer-guide.md#building).
+- [`documentation/`](../documentation/) — project docs, including the developer guide and
+  area-specific guides.
+- [`template_feed/`](../template_feed/) — the in-box project and item templates.
+- [`test/`](../test/) — test projects and
+  [`test/TestAssets/TestProjects`](../test/TestAssets/TestProjects/) test inputs.
 
 ### Build and test
 
@@ -121,6 +159,37 @@ manually edit:
   documentation; change the upstream documentation in https://github.com/dotnet/docs instead.
 - **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
 - More broadly, any file marked `linguist-generated=true` in `.gitattributes`.
+
+## External Dependencies
+
+Adding or updating a dependency is a repo-wide compatibility and supply-chain change,
+not just a project-file edit. Prefer the BCL, existing repository code, or a
+dependency already in use. Add a new dependency only at the narrowest necessary scope.
+
+- **Approved feeds:** Use only the restore sources in the root
+  [`NuGet.config`](../NuGet.config). For normal repository dependencies, do not add
+  ad hoc feeds just to make restore succeed. Do not edit automation-managed feed blocks.
+- **Version policy:** Central package management is enabled in
+  [`Directory.Build.props`](../Directory.Build.props).
+  - Omit `Version` from normal project `PackageReference` items and change the declaration
+    in [`Directory.Packages.props`](../Directory.Packages.props) or its imported owner
+    instead.
+  - Locate the existing `PackageVersion` and update its actual owner: literal versions in
+    `Directory.Packages.props` are managed there, property-backed manual versions live in
+    [`eng/Versions.props`](../eng/Versions.props) or
+    [`eng/ManualVersions.props`](../eng/ManualVersions.props), and packages listed in
+    [`eng/dependabot/Packages.props`](../eng/dependabot/Packages.props) are updated by
+    Dependabot.
+  - For dependencies represented in
+    [`eng/Version.Details.xml`](../eng/Version.Details.xml), use the Darc/Maestro
+    dependency-flow workflow so the manifest, generated properties, and feeds stay in
+    sync; never hand-edit the generated
+    [`eng/Version.Details.props`](../eng/Version.Details.props).
+- **Security:** Local restores enable NuGet Audit for all dependencies at low severity
+  or higher in [`Directory.Build.props`](../Directory.Build.props), using the audit
+  source in [`NuGet.config`](../NuGet.config). Treat `NU19xx` findings as actionable:
+  update or remove the affected package rather than suppressing the warning or weakening
+  audit settings.
 
 ## Coding Style
 

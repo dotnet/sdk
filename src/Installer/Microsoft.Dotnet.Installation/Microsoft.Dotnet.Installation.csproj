@@ -31,6 +31,9 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
+    <!-- HostFxrLocator.cs (globbed above) depends on HostFxrPathResolver in the source-shared
+         src\Common file, mirroring Microsoft.DotNet.NativeWrapper.csproj. -->
+    <Compile Include="$(RepoRoot)src\Common\HostFxrPathResolver.cs" LinkBase="Common" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,6 +56,8 @@
   <ItemGroup>
     <PackageReference Include="Meziantou.Analyzer" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <!-- Required by src\Common\HostFxrPathResolver.cs (compiled in via the NativeWrapper glob above). -->
+    <PackageReference Include="NuGet.Versioning" Condition="'$(TargetFramework)' != 'net472'" />
     <!-- Required for SignedCms / Rfc3161TimestampToken used by Internal/Signing/SignatureVerifier. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
