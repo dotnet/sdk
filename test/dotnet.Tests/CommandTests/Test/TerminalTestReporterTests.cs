@@ -6,6 +6,10 @@ using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
+// Disambiguate ExitCode: the test framework's global usings (test/Directory.Build.targets)
+// also bring Microsoft.NET.TestFramework.ExitCode into scope, which collides with the MTP
+// Microsoft.DotNet.Cli.Commands.Test.ExitCode used here.
+using ExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
