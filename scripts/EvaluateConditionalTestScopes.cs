@@ -211,12 +211,14 @@ static List<string> GetChangedFiles(string? targetBranch, string repoRoot)
 static bool GlobMatches(string path, string pattern)
 {
     // Convert glob to regex: ** = any path, * = any segment chars, ? = single char
+    // Handle **/ (globstar followed by separator) specially: it matches zero or more path segments.
     var regexPattern = "^" +
         Regex.Escape(pattern)
-            .Replace("\\*\\*", "@@GLOBSTAR@@")
+            .Replace("\\*\\*/", "@@GLOBSTAR_SLASH@@")
+            .Replace("\\*\\*", ".*")
             .Replace("\\*", "[^/]*")
             .Replace("\\?", "[^/]")
-            .Replace("@@GLOBSTAR@@", ".*") +
+            .Replace("@@GLOBSTAR_SLASH@@", "(.+/)?") +
         "$";
     return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase);
 }
