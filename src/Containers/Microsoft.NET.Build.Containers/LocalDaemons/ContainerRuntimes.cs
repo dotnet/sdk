@@ -360,14 +360,7 @@ internal sealed class WslcContainerRuntime(ContainerRuntimeOperations operations
         SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken)
-        => Operations.LoadFromFileAsync(
-            Command,
-            archivePath => ["image", "load", "--input", archivePath],
-            image,
-            sourceReference,
-            destinationReference,
-            ContainerArchive.WriteMultiArchOciImageToStreamAsync,
-            cancellationToken);
+        => throw new DockerLoadException(Strings.ImageLoadFailed_WslcMultiArchUnsupported);
 }
 
 internal sealed class MacOSContainerRuntime(ContainerRuntimeOperations operations, ILogger logger) : ContainerRuntimeBase(operations, logger)

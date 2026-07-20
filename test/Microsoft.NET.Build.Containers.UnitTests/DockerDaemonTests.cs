@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.Build.Containers.Resources;
+
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]
@@ -216,6 +218,21 @@ public class DockerDaemonTests : IDisposable
                 SchemaTypes.OciManifestV1,
                 KnownImageFormats.Docker,
                 destination));
+    }
+
+    [TestMethod]
+    public async Task Wslc_rejects_multi_arch_images()
+    {
+        ILocalRegistry registry = KnownLocalRegistryTypes.CreateLocalRegistry(KnownLocalRegistryTypes.Wslc, _loggerFactory);
+
+        DockerLoadException exception = await Assert.ThrowsExactlyAsync<DockerLoadException>(
+            () => registry.LoadAsync(
+                new MultiArchImage { ImageIndex = "", ImageIndexMediaType = "" },
+                default,
+                default,
+                TestContext.CancellationToken));
+
+        Assert.AreEqual(Strings.ImageLoadFailed_WslcMultiArchUnsupported, exception.Message);
     }
 
     private ContainerRuntime CreateRuntime(Func<string, bool> isAvailable, bool isWindows, bool isMacOS, bool isPodmanAlias)

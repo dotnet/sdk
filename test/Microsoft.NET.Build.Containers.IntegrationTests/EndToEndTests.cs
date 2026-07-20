@@ -961,6 +961,32 @@ public class EndToEndTests : SdkTest, IDisposable
         newProjectDir.Delete(true);
     }
 
+    [TestMethod]
+    [WslcAvailableCondition]
+    public void EndToEndMultiArch_WslcIsRejected()
+    {
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
+
+        CommandResult commandResult = new DotnetCommand(
+            Log,
+            "publish",
+            "/t:PublishContainer",
+            "-f", _oldFramework,
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={NewImageName()}",
+            "/p:ContainerImageTag=1.0",
+            $"/p:LocalRegistry={KnownLocalRegistryTypes.Wslc}",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        commandResult.Should().Fail().And.HaveStdOutContaining(Strings.ImageLoadFailed_WslcMultiArchUnsupported);
+
+        newProjectDir.Delete(true);
+    }
+
     public static IEnumerable<object[]> AvailableMultiArchLocalRegistryData()
     {
         string[] imageNames =

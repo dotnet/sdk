@@ -189,6 +189,11 @@
         <target state="translated">CONTAINER1020: 未能加载映像，因为没有为 Docker 启用容器映像存储。提示: 可以通过在 Docker Desktop 设置中检查“使用容器拉取和存储映像”来启用它。</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: 不支持从本地注册表拉取映像。</target>

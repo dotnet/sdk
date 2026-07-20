@@ -169,11 +169,6 @@ internal static class MultiArchLocalRegistryTestData
             yield return KnownLocalRegistryTypes.Podman;
         }
 
-        if (WslcCliStatus.IsAvailable)
-        {
-            yield return KnownLocalRegistryTypes.Wslc;
-        }
-
         if (MacOSContainerCliStatus.IsAvailable)
         {
             yield return KnownLocalRegistryTypes.MacOSContainer;

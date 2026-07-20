@@ -193,6 +193,10 @@
     <value>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</value>
     <comment>{StrBegin="CONTAINER1020: "}</comment>
   </data>
+  <data name="ImageLoadFailed_WslcMultiArchUnsupported" xml:space="preserve">
+    <value>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</value>
+    <comment>{StrBegins="CONTAINER1021: "}</comment>
+  </data>
   <data name="InvalidEnvVar" xml:space="preserve">
     <value>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</value>
     <comment>{StrBegins="CONTAINER2015: "}</comment>
