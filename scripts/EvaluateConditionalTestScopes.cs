@@ -151,7 +151,7 @@ var result = skippedScopes.Count > 0 && skippedScopes.Count == scopes.Count ? "_
     : "";
 
 // Set Azure DevOps pipeline variable if running in CI
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BUILD_BUILDNUMBER")))
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")))
 {
     Console.WriteLine($"##vso[task.setvariable variable=SkippedTestScopes]{result}");
 }
