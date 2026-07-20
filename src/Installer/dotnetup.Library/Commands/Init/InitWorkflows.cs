@@ -20,15 +20,13 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 internal class InitWorkflows
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
-    private readonly ChannelVersionResolver _channelVersionResolver;
 
     /// <summary>Sentinel channel value indicating the user wants to skip the initial install.</summary>
     internal const string NoneChannel = "none";
 
-    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment, ChannelVersionResolver channelVersionResolver)
+    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment)
     {
         _dotnetEnvironment = dotnetEnvironment;
-        _channelVersionResolver = channelVersionResolver;
     }
 
     // ── Init Flow Orchestrators ──

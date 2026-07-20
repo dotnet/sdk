@@ -37,7 +37,6 @@ internal sealed class InitFormModel
     private readonly FormField? _migrateField;
     private readonly IReadOnlyList<MigrationWorkflow.MigrationSelection> _migrations;
 
-    private readonly string _installPath;
     private readonly IReadOnlyList<string> _profilePaths;
 
     private InitFormModel(
@@ -62,7 +61,7 @@ internal sealed class InitFormModel
         _accessModes = accessModes;
         _migrateField = migrateField;
         _migrations = migrations;
-        _installPath = installPath;
+        InstallPath = installPath;
         _profilePaths = profilePaths;
     }
 
@@ -100,7 +99,7 @@ internal sealed class InitFormModel
     public bool MigrateSelected() => _migrateField is not null && _migrateField.SelectedIndex == YesIndex;
 
     /// <summary>Where dotnetup installs .NET; shown once at the top of the form.</summary>
-    public string InstallPath => _installPath;
+    public string InstallPath { get; }
 
     /// <summary>
     /// Computes the detail (help text + derived info lines) for the given field's value at

@@ -29,7 +29,7 @@ internal enum FormMode
 /// </summary>
 internal sealed class FormSelectorState
 {
-    private readonly IReadOnlyList<FormField> _fields;
+    private IReadOnlyList<FormField> Fields { get; }
 
     public FormSelectorState(IReadOnlyList<FormField> fields)
     {
@@ -38,7 +38,7 @@ internal sealed class FormSelectorState
             throw new ArgumentException("The form needs at least one field.", nameof(fields));
         }
 
-        _fields = fields;
+        Fields = fields;
 
         // Focus starts on the Accept row so the recommended path is a single Enter.
         FocusedRow = AcceptRow;
@@ -49,7 +49,7 @@ internal sealed class FormSelectorState
     /// fields change, so navigation, the Accept row position, and rendering all use this view rather
     /// than the full field list.
     /// </summary>
-    public IReadOnlyList<FormField> VisibleFields => _fields.Where(static f => f.IsVisible).ToList();
+    public IReadOnlyList<FormField> VisibleFields => Fields.Where(static f => f.IsVisible).ToList();
 
     /// <summary>The row index representing the Accept action (immediately after the last field).</summary>
     public int AcceptRow => VisibleFields.Count;

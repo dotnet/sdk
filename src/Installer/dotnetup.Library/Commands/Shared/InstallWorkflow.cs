@@ -52,7 +52,7 @@ internal class InstallWorkflow
             // Pre-resolve the user's requests unless we still need to prompt for a starter channel
             // (in which case the walkthrough generates them after the prompt).
             var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
-            var workflows = new InitWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
+            var workflows = new InitWorkflows(_command.DotnetEnvironment);
             requests = workflows.InitWalkthrough(_command, initialRequests);
         }
         else
