@@ -105,6 +105,14 @@ internal static class FailedTestResultMessageFieldsId
     public const ushort StandardOutput = 7;
     public const ushort ErrorOutput = 8;
     public const ushort SessionUid = 9;
+
+    // Optional assertion diff fields. They carry the structured expected/actual values captured by
+    // assertion libraries (e.g. MSTest's Assert stores them on Exception.Data["assert.expected"] /
+    // ["assert.actual"]) so the SDK's TerminalTestReporter can render the same expected-vs-actual diff
+    // for multi-assembly `dotnet test` runs that it already renders for single-assembly runs. Added
+    // after SessionUid; older readers skip unrecognized field ids, so this stays backwards compatible.
+    public const ushort Expected = 10;
+    public const ushort Actual = 11;
 }
 
 internal static class ExceptionMessageFieldsId
@@ -131,6 +139,7 @@ internal static class FileArtifactMessageFieldsId
     public const ushort TestUid = 4;
     public const ushort TestDisplayName = 5;
     public const ushort SessionUid = 6;
+    public const ushort Kind = 7;
 }
 
 internal static class TestSessionEventFieldsId
