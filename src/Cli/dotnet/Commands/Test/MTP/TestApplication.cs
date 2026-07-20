@@ -73,6 +73,13 @@ internal sealed class TestApplication(
         (runtimeIdentifier.StartsWith("browser", StringComparison.OrdinalIgnoreCase) ||
          runtimeIdentifier.StartsWith("wasi", StringComparison.OrdinalIgnoreCase));
 
+    // The results directory passed to a standalone (wasm) host, and where dotnet test reads the
+    // resulting TRX from after the host exits. Only meaningful when LaunchTestHostStandalone is true.
+    private string StandaloneResultsDirectory =>
+        GetStandaloneResultsDirectory(_buildOptions.PathOptions.ResultsDirectoryPath, launchStandalone: true, Directory.GetCurrentDirectory())!;
+
+    private string StandaloneTrxFilePath => Path.Combine(StandaloneResultsDirectory, WasmTestTrxFileName);
+
     public async Task<int> RunAsync(CtrlCCancellationManager ctrlC)
     {
         if (Interlocked.Exchange(ref _hasRun, 1) != 0)
@@ -148,6 +155,15 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
+
+            if (LaunchTestHostStandalone)
+            {
+                // Standalone wasm hosts don't use the pipe; recover results from the on-disk TRX
+                // the host wrote (a bridge host / runner copies it back to the results directory).
+                _handler.ReportStandaloneResults(exitCode, StandaloneTrxFilePath, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
+                return exitCode;
+            }
+
             _handler.OnTestProcessExited(exitCode, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
