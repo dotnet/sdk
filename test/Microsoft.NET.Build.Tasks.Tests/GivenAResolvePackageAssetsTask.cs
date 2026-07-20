@@ -81,11 +81,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             ExecuteAnalyzerAssetsTest(
                 restoreEnableAnalyzerAssets: true,
-                includeAnalyzerAssetsGroup: true,
-                assert: (analyzers, expectedAnalyzerPath) =>
-                {
-                    analyzers.Should().Equal(expectedAnalyzerPath);
-                });
+                includeAnalyzerAssetsGroup: true)
+                .Should().Equal(AnalyzerAssetPath);
         }
 
         [TestMethod]
@@ -93,11 +90,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             ExecuteAnalyzerAssetsTest(
                 restoreEnableAnalyzerAssets: true,
-                includeAnalyzerAssetsGroup: false,
-                assert: (analyzers, expectedAnalyzerPath) =>
-                {
-                    analyzers.Should().BeEmpty();
-                });
+                includeAnalyzerAssetsGroup: false)
+                .Should().BeEmpty();
         }
 
         [TestMethod]
@@ -105,11 +99,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             ExecuteAnalyzerAssetsTest(
                 restoreEnableAnalyzerAssets: false,
-                includeAnalyzerAssetsGroup: false,
-                assert: (analyzers, expectedAnalyzerPath) =>
-                {
-                    analyzers.Should().Equal(expectedAnalyzerPath);
-                });
+                includeAnalyzerAssetsGroup: false)
+                .Should().Equal(AnalyzerAssetPath);
         }
 
         [TestMethod]
@@ -127,6 +118,18 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
 
             selected.Should().Equal("analyzers/dotnet/cs/CSharpAnalyzer.dll");
+        }
+
+        [TestMethod]
+        public void It_uses_analyzer_metadata_instead_of_the_asset_path()
+        {
+            string[] selected = ResolveGroupAnalyzers(
+                projectLanguage: "C#",
+                compilerApiVersion: null,
+                analyzerPaths: new[] { "analyzers/dotnet/cs/CSharpAnalyzer.dll" },
+                analyzerMetadata: _ => @"""codeLanguage"": ""vb""");
+
+            selected.Should().BeEmpty();
         }
 
         [TestMethod]
@@ -171,23 +174,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             // Feature flag off: legacy path scanning is used and the F# analyzer is included.
             selectedWithoutFlag.Should().Equal(expected);
-        }
-
-        [TestMethod]
-        public void It_honors_the_restore_decision_from_the_assets_file_over_the_msbuild_property()
-        {
-            // The TFM gate (.NET 11+) lives in NuGet.targets, which is not imported during build, so the raw
-            // MSBuild property can be true for a project that restore actually gated off. The SDK must honor the
-            // value restore persisted into the assets file (here: disabled, no analyzer group) and fall back to
-            // legacy package-file scanning instead of silently dropping all analyzers.
-            ExecuteAnalyzerAssetsTest(
-                restoreEnableAnalyzerAssets: false,         // assets file: restore gated the feature off
-                includeAnalyzerAssetsGroup: false,
-                restoreEnableAnalyzerAssetsTaskProperty: true, // raw MSBuild property (ungated) is true
-                assert: (analyzers, expectedAnalyzerPath) =>
-                {
-                    analyzers.Should().Equal(expectedAnalyzerPath);
-                });
         }
 
         [TestMethod]
@@ -336,20 +322,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 string packagesDir = Path.Combine(testRoot, "packages");
                 Directory.CreateDirectory(objDir);
 
-                string packageDirectory = Path.Combine(packagesDir, AnalyzerPackageName.ToLowerInvariant(), AnalyzerPackageVersion);
-                foreach (string relativePath in new[] { "analyzers/dotnet/cs/Net8Analyzer.dll", "analyzers/dotnet/cs/Net9Analyzer.dll" })
-                {
-                    string fullPath = Path.Combine(packageDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
-                    Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
-                    File.WriteAllText(fullPath, string.Empty);
-                }
-
-                File.WriteAllText(
-                    Path.Combine(packageDirectory, $"{AnalyzerPackageName.ToLowerInvariant()}.{AnalyzerPackageVersion}.nupkg.sha512"),
-                    "abc123");
-                File.WriteAllText(
-                    Path.Combine(packageDirectory, $"{AnalyzerPackageName.ToLowerInvariant()}.nuspec"),
-                    $"<package><metadata><id>{AnalyzerPackageName}</id><version>{AnalyzerPackageVersion}</version></metadata></package>");
+                string packageDirectory = CreateAnalyzerPackage(
+                    packagesDir,
+                    "analyzers/dotnet/cs/Net8Analyzer.dll",
+                    "analyzers/dotnet/cs/Net9Analyzer.dll");
 
                 string projectPath = Path.Combine(testRoot, "test.csproj");
                 string projectAssetsJsonPath = Path.Combine(objDir, "project.assets.json");
@@ -357,28 +333,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     projectAssetsJsonPath,
                     CreateMultiTargetedAnalyzerAssetsJson(projectPath, packagesDir, objDir));
 
-                var task = new ResolvePackageAssets
-                {
-                    BuildEngine = new MockBuildEngine(),
-                    ProjectAssetsCacheFile = Path.Combine(objDir, "project.assets.cache"),
-                    ProjectAssetsFile = projectAssetsJsonPath,
-                    ProjectPath = projectPath,
-                    TargetFramework = "net9.0",
-                    ProjectLanguage = "C#",
-                    DotNetAppHostExecutableNameWithoutExtension = "apphost",
-                    DefaultImplicitPackages = "Microsoft.NETCore.App",
-                    DisablePackageAssetsCache = true,
-                    RestoreEnableAnalyzerAssets = true,
-                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(testRoot)
-                };
+                ResolvePackageAssets task = CreateAnalyzerAssetsTask(
+                    testRoot,
+                    projectAssetsJsonPath,
+                    projectPath,
+                    targetFramework: "net9.0");
 
                 task.Execute().Should().BeTrue();
 
-                string packagePrefix = packageDirectory + Path.DirectorySeparatorChar;
-                task.Analyzers
-                    .Select(a => a.ItemSpec.StartsWith(packagePrefix, StringComparison.OrdinalIgnoreCase)
-                        ? a.ItemSpec.Substring(packagePrefix.Length).Replace(Path.DirectorySeparatorChar, '/')
-                        : a.ItemSpec)
+                GetPackageRelativeAnalyzerPaths(task, packageDirectory)
                     .Should().Equal("analyzers/dotnet/cs/Net9Analyzer.dll");
             }
             finally
@@ -456,11 +419,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         private const string AnalyzerPackageVersion = "1.0.0";
         private const string AnalyzerAssetPath = "analyzers/dotnet/cs/Analyzer.Package.dll";
 
-        private static void ExecuteAnalyzerAssetsTest(
+        private static string[] ExecuteAnalyzerAssetsTest(
             bool restoreEnableAnalyzerAssets,
-            bool includeAnalyzerAssetsGroup,
-            Action<string[], string> assert,
-            bool? restoreEnableAnalyzerAssetsTaskProperty = null)
+            bool includeAnalyzerAssetsGroup)
         {
             string testRoot = Path.Combine(Path.GetTempPath(), "rpa-analyzers-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(testRoot);
@@ -470,7 +431,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 string objDir = Path.Combine(testRoot, "obj");
                 string packagesDir = Path.Combine(testRoot, "packages");
                 Directory.CreateDirectory(objDir);
-                CreateAnalyzerPackage(packagesDir);
+                string packageDirectory = CreateAnalyzerPackage(packagesDir, AnalyzerAssetPath);
 
                 string projectPath = Path.Combine(testRoot, "test.csproj");
                 string projectAssetsJsonPath = Path.Combine(objDir, "project.assets.json");
@@ -478,22 +439,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     projectAssetsJsonPath,
                     CreateAnalyzerAssetsJson(projectPath, packagesDir, objDir, includeAnalyzerAssetsGroup, restoreEnableAnalyzerAssets));
 
-                var task = InitializeAnalyzerAssetsTask(
+                ResolvePackageAssets task = CreateAnalyzerAssetsTask(
                     testRoot,
-                    objDir,
                     projectAssetsJsonPath,
-                    projectPath,
-                    restoreEnableAnalyzerAssetsTaskProperty ?? restoreEnableAnalyzerAssets);
+                    projectPath);
 
                 task.Execute().Should().BeTrue();
-
-                string expectedAnalyzerPath = Path.Combine(
-                    packagesDir,
-                    AnalyzerPackageName.ToLowerInvariant(),
-                    AnalyzerPackageVersion,
-                    AnalyzerAssetPath.Replace('/', Path.DirectorySeparatorChar));
-
-                assert(task.Analyzers.Select(a => a.ItemSpec).ToArray(), expectedAnalyzerPath);
+                return GetPackageRelativeAnalyzerPaths(task, packageDirectory);
             }
             finally
             {
@@ -501,48 +453,69 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        private static ResolvePackageAssets InitializeAnalyzerAssetsTask(
+        private static ResolvePackageAssets CreateAnalyzerAssetsTask(
             string testRoot,
-            string objDir,
             string projectAssetsJsonPath,
             string projectPath,
-            bool restoreEnableAnalyzerAssets)
+            string targetFramework = "net8.0",
+            string projectLanguage = "C#",
+            string compilerApiVersion = null)
         {
             return new ResolvePackageAssets
             {
                 BuildEngine = new MockBuildEngine(),
-                ProjectAssetsCacheFile = Path.Combine(objDir, "project.assets.cache"),
+                ProjectAssetsCacheFile = Path.Combine(Path.GetDirectoryName(projectAssetsJsonPath), "project.assets.cache"),
                 ProjectAssetsFile = projectAssetsJsonPath,
                 ProjectPath = projectPath,
-                TargetFramework = "net8.0",
-                ProjectLanguage = "C#",
+                TargetFramework = targetFramework,
+                ProjectLanguage = projectLanguage,
+                CompilerApiVersion = compilerApiVersion,
                 DotNetAppHostExecutableNameWithoutExtension = "apphost",
                 DefaultImplicitPackages = "Microsoft.NETCore.App",
                 DisablePackageAssetsCache = true,
-                RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets,
                 TaskEnvironment = TaskEnvironmentHelper.CreateForTest(testRoot)
             };
         }
 
-        private static void CreateAnalyzerPackage(string packagesDir)
+        private static string CreateAnalyzerPackage(string packagesDir, params string[] analyzerPaths)
         {
             string packageDirectory = Path.Combine(
                 packagesDir,
                 AnalyzerPackageName.ToLowerInvariant(),
                 AnalyzerPackageVersion);
 
-            string analyzerPath = Path.Combine(
-                packageDirectory,
-                AnalyzerAssetPath.Replace('/', Path.DirectorySeparatorChar));
+            foreach (string relativePath in analyzerPaths)
+            {
+                string analyzerPath = Path.Combine(
+                    packageDirectory,
+                    relativePath.Replace('/', Path.DirectorySeparatorChar));
 
-            Directory.CreateDirectory(Path.GetDirectoryName(analyzerPath));
-            File.WriteAllText(analyzerPath, string.Empty);
+                Directory.CreateDirectory(Path.GetDirectoryName(analyzerPath));
+                File.WriteAllText(analyzerPath, string.Empty);
+            }
+
             File.WriteAllText(
                 Path.Combine(packageDirectory, $"{AnalyzerPackageName.ToLowerInvariant()}.{AnalyzerPackageVersion}.nupkg.sha512"),
                 "abc123");
             File.WriteAllText(
                 Path.Combine(packageDirectory, $"{AnalyzerPackageName.ToLowerInvariant()}.nuspec"),
                 $"<package><metadata><id>{AnalyzerPackageName}</id><version>{AnalyzerPackageVersion}</version></metadata></package>");
+
+            return packageDirectory;
+        }
+
+        private static string[] GetPackageRelativeAnalyzerPaths(
+            ResolvePackageAssets task,
+            string packageDirectory)
+        {
+            string packagePrefix = packageDirectory + Path.DirectorySeparatorChar;
+            return task.Analyzers
+                .Select(analyzer => analyzer.ItemSpec)
+                .Select(itemSpec => itemSpec.StartsWith(packagePrefix, StringComparison.OrdinalIgnoreCase)
+                    ? itemSpec.Substring(packagePrefix.Length).Replace(Path.DirectorySeparatorChar, '/')
+                    : itemSpec)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
         }
 
         private static string CreateAnalyzerAssetsJson(
@@ -652,7 +625,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string projectLanguage,
             string compilerApiVersion,
             string[] analyzerPaths,
-            bool restoreEnableAnalyzerAssets = true)
+            bool restoreEnableAnalyzerAssets = true,
+            Func<string, string> analyzerMetadata = null)
         {
             string testRoot = Path.Combine(Path.GetTempPath(), "rpa-analyzers-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(testRoot);
@@ -663,57 +637,29 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 string packagesDir = Path.Combine(testRoot, "packages");
                 Directory.CreateDirectory(objDir);
 
-                string packageDirectory = Path.Combine(
-                    packagesDir,
-                    AnalyzerPackageName.ToLowerInvariant(),
-                    AnalyzerPackageVersion);
-
-                foreach (string relativePath in analyzerPaths)
-                {
-                    string fullPath = Path.Combine(packageDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
-                    Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
-                    File.WriteAllText(fullPath, string.Empty);
-                }
-
-                File.WriteAllText(
-                    Path.Combine(packageDirectory, $"{AnalyzerPackageName.ToLowerInvariant()}.{AnalyzerPackageVersion}.nupkg.sha512"),
-                    "abc123");
-                File.WriteAllText(
-                    Path.Combine(packageDirectory, $"{AnalyzerPackageName.ToLowerInvariant()}.nuspec"),
-                    $"<package><metadata><id>{AnalyzerPackageName}</id><version>{AnalyzerPackageVersion}</version></metadata></package>");
+                string packageDirectory = CreateAnalyzerPackage(packagesDir, analyzerPaths);
 
                 string projectPath = Path.Combine(testRoot, "test.csproj");
                 string projectAssetsJsonPath = Path.Combine(objDir, "project.assets.json");
                 File.WriteAllText(
                     projectAssetsJsonPath,
-                    CreateMultiAnalyzerAssetsJson(projectPath, packagesDir, objDir, analyzerPaths, restoreEnableAnalyzerAssets));
+                    CreateMultiAnalyzerAssetsJson(
+                        projectPath,
+                        packagesDir,
+                        objDir,
+                        analyzerPaths,
+                        restoreEnableAnalyzerAssets,
+                        analyzerMetadata ?? AnalyzerMetadataJson));
 
-                var task = new ResolvePackageAssets
-                {
-                    BuildEngine = new MockBuildEngine(),
-                    ProjectAssetsCacheFile = Path.Combine(objDir, "project.assets.cache"),
-                    ProjectAssetsFile = projectAssetsJsonPath,
-                    ProjectPath = projectPath,
-                    TargetFramework = "net8.0",
-                    ProjectLanguage = projectLanguage,
-                    CompilerApiVersion = compilerApiVersion,
-                    DotNetAppHostExecutableNameWithoutExtension = "apphost",
-                    DefaultImplicitPackages = "Microsoft.NETCore.App",
-                    DisablePackageAssetsCache = true,
-                    RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets,
-                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(testRoot)
-                };
+                ResolvePackageAssets task = CreateAnalyzerAssetsTask(
+                    testRoot,
+                    projectAssetsJsonPath,
+                    projectPath,
+                    projectLanguage: projectLanguage,
+                    compilerApiVersion: compilerApiVersion);
 
                 task.Execute().Should().BeTrue();
-
-                string packagePrefix = packageDirectory + Path.DirectorySeparatorChar;
-                return task.Analyzers
-                    .Select(analyzer => analyzer.ItemSpec)
-                    .Select(itemSpec => itemSpec.StartsWith(packagePrefix, StringComparison.OrdinalIgnoreCase)
-                        ? itemSpec.Substring(packagePrefix.Length).Replace(Path.DirectorySeparatorChar, '/')
-                        : itemSpec)
-                    .OrderBy(path => path, StringComparer.Ordinal)
-                    .ToArray();
+                return GetPackageRelativeAnalyzerPaths(task, packageDirectory);
             }
             finally
             {
@@ -726,11 +672,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string packagesPath,
             string outputPath,
             string[] analyzerPaths,
-            bool restoreEnableAnalyzerAssets)
+            bool restoreEnableAnalyzerAssets,
+            Func<string, string> analyzerMetadata)
         {
             string groupEntries = string.Join(
                 ",\r\n                      ",
-                analyzerPaths.Select(path => $@"""{path}"": {{ {AnalyzerMetadataJson(path)} }}"));
+                analyzerPaths.Select(path => $@"""{path}"": {{ {analyzerMetadata(path)} }}"));
 
             string restoreEnableAnalyzerAssetsMetadata = restoreEnableAnalyzerAssets
                 ? @"
