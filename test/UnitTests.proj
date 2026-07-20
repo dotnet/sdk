@@ -14,8 +14,6 @@
     <TestWorkItemTimeout>01:00:00</TestWorkItemTimeout>
   </PropertyGroup>
 
-  <Import Project="ConditionalTests.props" />
-
   <ItemGroup>
     <PackageReference Remove="AwesomeAssertions" />
   </ItemGroup>
@@ -118,39 +116,7 @@
     <HelixTargetQueue Include="$(CustomHelixTargetQueue)" />
   </ItemGroup>
 
-  <!-- Remove test projects for skipped conditional test scopes (defined in ConditionalTests.props).
-       SkippedTestScopes is set by scripts/EvaluateConditionalTestScopes.cs in CI.
-       When all scopes are skipped, it outputs "__all__" so all conditional projects are removed.
-       When empty (local dev, script failure, or global trigger), the target is skipped and all tests run. -->
-  <!--
-    _CollectSkippedTestProjects uses target batching (Outputs="%(...)") to iterate over
-    ConditionalTestScope items. For each scope that matches SkippedTestScopes, it expands
-    the TestProjects glob(s) into SkippedTestProject items. Target batching is needed because
-    MSBuild cannot resolve metadata references inside property functions in ItemGroup conditions,
-    and semicolons in TestProjects metadata must be split by Include evaluation (not transforms).
-  -->
-  <Target Name="_CollectSkippedTestProjects" Outputs="%(ConditionalTestScope.Identity)" Condition="'$(SkippedTestScopes)' != ''">
-    <PropertyGroup>
-      <_CurrentScope>%(ConditionalTestScope.Identity)</_CurrentScope>
-      <_CurrentTestProjects>%(ConditionalTestScope.TestProjects)</_CurrentTestProjects>
-      <_CurrentMechanism>%(ConditionalTestScope.Mechanism)</_CurrentMechanism>
-      <_ShouldSkip Condition="'$(_CurrentMechanism)' == 'project' and ('$(SkippedTestScopes)' == '__all__' or $([System.String]::Concat(';','$(SkippedTestScopes)',';').Contains(';$(_CurrentScope);')))">true</_ShouldSkip>
-      <_ShouldSkip Condition="'$(_ShouldSkip)' != 'true'">false</_ShouldSkip>
-    </PropertyGroup>
-    <ItemGroup Condition="'$(_ShouldSkip)' == 'true'">
-      <SkippedTestProject Include="$(RepoRoot)$(_CurrentTestProjects)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="RemoveSkippedConditionalTestProjects" BeforeTargets="CreateSDKCustomTestWorkItems" DependsOnTargets="_CollectSkippedTestProjects" Condition="'$(SkippedTestScopes)' != ''">
-    <ItemGroup>
-      <!-- MatchOnMetadata="FullPath" with PathLike ensures removal works regardless of whether
-           the SDKCustomTestProject identity is a relative or absolute path, using OS-appropriate
-           path comparison (case-insensitive on Windows). -->
-      <SDKCustomTestProject Remove="@(SkippedTestProject)" MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
-    </ItemGroup>
-    <Message Importance="normal" Text="Conditional test filtering applied (SkippedTestScopes: $(SkippedTestScopes))" />
-  </Target>
+  <Import Project="ConditionalTests.targets" />
 
   <Import Project="test-runner\TestRunner.targets" />
 
@@ -198,6 +164,14 @@
       </TestExecutionDirectoryFiles>
       <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\ManualVersions.props">
         <DestinationFolder>eng/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
+
+      <!-- Infrastructure test files: conditional test scopes script and targets -->
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)scripts\EvaluateConditionalTestScopes.cs">
+        <DestinationFolder>scripts/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)test\ConditionalTests.targets">
+        <DestinationFolder>test/</DestinationFolder>
       </TestExecutionDirectoryFiles>
 
       <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />

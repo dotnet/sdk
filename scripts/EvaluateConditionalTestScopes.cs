@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#:property TargetFramework=$(NetCurrent)
 #:property RollForward=LatestMajor
 
 // Evaluates which conditional test scopes should be skipped based on changed files and build context.
