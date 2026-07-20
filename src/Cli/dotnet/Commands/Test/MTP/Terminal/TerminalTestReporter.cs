@@ -839,7 +839,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             if (!string.IsNullOrWhiteSpace(output))
             {
-                AppendIndentedLine(terminal, $"{description}: {output}", SingleIndentation);
+                AppendIndentedLine(terminal, $"{description}: {NormalizeSpecialCharacters(output)}", SingleIndentation);
             }
         }
     }

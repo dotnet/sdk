@@ -1444,7 +1444,7 @@ Make the profile names distinct.</target>
       <trans-unit id="HandshakeFailuresHeader">
         <source>Handshake failures:</source>
         <target state="new">Handshake failures:</target>
-        <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
+        <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to handshake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
       </trans-unit>
       <trans-unit id="HangDumpTypeArgumentName">
         <source>DUMP_TYPE</source>
