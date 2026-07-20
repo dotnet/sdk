@@ -222,11 +222,16 @@ internal static class ContainerArchive
     {
         cancellationToken.ThrowIfCancellationRequested();
         string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
-            SchemaTypes.OciManifestV1,
+            image.ManifestMediaType,
             image.ManifestDigest,
             image.Manifest.Length,
             destinationReference.Repository,
-            destinationReference.Tags);
+            destinationReference.Tags,
+            new PlatformInformation
+            {
+                architecture = image.Architecture,
+                os = image.OS
+            });
 
         using MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson));
         PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
@@ -283,7 +288,10 @@ internal static class ContainerArchive
             manifestListDigest,
             multiArchImage.ImageIndex.Length,
             destinationReference.Repository,
-            destinationReference.Tags);
+            destinationReference.Tags,
+            // OCI defines this descriptor as a referrer to the multi-platform index, so it has no single platform.
+            // Apple container requires platform metadata here; Docker and Podman accept unknown values.
+            new PlatformInformation { architecture = "unknown", os = "unknown" });
 
         using MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson));
         PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")

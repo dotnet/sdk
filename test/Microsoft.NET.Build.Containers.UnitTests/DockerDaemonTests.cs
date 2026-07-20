@@ -205,15 +205,15 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
-    public void MacOSContainer_registry_forces_oci_image_format()
+    public void MacOSContainer_registry_preserves_requested_image_format()
     {
         ILocalRegistry registry = KnownLocalRegistryTypes.CreateLocalRegistry(KnownLocalRegistryTypes.MacOSContainer, _loggerFactory);
         DestinationImageReference destination = new(registry, "repository", ["tag"]);
 
         Assert.AreEqual(
-            SchemaTypes.OciManifestV1,
+            SchemaTypes.DockerManifestV2,
             ContainerHelpers.GetManifestMediaType(
-                SchemaTypes.DockerManifestV2,
+                SchemaTypes.OciManifestV1,
                 KnownImageFormats.Docker,
                 destination));
     }

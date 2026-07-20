@@ -378,10 +378,6 @@ internal sealed class MacOSContainerRuntime(ContainerRuntimeOperations operation
     protected override string ProbeArguments => "system status";
 
     /// <inheritdoc />
-    public override string GetManifestMediaType(string defaultManifestMediaType, KnownImageFormats? imageFormat)
-        => SchemaTypes.OciManifestV1;
-
-    /// <inheritdoc />
     public override ContainerRuntimeKind GetTelemetryValue() => ContainerRuntimeKind.MacOSContainer;
 
     /// <inheritdoc />

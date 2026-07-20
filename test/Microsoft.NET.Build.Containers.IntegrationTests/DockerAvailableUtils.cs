@@ -119,6 +119,17 @@ internal static class MacOSContainerCliStatus
     public static bool IsAvailable => s_isAvailable.Value;
 }
 
+internal static class PodmanCliStatus
+{
+    private static readonly Lazy<bool> s_isAvailable = new(
+        () => new ContainerRuntime(
+            ContainerRuntime.PodmanCommand,
+            new Microsoft.NET.TestFramework.TestLoggerFactory()).IsAvailable(),
+        LazyThreadSafetyMode.ExecutionAndPublication);
+
+    public static bool IsAvailable => s_isAvailable.Value;
+}
+
 internal static class DockerCliStatus
 {
     private static readonly Lazy<(bool IsAvailable, ContainerRuntimeKind Runtime)> s_status = new(
@@ -139,5 +150,33 @@ internal static class DockerCliStatus
         ContainerRuntime runtime = new(new Microsoft.NET.TestFramework.TestLoggerFactory(), probePlatformNativeCli: false);
         bool isAvailable = runtime.IsAvailable();
         return (isAvailable, runtime.GetTelemetryValue());
+    }
+}
+
+internal static class MultiArchLocalRegistryTestData
+{
+    public static IEnumerable<string> AvailableRuntimes()
+    {
+        if (DockerCliStatus.IsAvailable
+            && DockerCliStatus.Runtime == ContainerRuntimeKind.Docker
+            && DockerContainerRuntime.IsContainerdStoreEnabled())
+        {
+            yield return KnownLocalRegistryTypes.Docker;
+        }
+
+        if (PodmanCliStatus.IsAvailable)
+        {
+            yield return KnownLocalRegistryTypes.Podman;
+        }
+
+        if (WslcCliStatus.IsAvailable)
+        {
+            yield return KnownLocalRegistryTypes.Wslc;
+        }
+
+        if (MacOSContainerCliStatus.IsAvailable)
+        {
+            yield return KnownLocalRegistryTypes.MacOSContainer;
+        }
     }
 }
