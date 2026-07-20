@@ -80,5 +80,26 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 summaryLine.Should().NotContain("Zero tests ran", "the summary headline must not mask a handshake failure as an empty run");
             }
         }
+
+        [TestMethod]
+        public void RunConsoleAppWithInvalidOptionError_ShouldSurfaceErrorOutput()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ConsoleAppDoesNothing", Guid.NewGuid().ToString())
+                .WithSource();
+            File.WriteAllText(
+                Path.Combine(testInstance.Path, "Program.cs"),
+                """
+                Console.Error.WriteLine("Option '--unsupported-option' is not recognized.");
+                return 5;
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--unsupported-option");
+
+            result.ExitCode.Should().Be(5);
+            result.StdOut.Should().Contain("Option '--unsupported-option' is not recognized.");
+            result.StdOut.Should().Contain("Test run summary: Failed!");
+        }
     }
 }
