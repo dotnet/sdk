@@ -38,11 +38,11 @@ internal static class ContainerArchive
     {
         if (image.ManifestMediaType == SchemaTypes.DockerManifestV2)
         {
-            await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
+            await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken).ConfigureAwait(false);
         }
         else if (image.ManifestMediaType == SchemaTypes.OciManifestV1)
         {
-            await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
+            await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -61,12 +61,12 @@ internal static class ContainerArchive
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
         JsonArray layerTarballPaths = new();
-        await WriteImageLayers(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
+        await WriteImageLayersAsync(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
             .ConfigureAwait(false);
 
         string configTarballPath = $"{GetRequiredImageSha(image)}.json";
-        await WriteImageConfig(writer, image, configTarballPath, cancellationToken).ConfigureAwait(false);
-        await WriteManifestForDockerImage(writer, destinationReference, configTarballPath, layerTarballPaths, cancellationToken)
+        await WriteImageConfigAsync(writer, image, configTarballPath, cancellationToken).ConfigureAwait(false);
+        await WriteManifestForDockerImageAsync(writer, destinationReference, configTarballPath, layerTarballPaths, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -80,9 +80,9 @@ internal static class ContainerArchive
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-        await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken).ConfigureAwait(false);
-        await WriteIndexJsonForOciImage(writer, image, destinationReference, cancellationToken).ConfigureAwait(false);
-        await WriteOciLayout(writer, cancellationToken).ConfigureAwait(false);
+        await WriteOciImageToBlobsAsync(writer, image, sourceReference, cancellationToken).ConfigureAwait(false);
+        await WriteIndexJsonForOciImageAsync(writer, image, destinationReference, cancellationToken).ConfigureAwait(false);
+        await WriteOciLayoutAsync(writer, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task WriteMultiArchOciImageToStreamAsync(
@@ -98,15 +98,15 @@ internal static class ContainerArchive
         Debug.Assert(multiArchImage.Images is not null);
         foreach (BuiltImage image in multiArchImage.Images)
         {
-            await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken).ConfigureAwait(false);
+            await WriteOciImageToBlobsAsync(writer, image, sourceReference, cancellationToken).ConfigureAwait(false);
         }
 
-        await WriteIndexJsonForMultiArchOciImage(writer, multiArchImage, destinationReference, cancellationToken)
+        await WriteIndexJsonForMultiArchOciImageAsync(writer, multiArchImage, destinationReference, cancellationToken)
             .ConfigureAwait(false);
-        await WriteOciLayout(writer, cancellationToken).ConfigureAwait(false);
+        await WriteOciLayoutAsync(writer, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task WriteImageLayers(
+    private static async Task WriteImageLayersAsync(
         TarWriter writer,
         BuiltImage image,
         SourceImageReference sourceReference,
@@ -134,7 +134,7 @@ internal static class ContainerArchive
         }
     }
 
-    private static async Task WriteImageConfig(TarWriter writer, BuiltImage image, string configPath, CancellationToken cancellationToken)
+    private static async Task WriteImageConfigAsync(TarWriter writer, BuiltImage image, string configPath, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using MemoryStream configStream = new(Encoding.UTF8.GetBytes(image.Config));
@@ -149,7 +149,7 @@ internal static class ContainerArchive
     /// Records archive entry paths using the fields interpreted by Moby's
     /// <see href="https://github.com/moby/moby/blob/c5b47383f5108b7a0c05b4334ef31644158553cf/daemon/internal/image/tarexport/tarexport.go#L20-L26"><c>manifestItem</c> contract</see>.
     /// </summary>
-    private static async Task WriteManifestForDockerImage(
+    private static async Task WriteManifestForDockerImageAsync(
         TarWriter writer,
         DestinationImageReference destinationReference,
         string configTarballPath,
@@ -183,7 +183,7 @@ internal static class ContainerArchive
     /// Writes the required layout marker and version defined by the
     /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#oci-layout-file"><c>oci-layout</c> file specification</see>.
     /// </summary>
-    private static async Task WriteOciLayout(TarWriter writer, CancellationToken cancellationToken)
+    private static async Task WriteOciLayoutAsync(TarWriter writer, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using MemoryStream layoutStream = new(Encoding.UTF8.GetBytes("{\"imageLayoutVersion\": \"1.0.0\"}"));
@@ -198,7 +198,7 @@ internal static class ContainerArchive
     /// Stores the image manifest at the content-addressed path prescribed by the
     /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#blobs">OCI blobs layout</see>.
     /// </summary>
-    private static async Task WriteManifestForOciImage(TarWriter writer, BuiltImage image, CancellationToken cancellationToken)
+    private static async Task WriteManifestForOciImageAsync(TarWriter writer, BuiltImage image, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         string manifestPath = $"{BlobsPath}/{image.ManifestDigest.Substring("sha256:".Length)}";
@@ -214,7 +214,7 @@ internal static class ContainerArchive
     /// Creates the required image-layout entry point defined by the
     /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#indexjson-file"><c>index.json</c> file specification</see>.
     /// </summary>
-    private static async Task WriteIndexJsonForOciImage(
+    private static async Task WriteIndexJsonForOciImageAsync(
         TarWriter writer,
         BuiltImage image,
         DestinationImageReference destinationReference,
@@ -245,16 +245,16 @@ internal static class ContainerArchive
     /// Places layers, configuration, and the manifest in the content-addressed
     /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#blobs">OCI blobs layout</see>.
     /// </summary>
-    private static async Task WriteOciImageToBlobs(
+    private static async Task WriteOciImageToBlobsAsync(
         TarWriter writer,
         BuiltImage image,
         SourceImageReference sourceReference,
         CancellationToken cancellationToken)
     {
-        await WriteImageLayers(writer, image, sourceReference, d => $"{BlobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
+        await WriteImageLayersAsync(writer, image, sourceReference, d => $"{BlobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
             .ConfigureAwait(false);
-        await WriteImageConfig(writer, image, $"{BlobsPath}/{GetRequiredImageSha(image)}", cancellationToken).ConfigureAwait(false);
-        await WriteManifestForOciImage(writer, image, cancellationToken).ConfigureAwait(false);
+        await WriteImageConfigAsync(writer, image, $"{BlobsPath}/{GetRequiredImageSha(image)}", cancellationToken).ConfigureAwait(false);
+        await WriteManifestForOciImageAsync(writer, image, cancellationToken).ConfigureAwait(false);
     }
 
     private static string GetRequiredImageSha(BuiltImage image)
@@ -264,7 +264,7 @@ internal static class ContainerArchive
     /// Makes the multi-platform image index discoverable through the required
     /// <see href="https://github.com/opencontainers/image-spec/blob/v1.1.1/image-layout.md#indexjson-file"><c>index.json</c> entry point</see>.
     /// </summary>
-    private static async Task WriteIndexJsonForMultiArchOciImage(
+    private static async Task WriteIndexJsonForMultiArchOciImageAsync(
         TarWriter writer,
         MultiArchImage multiArchImage,
         DestinationImageReference destinationReference,
