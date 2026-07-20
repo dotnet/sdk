@@ -541,6 +541,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>b25932e8d128b5242f1d89691f8e8171b82774c0</Sha>
     </Dependency>
+    <!-- KEEP IN SYNC: the following testfx packages (Microsoft.Testing.Platform, MSTest, MSTest.Sdk) must
+         stay on the SAME testfx build/Sha. The MSTest.Sdk source generator emits registrations against the
+         MSTest.TestFramework runtime, so a version skew breaks the NativeAOT CLI test build. See #55302. -->
     <Dependency Name="Microsoft.Testing.Platform" Version="2.4.0-preview.26367.7">
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>fd744761254d82f054ebba7f8479af01f3822c5a</Sha>

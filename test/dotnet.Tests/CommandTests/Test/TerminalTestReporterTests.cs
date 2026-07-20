@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
 
@@ -262,6 +264,88 @@ public class TerminalTestReporterTests
         output.Should().Contain("Option '--show-live-output' has invalid arguments");
         output.Should().Contain("lines omitted");
         output.Should().NotContain("help line 350");
+    }
+
+    /// <summary>
+    /// '--list-tests json' renders a machine-readable JSON document from the discovered-test data the
+    /// SDK already receives over the 'dotnet test' IPC protocol. The document is a versioned envelope
+    /// grouped by test container (assembly + TFM + architecture), preserving every field the wire
+    /// contract carries (uid, namespace, typeName, methodName, parameterTypeFullNames, traits, location).
+    /// See https://github.com/dotnet/sdk/issues/49754.
+    /// </summary>
+    [TestMethod]
+    public void TestExecutionCompleted_WhenDiscoveryJsonFormat_EmitsMachineReadableJson()
+    {
+        var capturingConsole = new CapturingConsole();
+
+        var options = new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowProgress = false,
+            ShowAssembly = false,
+            ShowAssemblyStartAndComplete = false,
+            ListTestsFormat = TestListFormat.Json,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: true, isHelp: false, isRetry: false);
+
+        const string assembly = "/repo/bin/Debug/net9.0/MyTests.dll";
+        const string executionId = "exec-1";
+
+        reporter.AssemblyRunStarted(assembly, targetFramework: "net9.0", architecture: "x64", executionId, instanceId: "inst-1");
+
+        reporter.TestDiscovered(executionId, new DiscoveredTestInfo(
+            DisplayName: "MyMethod(x: 1)",
+            Uid: "uid-1",
+            FilePath: "/repo/MyTests.cs",
+            LineNumber: 42,
+            Namespace: "My.Ns",
+            TypeName: "MyClass",
+            MethodName: "MyMethod",
+            ParameterTypeFullNames: ["System.Int32"],
+            Traits: [("Category", "Fast")]));
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: 0);
+
+        string output = capturingConsole.GetOutput();
+        int start = output.IndexOf('{');
+        start.Should().BeGreaterThanOrEqualTo(0, "the discovery output should contain a JSON document");
+
+        using var document = JsonDocument.Parse(output.Substring(start));
+        JsonElement root = document.RootElement;
+
+        root.GetProperty("version").GetString().Should().Be("1.0");
+
+        JsonElement containers = root.GetProperty("testContainers");
+        containers.GetArrayLength().Should().Be(1);
+
+        JsonElement container = containers[0];
+        container.GetProperty("assemblyPath").GetString().Should().Be(assembly);
+        container.GetProperty("targetFramework").GetString().Should().Be("net9.0");
+        container.GetProperty("architecture").GetString().Should().Be("x64");
+
+        JsonElement tests = container.GetProperty("tests");
+        tests.GetArrayLength().Should().Be(1);
+
+        JsonElement test = tests[0];
+        test.GetProperty("uid").GetString().Should().Be("uid-1");
+        test.GetProperty("displayName").GetString().Should().Be("MyMethod(x: 1)");
+        test.GetProperty("namespace").GetString().Should().Be("My.Ns");
+        test.GetProperty("typeName").GetString().Should().Be("MyClass");
+        test.GetProperty("methodName").GetString().Should().Be("MyMethod");
+        test.GetProperty("filePath").GetString().Should().Be("/repo/MyTests.cs");
+        test.GetProperty("lineNumber").GetInt32().Should().Be(42);
+
+        JsonElement parameters = test.GetProperty("parameterTypeFullNames");
+        parameters.GetArrayLength().Should().Be(1);
+        parameters[0].GetString().Should().Be("System.Int32");
+
+        JsonElement traits = test.GetProperty("traits");
+        traits.GetArrayLength().Should().Be(1);
+        traits[0].GetProperty("key").GetString().Should().Be("Category");
+        traits[0].GetProperty("value").GetString().Should().Be("Fast");
     }
 
     private static void ReportTest(TerminalTestReporter reporter, string assembly, string executionId, string instanceId, string testUid, TestOutcome outcome)
