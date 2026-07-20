@@ -143,9 +143,10 @@ This file should be imported by eng/Versions.props
          version skew breaks the NativeAOT CLI test build (e.g. CS0234 / "Zero tests ran"). See
          https://github.com/dotnet/sdk/pull/55302. These flow together via darc (Version.Details.xml); do not bump
          one without the others. -->
-    <MicrosoftTestingPlatformPackageVersion>2.4.0-preview.26366.2</MicrosoftTestingPlatformPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>2.4.0-preview.26367.7</MicrosoftTestingPlatformPackageVersion>
     <MicrosoftTestingPlatformInternalDotnetTestPackageVersion>2.3.0-preview.26330.8</MicrosoftTestingPlatformInternalDotnetTestPackageVersion>
-    <MSTestPackageVersion>4.4.0-preview.26366.2</MSTestPackageVersion>
+    <MSTestPackageVersion>4.4.0-preview.26367.7</MSTestPackageVersion>
+    <MSTestSdkPackageVersion>4.4.0-preview.26367.7</MSTestSdkPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
@@ -284,5 +285,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftTestingPlatformVersion>$(MicrosoftTestingPlatformPackageVersion)</MicrosoftTestingPlatformVersion>
     <MicrosoftTestingPlatformInternalDotnetTestVersion>$(MicrosoftTestingPlatformInternalDotnetTestPackageVersion)</MicrosoftTestingPlatformInternalDotnetTestVersion>
     <MSTestVersion>$(MSTestPackageVersion)</MSTestVersion>
+    <MSTestSdkVersion>$(MSTestSdkPackageVersion)</MSTestSdkVersion>
   </PropertyGroup>
 </Project>
