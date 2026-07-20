@@ -8,10 +8,15 @@
 // Reads test/ConditionalTests.props and outputs a semicolon-separated list of skipped scope names.
 //
 // Usage:
-//   dotnet run EvaluateConditionalTestScopes.cs -- --repo-root <path> [--target-branch <branch>] [--build-reason <reason>]
+//   dotnet run EvaluateConditionalTestScopes.cs -- --repo-root <path> [--target-branch <branch>] [--build-reason <reason>] [--output-variable <name>]
 //
 // When --target-branch is not provided, no scopes are skipped (safe default for local dev).
 // Changed files are determined via `git diff --name-only origin/<target-branch>...HEAD`.
+//
+// Output variable format (set via ##vso when running in Azure Pipelines):
+//   - Empty string: no scopes skipped, all tests run.
+//   - "__all__": every defined scope is skipped.
+//   - Semicolon-separated scope names (e.g. "TemplateEngine;ILLink"): only listed scopes are skipped.
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -20,6 +25,7 @@ using System.Xml.Linq;
 var targetBranch = GetArg("--target-branch");
 var buildReason = GetArg("--build-reason") ?? "";
 var repoRoot = GetArg("--repo-root");
+var outputVariable = GetArg("--output-variable");
 
 if (string.IsNullOrEmpty(repoRoot) || !Directory.Exists(repoRoot))
 {
@@ -150,10 +156,10 @@ var result = skippedScopes.Count > 0 && skippedScopes.Count == scopes.Count ? "_
     : skippedScopes.Count > 0 ? string.Join(";", skippedScopes)
     : "";
 
-// Set Azure DevOps pipeline variable if running in CI
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")))
+// Set Azure DevOps pipeline variable if running in CI and output variable was specified
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")) && !string.IsNullOrEmpty(outputVariable))
 {
-    Console.WriteLine($"##vso[task.setvariable variable=SkippedTestScopes]{result}");
+    Console.WriteLine($"##vso[task.setvariable variable={outputVariable}]{result}");
 }
 
 Console.WriteLine($"Skipped test scopes: {(result == "" ? "(none)" : result)}");
