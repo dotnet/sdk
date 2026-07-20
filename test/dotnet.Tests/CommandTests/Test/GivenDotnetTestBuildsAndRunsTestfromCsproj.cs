@@ -338,7 +338,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("m", false)]
         [InlineData("n", true)]
         [InlineData("d", true)]
-        [InlineData("diag", true)]
+        [InlineData("diag", true, Skip = "https://github.com/dotnet/sdk/issues/54781")]
         public void ItUsesVerbosityPassedToDefineVerbosityOfConsoleLoggerOfTheTests(string verbosity, bool shouldShowPassedTests)
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
