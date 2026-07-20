@@ -33,7 +33,9 @@
       <Mechanism>project</Mechanism>
       <TestProjects>test/TemplateEngine/**/*.csproj</TestProjects>
       <TriggerPaths>
+        documentation/TemplateEngine/Samples/**;
         src/TemplateEngine/**;
+        template_feed/Microsoft.TemplateEngine.Authoring.Templates/**;
         test/TemplateEngine/**;
         test/TestAssets/TestPackages/TemplateEngine/**
       </TriggerPaths>
