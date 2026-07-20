@@ -547,7 +547,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                               UnavailableRuntimePacks="@(UnavailableRuntimePack)"
                               SatelliteResourceLanguages="$(SatelliteResourceLanguages)"
                               DesignTimeBuild="$(DesignTimeBuild)"
-                              DisableTransitiveFrameworkReferenceDownloads="$(DisableTransitiveFrameworkReferenceDownloads)">
+                              DisableTransitiveFrameworkReferenceDownloads="$(DisableTransitiveFrameworkReferenceDownloads)"
+                              RuntimeIdentifier="$(RuntimeIdentifier)">
       <Output TaskParameter="RuntimePackAssets" ItemName="RuntimePackAsset" />
     </ResolveRuntimePackAssets>
 
