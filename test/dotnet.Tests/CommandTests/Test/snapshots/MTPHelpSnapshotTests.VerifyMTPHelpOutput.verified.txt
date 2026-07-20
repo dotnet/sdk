@@ -71,6 +71,7 @@ Platform Options:
                                   Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
                                   'auto' shows progress unless the terminal cannot update in place (for example with --no-ansi or in CI).
                                   This option takes precedence over the deprecated --no-progress flag.
+  --show-slowest-tests            Show the specified number of slowest tests (by reported execution duration) in the run summary. Expects a positive integer.
   --show-stderr                   Determines when to show captured error output of a test.
                                   Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
   --show-stdout                   Determines when to show captured standard output of a test.
