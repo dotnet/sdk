@@ -207,11 +207,11 @@ namespace Microsoft.DotNet.GenAPI
 
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 new SyntaxList<AttributeListSyntax>(),
-                SyntaxFactory.TokenList([ SyntaxFactory.Token(visibility) ]),
+                SyntaxFactory.TokenList([SyntaxFactory.Token(visibility)]),
                 SyntaxFactory.Identifier(namedType.ToDisplayString()),
                 SyntaxFactory.ParameterList(),
-                default!,
-                default(BlockSyntax)!);
+                default,
+                SyntaxFactory.Block());
 
             // find base constructor to call if it's not implicit.
             IEnumerable<IMethodSymbol> baseConstructors = namedType.BaseType?.Constructors.Where(symbolFilter.Include) ?? Enumerable.Empty<IMethodSymbol>();
