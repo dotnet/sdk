@@ -373,6 +373,35 @@ public class EvaluateConditionalTestScopesTests : SdkTest
     }
 
     [TestMethod]
+    public async Task Validation_WildcardInDirectoryName_ValidatesParentSegment()
+    {
+        // Patterns like "test/dotnet-format.*/**" have a wildcard in the directory
+        // name itself. The validator should check "test/" (the last complete segment),
+        // not "test/dotnet-format." (the prefix up to the first wildcard character).
+        var props = """
+            <Project>
+              <ItemGroup>
+                <ConditionalTestScope Include="FormatScope">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/dotnet-format.*/**/*.csproj</TestProjects>
+                  <TriggerPaths>test/dotnet-format.*/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+              </ItemGroup>
+            </Project>
+            """;
+
+        // Create "test/" parent but not a literal "test/dotnet-format." directory.
+        // The glob is meant to match test/dotnet-format.IntegrationTests, etc.
+        using var repo = new TestRepo(props, "test");
+
+        var result = await RunScript(repo.Root, targetBranch: null, buildReason: "PullRequest");
+
+        Assert.AreEqual(0, result.ExitCode, $"Validation should pass when parent segment exists.\nStdOut: {result.StdOut}\nStdErr: {result.StdErr}");
+        Assert.Contains("Scope 'FormatScope': RUN", result.StdOut);
+    }
+
+    [TestMethod]
     public async Task Validation_GlobalTriggerPathBaseDir_DoesNotExist_ReturnsError()
     {
         var props = """
