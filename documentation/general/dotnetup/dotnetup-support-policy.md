@@ -84,7 +84,7 @@ End of support refers to the date when Microsoft no longer provides fixes, updat
 
 When a new `stable` version of `dotnetup` is published, all previous versions immediately reach end of support.
 
-`dotnetup` is a free product. The Modern Lifecycle Policy's 12-month notification commitment before ending support without a successor does not apply to free products or preview releases. Despite this exception, Microsoft will provide at least six months' notice before retiring the `stable` channel without a successor. This retirement notice does not apply when one `stable` version supersedes another under the tip-only support model.
+`dotnetup` is a free product. The Modern Lifecycle Policy's 12-month notification commitment before ending support without a successor does not apply to free products or preview releases. Despite this exception, we will provide at least six months' notice before retiring the `stable` channel without a successor. This retirement notice does not apply when one `stable` version supersedes another under the tip-only support model.
 
 Historical `stable` versions of `dotnetup` will generally remain available for download as official [dotnet releases](https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json) despite their lack of official support, much like historical .NET versions are available today.
 
