@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
 using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
+using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -132,6 +133,71 @@ public class MSBuildEvaluationTests
                 "--property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true",
                 explicitConfigurationArguments);
             Assert.DoesNotContain("--property:Configuration=Release", explicitConfigurationArguments);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previousCurrentDirectory);
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void PublishCommandEvaluatesPublishReleaseAndForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-publish-{Guid.NewGuid():N}");
+        string projectPath = Path.Combine(testDirectory, "TestProject.csproj");
+        string sourcePath = Path.Combine(testDirectory, "Program.cs");
+        string binlogPath = Path.Combine(testDirectory, "publish.binlog");
+        string previousCurrentDirectory = Directory.GetCurrentDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <PublishRelease>true</PublishRelease>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(sourcePath, """Console.WriteLine("hi");""");
+
+        try
+        {
+            Directory.SetCurrentDirectory(testDirectory);
+            MSBuildSdkResolverRegistration.Register();
+
+            var command = (PublishCommand)PublishCommand.FromArgs(
+                [projectPath, "--no-restore", $"-bl:{binlogPath}"]);
+            string[] arguments = command.GetArgumentTokensToMSBuild();
+
+            Assert.Contains("--target:Publish", arguments);
+            Assert.Contains("--property:_IsPublishing=true", arguments);
+            Assert.Contains("--property:Configuration=Release", arguments);
+            Assert.Contains($"-bl:{binlogPath}", arguments);
+            Assert.DoesNotContain("-restore", arguments);
+            Assert.Contains(
+                Path.Combine(sdkDirectory, "MSBuild.dll"),
+                command.GetProcessStartInfo().Arguments);
+
+            var restoreCommand = (PublishCommand)PublishCommand.FromArgs([projectPath]);
+            Assert.Contains("-restore", restoreCommand.GetArgumentTokensToMSBuild());
+
+            var explicitConfigurationCommand = (PublishCommand)PublishCommand.FromArgs(
+                [projectPath, "--no-restore", "--configuration", "Debug"]);
+            string[] explicitConfigurationArguments = explicitConfigurationCommand.GetArgumentTokensToMSBuild();
+            Assert.Contains("--property:Configuration=Debug", explicitConfigurationArguments);
+            Assert.Contains(
+                "--property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true",
+                explicitConfigurationArguments);
+            Assert.DoesNotContain("--property:Configuration=Release", explicitConfigurationArguments);
+
+            CommandBase fileCommand = PublishCommand.FromArgs([sourcePath, "--no-restore"]);
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => fileCommand.Execute());
         }
         finally
         {

@@ -84,8 +84,8 @@ must invoke that `dotnet.exe` from outside the repository so the repository
 The Native AOT test executable also evaluates a stock `Microsoft.NET.Sdk` project
 against the bootstrap SDK, proving that the workload resolver handles the SDK's
 workload-locator imports through `SdkResolver.Register` without reflective plugin
-loading. Pack-specific tests additionally verify that `PackRelease` evaluation and
-the child MSBuild process use the versioned SDK directory. End-to-end parity toggles
-`DOTNET_CLI_ENABLEAOT` on the same redist muxer; telemetry must report
-`cli.runtime=aot` for physical project packing and `cli.runtime=managed` for
-`.nuspec` and file-based fallbacks.
+loading. Command-specific tests additionally verify that `PackRelease`/`PublishRelease`
+evaluation and the child MSBuild process use the versioned SDK directory. End-to-end
+parity toggles `DOTNET_CLI_ENABLEAOT` on the same redist muxer; telemetry must report
+`cli.runtime=aot` for physical project packing and publishing, and `cli.runtime=managed`
+for `.nuspec` and file-based fallbacks.

@@ -231,7 +231,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Remove\SolutionRemoveCommand.cs" Link="Commands\Solution\Remove\SolutionRemoveCommand.cs" />
   </ItemGroup>
 
-  <!-- 'dotnet pack' command: physical project/solution evaluation and out-of-process MSBuild forwarding. -->
+  <!-- 'dotnet pack' and 'dotnet publish': physical project/solution evaluation and out-of-process MSBuild forwarding. -->
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" Link="MSBuildPropertyNames.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\LoggerUtility.cs" Link="LoggerUtility.cs" />
@@ -242,6 +242,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\VirtualProjectBuildingCommand.cs" Link="Commands\Run\VirtualProjectBuildingCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommand.cs" Link="Commands\Pack\PackCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommandParser.cs" Link="Commands\Pack\PackCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Publish\PublishCommand.cs" Link="Commands\Publish\PublishCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Publish\PublishCommandParser.cs" Link="Commands\Publish\PublishCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommand.cs" Link="Commands\Restore\RestoreCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoringCommand.cs" Link="Commands\Restore\RestoringCommand.cs" />
   </ItemGroup>

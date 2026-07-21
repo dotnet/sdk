@@ -122,7 +122,7 @@ bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
 can run entirely in AOT (`--version`, `--info`, and the AOT-capable `sln`
-subcommands, plus `pack` setup) execute immediately and return.
+subcommands, plus `pack` and `publish` setup) execute immediately and return.
 Every other built-in command is wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
@@ -145,15 +145,16 @@ its full resolver set, deferral produces identical user-facing behavior. Out-of-
 process invocation only happens after a non-null spec, so a command is never
 executed twice.
 
-**MSBuild evaluation and `pack`** — The AOT bridge registers the SDK-shipped
-workload and NuGet SDK resolvers through MSBuild's static registration APIs.
+**MSBuild evaluation, `pack`, and `publish`** — The AOT bridge registers the
+SDK-shipped workload and NuGet SDK resolvers through MSBuild's static registration APIs.
 For a physical project, solution, current directory, or file-based app passed to
-`dotnet pack`, it evaluates only the project properties needed to honor `PackRelease`,
-then forwards restore and the `Pack` target to the selected SDK's `MSBuild.dll` out of
-process. File-based apps without `#:` directives use an AOT-safe subset of the existing
-virtual-project builder for evaluation, including SDK imports and implicit files such as
-`Directory.Build.props`; compilation and directive-aware project construction still
-defer to the managed CLI. SDK-relative paths (`MSBuild.dll`, `Sdks`,
+`dotnet pack` or `dotnet publish`, it evaluates only the project properties needed to honor
+`PackRelease` or `PublishRelease`, then forwards restore and the command target to the
+selected SDK's `MSBuild.dll` out of process. File-based apps without `#:` directives use
+an AOT-safe subset of the existing virtual-project builder for evaluation, including SDK
+imports and implicit files such as `Directory.Build.props`; compilation and
+directive-aware project construction still defer to the managed CLI. SDK-relative paths
+(`MSBuild.dll`, `Sdks`,
 `MSBuildExtensionsPath`, and the telemetry logger) come from
 `SdkPaths.SdkDirectory`, not `AppContext.BaseDirectory`. `.nuspec` inputs also defer
 because they use the in-process NuGet pack engine. The shared `RestoringCommand` starts
