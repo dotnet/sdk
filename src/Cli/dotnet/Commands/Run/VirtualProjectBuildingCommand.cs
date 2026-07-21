@@ -1201,21 +1201,31 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 #endif
 
-#if CLI_AOT
-    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection) =>
-        throw new CommandNotAvailableInAotException();
-
-    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null) =>
-        throw new CommandNotAvailableInAotException();
-#else
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, additionalGlobalProperties: null);
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+#if !CLI_AOT
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "The managed CLI supports Roslyn-based file directives; the Native AOT implementation uses the no-directive project builder.")]
+#endif
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null)
     {
+#if CLI_AOT
+        // Roslyn's directive parser roots Assembly.Location, which is not Native AOT-compatible.
+        // Remove this fallback when https://github.com/dotnet/roslyn/issues/84574 is fixed.
+        if (File.ReadLines(Builder.EntryPointFileFullPath)
+            .Any(static line => line.TrimStart().StartsWith("#:", StringComparison.Ordinal)))
+        {
+            throw new CommandNotAvailableInAotException();
+        }
+
+        IProjectInstance project = Builder.CreateProjectInstanceWithoutDirectivesAsync(
+            projectCollection.Wrap(),
+            additionalGlobalProperties).AsTask().GetAwaiter().GetResult();
+
+        return project.Unwrap();
+#else
         var projectCollectionWrapped = projectCollection.Wrap();
 
         var result = Builder.CreateProjectInstanceAsync(
@@ -1227,8 +1237,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         EvaluatedDirectives = result.EvaluatedDirectives;
 
         return result.Project.Unwrap();
-    }
 #endif
+    }
 
     /// <summary>
     /// Creates a temporary subdirectory for file-based apps.
