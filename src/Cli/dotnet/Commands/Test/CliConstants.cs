@@ -72,6 +72,11 @@ internal static class HandshakeMessagePropertyNames
     // Optional property — older Microsoft.Testing.Platform versions don't send
     // it, in which case the SDK falls back to its previous (no-validation) behavior.
     internal const byte ExecutionMode = 10;
+
+    // Optional 1-based retry attempt number. Multiple test host instances, such as shards,
+    // can belong to the same attempt. Older hosts omit it, so the SDK retains instance-based
+    // retry inference as a compatibility fallback.
+    internal const byte AttemptNumber = 13;
 }
 
 internal static class HandshakeMessageExecutionModes

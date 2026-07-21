@@ -8,6 +8,15 @@
 # review when someone opens a pull request.
 # Issue/PR labels to use are listed before each section
 
+# Area-CLI
+/src/Cli/ @dotnet/dotnet-cli
+/test/dotnet.Tests/ @dotnet/dotnet-cli
+
+# Area-NetSDK
+/src/Tasks/Microsoft.NET.Build.Tasks/ @dotnet/dotnet-cli
+/test/Microsoft.NET.Build.Tests/ @dotnet/dotnet-cli
+/test/Microsoft.NET.Publish.Tests/ @dotnet/dotnet-cli
+
 # Area-WebSDK
 /src/WebSdk/ @vijayrkn
 /test/Microsoft.NET.Sdk.Publish.Tasks.Tests/ @vijayrkn
@@ -27,7 +36,21 @@
 /test/TestAssets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
 /test/TestAssets/TestProjects/Razor*/ @dotnet/razor-tooling
 
-# Area-Wasm
+# Area-StaticWebAssets
+/src/StaticWebAssetsSdk/ @dotnet/aspnet-blazor-eng
+/test/Microsoft.NET.Sdk.StaticWebAssets.Tests/ @dotnet/aspnet-blazor-eng
+
+# Area-Workloads
+/src/Cli/Microsoft.DotNet.Cli.Definitions/Commands/Workload/ @dotnet/net-sdk-workload-contributors
+/src/Cli/dotnet/Commands/Workload/ @dotnet/net-sdk-workload-contributors
+/src/Resolvers/Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver/ @dotnet/net-sdk-workload-contributors
+/src/Resolvers/Microsoft.NET.Sdk.WorkloadManifestReader/ @dotnet/net-sdk-workload-contributors
+/src/Workloads/ @dotnet/net-sdk-workload-contributors
+/test/dotnet.Tests/CommandTests/Workload/ @dotnet/net-sdk-workload-contributors
+/test/Microsoft.NET.Sdk.WorkloadManifestReader.Tests/ @dotnet/net-sdk-workload-contributors
+/test/TestAssets/TestWorkloads/ @dotnet/net-sdk-workload-contributors
+
+# Area-WasmSdk
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
@@ -51,20 +74,19 @@
 /test/dotnet-fsi.Tests @dotnet/fsharp
 
 # Area-DotNet Test
-/src/Cli/dotnet/Commands/Test @dotnet/dotnet-testing-admin
-/src/Cli/dotnet/Commands/VSTest @dotnet/dotnet-testing-admin
-/test/dotnet.Tests/CommandTests/Test @dotnet/dotnet-testing-admin
-/test/dotnet.Tests/CommandTests/VSTest @dotnet/dotnet-testing-admin
-/test/dotnet-new.IntegrationTests @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/MSTest* @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/NUnit* @dotnet/dotnet-testing-admin
-/template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing-admin
+/src/Cli/dotnet/Commands/Test @dotnet/dotnet-testing
+/src/Cli/dotnet/Commands/VSTest @dotnet/dotnet-testing
+/test/dotnet.Tests/CommandTests/Test @dotnet/dotnet-testing
+/test/dotnet.Tests/CommandTests/VSTest @dotnet/dotnet-testing
+/template_feed/Microsoft.DotNet.Common.*/content/MSTest* @dotnet/dotnet-testing
+/template_feed/Microsoft.DotNet.Common.*/content/NUnit* @dotnet/dotnet-testing
+/template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing
 
 # Area-Templates
 /src/Cli/dotnet/Commands/New @dotnet/templating-engine-maintainers
 /src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
 /src/TemplateEngine @dotnet/templating-engine-maintainers
-/test/dotnet-new.IntegrationTests @dotnet/templating-engine-maintainers
+/test/dotnet-new.IntegrationTests @dotnet/templating-engine-maintainers @dotnet/dotnet-testing
 /test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
 /test/TemplateEngine @dotnet/templating-engine-maintainers
 /template_feed @dotnet/templating-engine-maintainers
@@ -127,3 +149,16 @@
 .agents/ @mthalman @lbussell
 AGENTS.md @mthalman @lbussell
 SKILL.md @mthalman @lbussell
+
+# Area-dotnetup
+/.github/ISSUE_TEMPLATE/30_dotnetup.yml @dotnet/dotnetup
+/.vsts-dnup-ci.yml @dotnet/dotnetup
+/.vsts-dnup-pr.yml @dotnet/dotnetup
+/documentation/general/dotnetup/ @dotnet/dotnetup
+/dotnetup.slnf @dotnet/dotnetup
+/eng/dotnetup-shared.ps1 @dotnet/dotnetup
+/eng/dotnetup-shared.sh @dotnet/dotnetup
+/eng/pipelines/templates/jobs/dotnetup/ @dotnet/dotnetup
+/src/Installer/dotnetup/ @dotnet/dotnetup
+/src/Installer/dotnetup.Library/ @dotnet/dotnetup
+/test/dotnetup.Tests/ @dotnet/dotnetup
