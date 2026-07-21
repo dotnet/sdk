@@ -377,8 +377,8 @@ Isso equivale a excluir o project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">Listar os testes detectados em vez de executar os testes.</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">Listar os testes detectados em vez de executar os testes.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">

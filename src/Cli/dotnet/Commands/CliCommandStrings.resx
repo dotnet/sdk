@@ -1962,6 +1962,10 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="StandardOutput" xml:space="preserve">
     <value>Standard output</value>
   </data>
+  <data name="TestApplicationOutputTruncated" xml:space="preserve">
+    <value>... output truncated, {0} lines omitted ...</value>
+    <comment>{0} is the number of output lines that were omitted from the summary.</comment>
+  </data>
   <data name="StatusColumnHeader" xml:space="preserve">
     <value>Status</value>
   </data>
