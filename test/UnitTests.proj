@@ -47,8 +47,8 @@
        - The FullFramework leg sets TestFullMSBuild=true and uses a Windows queue. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomTestProject Include="
-      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
-      Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
+      Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
+      Compatibility\GenAPI\Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
                            TargetFramework="net472"
                            RuntimeTargetFramework="net472" />
   </ItemGroup>

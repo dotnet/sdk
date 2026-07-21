@@ -10,7 +10,7 @@
   <ItemGroup>
     <!-- Build-ordering dependency on the tool under test. -->
     <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiDiff\Microsoft.DotNet.ApiDiff.Tool\Microsoft.DotNet.ApiDiff.Tool.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <ProjectReference Include="$(RepoRoot)test\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <!-- Stage the apidiff CLI binary closure under tools\Microsoft.DotNet.ApiDiff.Tool\ so the
