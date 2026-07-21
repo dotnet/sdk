@@ -50,10 +50,10 @@ public class ConcatenateCssFilesMultiThreadingTest
                 OutputFile = relativeOutputFile
             };
 
-            if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeOutputFile))
+            if (string.IsNullOrWhiteSpace(relativeOutputFile))
             {
                 Action execute = () => task.Execute();
-                execute.Should().Throw<Exception>();
+                execute.Should().Throw<ArgumentException>();
                 return;
             }
 
