@@ -229,6 +229,7 @@ public static class Parser
         AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
 
         Microsoft.DotNet.Cli.Commands.Pack.PackCommandParser.ConfigureCommand(rootCommand.PackCommand);
+        Microsoft.DotNet.Cli.Commands.Publish.PublishCommandParser.ConfigureCommand(rootCommand.PublishCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
