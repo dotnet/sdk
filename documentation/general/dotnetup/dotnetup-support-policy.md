@@ -37,7 +37,7 @@ Multiple `daily` builds may be published in one day. Only the most recent `daily
 
 #### Support Policy
 
-The `daily` version of `dotnetup` does not have any guarantees. Features may be added, changed, or removed without notice. Breaking changes may be added without documentation or notice.
+The `daily` version of `dotnetup` does not have any guarantees. Features may be added, changed, or removed without notice. Breaking changes may be added without documentation or notice. We may provide notices or backward compatibility for breaking changes even in `daily` builds; however, this is not an official policy and is at our discretion depending upon the feature and expected risk.
 
 The `main` branch of the .NET SDK will also be a first party consumer of `dotnetup` `daily` builds.
 
