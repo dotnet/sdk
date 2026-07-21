@@ -115,6 +115,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [TestMethod]
         [DoNotParallelize]
         [DataRow(null, "0")]
+        [DataRow("", "0")]
         [DataRow("0", "0")]
         [DataRow("1", "1")]
         public void ItUsesCliServerSettingUnlessMSBuildServerSettingIsExplicit(string msbuildUseServer, string expected)

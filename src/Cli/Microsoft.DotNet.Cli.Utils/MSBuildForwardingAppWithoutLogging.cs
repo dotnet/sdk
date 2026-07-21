@@ -101,7 +101,8 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
         // The MSBuild server is enabled by default. Set MSBUILDUSESERVER based on DOTNET_CLI_USE_MSBUILD_SERVER,
         // unless the user has already set MSBUILDUSESERVER themselves - in which case we leave their value untouched.
-        if (Env.GetEnvironmentVariable("MSBUILDUSESERVER") is null)
+        // An empty value is treated as unset.
+        if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDUSESERVER")))
         {
             EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
         }
