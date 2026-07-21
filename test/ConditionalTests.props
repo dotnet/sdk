@@ -9,9 +9,11 @@
 
   <!-- ======== Global trigger paths ========
        If ANY changed file matches these patterns, ALL scopes below are forced active.
-       Use for shared infrastructure that all code/tests depend on. -->
+       Use for shared infrastructure that all code/tests depend on. List patterns in
+       alphabetical order. -->
   <PropertyGroup>
     <GlobalTriggerPaths>
+      eng/Version.Details.xml;
       test/Microsoft.NET.TestFramework/**;
       test/Microsoft.NET.TestFramework.MSTest/**
     </GlobalTriggerPaths>
@@ -26,7 +28,7 @@
          TestProjects: (Mechanism=project) Semicolon-separated glob patterns matching test .csproj
                        files, relative to the repo root.
          TriggerPaths: Semicolon-separated glob patterns relative to the repo root. If ANY changed
-                       file matches, the scope runs.
+                       file matches, the scope runs. List patterns in alphabetical order.
          RunAlways:    Conditions under which the scope always runs regardless of changed files.
                        Supported values: CI (non-PR builds). -->
   <ItemGroup>
@@ -39,6 +41,14 @@
         template_feed/Microsoft.TemplateEngine.Authoring.Templates/**;
         test/TemplateEngine/**;
         test/TestAssets/TestPackages/TemplateEngine/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+    <ConditionalTestScope Include="NetAnalyzers">
+      <Mechanism>project</Mechanism>
+      <TestProjects>src/Microsoft.CodeAnalysis.NetAnalyzers/tests/**/*.csproj</TestProjects>
+      <TriggerPaths>
+        src/Microsoft.CodeAnalysis.NetAnalyzers/**
       </TriggerPaths>
       <RunAlways>CI</RunAlways>
     </ConditionalTestScope>
