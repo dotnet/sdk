@@ -33,6 +33,7 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <ProjectReference Include="..\Microsoft.DotNet.SdkResolver\Microsoft.DotNet.SdkResolver.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <Compile Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\SdkPaths.cs" Link="SdkPaths.cs" />
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
   </ItemGroup>
 

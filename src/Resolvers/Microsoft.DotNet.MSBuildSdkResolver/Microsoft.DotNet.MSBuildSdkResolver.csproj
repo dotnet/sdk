@@ -61,6 +61,7 @@
     <Compile Include="..\Microsoft.DotNet.SdkResolver\**\*.cs" LinkBase="Microsoft.DotNet.SdkResolver" />
     <Compile Include="..\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\CachingWorkloadResolver.cs" LinkBase="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" />
     <Compile Include="..\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader" />
+    <Compile Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\SdkPaths.cs" LinkBase="Cli" />
     <Compile Include="..\..\Cli\dotnet\Commands\Workload\Install\WorkloadInstallRecords\**\*.cs"
              Exclude="..\..\Cli\dotnet\Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs"
              LinkBase="WorkloadInstallRecords" />
