@@ -296,6 +296,32 @@ sealed class VirtualProjectBuilder
         return result.Project;
     }
 
+    internal async ValueTask<IProjectInstance> CreateProjectInstanceWithoutDirectivesAsync(
+        IProjectCollection projectCollection,
+        IDictionary<string, string>? additionalGlobalProperties = null)
+    {
+        var projectFileWriter = new StringWriter();
+
+        WriteProjectFile(
+            projectFileWriter,
+            [],
+            GetDefaultProperties(_targetFramework),
+            isVirtualProject: true,
+            entryPointFilePath: EntryPointFileFullPath,
+            artifactsPath: ArtifactsPath,
+            includeRuntimeConfigInformation: RequestedTargets?.Any(static t => t is "Publish" or "Pack") != true);
+
+        using var reader = new StringReader(projectFileWriter.ToString());
+        using var xmlReader = XmlReader.Create(reader);
+        IProjectRootElement projectRoot = _buildService.CreateProjectRootElement(xmlReader, projectCollection, EntryPointFileFullPath);
+        projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
+
+        return await _buildService.CreateProjectInstanceFromProjectRootElementAsync(
+            projectRoot,
+            projectCollection,
+            additionalGlobalProperties).ConfigureAwait(false);
+    }
+
     internal readonly struct Result(
         IProjectInstance project,
         IProjectRootElement projectRootElement,
