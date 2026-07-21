@@ -13,11 +13,47 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 public class GenerateStaticWebAssetsManifestMultiThreadingTest
 {
     [TestMethod]
-    [DataRow("output/manifest.json", "output/manifest.cache")]
-    [DataRow(" ", "  ")]
-    public void WritesManifestAndCacheRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory(
+    public void WritesManifestAndCacheRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory() =>
+        AssertWritesManifestAndCacheRelativeToTaskEnvironmentProjectDirectory("output/manifest.json", "output/manifest.cache");
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WhitespaceManifestAndCachePathsFailOnWindows()
+    {
+        WithTask(" ", "  ", (task, errorMessages, _, _) =>
+        {
+            task.Execute().Should().BeFalse();
+            errorMessages.Should().NotBeEmpty();
+        });
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void WhitespaceManifestAndCachePathsWriteRelativeToTaskEnvironmentProjectDirectoryOnUnix() =>
+        AssertWritesManifestAndCacheRelativeToTaskEnvironmentProjectDirectory(" ", "  ");
+
+    private static void AssertWritesManifestAndCacheRelativeToTaskEnvironmentProjectDirectory(
         string relativeManifestPath,
         string relativeManifestCacheFilePath)
+    {
+        WithTask(relativeManifestPath, relativeManifestCacheFilePath, (task, errorMessages, projectDir, spawnDir) =>
+        {
+            task.Execute().Should().BeTrue(string.Join("; ", errorMessages));
+
+            var expectedManifest = Path.Combine(projectDir, relativeManifestPath);
+            var expectedCache = Path.Combine(projectDir, relativeManifestCacheFilePath);
+            File.Exists(expectedManifest).Should().BeTrue("manifest must be written under TaskEnvironment.ProjectDirectory, not the process CWD");
+            File.Exists(expectedCache).Should().BeTrue("cache must be written under TaskEnvironment.ProjectDirectory, not the process CWD");
+
+            File.Exists(Path.Combine(spawnDir, relativeManifestPath)).Should().BeFalse();
+            File.Exists(Path.Combine(spawnDir, relativeManifestCacheFilePath)).Should().BeFalse();
+        });
+    }
+
+    private static void WithTask(
+        string manifestPath,
+        string manifestCacheFilePath,
+        Action<GenerateStaticWebAssetsManifest, List<string>, string, string> assertion)
     {
         // Layout: place project and decoy in disjoint subtrees so that the same
         // relative path produces different absolute paths from each root.
@@ -53,27 +89,11 @@ public class GenerateStaticWebAssetsManifestMultiThreadingTest
                 Source = "MyProject",
                 ManifestType = "Build",
                 Mode = "Default",
-                ManifestPath = relativeManifestPath,
-                ManifestCacheFilePath = relativeManifestCacheFilePath,
+                ManifestPath = manifestPath,
+                ManifestCacheFilePath = manifestCacheFilePath,
             };
 
-            if (OperatingSystem.IsWindows() &&
-                (string.IsNullOrWhiteSpace(relativeManifestPath) || string.IsNullOrWhiteSpace(relativeManifestCacheFilePath)))
-            {
-                task.Execute().Should().BeFalse();
-                errorMessages.Should().NotBeEmpty();
-                return;
-            }
-
-            task.Execute().Should().BeTrue(string.Join("; ", errorMessages));
-
-            var expectedManifest = Path.Combine(projectDir, relativeManifestPath);
-            var expectedCache = Path.Combine(projectDir, relativeManifestCacheFilePath);
-            File.Exists(expectedManifest).Should().BeTrue("manifest must be written under TaskEnvironment.ProjectDirectory, not the process CWD");
-            File.Exists(expectedCache).Should().BeTrue("cache must be written under TaskEnvironment.ProjectDirectory, not the process CWD");
-
-            File.Exists(Path.Combine(spawnDir, relativeManifestPath)).Should().BeFalse();
-            File.Exists(Path.Combine(spawnDir, relativeManifestCacheFilePath)).Should().BeFalse();
+            assertion(task, errorMessages, projectDir, spawnDir);
         }
         finally
         {

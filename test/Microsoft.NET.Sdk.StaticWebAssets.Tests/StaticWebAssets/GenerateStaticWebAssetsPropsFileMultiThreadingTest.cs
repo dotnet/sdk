@@ -14,9 +14,42 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 public class GenerateStaticWebAssetsPropsFileMultiThreadingTest
 {
     [TestMethod]
-    [DataRow("output/build.props")]
-    [DataRow(" ")]
-    public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory(string relativeTargetPropsFilePath)
+    public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory() =>
+        AssertWritesPropsFileRelativeToTaskEnvironmentProjectDirectory("output/build.props");
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WhitespaceTargetPropsFilePathFailsOnWindows()
+    {
+        WithTask(" ", (task, _, _) =>
+        {
+            Action execute = () => task.Execute();
+            execute.Should().Throw<Exception>();
+        });
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void WhitespaceTargetPropsFilePathWritesRelativeToTaskEnvironmentProjectDirectoryOnUnix() =>
+        AssertWritesPropsFileRelativeToTaskEnvironmentProjectDirectory(" ");
+
+    private static void AssertWritesPropsFileRelativeToTaskEnvironmentProjectDirectory(string relativeTargetPropsFilePath)
+    {
+        WithTask(relativeTargetPropsFilePath, (task, projectDir, spawnDir) =>
+        {
+            task.Execute().Should().BeTrue();
+
+            var expectedPath = Path.Combine(projectDir, relativeTargetPropsFilePath);
+            File.Exists(expectedPath).Should().BeTrue("the props file should be written under TaskEnvironment.ProjectDirectory, not the process CWD");
+
+            var incorrectPath = Path.Combine(spawnDir, relativeTargetPropsFilePath);
+            File.Exists(incorrectPath).Should().BeFalse("the props file must NOT be written relative to the process CWD");
+        });
+    }
+
+    private static void WithTask(
+        string targetPropsFilePath,
+        Action<GenerateStaticWebAssetsPropsFile, string, string> assertion)
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(GenerateStaticWebAssetsPropsFileMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");
@@ -36,7 +69,7 @@ public class GenerateStaticWebAssetsPropsFileMultiThreadingTest
             {
                 BuildEngine = buildEngine.Object,
                 TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
-                TargetPropsFilePath = relativeTargetPropsFilePath,
+                TargetPropsFilePath = targetPropsFilePath,
                 StaticWebAssets = new TaskItem[]
                 {
                     new TaskItem(Path.Combine("wwwroot", "js", "app.js"), new Dictionary<string, string>
@@ -63,20 +96,7 @@ public class GenerateStaticWebAssetsPropsFileMultiThreadingTest
                 }
             };
 
-            if (OperatingSystem.IsWindows() && string.IsNullOrWhiteSpace(relativeTargetPropsFilePath))
-            {
-                Action execute = () => task.Execute();
-                execute.Should().Throw<Exception>();
-                return;
-            }
-
-            task.Execute().Should().BeTrue();
-
-            var expectedPath = Path.Combine(projectDir, relativeTargetPropsFilePath);
-            File.Exists(expectedPath).Should().BeTrue("the props file should be written under TaskEnvironment.ProjectDirectory, not the process CWD");
-
-            var incorrectPath = Path.Combine(spawnDir, relativeTargetPropsFilePath);
-            File.Exists(incorrectPath).Should().BeFalse("the props file must NOT be written relative to the process CWD");
+            assertion(task, projectDir, spawnDir);
         }
         finally
         {

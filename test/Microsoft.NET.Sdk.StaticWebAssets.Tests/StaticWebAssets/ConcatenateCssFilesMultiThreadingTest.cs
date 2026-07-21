@@ -16,10 +16,41 @@ namespace Microsoft.AspNetCore.Razor.Tasks;
 [TestClass]
 public class ConcatenateCssFilesMultiThreadingTest
 {
+    private const string InputContents = ".counter { color: red; }";
+
     [TestMethod]
-    [DataRow("obj/scoped.styles.css")]
-    [DataRow(" ")]
-    public void ReadsInputsAndWritesBundleRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory(string relativeOutputFile)
+    public void ReadsInputsAndWritesBundleRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory() =>
+        AssertWritesBundleRelativeToTaskEnvironmentProjectDirectory("obj/scoped.styles.css");
+
+    [TestMethod]
+    public void WhitespaceOutputFilePreservesPreMigrationFailure()
+    {
+        WithTask(" ", (task, _, _) =>
+        {
+            Action execute = () => task.Execute();
+            execute.Should().Throw<ArgumentException>();
+        });
+    }
+
+    private static void AssertWritesBundleRelativeToTaskEnvironmentProjectDirectory(string relativeOutputFile)
+    {
+        WithTask(relativeOutputFile, (task, projectDir, spawnDir) =>
+        {
+            task.Execute().Should().BeTrue("the task must run to completion when TaskEnvironment.ProjectDirectory differs from the process CWD");
+
+            var expectedOutput = Path.Combine(projectDir, relativeOutputFile);
+            File.Exists(expectedOutput).Should().BeTrue("the bundle should be written under the project dir, not the process CWD");
+
+            var incorrectOutput = Path.Combine(spawnDir, relativeOutputFile);
+            File.Exists(incorrectOutput).Should().BeFalse();
+
+            File.ReadAllText(expectedOutput).Should().Contain(InputContents);
+        });
+    }
+
+    private static void WithTask(
+        string outputFile,
+        Action<ConcatenateCssFiles, string, string> assertion)
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ConcatenateCssFilesMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");
@@ -29,8 +60,7 @@ public class ConcatenateCssFilesMultiThreadingTest
 
         // The scoped css input lives under the project directory and is referenced with a relative
         // ItemSpec. It must be resolved against TaskEnvironment.ProjectDirectory, not the process CWD.
-        const string inputContents = ".counter { color: red; }";
-        File.WriteAllText(Path.Combine(projectDir, "Counter.razor.rz.scp.css"), inputContents);
+        File.WriteAllText(Path.Combine(projectDir, "Counter.razor.rz.scp.css"), InputContents);
 
         var originalCurrentDirectory = Directory.GetCurrentDirectory();
         try
@@ -47,26 +77,10 @@ public class ConcatenateCssFilesMultiThreadingTest
                 ],
                 ProjectBundles = [],
                 ScopedCssBundleBasePath = "/",
-                OutputFile = relativeOutputFile
+                OutputFile = outputFile
             };
 
-            if (string.IsNullOrWhiteSpace(relativeOutputFile))
-            {
-                Action execute = () => task.Execute();
-                execute.Should().Throw<ArgumentException>();
-                return;
-            }
-
-            task.Execute().Should().BeTrue("the task must run to completion when TaskEnvironment.ProjectDirectory differs from the process CWD");
-
-            var expectedOutput = Path.Combine(projectDir, relativeOutputFile);
-            File.Exists(expectedOutput).Should().BeTrue("the bundle should be written under the project dir, not the process CWD");
-
-            var incorrectOutput = Path.Combine(spawnDir, relativeOutputFile);
-            File.Exists(incorrectOutput).Should().BeFalse();
-
-            // The input file content must have been read from the project directory.
-            File.ReadAllText(expectedOutput).Should().Contain(inputContents);
+            assertion(task, projectDir, spawnDir);
         }
         finally
         {
