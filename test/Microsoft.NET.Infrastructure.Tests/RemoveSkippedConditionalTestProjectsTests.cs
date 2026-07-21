@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.NET.TestFramework;
 
 namespace Microsoft.NET.Infrastructure.Tests;
@@ -47,7 +48,7 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
     [TestMethod]
     public async Task EmptySkippedScopes_NothingRemoved()
     {
-        using var env = new TestEnvironment(CreateSingleScopeProps());
+        using var env = new TestEnvironment(TestAssetsManager, CreateSingleScopeProps());
 
         var remaining = await RunRemovalTarget(env, skippedScopes: "");
 
@@ -58,7 +59,7 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
     [TestMethod]
     public async Task SingleScopeSkipped_OnlyScopeProjectsRemoved()
     {
-        using var env = new TestEnvironment(CreateTwoScopeProps());
+        using var env = new TestEnvironment(TestAssetsManager, CreateTwoScopeProps());
 
         var remaining = await RunRemovalTarget(env, skippedScopes: "FeatureA");
 
@@ -70,7 +71,7 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
     [TestMethod]
     public async Task MultipleScopesSkipped_AllMatchingScopesRemoved()
     {
-        using var env = new TestEnvironment(CreateTwoScopeProps());
+        using var env = new TestEnvironment(TestAssetsManager, CreateTwoScopeProps());
 
         var remaining = await RunRemovalTarget(env, skippedScopes: "FeatureA;FeatureB");
 
@@ -82,7 +83,7 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
     [TestMethod]
     public async Task AllKeyword_AllConditionalProjectsRemoved()
     {
-        using var env = new TestEnvironment(CreateTwoScopeProps());
+        using var env = new TestEnvironment(TestAssetsManager, CreateTwoScopeProps());
 
         var remaining = await RunRemovalTarget(env, skippedScopes: "__all__");
 
@@ -110,7 +111,7 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
             </Project>
             """;
 
-        using var env = new TestEnvironment(props, new[]
+        using var env = new TestEnvironment(TestAssetsManager, props, new[]
         {
             "test/PathA/A.Tests.csproj",
             "test/PathB/B.Tests.csproj",
@@ -127,7 +128,7 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
     [TestMethod]
     public async Task ScopeNotInSkippedList_ProjectsKept()
     {
-        using var env = new TestEnvironment(CreateTwoScopeProps());
+        using var env = new TestEnvironment(TestAssetsManager, CreateTwoScopeProps());
 
         var remaining = await RunRemovalTarget(env, skippedScopes: "FeatureA");
 
@@ -249,15 +250,15 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
             "test/Unrelated.Tests/Unrelated.Tests.csproj"
         ];
 
-        public TestEnvironment(string conditionalTestsPropsContent, string[]? testProjects = null)
+        public TestEnvironment(TestAssetsManager testAssetsManager, string conditionalTestsPropsContent, string[]? testProjects = null, [CallerMemberName] string? callerName = null)
         {
-            Root = Path.Combine(Path.GetTempPath(), "infra-msbuild-tests-" + Guid.NewGuid().ToString("N")[..8]);
-            Directory.CreateDirectory(Root);
+            var testDir = testAssetsManager.CreateTestDirectory(callerName, identifier: nameof(RemoveSkippedConditionalTestProjectsTests));
+            Root = testDir.Path;
 
             // Write ConditionalTests.props
-            var testDir = Path.Combine(Root, "test");
-            Directory.CreateDirectory(testDir);
-            File.WriteAllText(Path.Combine(testDir, "ConditionalTests.props"), conditionalTestsPropsContent);
+            var testSubDir = Path.Combine(Root, "test");
+            Directory.CreateDirectory(testSubDir);
+            File.WriteAllText(Path.Combine(testSubDir, "ConditionalTests.props"), conditionalTestsPropsContent);
 
             // Create dummy .csproj files so globs resolve
             foreach (var relativePath in testProjects ?? s_defaultTestProjects)
