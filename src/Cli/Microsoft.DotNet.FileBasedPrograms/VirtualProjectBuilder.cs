@@ -46,8 +46,6 @@ sealed class VirtualProjectBuilder
 
     private readonly string _targetFramework;
 
-    private readonly IEnumerable<(string name, string value)> _defaultProperties;
-
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
 
     internal string EntryPointFileFullPath { get; }
@@ -85,7 +83,6 @@ sealed class VirtualProjectBuilder
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
         _targetFramework = targetFramework;
-        _defaultProperties = GetDefaultProperties(targetFramework);
 
         if (sourceText != null)
         {
@@ -479,7 +476,7 @@ sealed class VirtualProjectBuilder
             WriteProjectFile(
                 projectFileWriter,
                 directives,
-                _defaultProperties,
+                GetDefaultProperties(_targetFramework),
                 isVirtualProject: true,
                 entryPointFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
