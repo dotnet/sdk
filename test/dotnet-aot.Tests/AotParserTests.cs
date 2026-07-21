@@ -178,6 +178,46 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void ParsePackCommand_UsesAotParser()
+    {
+        var result = Parser.Parse(["pack", "test.csproj", "--no-restore"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreEqual("pack", result.CommandResult.Command.Name);
+        Assert.IsFalse(result.RequiresManagedCommandResolution());
+    }
+
+    [TestMethod]
+    public void InvokePackNuspec_FallsBackToManaged()
+    {
+        var result = Parser.Parse(["pack", "package.nuspec"]);
+        Assert.IsEmpty(result.Errors);
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokePackFileBasedAppWithDirective_FallsBackToManaged()
+    {
+        string sourceFile = Path.Combine(Path.GetTempPath(), $"aot-pack-{Guid.NewGuid():N}.cs");
+        File.WriteAllText(
+            sourceFile,
+            """
+            #:property PackRelease=true
+            Console.WriteLine("hi");
+            """);
+        try
+        {
+            var result = Parser.Parse(["pack", sourceFile, "--configuration", "Debug"]);
+            Assert.IsEmpty(result.Errors);
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+        }
+        finally
+        {
+            File.Delete(sourceFile);
+        }
+    }
+
+    [TestMethod]
     public void InvokeBareSdk_RendersHelpFromAot()
     {
         // `dotnet sdk` with no subcommand renders its missing-command error and help entirely

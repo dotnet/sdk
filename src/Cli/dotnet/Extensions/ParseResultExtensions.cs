@@ -231,7 +231,6 @@ public static class ParseResultExtensions
         }
     }
 
-#if !CLI_AOT
     [Conditional("DEBUG")]
     public static void HandleDebugSwitch(this ParseResult parseResult)
     {
@@ -240,7 +239,6 @@ public static class ParseResultExtensions
             DebugHelper.WaitForDebugger();
         }
     }
-#endif
 
     public static string GetCommandName(this ParseResult parseResult)
     {
