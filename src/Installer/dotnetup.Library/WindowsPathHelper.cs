@@ -72,10 +72,10 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Reads the machine-wide PATH environment variable from the registry.
+    /// Reads the machine-wide (system) PATH environment variable from the registry.
     /// </summary>
     /// <param name="expand">If true, expands environment variables in the PATH value.</param>
-    public static string ReadAdminPath(bool expand = false)
+    public static string ReadSystemPath(bool expand = false)
     {
         using var key = Registry.LocalMachine.OpenSubKey(RegistryEnvironmentPath, writable: false);
         if (key == null)
@@ -88,9 +88,9 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Writes the machine-wide PATH environment variable to the registry.
+    /// Writes the machine-wide (system) PATH environment variable to the registry.
     /// </summary>
-    public static void WriteAdminPath(string path)
+    public static void WriteSystemPath(string path)
     {
         using var key = Registry.LocalMachine.OpenSubKey(RegistryEnvironmentPath, writable: true);
         if (key == null)
@@ -207,6 +207,30 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
+    /// Verifies that the PATH-editing helpers can safely map entries between the expanded and
+    /// unexpanded PATH by index. Those helpers detect entries against the expanded PATH but apply
+    /// the edit to the unexpanded PATH by position, which is only valid when the two lists are
+    /// element-aligned. Alignment holds exactly when every unexpanded entry expands to a single
+    /// non-empty segment. A variable that expands to a value containing ';' (adding entries) or to
+    /// nothing (dropping an entry) breaks that invariant, so rather than silently corrupt the PATH
+    /// we fail loudly.
+    /// </summary>
+    /// <param name="unexpandedEntries">The unexpanded PATH split into entries.</param>
+    private static void EnsureExpandedPathAligned(List<string> unexpandedEntries)
+    {
+        foreach (var entry in unexpandedEntries)
+        {
+            if (SplitPath(Environment.ExpandEnvironmentVariables(entry)).Count != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot safely modify PATH: the entry '{entry}' expands to a value that is empty or " +
+                    "contains ';', changing the number of ';'-separated entries. Entries cannot be reliably " +
+                    "matched between the expanded and unexpanded PATH.");
+            }
+        }
+    }
+
+    /// <summary>
     /// Finds the indices of entries in a PATH that match the specified paths.
     /// This method is designed for unit testing without registry access.
     /// </summary>
@@ -265,57 +289,6 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Removes the Program Files dotnet path from the given PATH strings.
-    /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
-    /// </summary>
-    /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
-    /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
-    /// <returns>The modified unexpanded PATH string.</returns>
-    public static string RemoveProgramFilesDotnetFromPath(string unexpandedPath, string expandedPath)
-    {
-        // Find indices to remove using the expanded path
-        var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
-
-        // Remove those indices from the unexpanded path
-        return RemovePathEntries(unexpandedPath, expandedPath, programFilesDotnetPaths);
-    }
-
-    /// <summary>
-    /// Gets the admin PATH with Program Files dotnet path removed while preserving unexpanded environment variables.
-    /// This does not modify the registry, only returns the modified PATH string.
-    /// </summary>
-    /// <returns>The modified unexpanded PATH string.</returns>
-    public static string GetAdminPathWithProgramFilesDotnetRemoved()
-    {
-        // Read both expanded and unexpanded versions
-        string expandedPath = ReadAdminPath(expand: true);
-        string unexpandedPath = ReadAdminPath(expand: false);
-
-        return RemoveProgramFilesDotnetFromPath(unexpandedPath, expandedPath);
-    }
-
-    /// <summary>
-    /// Adds the Program Files dotnet path to the given PATH strings if it's not already present.
-    /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
-    /// </summary>
-    /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
-    /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
-    /// <returns>The modified unexpanded PATH string.</returns>
-    public static string AddProgramFilesDotnetToPath(string unexpandedPath, string expandedPath)
-    {
-        var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
-
-        // Get the primary Program Files dotnet path (non-x86)
-        string primaryDotnetPath = programFilesDotnetPaths.FirstOrDefault() ?? string.Empty;
-        if (string.IsNullOrEmpty(primaryDotnetPath))
-        {
-            return unexpandedPath;
-        }
-
-        return AddPathEntry(unexpandedPath, expandedPath, primaryDotnetPath, "dotnet");
-    }
-
-    /// <summary>
     /// Adds a path entry to the given PATH strings if it's not already present.
     /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
     /// If the command already resolves to the pathToAdd, no changes are made.
@@ -330,6 +303,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
     {
         var expandedEntries = SplitPath(expandedPath);
         var unexpandedEntries = SplitPath(unexpandedPath);
+        EnsureExpandedPathAligned(unexpandedEntries);
 
         // Check if the command already resolves to the pathToAdd using EnvironmentProvider
         var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider(searchPathsOverride: expandedEntries);
@@ -371,6 +345,80 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
+    /// Inserts a path entry into the given PATH strings immediately before the machine-wide
+    /// Program Files dotnet entry. When no Program Files dotnet entry is present, the path is
+    /// appended to the end instead, so that a machine-wide install added later lands after the
+    /// inserted entry, which therefore keeps precedence.
+    /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve
+    /// environment variables. If the entry is already positioned ahead of the Program Files
+    /// dotnet entry (or is already present when there is no Program Files dotnet entry), the PATH
+    /// is returned unchanged.
+    /// </summary>
+    /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
+    /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
+    /// <param name="pathToInsert">The path to insert (e.g. the user's dotnet directory).</param>
+    /// <returns>The modified unexpanded PATH string.</returns>
+    public static string InsertPathEntryBeforeProgramFilesDotnet(string unexpandedPath, string expandedPath, string pathToInsert)
+    {
+        var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
+        return InsertPathEntryBeforeDotnet(unexpandedPath, expandedPath, pathToInsert, programFilesDotnetPaths);
+    }
+
+    /// <summary>
+    /// Testable core of <see cref="InsertPathEntryBeforeProgramFilesDotnet"/> that takes the
+    /// machine-wide dotnet paths as an argument instead of reading them from the registry.
+    /// </summary>
+    /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
+    /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
+    /// <param name="pathToInsert">The path to insert.</param>
+    /// <param name="programFilesDotnetPaths">The machine-wide dotnet paths to position ahead of.</param>
+    /// <returns>The modified unexpanded PATH string.</returns>
+    public static string InsertPathEntryBeforeDotnet(
+        string unexpandedPath,
+        string expandedPath,
+        string pathToInsert,
+        List<string> programFilesDotnetPaths)
+    {
+        var expandedEntries = SplitPath(expandedPath);
+        var unexpandedEntries = SplitPath(unexpandedPath);
+        EnsureExpandedPathAligned(unexpandedEntries);
+
+        var normalizedPathToInsert = Path.TrimEndingDirectorySeparator(pathToInsert);
+
+        var programFilesIndices = FindPathIndices(expandedEntries, programFilesDotnetPaths);
+        int firstProgramFilesIndex = programFilesIndices.Count > 0 ? programFilesIndices.Min() : -1;
+
+        int existingIndex = expandedEntries.FindIndex(expandedEntry =>
+            Path.TrimEndingDirectorySeparator(expandedEntry).Equals(normalizedPathToInsert, StringComparison.OrdinalIgnoreCase));
+
+        if (existingIndex >= 0)
+        {
+            // Already positioned ahead of the Program Files dotnet entry (or already present when
+            // there is no Program Files dotnet entry at all) — the inserted entry already wins.
+            if (firstProgramFilesIndex < 0 || existingIndex < firstProgramFilesIndex)
+            {
+                return unexpandedPath;
+            }
+
+            // Present, but after the Program Files dotnet entry. Remove it so it can be
+            // re-inserted immediately before that entry. It sits after firstProgramFilesIndex, so
+            // removing it does not shift that index.
+            unexpandedEntries.RemoveAt(existingIndex);
+        }
+
+        if (firstProgramFilesIndex >= 0)
+        {
+            unexpandedEntries.Insert(firstProgramFilesIndex, pathToInsert);
+        }
+        else
+        {
+            unexpandedEntries.Add(pathToInsert);
+        }
+
+        return string.Join(';', unexpandedEntries);
+    }
+
+    /// <summary>
     /// Removes a specific path entry from the given PATH strings.
     /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
     /// </summary>
@@ -381,6 +429,8 @@ internal sealed partial class WindowsPathHelper : IDisposable
     public static string RemovePathEntries(string unexpandedPath, string expandedPath, List<string> pathsToRemove)
     {
         var expandedEntries = SplitPath(expandedPath);
+        var unexpandedEntries = SplitPath(unexpandedPath);
+        EnsureExpandedPathAligned(unexpandedEntries);
 
         // Find indices to remove using the expanded path
         var indicesToRemove = FindPathIndices(expandedEntries, pathsToRemove);
@@ -390,24 +440,24 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Checks if the admin PATH contains the Program Files dotnet path.
+    /// Checks if the system PATH contains the Program Files dotnet path.
     /// Uses the expanded PATH for accurate detection.
     /// </summary>
-    public static bool AdminPathContainsProgramFilesDotnet()
+    public static bool SystemPathContainsProgramFilesDotnet()
     {
-        return AdminPathContainsProgramFilesDotnet(out _);
+        return SystemPathContainsProgramFilesDotnet(out _);
     }
 
     /// <summary>
-    /// Checks if the admin PATH contains the Program Files dotnet path.
+    /// Checks if the system PATH contains the Program Files dotnet path.
     /// Uses the expanded PATH for accurate detection.
     /// </summary>
-    /// <param name="foundDotnetPaths">The list of dotnet paths found in the admin PATH.</param>
+    /// <param name="foundDotnetPaths">The list of dotnet paths found in the system PATH.</param>
     /// <returns>True if any dotnet path is found, false otherwise.</returns>
-    public static bool AdminPathContainsProgramFilesDotnet(out List<string> foundDotnetPaths)
+    public static bool SystemPathContainsProgramFilesDotnet(out List<string> foundDotnetPaths)
     {
-        var adminPath = ReadAdminPath(expand: true);
-        var pathEntries = SplitPath(adminPath);
+        var systemPath = ReadSystemPath(expand: true);
+        var pathEntries = SplitPath(systemPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         foundDotnetPaths = [];
@@ -422,83 +472,85 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Removes the Program Files dotnet path from the admin PATH.
-    /// This is the main orchestrating method that should be called by commands.
+    /// Inserts the dotnet directory into the system PATH immediately before the machine-wide
+    /// Program Files dotnet entry (or appends it to the end when there is no machine-wide dotnet on
+    /// the system PATH). This is the main orchestrating method that should be called by commands.
     /// </summary>
+    /// <param name="dotnetDir">The dotnet directory to insert. Must be supplied by the
+    /// caller because this can run in an elevated child process under a different account, where the
+    /// current user's directory cannot be recomputed.</param>
     /// <returns>0 on success, 1 on failure.</returns>
-    public int RemoveDotnetFromAdminPath()
+    public int InsertDotnetIntoSystemPath(string dotnetDir)
     {
         try
         {
-            LogMessage("Starting RemoveDotnetFromAdminPath operation");
+            LogMessage($"Starting InsertDotnetIntoSystemPath operation for {dotnetDir}");
 
-            string oldPath = ReadAdminPath(expand: false);
-            LogMessage($"Old PATH (unexpanded): {oldPath}");
+            string unexpandedPath = ReadSystemPath(expand: false);
+            string expandedPath = ReadSystemPath(expand: true);
+            LogMessage($"Old PATH (unexpanded): {unexpandedPath}");
 
-            if (!AdminPathContainsProgramFilesDotnet())
+            string newPath = InsertPathEntryBeforeProgramFilesDotnet(unexpandedPath, expandedPath, dotnetDir);
+            if (string.Equals(newPath, unexpandedPath, StringComparison.Ordinal))
             {
-                LogMessage("No changes needed - dotnet path not found");
+                LogMessage("No changes needed - dotnet directory already positioned ahead of Program Files dotnet");
                 return 0;
             }
 
-            LogMessage("Removing dotnet paths from admin PATH");
-            string newPath = GetAdminPathWithProgramFilesDotnetRemoved();
             LogMessage($"New PATH (unexpanded): {newPath}");
-
-            WriteAdminPath(newPath);
+            WriteSystemPath(newPath);
             LogMessage("PATH written to registry");
 
-            // Broadcast environment change
             BroadcastEnvironmentChange();
 
-            LogMessage("RemoveDotnetFromAdminPath operation completed successfully");
+            LogMessage("InsertDotnetIntoSystemPath operation completed successfully");
             return 0;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: Failed to remove dotnet from admin PATH: {ex.Message}");
+            Console.Error.WriteLine($"Error: Failed to insert dotnet directory into system PATH: {ex.Message}");
             LogMessage($"ERROR: {ex.ToString()}");
             return 1;
         }
     }
 
     /// <summary>
-    /// Adds the Program Files dotnet path to the admin PATH.
-    /// This is the main orchestrating method that should be called by commands.
+    /// Removes the dotnet directory from the system PATH. This undoes
+    /// <see cref="InsertDotnetIntoSystemPath"/> and is the main orchestrating method that
+    /// should be called by commands.
     /// </summary>
+    /// <param name="dotnetDir">The dotnet directory to remove. Must be supplied by the
+    /// caller because this can run in an elevated child process under a different account.</param>
     /// <returns>0 on success, 1 on failure.</returns>
-    public int AddDotnetToAdminPath()
+    public int RemoveDotnetFromSystemPath(string dotnetDir)
     {
         try
         {
-            LogMessage("Starting AddDotnetToAdminPath operation");
+            LogMessage($"Starting RemoveDotnetFromSystemPath operation for {dotnetDir}");
 
-            string unexpandedPath = ReadAdminPath(expand: false);
-            string expandedPath = ReadAdminPath(expand: true);
+            string unexpandedPath = ReadSystemPath(expand: false);
+            string expandedPath = ReadSystemPath(expand: true);
             LogMessage($"Old PATH (unexpanded): {unexpandedPath}");
 
-            if (AdminPathContainsProgramFilesDotnet())
+            string newPath = RemovePathEntries(unexpandedPath, expandedPath, [dotnetDir]);
+            if (string.Equals(newPath, unexpandedPath, StringComparison.Ordinal))
             {
-                LogMessage("No changes needed - dotnet path already exists");
+                LogMessage("No changes needed - dotnet directory not present on system PATH");
                 return 0;
             }
 
-            LogMessage("Adding dotnet path to admin PATH");
-            string newPath = AddProgramFilesDotnetToPath(unexpandedPath, expandedPath);
             LogMessage($"New PATH (unexpanded): {newPath}");
-
-            WriteAdminPath(newPath);
+            WriteSystemPath(newPath);
             LogMessage("PATH written to registry");
 
-            // Broadcast environment change
             BroadcastEnvironmentChange();
 
-            LogMessage("AddDotnetToAdminPath operation completed successfully");
+            LogMessage("RemoveDotnetFromSystemPath operation completed successfully");
             return 0;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: Failed to add dotnet to admin PATH: {ex.Message}");
+            Console.Error.WriteLine($"Error: Failed to remove dotnet directory from system PATH: {ex.Message}");
             LogMessage($"ERROR: {ex.ToString()}");
             return 1;
         }
@@ -531,9 +583,15 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// <summary>
     /// Starts an elevated process to modify the system PATH and waits for it to complete.
     /// </summary>
+    /// <param name="operation">The elevated operation to perform (<c>insertdotnet</c>/<c>removedotnet</c>).</param>
+    /// <param name="dotnetDir">The dotnet directory the elevated process should insert into or remove
+    /// from the system PATH. This must be supplied by the caller because the elevated process can run
+    /// under a different account than the invoking user — when a standard user elevates by supplying
+    /// an administrator's credentials, the child runs as that administrator, whose per-user directory
+    /// (e.g. %LOCALAPPDATA%) differs — so the invoking user's directory cannot be recomputed there.</param>
     /// <exception cref="DotnetInstallException">Thrown when the user declines the UAC elevation prompt.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the process cannot be started or returns a non-zero exit code.</exception>
-    public static void StartElevatedProcess(string operation)
+    public static void StartElevatedProcess(string operation, string dotnetDir)
     {
         var processPath = Environment.ProcessPath;
         if (string.IsNullOrEmpty(processPath))
@@ -548,7 +606,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
         try
         {
-            string arguments = $"elevatedadminpath {operation} \"{outputFilePath}\"";
+            string arguments = $"elevatedsystempath {operation} \"{outputFilePath}\" --dotnet-dir \"{dotnetDir}\"";
 
             var startInfo = new ProcessStartInfo
             {

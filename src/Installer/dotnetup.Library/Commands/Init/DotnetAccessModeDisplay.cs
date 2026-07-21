@@ -24,13 +24,13 @@ internal static class DotnetAccessModeDisplay
     };
 
     /// <summary>
-    /// Returns the display name, appending the localized "(Suggested)" hint only for the suggested
-    /// mode (<see cref="DotnetAccessMode.Shell"/> / Terminal Mode). The hint is a separate,
-    /// independently localizable string (rather than baked into the name) so translations are not
-    /// forced to follow the "(...)" convention or a particular word order.
+    /// Returns the display name, appending the localized "(Suggested)" hint only when the given
+    /// mode is the current default (see <see cref="InitWorkflowDefaults.GetDefaultAccessMode"/>).
+    /// The hint is a separate, independently localizable string (rather than baked into the name)
+    /// so translations are not forced to follow the "(...)" convention or a particular word order.
     /// </summary>
     public static string GetNameWithSuggestedHint(DotnetAccessMode accessMode)
-        => accessMode is DotnetAccessMode.Shell
+        => accessMode == InitWorkflowDefaults.GetDefaultAccessMode()
             ? string.Format(
                 CultureInfo.InvariantCulture,
                 "{0} {1}",
