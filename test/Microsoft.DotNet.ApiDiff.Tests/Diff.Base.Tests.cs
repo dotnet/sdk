@@ -22,14 +22,16 @@ public abstract class DiffBaseTests
                            string expectedCode,
                            string[]? attributesToExclude = null,
                            string[]? apisToExclude = null,
-                           bool addPartialModifier = false)
+                           bool addPartialModifier = false,
+                           bool usePreviewLanguageVersion = false)
         => RunTestAsync(
                    before: [($"{AssemblyName}.dll", beforeCode)],
                    after: [($"{AssemblyName}.dll", afterCode)],
                    expected: new() { { AssemblyName, expectedCode } },
                    attributesToExclude,
                    apisToExclude,
-                   addPartialModifier);
+                   addPartialModifier,
+                   usePreviewLanguageVersion);
 
     protected async Task RunTestAsync(
                            (string, string)[] before,
@@ -37,15 +39,24 @@ public abstract class DiffBaseTests
                            Dictionary<string, string> expected,
                            string[]? attributesToExclude = null,
                            string[]? apisToExclude = null,
-                           bool addPartialModifier = false)
+                           bool addPartialModifier = false,
+                           bool usePreviewLanguageVersion = false)
     {
         // CreateFromTexts will assert on any loader diagnostics via SyntaxFactory.
 
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols)
-            = TestAssemblyLoaderFactory.CreateFromTexts(_log.Object, assemblyTexts: before, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
+            = TestAssemblyLoaderFactory.CreateFromTexts(
+                _log.Object,
+                assemblyTexts: before,
+                diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions,
+                usePreviewLanguageVersion: usePreviewLanguageVersion);
 
         (IAssemblySymbolLoader afterLoader, Dictionary<string, IAssemblySymbol> afterAssemblySymbols)
-            = TestAssemblyLoaderFactory.CreateFromTexts(_log.Object, assemblyTexts: after, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
+            = TestAssemblyLoaderFactory.CreateFromTexts(
+                _log.Object,
+                assemblyTexts: after,
+                diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions,
+                usePreviewLanguageVersion: usePreviewLanguageVersion);
 
         using MemoryStream outputStream = new();
 
