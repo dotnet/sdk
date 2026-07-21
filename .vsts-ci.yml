@@ -152,7 +152,7 @@ extends:
               runTests: false
               variables:
                 _SignType: real
-              dependsOn: Official_windows_x64
+              dependsOn: Windows_x64_Official
               downloadManifestMsiPackages: true
             - categoryName: Official
               targetArchitecture: arm64
@@ -162,7 +162,7 @@ extends:
               runTests: false
               variables:
                 _SignType: real
-              dependsOn: Official_windows_x64
+              dependsOn: Windows_x64_Official
               downloadManifestMsiPackages: true
             ### TestTemplatesCG ###
             # Note: This job is only used to allow the test templates to be built locally on the agent as opposed to Helix.
@@ -196,7 +196,7 @@ extends:
             populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             windowsJobParameterSets:
-            - categoryName: AoT
+            - categoryName: AOT
               targetArchitecture: arm64
               runtimeIdentifier: win-arm64
               osProperties: /p:CrossBuild=true
@@ -308,7 +308,7 @@ extends:
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             timeoutInMinutes: 90
             linuxJobParameterSets:
-            - categoryName: AoT
+            - categoryName: AOT
               container: azureLinuxCrossArm64
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
@@ -364,7 +364,7 @@ extends:
             populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             macOSJobParameterSets:
-            - categoryName: AoT
+            - categoryName: AOT
               runAoTTests: true
               targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
@@ -381,8 +381,7 @@ extends:
             populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             macOSJobParameterSets:
-            - categoryName: TestBuild
-              targetArchitecture: arm64
+            - targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
 
       ############### DOTNET-FORMAT ###############

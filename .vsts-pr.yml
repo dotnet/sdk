@@ -81,7 +81,7 @@ stages:
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
       windowsJobParameterSets:
-      - categoryName: AoT
+      - categoryName: AOT
         targetArchitecture: arm64
         runtimeIdentifier: win-arm64
         osProperties: /p:CrossBuild=true
@@ -112,7 +112,7 @@ stages:
       helixTargetQueue: ubuntu.2204.amd64.open
       timeoutInMinutes: 90
       linuxJobParameterSets:
-      - categoryName: AoT
+      - categoryName: AOT
         container: azureLinuxCrossArm64
         targetArchitecture: arm64
         runtimeIdentifier: linux-arm64
@@ -140,7 +140,7 @@ stages:
         os: macOS
       helixTargetQueue: osx.15.arm64.open
       macOSJobParameterSets:
-      - categoryName: AoT
+      - categoryName: AOT
         runAoTTests: true
         targetArchitecture: arm64
         runtimeIdentifier: osx-arm64
@@ -155,8 +155,7 @@ stages:
           os: macOS
         helixTargetQueue: osx.15.amd64.open
         macOSJobParameterSets:
-        - categoryName: TestBuild
-          runtimeIdentifier: osx-x64
+        - runtimeIdentifier: osx-x64
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml
