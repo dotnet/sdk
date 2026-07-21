@@ -74,6 +74,20 @@ public class StandaloneTestResultReportingTests : IDisposable
         console.GetOutput().Should().Contain("crash-out");
     }
 
+    // TRX not requested (the wasm default today — TrxReport crashes single-threaded wasm) => report
+    // pass/fail from the exit code, NOT a handshake failure. A missing TRX here is expected, not a crash.
+    [TestMethod]
+    public void ReportStandaloneResults_NoTrxRequested_ReportsFromExitCodeNotHandshakeFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler();
+        handler.ReportStandaloneResults(exitCode: 0, trxFilePath: null, outputData: "run-out", errorData: "");
+        reporter.HasHandshakeFailure.Should().BeFalse();
+
+        (TestApplicationHandler failHandler, TerminalTestReporter failReporter, _) = CreateHandler();
+        failHandler.ReportStandaloneResults(exitCode: 1, trxFilePath: null, outputData: "run-out", errorData: "");
+        failReporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
     private (TestApplicationHandler, TerminalTestReporter, CapturingConsole) CreateHandler()
     {
         var console = new CapturingConsole();

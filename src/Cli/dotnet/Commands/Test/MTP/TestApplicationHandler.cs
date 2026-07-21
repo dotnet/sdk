@@ -566,15 +566,24 @@ internal sealed class TestApplicationHandler
 
     /// <summary>
     /// Reports results for a standalone (wasm) test host that ran without the named pipe. There is
-    /// no handshake or streamed messages, so results are read from the on-disk TRX the host wrote
-    /// and replayed into the reporter as if they had arrived over the pipe. A missing TRX means the
-    /// host crashed before finishing (TRX present ⇒ ran to completion), so we surface the process
-    /// output and exit code via <see cref="TerminalTestReporter.HandshakeFailure"/> instead.
+    /// no handshake or streamed messages, so we report from what's available:
+    /// <list type="bullet">
+    /// <item><paramref name="trxFilePath"/> is <see langword="null"/> (TRX not requested — the
+    /// current wasm default; see <c>WasmReportTrxSupported</c>): report assembly-level pass/fail
+    /// from the process exit code, with no per-test detail.</item>
+    /// <item><paramref name="trxFilePath"/> is set and the TRX exists: replay its per-test results
+    /// into the reporter as if they had arrived over the pipe.</item>
+    /// <item><paramref name="trxFilePath"/> is set but the TRX is missing: the host crashed before
+    /// finishing (TRX present ⇒ ran to completion), so surface the process output and exit code via
+    /// <see cref="TerminalTestReporter.HandshakeFailure"/>.</item>
+    /// </list>
     /// </summary>
-    internal void ReportStandaloneResults(int exitCode, string trxFilePath, string outputData, string errorData)
+    internal void ReportStandaloneResults(int exitCode, string? trxFilePath, string outputData, string errorData)
     {
-        TrxReport? report = TrxTestResultParser.TryParse(trxFilePath);
-        if (report is null)
+        TrxReport? report = trxFilePath is not null ? TrxTestResultParser.TryParse(trxFilePath) : null;
+
+        // A requested-but-missing TRX means the host crashed before writing results.
+        if (trxFilePath is not null && report is null)
         {
             _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
             LogTestProcessExit(exitCode, outputData, errorData);
@@ -587,7 +596,9 @@ internal sealed class TestApplicationHandler
 
         _output.AssemblyRunStarted(_module.TargetPath, _module.TargetFramework, architecture, executionId, instanceId);
 
-        foreach (TrxTestResult result in report.Results)
+        // With a TRX, replay per-test results; without one (exit-code-only path, e.g. wasm today),
+        // report only the assembly-level pass/fail that AssemblyRunCompleted derives from the exit code.
+        foreach (TrxTestResult result in report?.Results ?? [])
         {
             // TRX has no structured expected/actual (only inline in the message), so both are null.
             Terminal.FlatException[]? exceptions = result.ErrorMessage is not null || result.StackTrace is not null

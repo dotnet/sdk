@@ -73,10 +73,27 @@ internal sealed class TestApplication(
         (runtimeIdentifier.StartsWith("browser", StringComparison.OrdinalIgnoreCase) ||
          runtimeIdentifier.StartsWith("wasi", StringComparison.OrdinalIgnoreCase));
 
+    // TrxReport's TrxResultStreamingStore starts a background thread (SystemTask.RunLongRunning,
+    // which is [UnsupportedOSPlatform("browser")]) in its constructor, so requesting --report-trx
+    // crashes a standalone wasm host with PlatformNotSupportedException before results are written
+    // (confirmed on Microsoft.Testing.Extensions.TrxReport shipped with MSTest 4.4.0-preview /
+    // MTP 2.4.0-preview). Emitting --report-trx to a wasm host therefore breaks a run that would
+    // otherwise pass on its exit code. Until TrxReport guards that thread on single-threaded wasm
+    // (microsoft/testfx browser-enablement track), we do NOT request a TRX from wasm hosts and
+    // report pass/fail from the exit code instead. The TRX reader (TrxTestResultParser /
+    // TestApplicationHandler.ReportStandaloneResults) stays in place for when this flips.
+    // TODO: flip to true (or gate on a detected TrxReport version / host capability) once the
+    // streaming-store fix ships in a Microsoft.Testing.Extensions.TrxReport release.
+    private const bool WasmReportTrxSupported = false;
+
+    // True when we should ask a standalone (wasm) host to write an on-disk TRX. Off today because
+    // of the TrxReport single-threaded-wasm crash above; see WasmReportTrxSupported.
+    private bool EmitTrxForStandaloneHost => LaunchTestHostStandalone && WasmReportTrxSupported;
+
     // The results directory passed to a standalone (wasm) host, and where dotnet test reads the
     // resulting TRX from after the host exits. Only meaningful when LaunchTestHostStandalone is true.
     private string StandaloneResultsDirectory =>
-        GetStandaloneResultsDirectory(_buildOptions.PathOptions.ResultsDirectoryPath, launchStandalone: true, Directory.GetCurrentDirectory())!;
+        GetStandaloneResultsDirectory(_buildOptions.PathOptions.ResultsDirectoryPath, defaultForStandalone: true, Directory.GetCurrentDirectory())!;
 
     private string StandaloneTrxFilePath => Path.Combine(StandaloneResultsDirectory, WasmTestTrxFileName);
 
@@ -158,9 +175,11 @@ internal sealed class TestApplication(
 
             if (LaunchTestHostStandalone)
             {
-                // Standalone wasm hosts don't use the pipe; recover results from the on-disk TRX
-                // the host wrote (a bridge host / runner copies it back to the results directory).
-                _handler.ReportStandaloneResults(exitCode, StandaloneTrxFilePath, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
+                // Standalone wasm hosts don't use the pipe. When TRX is enabled (see
+                // EmitTrxForStandaloneHost) recover per-test results from the on-disk TRX the host
+                // wrote; otherwise (today) report pass/fail from the exit code alone.
+                string? trxFilePath = EmitTrxForStandaloneHost ? StandaloneTrxFilePath : null;
+                _handler.ReportStandaloneResults(exitCode, trxFilePath, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
                 return exitCode;
             }
 
@@ -265,11 +284,13 @@ internal sealed class TestApplication(
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
-        // Wasm hosts have no live pipe; they report through an on-disk TRX. Ensure a results
-        // directory is always set for them (default it when the user didn't pass one) so the host
-        // that writes the TRX and dotnet test that reads it back agree on the location.
+        // A standalone (wasm) host reports through an on-disk TRX, so when TRX is enabled default a
+        // results directory for it (the host writes the TRX there and dotnet test reads it back).
+        // Today TRX is gated off for wasm (see EmitTrxForStandaloneHost / WasmReportTrxSupported),
+        // so this only defaults once TrxReport supports single-threaded wasm; non-wasm runs keep the
+        // existing behavior of setting it only when explicitly requested.
         string? resultsDirectoryPath = GetStandaloneResultsDirectory(
-            _buildOptions.PathOptions.ResultsDirectoryPath, LaunchTestHostStandalone, Directory.GetCurrentDirectory());
+            _buildOptions.PathOptions.ResultsDirectoryPath, EmitTrxForStandaloneHost, Directory.GetCurrentDirectory());
 
         if (resultsDirectoryPath is not null)
         {
@@ -292,37 +313,48 @@ internal sealed class TestApplication(
         }
 
         // Server mode makes the test host connect back to our named pipe. On wasm runtimes the
-        // sandbox can't open a pipe, so we skip those options and run the host standalone, asking
-        // it to write an on-disk TRX instead. A bridge host / runner copies that TRX back to the
-        // results directory, and dotnet test reads results from it. This assumes the test project
-        // includes the Microsoft.Testing.Extensions.TrxReport extension (MSTest.Sdk does by
-        // default). See LaunchTestHostStandalone.
+        // sandbox can't open a pipe, so we run the host standalone. When TRX is enabled we also ask
+        // it to write an on-disk TRX (which dotnet test reads back); when it isn't, the host runs
+        // bare and results come from the exit code. This assumes the test project includes the
+        // Microsoft.Testing.Extensions.TrxReport extension (MSTest.Sdk does by default).
         //
         // KNOWN LIMITATION (Blazor `dotnet test`, dotnet/sdk#54091): as of MSTest 4.4.0-preview /
         // Microsoft.Testing.Platform 2.4.0-preview, requesting `--report-trx` crashes a wasm host
         // because TrxReport's TrxResultStreamingStore starts a background Thread, which throws
-        // PlatformNotSupportedException on single-threaded wasm. Until TrxReport guards that thread
-        // on single-threaded wasm (tracked with the browser-enablement work in microsoft/testfx),
-        // the on-disk TRX path is not usable on wasm and only the exit-code result is reliable.
-        // A follow-up should gate the `--report-trx` emission on that fix (or a host capability)
-        // so wasm runs that pass on exit code are not regressed.
-        builder.Append($" {GetHostModeArguments(LaunchTestHostStandalone, _pipeName, WasmTestTrxFileName)}");
+        // PlatformNotSupportedException on single-threaded wasm. So `--report-trx` is currently
+        // NOT emitted for wasm (WasmReportTrxSupported == false) to avoid regressing a run that
+        // passes on its exit code; per-test TRX reporting lights up once TrxReport guards that
+        // thread (microsoft/testfx browser-enablement track) and WasmReportTrxSupported flips.
+        string hostModeArguments = GetHostModeArguments(LaunchTestHostStandalone, EmitTrxForStandaloneHost, _pipeName, WasmTestTrxFileName);
+        if (hostModeArguments.Length > 0)
+        {
+            builder.Append($" {hostModeArguments}");
+        }
 
         return builder.ToString();
     }
 
-    // Resolves the results directory to pass to the host. Wasm hosts always need one (they report
-    // via an on-disk TRX), so default it when the user didn't pass one; non-wasm hosts keep the
-    // existing behavior of only setting it when explicitly requested.
-    internal static string? GetStandaloneResultsDirectory(string? userResultsDirectory, bool launchStandalone, string currentDirectory) =>
-        userResultsDirectory ?? (launchStandalone ? Path.Combine(currentDirectory, WasmDefaultResultsDirectoryName) : null);
+    // Resolves the results directory to pass to the host. When defaultForStandalone is true (a wasm
+    // host that will write a TRX) default it if the user didn't pass one, so the host and dotnet
+    // test agree on the location; otherwise only set it when explicitly requested.
+    internal static string? GetStandaloneResultsDirectory(string? userResultsDirectory, bool defaultForStandalone, string currentDirectory) =>
+        userResultsDirectory ?? (defaultForStandalone ? Path.Combine(currentDirectory, WasmDefaultResultsDirectoryName) : null);
 
-    // Trailing host arguments that depend on run mode: standalone (wasm) hosts are asked to write
-    // an on-disk TRX; all others get the server-mode named-pipe options.
-    internal static string GetHostModeArguments(bool launchStandalone, string pipeName, string trxFileName) =>
-        launchStandalone
+    // Trailing host arguments that depend on run mode:
+    //  - non-standalone: the server-mode named-pipe options;
+    //  - standalone (wasm) with TRX enabled: request an on-disk TRX;
+    //  - standalone (wasm) with TRX disabled: nothing (run bare, report from the exit code).
+    internal static string GetHostModeArguments(bool launchStandalone, bool reportTrx, string pipeName, string trxFileName)
+    {
+        if (!launchStandalone)
+        {
+            return $"{CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}";
+        }
+
+        return reportTrx
             ? $"{CliConstants.ReportTrxOptionKey} {CliConstants.ReportTrxFileNameOptionKey} {ArgumentEscaper.EscapeSingleArg(trxFileName)}"
-            : $"{CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}";
+            : string.Empty;
+    }
 
     private async Task WaitConnectionAsync(CancellationToken token)
     {

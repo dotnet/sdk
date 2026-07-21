@@ -31,12 +31,13 @@ public class TestApplicationTests
         TestApplication.IsWasmRuntimeIdentifier(runtimeIdentifier).Should().Be(expected);
     }
 
-    // Wasm (standalone) hosts can't open a named pipe, so they must NOT get server mode; instead
-    // they're asked to write an on-disk TRX. Non-wasm hosts keep the server-mode pipe options.
+    // Wasm (standalone) hosts can't open a named pipe, so they must NOT get server mode. When TRX
+    // is enabled they're asked to write an on-disk TRX; when it's disabled (the wasm default today)
+    // they run bare and report from the exit code. Non-wasm hosts keep the server-mode pipe options.
     [TestMethod]
-    public void GetHostModeArguments_Standalone_RequestsTrxAndSkipsServerMode()
+    public void GetHostModeArguments_StandaloneWithTrx_RequestsTrxAndSkipsServerMode()
     {
-        var args = TestApplication.GetHostModeArguments(launchStandalone: true, pipeName: "/tmp/abc", trxFileName: "blazor-wasm.trx");
+        var args = TestApplication.GetHostModeArguments(launchStandalone: true, reportTrx: true, pipeName: "/tmp/abc", trxFileName: "blazor-wasm.trx");
 
         args.Should().Contain("--report-trx");
         args.Should().Contain("--report-trx-filename");
@@ -45,10 +46,19 @@ public class TestApplicationTests
         args.Should().NotContain("--dotnet-test-pipe");
     }
 
+    // TRX gated off for wasm (TrxReport crashes single-threaded wasm): neither server mode NOR TRX.
+    [TestMethod]
+    public void GetHostModeArguments_StandaloneWithoutTrx_EmitsNeitherServerNorTrx()
+    {
+        var args = TestApplication.GetHostModeArguments(launchStandalone: true, reportTrx: false, pipeName: "/tmp/abc", trxFileName: "blazor-wasm.trx");
+
+        args.Should().BeEmpty();
+    }
+
     [TestMethod]
     public void GetHostModeArguments_NonStandalone_UsesServerModeAndSkipsTrx()
     {
-        var args = TestApplication.GetHostModeArguments(launchStandalone: false, pipeName: "/tmp/abc", trxFileName: "blazor-wasm.trx");
+        var args = TestApplication.GetHostModeArguments(launchStandalone: false, reportTrx: false, pipeName: "/tmp/abc", trxFileName: "blazor-wasm.trx");
 
         args.Should().Contain("--server");
         args.Should().Contain("dotnettestcli");
@@ -62,23 +72,23 @@ public class TestApplicationTests
     [TestMethod]
     public void GetStandaloneResultsDirectory_DefaultsForWasmWhenUnset()
     {
-        TestApplication.GetStandaloneResultsDirectory(userResultsDirectory: null, launchStandalone: true, currentDirectory: "/work")
+        TestApplication.GetStandaloneResultsDirectory(userResultsDirectory: null, defaultForStandalone: true, currentDirectory: "/work")
             .Should().Be(Path.Combine("/work", "TestResults"));
     }
 
     [TestMethod]
     public void GetStandaloneResultsDirectory_KeepsUserValue()
     {
-        TestApplication.GetStandaloneResultsDirectory(userResultsDirectory: "/custom", launchStandalone: true, currentDirectory: "/work")
+        TestApplication.GetStandaloneResultsDirectory(userResultsDirectory: "/custom", defaultForStandalone: true, currentDirectory: "/work")
             .Should().Be("/custom");
-        TestApplication.GetStandaloneResultsDirectory(userResultsDirectory: "/custom", launchStandalone: false, currentDirectory: "/work")
+        TestApplication.GetStandaloneResultsDirectory(userResultsDirectory: "/custom", defaultForStandalone: false, currentDirectory: "/work")
             .Should().Be("/custom");
     }
 
     [TestMethod]
     public void GetStandaloneResultsDirectory_NullForNonWasmWhenUnset()
     {
-        TestApplication.GetStandaloneResultsDirectory(userResultsDirectory: null, launchStandalone: false, currentDirectory: "/work")
+        TestApplication.GetStandaloneResultsDirectory(userResultsDirectory: null, defaultForStandalone: false, currentDirectory: "/work")
             .Should().BeNull();
     }
 }
