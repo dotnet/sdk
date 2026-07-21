@@ -10,7 +10,7 @@ Looking for the support policy for another part of the .NET platform? See the [.
 
 Every Microsoft product has a lifecycle. The lifecycle begins when a product is released and ends when it's no longer supported. Knowing key dates in this lifecycle helps you make informed decisions about when to upgrade or make other changes to your software. This product is governed by [Microsoft's Modern Lifecycle Policy.](https://learn.microsoft.com/lifecycle/policies/modern)
 
- Unlike the .NET SDK, will release as a tip only product, meaning that *only the latest version* of `dotnetup` will remain in support at any given time. This may change as the product matures, and if it becomes more engrained into the .NET ecosystem. To be clear `dotnetup` is a standalone tool isolated outside of the .NET SDK space.
+ Unlike the .NET SDK, `dotnetup` will release as a tip only product, meaning that *only the latest version* of `dotnetup` will remain in support at any given time. This may change as the product matures, and if it becomes more engrained into the .NET ecosystem. To be clear `dotnetup` is a standalone tool isolated outside of the .NET SDK space.
 
 #### `dotnetup` will release in three separate version `channels`:
 `daily`
