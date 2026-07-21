@@ -61,7 +61,7 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
@@ -69,19 +69,19 @@ stages:
   # dotnet-aot is built with NativeAOT, which can cross-compile win-x64 -> win-arm64 (the MSVC arm64
   # linker and the RID-specific ILCompiler package handle the cross-link; no sysroot is required).
   # This leg BUILDS on the win-x64 pool with /p:CrossBuild=true and produces the dotnet-aot .dll plus
-  # its mstat/dgml size-analysis artifacts (that step is gated on runAoTTests). It is build-only
+  # its mstat/dgml size-analysis artifacts (that step is gated on the AoT category). It is build-only
   # (runTests: false): there is no wired windows arm64 Helix queue yet, so running the *.AoT.Tests on
   # arm64 hardware is a follow-up pending a windows.11.arm64 queue.
+  # The VS 2026 build image is required for the arm64 linker used by this cross-build.
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
       windowsJobParameterSets:
       - categoryName: AoT
-        runAoTTests: true
         targetArchitecture: arm64
         runtimeIdentifier: win-arm64
         osProperties: /p:CrossBuild=true
@@ -114,7 +114,6 @@ stages:
       linuxJobParameterSets:
       - categoryName: AoT
         container: azureLinuxCrossArm64
-        runAoTTests: true
         targetArchitecture: arm64
         runtimeIdentifier: linux-arm64
         osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true

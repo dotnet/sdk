@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <ProjectCapability Include="RuntimeEnvironmentVariableSupport"
+                       Condition="'$(EnableRuntimeEnvironmentVariableSupport)' != 'false'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +27,7 @@
   <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
     <!-- If SingleDevice property is set, return only one device -->
     <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' == 'true'">
-      <Devices Include="single-device" Description="Single Device" Type="Emulator" Status="Online" />
+      <Devices Include="single-device" Description="Single Device" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
     </ItemGroup>
     <!-- Otherwise return multiple devices based on target framework -->
     <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' != 'net9.0'">
@@ -36,6 +38,39 @@
       <Devices Include="test-device-downlevel-1" Description="Test Device Downlevel 1" Type="Emulator" Status="Online" />
       <Devices Include="test-device-downlevel-2" Description="Test Device Downlevel 2" Type="Simulator" Status="Booted" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="DeployToDevice">
+    <Message Text="DeployToDevice: Deployed $(TargetFramework) to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" />
+    <Message Text="DeployToDevice: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+    <Error Condition="'$(FailDeployToDevice)' == 'true'" Text="DeployToDevice failed as requested." />
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)dotnet-test-deploy.marker"
+      Lines="$(Device)|$(RuntimeIdentifier)"
+      Overwrite="true" />
+  </Target>
+
+  <Target Name="_LogRuntimeEnvironmentVariableDuringBuild"
+          BeforeTargets="_MTPBuild"
+          Condition="'@(RuntimeEnvironmentVariable)' != ''">
+    <Message Text="Build: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
+  <Target Name="_ModifyRuntimeEnvironmentVariable"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(ModifyRuntimeEnvironmentVariable)' == 'true'">
+    <ItemGroup>
+      <RuntimeEnvironmentVariable Remove="FOO" />
+      <RuntimeEnvironmentVariable Include="FOO" Value="modified-by-target" />
+      <RuntimeEnvironmentVariable Include="INJECTED" Value="injected-by-target" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_LogRuntimeEnvironmentVariableDuringComputeRunArguments"
+          BeforeTargets="ComputeRunArguments"
+          AfterTargets="_ModifyRuntimeEnvironmentVariable"
+          Condition="'@(RuntimeEnvironmentVariable)' != ''">
+    <Message Text="ComputeRunArguments: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
   </Target>
 
 </Project>

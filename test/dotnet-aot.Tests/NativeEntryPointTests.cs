@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  "managed fallback not found" error because test env doesn't have dotnet.dll in sdkDir.
 /// </summary>
 [TestClass]
-public class NativeEntryPointTests
+public partial class NativeEntryPointTests
 {
     /// <summary>
     /// Runs a test action with relevant environment variables restored afterward.
@@ -243,7 +243,7 @@ public class NativeEntryPointTests
     }
 
     [TestMethod]
-    public void ExecuteCore_AotNotSet_VersionCommand_FallsBack()
+    public void ExecuteCore_AotNotSet_VersionCommand_UsesAotByDefault()
     {
         WithEnvRestore(() =>
         {
@@ -256,8 +256,9 @@ public class NativeEntryPointTests
                 hostfxrPath: "",
                 args: ["--version"]);
 
-            // Default is false → managed fallback → files missing → returns 1
-            Assert.AreEqual(1, exitCode);
+            // Default is enabled on all platforms → AOT path handles --version in-process → exit 0
+            // (without falling back to the missing managed dotnet.dll).
+            Assert.AreEqual(0, exitCode);
         });
     }
 
@@ -287,11 +288,38 @@ public class NativeEntryPointTests
     }
 
     [TestMethod]
+    [DataRow("false")]
+    [DataRow("False")]
+    [DataRow("FALSE")]
+    [DataRow("0")]
+    [DataRow("no")]
+    [DataRow("off")]
+    public void ExecuteCore_AotDisabledVariousFormats_FallsBack(string disableValue)
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", disableValue);
+
+            int exitCode = NativeEntryPoint.ExecuteCore(
+                hostPath: "test-host",
+                dotnetRoot: "test-root",
+                sdkDir: "nonexistent-sdk-dir",
+                hostfxrPath: "",
+                args: ["--version"]);
+
+            // All these formats opt out of AOT → managed fallback → files missing → returns 1
+            Assert.AreEqual(1, exitCode);
+        });
+    }
+
+    [TestMethod]
     public void ExecuteCore_MissingFallbackFiles_ReturnsOneAndWritesError()
     {
         WithEnvRestore(() =>
         {
-            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", null);
+            // Disable the AOT fast path so the invocation is routed to the managed fallback,
+            // which is missing in the test layout and should surface the fallback error.
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "false");
 
             var originalErr = Console.Error;
             var stderrWriter = new StringWriter();
