@@ -1,0 +1,47 @@
+<Project>
+
+  <!--
+    Conditional Test Filtering
+
+    This file defines which tests can be skipped on PRs that don't touch relevant source.
+    See documentation/project-docs/pr-test-filtering.md for design details and usage guide.
+  -->
+
+  <!-- ======== Global trigger paths ========
+       If ANY changed file matches these patterns, ALL scopes below are forced active.
+       Use for shared infrastructure that all code/tests depend on. -->
+  <PropertyGroup>
+    <GlobalTriggerPaths>
+      test/Microsoft.NET.TestFramework/**;
+      test/Microsoft.NET.TestFramework.MSTest/**
+    </GlobalTriggerPaths>
+  </PropertyGroup>
+
+  <!-- ======== Conditional test scopes ========
+       Each ConditionalTestScope item defines a set of tests that only run when specific
+       source paths change or under specific build conditions.
+
+       Metadata:
+         Mechanism:    "project" = entire test project(s) excluded/included from Helix submission.
+         TestProjects: (Mechanism=project) Semicolon-separated glob patterns matching test .csproj
+                       files, relative to the repo root.
+         TriggerPaths: Semicolon-separated glob patterns relative to the repo root. If ANY changed
+                       file matches, the scope runs.
+         RunAlways:    Conditions under which the scope always runs regardless of changed files.
+                       Supported values: CI (non-PR builds). -->
+  <ItemGroup>
+    <ConditionalTestScope Include="TemplateEngine">
+      <Mechanism>project</Mechanism>
+      <TestProjects>test/TemplateEngine/**/*.csproj</TestProjects>
+      <TriggerPaths>
+        documentation/TemplateEngine/Samples/**;
+        src/TemplateEngine/**;
+        template_feed/Microsoft.TemplateEngine.Authoring.Templates/**;
+        test/TemplateEngine/**;
+        test/TestAssets/TestPackages/TemplateEngine/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+  </ItemGroup>
+
+</Project>

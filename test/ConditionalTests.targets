@@ -1,0 +1,49 @@
+<!-- Targets for removing test projects based on SkippedTestScopes.
+     Imported by UnitTests.proj (production) and test assets (testing).
+     
+     Prerequisites:
+       - $(RepoRoot) must be set (used for glob expansion and to locate ConditionalTests.props)
+       - SDKCustomTestProject items must exist
+       - $(SkippedTestScopes) controls which scopes are filtered
+
+     How SkippedTestScopes is set:
+       - scripts/EvaluateConditionalTestScopes.cs runs in CI and outputs scope names to skip
+       - "__all__" means all conditional projects are removed
+       - Empty (local dev, script failure, or global trigger match) means all tests run -->
+<Project>
+
+  <Import Project="$(RepoRoot)test\ConditionalTests.props" />
+
+  <!-- _CollectSkippedTestProjects uses target batching (Outputs="%(...)") to iterate over
+       ConditionalTestScope items. For each scope that matches SkippedTestScopes, it prepends
+       $(RepoRoot) to the relative TestProjects paths and includes them as glob patterns.
+       Target batching is needed because MSBuild cannot resolve metadata references inside
+       property functions in ItemGroup conditions. -->
+  <Target Name="_CollectSkippedTestProjects" Outputs="%(ConditionalTestScope.Identity)" Condition="'$(SkippedTestScopes)' != ''">
+    <PropertyGroup>
+      <_CurrentScope>%(ConditionalTestScope.Identity)</_CurrentScope>
+      <_CurrentTestProjects>%(ConditionalTestScope.TestProjects)</_CurrentTestProjects>
+      <_CurrentMechanism>%(ConditionalTestScope.Mechanism)</_CurrentMechanism>
+      <_ShouldSkip Condition="'$(_CurrentMechanism)' == 'project' and ('$(SkippedTestScopes)' == '__all__' or $([System.String]::Concat(';','$(SkippedTestScopes)',';').Contains(';$(_CurrentScope);')))">true</_ShouldSkip>
+      <_ShouldSkip Condition="'$(_ShouldSkip)' != 'true'">false</_ShouldSkip>
+      <!-- Prepend $(RepoRoot) to each semicolon-separated relative path for glob resolution.
+           Replace() escapes semicolons internally, so Unescape restores them for item splitting. -->
+      <_AbsoluteTestProjects Condition="'$(_ShouldSkip)' == 'true'">$(RepoRoot)$(_CurrentTestProjects.Replace(';',';$(RepoRoot)'))</_AbsoluteTestProjects>
+      <_AbsoluteTestProjects Condition="'$(_ShouldSkip)' == 'true'">$([MSBuild]::Unescape('$(_AbsoluteTestProjects)'))</_AbsoluteTestProjects>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_ShouldSkip)' == 'true'">
+      <SkippedTestProject Include="$(_AbsoluteTestProjects)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RemoveSkippedConditionalTestProjects" BeforeTargets="CreateSDKCustomTestWorkItems" DependsOnTargets="_CollectSkippedTestProjects" Condition="'$(SkippedTestScopes)' != ''">
+    <ItemGroup>
+      <!-- MatchOnMetadata="FullPath" with PathLike ensures removal works regardless of whether
+           the SDKCustomTestProject identity is a relative or absolute path, using OS-appropriate
+           path comparison (case-insensitive on Windows). -->
+      <SDKCustomTestProject Remove="@(SkippedTestProject)" MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
+    </ItemGroup>
+    <Message Importance="normal" Text="Conditional test filtering applied (SkippedTestScopes: $(SkippedTestScopes))" />
+  </Target>
+
+</Project>

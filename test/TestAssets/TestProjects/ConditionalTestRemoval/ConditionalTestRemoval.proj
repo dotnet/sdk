@@ -1,0 +1,39 @@
+<!--
+  Test project for RemoveSkippedConditionalTestProjects target.
+  Invoked from RemoveSkippedConditionalTestProjectsTests.cs via dotnet msbuild.
+
+  Usage:
+    dotnet msbuild ConditionalTestRemoval.proj /p:SkippedTestScopes=<value> /p:TestRepoRoot=<path> /p:RealRepoRoot=<path> /p:TestProjectItemsFile=<path> /t:VerifyRemoval
+
+  This project simulates what UnitTests.proj does: imports ConditionalTests.props and
+  ConditionalTests.targets, defines SDKCustomTestProject items, runs the removal target,
+  and prints what remains.
+-->
+<Project>
+
+  <PropertyGroup>
+    <!-- RepoRoot is what the targets use for glob expansion and to locate ConditionalTests.props -->
+    <RepoRoot>$(TestRepoRoot)</RepoRoot>
+    <!-- Unescape %3B back to ; since MSBuild's CLI parser splits on raw semicolons -->
+    <SkippedTestScopes>$([MSBuild]::Unescape('$(SkippedTestScopes)'))</SkippedTestScopes>
+  </PropertyGroup>
+
+  <!-- Import the REAL removal targets from the repo (single source of truth).
+       The targets import ConditionalTests.props from $(RepoRoot), which here is the test's temp dir. -->
+  <Import Project="$(RealRepoRoot)test\ConditionalTests.targets" />
+
+  <!-- Load SDKCustomTestProject items from a file (one path per line).
+       Semicolons cannot pass through the MSBuild CLI so the test writes a file instead. -->
+  <Target Name="_LoadTestProjectItems">
+    <ReadLinesFromFile File="$(TestProjectItemsFile)">
+      <Output TaskParameter="Lines" ItemName="SDKCustomTestProject" />
+    </ReadLinesFromFile>
+  </Target>
+
+  <!-- Verification target: prints remaining SDKCustomTestProject items, one per line -->
+  <Target Name="VerifyRemoval" DependsOnTargets="_LoadTestProjectItems;RemoveSkippedConditionalTestProjects">
+    <Message Importance="high" Text="REMAINING: %(SDKCustomTestProject.Identity)" Condition="'@(SDKCustomTestProject)' != ''" />
+    <Message Importance="high" Text="REMAINING_COUNT: @(SDKCustomTestProject->Count())" />
+  </Target>
+
+</Project>

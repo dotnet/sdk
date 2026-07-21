@@ -375,6 +375,7 @@
     <Project Path="test/Microsoft.NET.Build.Containers.IntegrationTests/Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
     <Project Path="test/Microsoft.NET.Build.Containers.UnitTests/Microsoft.NET.Build.Containers.UnitTests.csproj" />
     <Project Path="test/Microsoft.NET.Build.Tests/Microsoft.NET.Build.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Infrastructure.Tests/Microsoft.NET.Infrastructure.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Clean.Tests/Microsoft.NET.Clean.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Pack.Tests/Microsoft.NET.Pack.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Publish.Tests/Microsoft.NET.Publish.Tests.csproj" />
