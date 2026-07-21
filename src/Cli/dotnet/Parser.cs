@@ -227,6 +227,7 @@ public static class Parser
         Microsoft.DotNet.Cli.Commands.Build.BuildCommandParser.ConfigureCommand(rootCommand.BuildCommand);
         Microsoft.DotNet.Cli.Commands.Pack.PackCommandParser.ConfigureCommand(rootCommand.PackCommand);
         Microsoft.DotNet.Cli.Commands.Publish.PublishCommandParser.ConfigureCommand(rootCommand.PublishCommand);
+        Microsoft.DotNet.Cli.Commands.Restore.RestoreCommandParser.ConfigureCommand(rootCommand.RestoreCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);

@@ -170,6 +170,16 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void ParseRestoreCommand_UsesAotParser()
+    {
+        var result = Parser.Parse(["restore", "test.csproj", "--no-cache"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreEqual("restore", result.CommandResult.Command.Name);
+        Assert.IsFalse(result.RequiresManagedCommandResolution());
+    }
+
+    [TestMethod]
     public void ParsePackCommand_UsesAotParser()
     {
         var result = Parser.Parse(["pack", "test.csproj", "--no-restore"]);
