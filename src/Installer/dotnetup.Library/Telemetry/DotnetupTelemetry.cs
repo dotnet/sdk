@@ -78,7 +78,9 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// The telemetry name of the subcommand the current invocation is running.
-    /// Assumption: Commands may have concurrency but distinct commands are not constructed concurrently.
+    /// Write-once per process: the first command to start wins, so if one
+    /// command is implemented in terms of another the outer name is preserved
+    /// rather than being clobbered by the nested command.
     /// </summary>
     internal string? CurrentCommandName { get; private set; }
 
@@ -258,7 +260,9 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </summary>
     internal TrackedOperation StartTrackedCommand(string commandName)
     {
-        CurrentCommandName = commandName;
+        // Write-once per process (see CurrentCommandName): the first command to
+        // start wins so nested StartTrackedCommand calls can't overwrite it.
+        CurrentCommandName ??= commandName;
         var activity = Enabled
             ? CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal)
             : null;
@@ -400,7 +404,11 @@ public sealed class DotnetupTelemetry : IDisposable
             return forced;
         }
 
-        // Failures are essential to record and not expected in a typical use case.
+        // Failures are essential to record and not expected in a typical use case,
+        // so we spend the durable budget even in interactive runs. This can hurt
+        // interactive exit latency on the error path; that tradeoff is deliberate
+        // until the persist-then-drain exporter lands and should be revisited then.
+        // Tracked by https://github.com/dotnet/sdk/issues/55184 (see PR #55211).
         if (exitCode != 0)
         {
             return DurableFlushTimeoutMs;
@@ -412,7 +420,12 @@ public sealed class DotnetupTelemetry : IDisposable
             return DefaultFlushTimeoutMs;
         }
 
-        // Interactive foreground use: keep exit snappy
+        // Interactive foreground use: keep exit snappy. Redirected output is
+        // treated as non-interactive here, which is conservative: an agent or
+        // helper script driving dotnetup is redirected but effectively
+        // interactive and will pay the durable budget. Intentionally aggressive
+        // for now so we can measure delivery; revisit with the new exporter
+        // (https://github.com/dotnet/sdk/issues/55184).
         if (!IsOneAndDoneEnvironment && !Console.IsOutputRedirected)
         {
             return DefaultFlushTimeoutMs;
@@ -638,13 +651,17 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Test-only teardown.
+    /// Test-only teardown. Implemented explicitly on <see cref="IDisposable"/>
+    /// so production code cannot call <c>DotnetupTelemetry.Instance.Dispose()</c>
+    /// and silently lose telemetry — production must flush via <see cref="Flush"/>.
+    /// Reachable only through a <c>using</c> block or an explicit
+    /// <c>IDisposable</c> cast, which is confined to test teardown.
     /// </summary>
     /// <remarks>
     /// Mirrors Aspire's <c>TelemetryManager.Dispose</c>
     /// <c>Shutdown(0)</c> tears down immediately without waiting for a network drain.
     /// </remarks>
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         try { _loggerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
         try { _tracerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }

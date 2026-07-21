@@ -110,8 +110,12 @@ public class TelemetryE2ETests
             details.Should().NotBeNullOrWhiteSpace("error.details should contain a meaningful message");
         }
 
-        // The error.type should be present and match between command and root records
+        // error.type is always stamped (empty on success) for schema uniformity,
+        // so the root record must carry the key; when the command record also
+        // carries it the two must agree.
         var commandRecord = logRecords.FirstOrDefault(s => s.DisplayName == "command");
+        rootRecord.Attributes.Should().ContainKey("error.type",
+            "error.type is always stamped on the root record, even on the failure path");
         if (commandRecord != null &&
             commandRecord.Attributes.TryGetValue("error.type", out string? commandErrorType) &&
             rootRecord.Attributes.TryGetValue("error.type", out string? rootErrorType))
