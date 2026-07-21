@@ -14,6 +14,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
+using MSBuildCommand = Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildCommand;
 using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 using RestoreCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoreCommand;
@@ -137,6 +138,24 @@ public class MSBuildEvaluationTests
 
         Assert.Contains("test.csproj", arguments);
         Assert.Contains("--target:Clean", arguments);
+        Assert.Contains("--property:Configuration=Release", arguments);
+        Assert.Contains(
+            Path.Combine(sdkDirectory, "MSBuild.dll"),
+            command.GetProcessStartInfo().Arguments);
+    }
+
+    [TestMethod]
+    public void MSBuildCommandForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        MSBuildCommand command = MSBuildCommand.FromArgs(
+            ["test.csproj", "-target:Build", "-property:Configuration=Release"]);
+        string[] arguments = command.GetArgumentTokensToMSBuild();
+
+        Assert.Contains("test.csproj", arguments);
+        Assert.Contains("--target:Build", arguments);
         Assert.Contains("--property:Configuration=Release", arguments);
         Assert.Contains(
             Path.Combine(sdkDirectory, "MSBuild.dll"),

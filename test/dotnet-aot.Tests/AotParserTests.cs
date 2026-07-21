@@ -199,6 +199,16 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void ParseMSBuildCommand_UsesAotParser()
+    {
+        var result = Parser.Parse(["msbuild", "test.csproj", "-target:Build"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreEqual("msbuild", result.CommandResult.Command.Name);
+        Assert.IsFalse(result.RequiresManagedCommandResolution());
+    }
+
+    [TestMethod]
     public void ParsePackCommand_UsesAotParser()
     {
         var result = Parser.Parse(["pack", "test.csproj", "--no-restore"]);

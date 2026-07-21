@@ -243,6 +243,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Build\BuildCommandParser.cs" Link="Commands\Build\BuildCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Clean\CleanCommand.cs" Link="Commands\Clean\CleanCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Clean\CleanCommandParser.cs" Link="Commands\Clean\CleanCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildCommand.cs" Link="Commands\MSBuild\MSBuildCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildCommandParser.cs" Link="Commands\MSBuild\MSBuildCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\VirtualProjectBuildingCommand.cs" Link="Commands\Run\VirtualProjectBuildingCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommand.cs" Link="Commands\Pack\PackCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommandParser.cs" Link="Commands\Pack\PackCommandParser.cs" />
