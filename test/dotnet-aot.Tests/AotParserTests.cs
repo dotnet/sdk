@@ -151,12 +151,22 @@ public partial class AotParserTests
     }
 
     [TestMethod]
-    public void InvokeKnownCommand_FallsBackToManaged()
+    public void InvokeUnsupportedKnownCommand_FallsBackToManaged()
     {
         // Commands that cannot run in AOT must signal a managed fallback rather than execute.
-        var result = Parser.Parse(["build"]);
+        var result = Parser.Parse(["test"]);
         Assert.IsEmpty(result.Errors);
         Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void ParseBuildCommand_UsesAotParser()
+    {
+        var result = Parser.Parse(["build", "test.csproj", "--no-restore"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreEqual("build", result.CommandResult.Command.Name);
+        Assert.IsFalse(result.RequiresManagedCommandResolution());
     }
 
     [TestMethod]
