@@ -1,23 +1,29 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !CLI_AOT
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+#endif
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+#if !CLI_AOT
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
+#endif
 using Microsoft.DotNet.Cli.Utils;
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
+#endif
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -27,6 +33,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed class VirtualProjectBuildingCommand : CommandBase
 {
+#if !CLI_AOT
     /// <summary>
     /// A file put into the artifacts directory when build starts.
     /// It contains full path to the original source file to allow tracking down the input corresponding to the output.
@@ -81,6 +88,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         "RestoreUseSkipNonexistentTargets",
         "ProvideCommandLineArgs",
     ];
+#endif
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
     public static string TargetFramework => $"net{Product.TargetFrameworkVersion}";
@@ -95,6 +103,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public bool NoBuild { get; init; }
 
+#if !CLI_AOT
     /// <summary>
     /// Filled during <see cref="Execute"/>.
     /// </summary>
@@ -104,6 +113,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// Filled during <see cref="Execute"/>.
     /// </summary>
     public RunProperties? LastRunProperties { get; private set; }
+#endif
 
     /// <summary>
     /// If <see langword="true"/>, no build markers are written
@@ -118,6 +128,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public VirtualProjectBuilder Builder { get; }
     public MSBuildArgs MSBuildArgs { get; }
 
+#if !CLI_AOT
     /// <summary>
     /// Keeps strong references to <see cref="VirtualProjectBuilder"/>s created for <c>#:ref</c> directives,
     /// preventing their <see cref="ProjectRootElement"/>s from being garbage collected
@@ -146,6 +157,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     public ImmutableArray<CSharpDirective> EvaluatedDirectives { get; private set; }
+#endif
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
@@ -702,9 +714,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
     }
-
+#else
+    public override int Execute() => throw new CommandNotAvailableInAotException();
 #endif
 
+#if !CLI_AOT
     /// <summary>
     /// Common info needed by <see cref="ComputeCacheEntry"/> but also later stages.
     /// </summary>
@@ -1192,27 +1206,35 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
+#endif
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+#if CLI_AOT
+    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection) =>
+        throw new CommandNotAvailableInAotException();
+
+    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties) =>
+        throw new CommandNotAvailableInAotException();
+#else
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "The managed CLI supports Roslyn-based file directives; the Native AOT implementation uses the no-directive project builder.")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
+        ImmutableArray<CSharpDirective> directives = Directives;
+        ErrorReporter errorReporter = ThrowingReporter;
         Builder.CreateProjectInstance(
             projectCollection,
-            ThrowingReporter,
+            errorReporter,
             out var project,
             projectRootElement: out _,
             out var evaluatedDirectives,
-            Directives,
+            directives,
             addGlobalProperties);
 
         EvaluatedDirectives = evaluatedDirectives;
-
         // Create virtual ProjectRootElements for all #:ref directives so MSBuild can resolve them.
         CreateReferencedVirtualProjects(projectCollection, evaluatedDirectives);
 
@@ -1225,7 +1247,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// The <see cref="ProjectRootElement"/>s are registered in the <paramref name="projectCollection"/>'s
     /// <c>ProjectRootElementCache</c> so MSBuild can resolve <c>&lt;ProjectReference&gt;</c> items to them.
     /// </summary>
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "The managed CLI supports Roslyn-based file directives; this method is excluded from the Native AOT build.")]
     private void CreateReferencedVirtualProjects(
         ProjectCollection projectCollection,
         ImmutableArray<CSharpDirective> directives)
@@ -1275,6 +1297,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
     }
+#endif
 
     /// <summary>
     /// Creates a temporary subdirectory for file-based apps.
@@ -1295,6 +1318,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+#if !CLI_AOT
     public static readonly ErrorReporter ThrowingReporter =
         static (text, path, textSpan, message, innerException) =>
             throw new GracefulException(
@@ -1318,8 +1342,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var modifiedFile = RemoveDirectivesFromFile(sourceFile);
         (modifiedFile with { Path = targetFilePath }).Save();
     }
+#endif
 }
 
+#if !CLI_AOT
 internal sealed class RunFileBuildCacheEntry
 {
     private static StringComparer GlobalPropertiesComparer => StringComparer.OrdinalIgnoreCase;
@@ -1408,3 +1434,4 @@ internal enum BuildLevel
     /// </summary>
     All,
 }
+#endif

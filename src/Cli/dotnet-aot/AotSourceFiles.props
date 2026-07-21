@@ -231,9 +231,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Remove\SolutionRemoveCommand.cs" Link="Commands\Solution\Remove\SolutionRemoveCommand.cs" />
   </ItemGroup>
 
-  <!-- Project-backed command completions. -->
+  <!-- 'dotnet pack' command: physical project/solution evaluation and out-of-process MSBuild forwarding. -->
   <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" Link="MSBuildPropertyNames.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\LoggerUtility.cs" Link="LoggerUtility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ReleasePropertyProjectLocator.cs" Link="ReleasePropertyProjectLocator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliCompletion.cs" Link="CliCompletion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ProjectInstanceExtensions.cs" Link="Extensions\ProjectInstanceExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\DotNetCommandFactory.cs" Link="Commands\DotNetCommandFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\VirtualProjectBuildingCommand.cs" Link="Commands\Run\VirtualProjectBuildingCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommand.cs" Link="Commands\Pack\PackCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommandParser.cs" Link="Commands\Pack\PackCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommand.cs" Link="Commands\Restore\RestoreCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoringCommand.cs" Link="Commands\Restore\RestoringCommand.cs" />
   </ItemGroup>
 
   <!-- 'dotnet sln' command: command-specific dependencies. -->
@@ -273,6 +283,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolver.cs" Link="CommandFactory\CommandResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandFactoryUsingResolver.cs" Link="CommandFactory\CommandFactoryUsingResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\ICommandFactory.cs" Link="CommandFactory\ICommandFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandSpec.cs" Link="CommandFactory\CommandSpec.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\CompositeCommandResolver.cs" Link="CommandFactory\CommandResolution\CompositeCommandResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\ICommandResolver.cs" Link="CommandFactory\CommandResolution\ICommandResolver.cs" />
