@@ -97,19 +97,35 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
+    <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" Link="Resources\Strings.resx" GenerateSource="true" Namespace="Microsoft.NET.Build.Tasks" />
   </ItemGroup>
 
   <!--
-    The "MSBuild version:" line of the info command: MSBuildForwardingAppWithoutLogging.MSBuildVersion
-    (in Microsoft.DotNet.Cli.Utils) reads Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion,
-    so the AOT binary needs the Microsoft.Build runtime assembly for ILC to compile that path.
+    MSBuild object-model support. The info command reads ProjectCollection.DisplayVersion, while
+    in-process evaluation needs Microsoft.Build.Utilities.Core for SDK property functions and the
+    NuGet SDK resolver for package-based SDK references.
     Cli.Utils references Microsoft.Build with ExcludeAssets="runtime" / PrivateAssets="all", so it does
-    not flow transitively; reference it directly here. Microsoft.Build is only partially annotated
-    for trimming/AOT; its analysis warnings are rolled up and suppressed in dotnet-aot.csproj.
+    not flow transitively; reference it directly here. Microsoft.Build.Framework is also direct so its
+    trim-safe feature-switch defaults can be imported by the AOT consumer.
   -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Framework" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.NuGetSdkResolver" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
   </ItemGroup>
+  <!-- Use NuGet's source-generated System.Text.Json deserialization path and let ILC remove
+       the legacy Newtonsoft.Json deserialization path. Keep this in the shared props so the
+       product and Native AOT tests compile with the same feature switch. -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="NuGet.UseSystemTextJsonDeserialization"
+                                    Value="true"
+                                    Trim="true" />
+  </ItemGroup>
+  <!-- The package's TFM-specific _._ prevents NuGet from importing its root buildTransitive target.
+       Remove this workaround when https://github.com/dotnet/msbuild/issues/14467 is fixed. -->
+  <Import Project="$(PkgMicrosoft_Build_Framework)\buildTransitive\Microsoft.Build.Framework.targets"
+          Condition="Exists('$(PkgMicrosoft_Build_Framework)\buildTransitive\Microsoft.Build.Framework.targets')" />
 
   <!--
     Workload reporting for the info command: WorkloadInfoHelper.GetWorkloadsVersion() and
