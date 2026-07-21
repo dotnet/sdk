@@ -247,6 +247,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Publish\PublishCommand.cs" Link="Commands\Publish\PublishCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Publish\PublishCommandParser.cs" Link="Commands\Publish\PublishCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommand.cs" Link="Commands\Restore\RestoreCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommandParser.cs" Link="Commands\Restore\RestoreCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoringCommand.cs" Link="Commands\Restore\RestoringCommand.cs" />
   </ItemGroup>
 

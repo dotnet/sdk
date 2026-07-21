@@ -15,6 +15,7 @@ using Microsoft.DotNet.ProjectTools;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
+using RestoreCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoreCommand;
 using RestoringCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoringCommand;
 
 namespace Microsoft.DotNet.Cli.Tests;
@@ -103,6 +104,24 @@ public class MSBuildEvaluationTests
         var restoreCommand = Assert.IsInstanceOfType<RestoringCommand>(
             BuildCommand.FromArgs(["test.csproj"]));
         Assert.Contains("-restore", restoreCommand.GetArgumentTokensToMSBuild());
+    }
+
+    [TestMethod]
+    public void RestoreCommandForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        var command = Assert.IsInstanceOfType<MSBuildForwardingApp>(
+            RestoreCommand.FromArgs(["test.csproj", "--no-cache"]));
+        string[] arguments = command.GetArgumentTokensToMSBuild();
+
+        Assert.Contains("test.csproj", arguments);
+        Assert.Contains("--target:Restore", arguments);
+        Assert.Contains("--property:RestoreNoCache=true", arguments);
+        Assert.Contains(
+            Path.Combine(sdkDirectory, "MSBuild.dll"),
+            command.GetProcessStartInfo().Arguments);
     }
 
     [TestMethod]
