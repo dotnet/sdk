@@ -39,10 +39,11 @@ Options:
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
   --output <Detailed|Normal>                      Verbosity of test output.
-  --list-tests <list-tests>                       List the discovered tests instead of running the tests.
+  --list-tests <text|json>                        List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.
   --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
   --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the application. [default: False]
-  --device <DEVICE>                               The device identifier to use for running the application.
+  --device <DEVICE>                               The device identifier to use for running tests.
+  --list-devices                                  List available devices for running tests. [default: False]
   -?, -h, --help                                  Show command line help.
 
 Waiting for options and extensions...
@@ -70,6 +71,7 @@ Platform Options:
                                   Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
                                   'auto' shows progress unless the terminal cannot update in place (for example with --no-ansi or in CI).
                                   This option takes precedence over the deprecated --no-progress flag.
+  --show-slowest-tests            Show the specified number of slowest tests (by reported execution duration) in the run summary. Expects a positive integer.
   --show-stderr                   Determines when to show captured error output of a test.
                                   Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
   --show-stdout                   Determines when to show captured standard output of a test.

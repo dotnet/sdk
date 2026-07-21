@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
 /// Runs the interactive initialization flow that installs the .NET SDK with defaults
-/// and records the user's path replacement preference to <c>dotnetup.config.json</c>.
+/// and records the user's access mode to <c>dotnetup.config.json</c>.
 /// </summary>
 internal class InitCommand(ParseResult result) : InstallCommand(result, "init")
 {

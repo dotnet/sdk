@@ -260,8 +260,6 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </summary>
     internal TrackedOperation StartTrackedCommand(string commandName)
     {
-        // Write-once per process (see CurrentCommandName): the first command to
-        // start wins so nested StartTrackedCommand calls can't overwrite it.
         CurrentCommandName ??= commandName;
         var activity = Enabled
             ? CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal)

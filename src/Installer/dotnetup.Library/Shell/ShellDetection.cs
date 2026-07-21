@@ -17,6 +17,7 @@ public static class ShellDetection
     [
         new BashEnvShellProvider(),
         new ZshEnvShellProvider(),
+        new FishEnvShellProvider(),
         new PowerShellEnvShellProvider()
     ];
 

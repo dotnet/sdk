@@ -38,7 +38,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     RuntimeConfigPath = configRelativePath,
                     RuntimeFrameworks = new ITaskItem[] { runtimeFramework },
                     IsSelfContained = false,
-                    GenerateRuntimeConfigDevFile = false,
                 };
 
                 // Execute — should write runtimeconfig.json under projectDir via TaskEnvironment
@@ -143,7 +142,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 RuntimeConfigPath = runtimeConfigPath,
                 RuntimeFrameworks = new ITaskItem[] { runtimeFramework },
                 IsSelfContained = false,
-                GenerateRuntimeConfigDevFile = false,
                 AssetsFilePath = assetsFilePath,
                 TaskEnvironment = taskEnvironment,
             };
@@ -298,6 +296,276 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 if (Directory.Exists(otherDir))
                     Directory.Delete(otherDir, true);
             }
+        }
+
+        [TestMethod]
+        public void ItGeneratesHotReloadPropertiesToDevConfig()
+        {
+            // When GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile = true,
+            // the task should write MetadataUpdater.IsSupported and StartupHookProvider.IsSupported
+            // to the runtimeconfig.dev.json file.
+            var projectDir = Path.Combine(Path.GetTempPath(), "rtconfig-hotreload-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                var configRelativePath = Path.Combine("bin", "test.runtimeconfig.json");
+                var devConfigRelativePath = Path.Combine("bin", "test.runtimeconfig.dev.json");
+                var devConfigAbsolutePath = Path.Combine(projectDir, devConfigRelativePath);
+                Directory.CreateDirectory(Path.Combine(projectDir, "bin"));
+
+                var assetsFilePath = CreateMinimalAssetsFile(projectDir);
+
+                var runtimeFramework = new TaskItem("Microsoft.NETCore.App");
+                runtimeFramework.SetMetadata("FrameworkName", "Microsoft.NETCore.App");
+                runtimeFramework.SetMetadata("Version", "8.0.0");
+
+                var mockEngine = new MockBuildEngine();
+                var task = new GenerateRuntimeConfigurationFiles
+                {
+                    BuildEngine = mockEngine,
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                    TargetFramework = "net8.0",
+                    TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
+                    RuntimeConfigPath = configRelativePath,
+                    RuntimeConfigDevPath = devConfigRelativePath,
+                    RuntimeFrameworks = new ITaskItem[] { runtimeFramework },
+                    IsSelfContained = false,
+                    AssetsFilePath = assetsFilePath,
+                    GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile = true,
+                };
+
+                task.Execute().Should().BeTrue(
+                    string.Join("; ", mockEngine.Errors.Select(e => e.Message)));
+
+                File.Exists(devConfigAbsolutePath).Should().BeTrue(
+                    "runtimeconfig.dev.json should be generated when hot reload options are enabled");
+
+                var devContent = File.ReadAllText(devConfigAbsolutePath);
+                devContent.Should().Contain("System.Reflection.Metadata.MetadataUpdater.IsSupported",
+                    "hot reload MetadataUpdater switch should be present in dev config");
+                devContent.Should().Contain("System.StartupHookProvider.IsSupported",
+                    "hot reload StartupHookProvider switch should be present in dev config");
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
+        }
+
+        [TestMethod]
+        public void ItDoesNotGenerateHotReloadPropertiesWhenDisabled()
+        {
+            // When GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile = false (default)
+            // and GenerateProbingPathsToRuntimeConfigDevFile = true,
+            // the dev config should NOT contain Hot Reload properties.
+            var projectDir = Path.Combine(Path.GetTempPath(), "rtconfig-nohotreload-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                var configRelativePath = Path.Combine("bin", "test.runtimeconfig.json");
+                var devConfigRelativePath = Path.Combine("bin", "test.runtimeconfig.dev.json");
+                var devConfigAbsolutePath = Path.Combine(projectDir, devConfigRelativePath);
+                Directory.CreateDirectory(Path.Combine(projectDir, "bin"));
+
+                var assetsFilePath = CreateMinimalAssetsFile(projectDir);
+
+                var runtimeFramework = new TaskItem("Microsoft.NETCore.App");
+                runtimeFramework.SetMetadata("FrameworkName", "Microsoft.NETCore.App");
+                runtimeFramework.SetMetadata("Version", "8.0.0");
+
+                var probingPath = new TaskItem("C:\\packages");
+
+                var mockEngine = new MockBuildEngine();
+                var task = new GenerateRuntimeConfigurationFiles
+                {
+                    BuildEngine = mockEngine,
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                    TargetFramework = "net8.0",
+                    TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
+                    RuntimeConfigPath = configRelativePath,
+                    RuntimeConfigDevPath = devConfigRelativePath,
+                    RuntimeFrameworks = new ITaskItem[] { runtimeFramework },
+                    IsSelfContained = false,
+                    AssetsFilePath = assetsFilePath,
+                    GenerateProbingPathsToRuntimeConfigDevFile = true,
+                    GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile = false,
+                    AdditionalProbingPaths = new ITaskItem[] { probingPath },
+                };
+
+                task.Execute().Should().BeTrue(
+                    string.Join("; ", mockEngine.Errors.Select(e => e.Message)));
+
+                File.Exists(devConfigAbsolutePath).Should().BeTrue(
+                    "runtimeconfig.dev.json should be generated when probing paths are enabled");
+
+                var devContent = File.ReadAllText(devConfigAbsolutePath);
+                devContent.Should().NotContain("System.Reflection.Metadata.MetadataUpdater.IsSupported",
+                    "hot reload MetadataUpdater switch should NOT be present when disabled");
+                devContent.Should().NotContain("System.StartupHookProvider.IsSupported",
+                    "hot reload StartupHookProvider switch should NOT be present when disabled");
+                devContent.Should().Contain("additionalProbingPaths",
+                    "probing paths should still be present");
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
+        }
+
+        [TestMethod]
+        public void ItGeneratesBothHotReloadAndProbingPathsWhenBothEnabled()
+        {
+            // When both flags are true, the dev config should contain both
+            // hot reload properties and additional probing paths.
+            var projectDir = Path.Combine(Path.GetTempPath(), "rtconfig-both-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                var configRelativePath = Path.Combine("bin", "test.runtimeconfig.json");
+                var devConfigRelativePath = Path.Combine("bin", "test.runtimeconfig.dev.json");
+                var devConfigAbsolutePath = Path.Combine(projectDir, devConfigRelativePath);
+                Directory.CreateDirectory(Path.Combine(projectDir, "bin"));
+
+                var assetsFilePath = CreateMinimalAssetsFile(projectDir);
+
+                var runtimeFramework = new TaskItem("Microsoft.NETCore.App");
+                runtimeFramework.SetMetadata("FrameworkName", "Microsoft.NETCore.App");
+                runtimeFramework.SetMetadata("Version", "8.0.0");
+
+                var probingPath = new TaskItem("C:\\packages");
+
+                var mockEngine = new MockBuildEngine();
+                var task = new GenerateRuntimeConfigurationFiles
+                {
+                    BuildEngine = mockEngine,
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                    TargetFramework = "net8.0",
+                    TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
+                    RuntimeConfigPath = configRelativePath,
+                    RuntimeConfigDevPath = devConfigRelativePath,
+                    RuntimeFrameworks = new ITaskItem[] { runtimeFramework },
+                    IsSelfContained = false,
+                    AssetsFilePath = assetsFilePath,
+                    GenerateProbingPathsToRuntimeConfigDevFile = true,
+                    GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile = true,
+                    AdditionalProbingPaths = new ITaskItem[] { probingPath },
+                };
+
+                task.Execute().Should().BeTrue(
+                    string.Join("; ", mockEngine.Errors.Select(e => e.Message)));
+
+                File.Exists(devConfigAbsolutePath).Should().BeTrue(
+                    "runtimeconfig.dev.json should be generated when both flags are enabled");
+
+                var devContent = File.ReadAllText(devConfigAbsolutePath);
+                devContent.Should().Contain("System.Reflection.Metadata.MetadataUpdater.IsSupported");
+                devContent.Should().Contain("System.StartupHookProvider.IsSupported");
+                devContent.Should().Contain("additionalProbingPaths");
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
+        }
+
+        [TestMethod]
+        public void ItDoesNotGenerateDevConfigWhenBothFlagsAreFalse()
+        {
+            // When both GenerateProbingPathsToRuntimeConfigDevFile and
+            // GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile are false,
+            // the computed GenerateRuntimeConfigDevFile should be false,
+            // and no dev config file should be written.
+            var projectDir = Path.Combine(Path.GetTempPath(), "rtconfig-nodev-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(projectDir);
+            try
+            {
+                var configRelativePath = Path.Combine("bin", "test.runtimeconfig.json");
+                var devConfigRelativePath = Path.Combine("bin", "test.runtimeconfig.dev.json");
+                var devConfigAbsolutePath = Path.Combine(projectDir, devConfigRelativePath);
+                Directory.CreateDirectory(Path.Combine(projectDir, "bin"));
+
+                var assetsFilePath = CreateMinimalAssetsFile(projectDir);
+
+                var runtimeFramework = new TaskItem("Microsoft.NETCore.App");
+                runtimeFramework.SetMetadata("FrameworkName", "Microsoft.NETCore.App");
+                runtimeFramework.SetMetadata("Version", "8.0.0");
+
+                var mockEngine = new MockBuildEngine();
+                var task = new GenerateRuntimeConfigurationFiles
+                {
+                    BuildEngine = mockEngine,
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                    TargetFramework = "net8.0",
+                    TargetFrameworkMoniker = ".NETCoreApp,Version=v8.0",
+                    RuntimeConfigPath = configRelativePath,
+                    RuntimeConfigDevPath = devConfigRelativePath,
+                    RuntimeFrameworks = new ITaskItem[] { runtimeFramework },
+                    IsSelfContained = false,
+                    AssetsFilePath = assetsFilePath,
+                    GenerateProbingPathsToRuntimeConfigDevFile = false,
+                    GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile = false,
+                };
+
+                task.Execute().Should().BeTrue(
+                    string.Join("; ", mockEngine.Errors.Select(e => e.Message)));
+
+                File.Exists(devConfigAbsolutePath).Should().BeFalse(
+                    "runtimeconfig.dev.json should NOT be generated when both flags are false");
+            }
+            finally
+            {
+                Directory.Delete(projectDir, true);
+            }
+        }
+
+        /// <summary>
+        /// Creates a minimal project.assets.json file that is sufficient for
+        /// GenerateRuntimeConfigurationFiles to enter the assets-file code path.
+        /// The target key uses short form "net8.0" to match TargetFramework = "net8.0".
+        /// </summary>
+        private static string CreateMinimalAssetsFile(string projectDir)
+        {
+            var objDir = Path.Combine(projectDir, "obj");
+            Directory.CreateDirectory(objDir);
+            var assetsPath = Path.Combine(objDir, "project.assets.json");
+            var projectPath = Path.Combine(projectDir, "TestApp.csproj").Replace("\\", "\\\\");
+            var packagesPath = Path.Combine(projectDir, ".nuget", "packages").Replace("\\", "\\\\");
+            var outputPath = Path.Combine(projectDir, "obj").Replace("\\", "\\\\");
+
+            File.WriteAllText(assetsPath, $$"""
+                {
+                  "version": 3,
+                  "targets": { "net8.0": {} },
+                  "libraries": {},
+                  "projectFileDependencyGroups": { "net8.0": [] },
+                  "packageFolders": {},
+                  "project": {
+                    "version": "1.0.0",
+                    "restore": {
+                      "projectUniqueName": "{{projectPath}}",
+                      "projectName": "TestApp",
+                      "projectPath": "{{projectPath}}",
+                      "packagesPath": "{{packagesPath}}",
+                      "outputPath": "{{outputPath}}",
+                      "projectStyle": "PackageReference",
+                      "fallbackFolders": [],
+                      "configFilePaths": [],
+                      "originalTargetFrameworks": [ "net8.0" ],
+                      "sources": {},
+                      "frameworks": { "net8.0": { "targetAlias": "net8.0" } },
+                      "warningProperties": { "warnAsError": [ "NU1605" ] }
+                    },
+                    "frameworks": {
+                      "net8.0": {
+                        "targetAlias": "net8.0"
+                      }
+                    }
+                  }
+                }
+                """);
+
+            // Return relative path since the task will resolve via TaskEnvironment
+            return Path.Combine("obj", "project.assets.json");
         }
 
         [TestMethod]

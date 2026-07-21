@@ -162,7 +162,14 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         // GetDisplayRid consults the shared framework's deps file, which isn't available in AOT.
         Reporter.Output.WriteLine($" RID:         {RuntimeInformation.RuntimeIdentifier}");
 #endif
+#if CLI_AOT
+        // In the AOT bubble AppContext.BaseDirectory is the muxer/install root, so report the resolved
+        // versioned SDK directory instead. The managed CLI keeps AppContext.BaseDirectory - it is correct
+        // there and preserves the existing output (including its trailing directory separator).
+        Reporter.Output.WriteLine($" Base Path:   {SdkPaths.SdkDirectory}");
+#else
         Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
+#endif
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
         new WorkloadInfoHelper(isInteractive: false).ShowWorkloadsInfo(showVersion: false);

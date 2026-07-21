@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  detection runs without NuGet, MSBuild, or installer-IPC dependencies.
 /// </summary>
 [TestClass]
-public class WorkloadInstallDetectorTests
+public partial class WorkloadInstallDetectorTests
 {
     private static string CurrentFeatureBand => new SdkFeatureBand(Product.Version).ToString();
 

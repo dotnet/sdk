@@ -82,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 // Check if the log level exceeds the configured maximum threshold.
                 if (logLevel != LogLevelPassedAsParameter &&
-                    logLevel < LogLevelCritical &&
+                    logLevel <= LogLevelCritical &&
                     logLevel > ParseLogLevel(context.Options.GetStringOptionValue(EditorConfigOptionNames.MaxLogLevel, Rule, invocation.Syntax.SyntaxTree, context.Compilation)))
                 {
                     return;

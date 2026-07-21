@@ -5,7 +5,20 @@ using System.Collections.Immutable;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal record TestOptions(bool IsHelp, bool IsDiscovery, IReadOnlyDictionary<string, string> EnvironmentVariables);
+internal enum TestListFormat
+{
+    /// <summary>
+    /// Human-readable discovery output (the default when '--list-tests' is passed without a value).
+    /// </summary>
+    Text,
+
+    /// <summary>
+    /// Machine-readable JSON discovery output ('--list-tests json').
+    /// </summary>
+    Json,
+}
+
+internal record TestOptions(bool IsHelp, bool IsDiscovery, TestListFormat ListTestsFormat);
 
 internal record PathOptions(string? ProjectOrSolutionPath, string? SolutionPath, string? TestModules, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
 
@@ -18,4 +31,6 @@ internal record BuildOptions(
     bool NoLaunchProfileArguments,
     ImmutableArray<string> TestApplicationArguments,
     IEnumerable<string> MSBuildArgs,
-    string? Device);
+    string? Device,
+    bool ListDevices,
+    IReadOnlyDictionary<string, string> EnvironmentVariables);

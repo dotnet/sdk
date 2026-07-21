@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Manages the dotnet installation root configuration, including switching between user and admin installations.
+/// Manages the dotnet installation root configuration, including switching between user and system installations.
 /// </summary>
 internal class InstallRootManager
 {
@@ -28,201 +29,146 @@ internal class InstallRootManager
         }
 
         string userDotnetPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
-        bool needToRemoveAdminPath = WindowsPathHelper.AdminPathContainsProgramFilesDotnet(out var foundDotnetPaths);
 
-        // Read both expanded and unexpanded user PATH from registry
-        string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
-        string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
-
-        // Use the helper method to add the path while preserving unexpanded variables
-        string newUserPath = WindowsPathHelper.AddPathEntry(unexpandedUserPath, expandedUserPath, userDotnetPath, "dotnet");
-        bool needToAddToUserPath = newUserPath != unexpandedUserPath;
+        // everywhere mode inserts the user (dotnetup) dotnet directory into the system PATH
+        // immediately before the machine-wide Program Files dotnet entry (or appends it when there
+        // is none), rather than removing the Program Files entry. A later machine-wide install
+        // appends its own PATH entry, so it lands after the user entry and the user install keeps
+        // precedence.
+        //
+        // Windows composes the effective PATH as system-then-user, so this system-PATH entry makes
+        // the user install win for every process. No matching user-scope PATH entry is needed; only
+        // DOTNET_ROOT is set at user scope (for apphost/runtime resolution).
+        string unexpandedSystemPath = WindowsPathHelper.ReadSystemPath(expand: false);
+        string expandedSystemPath = WindowsPathHelper.ReadSystemPath(expand: true);
+        string newSystemPath = WindowsPathHelper.InsertPathEntryBeforeProgramFilesDotnet(
+            unexpandedSystemPath, expandedSystemPath, userDotnetPath);
+        bool needToInsertUserDotnetIntoSystemPath = !string.Equals(newSystemPath, unexpandedSystemPath, StringComparison.Ordinal);
+        bool systemPathHasProgramFilesDotnet = WindowsPathHelper.SystemPathContainsProgramFilesDotnet();
 
         var existingDotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT", EnvironmentVariableTarget.User);
         bool needToSetDotnetRoot = !string.Equals(userDotnetPath, existingDotnetRoot, StringComparison.OrdinalIgnoreCase);
 
         return new UserInstallRootChanges(
             userDotnetPath,
-            needToRemoveAdminPath,
-            needToAddToUserPath,
+            needToInsertUserDotnetIntoSystemPath,
             needToSetDotnetRoot,
-            newUserPath,
-            foundDotnetPaths);
+            systemPathHasProgramFilesDotnet);
     }
 
     /// <summary>
-    /// Gets the changes needed to configure admin install root.
+    /// Gets the changes needed to configure system install root.
     /// </summary>
-    public AdminInstallRootChanges GetAdminInstallRootChanges()
+    public SystemInstallRootChanges GetSystemInstallRootChanges()
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException("Admin install root configuration is only supported on Windows.");
+            throw new PlatformNotSupportedException("System install root configuration is only supported on Windows.");
         }
 
-        var programFilesDotnetPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
-
-        // When no dotnet is installed in Program Files, there is no admin path to reference or modify.
-        string primaryProgramFilesDotnetPath = programFilesDotnetPaths.FirstOrDefault() ?? string.Empty;
-        bool needToModifyAdminPath = !string.IsNullOrEmpty(primaryProgramFilesDotnetPath)
-            && !WindowsPathHelper.SplitPath(WindowsPathHelper.ReadAdminPath(expand: true))
-                .Contains(primaryProgramFilesDotnetPath, StringComparer.OrdinalIgnoreCase);
-
-        // Get the user dotnet installation path
+        // Get the user (dotnetup) dotnet installation path
         string userDotnetPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
 
-        // Read both expanded and unexpanded user PATH from registry to preserve environment variables
-        string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
-        string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
-
-        // Use the helper method to remove the path while preserving unexpanded variables
-        string newUserPath = WindowsPathHelper.RemovePathEntries(unexpandedUserPath, expandedUserPath, [userDotnetPath]);
-        bool needToModifyUserPath = newUserPath != unexpandedUserPath;
+        // Switching away from everywhere mode removes the user (dotnetup) dotnet directory that
+        // everywhere mode inserted into the system PATH. The machine-wide Program Files dotnet entry
+        // was never removed, so there is nothing to restore.
+        string unexpandedSystemPath = WindowsPathHelper.ReadSystemPath(expand: false);
+        string expandedSystemPath = WindowsPathHelper.ReadSystemPath(expand: true);
+        string newSystemPath = WindowsPathHelper.RemovePathEntries(
+            unexpandedSystemPath, expandedSystemPath, [userDotnetPath]);
+        bool needToRemoveUserDotnetFromSystemPath = !string.Equals(newSystemPath, unexpandedSystemPath, StringComparison.Ordinal);
 
         bool needToUnsetDotnetRoot = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_ROOT", EnvironmentVariableTarget.User));
 
-        return new AdminInstallRootChanges(
-            primaryProgramFilesDotnetPath,
-            needToModifyAdminPath,
-            needToModifyUserPath,
+        return new SystemInstallRootChanges(
+            needToRemoveUserDotnetFromSystemPath,
             needToUnsetDotnetRoot,
-            userDotnetPath,
-            newUserPath);
+            userDotnetPath);
     }
 
     /// <summary>
-    /// Applies the user install root configuration.
-    /// Returns true if successful, false if elevation was cancelled.
+    /// Applies the user install root configuration. Throws
+    /// <see cref="DotnetInstallException"/> if the user declines an elevation prompt.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public static bool ApplyUserInstallRoot(UserInstallRootChanges changes, Action<string> writeOutput, Action<string> writeError)
+    public static void ApplyUserInstallRoot(UserInstallRootChanges changes, Action<string> writeOutput)
     {
-        if (changes.NeedsRemoveAdminPath)
+        if (changes.NeedsInsertUserDotnetIntoSystemPath)
         {
-            if (!RemoveAdminPathIfNeeded(changes.FoundAdminDotnetPaths!, writeOutput, writeError))
-            {
-                return false; // Elevation was cancelled
-            }
-        }
-
-        if (changes.NeedsAddToUserPath)
-        {
-            writeOutput($"Adding {changes.UserDotnetPath} to user PATH.");
-            WindowsPathHelper.WriteUserPath(changes.NewUserPath!);
+            InsertUserDotnetIntoSystemPathIfNeeded(changes.UserDotnetPath, changes.SystemPathHasProgramFilesDotnet, writeOutput);
         }
 
         if (changes.NeedsSetDotnetRoot)
         {
-            writeOutput($"Setting DOTNET_ROOT to {changes.UserDotnetPath}");
+            writeOutput($"Setting {Highlight("DOTNET_ROOT")} to {Highlight(changes.UserDotnetPath)}");
             Environment.SetEnvironmentVariable("DOTNET_ROOT", changes.UserDotnetPath, EnvironmentVariableTarget.User);
         }
-
-        return true;
     }
 
     /// <summary>
-    /// Applies the admin install root configuration.
-    /// Returns true if successful, false if elevation was cancelled.
+    /// Applies the system install root configuration. Throws
+    /// <see cref="DotnetInstallException"/> if the user declines an elevation prompt.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public static bool ApplyAdminInstallRoot(AdminInstallRootChanges changes, Action<string> writeOutput, Action<string> writeError)
+    public static void ApplySystemInstallRoot(SystemInstallRootChanges changes, Action<string> writeOutput)
     {
-        if (changes.NeedsModifyAdminPath)
+        if (changes.NeedsRemoveUserDotnetFromSystemPath)
         {
-            if (!AddAdminPathIfNeeded(changes.ProgramFilesDotnetPath, writeOutput, writeError))
-            {
-                return false; // Elevation was cancelled
-            }
-        }
-
-        if (changes.NeedsModifyUserPath)
-        {
-            writeOutput($"Removing {changes.UserDotnetPath} from user PATH.");
-            WindowsPathHelper.WriteUserPath(changes.NewUserPath!);
+            RemoveUserDotnetFromSystemPathIfNeeded(changes.UserDotnetPath, writeOutput);
         }
 
         if (changes.NeedsUnsetDotnetRoot)
         {
-            writeOutput("Unsetting DOTNET_ROOT environment variable.");
+            writeOutput($"Removing {Highlight("DOTNET_ROOT")} environment variable.");
             Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
         }
-
-        return true;
     }
 
     [SupportedOSPlatform("windows")]
-    private static bool RemoveAdminPathIfNeeded(List<string> foundDotnetPaths, Action<string> writeOutput, Action<string> writeError)
+    private static void InsertUserDotnetIntoSystemPathIfNeeded(string userDotnetPath, bool systemPathHasProgramFilesDotnet, Action<string> writeOutput)
     {
+        // When a machine-wide install is present the entry is inserted just ahead of it; otherwise
+        // it is appended to the end of the system PATH.
+        string target = systemPathHasProgramFilesDotnet
+            ? "system PATH, ahead of the machine-wide .NET install"
+            : "system PATH";
+
         if (Environment.IsPrivilegedProcess)
         {
-            if (foundDotnetPaths.Count == 1)
-            {
-                writeOutput($"Removing {foundDotnetPaths[0]} from system PATH.");
-            }
-            else
-            {
-                writeOutput("Removing the following dotnet paths from system PATH:");
-                foreach (var path in foundDotnetPaths)
-                {
-                    writeOutput($"  - {path}");
-                }
-            }
-
-            // We're already elevated, modify the admin PATH directly
+            // We're already elevated, modify the system PATH directly
+            writeOutput($"Adding {Highlight(userDotnetPath)} to {target}.");
             using var pathHelper = new WindowsPathHelper();
-            pathHelper.RemoveDotnetFromAdminPath();
+            pathHelper.InsertDotnetIntoSystemPath(userDotnetPath);
         }
         else
         {
             // Not elevated, shell out to elevated process
-            if (foundDotnetPaths.Count == 1)
-            {
-                writeOutput($"Launching elevated process to remove {foundDotnetPaths[0]} from system PATH.");
-            }
-            else
-            {
-                writeOutput("Launching elevated process to remove the following dotnet paths from system PATH:");
-                foreach (var path in foundDotnetPaths)
-                {
-                    writeOutput($"  - {path}");
-                }
-            }
-
-            bool succeeded = WindowsPathHelper.StartElevatedProcess("removedotnet");
-            if (!succeeded)
-            {
-                writeError("Warning: Elevation was cancelled. System PATH was not modified.");
-                return false;
-            }
+            writeOutput($"Launching elevated process to add {Highlight(userDotnetPath)} to {target}.");
+            WindowsPathHelper.StartElevatedProcess("insertdotnet", userDotnetPath);
         }
-
-        return true;
     }
 
     [SupportedOSPlatform("windows")]
-    private static bool AddAdminPathIfNeeded(string programFilesDotnetPath, Action<string> writeOutput, Action<string> writeError)
+    private static void RemoveUserDotnetFromSystemPathIfNeeded(string userDotnetPath, Action<string> writeOutput)
     {
         if (Environment.IsPrivilegedProcess)
         {
-            // We're already elevated, modify the admin PATH directly
-            writeOutput($"Adding {programFilesDotnetPath} to system PATH.");
+            // We're already elevated, modify the system PATH directly
+            writeOutput($"Removing {Highlight(userDotnetPath)} from system PATH.");
             using var pathHelper = new WindowsPathHelper();
-            pathHelper.AddDotnetToAdminPath();
+            pathHelper.RemoveDotnetFromSystemPath(userDotnetPath);
         }
         else
         {
             // Not elevated, shell out to elevated process
-            writeOutput($"Launching elevated process to add {programFilesDotnetPath} to system PATH.");
-            bool succeeded = WindowsPathHelper.StartElevatedProcess("adddotnet");
-            if (!succeeded)
-            {
-                writeError("Warning: Elevation was cancelled. System PATH was not modified.");
-                return false;
-            }
+            writeOutput($"Launching elevated process to remove {Highlight(userDotnetPath)} from system PATH.");
+            WindowsPathHelper.StartElevatedProcess("removedotnet", userDotnetPath);
         }
-
-        return true;
     }
+
+    // Colors a path or environment-variable name with the theme accent, escaping any markup so
+    // it renders correctly when the output is written with AnsiConsole.MarkupLine.
+    private static string Highlight(string value) => DotnetupTheme.Accent(value.EscapeMarkup());
 }
 
 /// <summary>
@@ -230,31 +176,26 @@ internal class InstallRootManager
 /// </summary>
 internal record UserInstallRootChanges(
     string UserDotnetPath,
-    bool NeedsRemoveAdminPath,
-    bool NeedsAddToUserPath,
+    bool NeedsInsertUserDotnetIntoSystemPath,
     bool NeedsSetDotnetRoot,
-    string? NewUserPath,
-    List<string>? FoundAdminDotnetPaths)
+    bool SystemPathHasProgramFilesDotnet)
 {
     /// <summary>
     /// Checks if any changes are needed to configure user install root.
     /// </summary>
-    public bool NeedsChange() => NeedsRemoveAdminPath || NeedsAddToUserPath || NeedsSetDotnetRoot;
+    public bool NeedsChange() => NeedsInsertUserDotnetIntoSystemPath || NeedsSetDotnetRoot;
 }
 
 /// <summary>
-/// Represents the changes needed to configure admin install root.
+/// Represents the changes needed to configure system install root.
 /// </summary>
-internal record AdminInstallRootChanges(
-    string ProgramFilesDotnetPath,
-    bool NeedsModifyAdminPath,
-    bool NeedsModifyUserPath,
+internal record SystemInstallRootChanges(
+    bool NeedsRemoveUserDotnetFromSystemPath,
     bool NeedsUnsetDotnetRoot,
-    string UserDotnetPath,
-    string? NewUserPath)
+    string UserDotnetPath)
 {
     /// <summary>
-    /// Checks if any changes are needed to configure admin install root.
+    /// Checks if any changes are needed to configure system install root.
     /// </summary>
-    public bool NeedsChange() => NeedsModifyAdminPath || NeedsModifyUserPath || NeedsUnsetDotnetRoot;
+    public bool NeedsChange() => NeedsRemoveUserDotnetFromSystemPath || NeedsUnsetDotnetRoot;
 }

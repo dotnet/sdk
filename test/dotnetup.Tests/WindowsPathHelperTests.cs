@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Bootstrapper;
 using System.Runtime.Versioning;
+using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -10,76 +10,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [SupportedOSPlatform("windows")]
 public class WindowsPathHelperTests
 {
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void RemoveProgramFilesDotnetFromPath_RemovesCorrectPath()
-    {
-        // Arrange
-        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        string dotnetPath = Path.Combine(programFiles, "dotnet");
-        string path = $"C:\\SomeOtherPath;{dotnetPath};C:\\AnotherPath";
-
-        // Act - pass the same path for both since no environment variables are used
-        string result = WindowsPathHelper.RemoveProgramFilesDotnetFromPath(path, path);
-
-        // Assert
-        result.Should().NotContain(dotnetPath);
-        result.Should().Contain("C:\\SomeOtherPath");
-        result.Should().Contain("C:\\AnotherPath");
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void RemoveProgramFilesDotnetFromPath_HandlesEmptyPath()
-    {
-        // Arrange
-        string path = string.Empty;
-
-        // Act - pass the same path for both since no environment variables are used
-        string result = WindowsPathHelper.RemoveProgramFilesDotnetFromPath(path, path);
-
-        // Assert
-        result.Should().BeEmpty();
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void AddProgramFilesDotnetToPath_AddsCorrectPath()
-    {
-        // Arrange
-        string unexpandedPath = "C:\\SomeOtherPath;C:\\AnotherPath";
-        string expandedPath = unexpandedPath; // No environment variables to expand in test
-
-        // Act
-        string result = WindowsPathHelper.AddProgramFilesDotnetToPath(unexpandedPath, expandedPath);
-
-        // Assert
-        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        string dotnetPath = Path.Combine(programFiles, "dotnet");
-        result.Should().Contain(dotnetPath);
-        result.Should().Contain("C:\\SomeOtherPath");
-        result.Should().Contain("C:\\AnotherPath");
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void AddProgramFilesDotnetToPath_DoesNotAddDuplicatePath()
-    {
-        // Arrange
-        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        string dotnetPath = Path.Combine(programFiles, "dotnet");
-        string unexpandedPath = $"C:\\SomeOtherPath;{dotnetPath};C:\\AnotherPath";
-        string expandedPath = unexpandedPath; // No environment variables to expand in test
-
-        // Act
-        string result = WindowsPathHelper.AddProgramFilesDotnetToPath(unexpandedPath, expandedPath);
-
-        // Assert
-        // Count occurrences of dotnetPath in result
-        int count = result.Split(';').Count(p => p.Equals(dotnetPath, StringComparison.OrdinalIgnoreCase));
-        count.Should().Be(1);
-    }
-
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     public void GetProgramFilesDotnetPaths_ReturnsValidPaths()
@@ -172,6 +102,23 @@ public class WindowsPathHelperTests
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
+    public void PathContainsDotnet_MatchesWhenPathEntryHasTrailingSeparator()
+    {
+        // Regression: the .NET installer writes the system PATH entry with a trailing separator
+        // ("C:\Program Files\dotnet\"), while GetProgramFilesDotnetPaths trims it. The match must
+        // ignore the trailing separator so drift detection agrees with the apply step. A raw
+        // string compare here would return false and cause a permanent, unclearable "everywhere-mode
+        // wiring" drift on stock machines.
+        var pathEntries = new List<string> { "C:\\Path1", "C:\\Program Files\\dotnet\\", "C:\\Path2" };
+        var dotnetPaths = new List<string> { "C:\\Program Files\\dotnet" };
+
+        bool result = WindowsPathHelper.PathContainsDotnet(pathEntries, dotnetPaths);
+
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void FindDotnetPathIndices_IsCaseInsensitive()
     {
         // Arrange
@@ -201,5 +148,225 @@ public class WindowsPathHelperTests
         result.Should().Be("%SystemRoot%\\system32;%USERPROFILE%\\bin");
         result.Should().Contain("%SystemRoot%");
         result.Should().Contain("%USERPROFILE%");
+    }
+
+    // ── InsertPathEntryBeforeDotnet ──
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_InsertsImmediatelyBeforeProgramFilesDotnet()
+    {
+        // Arrange
+        string dotnetDir = "C:\\Users\\me\\AppData\\Local\\dotnet";
+        string path = "C:\\Windows;C:\\Program Files\\dotnet;C:\\tools";
+        var programFilesDotnet = new List<string> { "C:\\Program Files\\dotnet" };
+
+        // Act
+        string result = WindowsPathHelper.InsertPathEntryBeforeDotnet(path, path, dotnetDir, programFilesDotnet);
+
+        // Assert - dotnetup dir sits directly before the Program Files entry, not at the front
+        result.Should().Be($"C:\\Windows;{dotnetDir};C:\\Program Files\\dotnet;C:\\tools");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_MatchesProgramFilesEntryWithTrailingSeparator()
+    {
+        // The .NET installer writes the system PATH entry with a trailing separator.
+        string dotnetDir = "C:\\Users\\me\\AppData\\Local\\dotnet";
+        string path = "C:\\Windows;C:\\Program Files\\dotnet\\;C:\\tools";
+        var programFilesDotnet = new List<string> { "C:\\Program Files\\dotnet" };
+
+        string result = WindowsPathHelper.InsertPathEntryBeforeDotnet(path, path, dotnetDir, programFilesDotnet);
+
+        result.Should().Be($"C:\\Windows;{dotnetDir};C:\\Program Files\\dotnet\\;C:\\tools");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_AppendsToEndWhenNoProgramFilesDotnet()
+    {
+        // Arrange - no machine-wide dotnet on PATH
+        string dotnetDir = "C:\\Users\\me\\AppData\\Local\\dotnet";
+        string path = "C:\\Windows;C:\\tools";
+        var programFilesDotnet = new List<string>();
+
+        // Act
+        string result = WindowsPathHelper.InsertPathEntryBeforeDotnet(path, path, dotnetDir, programFilesDotnet);
+
+        // Assert - appended to the end so a later machine-wide install lands after it
+        result.Should().Be($"C:\\Windows;C:\\tools;{dotnetDir}");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_NoChangeWhenAlreadyAheadOfProgramFilesDotnet()
+    {
+        // Arrange - dotnetup dir already precedes the Program Files entry
+        string dotnetDir = "C:\\Users\\me\\AppData\\Local\\dotnet";
+        string path = $"C:\\Windows;{dotnetDir};C:\\Program Files\\dotnet;C:\\tools";
+        var programFilesDotnet = new List<string> { "C:\\Program Files\\dotnet" };
+
+        // Act
+        string result = WindowsPathHelper.InsertPathEntryBeforeDotnet(path, path, dotnetDir, programFilesDotnet);
+
+        // Assert - unchanged
+        result.Should().Be(path);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_MovesEntryWhenPresentAfterProgramFilesDotnet()
+    {
+        // Arrange - dotnetup dir present but AFTER the Program Files entry, so it does not win
+        string dotnetDir = "C:\\Users\\me\\AppData\\Local\\dotnet";
+        string path = $"C:\\Windows;C:\\Program Files\\dotnet;{dotnetDir};C:\\tools";
+        var programFilesDotnet = new List<string> { "C:\\Program Files\\dotnet" };
+
+        // Act
+        string result = WindowsPathHelper.InsertPathEntryBeforeDotnet(path, path, dotnetDir, programFilesDotnet);
+
+        // Assert - moved to immediately before the Program Files entry
+        result.Should().Be($"C:\\Windows;{dotnetDir};C:\\Program Files\\dotnet;C:\\tools");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_NoChangeWhenAlreadyPresentAndNoProgramFilesDotnet()
+    {
+        // Arrange - already appended and no machine-wide dotnet present
+        string dotnetDir = "C:\\Users\\me\\AppData\\Local\\dotnet";
+        string path = $"C:\\Windows;C:\\tools;{dotnetDir}";
+        var programFilesDotnet = new List<string>();
+
+        // Act
+        string result = WindowsPathHelper.InsertPathEntryBeforeDotnet(path, path, dotnetDir, programFilesDotnet);
+
+        // Assert - unchanged
+        result.Should().Be(path);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_PreservesUnexpandedVariables()
+    {
+        // Arrange - unexpanded PATH retains %VAR% entries
+        string dotnetDir = "C:\\Users\\me\\AppData\\Local\\dotnet";
+        string unexpandedPath = "%SystemRoot%\\system32;C:\\Program Files\\dotnet;%USERPROFILE%\\bin";
+        string expandedPath = "C:\\Windows\\system32;C:\\Program Files\\dotnet;C:\\Users\\me\\bin";
+        var programFilesDotnet = new List<string> { "C:\\Program Files\\dotnet" };
+
+        // Act
+        string result = WindowsPathHelper.InsertPathEntryBeforeDotnet(unexpandedPath, expandedPath, dotnetDir, programFilesDotnet);
+
+        // Assert
+        result.Should().Be($"%SystemRoot%\\system32;{dotnetDir};C:\\Program Files\\dotnet;%USERPROFILE%\\bin");
+        result.Should().Contain("%SystemRoot%");
+        result.Should().Contain("%USERPROFILE%");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void AddPathEntry_ThrowsWhenEntryExpandsToMultipleSegments()
+    {
+        // Arrange - a PATH variable whose value itself contains ';' expands to multiple entries,
+        // so the expanded and unexpanded PATH can no longer be matched by index.
+        const string varName = "DOTNETUP_TEST_MULTI";
+        Environment.SetEnvironmentVariable(varName, "C:\\x;C:\\y");
+        try
+        {
+            string unexpandedPath = $"%{varName}%;C:\\bin";
+            string expandedPath = "C:\\x;C:\\y;C:\\bin";
+
+            // Act
+            Action act = () => WindowsPathHelper.AddPathEntry(unexpandedPath, expandedPath, "C:\\new", "some-command");
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(varName, null);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_ThrowsWhenEntryExpandsToEmpty()
+    {
+        // Arrange - a PATH variable that expands to nothing drops an entry from the expanded PATH,
+        // so the expanded and unexpanded PATH can no longer be matched by index.
+        const string varName = "DOTNETUP_TEST_EMPTY";
+        Environment.SetEnvironmentVariable(varName, " ");
+        try
+        {
+            string unexpandedPath = $"%{varName}%;C:\\bin";
+            string expandedPath = "C:\\bin";
+            var programFilesDotnet = new List<string> { "C:\\Program Files\\dotnet" };
+
+            // Act
+            Action act = () => WindowsPathHelper.InsertPathEntryBeforeDotnet(unexpandedPath, expandedPath, "C:\\new", programFilesDotnet);
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(varName, null);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void RemovePathEntries_ThrowsWhenEntryExpandsToMultipleSegments()
+    {
+        // Arrange - a PATH variable whose value itself contains ';' misaligns the two PATH forms.
+        const string varName = "DOTNETUP_TEST_MULTI";
+        Environment.SetEnvironmentVariable(varName, "C:\\x;C:\\y");
+        try
+        {
+            string unexpandedPath = $"%{varName}%;C:\\bin";
+            string expandedPath = "C:\\x;C:\\y;C:\\bin";
+            var pathsToRemove = new List<string> { "C:\\bin" };
+
+            // Act
+            Action act = () => WindowsPathHelper.RemovePathEntries(unexpandedPath, expandedPath, pathsToRemove);
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(varName, null);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void AddPathEntry_ThrowsWhenEmptyAndMultiSegmentExpansionsCancelOut()
+    {
+        // Arrange - one variable expands to nothing and another to multiple segments, so the
+        // expanded and unexpanded PATH split into the same number of entries yet are misaligned.
+        // A whole-string entry-count comparison would miss this; per-entry validation catches it.
+        const string emptyVar = "DOTNETUP_TEST_EMPTY";
+        const string multiVar = "DOTNETUP_TEST_MULTI";
+        Environment.SetEnvironmentVariable(emptyVar, " ");
+        Environment.SetEnvironmentVariable(multiVar, "C:\\x;C:\\y");
+        try
+        {
+            string unexpandedPath = $"%{emptyVar}%;%{multiVar}%";
+            string expandedPath = "C:\\x;C:\\y";
+
+            // Act
+            Action act = () => WindowsPathHelper.AddPathEntry(unexpandedPath, expandedPath, "C:\\new", "some-command");
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(emptyVar, null);
+            Environment.SetEnvironmentVariable(multiVar, null);
+        }
     }
 }

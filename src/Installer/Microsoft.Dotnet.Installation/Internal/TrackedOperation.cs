@@ -42,9 +42,6 @@ internal sealed class TrackedOperation : IDisposable
 
     /// <summary>
     /// Guarantees the completion row carries an explicit <c>error.type</c>.
-    /// Invoked automatically from <see cref="SetStatus"/> at operation
-    /// completion; not part of the public surface so callers don't have to
-    /// remember to stamp it themselves.
     /// </summary>
     internal void EnsureErrorTypeTagged()
     {

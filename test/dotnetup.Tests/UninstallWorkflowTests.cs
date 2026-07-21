@@ -85,6 +85,6 @@ public class UninstallWorkflowTests
     private static DotnetInstallRootConfiguration CreateConfig(string path, InstallType installType)
     {
         var installRoot = new DotnetInstallRoot(path, InstallerUtilities.GetDefaultInstallArchitecture());
-        return new DotnetInstallRootConfiguration(installRoot, installType, IsFullyConfigured: true);
+        return new DotnetInstallRootConfiguration(installRoot, installType);
     }
 }

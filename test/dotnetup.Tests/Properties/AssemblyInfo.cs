@@ -4,7 +4,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// Some test methods take internal product types (e.g. PathPreference) as data-driven
+// Some test methods take internal product types (e.g. DotnetAccessMode) as data-driven
 // parameters, so they must be internal. DiscoverInternals lets MSTest discover them.
 [assembly: DiscoverInternals]
 

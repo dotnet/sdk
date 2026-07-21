@@ -3,7 +3,7 @@
 
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -124,6 +124,86 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
+    public void FishProvider_ShouldGenerateValidScript()
+    {
+        var provider = new FishEnvShellProvider();
+        var installPath = "/test/dotnet/path";
+
+        var script = provider.GenerateEnvScript(installPath);
+
+        script.Should().NotBeNullOrEmpty();
+        script.Should().NotContain("#!/usr/bin/env");
+        script.Should().Contain("# This fish script configures the environment for .NET installed at /test/dotnet/path");
+        script.Should().Contain($"set -gx DOTNET_ROOT '{installPath}'");
+        script.Should().Contain($"fish_add_path --global --move --path '{installPath}'");
+    }
+
+    [TestMethod]
+    public void FishProvider_ShouldIncludeDotnetupDirInPath()
+    {
+        var provider = new FishEnvShellProvider();
+        var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin");
+
+        script.Should().Contain("fish_add_path --global --move --path '/usr/local/bin' '/test/dotnet'");
+    }
+
+    [TestMethod]
+    public void FishProvider_DotnetupOnly_ShouldNotSetDotnetRoot()
+    {
+        var provider = new FishEnvShellProvider();
+        var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin", includeDotnet: false);
+
+        script.Should().NotContain("DOTNET_ROOT");
+        script.Should().Contain("# This fish script adds dotnetup to your PATH");
+        script.Should().Contain("fish_add_path --global --move --path '/usr/local/bin'");
+        script.Should().NotContain("'/test/dotnet'");
+    }
+
+    [TestMethod]
+    public void FishProvider_ShouldPreferXdgConfigHomeForProfilePath()
+    {
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(temporaryDirectory);
+        try
+        {
+            var originalXdgConfigHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+            try
+            {
+                Environment.SetEnvironmentVariable("XDG_CONFIG_HOME", temporaryDirectory);
+
+                var provider = new FishEnvShellProvider();
+                var paths = provider.GetProfilePaths();
+
+                paths.Should().ContainSingle();
+                paths[0].Should().Be(Path.Combine(temporaryDirectory, "fish", "conf.d", "dotnetup.fish"));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("XDG_CONFIG_HOME", originalXdgConfigHome);
+            }
+        }
+        finally
+        {
+            Directory.Delete(temporaryDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void FishProvider_ShouldSourceEnvScriptOutput()
+    {
+        var provider = new FishEnvShellProvider();
+
+        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
+        var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
+
+        profileEntry.Should().Contain("if test -x '/test/dotnetup'");
+        profileEntry.Should().Contain("'/test/dotnetup' env script --shell fish --dotnet --dotnetup | source");
+        profileEntry.Should().EndWith("end");
+
+        activationCommand.Should().Be("'/test/dotnetup' env script | source");
+    }
+
+    [TestMethod]
     public void PowerShellProvider_ShouldGenerateValidScript()
     {
         // Arrange
@@ -185,16 +265,17 @@ public class EnvShellProviderTests
         var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
-        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' print-env-script --shell pwsh | Out-String");
+        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup | Out-String");
         profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
         profileEntry.Should().Contain("Invoke-Expression $dotnetupScript");
 
-        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' print-env-script --shell pwsh | Out-String)");
+        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script | Out-String)");
     }
 
     [TestMethod]
     [DataRow("bash")]
     [DataRow("zsh")]
+    [DataRow("fish")]
     [DataRow("pwsh")]
     public void ShellProviders_ShouldHaveCorrectArgumentName(string expectedName)
     {
@@ -209,6 +290,7 @@ public class EnvShellProviderTests
     [TestMethod]
     [DataRow("/bin/bash", "bash")]
     [DataRow("/bin/zsh", "zsh")]
+    [DataRow("/usr/local/bin/fish", "fish")]
     [DataRow(@"C:\Program Files\PowerShell\7\pwsh.exe", "pwsh")]
     public void ShellDetection_ShouldResolveProviderFromShellPath(string shellPath, string expectedName)
     {
@@ -239,6 +321,16 @@ public class EnvShellProviderTests
         // Assert
         provider.ArgumentName.Should().Be("zsh");
         provider.Extension.Should().Be("zsh");
+        provider.HelpDescription.Should().NotBeNullOrEmpty();
+    }
+
+    [TestMethod]
+    public void FishProvider_ShouldHaveCorrectProperties()
+    {
+        var provider = new FishEnvShellProvider();
+
+        provider.ArgumentName.Should().Be("fish");
+        provider.Extension.Should().Be("fish");
         provider.HelpDescription.Should().NotBeNullOrEmpty();
     }
 
@@ -285,6 +377,18 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
+    public void FishProvider_ShouldEscapeSingleQuotesAndBackslashesInPath()
+    {
+        var provider = new FishEnvShellProvider();
+        var installPath = @"/test/path/with'quote\backslash";
+
+        var script = provider.GenerateEnvScript(installPath);
+
+        script.Should().Contain(@"set -gx DOTNET_ROOT '/test/path/with\'quote\\backslash'");
+        script.Should().Contain(@"fish_add_path --global --move --path '/test/path/with\'quote\\backslash'");
+    }
+
+    [TestMethod]
     public void PowerShellProvider_ShouldEscapeSingleQuotesInPath()
     {
         // Arrange
@@ -300,7 +404,7 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
-    public void PrintEnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
+    public void EnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
     {
         // Arrange
         var provider = new BashEnvShellProvider();
@@ -309,7 +413,7 @@ public class EnvShellProviderTests
         using var output = new MemoryStream();
 
         // Act
-        PrintEnvScriptCommand.WriteScript(output, script);
+        EnvScriptCommand.WriteScript(output, script);
 
         // Assert
         var bytes = output.ToArray();

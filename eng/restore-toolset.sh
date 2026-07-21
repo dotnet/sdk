@@ -155,16 +155,8 @@ function InstallDotNetSharedFrameworks {
     fi
   fi
 
-  local restore_errexit=false
-  if [[ $- == *e* ]]; then
-    restore_errexit=true
-    set +e
-  fi
-  "$dotnetup_exe" runtime install "${specs_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
-  local lastexitcode=$?
-  if [[ "$restore_errexit" == true ]]; then
-    set -e
-  fi
+  RunWithoutErrexit "$dotnetup_exe" runtime install "${specs_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
+  local lastexitcode=$_RunWithoutErrexit
 
   if [[ $lastexitcode != 0 ]]; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install shared frameworks (${specs_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode'); falling back to dotnet install script."
@@ -200,16 +192,8 @@ function InstallDotNetSharedFrameworksWithInstallScript {
     fi
 
     # Disable errexit around the install-script call so the exit-code and filesystem checks below always run.
-    local restore_errexit=false
-    if [[ $- == *e* ]]; then
-      restore_errexit=true
-      set +e
-    fi
-    bash "$install_script" "${install_args[@]}"
-    local lastexitcode=$?
-    if [[ "$restore_errexit" == true ]]; then
-      set -e
-    fi
+    RunWithoutErrexit bash "$install_script" "${install_args[@]}"
+    local lastexitcode=$_RunWithoutErrexit
 
     # Ensure the download was actually successful to some degree.
     local framework_installed=false

@@ -164,8 +164,7 @@ public class DotnetCommandTests
                 defaultInstallPath: defaultDir.FullName,
                 configuredRoot: new DotnetInstallRootConfiguration(
                     new DotnetInstallRoot(userDir.FullName, InstallArchitecture.x64),
-                    InstallType.User,
-                    IsFullyConfigured: true));
+                    InstallType.User));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
             var command = new TestableDotnetCommand(parseResult, mock);
@@ -221,8 +220,7 @@ public class DotnetCommandTests
                 defaultInstallPath: defaultDir.FullName,
                 configuredRoot: new DotnetInstallRootConfiguration(
                     new DotnetInstallRoot(adminDir.FullName, InstallArchitecture.x64),
-                    InstallType.System,
-                    IsFullyConfigured: true));
+                    InstallType.System));
 
             var parseResult = Parser.Parse(["dotnet", "--version"]);
             var command = new TestableDotnetCommand(parseResult, mock);

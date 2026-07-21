@@ -152,7 +152,7 @@ internal class InstallWorkflow
         return !migrateFromSystem &&
             interactive &&
             installPath is null &&
-            DotnetupConfig.ReadPathPreference() is null;
+            DotnetupConfig.ReadAccessMode() is null;
     }
 
     internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)

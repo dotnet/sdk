@@ -95,5 +95,21 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath)
                 .GetProcessStartInfo().WorkingDirectory.Should().Be("");
         }
+
+        [TestMethod]
+        public void ItEnablesMSBuildServerByDefault()
+        {
+            //  The SDK enables the MSBuild server by default. Only assert this when the ambient environment
+            //  hasn't already expressed an opinion via MSBUILDUSESERVER or DOTNET_CLI_USE_MSBUILD_SERVER.
+            if (Environment.GetEnvironmentVariable("MSBUILDUSESERVER") != null ||
+                Environment.GetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER") != null)
+            {
+                return;
+            }
+
+            var msbuildPath = "<msbuildpath>";
+            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
+            startInfo.Environment["MSBUILDUSESERVER"].Should().Be("1");
+        }
     }
 }
