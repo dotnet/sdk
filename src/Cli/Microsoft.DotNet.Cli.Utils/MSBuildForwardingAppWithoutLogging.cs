@@ -257,7 +257,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     private static string GetMSBuildExePath()
     {
         return Path.Combine(
-            AppContext.BaseDirectory,
+            SdkPaths.SdkDirectory,
             MSBuildExeName);
     }
 
@@ -276,7 +276,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         }
 
         return Path.Combine(
-            AppContext.BaseDirectory,
+            SdkPaths.SdkDirectory,
             SdksDirectoryName);
     }
 
@@ -295,7 +295,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     {
         return new()
         {
-            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? AppContext.BaseDirectory },
+            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? SdkPaths.SdkDirectory },
             { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
             { "DOTNET_HOST_PATH", GetDotnetPath() },
         };
