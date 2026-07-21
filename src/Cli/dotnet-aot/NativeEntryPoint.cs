@@ -104,6 +104,8 @@ static unsafe partial class NativeEntryPoint
         }
 
         SdkDirectory = string.IsNullOrEmpty(sdkDirectory) ? null : sdkDirectory;
+        // MSBuild snapshots registered resolvers on first SDK resolution, so register during startup.
+        MSBuildSdkResolverRegistration.Register();
 
         // Telemetry is best-effort and must never prevent the CLI from running. Initializing
         // it can fail on some layouts (e.g. the NativeAOT muxer cannot resolve the crypto

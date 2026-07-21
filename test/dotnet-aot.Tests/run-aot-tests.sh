@@ -91,6 +91,20 @@ fi
 echo "Running AOT tests..."
 echo ""
 
+SDK_DIRECTORY=$("$DOTNET" --info 2>/dev/null | awk '
+    /^[[:space:]]*Base Path:/ {
+        sub(/^[[:space:]]*Base Path:[[:space:]]*/, "")
+        print
+        exit
+    }')
+
+if [[ -z "$SDK_DIRECTORY" ]]; then
+    echo "ERROR: Could not determine the bootstrap SDK directory."
+    exit 1
+fi
+
+export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
+
 chmod +x "$EXE_PATH"
 
 # When --trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform

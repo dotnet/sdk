@@ -38,6 +38,12 @@
     <!-- Ignore checking for OS API compatibility as we aren't targeting just the Windows platform  -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
 
+    <!-- NuGet's AOT feature switch is configured in AotSourceFiles.props. NuGet.Packaging still
+         exposes Newtonsoft.Json-backed runtime-model APIs in the SDK resolver closure, while the
+         runtime dynamic assemblies also produce AOT rollups. Keep dependency rollups visible but
+         non-fatal; first-party IL warnings and all other warning codes remain errors. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);IL2104;IL3053</WarningsNotAsErrors>
+
     <!--
       Enable control flow guard
       https://github.com/dotnet/docs/blob/main/docs/core/deploying/native-aot/security.md#control-flow-guard
@@ -62,6 +68,7 @@
 
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
+    <Compile Include="MSBuildSdkResolverRegistration.cs" />
     <Compile Include="SdkRootLocator.cs" />
     <Compile Include="ManagedHost.cs" />
   </ItemGroup>
@@ -78,6 +85,9 @@
     <!-- Lean (Releases + System.Text.Json) reader providing SdkFeatureBand / WorkloadInstallType for
          the in-process, read-only workload install detection (WorkloadInstallDetector). -->
     <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <!-- Registered directly with MSBuild during AOT startup so workload-locator SDK imports do not
+         require reflection-based resolver discovery. -->
+    <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" GlobalPropertiesToRemove="PublishDir" />
   </ItemGroup>
 
   <ItemGroup>
@@ -90,21 +100,6 @@
   <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
-  </ItemGroup>
-
-  <!--
-    Select the System.Text.Json source-generated deserialization path in the NuGet client
-    libraries (NuGet.Packaging, NuGet.ProjectModel, NuGet.Configuration, etc.) instead of the
-    reflection-based Newtonsoft.Json path, which is not trim- or AOT-safe.
-
-    NuGet defines this as a [FeatureSwitchDefinition], so Trim="true" tells the trimmer/ILC the
-    value is a compile-time constant. That lets it dead-code-eliminate the Newtonsoft.Json branch
-    and avoid IL2026/IL2104/IL3050/IL3053 warnings when publishing this AOT binary.
-  -->
-  <ItemGroup>
-    <RuntimeHostConfigurationOption Include="NuGet.UseSystemTextJsonDeserialization"
-                                    Value="true"
-                                    Trim="true" />
   </ItemGroup>
 
   <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"
