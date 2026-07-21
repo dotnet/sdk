@@ -987,7 +987,7 @@ public class EndToEndTests : SdkTest, IDisposable
         newProjectDir.Delete(true);
     }
 
-    public static IEnumerable<object[]> AvailableMultiArchLocalRegistryData()
+    public static IEnumerable<TestDataRow<(string ImageName, string LocalRegistry)>> AvailableMultiArchLocalRegistryData()
     {
         string[] imageNames =
         [
@@ -995,11 +995,22 @@ public class EndToEndTests : SdkTest, IDisposable
             "myteam/endtoendmultiarch-localregistry"
         ];
 
-        foreach (string localRegistry in MultiArchLocalRegistryTestData.AvailableRuntimes())
+        string[] localRegistries = [.. MultiArchLocalRegistryTestData.AvailableRuntimes()];
+        if (localRegistries.Length == 0)
+        {
+            yield return new((string.Empty, string.Empty))
+            {
+                IgnoreMessage = "No multi-architecture local container runtime is available."
+            };
+
+            yield break;
+        }
+
+        foreach (string localRegistry in localRegistries)
         {
             foreach (string imageName in imageNames)
             {
-                yield return [imageName, localRegistry];
+                yield return new((imageName, localRegistry));
             }
         }
     }
