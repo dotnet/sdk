@@ -180,6 +180,25 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void ParseCleanCommand_UsesAotParser()
+    {
+        var result = Parser.Parse(["clean", "test.csproj", "--configuration", "Release"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreEqual("clean", result.CommandResult.Command.Name);
+        Assert.IsFalse(result.RequiresManagedCommandResolution());
+    }
+
+    [TestMethod]
+    public void InvokeCleanFileBasedApps_FallsBackToManaged()
+    {
+        var result = Parser.Parse(["clean", "file-based-apps"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
     public void ParsePackCommand_UsesAotParser()
     {
         var result = Parser.Parse(["pack", "test.csproj", "--no-restore"]);
