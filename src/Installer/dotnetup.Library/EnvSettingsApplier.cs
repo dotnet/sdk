@@ -15,10 +15,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 ///
 /// Composition:
 /// <list type="bullet">
-///   <item>The managed profile block wires dotnet iff <c>env ∈ {Shell, All}</c> and adds the
+///   <item>The managed profile block wires dotnet iff <c>env ∈ {Shell, Everywhere}</c> and adds the
 ///     dotnetup directory iff <c>dotnetupOnPath</c>. When it would wire neither, the block is
 ///     removed.</item>
-///   <item>On Windows, <c>All</c> additionally writes the user dotnet directory to the system
+///   <item>On Windows, <c>Everywhere</c> additionally writes the user dotnet directory to the system
 ///     PATH (ahead of the machine-wide install) and sets user-scope DOTNET_ROOT, and
 ///     <c>dotnetupOnPath</c> additionally writes the dotnetup directory to the user PATH (so
 ///     cmd.exe and GUI apps see it).</item>
@@ -47,10 +47,10 @@ internal static class EnvSettingsApplier
                 $"{nameof(DotnetAccessMode)}.{nameof(DotnetAccessMode.Everywhere)} is only supported on Windows.");
         }
 
-        // Windows user-scope dotnet env vars (PATH + DOTNET_ROOT) are wired only by All mode.
+        // Windows user-scope dotnet env vars (PATH + DOTNET_ROOT) are wired only by Everywhere mode.
         bool nowWritesDotnetEnvVars = targetEnv == DotnetAccessMode.Everywhere;
 
-        // The managed profile block wires dotnet for Shell/All, and dotnetup when dotnetupOnPath.
+        // The managed profile block wires dotnet for Shell/Everywhere, and dotnetup when dotnetupOnPath.
         bool nowProfileDotnet = targetEnv is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
         bool nowProfileDotnetup = targetDotnetupOnPath;
         bool nowHasProfileBlock = nowProfileDotnet || nowProfileDotnetup;

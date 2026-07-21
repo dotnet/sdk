@@ -264,4 +264,109 @@ public class WindowsPathHelperTests
         result.Should().Contain("%SystemRoot%");
         result.Should().Contain("%USERPROFILE%");
     }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void AddPathEntry_ThrowsWhenEntryExpandsToMultipleSegments()
+    {
+        // Arrange - a PATH variable whose value itself contains ';' expands to multiple entries,
+        // so the expanded and unexpanded PATH can no longer be matched by index.
+        const string varName = "DOTNETUP_TEST_MULTI";
+        Environment.SetEnvironmentVariable(varName, "C:\\x;C:\\y");
+        try
+        {
+            string unexpandedPath = $"%{varName}%;C:\\bin";
+            string expandedPath = "C:\\x;C:\\y;C:\\bin";
+
+            // Act
+            Action act = () => WindowsPathHelper.AddPathEntry(unexpandedPath, expandedPath, "C:\\new", "some-command");
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(varName, null);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void InsertPathEntryBeforeDotnet_ThrowsWhenEntryExpandsToEmpty()
+    {
+        // Arrange - a PATH variable that expands to nothing drops an entry from the expanded PATH,
+        // so the expanded and unexpanded PATH can no longer be matched by index.
+        const string varName = "DOTNETUP_TEST_EMPTY";
+        Environment.SetEnvironmentVariable(varName, " ");
+        try
+        {
+            string unexpandedPath = $"%{varName}%;C:\\bin";
+            string expandedPath = "C:\\bin";
+            var programFilesDotnet = new List<string> { "C:\\Program Files\\dotnet" };
+
+            // Act
+            Action act = () => WindowsPathHelper.InsertPathEntryBeforeDotnet(unexpandedPath, expandedPath, "C:\\new", programFilesDotnet);
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(varName, null);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void RemovePathEntries_ThrowsWhenEntryExpandsToMultipleSegments()
+    {
+        // Arrange - a PATH variable whose value itself contains ';' misaligns the two PATH forms.
+        const string varName = "DOTNETUP_TEST_MULTI";
+        Environment.SetEnvironmentVariable(varName, "C:\\x;C:\\y");
+        try
+        {
+            string unexpandedPath = $"%{varName}%;C:\\bin";
+            string expandedPath = "C:\\x;C:\\y;C:\\bin";
+            var pathsToRemove = new List<string> { "C:\\bin" };
+
+            // Act
+            Action act = () => WindowsPathHelper.RemovePathEntries(unexpandedPath, expandedPath, pathsToRemove);
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(varName, null);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void AddPathEntry_ThrowsWhenEmptyAndMultiSegmentExpansionsCancelOut()
+    {
+        // Arrange - one variable expands to nothing and another to multiple segments, so the
+        // expanded and unexpanded PATH split into the same number of entries yet are misaligned.
+        // A whole-string entry-count comparison would miss this; per-entry validation catches it.
+        const string emptyVar = "DOTNETUP_TEST_EMPTY";
+        const string multiVar = "DOTNETUP_TEST_MULTI";
+        Environment.SetEnvironmentVariable(emptyVar, " ");
+        Environment.SetEnvironmentVariable(multiVar, "C:\\x;C:\\y");
+        try
+        {
+            string unexpandedPath = $"%{emptyVar}%;%{multiVar}%";
+            string expandedPath = "C:\\x;C:\\y";
+
+            // Act
+            Action act = () => WindowsPathHelper.AddPathEntry(unexpandedPath, expandedPath, "C:\\new", "some-command");
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(emptyVar, null);
+            Environment.SetEnvironmentVariable(multiVar, null);
+        }
+    }
 }

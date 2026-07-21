@@ -89,10 +89,7 @@ internal static class InitWorkflowDefaults
     /// </summary>
     public static DotnetAccessMode GetDefaultAccessMode(IEnvShellProvider? shellProvider = null)
     {
-        // On Windows, everywhere mode is the default: it inserts the user (dotnetup) dotnet
-        // directory into the system PATH ahead of any machine-wide install, so every application
-        // resolves the dotnetup .NET, not just shells that load the profile. This does not depend
-        // on shell detection, so it takes precedence over the no-shell fallback below.
+        // Default to Everywhere mode on Windows
         if (OperatingSystem.IsWindows())
         {
             return DotnetAccessMode.Everywhere;

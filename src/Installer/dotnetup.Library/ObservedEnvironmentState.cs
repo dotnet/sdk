@@ -16,8 +16,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// the system PATH and/or the user-scope DOTNET_ROOT) is currently present. Always false off Windows.
 /// </param>
 /// <param name="DotnetUserEnvVarsComplete">
-/// True when the user-scope dotnet env vars are fully in the <c>all</c>-mode state (nothing left
-/// to wire). Always false off Windows. Used to detect a configured-<c>all</c>-but-incomplete drift.
+/// True when the user-scope dotnet env vars are fully in the <c>everywhere</c>-mode state (nothing left
+/// to wire). Always false off Windows. Used to detect a configured-<c>everywhere</c>-but-incomplete drift.
 /// </param>
 /// <param name="ProfileBlock">
 /// Whether the managed dotnetup block exists in the shell profile, or

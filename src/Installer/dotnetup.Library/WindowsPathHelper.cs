@@ -207,6 +207,30 @@ internal sealed partial class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
+    /// Verifies that the PATH-editing helpers can safely map entries between the expanded and
+    /// unexpanded PATH by index. Those helpers detect entries against the expanded PATH but apply
+    /// the edit to the unexpanded PATH by position, which is only valid when the two lists are
+    /// element-aligned. Alignment holds exactly when every unexpanded entry expands to a single
+    /// non-empty segment. A variable that expands to a value containing ';' (adding entries) or to
+    /// nothing (dropping an entry) breaks that invariant, so rather than silently corrupt the PATH
+    /// we fail loudly.
+    /// </summary>
+    /// <param name="unexpandedEntries">The unexpanded PATH split into entries.</param>
+    private static void EnsureExpandedPathAligned(List<string> unexpandedEntries)
+    {
+        foreach (var entry in unexpandedEntries)
+        {
+            if (SplitPath(Environment.ExpandEnvironmentVariables(entry)).Count != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot safely modify PATH: the entry '{entry}' expands to a value that is empty or " +
+                    "contains ';', changing the number of ';'-separated entries. Entries cannot be reliably " +
+                    "matched between the expanded and unexpanded PATH.");
+            }
+        }
+    }
+
+    /// <summary>
     /// Finds the indices of entries in a PATH that match the specified paths.
     /// This method is designed for unit testing without registry access.
     /// </summary>
@@ -279,6 +303,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
     {
         var expandedEntries = SplitPath(expandedPath);
         var unexpandedEntries = SplitPath(unexpandedPath);
+        EnsureExpandedPathAligned(unexpandedEntries);
 
         // Check if the command already resolves to the pathToAdd using EnvironmentProvider
         var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider(searchPathsOverride: expandedEntries);
@@ -356,6 +381,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
     {
         var expandedEntries = SplitPath(expandedPath);
         var unexpandedEntries = SplitPath(unexpandedPath);
+        EnsureExpandedPathAligned(unexpandedEntries);
 
         var normalizedPathToInsert = Path.TrimEndingDirectorySeparator(pathToInsert);
 
@@ -403,6 +429,8 @@ internal sealed partial class WindowsPathHelper : IDisposable
     public static string RemovePathEntries(string unexpandedPath, string expandedPath, List<string> pathsToRemove)
     {
         var expandedEntries = SplitPath(expandedPath);
+        var unexpandedEntries = SplitPath(unexpandedPath);
+        EnsureExpandedPathAligned(unexpandedEntries);
 
         // Find indices to remove using the expanded path
         var indicesToRemove = FindPathIndices(expandedEntries, pathsToRemove);
