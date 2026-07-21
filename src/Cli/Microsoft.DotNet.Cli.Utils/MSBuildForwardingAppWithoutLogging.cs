@@ -22,7 +22,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// By default, the MSBuild server is enabled, but users that hit stability/correctness concerns with some
     /// 1P tasks that keep static state around can opt out by setting this to false.
     /// </summary>
-    private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", true);
+    private static bool UseMSBuildServer => Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", true);
 
     /// <summary>
     /// What the SDK's opinion is on the default terminal logger. The SDK defaults to '<c>auto</c>' which will use the terminal logger if the output is going to a terminal, otherwise it will use the console logger.
@@ -98,12 +98,11 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
         MSBuildPath = msbuildPath ?? defaultMSBuildPath;
 
-        // The MSBuild server is enabled by default. Force MSBUILDUSESERVER on unless the user has opted out
-        // via DOTNET_CLI_USE_MSBUILD_SERVER, or has already set MSBUILDUSESERVER themselves - in which case we
-        // leave their value untouched so it can toggle the server on its own.
-        if (UseMSBuildServer && Env.GetEnvironmentVariable("MSBUILDUSESERVER") is null)
+        // The MSBuild server is enabled by default. Set MSBUILDUSESERVER based on DOTNET_CLI_USE_MSBUILD_SERVER,
+        // unless the user has already set MSBUILDUSESERVER themselves - in which case we leave their value untouched.
+        if (Env.GetEnvironmentVariable("MSBUILDUSESERVER") is null)
         {
-            EnvironmentVariable("MSBUILDUSESERVER", "1");
+            EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
         }
 
         // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set, the caller requires it (e.g. the AOT CLI, which
