@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using Microsoft.Build.Evaluation;
@@ -73,6 +74,46 @@ public class MSBuildEvaluationTests
         Assert.AreEqual(
             sdkDirectory,
             forwardingApp.GetProcessStartInfo().Environment["MSBuildExtensionsPath"]);
+    }
+
+    [TestMethod]
+    public void ProjectCompletionsEvaluateCurrentProject()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-pack-completion-{Guid.NewGuid():N}");
+        string projectPath = Path.Combine(testDirectory, "TestProject.csproj");
+        string previousCurrentDirectory = Directory.GetCurrentDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <Configurations>CustomDebug;CustomRelease</Configurations>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        try
+        {
+            Directory.SetCurrentDirectory(testDirectory);
+            MSBuildSdkResolverRegistration.Register();
+
+            string[] completions = [.. Parser.Parse("pack --configuration ").GetCompletions().Select(item => item.Label)];
+            string[] targetFrameworks = [.. CliCompletion.TargetFrameworksFromProjectFile(null!).Select(item => item.Label)];
+
+            completions.Should().Equal("CustomDebug", "CustomRelease");
+            targetFrameworks.Should().Equal("net11.0");
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previousCurrentDirectory);
+            Directory.Delete(testDirectory, recursive: true);
+        }
     }
 
     [TestMethod]
