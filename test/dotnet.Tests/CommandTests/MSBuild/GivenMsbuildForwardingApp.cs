@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [DataRow(null, "0")]
         [DataRow("0", "0")]
         [DataRow("1", "1")]
-        public void ItHonorsMSBuildServerEnvironmentVariables(string msbuildUseServer, string expected)
+        public void ItUsesCliServerSettingUnlessMSBuildServerSettingIsExplicit(string msbuildUseServer, string expected)
         {
             string originalUseMSBuildServer = Environment.GetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER");
             string originalMSBuildUseServer = Environment.GetEnvironmentVariable("MSBUILDUSESERVER");

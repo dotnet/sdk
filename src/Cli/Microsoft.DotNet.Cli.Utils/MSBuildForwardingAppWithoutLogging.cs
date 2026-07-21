@@ -21,6 +21,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// as a place to cache data and prevent re-doing CoreCLR startup/JITting for small builds.
     /// By default, the MSBuild server is enabled, but users that hit stability/correctness concerns with some
     /// 1P tasks that keep static state around can opt out by setting this to false.
+    /// The value is evaluated for each forwarding app so in-process invocations honor the current environment.
     /// </summary>
     private static bool UseMSBuildServer => Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", true);
 
