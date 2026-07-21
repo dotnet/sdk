@@ -35,6 +35,7 @@
   <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
   <ItemGroup>
     <Compile Include="..\..\src\Cli\dotnet-aot\NativeEntryPoint.cs" Link="NativeEntryPoint.cs" />
+    <Compile Include="..\..\src\Cli\dotnet-aot\MSBuildSdkResolverRegistration.cs" Link="MSBuildSdkResolverRegistration.cs" />
     <Compile Include="..\..\src\Cli\dotnet-aot\SdkRootLocator.cs" Link="SdkRootLocator.cs" />
   </ItemGroup>
 
@@ -53,6 +54,7 @@
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj">
       <Aliases>global,NativeWrapper,DotNetNativeWrapper</Aliases>
     </ProjectReference>
