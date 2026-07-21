@@ -47,7 +47,7 @@ If the `daily` build of `dotnetup` is broken, we will not guarantee any SLA or t
 
 At our discretion, `daily` builds may be promoted to `preview` versions. We will closely monitor telemetry for potential bugs or regressions added between the `preview` and `daily` build before promoting the `daily` to a `preview` build. `preview` versions are not officially supported by Microsoft and should not be used in production or other high-priority environments.
 
-`preview` versions will be built off the top of `preview` versions of .NET.
+`preview` versions may be built off the top of `preview` or `lts/sts` versions of .NET.
 
 `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version. Regardless, we aim to publish breaking change notices for expected high-impact changes.
 
