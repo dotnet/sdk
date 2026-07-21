@@ -32,6 +32,19 @@
          RunAlways:    Conditions under which the scope always runs regardless of changed files.
                        Supported values: CI (non-PR builds). -->
   <ItemGroup>
+    <ConditionalTestScope Include="ApiCompat">
+      <Mechanism>project</Mechanism>
+      <TestProjects>test/Compatibility/**/*.csproj</TestProjects>
+      <TriggerPaths>
+        src/Compatibility/**;
+        test/Compatibility/**;
+        test/TestAssets/TestProjects/ApiCompatValidateAssembliesTestProject/**;
+        test/TestAssets/TestProjects/GenAPITaskTestProject/**;
+        test/TestAssets/TestProjects/PackageValidationTestProject/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+
     <ConditionalTestScope Include="TemplateEngine">
       <Mechanism>project</Mechanism>
       <TestProjects>test/TemplateEngine/**/*.csproj</TestProjects>
