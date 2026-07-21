@@ -12,8 +12,10 @@ using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
+using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
 using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
+using RestoringCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoringCommand;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -79,6 +81,28 @@ public class MSBuildEvaluationTests
         Assert.AreEqual(
             sdkDirectory,
             forwardingApp.GetProcessStartInfo().Environment["MSBuildExtensionsPath"]);
+    }
+
+    [TestMethod]
+    public void BuildCommandForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        var command = Assert.IsInstanceOfType<RestoringCommand>(
+            BuildCommand.FromArgs(["test.csproj", "--no-restore"]));
+        string[] arguments = command.GetArgumentTokensToMSBuild();
+
+        Assert.Contains("test.csproj", arguments);
+        Assert.Contains("-consoleloggerparameters:Summary", arguments);
+        Assert.DoesNotContain("-restore", arguments);
+        Assert.Contains(
+            Path.Combine(sdkDirectory, "MSBuild.dll"),
+            command.GetProcessStartInfo().Arguments);
+
+        var restoreCommand = Assert.IsInstanceOfType<RestoringCommand>(
+            BuildCommand.FromArgs(["test.csproj"]));
+        Assert.Contains("-restore", restoreCommand.GetArgumentTokensToMSBuild());
     }
 
     [TestMethod]

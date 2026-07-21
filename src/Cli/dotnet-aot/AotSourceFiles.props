@@ -231,7 +231,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Remove\SolutionRemoveCommand.cs" Link="Commands\Solution\Remove\SolutionRemoveCommand.cs" />
   </ItemGroup>
 
-  <!-- 'dotnet pack' and 'dotnet publish': physical project/solution evaluation and out-of-process MSBuild forwarding. -->
+  <!-- MSBuild-backed commands: physical project/solution evaluation and out-of-process forwarding. -->
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" Link="MSBuildPropertyNames.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\LoggerUtility.cs" Link="LoggerUtility.cs" />
@@ -239,6 +239,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliCompletion.cs" Link="CliCompletion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ProjectInstanceExtensions.cs" Link="Extensions\ProjectInstanceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\DotNetCommandFactory.cs" Link="Commands\DotNetCommandFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Build\BuildCommand.cs" Link="Commands\Build\BuildCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Build\BuildCommandParser.cs" Link="Commands\Build\BuildCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\VirtualProjectBuildingCommand.cs" Link="Commands\Run\VirtualProjectBuildingCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommand.cs" Link="Commands\Pack\PackCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommandParser.cs" Link="Commands\Pack\PackCommandParser.cs" />

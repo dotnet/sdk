@@ -224,6 +224,7 @@ public static class Parser
         // global/tool-path variants and for install/update/restore/execute.
         ToolCommandParser.ConfigureCommand(rootCommand.ToolCommand);
 
+        Microsoft.DotNet.Cli.Commands.Build.BuildCommandParser.ConfigureCommand(rootCommand.BuildCommand);
         Microsoft.DotNet.Cli.Commands.Pack.PackCommandParser.ConfigureCommand(rootCommand.PackCommand);
         Microsoft.DotNet.Cli.Commands.Publish.PublishCommandParser.ConfigureCommand(rootCommand.PublishCommand);
 
