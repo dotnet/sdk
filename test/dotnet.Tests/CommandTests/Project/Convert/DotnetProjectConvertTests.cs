@@ -76,6 +76,68 @@ public sealed class DotnetProjectConvertTests : SdkTest
             .And.StartWith("""<Project Sdk="Microsoft.NET.Sdk">""");
     }
 
+    [TestMethod]
+    public void DefaultProperties()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <DefineConstants Condition="'$(Nullable)' == 'enable'">$(DefineConstants);NULLABLE_ENABLED_PROPS</DefineConstants>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <PropertyGroup>
+                <DefineConstants Condition="'$(Nullable)' == 'enable'">$(DefineConstants);NULLABLE_ENABLED_TARGETS</DefineConstants>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var expectedOutput = """
+            Not defined in props
+            Defined in targets
+            """;
+
+        // File-based app.
+        var fileBasedAppDir = Path.Join(testInstance.Path, "FileBasedApp");
+        Directory.CreateDirectory(fileBasedAppDir);
+        File.WriteAllText(Path.Join(fileBasedAppDir, "app.cs"), """
+            #if NULLABLE_ENABLED_PROPS
+            Console.WriteLine("Defined in props");
+            #else
+            Console.WriteLine("Not defined in props");
+            #endif
+            #if NULLABLE_ENABLED_TARGETS
+            Console.WriteLine("Defined in targets");
+            #else
+            Console.WriteLine("Not defined in targets");
+            #endif
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(fileBasedAppDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Converted project.
+        var convertedDir = Path.Join(testInstance.Path, "Converted");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", convertedDir)
+            .WithWorkingDirectory(fileBasedAppDir)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(convertedDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
     [TestMethod] // https://github.com/dotnet/sdk/issues/50832
     [DataRow("File", "File", "Lib", "../Lib", "Project", "..{/}Lib{/}lib.csproj")]
     [DataRow(".", ".", "Lib", "./Lib", "Project", "..{/}Lib{/}lib.csproj")]

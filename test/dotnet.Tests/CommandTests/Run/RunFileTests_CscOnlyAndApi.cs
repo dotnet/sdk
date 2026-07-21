@@ -1401,12 +1401,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -1417,6 +1411,11 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                       <Import Project="Sdk.props" Sdk="Aspire.AppHost.Sdk" Version="9.1.0" />
 
                       <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <TargetFramework>net5.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
@@ -1488,12 +1487,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -1503,6 +1496,12 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <P1>cs</P1>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
@@ -1564,12 +1563,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -1579,6 +1572,12 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
@@ -1639,12 +1638,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -1654,6 +1647,12 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>

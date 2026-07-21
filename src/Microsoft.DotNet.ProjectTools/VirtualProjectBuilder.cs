@@ -607,15 +607,6 @@ public sealed class VirtualProjectBuilder
                     """);
             }
 
-            // Write default properties before importing SDKs so they can be overridden by SDKs
-            // (and implicit build files which are imported by the default .NET SDK).
-            foreach (var (name, value) in defaultProperties)
-            {
-                writer.WriteLine($"""
-                        <{name}>{EscapeValue(value)}</{name}>
-                    """);
-            }
-
             writer.WriteLine($"""
                   </PropertyGroup>
 
@@ -683,28 +674,25 @@ public sealed class VirtualProjectBuilder
                 """);
 
             // First write the default properties except those specified by the user.
-            if (!isVirtualProject)
+            var customPropertyNames = propertyDirectives
+                .Select(static d => d.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var (name, value) in defaultProperties)
             {
-                var customPropertyNames = propertyDirectives
-                    .Select(static d => d.Name)
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var (name, value) in defaultProperties)
-                {
-                    if (!customPropertyNames.Contains(name))
-                    {
-                        writer.WriteLine($"""
-                                <{name}>{EscapeValue(value)}</{name}>
-                            """);
-                    }
-                }
-
-                if (userSecretsId != null && !customPropertyNames.Contains("UserSecretsId"))
+                if (!customPropertyNames.Contains(name))
                 {
                     writer.WriteLine($"""
-                            <UserSecretsId>{EscapeValue(userSecretsId)}</UserSecretsId>
+                            <{name}>{EscapeValue(value)}</{name}>
                         """);
                 }
+            }
+
+            if (userSecretsId != null && !customPropertyNames.Contains("UserSecretsId"))
+            {
+                writer.WriteLine($"""
+                        <UserSecretsId>{EscapeValue(userSecretsId)}</UserSecretsId>
+                    """);
             }
 
             // Write custom properties.
