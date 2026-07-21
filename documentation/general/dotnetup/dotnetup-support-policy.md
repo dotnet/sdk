@@ -4,6 +4,8 @@
 
 `dotnetup` refers exclusively to the standalone, self-contained tool for developers that helps them manage and acquire .NET.
 
+`dotnetup` is an experimental CLI and still changing and evolving. We are monitoring adoption and feedback which will inform support policy decisions and whether to treat `dotnetup` as a first-class product in the long-term.
+
 Looking for the support policy for another part of the .NET platform? See the [.NET Support Policy](https://dotnet.microsoft.com/platform/support/policy) page.
 
 Every Microsoft product has a lifecycle. The lifecycle begins when a product is released and ends when it's no longer supported. Knowing key dates in this lifecycle helps you make informed decisions about when to upgrade or make other changes to your software. This product is governed by [Microsoft's Modern Lifecycle Policy.](https://learn.microsoft.com/lifecycle/policies/modern)
@@ -77,6 +79,8 @@ Patch versions will exist only to fix critical bugs or to provide security updat
 End of support refers to the date when Microsoft no longer provides fixes, updates, or on-line technical assistance. Furthermore, you can't update or send in new applications to the Microsoft Store with .NET Native toolchains that are no longer supported.
 
 Any version of `dotnetup` `stable` that is not latest will immediately reach `End of Support`. This allows for a fast moving and evolving product to deliver higher impact to customers.
+
+Any deprecation or end of life policy for the `stable` channel `dotnetup` would be receive at minimum a `6` month notice in the event that support for `dotnetup` ended. As `dotnetup` matures and potentially replaces other core products, such as the [.NET Install Scripts](https://learn.microsoft.com/dotnet/core/tools/dotnet-install-script), we intend to increase that notice policy.
 
 Historical `stable` versions of `dotnetup` will generally remain available for download as official [dotnet releases](https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json) despite their lack of official support, much like historical .NET versions are available today.
 
