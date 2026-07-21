@@ -3,7 +3,9 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
+#endif
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
@@ -14,6 +16,11 @@ internal static class CleanCommandParser
         command.SetAction(CleanCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
+#if CLI_AOT
+        command.FileBasedAppsCommand.SetAction(
+            (Func<ParseResult, int>)(static _ => throw new CommandNotAvailableInAotException()));
+#else
         command.FileBasedAppsCommand.SetAction(parseResult => new CleanFileBasedAppArtifactsCommand(parseResult).Execute());
+#endif
     }
 }
