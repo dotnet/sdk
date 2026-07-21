@@ -19,18 +19,6 @@ namespace Microsoft.DotNet.Cli.Tests;
 [TestClass]
 public partial class AotParserTests
 {
-    // File-based app detection (GetFileBasedAppEntryPointToken -> VirtualProjectBuilder.IsValidEntryPointPath)
-    // pulls in the Microsoft.Build assembly, which cannot be loaded into a NativeAOT image, so the call
-    // always throws under AOT. Skip the affected tests when running AOT-compiled (no dynamic code support),
-    // while still exercising them in the managed test run. Tracked by https://github.com/dotnet/sdk/issues/54806.
-    private static void SkipIfFileBasedAppDetectionUnavailableUnderAot()
-    {
-        if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-        {
-            Assert.Inconclusive("https://github.com/dotnet/sdk/issues/54806 - GetFileBasedAppEntryPointToken requires Microsoft.Build, which cannot be loaded under NativeAOT.");
-        }
-    }
-
     private static Exception? RecordException(Action action)
     {
         try
@@ -85,8 +73,6 @@ public partial class AotParserTests
     [TestMethod]
     public void DetectFileBasedApp_WhenFirstArgIsCSharpFile()
     {
-        SkipIfFileBasedAppDetectionUnavailableUnderAot();
-
         // `dotnet app.cs` is an implicit file-based app invocation. The AOT parser only sees the
         // path as an unmatched root argument, so the shared detection (reused from the managed CLI)
         // identifies it so NativeEntryPoint can defer to the managed run pipeline.
@@ -107,8 +93,6 @@ public partial class AotParserTests
     [TestMethod]
     public void DoesNotDetectFileBasedApp_ForBuiltInCommand()
     {
-        SkipIfFileBasedAppDetectionUnavailableUnderAot();
-
         var result = Parser.Parse(["build"]);
         Assert.IsNull(result.GetFileBasedAppEntryPointToken());
     }
@@ -116,8 +100,6 @@ public partial class AotParserTests
     [TestMethod]
     public void DoesNotDetectFileBasedApp_ForNonExistentFile()
     {
-        SkipIfFileBasedAppDetectionUnavailableUnderAot();
-
         // IsValidEntryPointPath requires the file to exist, so a bogus *.cs argument is not
         // treated as a file-based app (it would resolve as an external `dotnet-<name>` command).
         var result = Parser.Parse([$"does-not-exist-{Guid.NewGuid():N}.cs"]);
@@ -193,6 +175,28 @@ public partial class AotParserTests
         var result = Parser.Parse(["pack", "package.nuspec"]);
         Assert.IsEmpty(result.Errors);
         Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokePackFileBasedAppWithDirective_FallsBackToManaged()
+    {
+        string sourceFile = Path.Combine(Path.GetTempPath(), $"aot-pack-{Guid.NewGuid():N}.cs");
+        File.WriteAllText(
+            sourceFile,
+            """
+            #:property PackRelease=true
+            Console.WriteLine("hi");
+            """);
+        try
+        {
+            var result = Parser.Parse(["pack", sourceFile]);
+            Assert.IsEmpty(result.Errors);
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+        }
+        finally
+        {
+            File.Delete(sourceFile);
+        }
     }
 
     [TestMethod]

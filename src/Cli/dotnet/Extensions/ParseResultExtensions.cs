@@ -49,36 +49,9 @@ public static class ParseResultExtensions
     /// </remarks>
     public static Token? GetFileBasedAppEntryPointToken(this ParseResult parseResult) =>
         parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
-            && IsValidEntryPointPath(unmatchedCommandOrFile.Value)
+            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value)
             ? unmatchedCommandOrFile
             : null;
-
-    // duplicated from VirtualProjectBuilder to temporarily avoid MSBuild dlls on AOT codepath
-    private static bool IsValidEntryPointPath(string entryPointFilePath)
-    {
-        if (!File.Exists(entryPointFilePath))
-        {
-            return false;
-        }
-
-        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        // Check if the first two characters are #!
-        try
-        {
-            using var stream = File.OpenRead(entryPointFilePath);
-            int first = stream.ReadByte();
-            int second = stream.ReadByte();
-            return first == '#' && second == '!';
-        }
-        catch
-        {
-            return false;
-        }
-    }
 
     private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {

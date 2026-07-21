@@ -6,9 +6,12 @@ using System.Runtime.CompilerServices;
 using System.Xml;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
 
 namespace Microsoft.DotNet.Cli.Tests;
@@ -173,6 +176,69 @@ public class MSBuildEvaluationTests
         finally
         {
             Directory.SetCurrentDirectory(previousCurrentDirectory);
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void VirtualFileProjectCanBeEvaluated()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-virtual-project-{Guid.NewGuid():N}");
+        string sourcePath = Path.Combine(testDirectory, "Program.cs");
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(
+            sourcePath,
+            """
+            Console.WriteLine("Hello");
+            """);
+        File.WriteAllText(
+            Path.Combine(testDirectory, "Directory.Build.props"),
+            """
+            <Project>
+              <PropertyGroup>
+                <PackRelease>true</PackRelease>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        try
+        {
+            MSBuildSdkResolverRegistration.Register();
+
+            var command = new VirtualProjectBuildingCommand(
+                sourcePath,
+                MSBuildArgs.FromProperties(null));
+            ProjectInstance project = command.CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
+
+            Assert.AreEqual("true", project.GetPropertyValue("PackRelease"));
+            Assert.AreEqual("net11.0", project.GetPropertyValue("TargetFramework"));
+            Assert.AreEqual(
+                VirtualProjectBuilder.GetVirtualProjectPath(sourcePath),
+                project.FullPath);
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => command.Execute());
+
+            var packCommand = Assert.IsInstanceOfType<VirtualProjectBuildingCommand>(
+                PackCommand.FromArgs([sourcePath, "--no-restore"]));
+            Assert.AreEqual("Release", packCommand.MSBuildArgs.GlobalProperties?.GetValueOrDefault("Configuration"));
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => packCommand.Execute());
+
+            File.WriteAllText(
+                sourcePath,
+                """
+                #:property PackRelease=true
+                Console.WriteLine("Hello");
+                """);
+            var commandWithDirectives = new VirtualProjectBuildingCommand(
+                sourcePath,
+                MSBuildArgs.FromProperties(null));
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(
+                () => commandWithDirectives.CreateProjectInstance(ProjectCollection.GlobalProjectCollection));
+        }
+        finally
+        {
             Directory.Delete(testDirectory, recursive: true);
         }
     }

@@ -202,7 +202,7 @@ public sealed class VirtualProjectBuilder
     /// <c>#:include</c>/<c>#:exclude</c> have their <see cref="CSharpDirective.IncludeOrExclude.ItemType"/> determined
     /// and relative paths resolved relative to their containing file.
     /// </remarks>
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    [RequiresDynamicCode("Uses Roslyn to parse file-level directives, which is not AOT-safe")]
     private ImmutableArray<CSharpDirective> EvaluateDirectives(
         ProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
@@ -259,7 +259,7 @@ public sealed class VirtualProjectBuilder
         return builder.DrainToImmutable();
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    [RequiresDynamicCode("Uses Roslyn to parse file-level directives, which is not AOT-safe")]
     internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
     {
         return CSharpDirective.IncludeOrExclude.ParseMapping(
@@ -268,7 +268,7 @@ public sealed class VirtualProjectBuilder
             reportError);
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    [RequiresDynamicCode("Uses Roslyn to parse file-level directives, which is not AOT-safe")]
     public static ProjectInstance CreateProjectInstance(
         string entryPointFilePath,
         string targetFramework,
@@ -287,7 +287,17 @@ public sealed class VirtualProjectBuilder
         return projectInstance;
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    internal ProjectInstance CreateProjectInstanceWithoutDirectives(
+        ProjectCollection projectCollection,
+        Action<IDictionary<string, string>>? addGlobalProperties = null)
+    {
+        return CreateProjectInstanceFromText(
+            CreateProjectFileText([]),
+            projectCollection,
+            addGlobalProperties).Project;
+    }
+
+    [RequiresDynamicCode("Uses Roslyn to parse file-level directives, which is not AOT-safe")]
     internal void CreateProjectInstance(
         ProjectCollection projectCollection,
         ErrorReporter reportError,
@@ -451,18 +461,7 @@ public sealed class VirtualProjectBuilder
             ImmutableArray<CSharpDirective> directives,
             Action<IDictionary<string, string>>? addGlobalProperties = null)
         {
-            var projectFileWriter = new StringWriter();
-
-            WriteProjectFile(
-                projectFileWriter,
-                directives,
-                _defaultProperties,
-                isVirtualProject: true,
-                entryPointFilePath: EntryPointFileFullPath,
-                artifactsPath: ArtifactsPath,
-                includeRuntimeConfigInformation: RequestedTargets?.ContainsAny("Publish", "Pack") != true);
-
-            var projectFileText = projectFileWriter.ToString();
+            string projectFileText = CreateProjectFileText(directives);
 
             // If nothing changed, reuse the previous project instance to avoid unnecessary re-evaluations.
             if (lastProject is { } cachedProject && cachedProject.ProjectFileText == projectFileText)
@@ -470,38 +469,56 @@ public sealed class VirtualProjectBuilder
                 return (cachedProject.ProjectInstance, cachedProject.ProjectRootElement);
             }
 
-            var projectRoot = CreateProjectRootElement(projectFileText, projectCollection);
-
-            var globalProperties = projectCollection.GlobalProperties;
-            if (addGlobalProperties is not null)
-            {
-                globalProperties = new Dictionary<string, string>(projectCollection.GlobalProperties, StringComparer.OrdinalIgnoreCase);
-                addGlobalProperties(globalProperties);
-            }
-
-            var project = ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
-            {
-                ProjectCollection = projectCollection,
-                GlobalProperties = globalProperties,
-            });
+            var (project, projectRoot) = CreateProjectInstanceFromText(projectFileText, projectCollection, addGlobalProperties);
 
             lastProject = (projectFileText, project, projectRoot);
 
             return (project, projectRoot);
-
-            ProjectRootElement CreateProjectRootElement(string projectFileText, ProjectCollection projectCollection)
-            {
-                using var reader = new StringReader(projectFileText);
-                using var xmlReader = XmlReader.Create(reader);
-                var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
-                projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
-                _projectRootElement = projectRoot;
-                return projectRoot;
-            }
         }
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    private string CreateProjectFileText(ImmutableArray<CSharpDirective> directives)
+    {
+        var projectFileWriter = new StringWriter();
+        WriteProjectFile(
+            projectFileWriter,
+            directives,
+            _defaultProperties,
+            isVirtualProject: true,
+            entryPointFilePath: EntryPointFileFullPath,
+            artifactsPath: ArtifactsPath,
+            includeRuntimeConfigInformation: RequestedTargets?.ContainsAny("Publish", "Pack") != true);
+        return projectFileWriter.ToString();
+    }
+
+    private (ProjectInstance Project, ProjectRootElement ProjectRoot) CreateProjectInstanceFromText(
+        string projectFileText,
+        ProjectCollection projectCollection,
+        Action<IDictionary<string, string>>? addGlobalProperties)
+    {
+        using var reader = new StringReader(projectFileText);
+        using var xmlReader = XmlReader.Create(reader);
+        var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
+        projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
+        _projectRootElement = projectRoot;
+
+        var globalProperties = projectCollection.GlobalProperties;
+        if (addGlobalProperties is not null)
+        {
+            globalProperties = new Dictionary<string, string>(projectCollection.GlobalProperties, StringComparer.OrdinalIgnoreCase);
+            addGlobalProperties(globalProperties);
+        }
+
+        var project = ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
+        {
+            ProjectCollection = projectCollection,
+            GlobalProperties = globalProperties,
+        });
+
+        return (project, projectRoot);
+    }
+
+    [RequiresDynamicCode("Uses Roslyn to parse file-level directives, which is not AOT-safe")]
     private void CheckDirectives(
         ProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
@@ -909,8 +926,6 @@ public sealed class VirtualProjectBuilder
             </Project>
             """);
 
-        static string EscapeValue(string value) => SecurityElement.Escape(value);
-
         static void WriteImport(TextWriter writer, string project, CSharpDirective.Sdk sdk)
         {
             if (sdk.Version is null)
@@ -927,4 +942,6 @@ public sealed class VirtualProjectBuilder
             }
         }
     }
+
+    private static string EscapeValue(string value) => SecurityElement.Escape(value);
 }
