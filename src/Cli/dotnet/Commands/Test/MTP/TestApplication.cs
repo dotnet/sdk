@@ -297,6 +297,15 @@ internal sealed class TestApplication(
         // results directory, and dotnet test reads results from it. This assumes the test project
         // includes the Microsoft.Testing.Extensions.TrxReport extension (MSTest.Sdk does by
         // default). See LaunchTestHostStandalone.
+        //
+        // KNOWN LIMITATION (Blazor `dotnet test`, dotnet/sdk#54091): as of MSTest 4.4.0-preview /
+        // Microsoft.Testing.Platform 2.4.0-preview, requesting `--report-trx` crashes a wasm host
+        // because TrxReport's TrxResultStreamingStore starts a background Thread, which throws
+        // PlatformNotSupportedException on single-threaded wasm. Until TrxReport guards that thread
+        // on single-threaded wasm (tracked with the browser-enablement work in microsoft/testfx),
+        // the on-disk TRX path is not usable on wasm and only the exit-code result is reliable.
+        // A follow-up should gate the `--report-trx` emission on that fix (or a host capability)
+        // so wasm runs that pass on exit code are not regressed.
         builder.Append($" {GetHostModeArguments(LaunchTestHostStandalone, _pipeName, WasmTestTrxFileName)}");
 
         return builder.ToString();
