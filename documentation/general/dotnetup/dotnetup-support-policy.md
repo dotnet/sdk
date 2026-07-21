@@ -51,7 +51,7 @@ At our discretion, `daily` builds may be promoted to `preview` versions. We will
 
 `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version. Regardless, we aim to publish breaking change notices for expected high-impact changes.
 
-Microsoft may use `preview` versions in its own build infrastructure. This internal use does not make `preview` versions supported for customer production use.
+.NET teams may use `preview` versions in its own build infrastructure. This internal use does not make `preview` versions supported for customer production use.
 
 ### `Stable` Channel Versions
 
