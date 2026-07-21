@@ -228,6 +228,7 @@ public static class Parser
         // reuse a synthetic CSC cache or a validated cached run contract. Other shapes fall back.
         AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
 
+        Microsoft.DotNet.Cli.Commands.Build.BuildCommandParser.ConfigureCommand(rootCommand.BuildCommand);
         Microsoft.DotNet.Cli.Commands.Pack.PackCommandParser.ConfigureCommand(rootCommand.PackCommand);
         Microsoft.DotNet.Cli.Commands.Publish.PublishCommandParser.ConfigureCommand(rootCommand.PublishCommand);
 

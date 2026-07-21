@@ -203,20 +203,20 @@ public partial class NativeEntryPointTests
     }
 
     [TestMethod]
-    public void ExecuteCore_AotEnabled_UnrecognizedCommand_FallsBack()
+    public void ExecuteCore_AotEnabled_UnsupportedCommand_FallsBack()
     {
         WithEnvRestore(() =>
         {
             Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
 
-            // "build" parses cleanly, so the AOT path is taken but cannot execute it and falls back during invocation.
+            // "test" parses cleanly, so the AOT path is taken but cannot execute it and falls back during invocation.
             // Since sdkDir doesn't contain dotnet.dll, this returns 1 (no managed fallback)
             int exitCode = NativeEntryPoint.ExecuteCore(
                 hostPath: "test-host",
                 dotnetRoot: "test-root",
                 sdkDir: "nonexistent-sdk-dir",
                 hostfxrPath: "",
-                args: ["build"]);
+                args: ["test"]);
 
             Assert.AreEqual(1, exitCode);
         });
