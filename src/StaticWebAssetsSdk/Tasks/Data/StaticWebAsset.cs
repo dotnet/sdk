@@ -589,10 +589,19 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     public static StaticWebAsset FromTaskItem(ITaskItem item, bool validate = false)
+        => FromTaskItem(item, TaskEnvironment.Fallback, validate);
+
+    /// <summary>
+    /// Builds a <see cref="StaticWebAsset"/> from an MSBuild item, absolutizing path-bearing
+    /// metadata (ContentRoot, RelatedAsset) against the supplied <paramref name="env"/>'s
+    /// project directory rather than the process current directory. Required for multithreaded
+    /// MSBuild execution.
+    /// </summary>
+    public static StaticWebAsset FromTaskItem(ITaskItem item, TaskEnvironment env, bool validate = false)
     {
         var result = FromTaskItemCore(item);
 
-        result.Normalize();
+        result.Normalize(env);
         if (validate)
         {
             result.Validate();
@@ -803,12 +812,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         AssetKinds.IsKind(AssetKind, assetKind);
 
     public static StaticWebAsset FromV1TaskItem(ITaskItem item)
+        => FromV1TaskItem(item, TaskEnvironment.Fallback);
+
+    public static StaticWebAsset FromV1TaskItem(ITaskItem item, TaskEnvironment env)
     {
         var result = FromTaskItemCore(item);
-        result.ApplyDefaults();
+        result.ApplyDefaults(env);
         result.OriginalItemSpec = string.IsNullOrEmpty(result.OriginalItemSpec) ? item.GetMetadata("FullPath") : result.OriginalItemSpec;
 
-        result.Normalize();
+        result.Normalize(env);
         result.Validate();
 
         return result;
@@ -822,7 +834,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         };
     }
 
-    public void ApplyDefaults()
+    public void ApplyDefaults() => ApplyDefaults(TaskEnvironment.Fallback);
+
+    public void ApplyDefaults(TaskEnvironment env)
     {
         CopyToOutputDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.Never : CopyToOutputDirectory;
         CopyToPublishDirectory = string.IsNullOrEmpty(CopyToPublishDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
@@ -831,7 +845,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
         if (string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) || FileLength == -1 || LastWriteTime == DateTimeOffset.MinValue)
         {
-            var file = ResolveFile(Identity, OriginalItemSpec);
+            var file = ResolveFile(Identity, OriginalItemSpec, env);
             (Fingerprint, Integrity) = string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) ?
                 ComputeFingerprintAndIntegrityIfNeeded(file) : (Fingerprint, Integrity);
             FileLength = FileLength == -1 ? file.Length : FileLength;
@@ -861,8 +875,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     internal static string ComputeIntegrity(string identity, string originalItemSpec)
+        => ComputeIntegrity(identity, originalItemSpec, TaskEnvironment.Fallback);
+
+    internal static string ComputeIntegrity(string identity, string originalItemSpec, TaskEnvironment env)
     {
-        var fileInfo = ResolveFile(identity, originalItemSpec);
+        var fileInfo = ResolveFile(identity, originalItemSpec, env);
         return ComputeIntegrity(fileInfo);
     }
 
@@ -1064,20 +1081,24 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     internal bool HasSourceId(string source) =>
         HasSourceId(SourceId, source);
 
-    public void Normalize()
+    public void Normalize() => Normalize(TaskEnvironment.Fallback);
+
+    public void Normalize(TaskEnvironment env)
     {
-        ContentRoot = !string.IsNullOrEmpty(ContentRoot) ? NormalizeContentRootPath(ContentRoot) : ContentRoot;
+        ContentRoot = !string.IsNullOrEmpty(ContentRoot) ? NormalizeContentRootPath(ContentRoot, env) : ContentRoot;
         BasePath = Normalize(BasePath);
         RelativePath = Normalize(RelativePath, allowEmpyPath: true);
-        RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(RelatedAsset) : RelatedAsset;
+        RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(env.GetAbsolutePath(RelatedAsset)) : RelatedAsset;
     }
 
     // Normalizes the given path to a content root path in the way we expect it:
     // * Converts the path to absolute with Path.GetFullPath(path) which takes care of normalizing
     //   the directory separators to use Path.DirectorySeparator
     // * Appends a trailing directory separator at the end.
-    public static string NormalizeContentRootPath(string path)
-        => Path.GetFullPath(path) +
+    public static string NormalizeContentRootPath(string path) => NormalizeContentRootPath(path, TaskEnvironment.Fallback);
+
+    public static string NormalizeContentRootPath(string path, TaskEnvironment env)
+        => Path.GetFullPath(string.IsNullOrEmpty(path) ? path : env.GetAbsolutePath(path)) +
         // We need to do .ToString because there is no EndsWith overload for chars in .NET Framework
         (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
         {
@@ -1134,8 +1155,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public bool ShouldCopyToPublishDirectory()
         => !string.Equals(CopyToPublishDirectory, AssetCopyOptions.Never, StringComparison.Ordinal);
 
-    public bool HasContentRoot(string path) =>
-        string.Equals(ContentRoot, NormalizeContentRootPath(path), StringComparison.Ordinal);
+    public bool HasContentRoot(string path) => HasContentRoot(path, TaskEnvironment.Fallback);
+
+    public bool HasContentRoot(string path, TaskEnvironment env) =>
+        string.Equals(ContentRoot, NormalizeContentRootPath(path, env), StringComparison.Ordinal);
 
     /// <summary>
     /// Materializes a framework asset by copying it to the consuming project's intermediate directory
@@ -1149,6 +1172,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         string projectPackageId,
         string projectBasePath,
         TaskLoggingHelper log)
+        => MaterializeFrameworkAsset(asset, intermediateOutputPath, projectPackageId, projectBasePath, log, TaskEnvironment.Fallback);
+
+    public static (StaticWebAsset Asset, string OldIdentity, string OldBasePath) MaterializeFrameworkAsset(
+        StaticWebAsset asset,
+        string intermediateOutputPath,
+        string projectPackageId,
+        string projectBasePath,
+        TaskLoggingHelper log,
+        TaskEnvironment env)
     {
         var originalSourceId = asset.SourceId;
         var oldBasePath = asset.BasePath;
@@ -1158,12 +1190,18 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var fxDir = Path.Combine(intermediateOutputPath, "fx", originalSourceId);
         var fileSystemRelativePath = asset.ComputePathWithoutTokens(relativePath);
         var destPath = Path.Combine(fxDir, Normalize(fileSystemRelativePath));
-        destPath = Path.GetFullPath(destPath);
+      
+        destPath = Path.GetFullPath(env.GetAbsolutePath(destPath));
+        if (string.IsNullOrEmpty(asset.Identity))
+        {
+            log.LogError("Source file '{0}' does not exist for framework asset materialization.", asset.Identity);
+            return (null, null, null);
+        }
 
-        var sourceFile = asset.Identity;
+        var sourceFile = env.GetAbsolutePath(asset.Identity);
         if (!File.Exists(sourceFile))
         {
-            log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourceFile);
+            log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourceFile.OriginalValue);
             return (null, null, null);
         }
 
@@ -1173,22 +1211,22 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(sourceFile) > File.GetLastWriteTimeUtc(destPath))
         {
             File.Copy(sourceFile, destPath, overwrite: true);
-            log.LogMessage(MessageImportance.Low, "Materialized framework asset '{0}' to '{1}'.", sourceFile, destPath);
+            log.LogMessage(MessageImportance.Low, "Materialized framework asset '{0}' to '{1}'.", sourceFile.OriginalValue, destPath);
         }
         else
         {
-            log.LogMessage(MessageImportance.Low, "Framework asset '{0}' already up to date at '{1}'.", sourceFile, destPath);
+            log.LogMessage(MessageImportance.Low, "Framework asset '{0}' already up to date at '{1}'.", sourceFile.OriginalValue, destPath);
         }
 
         asset.Identity = destPath;
         asset.OriginalItemSpec = destPath;
-        asset.ContentRoot = NormalizeContentRootPath(fxDir);
+        asset.ContentRoot = NormalizeContentRootPath(fxDir, env);
         asset.SourceType = SourceTypes.Discovered;
         asset.SourceId = projectPackageId;
         asset.BasePath = projectBasePath;
         asset.AssetMode = AssetModes.CurrentProject;
         asset.AssetGroups = "";
-        asset.Normalize();
+        asset.Normalize(env);
 
         return (asset, oldIdentity, oldBasePath);
     }
@@ -1597,16 +1635,21 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return pattern.RawPattern.ToString();
     }
 
-    internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec);
+    internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec, TaskEnvironment.Fallback);
+
+    internal FileInfo ResolveFile(TaskEnvironment env) => ResolveFile(Identity, OriginalItemSpec, env);
 
     internal static FileInfo ResolveFile(string identity, string originalItemSpec)
+        => ResolveFile(identity, originalItemSpec, TaskEnvironment.Fallback);
+
+    internal static FileInfo ResolveFile(string identity, string originalItemSpec, TaskEnvironment env)
     {
-        var fileInfo = new FileInfo(identity);
+        var fileInfo = new FileInfo(string.IsNullOrEmpty(identity) ? identity: env.GetAbsolutePath(identity));
         if (fileInfo.Exists)
         {
             return fileInfo;
         }
-        fileInfo = new FileInfo(originalItemSpec);
+        fileInfo = new FileInfo(string.IsNullOrEmpty(originalItemSpec) ? originalItemSpec : env.GetAbsolutePath(originalItemSpec));
         if (fileInfo.Exists)
         {
             return fileInfo;
@@ -1616,11 +1659,14 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, bool validate = false)
+        => ToAssetDictionary(candidateAssets, TaskEnvironment.Fallback, validate);
+
+    internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, TaskEnvironment env, bool validate = false)
     {
         var dictionary = new Dictionary<string, StaticWebAsset>(candidateAssets.Length);
         for (var i = 0; i < candidateAssets.Length; i++)
         {
-            var candidateAsset = FromTaskItem(candidateAssets[i], validate);
+            var candidateAsset = FromTaskItem(candidateAssets[i], env, validate);
             dictionary.Add(candidateAsset.Identity, candidateAsset);
         }
 
@@ -1628,11 +1674,14 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     internal static StaticWebAsset[] FromTaskItemGroup(ITaskItem[] candidateAssets, bool validate = false)
+        => FromTaskItemGroup(candidateAssets, TaskEnvironment.Fallback, validate);
+
+    internal static StaticWebAsset[] FromTaskItemGroup(ITaskItem[] candidateAssets, TaskEnvironment env, bool validate = false)
     {
         var result = new StaticWebAsset[candidateAssets.Length];
         for (var i = 0; i != result.Length; i++)
         {
-            var candidateAsset = FromTaskItem(candidateAssets[i], validate);
+            var candidateAsset = FromTaskItem(candidateAssets[i], env, validate);
             result[i] = candidateAsset;
         }
         return result;
@@ -1644,6 +1693,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
+        => AssetsByTargetPath(assets, source, assetKind, TaskEnvironment.Fallback);
+
+    internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind, TaskEnvironment env)
     {
         // We return either the selected asset or a list with all the candidates that were found to be ambiguous
         var result = new Dictionary<string, (StaticWebAsset selected, List<StaticWebAsset> all)>();
@@ -1658,7 +1710,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             {
                 continue;
             }
-            var asset = FromTaskItem(candidate);
+            var asset = FromTaskItem(candidate, env);
             var key = asset.ComputeTargetPath("", '/');
             if (!result.TryGetValue(key, out var existing))
             {

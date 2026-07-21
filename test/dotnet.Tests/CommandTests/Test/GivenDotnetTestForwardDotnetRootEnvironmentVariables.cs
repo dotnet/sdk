@@ -5,17 +5,18 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class VSTestForwardDotnetRootEnvironmentVariables : SdkTest
     {
         private const string TestAppName = "VSTestForwardDotnetRootEnvironmentVariables";
 
-        public VSTestForwardDotnetRootEnvironmentVariables(ITestOutputHelper log) : base(log)
+        public VSTestForwardDotnetRootEnvironmentVariables()
         {
         }
 
         private readonly string[] ConsoleLoggerOutputDetailed = new[] { "--logger", "console;verbosity=detailed" };
 
-        [Fact]
+        [TestMethod]
         public void ShouldForwardDotnetRootEnvironmentVariablesIfNotProvided()
         {
             var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)

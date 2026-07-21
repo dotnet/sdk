@@ -2,16 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+internal sealed class MSBuildHandler(BuildOptions buildOptions, FacadeLogger? logger) : ITestHandler
 {
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly FacadeLogger? _logger = logger;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
+
 
     public bool Initialize()
     {
@@ -23,8 +27,8 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
         }
 
         (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, int buildExitCode) = isSolution ?
-            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions) :
-            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions);
+            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions, _logger) :
+            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions, _logger);
 
         LogProjectProperties(projects);
 

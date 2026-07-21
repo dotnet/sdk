@@ -1,5 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+extern alias MSTestFramework;
 
 #nullable disable
 
@@ -9,11 +11,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class FileWatcherTests(ITestOutputHelper output)
+[TestClass]
+public class FileWatcherTests
 {
+    public TestContext TestContext { get; set; } = null!;
+    private DualOutputHelper _output;
+    private DualOutputHelper Output => _output ??= new(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
     private readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
     private readonly TimeSpan NegativeTimeout = TimeSpan.FromSeconds(5);
-    private readonly TestAssetsManager _testAssetManager = new(output);
+    private TestAssetsManager _testAssetManager;
+    private TestAssetsManager TestAssetManager => _testAssetManager ??= new(Output);
 
     private async Task TestOperation(
         string dir,
@@ -30,7 +37,7 @@ public class FileWatcherTests(ITestOutputHelper output)
             {
                 try
                 {
-                    output.WriteLine(m);
+                    Output.WriteLine(m);
                 }
                 catch (InvalidOperationException)
                 {
@@ -47,11 +54,11 @@ public class FileWatcherTests(ITestOutputHelper output)
         {
             if (filesChanged.Add(f))
             {
-                output.WriteLine($"Observed new {f.Kind}: '{f.Path}' ({filesChanged.Count} out of {expectedChanges.Length})");
+                Output.WriteLine($"Observed new {f.Kind}: '{f.Path}' ({filesChanged.Count} out of {expectedChanges.Length})");
             }
             else
             {
-                output.WriteLine($"Already seen {f.Kind}: '{f.Path}'");
+                Output.WriteLine($"Already seen {f.Kind}: '{f.Path}'");
             }
 
             if (filesChanged.Count == expectedChanges.Length)
@@ -70,7 +77,7 @@ public class FileWatcherTests(ITestOutputHelper output)
             // On Unix the file write time is in 1s increments;
             // if we don't wait, there's a chance that the polling
             // watcher will not detect the change
-            await Task.Delay(1000);
+            await Task.Delay(1000, TestContext.CancellationToken);
         }
 
         operation();
@@ -101,10 +108,10 @@ public class FileWatcherTests(ITestOutputHelper output)
     private static IEnumerable<string> Inspect(IReadOnlyDictionary<string, DirectoryWatcher> watchers)
         => watchers.OrderBy(w => w.Key).Select(w => $"{w.Key.TrimEnd('\\', '/')}: [{string.Join(',', w.Value.WatchedFileNames.Order())}]");
 
-    [Fact]
+    [TestMethod]
     public void DirectoryWatcherMerging()
     {
-        var logger = new TestLogger(output);
+        var logger = new TestLogger(Output);
         var watcher = new TestFileWatcher(logger);
         string root = SdkTestContext.Current.TestExecutionDirectory;
 
@@ -155,11 +162,11 @@ public class FileWatcherTests(ITestOutputHelper output)
         AssertEx.SequenceEqual([$"{dirA}: []"], Inspect(watcher.DirectoryWatchers));
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task NewFile(bool usePolling)
     {
-        var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
         var file = Path.Combine(dir, "file");
 
@@ -180,7 +187,7 @@ public class FileWatcherTests(ITestOutputHelper output)
             () => File.WriteAllText(file, string.Empty));
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task NewFileInNewDirectory(bool usePolling, bool nested)
     {
@@ -191,7 +198,7 @@ public class FileWatcherTests(ITestOutputHelper output)
             return;
         }
 
-        var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
         var dir1 = Path.Combine(dir, "dir1");
         var dir2 = nested ? Path.Combine(dir1, "dir2") : dir1;
@@ -224,11 +231,11 @@ public class FileWatcherTests(ITestOutputHelper output)
             });
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task ChangeFile(bool usePolling)
     {
-        var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
         var file = Path.Combine(dir, "file");
         File.WriteAllText(file, string.Empty);
@@ -241,11 +248,11 @@ public class FileWatcherTests(ITestOutputHelper output)
             () => File.WriteAllText(file, string.Empty));
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task MoveFile(bool usePolling)
     {
-        var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
         var srcFile = Path.Combine(dir, "file");
         var dstFile = Path.Combine(dir, "file2");
 
@@ -271,11 +278,11 @@ public class FileWatcherTests(ITestOutputHelper output)
             () => File.Move(srcFile, dstFile));
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task FileInSubdirectory(bool usePolling, bool watchSubdirectories)
     {
-        var dir = _testAssetManager.CreateTestDirectory(identifier: $"{usePolling}{watchSubdirectories}").Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: $"{usePolling}{watchSubdirectories}").Path;
 
         var subdir = Path.Combine(dir, "subdir");
         Directory.CreateDirectory(subdir);
@@ -323,11 +330,11 @@ public class FileWatcherTests(ITestOutputHelper output)
             });
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task NoNotificationIfDisabled(bool usePolling)
     {
-        var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
         using var watcher = DirectoryWatcher.Create(dir, watchedFileNames: [], usePolling, includeSubdirectories: true);
 
@@ -344,18 +351,18 @@ public class FileWatcherTests(ITestOutputHelper output)
             // On Unix the file write time is in 1s increments;
             // if we don't wait, there's a chance that the polling
             // watcher will not detect the change
-            await Task.Delay(1000, TestContext.Current.CancellationToken);
+            await Task.Delay(1000, TestContext.CancellationToken);
         }
         File.WriteAllText(testFileFullPath, string.Empty);
 
-        await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
+        await Assert.ThrowsExactlyAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task DisposedNoEvents(bool usePolling)
     {
-        var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
         var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (var watcher = DirectoryWatcher.Create(dir, watchedFileNames: [], usePolling, includeSubdirectories: true))
         {
@@ -370,18 +377,18 @@ public class FileWatcherTests(ITestOutputHelper output)
             // On Unix the file write time is in 1s increments;
             // if we don't wait, there's a chance that the polling
             // watcher will not detect the change
-            await Task.Delay(1000, TestContext.Current.CancellationToken);
+            await Task.Delay(1000, TestContext.CancellationToken);
         }
         File.WriteAllText(file, string.Empty);
 
-        await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
+        await Assert.ThrowsExactlyAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task MultipleFiles(bool usePolling)
     {
-        var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
         var file1 = Path.Combine(dir, "a1");
         var file2 = Path.Combine(dir, "a2");
@@ -406,11 +413,11 @@ public class FileWatcherTests(ITestOutputHelper output)
             watchedFileNames: ["a3"]);
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task MultipleTriggers(bool usePolling)
     {
-        var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
         using var watcher = DirectoryWatcher.Create(dir, watchedFileNames: [], usePolling, includeSubdirectories: true);
 
@@ -430,7 +437,7 @@ public class FileWatcherTests(ITestOutputHelper output)
         var expectedPath = Path.Combine(directory, Path.GetRandomFileName());
         EventHandler<ChangedPath> handler = (_, f) =>
         {
-            output.WriteLine("File changed: " + f);
+            Output.WriteLine("File changed: " + f);
             try
             {
                 if (string.Equals(f.Path, expectedPath, StringComparison.OrdinalIgnoreCase))
@@ -455,7 +462,7 @@ public class FileWatcherTests(ITestOutputHelper output)
             // On Unix the file write time is in 1s increments;
             // if we don't wait, there's a chance that the polling
             // watcher will not detect the change
-            await Task.Delay(1000);
+            await Task.Delay(1000, TestContext.CancellationToken);
             File.AppendAllText(expectedPath, " ");
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
         }
@@ -465,11 +472,11 @@ public class FileWatcherTests(ITestOutputHelper output)
         }
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task DeleteSubfolder(bool usePolling)
     {
-        var dir = _testAssetManager.CreateTestDirectory(usePolling.ToString()).Path;
+        var dir = TestAssetManager.CreateTestDirectory(usePolling.ToString()).Path;
 
         var subdir = Path.Combine(dir, "subdir");
         Directory.CreateDirectory(subdir);
@@ -504,6 +511,10 @@ public class FileWatcherTests(ITestOutputHelper output)
             ],
             usePolling,
             watchSubdirectories: true,
-            () => Directory.Delete(subdir, recursive: true));
+            () => Directory.Delete(subdir, recursive: true),
+            // Restrict to the watched files so the macOS event replay (which intermittently includes a
+            // directory-level "subdir" Add event) doesn't displace one of the expected file events and
+            // make the test flaky.
+            watchedFileNames: ["foo1", "foo2", "foo3"]);
     }
 }

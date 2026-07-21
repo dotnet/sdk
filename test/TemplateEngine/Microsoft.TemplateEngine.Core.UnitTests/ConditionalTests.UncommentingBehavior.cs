@@ -3,13 +3,12 @@
 
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests
     {
-        [Fact(DisplayName = nameof(VerifyMixedConditionalsThreeLevelEmbedding))]
+        [TestMethod]
         public void VerifyMixedConditionalsThreeLevelEmbedding()
         {
             string originalValue = @"Lead content
@@ -58,7 +57,7 @@ moar trailing content";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(MixedTokenFormsTest))]
+        [TestMethod]
         public void MixedTokenFormsTest()
         {
             IList<string> testCases = new List<string>();
@@ -148,7 +147,7 @@ Past endif
             }
         }
 
-        [Fact(DisplayName = nameof(MultiTokenFormsBaseTest))]
+        [TestMethod]
         public void MultiTokenFormsBaseTest()
         {
             IList<string> testCases = new List<string>();
@@ -197,8 +196,8 @@ Past endif
         /// Tests that the if block is uncommented in each of the scenarios
         /// because the if token is special and the clause is true in each case.
         /// </summary>
-        [Theory(DisplayName = nameof(VerifySpecialIfTrueUncomments))]
-        [InlineData(
+        [TestMethod]
+        [DataRow(
             @"Hello
 ////#if (VALUE_IF)
     //if value
@@ -208,7 +207,7 @@ Past endif
     ...uncommented in original
 // dont uncomment",
             "special #if (true)")]
-        [InlineData(
+        [DataRow(
             @"Hello
 ////#if (VALUE_IF)
     //if value
@@ -221,7 +220,7 @@ Past endif
     ...uncommented in original
 // dont uncomment",
             "special #if (true), regular #else")]
-        [InlineData(
+        [DataRow(
             @"Hello
 ////#if (VALUE_IF)
     //if value
@@ -234,7 +233,7 @@ Past endif
     ...uncommented in original
 // dont uncomment",
             "special #if (true), special #else ignored")]
-        [InlineData(
+        [DataRow(
             @"Hello
 ////#if (VALUE_IF)
     //if value
@@ -250,7 +249,7 @@ Past endif
     ...uncommented in original
 // dont uncomment",
             "special #if (true), regular #elseif, regular #else")]
-        [InlineData(
+        [DataRow(
             @"Hello
 ////#if (VALUE_IF)
     //if value
@@ -266,7 +265,7 @@ Past endif
     ...uncommented in original
 // dont uncomment",
             "special #if (true), special #elseif, regular #else")]
-        [InlineData(
+        [DataRow(
             @"Hello
 ////#if (VALUE_IF)
     //if value
@@ -282,7 +281,7 @@ Past endif
     ...uncommented in original
 // dont uncomment",
             "special #if (true), regular #elseif, special #else")]
-        [InlineData(
+        [DataRow(
             @"Hello
 ////#if (VALUE_IF)
     //if value
@@ -317,15 +316,15 @@ Past endif
             IProcessor processor = SetupCStyleWithCommentsProcessor(vc);
             RunAndVerify(test, expectedValue, processor, 28);
 
-            //comment is unused - Asserting to bypass the warning.
-            Assert.Equal(comment, comment);
+            // comment is the scenario description from the DataRow; assert it is present.
+            Assert.IsFalse(string.IsNullOrWhiteSpace(comment));
         }
 
         /// <summary>
         /// Tests that the elseif block is uncommented in each of the scenarios
         /// because the elseif token is special and the clause is true in each case.
         /// </summary>
-        [Fact(DisplayName = nameof(VerifySpecialElseifTrueUncomments))]
+        [TestMethod]
         public void VerifySpecialElseifTrueUncomments()
         {
             IList<string> testCases = new List<string>();
@@ -462,7 +461,7 @@ Past endif
         /// Tests that the else block is uncommented in each of the scenarios
         /// because the if and elseif conditions (if present) are false in each case.
         /// </summary>
-        [Fact(DisplayName = nameof(VerifySpecialElseTrueUncomments))]
+        [TestMethod]
         public void VerifySpecialElseTrueUncomments()
         {
             IList<string> testCases = new List<string>();
@@ -598,7 +597,7 @@ Past endif
         /// <summary>
         /// The #if condition is false, so don't emit its value in any way.
         /// </summary>
-        [Fact(DisplayName = nameof(VerifyFalseIfDoesNotUncomment))]
+        [TestMethod]
         public void VerifyFalseIfDoesNotUncomment()
         {
             string ifOnlyValue = @"Hello
@@ -629,7 +628,7 @@ Past endif
         /// The #if condition is false, so don't emit its value in any way.
         /// But emit the else value without modification (because its not the special #else).
         /// </summary>
-        [Fact(DisplayName = nameof(VerifyFalseIfDoesNotUncommentButElseIsEmitted))]
+        [TestMethod]
         public void VerifyFalseIfDoesNotUncommentButElseIsEmitted()
         {
             string ifElseValue = @"Hello
@@ -666,7 +665,7 @@ Past endif
         ///     its the special #else
         ///     and the if and elseif conditions are false.
         /// </summary>
-        [Fact(DisplayName = nameof(VerifyElseUncomments))]
+        [TestMethod]
         public void VerifyElseUncomments()
         {
             string ifElseValue = @"Hello
@@ -722,7 +721,7 @@ Past endif
         /// Tests that the first elseif block is uncommented
         /// It's the one with the true condition.
         /// </summary>
-        [Fact(DisplayName = nameof(VerifyFirstElseifUncomments))]
+        [TestMethod]
         public void VerifyFirstElseifUncomments()
         {
             string ifElseifElseValue = @"Hello
@@ -767,7 +766,7 @@ Past endif
         /// Tests the multiple special elseif's are respected. In this test, the 2nd elseif is special and should have its content uncommented.
         /// TODO: make more test with multiple elseif's.
         /// </summary>
-        [Fact(DisplayName = nameof(VerifySecondElseifUncomments))]
+        [TestMethod]
         public void VerifySecondElseifUncomments()
         {
             string ifElseifElseValue = @"Hello
@@ -808,7 +807,7 @@ Past endif
             RunAndVerify(ifElseifElseValue, expectedValue, processor, 28);
         }
 
-        [Fact(DisplayName = nameof(VerifyElseIfUncomments))]
+        [TestMethod]
         public void VerifyElseIfUncomments()
         {
             string value = @"Hello

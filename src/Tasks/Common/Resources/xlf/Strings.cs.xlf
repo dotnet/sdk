@@ -876,6 +876,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1234: RoslynCompilerType Framework je zastaralý a v budoucí verzi se odebere. Další informace najdete tady: {0}.</target>
         <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandRequiresWindowsForNetFramework">
+        <source>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</source>
+        <target state="new">NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
+        <note>{StrBegins="NETSDK1243: "}{Locked="{0}"}{Locked="{1}"}{Locked="TargetFramework"}{Locked="RunCommand"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
         <target state="translated">NETSDK1231: Soubor {0} neexistuje. Ujistěte se prosím, že cesta ke grafu modulu runtime existuje.</target>
@@ -957,6 +962,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1197: Projekt(y) několika řešení obsahuj(e/í) konfliktní hodnoty „{0}“; ujistěte se, že se hodnoty shodují. Zvažte použití souboru Directory.build.props k nastavení vlastnosti pro všechny projekty. Konfliktní projekty:
 {1}</target>
         <note>{StrBegins="NETSDK1197: "}</note>
+      </trans-unit>
+      <trans-unit id="TargetFrameworkEmpty">
+        <source>NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</source>
+        <target state="new">NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</target>
+        <note>{StrBegins="NETSDK1241: "}</note>
       </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
         <source>NETSDK1138: The target framework '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
@@ -1171,6 +1181,11 @@ To install these workloads, run the following command: dotnet workload restore</
         <target state="translated">NETSDK1147: k sestavení tohoto projektu musí být nainstalované následující úlohy: {0}
 Pokud chcete nainstalovat tyto úlohy, spusťte následující příkaz: dotnet workload restore</target>
         <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="MonoRuntimeNotSupportedForPlatform">
+        <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</source>
+        <target state="new">NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</target>
+        <note>{StrBegins="NETSDK1242: "}</note>
       </trans-unit>
     </body>
   </file>

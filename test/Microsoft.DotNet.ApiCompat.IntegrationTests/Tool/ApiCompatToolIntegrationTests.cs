@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
@@ -10,15 +10,12 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
     /// <c>dotnet exec Microsoft.DotNet.ApiCompat.Tool.dll</c> with command-line arguments and
     /// asserting on the exit code and stdout, exactly as a customer would.
     /// </summary>
+    [TestClass]
     public class ApiCompatToolIntegrationTests : SdkTest
     {
         private const string TestAssetName = "ApiCompatValidateAssembliesTestProject";
 
-        public ApiCompatToolIntegrationTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [TestMethod] 
         public void ApiCompatTool_AssembliesIdentical_ExitsZero()
         {
             string assembly = BuildAsset(nameof(ApiCompatTool_AssembliesIdentical_ExitsZero), forceBreakingChange: false);
@@ -28,7 +25,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             result.Should().Pass();
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [TestMethod] 
         public void ApiCompatTool_BreakingChange_ReportsCP0002()
         {
             string contractAssembly = BuildAsset($"{nameof(ApiCompatTool_BreakingChange_ReportsCP0002)}_left", forceBreakingChange: false);
@@ -42,7 +39,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
                 .And.Contain("Goodbye");
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [TestMethod] 
         public void ApiCompatTool_SuppressionFile_RoundTrip()
         {
             string contractAssembly = BuildAsset($"{nameof(ApiCompatTool_SuppressionFile_RoundTrip)}_left", forceBreakingChange: false);
@@ -71,7 +68,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             consumeResult.StdOut.Should().NotContain("error CP0002");
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [TestMethod] 
         public void ApiCompatTool_PackageMode_DetectsRemovedApi()
         {
             // Pack the existing PackageValidationTestProject twice to produce two .nupkg files

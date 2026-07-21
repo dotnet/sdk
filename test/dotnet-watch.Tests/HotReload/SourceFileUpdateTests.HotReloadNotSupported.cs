@@ -3,31 +3,26 @@
 
 #nullable disable
 
+using Combinatorial.MSTest;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class SourceFileUpdateTests_HotReloadNotSupported : DotNetWatchTestBase
 {
-    [Theory]
-    [InlineData("PublishAot", "True")]
-    [InlineData("PublishTrimmed", "True")]
-    [InlineData("StartupHookSupport", "False")]
-    [InlineData("Optimize", "True")]
-    [InlineData("MetadataUpdaterSupport", "False")]
-    public async Task ChangeFileInAotProject(string propertyName, string propertyValue)
+    [TestMethod]
+    [DataRow("PublishAot", "True")]
+    [DataRow("PublishTrimmed", "True")]
+    [DataRow("StartupHookSupport", "False")]
+    [DataRow("Optimize", "True")]
+    public async Task ChangeFileInAotProject_PriorNet11(string propertyName, string propertyValue)
     {
-        var tfvParsed = Version.Parse(ToolsetInfo.CurrentTargetFrameworkVersion);
-        var isNet11OrNewer = tfvParsed.Major >= 11;
-
-        // Optimize check only applies to < .NET 11; MetadataUpdaterSupport only to >= .NET 11.
-        if (propertyName == "Optimize" && isNet11OrNewer)
-            return;
-        if (propertyName == "MetadataUpdaterSupport" && !isNet11OrNewer)
-            return;
-
-        var projectDisplay = $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})";
+        var tfm = "net9.0";
+        var projectDisplay = $"WatchHotReloadApp ({tfm})";
 
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{propertyName};{propertyValue}")
             .WithSource()
+            .WithTargetFramework(tfm)
             .WithProjectChanges(project =>
             {
                 project.Root.Descendants()
@@ -43,9 +38,9 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
         var (suggestedProperty, suggestedValue) = propertyName switch
         {
             "Optimize" => (PropertyNames.Optimize, "False"),
-            "MetadataUpdaterSupport" => (PropertyNames.MetadataUpdaterSupport, "True"),
             _ => (PropertyNames.StartupHookSupport, "True"),
         };
+
         var message = MessageDescriptor.ProjectDoesNotSupportHotReload_Property.GetMessage((propertyName, propertyValue, suggestedProperty, suggestedValue));
         await App.WaitForOutputLineContaining($"[{projectDisplay}] {message}");
         await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
@@ -57,7 +52,77 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
         await App.WaitForOutputLineContaining("<updated>");
     }
 
-    [Fact]
+    [TestMethod]
+    [CombinatorialData]
+    public async Task ChangeFileInAotProject_Net11_DisabledInConfigDevFile(bool startupHookSupport)
+    {
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+        var projectDisplay = $"WatchHotReloadApp ({tfm})";
+
+        var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{startupHookSupport}")
+            .WithSource()
+            .WithTargetFramework(tfm)
+            .WithProjectChanges(project =>
+            {
+                project.Root.Descendants()
+                    .First(e => e.Name.LocalName == "PropertyGroup")
+                    .Add(
+                        XElement.Parse($"<EnableHotReloadInRuntimeConfigDevFile>false</EnableHotReloadInRuntimeConfigDevFile>"),
+                        XElement.Parse($"<MetadataUpdaterSupport>{!startupHookSupport}</MetadataUpdaterSupport>"),
+                        XElement.Parse($"<StartupHookSupport>{startupHookSupport}</StartupHookSupport>"));
+            });
+
+        var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+        App.Start(testAsset, ["--non-interactive"]);
+
+        var propertyName = startupHookSupport ? "MetadataUpdaterSupport" : "StartupHookSupport";
+        var message = MessageDescriptor.ProjectDoesNotSupportHotReload_Property.GetMessage((propertyName, "False", "EnableHotReloadInRuntimeConfigDevFile", "True"));
+        await App.WaitForOutputLineContaining($"[{projectDisplay}] {message}");
+        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+        App.Process.ClearOutput();
+
+        UpdateSourceFile(programPath, content => content.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"<updated>\");"));
+
+        await App.WaitForOutputLineContaining($"[{projectDisplay}] [auto-restart] {programPath}(1,1): error ENC0097"); //  Applying source changes while the application is running is not supported by the runtime.
+        await App.WaitForOutputLineContaining("<updated>");
+    }
+
+    [TestMethod]
+    [CombinatorialData]
+    public async Task ChangeFileInAotProject_Net11_EnabledInConfigFile(bool enabledInDevFile)
+    {
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+        var projectDisplay = $"WatchHotReloadApp ({tfm})";
+
+        var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{enabledInDevFile}")
+            .WithSource()
+            .WithTargetFramework(tfm)
+            .WithProjectChanges(project =>
+            {
+                project.Root.Descendants()
+                    .First(e => e.Name.LocalName == "PropertyGroup")
+                    .Add(
+                        XElement.Parse($"<EnableHotReloadInRuntimeConfigDevFile>{enabledInDevFile}</EnableHotReloadInRuntimeConfigDevFile>"),
+                        XElement.Parse($"<MetadataUpdaterSupport>{!enabledInDevFile}</MetadataUpdaterSupport>"),
+                        XElement.Parse($"<StartupHookSupport>{!enabledInDevFile}</StartupHookSupport>"));
+            });
+
+        var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+        App.Start(testAsset, ["--non-interactive"]);
+
+        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+        App.AssertOutputDoesNotContain("⚠");
+        App.Process.ClearOutput();
+
+        UpdateSourceFile(programPath, content => content.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"<updated>\");"));
+
+        await App.WaitForOutputLineContaining(MessageDescriptor.ManagedCodeChangesApplied);
+        await App.WaitForOutputLineContaining("<updated>");
+    }
+
+    [TestMethod]
     public async Task ChangeFileInFSharpProject()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -72,7 +137,7 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
         await App.WaitUntilOutputContains("<Updated>");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeFileInFSharpProjectWithLoop()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")

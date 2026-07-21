@@ -9,6 +9,14 @@
     "Framework": {
       "longName": "framework"
     },
+    "XUnitVersion": {
+      "shortName": "",
+      "longName": "xunit-version"
+    },
+    "TestRunner": {
+      "shortName": "",
+      "longName": "test-runner"
+    },
     "EnablePack": {
       "shortName": "p",
       "longName": "enable-pack"

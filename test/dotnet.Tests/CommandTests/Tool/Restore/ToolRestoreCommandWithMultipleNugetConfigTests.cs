@@ -18,6 +18,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolRestoreCommandWithMultipleNugetConfigTests
     {
         private readonly IFileSystem _fileSystem;
@@ -109,7 +110,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenManifestPackageAreFromDifferentDirectoryItCanFindTheRightNugetConfigAndSaveToCache()
         {
             IToolManifestFinder manifestFinder =

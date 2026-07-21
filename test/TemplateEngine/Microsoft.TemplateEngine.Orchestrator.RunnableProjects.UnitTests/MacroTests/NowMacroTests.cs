@@ -10,20 +10,30 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class NowMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class NowMacroTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public NowMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public NowMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         // tests regular Now configuration, and Utc = true
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("yyyy-MM-dd HH:mm:ss")]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow("yyyy-MM-dd HH:mm:ss")]
         public void EvaluateNowConfig(string? format)
         {
             string variableName = "nowString";
@@ -31,22 +41,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             NowMacro macro = new();
             NowMacroConfig macroConfig = new(macro, variableName, format, utc);
-            Assert.Equal("string", macroConfig.DataType);
+            Assert.AreEqual("string", macroConfig.DataType);
 
             IVariableCollection variables = new VariableCollection();
 
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
-            Assert.IsType<string>(variables[variableName]);
+            Assert.IsExactInstanceOfType<string>(variables[variableName]);
             string macroNowString = (string)variables[variableName]!;
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
             TimeSpan difference = macroNowTime.Subtract(DateTime.UtcNow);
 
             // 10 seconds is quite a lot of wiggle room, but should be fine, and safe.
-            Assert.True(difference.TotalSeconds < 10);
+            Assert.IsLessThan(10, difference.TotalSeconds);
         }
 
-        [Fact]
+        [TestMethod]
         public void GeneratedSymbolTest()
         {
             string variableName = "nowString";
@@ -62,21 +72,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             NowMacro macro = new();
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
-            Assert.IsType<string>(variables[variableName]);
+            Assert.IsExactInstanceOfType<string>(variables[variableName]);
             string macroNowString = (string)variables[variableName]!;
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
             TimeSpan difference = macroNowTime.Subtract(DateTime.Now);
 
             // 10 seconds is quite a lot of wiggle room, but should be fine, and safe.
-            Assert.True(difference.TotalSeconds < 10);
+            Assert.IsLessThan(10, difference.TotalSeconds);
         }
 
-        [Theory]
-        [InlineData(null, "string")]
-        [InlineData("", "string")]
-        [InlineData("string", "string")]
-        [InlineData("date", "date")]
+        [TestMethod]
+        [DataRow(null, "string")]
+        [DataRow("", "string")]
+        [DataRow("string", "string")]
+        [DataRow("date", "date")]
         public void EvaluateNowOverrideDatatypeInConfig(string? type, string expectedType)
         {
             string variableName = "nowString";
@@ -90,10 +100,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratedSymbol deferredConfig = new(variableName, "NowMacro", jsonParameters, type);
             NowMacro macro = new();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            Assert.Equal(expectedType, (realConfig as NowMacroConfig)?.DataType);
+            Assert.AreEqual(expectedType, (realConfig as NowMacroConfig)?.DataType);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDeterministicMode()
         {
             IVariableCollection variables = new VariableCollection();
@@ -101,11 +111,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             NowMacroConfig config = new(macro, "test", "yyyy-MM-dd HH:mm:ss");
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, config);
 
-            Assert.Single(variables);
-            Assert.Equal("1900-01-01 00:00:00", variables["test"].ToString());
+            Assert.ContainsSingle(variables);
+            Assert.AreEqual("1900-01-01 00:00:00", variables["test"].ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public void TestDeterministicMode_GenSymbol()
         {
             string variableName = "test";
@@ -123,11 +133,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
 
-            Assert.Single(variables);
-            Assert.Equal("1900-01-01 00:00:00", variables["test"].ToString());
+            Assert.ContainsSingle(variables);
+            Assert.AreEqual("1900-01-01 00:00:00", variables["test"].ToString());
         }
 
-        [Fact]
+        [TestMethod]
         [Obsolete("IMacro.EvaluateConfig is obsolete")]
         public void ObsoleteEvaluateConfigTest()
         {
@@ -135,22 +145,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             NowMacro macro = new();
             NowMacroConfig macroConfig = new(macro, variableName, "yyyy-MM-dd HH:mm:ss", false);
-            Assert.Equal("string", macroConfig.DataType);
+            Assert.AreEqual("string", macroConfig.DataType);
 
             IVariableCollection variables = new VariableCollection();
 
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
-            Assert.IsType<string>(variables[variableName]);
+            Assert.IsExactInstanceOfType<string>(variables[variableName]);
             string macroNowString = (string)variables[variableName]!;
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
             TimeSpan difference = macroNowTime.Subtract(DateTime.Now);
 
             // 10 seconds is quite a lot of wiggle room, but should be fine, and safe.
-            Assert.True(difference.TotalSeconds < 10);
+            Assert.IsLessThan(10, difference.TotalSeconds);
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultConfigurationTest()
         {
             string variableName = "test";
@@ -159,8 +169,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratedSymbol symbol = new(variableName, "now", jsonParameters);
             NowMacroConfig config = new(macro, symbol);
 
-            Assert.Null(config.Format);
-            Assert.False(config.Utc);
+            Assert.IsNull(config.Format);
+            Assert.IsFalse(config.Utc);
         }
     }
 }

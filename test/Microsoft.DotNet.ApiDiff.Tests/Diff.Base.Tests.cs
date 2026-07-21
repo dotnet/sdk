@@ -7,7 +7,6 @@ using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI.Tests;
 using Moq;
-using VerifyTests;
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
@@ -23,14 +22,16 @@ public abstract class DiffBaseTests
                            string expectedCode,
                            string[]? attributesToExclude = null,
                            string[]? apisToExclude = null,
-                           bool addPartialModifier = false)
+                           bool addPartialModifier = false,
+                           bool usePreviewLanguageVersion = false)
         => RunTestAsync(
                    before: [($"{AssemblyName}.dll", beforeCode)],
                    after: [($"{AssemblyName}.dll", afterCode)],
                    expected: new() { { AssemblyName, expectedCode } },
                    attributesToExclude,
                    apisToExclude,
-                   addPartialModifier);
+                   addPartialModifier,
+                   usePreviewLanguageVersion);
 
     protected async Task RunTestAsync(
                            (string, string)[] before,
@@ -38,15 +39,24 @@ public abstract class DiffBaseTests
                            Dictionary<string, string> expected,
                            string[]? attributesToExclude = null,
                            string[]? apisToExclude = null,
-                           bool addPartialModifier = false)
+                           bool addPartialModifier = false,
+                           bool usePreviewLanguageVersion = false)
     {
         // CreateFromTexts will assert on any loader diagnostics via SyntaxFactory.
 
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols)
-            = TestAssemblyLoaderFactory.CreateFromTexts(_log.Object, assemblyTexts: before, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
+            = TestAssemblyLoaderFactory.CreateFromTexts(
+                _log.Object,
+                assemblyTexts: before,
+                diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions,
+                usePreviewLanguageVersion: usePreviewLanguageVersion);
 
         (IAssemblySymbolLoader afterLoader, Dictionary<string, IAssemblySymbol> afterAssemblySymbols)
-            = TestAssemblyLoaderFactory.CreateFromTexts(_log.Object, assemblyTexts: after, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
+            = TestAssemblyLoaderFactory.CreateFromTexts(
+                _log.Object,
+                assemblyTexts: after,
+                diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions,
+                usePreviewLanguageVersion: usePreviewLanguageVersion);
 
         using MemoryStream outputStream = new();
 
@@ -67,11 +77,11 @@ public abstract class DiffBaseTests
         {
             if (string.IsNullOrEmpty(expectedCode))
             {
-                Assert.False(generator.Results.TryGetValue(expectedAssemblyName, out string? _), $"Assembly should've been absent among the results: {expectedAssemblyName}");
+                Assert.IsFalse(generator.Results.TryGetValue(expectedAssemblyName, out string? _), $"Assembly should've been absent among the results: {expectedAssemblyName}");
             }
             else
             {
-                Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
+                Assert.IsTrue(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
                 string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
                 if (!fullExpectedCode.Equals(actualCode))
                 {
