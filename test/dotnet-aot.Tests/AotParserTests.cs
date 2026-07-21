@@ -200,6 +200,16 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void ParsePublishCommand_UsesAotParser()
+    {
+        var result = Parser.Parse(["publish", "test.csproj", "--no-restore"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreEqual("publish", result.CommandResult.Command.Name);
+        Assert.IsFalse(result.RequiresManagedCommandResolution());
+    }
+
+    [TestMethod]
     public void InvokeBareSdk_RendersHelpFromAot()
     {
         // `dotnet sdk` with no subcommand renders its missing-command error and help entirely
