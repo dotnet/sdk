@@ -63,15 +63,29 @@ the module self-locates.
   `Microsoft.DotNet.Cli.Utils`), which resolves the `Microsoft.DotNet.Sdk.Root`
   AppContext value -> the SDK assembly directory -> `AppContext.BaseDirectory` (once,
   cached). Out-of-repo code (MSBuild tasks, NuGet, the runtime) reads the
-  `Microsoft.DotNet.Sdk.Root` AppContext value first, else its existing BCL logic.
+  `Microsoft.DotNet.Sdk.Root` AppContext value first, else its existing BCL logic. The
+  workload MSBuild SDK resolver follows this contract so it can be constructed and
+  registered directly in the AOT host without relying on `Assembly.Location`.
 
-The managed CLI keeps using `AppContext.BaseDirectory`, where it is correct.
+The same forwarding code is shared by both CLIs and therefore consistently uses
+`SdkPaths.SdkDirectory`; this remains equivalent to `AppContext.BaseDirectory` in
+the normal managed SDK layout.
 
 ## Testing
 
-`dn.exe` and `run-dn.ps1` provide a separated layout that places `dotnet-aot.dll`
-in a `sdk\<version>\` subdirectory while `dn.exe` stays in the parent, mirroring the
-deployed muxer. A flat layout hides SDK-directory bugs because
-`AppContext.BaseDirectory` equals `sdk_dir` there by accident. Tests assert that
-`--info`'s `Base Path` is the SDK subdirectory in both the passed-`sdk_dir` and
-self-locate cases.
+The authoritative integration layout is produced by the full Debug redist build:
+`artifacts\bin\redist\Debug\dotnet\dotnet.exe` remains in the install root while
+`dotnet-aot.dll`, `dotnet.dll`, `MSBuild.dll`, and `Sdks\` are under
+`sdk\<version>\`. A flat layout hides SDK-directory bugs because
+`AppContext.BaseDirectory` equals `sdk_dir` there by accident. Redist validation
+must invoke that `dotnet.exe` from outside the repository so the repository
+`global.json` cannot select the bootstrap SDK.
+
+The Native AOT test executable also evaluates a stock `Microsoft.NET.Sdk` project
+against the bootstrap SDK, proving that the workload resolver handles the SDK's
+workload-locator imports through `SdkResolver.Register` without reflective plugin
+loading. Pack-specific tests additionally verify that `PackRelease` evaluation and
+the child MSBuild process use the versioned SDK directory. End-to-end parity toggles
+`DOTNET_CLI_ENABLEAOT` on the same redist muxer; telemetry must report
+`cli.runtime=aot` for physical project packing and `cli.runtime=managed` for
+`.nuspec` and file-based fallbacks.
