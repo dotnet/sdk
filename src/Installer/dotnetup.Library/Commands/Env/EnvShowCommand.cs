@@ -12,14 +12,12 @@ internal class EnvShowCommand : CommandBase
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public EnvShowCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result)
+    public EnvShowCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result, "env show")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
-
-    protected override string GetCommandName() => "env show";
 
     protected override void ExecuteCore()
     {

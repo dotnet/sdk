@@ -35,6 +35,20 @@ internal sealed class TrackedOperation : IDisposable
     {
         Activity?.SetStatus(code, description);
         Tag("command.status", code == ActivityStatusCode.Ok ? "ok" : "error");
+        // Every top-level operation ends by setting status, so guarantee
+        // error.type is present here instead of relying on callers to do it.
+        EnsureErrorTypeTagged();
+    }
+
+    /// <summary>
+    /// Guarantees the completion row carries an explicit <c>error.type</c>.
+    /// </summary>
+    internal void EnsureErrorTypeTagged()
+    {
+        if (Activity?.GetTagItem("error.type") is null)
+        {
+            Tag("error.type", string.Empty);
+        }
     }
 
     public void Dispose()

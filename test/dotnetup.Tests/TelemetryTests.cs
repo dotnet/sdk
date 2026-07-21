@@ -324,7 +324,7 @@ public class DotnetupTelemetryTests : IDisposable
     public void Flush_DoesNotThrow()
     {
         // Even if telemetry is disabled, Flush should not throw
-        var exception = Record.Exception(() => DotnetupTelemetry.Instance.Flush());
+        var exception = Record.Exception(() => DotnetupTelemetry.Instance.Flush(0));
 
         Assert.IsNull(exception);
     }
@@ -332,28 +332,36 @@ public class DotnetupTelemetryTests : IDisposable
     [TestMethod]
     public void Flush_WithTimeout_DoesNotThrow()
     {
-        var exception = Record.Exception(() => DotnetupTelemetry.Instance.Flush(1000));
+        var exception = Record.Exception(() => DotnetupTelemetry.Instance.FlushWithTimeout(1000));
 
         Assert.IsNull(exception);
     }
 
     [TestMethod]
-    public void RecordException_WithNullActivity_DoesNotThrow()
+    public void RecordException_AfterStartTrackedCommand_DoesNotThrow()
     {
-        var exception = Record.Exception(() =>
-            DotnetupTelemetry.Instance.RecordException(null, new Exception("test")));
+        var telemetry = DotnetupTelemetry.Instance;
+        var operation = telemetry.StartTrackedCommand("test");
 
-        Assert.IsNull(exception);
+        Assert.AreEqual(telemetry.Enabled, operation.Activity is not null,
+            "an activity should be started exactly when telemetry is enabled");
+
+        telemetry.RecordException(operation, new Exception("test"));
     }
 
     [TestMethod]
-    public void ApplyLastErrorToActivity_WithNullActivity_DoesNotThrow()
+    public void RecordException_WhenTelemetryDisabled_IsNoOp()
     {
-        // RecordException with null activity should not throw
-        var exception = Record.Exception(() =>
-            DotnetupTelemetry.Instance.RecordException(null, new Exception("test")));
+        using var telemetry = new DotnetupTelemetry(name =>
+            name == Constants.Telemetry.TelemetryOptOutEnvVar ? "1" : null);
 
-        Assert.IsNull(exception);
+        Assert.IsFalse(telemetry.Enabled, "opt-out=1 must disable telemetry");
+
+        // Disabled telemetry starts no activity, so the op carries a null Activity...
+        var operation = telemetry.StartTrackedCommand("test");
+        Assert.IsNull(operation.Activity, "disabled telemetry must not start an activity");
+
+        telemetry.RecordException(operation, new Exception("test"));
     }
 
     /// <summary>
@@ -1042,6 +1050,33 @@ public class TrackedOperationTests : IDisposable
 
         Assert.ContainsSingle(_capturedActivities);
         Assert.AreEqual(ActivityStatusCode.Error, _capturedActivities[0].Status);
+    }
+
+    [TestMethod]
+    public void EnsureErrorTypeTagged_WhenNoError_StampsEmptyString()
+    {
+        using (var op = Metrics.Track("test/ensure-error-type", activityName: "test-ensure-empty"))
+        {
+            op.EnsureErrorTypeTagged();
+        }
+
+        Assert.ContainsSingle(_capturedActivities);
+        var tag = _capturedActivities[0].GetTagItem("error.type");
+        Assert.IsNotNull(tag);
+        Assert.AreEqual(string.Empty, tag);
+    }
+
+    [TestMethod]
+    public void EnsureErrorTypeTagged_WhenErrorAlreadySet_DoesNotOverwrite()
+    {
+        using (var op = Metrics.Track("test/ensure-error-type-keep", activityName: "test-ensure-keep"))
+        {
+            op.Tag("error.type", "InstallFailed");
+            op.EnsureErrorTypeTagged();
+        }
+
+        Assert.ContainsSingle(_capturedActivities);
+        Assert.AreEqual("InstallFailed", _capturedActivities[0].GetTagItem("error.type"));
     }
 
     [TestMethod]

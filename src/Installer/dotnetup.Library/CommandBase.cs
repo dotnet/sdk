@@ -19,18 +19,17 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 public abstract class CommandBase
 {
     protected ParseResult ParseResult { get; }
-    private TrackedOperation? _operation;
+    private readonly TrackedOperation _operation;
     private int _exitCode;
 
-    protected CommandBase(ParseResult parseResult)
+    protected CommandBase(ParseResult parseResult, string commandName)
     {
         ParseResult = parseResult;
+        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(commandName);
     }
 
     public int Execute()
     {
-        var commandName = GetCommandName();
-        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(commandName);
         _exitCode = 1;
 
         RecordOptionUsage();
@@ -64,9 +63,9 @@ public abstract class CommandBase
         {
             // _exitCode = 0 on success (set in try), 1 on exception (reset
             // in catch), or whatever ExecuteCore passed to SetExitCode().
-            _operation?.Tag(TelemetryTagNames.ExitCode, _exitCode);
-            _operation?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-            _operation?.Dispose();
+            _operation.Tag(TelemetryTagNames.ExitCode, _exitCode);
+            _operation.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            _operation.Dispose();
         }
     }
 
@@ -98,20 +97,12 @@ public abstract class CommandBase
     }
 
     /// <summary>
-    /// Returns the stable command identifier used as the
-    /// <c>command.name</c> telemetry tag (e.g., <c>"sdk/install"</c>,
-    /// <c>"runtime/update"</c>). Used only for telemetry; not surfaced to
-    /// users.
-    /// </summary>
-    protected abstract string GetCommandName();
-
-    /// <summary>
     /// Adds a tag to the per-command <see cref="TrackedOperation"/>. The
     /// tag is folded into the completion LogRecord state on dispose.
     /// </summary>
     internal void SetCommandTag(string key, object? value)
     {
-        _operation?.Tag(key, value);
+        _operation.Tag(key, value);
     }
 
     /// <summary>
@@ -123,7 +114,7 @@ public abstract class CommandBase
     protected void RecordRequestedVersion(string? versionOrChannel)
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
-        _operation?.Tag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
+        _operation.Tag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
     }
 
     /// <summary>
@@ -134,11 +125,11 @@ public abstract class CommandBase
     /// </summary>
     protected void RecordRequestSource(string source, string? requestedValue)
     {
-        _operation?.Tag(TelemetryTagNames.DotnetRequestSource, source);
+        _operation.Tag(TelemetryTagNames.DotnetRequestSource, source);
         if (requestedValue != null)
         {
             var sanitized = VersionSanitizer.Sanitize(requestedValue);
-            _operation?.Tag(TelemetryTagNames.DotnetRequested, sanitized);
+            _operation.Tag(TelemetryTagNames.DotnetRequested, sanitized);
         }
     }
 
@@ -154,11 +145,6 @@ public abstract class CommandBase
     /// </summary>
     private void RecordOptionUsage()
     {
-        if (_operation is null)
-        {
-            return;
-        }
-
         foreach (var option in ParseResult.CommandResult.Command.Options)
         {
             // Skip built-in options that don't carry useful signal

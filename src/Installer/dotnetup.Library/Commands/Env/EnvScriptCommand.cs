@@ -16,7 +16,7 @@ internal class EnvScriptCommand : CommandBase
     private readonly bool _dotnetup;
     private readonly bool _dotnetupOnly;
 
-    public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
+    public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result, "env script")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(EnvScriptCommandParser.ShellOption);
@@ -25,8 +25,6 @@ internal class EnvScriptCommand : CommandBase
         _dotnetup = result.GetValue(EnvScriptCommandParser.DotnetupOption);
         _dotnetupOnly = result.GetValue(EnvScriptCommandParser.DotnetupOnlyOption);
     }
-
-    protected override string GetCommandName() => "env script";
 
     protected override void ExecuteCore()
     {

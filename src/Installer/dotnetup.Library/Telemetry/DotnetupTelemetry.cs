@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -18,7 +19,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 /// <summary>
 /// Singleton telemetry manager for dotnetup.
-/// Uses OpenTelemetry with Azure Monitor exporter (AOT compatible).
 /// </summary>
 public sealed class DotnetupTelemetry : IDisposable
 {
@@ -36,50 +36,29 @@ public sealed class DotnetupTelemetry : IDisposable
         Constants.Telemetry.BootstrapperSourceName,
         GetVersion());
 
-    private static readonly string s_defaultStorageDirectory =
-        Path.Combine(
-            Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData,
-                Environment.SpecialFolderOption.DoNotVerify),
-            "dotnetup",
-            "TelemetryStorageService");
-
-    private static readonly string? s_diskLogPath = GetDiskLogPath();
-
-    private static string? GetDiskLogPath()
-    {
-        var path = Environment.GetEnvironmentVariable(Constants.Telemetry.DiskLogPathEnvVar);
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-
-        // Write to the same directory as the SDK log but with a distinct filename
-        // to avoid read-modify-write conflicts between dotnet CLI and dotnetup.
-        var dir = Path.GetDirectoryName(path);
-        var name = Path.GetFileNameWithoutExtension(path);
-        var ext = Path.GetExtension(path);
-        return Path.Combine(dir ?? string.Empty, $"{name}-dotnetup{ext}");
-    }
+    private static readonly string? s_diskLogPath = DotnetupPaths.TelemetryDiskLogPath;
 
     private readonly TracerProvider? _tracerProvider;
     private readonly ServiceProvider? _services;
+    [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed",
+        Justification = "Owned and disposed transitively by _services (resolved from that ServiceProvider). Disposed via _services.Dispose() in Dispose(); shut down non-blocking via Shutdown(0) first.")]
     private readonly LoggerProvider? _loggerProvider;
+    [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed",
+        Justification = "Owned and disposed transitively by _services (resolved from that ServiceProvider). Disposed via _services.Dispose() in Dispose().")]
     private readonly ILoggerFactory? _loggerFactory;
     private readonly ILogger? _logger;
     private readonly List<Activity> _activities = [];
+
     /// <summary>
     /// Snapshot of process-level common properties (os.type, device.id,
     /// session.id, dev.build, ...). These also live on the OTel
     /// <see cref="Resource"/>, but the AzMonitor log exporter only maps a
     /// fixed subset of Resource attrs to AppInsights envelope fields and
-    /// drops the rest — so we re-stamp them on every LogRecord state in
+    /// drops the rest, so we re-stamp them on every LogRecord state in
     /// <c>BuildCompletionState</c> to ensure they reach the
     /// <c>traces</c> table (the data-x signal).
     /// </summary>
     private readonly KeyValuePair<string, object?>[] _commonProperties = [];
-    private bool _disposed;
-    private bool _flushed;
 
     /// <summary>
     /// Gets whether telemetry is enabled.
@@ -93,23 +72,33 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// True when this process is running in a CI environment, as detected by
-    /// <see cref="TelemetryCommonProperties.IsCIEnvironment"/>. CI runs are
-    /// one-and-done — there's no follow-up invocation to drain the
-    /// AzMonitor offline store — so callers can use this to allocate a
-    /// larger flush budget on exit. Interactive (non-CI) runs stay on the
-    /// default budget so user exit performance is unaffected.
+    /// <see cref="TelemetryCommonProperties.IsCIEnvironment"/>.
     /// </summary>
     public bool IsOneAndDoneEnvironment { get; }
 
+    /// <summary>
+    /// The telemetry name of the subcommand the current invocation is running.
+    /// Write-once per process: the first command to start wins, so if one
+    /// command is implemented in terms of another the outer name is preserved
+    /// rather than being clobbered by the nested command.
+    /// </summary>
+    internal string? CurrentCommandName { get; private set; }
+
     private DotnetupTelemetry()
+        : this(Environment.GetEnvironmentVariable)
+    {
+    }
+
+    // Internal seam: tests pass a fake env-var lookup to force the
+    // telemetry-disabled (opt-out) path deterministically, without mutating
+    // process-wide environment variables or depending on the Lazy singleton's
+    // one-shot, construction-time env read.
+    internal DotnetupTelemetry(Func<string, string?> getEnvironmentVariable)
     {
         SessionId = Guid.NewGuid().ToString();
         IsOneAndDoneEnvironment = TelemetryCommonProperties.IsCIEnvironment;
 
-        // Check opt-out (same env var as SDK).
-        // Unlike the SDK, dotnetup sends telemetry from dev/test builds too —
-        // distinguished by the dev.build=true tag in common properties.
-        Enabled = !IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.TelemetryOptOutEnvVar));
+        Enabled = !IsTruthy(getEnvironmentVariable(Constants.Telemetry.TelemetryOptOutEnvVar));
 
         if (!Enabled)
         {
@@ -121,11 +110,11 @@ public sealed class DotnetupTelemetry : IDisposable
 
         try
         {
-            var disableExport = IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.DisableTraceExportEnvVar));
-            var enablePerfTrace = IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.EnablePerfTraceEnvVar));
-            var enableOtlpExporter = IsOtlpExporterEnabled(disableExport);
-            var debugConsole = Environment.GetEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
-            var storageDirectory = ResolveStorageDirectory();
+            var disableExport = IsTruthy(getEnvironmentVariable(Constants.Telemetry.DisableTraceExportEnvVar));
+            var enablePerfTrace = IsTruthy(getEnvironmentVariable(Constants.Telemetry.EnablePerfTraceEnvVar));
+            var enableOtlpExporter = IsOtlpExporterEnabled(disableExport, getEnvironmentVariable);
+            var debugConsole = getEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
+            var storageDirectory = ResolveStorageDirectory(getEnvironmentVariable);
             var commonAttrs = BuildCommonAttributes();
             _commonProperties = ToLogStateProperties(commonAttrs);
             var resource = BuildResource(commonAttrs);
@@ -143,20 +132,21 @@ public sealed class DotnetupTelemetry : IDisposable
         }
     }
 
-    private static string ResolveStorageDirectory()
+    private static string ResolveStorageDirectory(Func<string, string?> getEnvironmentVariable)
     {
-        var environmentStoragePath = Environment.GetEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
+        var environmentStoragePath = getEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
         return string.IsNullOrWhiteSpace(environmentStoragePath)
-            ? s_defaultStorageDirectory
+            ? DotnetupPaths.TelemetryStorageDirectory
             : environmentStoragePath;
     }
 
     /// <summary>
     /// Builds the list of common process-level attributes (caller, os.type,
-    /// device.id, session.id, dev.build, ...). Used both as OTel
-    /// <see cref="Resource"/> attributes (for spans / opt-in perf trace
-    /// export) and as per-LogRecord state stamps (for the AppInsights
-    /// <c>traces</c> table that data-x ingests).
+    /// device.id, session.id, dev.build, ...).
+    ///
+    /// Used both as:
+    /// OTel Resource Attributes (for spans / opt-in perf trace export)
+    /// Per-LogRecord state stamps (for actual telemetry)
     /// </summary>
     private List<KeyValuePair<string, object>> BuildCommonAttributes()
     {
@@ -176,12 +166,6 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Builds the OTel <see cref="Resource"/> shared by tracer and logger.
-    /// Note: the AzMonitor log exporter only maps a fixed subset of Resource
-    /// attrs (<c>service.name</c>, <c>service.version</c>,
-    /// <c>service.instance.id</c>) to AppInsights envelope fields and drops
-    /// the rest — so common attrs are also stamped per-LogRecord in
-    /// <c>BuildCompletionState</c> to reach the <c>traces</c> table.
-    /// On spans (opt-in perf trace) Resource attrs auto-stamp normally.
     /// </summary>
     private static ResourceBuilder BuildResource(List<KeyValuePair<string, object>> commonAttrs)
     {
@@ -191,10 +175,8 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the <see cref="TracerProvider"/>. Spans always run in-process
-    /// (Activity.Current correlation + in-memory test seam); network export
-    /// is opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x
-    /// ingests logs, not spans.
+    /// Builds the <see cref="TracerProvider"/>.
+    /// Traces should be opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x does not ingest spans.
     /// </summary>
     private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
@@ -209,9 +191,7 @@ public sealed class DotnetupTelemetry : IDisposable
             builder.AddInMemoryExporter(_activities);
         }
 
-        // Span network export is off by default because data-x ingests logs,
-        // not spans. AzMonitor spans are gated on the perf-trace opt-in;
-        // OTLP spans additionally require the SDK-style OTLP exporter opt-in.
+        // Span network export is off by default because data-x ingests logs, not spans.
         if (enablePerfTrace && !disableExport)
         {
             if (enableOtlpExporter)
@@ -235,25 +215,10 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the <see cref="ILoggerFactory"/>. Every TrackedOperation
-    /// completion and every <see cref="RecordException"/> emits one LogRecord
-    /// through this factory; the AzMonitor log exporter routes it to the
-    /// AppInsights <c>traces</c> table — the only table data-x ingests. The
-    /// OTel logger auto-stamps Activity.Current's TraceId/SpanId so AzMonitor
-    /// can map them to operation_Id/operation_ParentId for cross-row
-    /// correlation.
+    /// Builds the <see cref="ILoggerFactory"/> in a way that exposes forceFlush via a ServiceProvider.
+    ///
+    /// The AzMonitor log exporter routes data through the AppInsights <c>traces</c> table which is the only table data-x-platform ingests.
     /// </summary>
-    /// <remarks>
-    /// Built via <see cref="ServiceCollection"/> (rather than
-    /// <c>LoggerFactory.Create</c>) so the underlying
-    /// <see cref="OpenTelemetry.Logs.LoggerProvider"/> is resolvable via DI.
-    /// We need a direct handle on the provider so <see cref="Flush"/> can
-    /// call <c>ForceFlush</c> on it — without that, the
-    /// <c>BatchLogRecordExportProcessor</c> only drains on
-    /// <see cref="Dispose"/>, and CI runs (one-and-done — no follow-up
-    /// invocation to retry from the AzMonitor offline store) need a
-    /// pre-shutdown drain with an extended budget.
-    /// </remarks>
     private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
         var services = new ServiceCollection();
@@ -261,14 +226,12 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             lb.AddOpenTelemetry(o =>
             {
-                o.IncludeScopes = true;
+                o.IncludeScopes = false; // Never used currently as we don't use _logger.log() with BeginScope
                 o.IncludeFormattedMessage = true;
-                o.ParseStateValues = true;
+                o.ParseStateValues = true; // On by default in OTel 1.5v, but might as well be explicit
                 o.SetResourceBuilder(resource);
 
-                // AzMonitor is the prod sink for the AppInsights `traces`
-                // table. OTLP is only for explicitly enabled local or
-                // collector scenarios.
+                // OTLP is only for explicitly enabled local scenarios.
                 if (!disableExport)
                 {
                     o.AddAzureMonitorLogExporter(amo =>
@@ -293,17 +256,11 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Starts the per-command operation. The Activity OperationName is
-    /// <c>command/{commandName}</c> for in-process correlation; the LogRecord
-    /// Message is the stable string <c>dotnetup/command</c> with the
-    /// subcommand discriminator on the <c>command.name</c> property. A single
-    /// stable Message keeps one GDPR-catalog entry covering every (existing
-    /// and future) subcommand — per-subcommand Messages caused new
-    /// subcommands to silently fall off the classified <c>RawEventsTraces</c>
-    /// table until the catalog was hand-updated.
+    /// Starts a per-command <see cref="TrackedOperation"/> operation.
     /// </summary>
     internal TrackedOperation StartTrackedCommand(string commandName)
     {
+        CurrentCommandName ??= commandName;
         var activity = Enabled
             ? CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal)
             : null;
@@ -314,15 +271,7 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Starts the root <see cref="TrackedOperation"/> for the entire
-    /// dotnetup invocation. Disposed in <c>Program.Main</c>'s
-    /// <c>finally</c>; emits the <c>dotnetup/root</c> LogRecord that
-    /// carries the wall-clock <c>operation.duration_ms</c> for the whole
-    /// process and any <c>error.*</c> tags propagated up from a failing
-    /// command (or attached directly when an exception escapes
-    /// <see cref="CommandBase"/>'s catch). Paired with the per-command
-    /// <c>dotnetup/command</c> rows: "root" = whole process, "command" =
-    /// one subcommand.
+    /// Starts the root <see cref="TrackedOperation"/> for the entire dotnetup invocation.
     /// </summary>
     internal TrackedOperation StartTrackedProcess(string name)
     {
@@ -334,41 +283,58 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Records an exception on the failing operation, propagates the same
-    /// error.* tags up the activity ancestor chain so each parent's
-    /// completion log carries the failure signal, and emits one explicit
-    /// severity=Error LogRecord at the failure site.
+    /// Records an exception on the failing operation by classifying it and
+    /// stamping <c>error.*</c> tags onto the failing activity and all of its ancestors.
     /// </summary>
+    ///
     /// <remarks>
+    /// This does NOT emit a LogRecord.
+    /// <para>
     /// Ancestor propagation is first-failure-wins: once an ancestor has
     /// <c>error.type</c> set we don't overwrite, preserving the true root
-    /// cause when later siblings fail. The error LogRecord is emitted with
-    /// <c>exception: null</c> on purpose — the AzMonitor log exporter routes
-    /// records with a non-null <see cref="Exception"/> into the AppInsights
-    /// <c>exceptions</c> table, which data-x doesn't ingest. Exception type
-    /// and stack trace ride as structured props so the failure is fully
-    /// described in <c>traces</c>.
+    /// cause when later siblings fail.
+    /// </para>
     /// </remarks>
     /// <param name="operation">The tracked operation to tag.</param>
     /// <param name="ex">The exception to record.</param>
     /// <param name="errorCode">Optional error code override.</param>
-    internal void RecordException(TrackedOperation? operation, Exception ex, string? errorCode = null)
+    internal void RecordException(TrackedOperation operation, Exception ex, string? errorCode = null)
     {
-        if (operation == null || !Enabled)
+        if (!Enabled)
         {
             return;
         }
 
-        var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-        // Single hand-off into the propagation/application pipeline:
-        // primary error.* tags spread up the ancestor chain (first-failure-wins
-        // per ancestor), additional failures land only on the failing activity
-        // (the command row) so the root row stays uncluttered with batch detail.
-        PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
-        // Use a non-PII description (the classified error type) rather than
-        // ex.Message — the latter can leak user paths / values into exported
-        // span status when the perf-trace exporter is enabled.
-        operation.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
+        try
+        {
+            var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
+            PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
+
+            // Set the status as a failure. Uses a non-PII description (the classified error type) rather than ex.Message
+            operation.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
+        }
+        catch (Exception classificationEx)
+        {
+            // Never let a telemetry bug crash the app, but stamp a synthetic error.type so the
+            // failed span stays identifiable in the backend (SetStatus would otherwise leave it
+            // empty). A classification failure is our own bug, so the Product category is correct
+            // here — sourced from the ErrorCategory enum rather than a hand-typed literal to stay
+            // consistent with ErrorCodeMapper.ApplyErrorTags.
+            const string classificationErrorType = "TelemetryClassificationError";
+            try
+            {
+                operation.Tag(TelemetryTagNames.ErrorType, classificationErrorType);
+                operation.Tag(TelemetryTagNames.ErrorCategory, ErrorCategory.Product.ToString().ToLowerInvariant());
+                operation.SetStatus(ActivityStatusCode.Error, classificationErrorType);
+            }
+            catch
+            {
+                // Tagging itself failed (null activity, disposed, etc.) — nothing
+                // more we can safely do. The completion row still emits at dispose.
+            }
+
+            Debug.Fail($"RecordException classification threw: {classificationEx}");
+        }
     }
 
     /// <summary>
@@ -405,57 +371,125 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Returns the flush timeout appropriate for the current environment.
-    /// Interactive shells get 10ms to match the .NET SDK CLI's 10ms flush.
-    ///
-    /// Only non-interactive CI/one-and-done environments get the larger 2000ms budget. (2000 taken from high end of network queries to post to app insights on 6-12-2025, considering TCP is slower at the first request)
-    /// There's no follow-up invocation to drain the AzMonitor offline store.
+    /// Default flush budget (ms) for interactive / shell-startup exits.
+    /// Goal: Should not cause perceptible delay for humans.
+    /// Matches Aspire's CLI shutdown budget (TelemetryManager.ShutDownTimeoutMilliseconds = 200).
     /// </summary>
-    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? 2000 : 10;
+    private const int DefaultFlushTimeoutMs = 200;
 
     /// <summary>
-    /// Drains both the tracer and logger batch export processors out to
-    /// their network exporters within <paramref name="timeoutMilliseconds"/>.
-    /// Returns as soon as the queues are empty — the timeout is just a
-    /// ceiling — so passing a larger budget in CI never adds latency on
-    /// happy-path runs. Whatever doesn't drain in time falls back to the
-    /// AzMonitor exporter's <c>StorageDirectory</c> retry queue.
+    /// Durable flush budget (ms) for one-and-done environments (CI / piped /
+    /// non-interactive) that have no guaranteed next run to drain the offline store.
     /// </summary>
-    /// <param name="timeoutMilliseconds">Maximum time to wait for flush. If not specified, uses <see cref="GetFlushTimeoutMs"/>.</param>
-    public void Flush(int? timeoutMilliseconds = null)
+    private const int DurableFlushTimeoutMs = 5000;
+
+    /// <summary>
+    /// True when the current invocation is the latency-critical shell-startup command (<c>print-env-script</c>)
+    /// </summary>
+    private bool IsShellStartupCommand =>
+        string.Equals(CurrentCommandName, "print-env-script", StringComparison.Ordinal);
+
+    /// <summary>
+    /// Returns the ideal on-exit flush budget (ms) for the current run.
+    /// </summary>
+    internal int GetFlushTimeoutMs(int exitCode)
     {
-        var timeout = timeoutMilliseconds ?? GetFlushTimeoutMs();
+        var overrideValue = Environment.GetEnvironmentVariable(Constants.Telemetry.FlushTimeoutOverrideEnvVar);
+        if (!string.IsNullOrWhiteSpace(overrideValue)
+            && int.TryParse(overrideValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var forced)
+            && forced >= 0)
+        {
+            return forced;
+        }
+
+        // Failures are essential to record and not expected in a typical use case,
+        // so we spend the durable budget even in interactive runs. This can hurt
+        // interactive exit latency on the error path; that tradeoff is deliberate
+        // until the persist-then-drain exporter lands and should be revisited then.
+        // Tracked by https://github.com/dotnet/sdk/issues/55184 (see PR #55211).
+        if (exitCode != 0)
+        {
+            return DurableFlushTimeoutMs;
+        }
+
+        // Shell-startup hot path (don't slow down users shells)
+        if (IsShellStartupCommand)
+        {
+            return DefaultFlushTimeoutMs;
+        }
+
+        // Interactive foreground use: keep exit snappy. Redirected output is
+        // treated as non-interactive here, which is conservative: an agent or
+        // helper script driving dotnetup is redirected but effectively
+        // interactive and will pay the durable budget. Intentionally aggressive
+        // for now so we can measure delivery; revisit with the new exporter
+        // (https://github.com/dotnet/sdk/issues/55184).
+        if (!IsOneAndDoneEnvironment && !Console.IsOutputRedirected)
+        {
+            return DefaultFlushTimeoutMs;
+        }
+
+        // CI / piped / non-interactive: one-and-done with no guaranteed next run to drain the offline store
+        return DurableFlushTimeoutMs;
+    }
+
+    /// <summary>
+    /// Production flush entrypoint. Computes the budget from the process exit
+    /// code and the current environment (see <see cref="GetFlushTimeoutMs(int)"/>),
+    /// then drains the providers. Returns as soon as the queues are empty.
+    ///
+    /// Whatever doesn't drain in time falls back to the AzMonitor exporter's <c>StorageDirectory</c> retry queue.
+    /// </summary>
+    /// <param name="exitCode">The process exit code; a non-zero value selects the durable budget.</param>
+    public void Flush(int exitCode)
+    {
+        FlushCore(GetFlushTimeoutMs(exitCode));
+    }
+
+    /// <summary>
+    /// Flushes with an explicit budget, bypassing environment classification.
+    /// For tests and diagnostics only.
+    /// </summary>
+    internal void FlushWithTimeout(int timeoutMilliseconds)
+    {
+        FlushCore(timeoutMilliseconds);
+    }
+
+    /// <summary>
+    /// Flushes the providers against a single shared deadline.
+    /// </summary>
+    private void FlushCore(int timeoutMilliseconds)
+    {
+        var budget = Math.Max(0, timeoutMilliseconds);
+        var deadline = Environment.TickCount64 + budget;
 
         try
         {
-            _tracerProvider?.ForceFlush(timeout);
+            // Logger first: the primary data-x signal. Each LogRecord is fully
+            // decorated by BuildCompletionState at _logger.Log(...) time, so
+            // ForceFlush only has to drain an already-self-described queue.
+            _loggerProvider?.ForceFlush(budget);
         }
         catch
         {
-            // Never let telemetry flush failures crash the app
+            // Never let telemetry flush failures crash the app.
         }
 
         try
         {
-            // Also drain the LogRecord batch processor — this is the
-            // primary data-x signal (AppInsights `traces` table) and was
-            // previously only flushed on Dispose with the OTel default
-            // budget. Each LogRecord is fully decorated by
-            // BuildCompletionState at _logger.Log(...) time, so ForceFlush
-            // only has to drain an already-self-described queue.
-            _loggerProvider?.ForceFlush(timeout);
+            // Tracer gets the leftover budget so the two flushes share one
+            // deadline rather than summing to 2× on a slow network.
+            var remaining = (int)Math.Clamp(deadline - Environment.TickCount64, 0, budget);
+            _tracerProvider?.ForceFlush(remaining);
         }
         catch
         {
-            // Never let telemetry flush failures crash the app
+            // Never let telemetry flush failures crash the app.
         }
-
-        _flushed = true;
     }
 
     /// <summary>
     /// Writes collected activities to disk if DOTNET_CLI_TELEMETRY_LOG_PATH is set.
-    /// Same format as the SDK's TelemetryDiskLogger.
     /// </summary>
     public void WriteLogIfNecessary()
     {
@@ -466,8 +500,7 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Dispose callback for <see cref="TrackedOperation"/>. Emits the
-    /// completion LogRecord, then stops the activity.
+    /// Dispose callback for <see cref="TrackedOperation"/>. Emits the completion LogRecord, then stops the activity.
     /// </summary>
     /// <remarks>
     /// <strong>Critical ordering:</strong> Log() runs <em>before</em> Stop().
@@ -544,8 +577,7 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the structured state for one <c>traces</c> row. See
-    /// <see cref="BuildCompletionState(string, Activity, double, IReadOnlyList{KeyValuePair{string, object?}})"/>.
+    /// Builds the structured state for one <c>traces</c> row based on span tags.
     /// </summary>
     private List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
@@ -554,23 +586,19 @@ public sealed class DotnetupTelemetry : IDisposable
         => BuildCompletionState(eventName, activity, elapsedMs, _commonProperties);
 
     /// <summary>
-    /// Builds the structured state for one <c>traces</c> row. Stamps the
-    /// process-level common properties first (so per-event Activity tags can
-    /// override on collision), walks ancestor activities (root first) to
-    /// inherit <c>command.*</c> tags, then overlays the current activity's
-    /// own tags. Last writer wins; computed fields
-    /// (<c>operation.name</c>, <c>operation.duration_ms</c>,
-    /// <c>operation.parent_name</c>) are added last.
+    /// Builds a structured state for one <c>traces</c> row.
+    /// Stamps the process-level common properties first (so per-event Activity tags can override on collision).
+    /// Walks ancestor activities (root first) to inherit <c>command.*</c> tags.
+    /// Overlays the current activity's own tags.
     /// </summary>
+    ///
     /// <remarks>
     /// Common properties (caller, os.type, device.id, session.id, dev.build,
     /// ...) also live on the OTel <see cref="Resource"/>, but the AzMonitor
     /// log exporter only maps a fixed subset of Resource attrs to
-    /// AppInsights envelope fields and drops the rest from
-    /// <c>customDimensions</c>. We re-stamp them on each LogRecord state so
-    /// they reach the <c>traces</c> table that data-x ingests.
-    /// Exposed as <c>internal</c> for tests so they can verify common
-    /// properties land on every event without spinning up an exporter.
+    /// AppInsights envelope fields and drops the rest from <c>customDimensions</c>
+    ///
+    /// We re-stamp them on each LogRecord state so they reach the <c>traces</c> table.
     /// </remarks>
     internal static List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
@@ -580,16 +608,12 @@ public sealed class DotnetupTelemetry : IDisposable
     {
         var state = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-        // Process-level common properties first — Activity tags below may
-        // override on key collision (currently no overlap by design).
         foreach (var kv in commonProperties)
         {
             state[kv.Key] = kv.Value;
         }
 
-        // Walk root → ... → immediate parent so the root's command.* tags
-        // are written first and survive unless an inner activity explicitly
-        // overrides them.
+        // Stamp the higher-level command onto child activities - e.g. 'extract/complete' becomes associated with 'sdk/install'
         var ancestors = new List<Activity>();
         for (var a = activity.Parent; a is not null; a = a.Parent)
         {
@@ -606,7 +630,7 @@ public sealed class DotnetupTelemetry : IDisposable
             }
         }
 
-        // Own activity tags (override ancestor inherited values).
+        // Stamp our own tags into the state
         foreach (var tag in activity.TagObjects)
         {
             state[tag.Key] = tag.Value;
@@ -614,10 +638,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
         state["operation.name"] = $"dotnetup/{eventName}";
         state["operation.duration_ms"] = elapsedMs.ToString(CultureInfo.InvariantCulture);
-        // Distinguishes library-emitted events (Microsoft.Dotnet.Installation,
-        // routed through Metrics.OnTrackEvent) from dotnetup-internal events
-        // (Microsoft.DotNet.Tools.Bootstrapper) on the AppInsights traces row.
-        state["telemetry.source"] = activity.Source.Name;
+        state["telemetry.source"] = activity.Source.Name; // Distinguishes library-emitted events from dotnetup-internal events
         if (activity.Parent is { } parent)
         {
             state["operation.parent_name"] = parent.OperationName;
@@ -628,38 +649,27 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Disposes the telemetry provider.
+    /// Test-only teardown. Implemented explicitly on <see cref="IDisposable"/>
+    /// so production code cannot call <c>DotnetupTelemetry.Instance.Dispose()</c>
+    /// and silently lose telemetry — production must flush via <see cref="Flush"/>.
+    /// Reachable only through a <c>using</c> block or an explicit
+    /// <c>IDisposable</c> cast, which is confined to test teardown.
     /// </summary>
-    public void Dispose()
+    /// <remarks>
+    /// Mirrors Aspire's <c>TelemetryManager.Dispose</c>
+    /// <c>Shutdown(0)</c> tears down immediately without waiting for a network drain.
+    /// </remarks>
+    void IDisposable.Dispose()
     {
-        if (_disposed)
-        {
-            return;
-        }
+        try { _loggerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
+        try { _tracerProvider?.Shutdown(0); } catch { /* never crash on telemetry */ }
 
-        // Belt-and-braces drain on paths that reach Dispose without
-        // calling Flush first. Skipped when Flush() already ran so we don't
-        // pay another wait against an empty queue (or, worse, a slow
-        // network when the prior Flush's small budget already expired).
-        if (!_flushed)
-        {
-            try { _loggerProvider?.ForceFlush(GetFlushTimeoutMs()); } catch { /* never crash on telemetry */ }
-        }
-
-        // Dispose the logging service provider before the tracer so its
-        // BatchLogRecordExportProcessor flushes queued LogRecords (the
-        // primary data-x signal) before shutdown begins. Disposing the
-        // ServiceProvider disposes both the ILoggerFactory and the OTel
-        // LoggerProvider it owns; the explicit field disposes below
-        // satisfy CA2213 (the analyzer can't see the transitive
-        // ownership) and are idempotent thanks to the standard
-        // double-dispose guard on both types.
-        try { _loggerFactory?.Dispose(); } catch { /* never crash on telemetry */ }
-        try { _loggerProvider?.Dispose(); } catch { /* never crash on telemetry */ }
+        // One release call: the ServiceProvider owns _loggerFactory and the OTel
+        // _loggerProvider (both resolved from it) and disposes them transitively,
+        // so we don't dispose those two fields explicitly (see the CA2213
+        // suppression on their declarations).
         try { _services?.Dispose(); } catch { /* never crash on telemetry */ }
-
-        _tracerProvider?.Dispose();
-        _disposed = true;
+        try { _tracerProvider?.Dispose(); } catch { /* never crash on telemetry */ }
     }
 
     private static string GetVersion()
@@ -674,5 +684,8 @@ public sealed class DotnetupTelemetry : IDisposable
         string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
 
     internal static bool IsOtlpExporterEnabled(bool disableExport) =>
-        !disableExport && IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar));
+        IsOtlpExporterEnabled(disableExport, Environment.GetEnvironmentVariable);
+
+    internal static bool IsOtlpExporterEnabled(bool disableExport, Func<string, string?> getEnvironmentVariable) =>
+        !disableExport && IsTruthy(getEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar));
 }

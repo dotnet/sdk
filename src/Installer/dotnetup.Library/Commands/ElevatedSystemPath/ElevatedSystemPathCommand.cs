@@ -12,7 +12,7 @@ internal class ElevatedSystemPathCommand : CommandBase
     private readonly string _outputFile;
     private readonly string? _dotnetDir;
 
-    public ElevatedSystemPathCommand(ParseResult result) : base(result)
+    public ElevatedSystemPathCommand(ParseResult result) : base(result, "elevatedsystempath")
     {
         _operation = result.GetValue(ElevatedSystemPathCommandParser.OperationArgument)!;
         _outputFile = result.GetValue(ElevatedSystemPathCommandParser.OutputFile)!;
@@ -24,8 +24,6 @@ internal class ElevatedSystemPathCommand : CommandBase
         Console.WriteLine(message);
         File.AppendAllText(_outputFile, message + Environment.NewLine);
     }
-
-    protected override string GetCommandName() => "elevatedsystempath";
 
     protected override void ExecuteCore()
     {
