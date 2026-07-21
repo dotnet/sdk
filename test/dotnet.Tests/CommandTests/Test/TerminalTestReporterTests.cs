@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
+using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -173,9 +174,9 @@ public class TerminalTestReporterTests
         reporter.AssemblyRunStarted(passingAssembly, "net9.0", "x64", executionId: "exec-passing", instanceId: "inst-passing");
         ReportTest(reporter, passingAssembly, executionId: "exec-passing", instanceId: "inst-passing", testUid: "passing-1", TestOutcome.Passed);
 
-        reporter.AssemblyRunCompleted(executionId: "exec-empty", exitCode: ExitCode.ZeroTests, outputData: null, errorData: null);
-        reporter.AssemblyRunCompleted(executionId: "exec-passing", exitCode: ExitCode.Success, outputData: null, errorData: null);
-        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: ExitCode.Success);
+        reporter.AssemblyRunCompleted(executionId: "exec-empty", exitCode: TestExitCode.ZeroTests, outputData: null, errorData: null);
+        reporter.AssemblyRunCompleted(executionId: "exec-passing", exitCode: TestExitCode.Success, outputData: null, errorData: null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.Success);
 
         string output = StripAnsi(capturingConsole.GetOutput());
         output.Should().Contain("Test run summary: Passed!");
