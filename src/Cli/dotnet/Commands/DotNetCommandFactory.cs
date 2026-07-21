@@ -48,7 +48,6 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         return false;
     }
 
-#if !CLI_AOT
     internal static CommandBase CreateVirtualOrPhysicalCommand(
         System.CommandLine.Command commandDefinition,
         Argument<string[]> catchAllUserInputArgument,
@@ -138,5 +137,4 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
             yield return arg;
         }
     }
-#endif
 }
