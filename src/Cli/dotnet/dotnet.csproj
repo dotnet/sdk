@@ -52,6 +52,7 @@
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.InstallRecords.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.PackGroup.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerServer.cs" />
+    <Compile Remove="Commands\Workload\Install\WindowsMsiManifestInstaller.cs" />
     <Compile Remove="Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs" />
     <Compile Remove="Commands\Workload\SignCheck_Windows.cs" />
   </ItemGroup>

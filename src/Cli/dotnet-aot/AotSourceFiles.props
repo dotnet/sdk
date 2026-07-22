@@ -81,7 +81,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInstallDetector.cs" Link="WorkloadInstallDetector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\IWorkloadInstallationRecordRepository.cs" Link="IWorkloadInstallationRecordRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\FileBasedInstallationRecordInstaller.cs" Link="FileBasedInstallationRecordInstaller.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs" Link="RegistryWorkloadInstallationRecordRepository.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\ReadOnlyWindowsWorkloadInstallationRecordRepository.cs" Link="ReadOnlyWindowsWorkloadInstallationRecordRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
   </ItemGroup>
 
