@@ -1,4 +1,4 @@
-# `dotnetup` `preview` vs `stable` Version Definitions
+# `dotnetup` `daily`, `preview`, and `stable` Version Definitions
 
 ## Overview
 
@@ -31,9 +31,9 @@ Shell integration, including profile modification and environment-script generat
 `daily` builds of `dotnetup` will be fresh out of `CI`, much like the `daily` or `nightly` builds of the .NET SDK.
 We do not recommend using `daily` builds in production. They have no guarantees, no support, and are meant for our own engineering and testing. They are used at your own discretion.
 
-The `daily` `dotnetup` builds will use themselves to build. This allows us to catch problems early by being a dogfooder of our own product.
+The `daily` `dotnetup` builds will use themselves to build. This allows us to catch problems early by dogfooding our own product.
 
-Multiple `daily` builds may be published in one day. Only the most recent `daily` build is intended for dog food engineering use; older `daily` builds are not maintained.
+Multiple `daily` builds may be published in one day. Only the most recent `daily` build is intended for dogfooding; older `daily` builds are not maintained.
 
 #### Version Intent
 
@@ -93,4 +93,4 @@ PSAs and CVEs are planned to be announced under the [same platform (dotnet relea
 
 **How can I update to the latest `dotnetup` version?**
 
-Once `stable` releases are available, follow the [download instructions](README.md#download-dotnetup) and select the `stable` build quality. Pass `--quality stable` to `get-dotnetup.sh` or `-Quality stable` to `get-dotnetup.ps1`. Running either script without this option currently installs a `daily` build, which are available today but not supported.
+Once `stable` releases are available, follow the [download instructions](README.md#download-dotnetup) and select the `stable` build quality. Pass `--quality stable` to `get-dotnetup.sh` or `-Quality stable` to `get-dotnetup.ps1`. Running either script without this option currently installs a `daily` build, which is available today but not supported.
