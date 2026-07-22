@@ -1,5 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using TestNodeInfoEntry = (int Passed, int Skipped, int Failed, int LastAttemptNumber);
@@ -8,11 +8,18 @@ namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch, bool isDiscovery)
 {
+    private readonly Lock _lock = new();
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
-
-    // In most cases, retries don't happen. So we start with a capacity of 1.
-    // Resizes will be rare and will be okay with such small sizes.
-    private readonly List<string> _orderedInstanceIds = new(capacity: 1);
+    private readonly Dictionary<string, int> _instanceIdToAttemptNumber = new();
+    private readonly List<DiscoveredTestInfo> _discoveredTestNames = [];
+    private int _discoveredTests;
+    private int _failedTests;
+    private int _passedTests;
+    private int _skippedTests;
+    private int _retriedFailedTests;
+    private int _tryCount;
+    private TestNodeResultsState? _testNodeResultsState;
+    private bool _success;
 
     public string Assembly { get; } = assembly;
 
@@ -24,19 +31,82 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public IStopwatch Stopwatch { get; } = stopwatch;
 
-    public int DiscoveredTests { get; private set; }
+    public int DiscoveredTests
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _discoveredTests;
+            }
+        }
+    }
 
-    public int FailedTests { get; private set; }
+    public int FailedTests
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _failedTests;
+            }
+        }
+    }
 
-    public int PassedTests { get; private set; }
+    public int PassedTests
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _passedTests;
+            }
+        }
+    }
 
-    public int SkippedTests { get; private set; }
+    public int SkippedTests
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _skippedTests;
+            }
+        }
+    }
 
-    public int TotalTests => IsDiscovery ? DiscoveredTests : PassedTests + SkippedTests + FailedTests;
+    public int TotalTests
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return IsDiscovery ? _discoveredTests : _passedTests + _skippedTests + _failedTests;
+            }
+        }
+    }
 
-    public int RetriedFailedTests { get; private set; }
+    public int RetriedFailedTests
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _retriedFailedTests;
+            }
+        }
+    }
 
-    public TestNodeResultsState? TestNodeResultsState { get; internal set; }
+    public TestNodeResultsState? TestNodeResultsState
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _testNodeResultsState;
+            }
+        }
+    }
 
     public int SlotIndex { get; internal set; }
 
@@ -44,13 +114,50 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public long Version { get; internal set; }
 
-    public List<(string? DisplayName, string? UID)> DiscoveredTestNames { get; internal set; } = [];
+    public List<DiscoveredTestInfo> DiscoveredTestNames
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return [.. _discoveredTestNames];
+            }
+        }
+    }
 
-    public bool Success { get; internal set; }
+    public bool Success
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _success;
+            }
+        }
 
-    public bool IsDiscovery = isDiscovery;
+        internal set
+        {
+            lock (_lock)
+            {
+                _success = value;
+            }
+        }
+    }
 
-    public int TryCount { get; private set; }
+    public int? ExitCode { get; internal set; }
+
+    public bool IsDiscovery { get; } = isDiscovery;
+
+    public int TryCount
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _tryCount;
+            }
+        }
+    }
 
     private void ReportGenericTestResult(
         string testNodeUid,
@@ -58,43 +165,36 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         Func<TestNodeInfoEntry, TestNodeInfoEntry> incrementTestNodeInfoEntry,
         Action<TestProgressState> incrementCountAction)
     {
-        var currentAttemptNumber = GetAttemptNumberFromInstanceId(instanceId);
-
-        if (_testUidToResults.TryGetValue(testNodeUid, out var value))
+        lock (_lock)
         {
-            // We received a result for this test node uid before.
-            if (value.LastAttemptNumber == currentAttemptNumber)
+            int currentAttemptNumber = GetAttemptNumberCore(instanceId);
+
+            if (_testUidToResults.TryGetValue(testNodeUid, out var value))
             {
-                // We are getting a test result for the same attempt.
-                // This means that the test framework is reporting multiple results for the same test node uid.
-                // We will just increment the count of the result.
-                _testUidToResults[testNodeUid] = incrementTestNodeInfoEntry(value);
-            }
-            else if (currentAttemptNumber > value.LastAttemptNumber)
-            {
-                // This is a retry!
-                // We are getting a test result for a different instance id.
-                // This means that the test was retried.
-                // We discard the results from the previous instance id
-                RetriedFailedTests += value.Failed;
-                PassedTests -= value.Passed;
-                SkippedTests -= value.Skipped;
-                FailedTests -= value.Failed;
-                _testUidToResults[testNodeUid] = incrementTestNodeInfoEntry((Passed: 0, Skipped: 0, Failed: 0, LastAttemptNumber: currentAttemptNumber));
+                if (value.LastAttemptNumber == currentAttemptNumber)
+                {
+                    _testUidToResults[testNodeUid] = incrementTestNodeInfoEntry(value);
+                }
+                else if (currentAttemptNumber > value.LastAttemptNumber)
+                {
+                    _retriedFailedTests += value.Failed;
+                    _passedTests -= value.Passed;
+                    _skippedTests -= value.Skipped;
+                    _failedTests -= value.Failed;
+                    _testUidToResults[testNodeUid] = incrementTestNodeInfoEntry((Passed: 0, Skipped: 0, Failed: 0, LastAttemptNumber: currentAttemptNumber));
+                }
+                else
+                {
+                    throw new UnreachableException($"Unexpected test result for attempt '{currentAttemptNumber}' while the last attempt is '{value.LastAttemptNumber}'");
+                }
             }
             else
             {
-                // This is an unexpected case where we received a result for an instance id that is older than the last one we saw.
-                throw new UnreachableException($"Unexpected test result for attempt '{currentAttemptNumber}' while the last attempt is '{value.LastAttemptNumber}'");
+                _testUidToResults.Add(testNodeUid, incrementTestNodeInfoEntry((Passed: 0, Skipped: 0, Failed: 0, LastAttemptNumber: currentAttemptNumber)));
             }
-        }
-        else
-        {
-            // This is the first time we see this test node.
-            _testUidToResults.Add(testNodeUid, incrementTestNodeInfoEntry((Passed: 0, Skipped: 0, Failed: 0, LastAttemptNumber: currentAttemptNumber)));
-        }
 
-        incrementCountAction(this);
+            incrementCountAction(this);
+        }
     }
 
     public void ReportPassingTest(string testNodeUid, string instanceId)
@@ -103,7 +203,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         {
             entry.Passed++;
             return entry;
-        }, static @this => @this.PassedTests++);
+        }, static @this => @this._passedTests++);
     }
 
     public void ReportSkippedTest(string testNodeUid, string instanceId)
@@ -112,7 +212,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         {
             entry.Skipped++;
             return entry;
-        }, static @this => @this.SkippedTests++);
+        }, static @this => @this._skippedTests++);
     }
 
     public void ReportFailedTest(string testNodeUid, string instanceId)
@@ -121,41 +221,83 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         {
             entry.Failed++;
             return entry;
-        }, static @this => @this.FailedTests++);
+        }, static @this => @this._failedTests++);
     }
 
-    public void DiscoverTest(string? displayName, string? uid)
+    public void DiscoverTest(DiscoveredTestInfo test)
     {
-        DiscoveredTests++;
-        DiscoveredTestNames.Add(new(displayName, uid));
+        lock (_lock)
+        {
+            _discoveredTests++;
+            _discoveredTestNames.Add(test);
+        }
     }
 
     internal void NotifyHandshake(string instanceId)
+        => NotifyHandshakeCore(instanceId, attemptNumber: null);
+
+    internal void NotifyHandshake(string instanceId, int attemptNumber)
+        => NotifyHandshakeCore(instanceId, attemptNumber);
+
+    private void NotifyHandshakeCore(string instanceId, int? attemptNumber)
     {
-        var index = _orderedInstanceIds.IndexOf(instanceId);
-        if (index < 0)
+        lock (_lock)
         {
-            // New instanceId for a retry. We add it to _orderedInstanceIds.
-            _orderedInstanceIds.Add(instanceId);
-            TryCount++;
-        }
-        else if (index != _orderedInstanceIds.Count - 1)
-        {
-            // This is an unexpected case where we received a handshake for an instance id that is not the last one we saw.
-            // This means that the test framework is trying to report results for an instance id that is not the last one.
-            throw new UnreachableException($"Unexpected handshake for instance id '{instanceId}' at index '{index}' while the last index is '{_orderedInstanceIds.Count - 1}'");
+            if (_instanceIdToAttemptNumber.TryGetValue(instanceId, out int registeredAttemptNumber))
+            {
+                if (attemptNumber.HasValue && attemptNumber.Value != registeredAttemptNumber)
+                {
+                    throw new UnreachableException($"Instance id '{instanceId}' was already registered for attempt '{registeredAttemptNumber}', not '{attemptNumber.Value}'.");
+                }
+
+                return;
+            }
+
+            int resolvedAttemptNumber = attemptNumber ?? _tryCount + 1;
+            if (resolvedAttemptNumber < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(attemptNumber));
+            }
+
+            _instanceIdToAttemptNumber.Add(instanceId, resolvedAttemptNumber);
+            _tryCount = Math.Max(_tryCount, resolvedAttemptNumber);
         }
     }
 
-    private int GetAttemptNumberFromInstanceId(string instanceId)
+    internal int GetAttemptNumber(string instanceId)
     {
-        var index = _orderedInstanceIds.IndexOf(instanceId);
-        if (index < 0)
+        lock (_lock)
         {
-            throw new UnreachableException($"The instanceId '{instanceId}' not found.");
+            return GetAttemptNumberCore(instanceId);
         }
-
-        // Attempt numbers are 1-based, so we add 1 to the index.
-        return index + 1;
     }
+
+    internal TestNodeResultsState GetOrCreateTestNodeResultsState(Func<TestNodeResultsState> factory)
+    {
+        lock (_lock)
+        {
+            return _testNodeResultsState ??= factory();
+        }
+    }
+
+    private int GetAttemptNumberCore(string instanceId)
+        => _instanceIdToAttemptNumber.TryGetValue(instanceId, out int attemptNumber)
+            ? attemptNumber
+            : throw new UnreachableException($"The instanceId '{instanceId}' not found.");
 }
+
+/// <summary>
+/// Rich information about a single discovered test node, as received over the 'dotnet test' IPC
+/// protocol (<c>DiscoveredTestMessage</c>). Carries every field the wire contract provides so the
+/// SDK can render both the human-readable and the machine-readable ('--list-tests json') output.
+/// </summary>
+internal sealed record DiscoveredTestInfo(
+    string? DisplayName,
+    string? Uid,
+    string? FilePath,
+    int? LineNumber,
+    string? Namespace,
+    string? TypeName,
+    string? MethodName,
+    string[] ParameterTypeFullNames,
+    (string Key, string Value)[] Traits);

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 
@@ -55,7 +56,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     },
                     cancellationToken);
 
-                await codeFix.RegisterCodeFixesAsync(context).ConfigureAwait(false);
+                await codeFix.RegisterCodeFixesAsync(context);
 
                 var fixAllContext = new FixAllContext(
                     document: document,
@@ -66,14 +67,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     fixAllDiagnosticProvider: new DiagnosticProvider(result),
                     cancellationToken: cancellationToken);
 
-                var fixAllAction = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
+                var fixAllAction = await fixAllProvider.GetFixAsync(fixAllContext);
                 if (fixAllAction is null)
                 {
                     logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action, diagnosticId, codeFix.GetType().Name);
                     return solution;
                 }
 
-                var operations = await fixAllAction.GetOperationsAsync(cancellationToken).ConfigureAwait(false);
+                var operations = await fixAllAction.GetOperationsAsync(cancellationToken);
                 var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();
                 if (applyChangesOperation is null)
                 {

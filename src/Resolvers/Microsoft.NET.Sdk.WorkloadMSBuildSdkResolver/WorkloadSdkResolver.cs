@@ -62,7 +62,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                 resolverContext.State = cachedState;
             }
 
-            string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+            string? userProfileDir = new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath();
             ResolutionResult? result = null;
             if (cachedState.DotnetRootPath is not null && cachedState.SdkVersion is not null)
             {

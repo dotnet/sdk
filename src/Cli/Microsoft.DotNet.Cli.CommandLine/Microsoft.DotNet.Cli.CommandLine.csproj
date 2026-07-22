@@ -7,6 +7,12 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

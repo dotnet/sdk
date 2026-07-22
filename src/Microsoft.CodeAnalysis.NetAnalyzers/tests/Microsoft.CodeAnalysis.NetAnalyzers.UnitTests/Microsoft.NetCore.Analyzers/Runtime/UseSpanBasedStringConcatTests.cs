@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.VisualBasic;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseSpanBasedStringConcat,
@@ -19,6 +19,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseSpanBasedStringConcatTests
     {
         #region Reports Diagnostic
@@ -74,8 +75,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SingleViolationInOneBlock_CS))]
+        [TestMethod]
+        [DynamicData(nameof(Data_SingleViolationInOneBlock_CS))]
         public Task SingleViolationInOneBlock_ReportedAndFixed_CSAsync(string testStatements, string fixedStatements)
         {
             var test = new VerifyCS.Test
@@ -85,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_SingleViolationInOneBlock_VB
@@ -140,8 +141,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SingleViolationInOneBlock_VB))]
+        [TestMethod]
+        [DynamicData(nameof(Data_SingleViolationInOneBlock_VB))]
         public Task SingleViolationInOneBlock_ReportedAndFixed_VBAsync(string testStatement, string fixedStatement)
         {
             var test = new VerifyVB.Test
@@ -151,7 +152,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleViolationsInOneBlock_CS
@@ -187,8 +188,8 @@ string delta = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_MultipleViolationsInOneBlock_CS))]
+        [TestMethod]
+        [DynamicData(nameof(Data_MultipleViolationsInOneBlock_CS))]
         public Task MultipleViolationsInOneBlock_AreReportedAndFixed_CSAsync(string testStatements, string fixedStatements, int[] locations)
         {
             var test = new VerifyCS.Test
@@ -198,7 +199,7 @@ string delta = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyCS.Diagnostic(Rule).WithLocation(x)));
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleViolationsInOneBlock_VB
@@ -234,8 +235,8 @@ Dim delta = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.As
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_MultipleViolationsInOneBlock_VB))]
+        [TestMethod]
+        [DynamicData(nameof(Data_MultipleViolationsInOneBlock_VB))]
         public Task MultipleViolationsInOneBlock_AreReportedAndFixed_VBAsync(string testStatements, string fixedStatements, int[] locations)
         {
             var test = new VerifyVB.Test
@@ -245,7 +246,7 @@ Dim delta = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.As
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyVB.Diagnostic(Rule).WithLocation(x)));
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NestedViolations_CS
@@ -273,8 +274,8 @@ var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(stri
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NestedViolations_CS))]
+        [TestMethod]
+        [DynamicData(nameof(Data_NestedViolations_CS))]
         public Task NestedViolations_AreReportedAndFixed_CSAsync(
             string testStatements, string fixedStatements, int[] locations,
             int? incrementalIterations, int? fixAllInDocumentIterations, int? fixAllIterations)
@@ -289,7 +290,7 @@ var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(stri
                 NumberOfFixAllIterations = fixAllIterations
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyCS.Diagnostic(Rule).WithLocation(x)));
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NestedViolations_VB
@@ -317,8 +318,8 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NestedViolations_VB))]
+        [TestMethod]
+        [DynamicData(nameof(Data_NestedViolations_VB))]
         public Task NestedViolations_AreReportedAndFixed_VBAsync(
             string testStatements, string fixedStatements, int[] locations,
             int? incrementalIterations, int? fixAllInDocumentIterations, int? fixAllIterations)
@@ -333,10 +334,10 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 NumberOfFixAllInDocumentIterations = fixAllIterations
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyVB.Diagnostic(Rule).WithLocation(x)));
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ConditionalSubstringAccess_IsFlaggedButNotFixed_CSAsync()
         {
             string statements = @"var s = {|#0:foo?.Substring(1) + bar|};";
@@ -349,10 +350,10 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ConditionalSubstringAccess_IsFlaggedButNotFixed_VBAsync()
         {
             string statements = @"Dim s = {|#0:foo?.Substring(1) & bar|}";
@@ -365,10 +366,10 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task MissingSystemImport_IsAdded_WhenAbsent_CSAsync()
         {
             var test = new VerifyCS.Test
@@ -378,12 +379,12 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         //  Visual Basic supports implicit global imports. By default, 'System' is added as a global
         //  import when you create a project in Visual Studio.
-        [Fact]
+        [TestMethod]
         public Task MissingSystemImport_IsNotAdded_WhenIncludedInGlobalImports_VBAsync()
         {
             var test = new VerifyVB.Test
@@ -401,11 +402,11 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 options = options.WithGlobalImports(globalSystemImport);
                 return s.WithProjectCompilationOptions(project.Id, options);
             });
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         //  We must add 'Imports System' if it is not included as a global import.
-        [Fact]
+        [TestMethod]
         public Task MissingSystemImport_IsAdded_WhenAbsentFromGlobalImports_VBAsync()
         {
             var test = new VerifyVB.Test
@@ -415,15 +416,15 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(@"Substring(startIndex: 1)", @"AsSpan(start: 1)")]
-        [InlineData(@"Substring(startIndex: 1, length: 2)", @"AsSpan(start: 1, length: 2)")]
-        [InlineData(@"Substring(1, length: 2)", @"AsSpan(1, length: 2)")]
-        [InlineData(@"Substring(startIndex: 1, 2)", @"AsSpan(start: 1, 2)")]
-        [InlineData(@"Substring(length: 2, startIndex: 1)", @"AsSpan(length: 2, start: 1)")]
+        [TestMethod]
+        [DataRow(@"Substring(startIndex: 1)", @"AsSpan(start: 1)")]
+        [DataRow(@"Substring(startIndex: 1, length: 2)", @"AsSpan(start: 1, length: 2)")]
+        [DataRow(@"Substring(1, length: 2)", @"AsSpan(1, length: 2)")]
+        [DataRow(@"Substring(startIndex: 1, 2)", @"AsSpan(start: 1, 2)")]
+        [DataRow(@"Substring(length: 2, startIndex: 1)", @"AsSpan(length: 2, start: 1)")]
         public Task NamedSubstringArguments_ArePreserved_CSAsync(string substring, string asSpan)
         {
             string testStatements = $@"var s = {{|#0:foo.{substring} + bar|}};";
@@ -436,15 +437,15 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(@"Substring(startIndex:=1)", @"AsSpan(start:=1)")]
-        [InlineData(@"Substring(startIndex:=1, length:=2)", @"AsSpan(start:=1, length:=2)")]
-        [InlineData(@"Substring(1, length:=2)", @"AsSpan(1, length:=2)")]
-        [InlineData(@"Substring(startIndex:=1, 2)", @"AsSpan(start:=1, 2)")]
-        [InlineData(@"Substring(length:=2, startIndex:=1)", @"AsSpan(length:=2, start:=1)")]
+        [TestMethod]
+        [DataRow(@"Substring(startIndex:=1)", @"AsSpan(start:=1)")]
+        [DataRow(@"Substring(startIndex:=1, length:=2)", @"AsSpan(start:=1, length:=2)")]
+        [DataRow(@"Substring(1, length:=2)", @"AsSpan(1, length:=2)")]
+        [DataRow(@"Substring(startIndex:=1, 2)", @"AsSpan(start:=1, 2)")]
+        [DataRow(@"Substring(length:=2, startIndex:=1)", @"AsSpan(length:=2, start:=1)")]
         public Task NamedSubstringArguments_ArePreserved_VBAsync(string substring, string asSpan)
         {
             string testStatements = $@"Dim s = {{|#0:foo.{substring} & bar|}}";
@@ -457,16 +458,16 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(@"foo.Substring(1) + (string)explicitTo", @"string.Concat(foo.AsSpan(1), (string)explicitTo)")]
-        [InlineData(@"(string)explicitTo + foo.Substring(1)", @"string.Concat((string)explicitTo, foo.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) + (string)thing", @"string.Concat(foo.AsSpan(1), (string)thing)")]
-        [InlineData(@"(string)thing + foo.Substring(1)", @"string.Concat((string)thing, foo.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) + (thing as string)", @"string.Concat(foo.AsSpan(1), thing as string)")]
-        [InlineData(@"(thing as string) + foo.Substring(1)", @"string.Concat(thing as string, foo.AsSpan(1))")]
+        [TestMethod]
+        [DataRow(@"foo.Substring(1) + (string)explicitTo", @"string.Concat(foo.AsSpan(1), (string)explicitTo)")]
+        [DataRow(@"(string)explicitTo + foo.Substring(1)", @"string.Concat((string)explicitTo, foo.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) + (string)thing", @"string.Concat(foo.AsSpan(1), (string)thing)")]
+        [DataRow(@"(string)thing + foo.Substring(1)", @"string.Concat((string)thing, foo.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) + (thing as string)", @"string.Concat(foo.AsSpan(1), thing as string)")]
+        [DataRow(@"(thing as string) + foo.Substring(1)", @"string.Concat(thing as string, foo.AsSpan(1))")]
         public Task ExplicitConversions_ArePreserved_CSAsync(string testExpression, string fixedExpression)
         {
             string helperTypes = @"
@@ -494,16 +495,16 @@ var s = {0};";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(@"foo.Substring(1) & CType(explicitTo, String)", @"String.Concat(foo.AsSpan(1), CType(explicitTo, String))")]
-        [InlineData(@"CType(explicitTo, String) & foo.Substring(1)", @"String.Concat(CType(explicitTo, String), foo.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) & DirectCast(thing, String)", @"String.Concat(foo.AsSpan(1), DirectCast(thing, String))")]
-        [InlineData(@"DirectCast(thing, String) & foo.Substring(1)", @"String.Concat(DirectCast(thing, String), foo.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) & TryCast(thing, String)", @"String.Concat(foo.AsSpan(1), TryCast(thing, String))")]
-        [InlineData(@"TryCast(thing, String) & foo.Substring(1)", @"String.Concat(TryCast(thing, String), foo.AsSpan(1))")]
+        [TestMethod]
+        [DataRow(@"foo.Substring(1) & CType(explicitTo, String)", @"String.Concat(foo.AsSpan(1), CType(explicitTo, String))")]
+        [DataRow(@"CType(explicitTo, String) & foo.Substring(1)", @"String.Concat(CType(explicitTo, String), foo.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) & DirectCast(thing, String)", @"String.Concat(foo.AsSpan(1), DirectCast(thing, String))")]
+        [DataRow(@"DirectCast(thing, String) & foo.Substring(1)", @"String.Concat(DirectCast(thing, String), foo.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) & TryCast(thing, String)", @"String.Concat(foo.AsSpan(1), TryCast(thing, String))")]
+        [DataRow(@"TryCast(thing, String) & foo.Substring(1)", @"String.Concat(TryCast(thing, String), foo.AsSpan(1))")]
         public Task ExplicitConversions_ArePreserved_VBAsync(string testExpression, string fixedExpression)
         {
             string helperTypes = @"
@@ -534,25 +535,25 @@ Dim s = {0}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         //  No C# case because C# has only one concat operator.
-        [Theory]
-        [InlineData(@"foo.Substring(1) & bar + baz", @"String.Concat(foo.AsSpan(1), bar, baz)")]
-        [InlineData(@"foo & bar.Substring(1) + baz", @"String.Concat(foo, bar.AsSpan(1), baz)")]
-        [InlineData(@"foo & bar + baz.Substring(1)", @"String.Concat(foo, bar, baz.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) + bar & baz", @"String.Concat(foo.AsSpan(1), bar, baz)")]
-        [InlineData(@"foo + bar.Substring(1) & baz", @"String.Concat(foo, bar.AsSpan(1), baz)")]
-        [InlineData(@"foo + bar & baz.Substring(1)", @"String.Concat(foo, bar, baz.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) & bar + baz & baz.Substring(1)", @"String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
-        [InlineData(@"foo & bar.Substring(1) + baz & foo", @"String.Concat(foo, bar.AsSpan(1), baz, foo)")]
-        [InlineData(@"foo.Substring(1) & bar + baz & foo", @"String.Concat(foo.AsSpan(1), bar, baz, foo)")]
-        [InlineData(@"foo & bar + baz & foo.Substring(1)", @"String.Concat(foo, bar, baz, foo.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) + bar & baz + baz.Substring(1)", @"String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
-        [InlineData(@"foo + bar.Substring(1) & baz + foo", @"String.Concat(foo, bar.AsSpan(1), baz, foo)")]
-        [InlineData(@"foo.Substring(1) + bar & baz + foo", @"String.Concat(foo.AsSpan(1), bar, baz, foo)")]
-        [InlineData(@"foo + bar & baz + foo.Substring(1)", @"String.Concat(foo, bar, baz, foo.AsSpan(1))")]
+        [TestMethod]
+        [DataRow(@"foo.Substring(1) & bar + baz", @"String.Concat(foo.AsSpan(1), bar, baz)")]
+        [DataRow(@"foo & bar.Substring(1) + baz", @"String.Concat(foo, bar.AsSpan(1), baz)")]
+        [DataRow(@"foo & bar + baz.Substring(1)", @"String.Concat(foo, bar, baz.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) + bar & baz", @"String.Concat(foo.AsSpan(1), bar, baz)")]
+        [DataRow(@"foo + bar.Substring(1) & baz", @"String.Concat(foo, bar.AsSpan(1), baz)")]
+        [DataRow(@"foo + bar & baz.Substring(1)", @"String.Concat(foo, bar, baz.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) & bar + baz & baz.Substring(1)", @"String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
+        [DataRow(@"foo & bar.Substring(1) + baz & foo", @"String.Concat(foo, bar.AsSpan(1), baz, foo)")]
+        [DataRow(@"foo.Substring(1) & bar + baz & foo", @"String.Concat(foo.AsSpan(1), bar, baz, foo)")]
+        [DataRow(@"foo & bar + baz & foo.Substring(1)", @"String.Concat(foo, bar, baz, foo.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) + bar & baz + baz.Substring(1)", @"String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
+        [DataRow(@"foo + bar.Substring(1) & baz + foo", @"String.Concat(foo, bar.AsSpan(1), baz, foo)")]
+        [DataRow(@"foo.Substring(1) + bar & baz + foo", @"String.Concat(foo.AsSpan(1), bar, baz, foo)")]
+        [DataRow(@"foo + bar & baz + foo.Substring(1)", @"String.Concat(foo, bar, baz, foo.AsSpan(1))")]
         public Task MixedAddAndConcatenateOperatorChains_AreReportedAndFixed_VBAsync(string testExpression, string fixedExpression)
         {
             var test = new VerifyVB.Test
@@ -562,16 +563,16 @@ Dim s = {0}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(@"foo.Substring(1) + 'A'", @"string.Concat(foo.AsSpan(1), ""A"")")]
-        [InlineData(@"'A' + foo.Substring(1)", @"string.Concat(""A"", foo.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) + bar + 'A'", @"string.Concat(foo.AsSpan(1), bar, ""A"")")]
-        [InlineData(@"foo.Substring(1) + 'A' + bar", @"string.Concat(foo.AsSpan(1), ""A"", bar)")]
-        [InlineData(@"foo + 'A' + bar.Substring(1)", @"string.Concat(foo, ""A"", bar.AsSpan(1))")]
-        [InlineData(@"foo + bar.Substring(1) + 'A'", @"string.Concat(foo, bar.AsSpan(1), ""A"")")]
+        [TestMethod]
+        [DataRow(@"foo.Substring(1) + 'A'", @"string.Concat(foo.AsSpan(1), ""A"")")]
+        [DataRow(@"'A' + foo.Substring(1)", @"string.Concat(""A"", foo.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) + bar + 'A'", @"string.Concat(foo.AsSpan(1), bar, ""A"")")]
+        [DataRow(@"foo.Substring(1) + 'A' + bar", @"string.Concat(foo.AsSpan(1), ""A"", bar)")]
+        [DataRow(@"foo + 'A' + bar.Substring(1)", @"string.Concat(foo, ""A"", bar.AsSpan(1))")]
+        [DataRow(@"foo + bar.Substring(1) + 'A'", @"string.Concat(foo, bar.AsSpan(1), ""A"")")]
         public Task CharLiterals_AreConvertedToStringLiterals_CSAsync(string testExpression, string fixedExpression)
         {
             var test = new VerifyCS.Test
@@ -581,16 +582,16 @@ Dim s = {0}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(@"foo.Substring(1) & ""A""c", @"String.Concat(foo.AsSpan(1), ""A"")")]
-        [InlineData(@"""A""c & foo.Substring(1)", @"String.Concat(""A"", foo.AsSpan(1))")]
-        [InlineData(@"foo.Substring(1) & bar & ""A""c", @"String.Concat(foo.AsSpan(1), bar, ""A"")")]
-        [InlineData(@"foo.Substring(1) & ""A""c & bar", @"String.Concat(foo.AsSpan(1), ""A"", bar)")]
-        [InlineData(@"foo & ""A""c & bar.Substring(1)", @"String.Concat(foo, ""A"", bar.AsSpan(1))")]
-        [InlineData(@"foo & bar.Substring(1) & ""A""c", @"String.Concat(foo, bar.AsSpan(1), ""A"")")]
+        [TestMethod]
+        [DataRow(@"foo.Substring(1) & ""A""c", @"String.Concat(foo.AsSpan(1), ""A"")")]
+        [DataRow(@"""A""c & foo.Substring(1)", @"String.Concat(""A"", foo.AsSpan(1))")]
+        [DataRow(@"foo.Substring(1) & bar & ""A""c", @"String.Concat(foo.AsSpan(1), bar, ""A"")")]
+        [DataRow(@"foo.Substring(1) & ""A""c & bar", @"String.Concat(foo.AsSpan(1), ""A"", bar)")]
+        [DataRow(@"foo & ""A""c & bar.Substring(1)", @"String.Concat(foo, ""A"", bar.AsSpan(1))")]
+        [DataRow(@"foo & bar.Substring(1) & ""A""c", @"String.Concat(foo, bar.AsSpan(1), ""A"")")]
         public Task CharLiterals_AreConvertedToStringLiterals_VBAsync(string testExpression, string fixedExpression)
         {
             var test = new VerifyVB.Test
@@ -600,18 +601,18 @@ Dim s = {0}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
         #endregion
 
         #region No Diagnostic
-        [Theory]
-        [InlineData("foo.Substring(1) + foo + foo + bar + baz")]
-        [InlineData("foo + foo.Substring(1) + bar + baz + baz")]
-        [InlineData("foo.Substring(1) + bar.Substring(1) + baz.Substring(1) + bar.Substring(1) + foo.Substring(1)")]
-        [InlineData("foo.Substring(1) + bar + baz + foo.Substring(1) + bar + baz")]
-        [InlineData("foo + bar.Substring(1) + baz + foo + bar.Substring(1) + baz")]
-        [InlineData("foo.Substring(1) + bar + baz.Substring(1) + foo.Substring(1) + bar + baz.Substring(1)")]
+        [TestMethod]
+        [DataRow("foo.Substring(1) + foo + foo + bar + baz")]
+        [DataRow("foo + foo.Substring(1) + bar + baz + baz")]
+        [DataRow("foo.Substring(1) + bar.Substring(1) + baz.Substring(1) + bar.Substring(1) + foo.Substring(1)")]
+        [DataRow("foo.Substring(1) + bar + baz + foo.Substring(1) + bar + baz")]
+        [DataRow("foo + bar.Substring(1) + baz + foo + bar.Substring(1) + baz")]
+        [DataRow("foo.Substring(1) + bar + baz.Substring(1) + foo.Substring(1) + bar + baz.Substring(1)")]
         public Task TooManyArguments_NoDiagnostic_CSAsync(string expression)
         {
             string statements = $@"var s = {expression};";
@@ -621,16 +622,16 @@ Dim s = {0}";
                 TestCode = CSUsings + CSWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("foo.Substring(1) & foo & foo & bar & baz")]
-        [InlineData("foo & foo.Substring(1) & bar & baz & baz")]
-        [InlineData("foo.Substring(1) & bar.Substring(1) & baz.Substring(1) & bar.Substring(1) & foo.Substring(1)")]
-        [InlineData("foo.Substring(1) & bar & baz & foo.Substring(1) & bar & baz")]
-        [InlineData("foo & bar.Substring(1) & baz & foo & bar.Substring(1) & baz")]
-        [InlineData("foo.Substring(1) & bar & baz.Substring(1) & foo.Substring(1) & bar & baz.Substring(1)")]
+        [TestMethod]
+        [DataRow("foo.Substring(1) & foo & foo & bar & baz")]
+        [DataRow("foo & foo.Substring(1) & bar & baz & baz")]
+        [DataRow("foo.Substring(1) & bar.Substring(1) & baz.Substring(1) & bar.Substring(1) & foo.Substring(1)")]
+        [DataRow("foo.Substring(1) & bar & baz & foo.Substring(1) & bar & baz")]
+        [DataRow("foo & bar.Substring(1) & baz & foo & bar.Substring(1) & baz")]
+        [DataRow("foo.Substring(1) & bar & baz.Substring(1) & foo.Substring(1) & bar & baz.Substring(1)")]
         public Task TooManyArguments_NoDiagnostic_VBAsync(string expression)
         {
             string statements = $@"Dim s = {expression}";
@@ -640,14 +641,14 @@ Dim s = {0}";
                 TestCode = VBUsings + VBWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("foo + bar")]
-        [InlineData("foo + bar + baz")]
-        [InlineData("foo + bar.ToUpper()")]
-        [InlineData("foo.ToLower() + bar")]
+        [TestMethod]
+        [DataRow("foo + bar")]
+        [DataRow("foo + bar + baz")]
+        [DataRow("foo + bar.ToUpper()")]
+        [DataRow("foo.ToLower() + bar")]
         public Task NoSubstringInvocations_NoDiagnostic_CSAsync(string expression)
         {
             string statements = $@"var s = {expression};";
@@ -657,14 +658,14 @@ Dim s = {0}";
                 TestCode = CSUsings + CSWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("foo & bar")]
-        [InlineData("foo & bar & baz")]
-        [InlineData("foo & bar.ToUpper()")]
-        [InlineData("foo.ToLower() & bar")]
+        [TestMethod]
+        [DataRow("foo & bar")]
+        [DataRow("foo & bar & baz")]
+        [DataRow("foo & bar.ToUpper()")]
+        [DataRow("foo.ToLower() & bar")]
         public Task NoSubstringInvocations_NoDiagnostic_VBAsync(string expression)
         {
             string statements = $@"Dim s = {expression}";
@@ -674,19 +675,19 @@ Dim s = {0}";
                 TestCode = VBUsings + VBWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         //  No VB case because VB can't overload operators.
-        [Theory]
-        [InlineData(@"foo.Substring(1) + evil")]
-        [InlineData(@"evil + foo.Substring(1)")]
-        [InlineData(@"foo + evil + bar.Substring(1)")]
-        [InlineData(@"foo.Substring(1) + evil + bar")]
-        [InlineData(@"foo.Substring(1) + evil + bar + baz")]
-        [InlineData(@"foo + bar + evil + baz.Substring(1)")]
-        [InlineData(@"foo + evil + bar.Substring(1) + evil")]
-        [InlineData(@"foo + evil + bar.Substring(1) + evil + baz.Substring(1)")]
+        [TestMethod]
+        [DataRow(@"foo.Substring(1) + evil")]
+        [DataRow(@"evil + foo.Substring(1)")]
+        [DataRow(@"foo + evil + bar.Substring(1)")]
+        [DataRow(@"foo.Substring(1) + evil + bar")]
+        [DataRow(@"foo.Substring(1) + evil + bar + baz")]
+        [DataRow(@"foo + bar + evil + baz.Substring(1)")]
+        [DataRow(@"foo + evil + bar.Substring(1) + evil")]
+        [DataRow(@"foo + evil + bar.Substring(1) + evil + baz.Substring(1)")]
         public Task OverloadedAddOperator_NoDiagnostic_CSAsync(string expression)
         {
             string statements = $@"
@@ -705,20 +706,20 @@ var e = {expression};";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(@"foo.Substring(1) + thing")]
-        [InlineData(@"thing + foo.Substring(1)")]
-        [InlineData(@"foo.Substring(1) + count")]
-        [InlineData(@"count + foo.Substring(1)")]
-        [InlineData(@"foo.Substring(1) + charvar")]
-        [InlineData(@"charvar + foo.Substring(1)")]
-        [InlineData(@"foo.Substring(1) + bar + thing")]
-        [InlineData(@"foo + bar.Substring(1) + thing")]
-        [InlineData(@"foo.Substring(1) + thing + bar.Substring(1)")]
-        [InlineData(@"foo.Substring(1) + bar.Substring(1) + thing")]
+        [TestMethod]
+        [DataRow(@"foo.Substring(1) + thing")]
+        [DataRow(@"thing + foo.Substring(1)")]
+        [DataRow(@"foo.Substring(1) + count")]
+        [DataRow(@"count + foo.Substring(1)")]
+        [DataRow(@"foo.Substring(1) + charvar")]
+        [DataRow(@"charvar + foo.Substring(1)")]
+        [DataRow(@"foo.Substring(1) + bar + thing")]
+        [DataRow(@"foo + bar.Substring(1) + thing")]
+        [DataRow(@"foo.Substring(1) + thing + bar.Substring(1)")]
+        [DataRow(@"foo.Substring(1) + bar.Substring(1) + thing")]
         public Task WithNonStringNonCharLiteralOperands_NoDiagnostic_CSAsync(string expression)
         {
             string statements = $@"
@@ -732,20 +733,20 @@ string s = {expression};";
                 TestCode = CSUsings + CSWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(@"foo.Substring(1) & thing")]
-        [InlineData(@"thing & foo.Substring(1)")]
-        [InlineData(@"foo.Substring(1) & count")]
-        [InlineData(@"count & foo.Substring(1)")]
-        [InlineData(@"foo.Substring(1) & charvar")]
-        [InlineData(@"charvar & foo.Substring(1)")]
-        [InlineData(@"foo.Substring(1) & bar & thing")]
-        [InlineData(@"foo & bar.Substring(1) & thing")]
-        [InlineData(@"foo.Substring(1) & thing & bar.Substring(1)")]
-        [InlineData(@"foo.Substring(1) & bar.Substring(1) & thing")]
+        [TestMethod]
+        [DataRow(@"foo.Substring(1) & thing")]
+        [DataRow(@"thing & foo.Substring(1)")]
+        [DataRow(@"foo.Substring(1) & count")]
+        [DataRow(@"count & foo.Substring(1)")]
+        [DataRow(@"foo.Substring(1) & charvar")]
+        [DataRow(@"charvar & foo.Substring(1)")]
+        [DataRow(@"foo.Substring(1) & bar & thing")]
+        [DataRow(@"foo & bar.Substring(1) & thing")]
+        [DataRow(@"foo.Substring(1) & thing & bar.Substring(1)")]
+        [DataRow(@"foo.Substring(1) & bar.Substring(1) & thing")]
         public Task WithNonStringNonCharLiteralOperands_NoDiagnostic_VBAsync(string expression)
         {
             string statements = $@"
@@ -759,10 +760,10 @@ Dim s As String = {expression}";
                 TestCode = VBUsings + VBWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TestSystemImportedFromGlobalUsing()
         {
             var test = new VerifyCS.Test
@@ -784,7 +785,7 @@ Dim s As String = {expression}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
         #endregion
 

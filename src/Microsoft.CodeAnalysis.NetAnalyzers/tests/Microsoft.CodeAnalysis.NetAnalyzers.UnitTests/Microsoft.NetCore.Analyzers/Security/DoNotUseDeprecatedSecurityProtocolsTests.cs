@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseDeprecatedSecurityProtocols,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseDeprecatedSecurityProtocolsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_ViolationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -34,7 +35,7 @@ public class ExampleClass
             GetCSharpResultAt(10, 77, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_ViolationAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -52,7 +53,7 @@ End Class
             GetBasicResultAt(8, 78, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_CSharp_ViolationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -70,7 +71,7 @@ public class ExampleClass
             GetCSharpResultAt(10, 48, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "768"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_VB_ViolationAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -87,7 +88,7 @@ End Class
             GetBasicResultAt(8, 48, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "768"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_SolutionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -104,7 +105,7 @@ public class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_SolutionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -120,7 +121,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_CSharp_ViolationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -138,7 +139,7 @@ public class ExampleClass
             GetCSharpResultAt(10, 48, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_VB_ViolationAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -155,7 +156,7 @@ End Class
             GetBasicResultAt(8, 48, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample4_CSharp_ViolationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -173,7 +174,7 @@ public class ExampleClass
             GetCSharpResultAt(10, 48, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "3072"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample4_VB_ViolationAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -190,7 +191,7 @@ End Class
             GetBasicResultAt(8, 48, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "3072"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseSsl3DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -207,7 +208,7 @@ class TestClass
             GetCSharpResultAt(9, 17, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "Ssl3"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseTlsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -224,7 +225,7 @@ class TestClass
             GetCSharpResultAt(9, 17, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "Tls"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseTls11DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -241,7 +242,7 @@ class TestClass
             GetCSharpResultAt(9, 48, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "Tls11"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseSystemDefaultNoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -264,10 +265,10 @@ class TestClass
 }",
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseTls12DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -284,7 +285,7 @@ class TestClass
                 GetCSharpResultAt(9, 48, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseTls13DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -311,10 +312,10 @@ class TestClass
                         GetCSharpResultAt(9, 48, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "Tls13"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseTls12OrdTls11DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -332,7 +333,7 @@ class TestClass
                 GetCSharpResultAt(9, 77, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "Tls11"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUse192CompoundAssignmentDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -349,7 +350,7 @@ class TestClass
                 GetCSharpResultAt(9, 49, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "192"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUse384SimpleAssignmentDiagnosticAsync()
         {
             // 384 = SchProtocols.Tls11Server | SchProtocols.Tls10Client
@@ -367,7 +368,7 @@ class TestClass
                 GetCSharpResultAt(9, 48, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "384"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUse768SimpleAssignmentOrExpressionDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -384,7 +385,7 @@ class TestClass
                 GetCSharpResultAt(9, 87, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "768"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUse12288SimpleAssignmentOrExpressionDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -401,7 +402,7 @@ class TestClass
                 GetCSharpResultAt(9, 87, DoNotUseDeprecatedSecurityProtocols.HardCodedRule, "12288"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseTls12OrTls11Or192DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -419,7 +420,7 @@ class TestClass
                 GetCSharpResultAt(9, 77, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "Tls11"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUseTls12Or192DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -437,7 +438,7 @@ class TestClass
                 VerifyCS.Diagnostic(DoNotUseDeprecatedSecurityProtocols.HardCodedRule).WithSpan(9, 48, 9, 74).WithArguments("Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUse768DeconstructionAssignmentNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -455,7 +456,7 @@ class TestClass
             // Ideally we'd handle the IDeconstructionAssignment, but this code pattern seems unlikely.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUse24Plus24SimpleAssignmentDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -472,7 +473,7 @@ class TestClass
                 GetCSharpResultAt(9, 48, DoNotUseDeprecatedSecurityProtocols.DeprecatedRule, "48"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUse768NotSecurityProtocolTypeNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -488,7 +489,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMaskOutUnsafeOnServicePointManagerNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -504,7 +505,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMaskOutUnsafeOnVariableDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

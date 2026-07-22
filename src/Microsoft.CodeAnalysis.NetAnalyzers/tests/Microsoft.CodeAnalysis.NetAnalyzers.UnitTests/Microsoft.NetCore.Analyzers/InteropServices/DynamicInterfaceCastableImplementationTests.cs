@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.DynamicInterfaceCastableImplementationAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.InteropServices.CSharpDynamicInterfaceCastableImplementationFixer>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.NetCore.Analyzers.InteropServices
 {
+    [TestClass]
     public class DynamicInterfaceCastableImplementationTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementationAttribute_VB_Diagnostic()
         {
             string source = @"
@@ -32,7 +33,7 @@ End Interface";
             await VerifyVBAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_AllMethodsImplementated_CS_NoDiagnostic()
         {
             string source = @"
@@ -52,7 +53,7 @@ interface I2 : I
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_ParentMethodsPrivate_CS_NoDiagnostic()
         {
             string source = @"
@@ -71,7 +72,7 @@ interface I2 : I
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_AllMethodsImplementated_ParentAndTarget_CS_NoDiagnostic()
         {
             string source = @"
@@ -92,7 +93,7 @@ interface I2 : I
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_SomeMethodsImplementated_CS_Diagnostic()
         {
             string source = @"
@@ -134,7 +135,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_GrandparentInterfaceMethodsNotImplementated_CS_Diagnostic()
         {
             string source = @"
@@ -184,7 +185,7 @@ interface I3 : I2
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_SameMethodNameMultipleParentsUnimplemented_CS_Diagnostic()
         {
             string source = @"
@@ -236,7 +237,7 @@ interface I3 : I, I2
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_NoPropertiesImplementated_CS_Diagnostic()
         {
             string source = @"
@@ -281,7 +282,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_NoIndexerImplementated_CS_Diagnostic()
         {
             string source = @"
@@ -326,7 +327,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_NoPropertiesImplementated_GetAccessor_CS_Diagnostic()
         {
             string source = @"
@@ -366,7 +367,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_NoPropertiesImplementated_SetAccessor_CS_Diagnostic()
         {
             string source = @"
@@ -406,7 +407,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_NoPropertiesImplementated_InitAccessor_CS_Diagnostic()
         {
             string source = @"
@@ -446,7 +447,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_NoEventsImplemented_CS_Diagnostic()
         {
             string source = @"
@@ -492,7 +493,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsStatic_CS_NoDiagnostic()
         {
             string source = @"
@@ -515,7 +516,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsSealed_CS_Diagnostic()
         {
             string source = @"
@@ -554,7 +555,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsPrivate_CS_Diagnostic()
         {
             string source = @"
@@ -592,7 +593,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsImplicitPublicVirtual_CS_CodeFix()
         {
             string source = @"
@@ -631,7 +632,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsImplicitPublicVirtual_NoBody_CS_CodeFix()
         {
             string source = @"
@@ -674,7 +675,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsImplicitPublicExplicitVirtual_CS_CodeFix()
         {
             string source = @"
@@ -713,7 +714,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsImplicitPublicExplicitAbstract_CS_CodeFix()
         {
             string source = @"
@@ -754,7 +755,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsExplicitPublicImplicitVirtual_CS_CodeFix()
         {
             string source = @"
@@ -792,7 +793,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsExplicitPublicVirtual_CS_CodeFix()
         {
             string source = @"
@@ -830,7 +831,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedMethodsNonPublic_CS_CodeFix()
         {
             string source = @"
@@ -868,7 +869,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedProperties_NoBody_CS_Diagnostic()
         {
             string source = @"
@@ -894,7 +895,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedProperties_NoBody_GetOnly_CS_Diagnostic()
         {
             string source = @"
@@ -919,7 +920,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedProperties_NoBody_SetOnly_CS_Diagnostic()
         {
             string source = @"
@@ -944,7 +945,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedProperties_NoBody_InitOnly_CS_Diagnostic()
         {
             string source = @"
@@ -969,7 +970,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_DefinedProperties_SetOnly_CS_Diagnostic()
         {
             string source = @"
@@ -991,7 +992,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_Events_NoBody_CS_Diagnostic()
         {
             string source = @"
@@ -1014,7 +1015,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_Events_MultipleInOneDeclaration_NoBody_CS_Diagnostic()
         {
             string source = @"
@@ -1037,7 +1038,7 @@ interface I2 : I
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_Events_CS_Diagnostic()
         {
             string source = @"
@@ -1068,7 +1069,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicInterfaceCastableImplementation_InstanceMethod_CS_UsageRewritten()
         {
             string source = @"
@@ -1129,7 +1130,7 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5964, "https://github.com/dotnet/roslyn-analyzers/issues/5964")]
         public async Task DynamicInterfaceCastableImplementation_InterfaceContainingNamedType_NoDiagnostic()
         {
@@ -1155,7 +1156,7 @@ public interface IMyInterface
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5964, "https://github.com/dotnet/roslyn-analyzers/issues/5964")]
         public async Task DynamicInterfaceCastableImplementation_InterfaceContainingNamedType_Diagnostic()
         {
@@ -1198,7 +1199,7 @@ public interface IMyInterface
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5964, "https://github.com/dotnet/roslyn-analyzers/issues/5964")]
         public async Task DynamicInterfaceCastableImplementation_AbstractStaticInInterface()
         {
@@ -1236,7 +1237,7 @@ public interface I2 : I
             await VerifyCSCodeFixAsync(source, fixedSource, CSharp.LanguageVersion.Preview, ReferenceAssemblies.Net.Net60);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(7106, "htpts://github.com/dotnet/roslyn-analyzers/issues/7106")]
         public async Task DynamicInterfaceCastableImplementation_NonStatic_NestedType()
         {
@@ -1272,7 +1273,7 @@ internal interface IImpl : IMyInterface
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = source
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyCSCodeFixAsync(string source, string codeFix)
@@ -1288,7 +1289,7 @@ internal interface IImpl : IMyInterface
                 ReferenceAssemblies = referenceAssemblies,
                 TestCode = source,
                 FixedCode = codeFix
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

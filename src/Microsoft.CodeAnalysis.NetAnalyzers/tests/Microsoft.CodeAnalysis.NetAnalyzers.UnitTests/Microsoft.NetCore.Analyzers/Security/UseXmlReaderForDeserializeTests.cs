@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseXmlReaderForDeserialize,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class UseXmlReaderForDeserializeTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithStreamParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -32,7 +33,7 @@ class TestClass
             GetCSharpResultAt(10, 9, "XmlSerializer", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithTextReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -50,7 +51,7 @@ class TestClass
             GetCSharpResultAt(10, 9, "XmlSerializer", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBaseClassInvokesDeserializeWithXmlSerializationReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -81,7 +82,7 @@ End Class",
             GetBasicResultAt(9, 23, "XmlSerializer", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TesDerivedClassInvokesDeserializeWithXmlSerializationReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -121,7 +122,7 @@ End Class",
             GetBasicResultAt(13, 9, "TestClass", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithTwoLevelsOfInheritanceAndOverridesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -152,7 +153,7 @@ class SubTestClass : TestClass
             GetCSharpResultAt(23, 9, "SubTestClass", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -170,7 +171,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithXmlReaderAndStringParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -189,7 +190,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithXmlReaderAndXmlDeserializationEventsParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -207,7 +208,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithXmlReaderAndStringAndXmlDeserializationEventsParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -225,7 +226,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDerivedFromANormalClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -257,7 +258,7 @@ class SubTestClass : TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalClassReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

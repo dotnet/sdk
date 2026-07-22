@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumsShouldHaveZeroValueAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EquatableFixer>;
@@ -14,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumsShouldHaveZeroValueTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueFlagsRenameAsync()
         {
             var code = @"
@@ -64,7 +65,7 @@ public enum NoZeroValuedField
                 GetCSharpRenameResultAt(29, 5, "E4", "A4"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_EnumsShouldZeroValueFlagsRename_InternalAsync()
         {
             var code = @"
@@ -108,7 +109,7 @@ internal enum NoZeroValuedField
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
             var code = @"// Some comment
@@ -134,7 +135,7 @@ public enum E2
                 GetCSharpMultipleZeroResultAt(14, 13, "E2"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZero_InternalAsync()
         {
             var code = @"// Some comment
@@ -158,7 +159,7 @@ internal enum E2
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
             var code = @"
@@ -193,7 +194,7 @@ public enum E4
                 GetCSharpNoZeroResultAt(9, 17, "E2"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValue_InternalAsync()
         {
             var code = @"
@@ -226,7 +227,7 @@ internal enum E4
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRenameAsync()
         {
             var code = @"
@@ -262,7 +263,7 @@ End Enum
                 GetBasicRenameResultAt(18, 5, "E3", "A3"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_InternalAsync()
         {
             var code = @"
@@ -296,7 +297,7 @@ End Enum
         }
 
         [WorkItem(836193, "DevDiv")]
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTriviaAsync()
         {
             var code = @"
@@ -332,7 +333,7 @@ End Enum
                 GetBasicRenameResultAt(18, 2, "E3", "A3"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
             var code = @"
@@ -362,7 +363,7 @@ End Enum";
                 GetBasicMultipleZeroResultAt(17, 13, "E3"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZero_InternalAsync()
         {
             var code = @"
@@ -389,7 +390,7 @@ End Enum";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
             var code = @"
@@ -420,7 +421,7 @@ End Enum
                 GetBasicNoZeroResultAt(7, 17, "E2"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValue_InternalAsync()
         {
             var code = @"
@@ -449,12 +450,12 @@ End Enum
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Theory, WorkItem(5777, "https://github.com/dotnet/roslyn-analyzers/issues/5777")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.additional_enum_none_names = Never")]
-        [InlineData("dotnet_code_quality.CA1008.additional_enum_none_names = Never")]
-        [InlineData("dotnet_code_quality.additional_enum_none_names = Never|Zero")]
-        [InlineData("dotnet_code_quality.CA1008.additional_enum_none_names = Never|Zero")]
+        [TestMethod, WorkItem(5777, "https://github.com/dotnet/roslyn-analyzers/issues/5777")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.additional_enum_none_names = Never")]
+        [DataRow("dotnet_code_quality.CA1008.additional_enum_none_names = Never")]
+        [DataRow("dotnet_code_quality.additional_enum_none_names = Never|Zero")]
+        [DataRow("dotnet_code_quality.CA1008.additional_enum_none_names = Never|Zero")]
         public async Task EnumNoneValueMatchesUserOption(string editorConfigText)
         {
             var csTest = new VerifyCS.Test
@@ -504,7 +505,7 @@ public enum E3
                 csTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(21, 5, "E3", "Zero"));
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -550,7 +551,7 @@ End Enum"},
                 vbTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(18, 5, "E3", "Zero"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpMultipleZeroResultAt(int line, int column, string typeName)

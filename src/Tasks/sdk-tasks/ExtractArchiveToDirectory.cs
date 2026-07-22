@@ -84,20 +84,17 @@ namespace Microsoft.DotNet.Build.Tasks
                         if (isZipArchive)
                         {
                             using var zip = new ZipArchive(File.OpenRead(SourceArchive));
+                            string fullDestDirPath = GetFullDirectoryPathWithSeperator(DestinationDirectory);
+
                             foreach (var entry in zip.Entries)
                             {
                                 if (ShouldExtractItem(entry.FullName))
                                 {
-                                    string destinationPath = Path.Combine(DestinationDirectory, entry.FullName);
-                                    string destinationFileName = GetFullDirectoryPathWithSeperator(destinationPath);
-                                    string fullDestDirPath = GetFullDirectoryPathWithSeperator(DestinationDirectory);
+                                    string destinationPath = Path.GetFullPath(Path.Combine(DestinationDirectory, entry.FullName));
 
-                                    CheckDestinationPath(destinationFileName, fullDestDirPath);
+                                    CheckDestinationPath(destinationPath, fullDestDirPath);
 
-                                    if (!Directory.Exists(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName))))
-                                    {
-                                        Directory.CreateDirectory(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName)));
-                                    }
+                                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
 
                                     Log.LogMessage(Path.GetDirectoryName(entry.FullName));
                                     entry.ExtractToFile(destinationPath);
@@ -116,6 +113,7 @@ namespace Microsoft.DotNet.Build.Tasks
                             using var decompressedStream = new MemoryStream();
                             decompressor.CopyTo(decompressedStream);
                             decompressedStream.Seek(0, SeekOrigin.Begin);
+                            string fullDestDirPath = GetFullDirectoryPathWithSeperator(DestinationDirectory);
 
                             // Extract Tar content
                             using TarReader tr = new TarReader(decompressedStream);
@@ -127,15 +125,12 @@ namespace Microsoft.DotNet.Build.Tasks
                                     entryName = entryName.StartsWith("./") ? entryName[2..] : entryName;
                                     if (ShouldExtractItem(entryName))
                                     {
-                                        string destinationPath = Path.Combine(DestinationDirectory, entryName);
-                                        string destinationFileName = GetFullDirectoryPathWithSeperator(destinationPath);
-                                        string fullDestDirPath = GetFullDirectoryPathWithSeperator(DestinationDirectory);
+                                        string destinationPath = Path.GetFullPath(Path.Combine(DestinationDirectory, entryName));
 
-                                        CheckDestinationPath(destinationFileName, fullDestDirPath);
+                                        CheckDestinationPath(destinationPath, fullDestDirPath);
+                                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
 
                                         Log.LogMessage(entryName);
-
-                                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
                                         tarEntry.ExtractToFile(destinationPath, overwrite: true);
                                     }
                                 }
@@ -186,7 +181,7 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             string fullDirectoryPath = Path.GetFullPath(directory);
 
-            if (!fullDirectoryPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))
+            if (!fullDirectoryPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             {
                 fullDirectoryPath = string.Concat(fullDirectoryPath, Path.DirectorySeparatorChar);
             }
@@ -196,7 +191,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         private void CheckDestinationPath(string destinationFileName, string fullDestDirPath)
         {
-            if (!destinationFileName.StartsWith(fullDestDirPath, StringComparison.OrdinalIgnoreCase))
+            if (!destinationFileName.StartsWith(fullDestDirPath, StringComparison.Ordinal))
             {
                 throw new System.InvalidOperationException("Entry is outside the target dir: " + destinationFileName);
             }

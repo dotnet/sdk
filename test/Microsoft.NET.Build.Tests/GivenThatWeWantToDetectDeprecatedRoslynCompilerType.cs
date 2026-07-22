@@ -5,9 +5,10 @@
 
 namespace Microsoft.NET.Build.Tests;
 
-public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType : SdkTest
 {
-    [Fact]
+    [TestMethod]
     public void It_warns_when_RoslynCompilerType_is_Framework()
     {
         var testProject = new TestProject()
@@ -19,7 +20,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
 
         testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
         var buildCommand = new BuildCommand(testAsset);
 
@@ -33,7 +34,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .HaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_warn_when_RoslynCompilerType_is_Core()
     {
         var testProject = new TestProject()
@@ -45,7 +46,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
 
         testProject.AdditionalProperties["RoslynCompilerType"] = "Core";
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
         var buildCommand = new BuildCommand(testAsset);
 
@@ -59,7 +60,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .NotHaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_warn_when_RoslynCompilerType_is_FrameworkPackage()
     {
         var testProject = new TestProject()
@@ -71,7 +72,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
 
         testProject.AdditionalProperties["RoslynCompilerType"] = "FrameworkPackage";
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
         var buildCommand = new BuildCommand(testAsset);
 
@@ -85,7 +86,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .NotHaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_warn_when_RoslynCompilerType_is_not_set()
     {
         var testProject = new TestProject()
@@ -95,7 +96,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             IsExe = true
         };
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
         var buildCommand = new BuildCommand(testAsset);
 
@@ -109,7 +110,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .NotHaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_warn_when_suppressed_with_NoWarn()
     {
         var testProject = new TestProject()
@@ -122,7 +123,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
         testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
         testProject.AdditionalProperties["NoWarn"] = "NETSDK1234";
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
         var buildCommand = new BuildCommand(testAsset);
 
@@ -136,7 +137,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .NotHaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_can_suppress_warning_via_command_line()
     {
         var testProject = new TestProject()
@@ -148,7 +149,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
 
         testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
 
-        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
         var buildCommand = new BuildCommand(testAsset);
 

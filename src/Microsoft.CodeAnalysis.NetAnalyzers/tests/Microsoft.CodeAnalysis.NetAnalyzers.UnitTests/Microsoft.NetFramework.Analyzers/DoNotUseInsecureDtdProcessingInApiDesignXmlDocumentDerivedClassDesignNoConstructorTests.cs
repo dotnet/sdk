@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingInApiDesignAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -25,7 +25,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage, name));
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task NonXmlDocumentDerivedTypeWithNoConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -58,7 +58,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonXmlDocumentDerivedTypeWithConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -96,7 +96,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeWithNoConstructorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"

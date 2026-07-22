@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.InstantiateArgumentExceptionsCorrectlyAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.InstantiateArgumentExceptionsCorrectlyFixer>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class InstantiateArgumentExceptionsCorrectlyTests
     {
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_NoArguments_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -37,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 GetBasicNoArgumentsExpectedResult(4, 31, "ArgumentException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_EmptyParameterNameArgument_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -59,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "", "paramName", "ArgumentNullException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_SpaceParameterArgument_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -81,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", " ", "paramName", "ArgumentNullException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_NameofNonParameter_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -105,7 +106,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 GetBasicIncorrectParameterNameExpectedResult(5, 31, "Test", "v", "paramName", "ArgumentNullException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_ParameterNameAsMessage_WarnsAndCodeFixesWithNameOfAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -139,7 +140,7 @@ Public Class [MyClass]
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_ReversedArguments_WarnsAndCodeFixesWithNameOfAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -173,7 +174,7 @@ Public Class [MyClass]
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_ParameterWithNameofAsMessage_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -195,7 +196,7 @@ End Class");
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_ReversedArgumentsWithNameof_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -216,7 +217,7 @@ End Class");
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_Reversed3Arguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -250,7 +251,7 @@ Public Class [MyClass]
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_NoArguments_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -272,7 +273,7 @@ End Class");
                 GetBasicNoArgumentsExpectedResult(4, 31, "ArgumentNullException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_MessageAsParameterName_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -286,7 +287,7 @@ End Class");
                 GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first is null", "paramName", "ArgumentNullException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_ReversedArguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -320,7 +321,7 @@ Public Class [MyClass]
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeException_NoArguments_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -342,7 +343,7 @@ End Class");
                 GetBasicNoArgumentsExpectedResult(4, 31, "ArgumentOutOfRangeException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeException_MessageAsParameterName_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -364,7 +365,7 @@ End Class");
                 GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first is out of range", "paramName", "ArgumentOutOfRangeException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeException_ReversedArguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -398,7 +399,7 @@ Public Class [MyClass]
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeException_Reversed3Arguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -436,7 +437,7 @@ Public Class [MyClass]
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DuplicateWaitObjectException_NoArguments_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -458,7 +459,7 @@ End Class");
                 GetBasicNoArgumentsExpectedResult(4, 31, "DuplicateWaitObjectException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DuplicateWaitObjectException_MessageAsParameterName_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -480,7 +481,7 @@ End Class");
                 GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first is duplicate", "parameterName", "DuplicateWaitObjectException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DuplicateWaitObjectException_ReversedArguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -514,7 +515,7 @@ Public Class [MyClass]
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_ParentHasNoParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -527,7 +528,7 @@ End Class");
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_ParentHasNoParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -540,7 +541,7 @@ End Class");
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_VariableUsed_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -553,7 +554,7 @@ End Class");
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_NoArguments_ParentMethod_HasNoParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -573,7 +574,7 @@ End Class");
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_CorrectMessage_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -593,7 +594,7 @@ End Class");
                End Class");
         }
 
-        [Fact, WorkItem(6863, "https://github.com/dotnet/roslyn-analyzers/issues/6863")]
+        [TestMethod, WorkItem(6863, "https://github.com/dotnet/roslyn-analyzers/issues/6863")]
         public async Task ArgumentException_MessageStartWithParameterNameFollowedByPunctuation_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -622,7 +623,7 @@ End Class");
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_GenericParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -642,7 +643,7 @@ End Class");
                 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_GenericParameterName_WrongPosition_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -676,25 +677,25 @@ Public Class [MyClass]
 End Class");
         }
 
-        [Theory]
-        [InlineData("public", "dotnet_code_quality.api_surface = private", false)]
-        [InlineData("private", "dotnet_code_quality.api_surface = internal, public", false)]
-        [InlineData("public", "dotnet_code_quality.CA2208.api_surface = private, public", true)]
-        [InlineData("public", "dotnet_code_quality.CA2208.api_surface = internal, private", false)]
-        [InlineData("public", "dotnet_code_quality.CA2208.api_surface = Friend, Private", false)]
-        [InlineData("public", @"dotnet_code_quality.api_surface = all
+        [TestMethod]
+        [DataRow("public", "dotnet_code_quality.api_surface = private", false)]
+        [DataRow("private", "dotnet_code_quality.api_surface = internal, public", false)]
+        [DataRow("public", "dotnet_code_quality.CA2208.api_surface = private, public", true)]
+        [DataRow("public", "dotnet_code_quality.CA2208.api_surface = internal, private", false)]
+        [DataRow("public", "dotnet_code_quality.CA2208.api_surface = Friend, Private", false)]
+        [DataRow("public", @"dotnet_code_quality.api_surface = all
                                         dotnet_code_quality.CA2208.api_surface = private", false)]
-        [InlineData("public", "dotnet_code_quality.api_surface = public", true)]
-        [InlineData("public", "dotnet_code_quality.api_surface = internal, public", true)]
-        [InlineData("public", "dotnet_code_quality.CA2208.api_surface = public", true)]
-        [InlineData("public", "dotnet_code_quality.CA2208.api_surface = all", true)]
-        [InlineData("public", "dotnet_code_quality.CA2208.api_surface = public, private", true)]
-        [InlineData("public", @"dotnet_code_quality.api_surface = internal
+        [DataRow("public", "dotnet_code_quality.api_surface = public", true)]
+        [DataRow("public", "dotnet_code_quality.api_surface = internal, public", true)]
+        [DataRow("public", "dotnet_code_quality.CA2208.api_surface = public", true)]
+        [DataRow("public", "dotnet_code_quality.CA2208.api_surface = all", true)]
+        [DataRow("public", "dotnet_code_quality.CA2208.api_surface = public, private", true)]
+        [DataRow("public", @"dotnet_code_quality.api_surface = internal
                                         dotnet_code_quality.CA2208.api_surface = public", true)]
-        [InlineData("public", "", true)]
-        [InlineData("protected", "", true)]
-        [InlineData("private", "", true)]
-        [InlineData("protected", "dotnet_code_quality.CA2208.api_surface = public", true)]
+        [DataRow("public", "", true)]
+        [DataRow("protected", "", true)]
+        [DataRow("private", "", true)]
+        [DataRow("protected", "dotnet_code_quality.CA2208.api_surface = public", true)]
         public async Task EditorConfigConfiguration_ApiSurfaceOption_TestAsync(string accessibility, string editorConfigText, bool expectDiagnostic)
         {
             var exception = expectDiagnostic ? @"[|new System.ArgumentNullException(""first is null"")|]" : @"new System.ArgumentNullException(""first is null"")";
@@ -721,7 +722,7 @@ public class C
 ") }
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             exception = expectDiagnostic ? @"[|New System.ArgumentNullException(""first is null"")|]" : @"New System.ArgumentNullException(""first is null"")";
 
@@ -745,10 +746,10 @@ public class C
 ") }
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EditorConfigConfiguredPublic_PrivateMethods_TriggeringOtherRules_DoesNotWarnAsync()
         {
             await new VerifyCS.Test
@@ -777,10 +778,10 @@ public class C
 dotnet_code_quality.CA2208.api_surface = public") }
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentException_CorrectMessageAndParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -800,7 +801,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_CorrectParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -820,7 +821,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_ParameterNameFollowedByPunctuation_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -849,7 +850,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_ParameterNameFollowedByNonPunctuation_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -871,7 +872,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                 GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first123", "paramName", "ArgumentNullException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullException_VariableUsed_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -885,7 +886,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                 }");
         }
 
-        [Fact]
+        [TestMethod]
 
         public async Task ArgumentNullException_NameofParameter_DoesNotWarnAsync()
         {
@@ -906,7 +907,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNull_CorrectParameterNameAndMessage_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -926,7 +927,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeException_CorrectParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -946,7 +947,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeException_CorrectParameterNameAndMessage_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -966,7 +967,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DuplicateWaitObjectException_CorrectParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -986,7 +987,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DuplicateWaitObjectException_CorrectParameterNameAndMessage_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1006,7 +1007,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentExceptionType_NotHavingConstructorWithParameterName_NoArgument_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1026,7 +1027,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentExceptionType_NotHavingConstructor_WithParameterName_WithArgument_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1046,7 +1047,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                End Class");
         }
 
-        [Fact, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
+        [TestMethod, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
         public async Task ArgumentNullException_LocalFunctionParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1062,7 +1063,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                 }");
         }
 
-        [Fact, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
+        [TestMethod, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
         public async Task ArgumentNullException_NestedLocalFunctionParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1081,7 +1082,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                 }");
         }
 
-        [Fact, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
+        [TestMethod, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
         public async Task ArgumentNullException_LambdaParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1097,7 +1098,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                 }");
         }
 
-        [Fact, WorkItem(1561, "https://github.com/dotnet/roslyn-analyzers/issues/1561")]
+        [TestMethod, WorkItem(1561, "https://github.com/dotnet/roslyn-analyzers/issues/1561")]
         public async Task ArgumentOutOfRangeException_PropertyName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1122,7 +1123,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
                 }");
         }
 
-        [Fact, WorkItem(6580, "https://github.com/dotnet/roslyn-analyzers/issues/6580")]
+        [TestMethod, WorkItem(6580, "https://github.com/dotnet/roslyn-analyzers/issues/6580")]
         public async Task ArgumentNullException_Test()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

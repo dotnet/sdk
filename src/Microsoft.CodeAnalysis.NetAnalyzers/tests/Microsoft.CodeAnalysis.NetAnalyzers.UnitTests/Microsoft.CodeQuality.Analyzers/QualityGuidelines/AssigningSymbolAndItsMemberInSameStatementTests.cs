@@ -1,18 +1,19 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.AssigningSymbolAndItsMemberInSameStatement,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
 {
+    [TestClass]
     public class AssigningSymbolAndItsMemberInSameStatementTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignLocalVariableAndReferToItsFieldAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -33,7 +34,7 @@ public class Test
             GetCSharpResultAt(12, 9, "a", "Field"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignLocalVariableAndReferToItsPropertyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -54,7 +55,7 @@ public class Test
             GetCSharpResultAt(12, 9, "a", "Property"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignLocalVariablesPropertyAndReferToItsPropertyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +76,7 @@ public class Test
             GetCSharpResultAt(12, 9, "a.Property", "Property"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignLocalVariableAndItsPropertyAndReferToItsPropertyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -97,7 +98,7 @@ public class Test
             GetCSharpResultAt(12, 31, "a", "Property"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReferToFieldOfReferenceTypeLocalVariableAfterItsReassignmentAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -119,7 +120,7 @@ public class Test
             GetCSharpResultAt(13, 9, "x", "Field"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignGlobalVariableAndReferToItsFieldAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -141,7 +142,7 @@ public class Test
             GetCSharpResultAt(13, 9, "x.Property", "Property"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignGlobalVariableAndItsPropertyAndReferToItsPropertyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -164,7 +165,7 @@ public class Test
             GetCSharpResultAt(13, 31, "x", "Property"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignGlobalPropertyAndItsPropertyAndReferToItsPropertyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -188,7 +189,7 @@ public class Test
             GetCSharpResultAt(14, 31, "x", "Property"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignSecondLocalVariableAndReferToItsPropertyOfFirstVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -208,7 +209,7 @@ public class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignPropertyOfFirstLocalVariableWithSecondAndReferToPropertyOfSecondVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -228,7 +229,7 @@ public class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignPropertyOfFirstLocalVariableWithThirdAndReferToPropertyOfSecondVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -248,7 +249,7 @@ public class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignMethodParameterAndReferToItsPropertyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -269,7 +270,7 @@ public class Test
             GetCSharpResultAt(12, 9, "b", "Property"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignLocalValueTypeVariableAndReferToItsFieldAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -289,7 +290,7 @@ public class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpReassignLocalValueTypeVariableAndReferToItsPropertyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -309,7 +310,7 @@ public class Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpAssignmentInCodeWithOperationNoneAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -324,7 +325,7 @@ public struct Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2889, "https://github.com/dotnet/roslyn-analyzers/issues/2889")]
         public async Task CSharpAssignmentLocalReferenceOperationAsync()
         {

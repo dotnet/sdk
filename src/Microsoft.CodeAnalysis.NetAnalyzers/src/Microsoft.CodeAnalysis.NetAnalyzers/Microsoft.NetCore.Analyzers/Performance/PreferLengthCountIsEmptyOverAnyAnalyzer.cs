@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -155,6 +156,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static bool HasEligibleCountProperty(ITypeSymbol typeSymbol)
         {
             return typeSymbol.GetMembers(CountText)
+                // Include implemented interface members.
+                .Concat(typeSymbol.AllInterfaces.SelectMany(s => s.GetMembers(CountText)))
                 .OfType<IPropertySymbol>()
                 .Any(property => property.Type.SpecialType is SpecialType.System_Int32 or SpecialType.System_UInt32);
         }

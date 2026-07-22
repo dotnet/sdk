@@ -123,7 +123,7 @@ internal sealed class ToolListGlobalOrToolPathCommand(
                 Commands = [p.Command.Name.Value]
             })]
         };
-        var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+        var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.JsonContext.VersionedDataContractToolListJsonContractArray);
         _reporter.WriteLine(jsonText);
     }
 }

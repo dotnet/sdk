@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.BufferBlockCopyLengthAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -11,11 +11,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class BufferBlockCopyLengthTests
     {
-        [Theory]
-        [InlineData("src")]
-        [InlineData("dst")]
+        [TestMethod]
+        [DataRow("src")]
+        [DataRow("dst")]
         public async Task UsingByteArrayAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -47,9 +48,9 @@ End Module
 ");
         }
 
-        [Theory]
-        [InlineData("src")]
-        [InlineData("dst")]
+        [TestMethod]
+        [DataRow("src")]
+        [DataRow("dst")]
         public async Task UsingSbyteArrayAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -81,9 +82,9 @@ End Module
 ");
         }
 
-        [Theory]
-        [InlineData("src")]
-        [InlineData("dst")]
+        [TestMethod]
+        [DataRow("src")]
+        [DataRow("dst")]
         public async Task UsingBoolArrayAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -115,9 +116,9 @@ End Module
 ");
         }
 
-        [Theory]
-        [InlineData("src")]
-        [InlineData("dst")]
+        [TestMethod]
+        [DataRow("src")]
+        [DataRow("dst")]
         public async Task UsingIntArrayAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -149,7 +150,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OperandIsNotSrcOrDstAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -183,9 +184,9 @@ End Module
 ");
         }
 
-        [Theory]
-        [InlineData("src")]
-        [InlineData("dst")]
+        [TestMethod]
+        [DataRow("src")]
+        [DataRow("dst")]
         public async Task SrcNumOfBytesAsReferenceAsync(string array)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -219,7 +220,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NumOfBytesAsLiteralConstAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -251,7 +252,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NumOfBytesAsMultipleDeclarationsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -285,7 +286,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NumOfBytesAsConstLiteralAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -318,7 +319,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NumOfBytesAsClassConstFieldAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -352,7 +353,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NumOfBytesAsClassPropertyGetterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -390,7 +391,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NumOfBytesAsMethodInvocationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -431,7 +432,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SrcAndDstAsLiteralArraysAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -457,7 +458,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArgumentsNotInOrderAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -489,7 +490,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonLocalArraysAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -529,7 +530,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SrcArrayAsFunctionReturnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -567,7 +568,7 @@ End Module
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SrcAndDstAsGlobalArraysAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -599,7 +600,7 @@ End Class
 ");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/5371")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/5371")]
         public async Task SrcAndDstAsArrayCreateInstanceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

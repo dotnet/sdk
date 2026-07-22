@@ -309,7 +309,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Устанавливает значение переменной среды. 
@@ -377,8 +377,8 @@ This is equivalent to deleting project.assets.json.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">Вывод списка обнаруженных тестов вместо выполнения тестов.</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">Вывод списка обнаруженных тестов вместо выполнения тестов.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -652,7 +652,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Устанавливает значение переменной среды. 
@@ -748,6 +748,11 @@ Examples:
         <target state="translated">Идентификатор устройства, на котором следует запустить приложение.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescriptionForTest">
+        <source>The device identifier to use for running tests.</source>
+        <target state="new">The device identifier to use for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
         <target state="translated">УСТРОЙСТВО</target>
@@ -776,6 +781,11 @@ Examples:
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
         <target state="translated">Вывести список доступных устройств для запуска приложения.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescriptionForTest">
+        <source>List available devices for running tests.</source>
+        <target state="new">List available devices for running tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">

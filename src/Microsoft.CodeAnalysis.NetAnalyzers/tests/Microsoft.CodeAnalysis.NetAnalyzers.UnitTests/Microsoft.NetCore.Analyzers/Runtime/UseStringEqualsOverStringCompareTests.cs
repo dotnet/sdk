@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseStringEqualsOverStringCompare,
@@ -16,6 +16,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseStringEqualsOverStringCompareTests
     {
         #region Test Data
@@ -101,11 +102,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #endregion
 
-        [Theory]
-        [MemberData(nameof(CS_ComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(CS_ComparisonRightOfLiteralTestData))]
-        [MemberData(nameof(CS_InvertedComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(CS_InvertedComparisonRightOfLiteralTestData))]
+        [TestMethod]
+        [DynamicData(nameof(CS_ComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(CS_ComparisonRightOfLiteralTestData))]
+        [DynamicData(nameof(CS_InvertedComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(CS_InvertedComparisonRightOfLiteralTestData))]
         public Task StringCompareResult_CompareToZero_Diagnostic_CSAsync(string testExpression, string fixedExpression)
         {
             string testCode = $@"
@@ -132,9 +133,9 @@ public class Testopolis
             return VerifyCS.VerifyCodeFixAsync(testCode, VerifyCS.Diagnostic(Rule).WithLocation(0), fixedCode);
         }
 
-        [Theory, WorkItem(6609, "https://github.com/dotnet/roslyn-analyzers/issues/6609")]
-        [MemberData(nameof(CS_InvertedEqualsComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(CS_EqualsComparisonLeftOfLiteralTestData))]
+        [TestMethod, WorkItem(6609, "https://github.com/dotnet/roslyn-analyzers/issues/6609")]
+        [DynamicData(nameof(CS_InvertedEqualsComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(CS_EqualsComparisonLeftOfLiteralTestData))]
         public Task ComparisonWithEquals(string testExpression, string fixedExpression)
         {
             string testCode = $@"
@@ -161,11 +162,11 @@ public class Testopolis
             return VerifyCS.VerifyCodeFixAsync(testCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(VB_ComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(VB_ComparisonRightOfLiteralTestData))]
-        [MemberData(nameof(VB_InvertedComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(VB_InvertedComparisonRightOfLiteralTestData))]
+        [TestMethod]
+        [DynamicData(nameof(VB_ComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(VB_ComparisonRightOfLiteralTestData))]
+        [DynamicData(nameof(VB_InvertedComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(VB_InvertedComparisonRightOfLiteralTestData))]
         public Task StringCompareResult_CompareToZero_Diagnostic_VBAsync(string testExpression, string fixedExpression)
         {
             string testCode = $@"
@@ -190,8 +191,8 @@ End Class";
             return VerifyVB.VerifyCodeFixAsync(testCode, VerifyVB.Diagnostic(Rule).WithLocation(0), fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(CS_StringCompareExpressionsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(CS_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_CSAsync(string expression)
         {
             string code = $@"
@@ -213,8 +214,8 @@ public class Testopolis
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(VB_StringCompareExpressionsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(VB_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_VBAsync(string expression)
         {
             var code = $@"
@@ -234,8 +235,8 @@ End Class";
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(CS_StringCompareExpressionsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(CS_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToLiteralNonZero_NoDiagnostic_CSAsync(string expression)
         {
             string code = $@"
@@ -255,8 +256,8 @@ public class Testopolis
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(VB_StringCompareExpressionsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(VB_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToLiteralNonZero_NoDiagnostic_VBAsync(string expression)
         {
             string code = $@"
@@ -274,8 +275,8 @@ End Class";
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(CS_IneligibleStringCompareOverloadTestData))]
+        [TestMethod]
+        [DynamicData(nameof(CS_IneligibleStringCompareOverloadTestData))]
         public Task IneligibleStringCompareOverload_NoDiagnostic_CSAsync(string expression)
         {
             string code = $@"
@@ -295,8 +296,8 @@ public class Testopolis
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(VB_IneligibleStringCompareOverloadTestData))]
+        [TestMethod]
+        [DynamicData(nameof(VB_IneligibleStringCompareOverloadTestData))]
         public Task IneligibleStringCompareOverload_NoDiagnostic_VBAsync(string expression)
         {
             string code = $@"

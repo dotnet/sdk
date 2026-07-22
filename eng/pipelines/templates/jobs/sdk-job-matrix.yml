@@ -6,48 +6,41 @@ parameters:
   windowsJobParameterSets:
   - categoryName: TestBuild
     publishRetryConfig: true
+    runNativeAotCliTests: true
   - categoryName: FullFramework
     testFullMSBuild: true
-  - categoryName: TestAsTools
-    runTestsAsTool: true
-    # This job uses the build step for testing, so the extra test step is not necessary.
-    runTests: false
-  - categoryName: TemplateEngine
-    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-    publishXunitResults: true
   - categoryName: AoT
     runAoTTests: true
   ### LINUX ###
   linuxJobParameterSets:
   - categoryName: TestBuild
     osProperties: $(linuxOsglibcProperties)
+    runNativeAotCliTests: true
   - categoryName: TestBuild
     targetArchitecture: arm64
     runtimeIdentifier: linux-arm64
     osProperties: $(linuxOsglibcProperties)
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
+  # The x64 AoT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
+  # build dotnet-aot via NativeAOT (producing the .so and its mstat/dgml size-analysis output) and
+  # run the *.AoT.Tests.csproj test projects. linux-arm64 AoT is covered by a separate cross-build
+  # leg (see .vsts-pr.yml / .vsts-ci.yml).
+  - categoryName: AoT
+    runAoTTests: true
+    osProperties: $(linuxOsglibcProperties)
   - categoryName: ContainerBased
     container: azureLinux30Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
-    osProperties: /p:OSName=linux /p:BuildSdkDeb=true
+    osProperties: /p:OSName=linux /p:BuildSdkDeb=true /p:BuildSdkRpm=true
     # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
     disableJob: true
-  - categoryName: TemplateEngine
-    osProperties: $(linuxOsglibcProperties)
-    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-    publishXunitResults: true
   ### MACOS ###
   macOSJobParameterSets:
   - categoryName: TestBuild
-    runtimeIdentifier: osx-x64
-  - categoryName: TemplateEngine
-    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-    publishXunitResults: true
-    runtimeIdentifier: osx-x64
-  - categoryName: AoT
-    runAoTTests: true
-    runtimeIdentifier: osx-x64
+    targetArchitecture: arm64
+    runtimeIdentifier: osx-arm64
+    runNativeAotCliTests: true
 
 jobs:
 ### ONELOCBUILD ###

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Template Authoring"
+  ],
+  "name": "Template Package",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project for a template package containing .NET templates.",
+  "groupIdentity": "Microsoft.TemplateEngine.Authoring.TemplatePackage",
+  "precedence": "0",
+  "identity": "Microsoft.TemplateEngine.Authoring.TemplatePackage.1.0",
+  "shortName": "templatepack",
+  "tags": {
+    "type": "project"
+  },
+  "sourceName": "New.Template.Package",
+  "symbols": {
+    "EnableMSBuildTasks": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "New.Template.Package.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "id": "instructions",
+      "description": "Manual actions required",
+      "manualInstructions": [
+        {
+          "text": "Open *.csproj in the editor and complete the package metadata configuration. Copy the templates to 'content' folder. Fill in README.md."
+        }
+      ],
+      "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+      "continueOnError": true
+    }
+  ]
+}

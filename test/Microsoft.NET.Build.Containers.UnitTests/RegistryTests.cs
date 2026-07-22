@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
@@ -14,15 +14,17 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
+[TestClass]
 public class RegistryTests : IDisposable
 {
-    private ITestOutputHelper _testOutput;
     private readonly TestLoggerFactory _loggerFactory;
 
-    public RegistryTests(ITestOutputHelper testOutput)
+    public TestContext TestContext { get; }
+
+    public RegistryTests(TestContext testContext)
     {
-        _testOutput = testOutput;
-        _loggerFactory = new TestLoggerFactory(testOutput);
+        TestContext = testContext;
+        _loggerFactory = new TestLoggerFactory(testContext);
     }
 
     public void Dispose()
@@ -30,27 +32,27 @@ public class RegistryTests : IDisposable
         _loggerFactory.Dispose();
     }
 
-    [InlineData("us-south1-docker.pkg.dev", true)]
-    [InlineData("us.gcr.io", false)]
-    [Theory]
-    public void CheckIfGoogleArtifactRegistry(string registryName, bool isECR)
+    [DataRow("us-south1-docker.pkg.dev", true)]
+    [DataRow("us.gcr.io", false)]
+    [TestMethod]
+    public void CheckIfGoogleArtifactRegistry(string registryName, bool expectedIsGoogleArtifactRegistry)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfGoogleArtifactRegistry));
         Registry registry = new(registryName, logger, RegistryMode.Push);
-        Assert.Equal(isECR, registry.IsGoogleArtifactRegistry);
+        Assert.AreEqual(expectedIsGoogleArtifactRegistry, registry.IsGoogleArtifactRegistry);
     }
 
-    [Fact]
+    [TestMethod]
     public void DockerIoAlias()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(DockerIoAlias));
         Registry registry = new("docker.io", logger, RegistryMode.Push);
-        Assert.True(registry.IsDockerHub);
-        Assert.Equal("docker.io", registry.RegistryName);
-        Assert.Equal("registry-1.docker.io", registry.BaseUri.Host);
+        Assert.IsTrue(registry.IsDockerHub);
+        Assert.AreEqual("docker.io", registry.RegistryName);
+        Assert.AreEqual("registry-1.docker.io", registry.BaseUri.Host);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RegistriesThatProvideNoUploadSizeAttemptFullUpload()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatProvideNoUploadSizeAttemptFullUpload));
@@ -75,7 +77,7 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RegistriesThatProvideUploadSizePrefersFullUploadWhenChunkSizeIsLowerThanContentLength()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatProvideUploadSizePrefersFullUploadWhenChunkSizeIsLowerThanContentLength));
@@ -109,7 +111,7 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RegistriesThatFailAtomicUploadFallbackToChunked()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatFailAtomicUploadFallbackToChunked));
@@ -144,7 +146,7 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(contentLength / chunkSizeLessThanContentLength));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChunkedUploadCalculatesChunksCorrectly()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatFailAtomicUploadFallbackToChunked));
@@ -186,10 +188,10 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(10));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PushAsync_Logging()
     {
-        using TestLoggerFactory loggerFactory = new(_testOutput);
+        using TestLoggerFactory loggerFactory = new(TestContext);
         List<(LogLevel, string)> loggedMessages = new();
         loggerFactory.AddProvider(new InMemoryLoggerProvider(loggedMessages));
         ILogger logger = loggerFactory.CreateLogger(nameof(PushAsync_Logging));
@@ -211,14 +213,14 @@ public class RegistryTests : IDisposable
         Registry registry = new("public.ecr.aws", logger, api.Object);
         await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
 
-        Assert.NotEmpty(loggedMessages);
-        Assert.True(loggedMessages.All(m => m.Item1 == LogLevel.Trace));
+        Assert.IsNotEmpty(loggedMessages);
+        Assert.IsTrue(loggedMessages.All(m => m.Item1 == LogLevel.Trace));
         var messages = loggedMessages.Select(m => m.Item2).ToList();
-        Assert.Contains(messages, m => m == "Started upload session for sha256:fafafafafafafafafafafafafafafafa");
-        Assert.Contains(messages, m => m == "Finalized upload session for sha256:fafafafafafafafafafafafafafafafa");
+        Assert.Contains("Started upload session for sha256:fafafafafafafafafafafafafafafafa", messages);
+        Assert.Contains("Finalized upload session for sha256:fafafafafafafafafafafafafafafafa", messages);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PushAsync_ForceChunkedUpload()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_ForceChunkedUpload));
@@ -260,7 +262,7 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(10));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CanParseRegistryDeclaredChunkSize_FromRange()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanParseRegistryDeclaredChunkSize_FromRange));
@@ -279,10 +281,10 @@ public class RegistryTests : IDisposable
         DefaultBlobUploadOperations operations = new(new Uri("https://my-registy.com"), finalClient, logger);
         StartUploadInformation result = await operations.StartAsync(repoName, CancellationToken.None);
 
-        Assert.Equal("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
+        Assert.AreEqual("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CanParseRegistryDeclaredChunkSize_FromOCIChunkMinLength()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanParseRegistryDeclaredChunkSize_FromOCIChunkMinLength));
@@ -301,10 +303,10 @@ public class RegistryTests : IDisposable
         DefaultBlobUploadOperations operations = new(new Uri("https://my-registy.com"), finalClient, logger);
         StartUploadInformation result = await operations.StartAsync(repoName, CancellationToken.None);
 
-        Assert.Equal("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
+        Assert.AreEqual("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CanParseRegistryDeclaredChunkSize_None()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanParseRegistryDeclaredChunkSize_None));
@@ -322,10 +324,10 @@ public class RegistryTests : IDisposable
         DefaultBlobUploadOperations operations = new(new Uri("https://my-registy.com"), finalClient, logger);
         StartUploadInformation result = await operations.StartAsync(repoName, CancellationToken.None);
 
-        Assert.Equal("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
+        Assert.AreEqual("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task UploadBlobChunkedAsync_NormalFlow()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(UploadBlobChunkedAsync_NormalFlow));
@@ -359,7 +361,7 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(5));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task UploadBlobChunkedAsync_Failure()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(UploadBlobChunkedAsync_NormalFlow));
@@ -389,19 +391,20 @@ public class RegistryTests : IDisposable
         };
 
         Registry registry = new(registryUri, logger, api.Object, settings);
-        ApplicationException receivedException = await Assert.ThrowsAsync<ApplicationException>(() => registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(absoluteUploadUri), CancellationToken.None));
+        ApplicationException receivedException = await Assert.ThrowsExactlyAsync<ApplicationException>(() => registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(absoluteUploadUri), CancellationToken.None));
 
-        Assert.Equal(preparedException, receivedException);
+        Assert.AreEqual(preparedException, receivedException);
 
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
-    [Theory(Skip = "https://github.com/dotnet/sdk/issues/42820")]
-    [InlineData(true, true, true)]
-    [InlineData(false, true, true)]
-    [InlineData(true, false, true)]
-    [InlineData(false, false, true)]
-    [InlineData(false, false, false)]
+    [TestMethod]
+    [Ignore("https://github.com/dotnet/sdk/issues/42820")]
+    [DataRow(true, true, true)]
+    [DataRow(false, true, true)]
+    [DataRow(true, false, true)]
+    [DataRow(false, false, true)]
+    [DataRow(false, false, false)]
     public async Task InsecureRegistry(bool isInsecureRegistry, bool serverIsHttps, bool httpServerCloseAbortive)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(InsecureRegistry));
@@ -431,20 +434,20 @@ public class RegistryTests : IDisposable
         {
             while (true)
             {
-                using TcpClient client = await listener.AcceptTcpClientAsync();
+                using TcpClient client = await listener.AcceptTcpClientAsync(TestContext.CancellationToken);
                 try
                 {
                     using Stream stream = serverIsHttps ? new SslStream(client.GetStream(), leaveInnerStreamOpen: false) : client.GetStream();
                     if (stream is SslStream sslStream)
                     {
-                        await sslStream.AuthenticateAsServerAsync(sslOptions!, default(CancellationToken));
+                        await sslStream.AuthenticateAsServerAsync(sslOptions!, TestContext.CancellationToken);
                     }
                     byte[] buffer = new byte[10];
-                    await stream.ReadAtLeastAsync(buffer, buffer.Length); // Wait for the request.
+                    await stream.ReadAtLeastAsync(buffer, buffer.Length, cancellationToken: TestContext.CancellationToken); // Wait for the request.
                     // Repond if we see '/v2/' in the buffer (since we expect that as part of the request path).
                     if (buffer.AsSpan().IndexOf("/v2/"u8) != 0)
                     {
-                        await stream.WriteAsync("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n"u8.ToArray());
+                        await stream.WriteAsync("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n"u8.ToArray(), TestContext.CancellationToken);
                     }
                     else
                     {
@@ -457,7 +460,7 @@ public class RegistryTests : IDisposable
                 catch
                 { }
             }
-        });
+        }, TestContext.CancellationToken);
 
         RegistrySettings settings = new()
         {
@@ -472,12 +475,12 @@ public class RegistryTests : IDisposable
         {
             // Falls back to http (when serverIsHttps is false) or ignores https certificate errors (when serverIsHttps is true).
             // Results in throwing: CONTAINER2003: The manifest for dotnet/runtime:latest from registry hwas an unknown type.
-            await Assert.ThrowsAsync<NotImplementedException>(() => getManifest);
+            await Assert.ThrowsExactlyAsync<NotImplementedException>(() => getManifest);
         }
         else
         {
             // Does not fall back and throws HttpRequestException with SecureConnectionError.
-            Exception? exception = await Assert.ThrowsAnyAsync<Exception>(() => getManifest);
+            Exception? exception = await Assert.ThrowsAsync<Exception>(() => getManifest);
             try
             {
                 // The AuthHandshakeMessageHandler may reach its retry limit and throw an ApplicationException.
@@ -485,15 +488,14 @@ public class RegistryTests : IDisposable
                 {
                     // Find the exception for the first failed attempt.
                     exception = (exception.InnerException as AggregateException)?.InnerExceptions.FirstOrDefault();
-                    Assert.NotNull(exception);
+                    Assert.IsNotNull(exception);
                 }
 
-                Assert.IsType<HttpRequestException>(exception);
-                HttpRequestException requestException = (HttpRequestException)exception;
-                Assert.Equal(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
+                HttpRequestException requestException = Assert.IsExactInstanceOfType<HttpRequestException>(exception);
+                Assert.AreEqual(HttpRequestError.SecureConnectionError, requestException.HttpRequestError);
 
                 // The FallbackToHttpMessageHandler should fall back (if this registry was configured as insecure).
-                Assert.True(FallbackToHttpMessageHandler.ShouldAttemptFallbackToHttp(requestException));
+                Assert.IsTrue(FallbackToHttpMessageHandler.ShouldAttemptFallbackToHttp(requestException));
             }
             catch
             {
@@ -524,15 +526,15 @@ public class RegistryTests : IDisposable
         }
     }
 
-    [InlineData("localhost", null, true)]
-    [InlineData("localhost:5000", null, true)]
-    [InlineData("public.ecr.aws", null, false)]
-    [InlineData("public.ecr.aws", "public.ecr.aws", true)]
-    [InlineData("public.ecr.aws", "Public.ecr.aws", true)] // ignore case
-    [InlineData("public.ecr.aws", "public.ecr.aws;docker.io", true)] // multiple registries
-    [InlineData("public.ecr.aws", ";public.ecr.aws ;  docker.io ", true)] // ignore whitespace
-    [InlineData("public.ecr.aws", "public.ecr.aws2;docker.io ", false)] // full name match
-    [Theory]
+    [DataRow("localhost", null, true)]
+    [DataRow("localhost:5000", null, true)]
+    [DataRow("public.ecr.aws", null, false)]
+    [DataRow("public.ecr.aws", "public.ecr.aws", true)]
+    [DataRow("public.ecr.aws", "Public.ecr.aws", true)] // ignore case
+    [DataRow("public.ecr.aws", "public.ecr.aws;docker.io", true)] // multiple registries
+    [DataRow("public.ecr.aws", ";public.ecr.aws ;  docker.io ", true)] // ignore whitespace
+    [DataRow("public.ecr.aws", "public.ecr.aws2;docker.io ", false)] // full name match
+    [TestMethod]
     public void IsRegistryInsecure(string registryName, string? insecureRegistriesEnvvar, bool expectedInsecure)
     {
         var environment = new Dictionary<string, string>();
@@ -543,17 +545,17 @@ public class RegistryTests : IDisposable
 
         var registrySettings = new RegistrySettings(registryName, new MockEnvironmentProvider(environment));
 
-        Assert.Equal(expectedInsecure, registrySettings.IsInsecure);
+        Assert.AreEqual(expectedInsecure, registrySettings.IsInsecure);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DownloadBlobAsync_RetriesOnFailure()
     {
         // Arrange
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -572,8 +574,8 @@ public class RegistryTests : IDisposable
             result = await registry.DownloadBlobAsync(repoName, descriptor, cancellationToken);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.True(File.Exists(result)); // Ensure the file was successfully downloaded
+            Assert.IsNotNull(result);
+            Assert.IsTrue(File.Exists(result)); // Ensure the file was successfully downloaded
             mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken), Times.Exactly(3)); // Verify retries
         }
         finally
@@ -586,14 +588,14 @@ public class RegistryTests : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DownloadBlobAsync_ThrowsAfterMaxRetries()
     {
         // Arrange
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_ThrowsAfterMaxRetries));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -609,7 +611,7 @@ public class RegistryTests : IDisposable
         Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
 
         // Act & Assert
-        await Assert.ThrowsAsync<UnableToDownloadFromRepositoryException>(async () =>
+        await Assert.ThrowsExactlyAsync<UnableToDownloadFromRepositoryException>(async () =>
         {
             await registry.DownloadBlobAsync(repoName, descriptor, cancellationToken);
         });

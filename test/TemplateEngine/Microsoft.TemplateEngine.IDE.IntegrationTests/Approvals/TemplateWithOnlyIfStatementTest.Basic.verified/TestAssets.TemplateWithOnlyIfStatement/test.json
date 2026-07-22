@@ -1,0 +1,10 @@
+﻿{
+  "hostingManifest": {
+    "defaultPort": 3332,
+    "isPublic": false
+  },
+  "hostingManifest_2": {
+    "dPort": 12345,
+    "isPublic": true
+  }
+}

@@ -1,8 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-    <OutputType>library</OutputType>
     <RootNamespace>Microsoft.Win32.Msi</RootNamespace>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible Condition="'$(TargetFramework)' != '$(NetFrameworkToolCurrent)'">true</IsAotCompatible>
   </PropertyGroup>
+
 </Project>

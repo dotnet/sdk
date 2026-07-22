@@ -9,11 +9,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Dotnet.Watch\Watch\Microsoft.DotNet.HotReload.Watch.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Xunit.Combinatorial" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 </Project>

@@ -1,11 +1,11 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Tasks.UseValueTasksCorrectlyAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,6 +15,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
+    [TestClass]
     public class UseValueTasksCorrectlyTests
     {
         private static string CSBoilerplate(string s) => s +
@@ -87,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         #region No Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_AwaitMethodCallResultsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -111,7 +112,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_AwaitMethodCallResults_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(VBBoilerplate(@"
@@ -130,7 +131,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 End Class"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_TernaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -154,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_NullConditionalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -177,7 +178,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_SwitchAsync()
         {
             await new VerifyCS.Test
@@ -227,10 +228,10 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                     }
                 },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_AwaitConfiguredMethodCallResultsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -254,7 +255,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_PassAsArgumentsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -277,7 +278,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_PreserveAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -301,7 +302,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_AsTaskAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -325,7 +326,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_ReturnValueTaskAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -368,7 +369,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_AssignVariableThenReturnValueTaskAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -406,7 +407,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_OutValueTaskAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -432,7 +433,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_WorkBetweenStoreAndAwaitAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -457,8 +458,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task NoDiagnostics_AssertsBeforeDirectAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -491,8 +492,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task NoDiagnostics_AssertsBeforeDirectAccessToAssignedLocalAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -531,8 +532,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task NoDiagnostics_AssertsEarlierInFlowBeforeDirectAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -586,8 +587,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task NoDiagnostics_FastPathForSyncCompletedAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -615,8 +616,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task NoDiagnostics_FastPathForSyncCompletedInvertedAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -644,8 +645,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompletedPropertiesAndResultAccess))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompletedPropertiesAndResultAccess))]
         public async Task NoDiagnostics_FastPathForSyncCompletedOfIntAsync(string isProp, string resultMember)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -671,8 +672,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompletedPropertiesAndResultAccess))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompletedPropertiesAndResultAccess))]
         public async Task NoDiagnostics_FastPathForSyncCompletedOfTInvertedNoElseAsync(string isProp, string resultMember)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -698,7 +699,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_CreateInTry_AwaitInFinallyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -723,7 +724,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_CreateInTry_AwaitInCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -748,7 +749,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_ReturnOutOfPropertyExpressionBodiedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -764,7 +765,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_ReturnOutOfPropertyStatementsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -803,7 +804,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 }"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_CreateInTry_AwaitInCatchAndFinallyAsync()
         {
             // NOTE: This is a false negative.  Ideally the analyzer would catch
@@ -838,7 +839,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         #region Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_DontConsumeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -867,7 +868,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_DontConsume_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(VBBoilerplate(@"
@@ -894,7 +895,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StoreLocalUnusedAsync()
         {
             // NOTE: This is a false negative.  Ideally the analyzer would catch
@@ -916,7 +917,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_StoreLocalUnused_GuardedAsync()
         {
             // NOTE: This is a false negative.  Ideally the analyzer would catch
@@ -939,7 +940,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_PassAsGenericAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -961,7 +962,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_DirectResultAccessAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -988,7 +989,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_UnguardedLocalResultAccessAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1019,7 +1020,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_UnguardedOutResultAccessAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1050,7 +1051,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_MultipleLocalAwaitsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1081,7 +1082,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_StoreIntoFieldsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1107,7 +1108,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_DiscardsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1137,8 +1138,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task Diagnostics_AssertsAfterDirectLocalAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1175,8 +1176,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task Diagnostics_AssertsAfterDirectOutAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1213,8 +1214,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task Diagnostics_AssertsLaterInFlowAfterDirectLocalAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1272,8 +1273,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Theory]
-        [MemberData(nameof(IsCompleteProperties))]
+        [TestMethod]
+        [DynamicData(nameof(IsCompleteProperties))]
         public async Task Diagnostics_AssertsLaterInFlowAfterDirectOutAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1331,7 +1332,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_MultipleAwaitsAcrossDifferingConditionsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"

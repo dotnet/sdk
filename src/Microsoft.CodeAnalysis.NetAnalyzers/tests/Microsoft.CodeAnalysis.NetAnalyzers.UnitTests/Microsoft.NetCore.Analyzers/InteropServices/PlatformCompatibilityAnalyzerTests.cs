@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -7,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.PlatformCompatibilityAnalyzer,
@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     {
         private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS,maccatalyst, ios, linux;\nbuild_property.TargetFramework=net5.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0";
 
-        [Fact(Skip = "TODO need to be fixed: Test for for wrong arguments, not sure how to report the Compiler error diagnostic")]
+        [TestMethod, Ignore("TODO need to be fixed: Test for for wrong arguments, not sure how to report the Compiler error diagnostic")]
         public async Task TestOsPlatformAttributesWithNonStringArgumentAsync()
         {
             var csSource = @"
@@ -74,8 +74,8 @@ public class Test
             yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=Unsupported\nbuild_property.TargetFrameworkVersion=v0.0", false };
         }
 
-        [Theory]
-        [MemberData(nameof(Create_DifferentTfms))]
+        [TestMethod]
+        [DynamicData(nameof(Create_DifferentTfms))]
         public async Task Net5OrHigherTfmWarns_LowerThanNet5NotWarnAsync(string tfm, bool warn)
         {
             var invocation = warn ? "[|Target.WindowsOnlyMethod()|]" : "Target.WindowsOnlyMethod()";
@@ -122,8 +122,8 @@ namespace CallerTargetsBelow5_0
             yield return new object[] { "build_property.TargetFramework = netcoreapp5\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
         }
 
-        [Theory]
-        [MemberData(nameof(Create_DifferentTfmsWithOption))]
+        [TestMethod]
+        [DynamicData(nameof(Create_DifferentTfmsWithOption))]
         public async Task Net5OrHigherTfmWarns_LowerThanNet5WarnsIfEnabledAsync(string tfmAndOption, bool warn)
         {
             var invocation = warn ? "[|Target.WindowsOnlyMethod()|]" : "Target.WindowsOnlyMethod()";
@@ -149,7 +149,7 @@ namespace CallerTargetsBelow5_0
             await VerifyAnalyzerCSAsync(source, tfmAndOption);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ProjectWithPlatformNeutralAssemblyPropertyTestAsync()
         {
             var source = @"
@@ -231,7 +231,7 @@ public class Test
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(6).WithArguments("Test.BrowserOnlyCallsite()", "'browser'", "'linux'"));
         }
 
-        [Fact, WorkItem(5963, "https://github.com/dotnet/roslyn-analyzers/pull/5963")]
+        [TestMethod, WorkItem(5963, "https://github.com/dotnet/roslyn-analyzers/pull/5963")]
         public async Task PlatformNeutralAssemblyAndCallSiteHasHigherVersionSupport()
         {
             var csSource = @"
@@ -249,7 +249,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, "build_property.PlatformNeutralAssembly = true\nbuild_property.TargetFramework=net5.0");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OnlyThrowsNotSupportedWithOsDependentStringNotWarnsAsync()
         {
             var csSource = @"
@@ -276,7 +276,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ThrowNotSupportedWithOtherOsDependentApiUsageNotWarnsAsync()
         {
             var csSource = @"
@@ -325,7 +325,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ThrowNotSupportedWithOtherStatementAndWithinConditionNotWarnsAsync()
         {
             var csSource = @"
@@ -383,7 +383,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateNotSupportedWithOsDependentStringNotWarnsAsync()
         {
             var csSource = @"
@@ -417,7 +417,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ThrowNotSupportedWarnsForNonStringArgumentAsync()
         {
             var csSource = @"
@@ -451,7 +451,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MethodsWithOsDependentTypeParameterWarnsAsync()
         {
             var csSource = @"
@@ -475,7 +475,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructorWithOsDependentTypeParameterWarnsAsync()
         {
             var csSource = @"
@@ -499,7 +499,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ApiContainingTypeHasOsDependentTypeParameterWarnsAsync()
         {
             var csSource = @"
@@ -539,7 +539,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AssemblyLevelAttribteWithPropertyEventNotWarnAsync()
         {
             var csSource = @"
@@ -598,7 +598,7 @@ namespace WindowsOnlyAssembly
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ApiContainingMultipleNestedTypeParameterAsync()
         {
             var csSource = @"
@@ -633,7 +633,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentMethodsCalledWarnsAsync()
         {
             var csSource = @"
@@ -677,7 +677,7 @@ End Class";
             await VerifyAnalyzerVBAsync(vbSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WrongPlatformStringsShouldHandledGracefullyAsync()
         {
             var source = @"
@@ -726,7 +726,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentPropertyCalledWarnsAsync()
         {
             var source = @"
@@ -758,7 +758,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact, WorkItem(4071, "https://github.com/dotnet/roslyn-analyzers/issues/4071")]
+        [TestMethod, WorkItem(4071, "https://github.com/dotnet/roslyn-analyzers/issues/4071")]
         public async Task OsDependentPropertyGetterSetterCalledWarnsAsync()
         {
             var source = @"
@@ -856,8 +856,8 @@ End Class";
             await VerifyAnalyzerVBAsync(vbSource);
         }
 
-        [Theory]
-        [MemberData(nameof(Create_AttributeProperty_WithCondtions))]
+        [TestMethod]
+        [DynamicData(nameof(Create_AttributeProperty_WithCondtions))]
         public async Task OsDependentPropertyConditionalCheckWarnsAsync(string attribute, string property, string condition, string setter, string getter)
         {
             var source = @"
@@ -889,7 +889,7 @@ public class Test
             yield return new object[] { "UnsupportedOSPlatform", "int UnsupportedProperty", " <= [|UnsupportedProperty|]", "UnsupportedProperty|] = 3", "UnsupportedProperty" };
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentEnumValueCalledWarnsAsync()
         {
             var source = @"
@@ -921,7 +921,7 @@ public enum PlatformEnum
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentEnumConditionalCheckNotWarnsAsync()
         {
             var source = @"
@@ -980,7 +980,7 @@ End Enum";
             await VerifyAnalyzerVBAsync(vbSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentFieldCalledWarnsAsync()
         {
             var source = @"
@@ -1013,7 +1013,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentMethodCalledFromInstanceWarnsAsync()
         {
             var source = @"
@@ -1035,7 +1035,7 @@ public class B
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentMethodCalledFromOtherNsInstanceWarnsAsync()
         {
             var source = @"
@@ -1083,7 +1083,7 @@ End Namespace";
             await VerifyAnalyzerVBAsync(vbSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentConstructorOfClassUsedCalledWarnsAsync()
         {
             var source = @"
@@ -1108,7 +1108,7 @@ public class C
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructorAndMethodOfOsDependentClassCalledWarnsAsync()
         {
             var source = @"
@@ -1148,7 +1148,7 @@ End Class
             await VerifyAnalyzerVBAsync(vbSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunctionCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
@@ -1171,7 +1171,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalGuardedFunctionCallsOsDependentMemberNotWarnsAsync()
         {
             var source = @"
@@ -1195,7 +1195,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunctionEscapedCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
@@ -1222,7 +1222,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LocalFunctionUnusedCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
@@ -1245,7 +1245,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LambdaCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
@@ -1271,7 +1271,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AttributedLambdaCallsOsDependentMemberNotWarnAsync()
         {
             var source = @"
@@ -1298,7 +1298,7 @@ public class C
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LambdaEscapedCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
@@ -1325,7 +1325,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LambdaUnusedCallsOsDependentMemberWarnsAsync()
         {
             var source = @"
@@ -1348,7 +1348,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentEventAccessedWarnsAsync()
         {
             var source = @"
@@ -1399,7 +1399,7 @@ End Class";
             await VerifyAnalyzerVBAsync(vbSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EventOfOsDependentTypeAccessedWarnsAsync()
         {
             var source = @"
@@ -1426,7 +1426,7 @@ public class C
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentEventAddRemoveAccessedWarnsAsync()
         {
             var source = @"
@@ -1472,7 +1472,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OsDependentMethodAssignedToDelegateWarnsAsync()
         {
             var source = @"
@@ -1494,7 +1494,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
+        [TestMethod, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
         public async Task UnsupportedShouldNotSuppressSupportedWithSameVersionAsync()
         {
             var source = @"
@@ -1523,7 +1523,7 @@ class UnsupportedOnBrowserType
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
+        [TestMethod, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
         public async Task CallSitesUnsupportedShouldNotSuppressSupportedWithSameVersionAsync()
         {
             var source = @"
@@ -1583,7 +1583,7 @@ class UnsupportedOnBrowserType
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
+        [TestMethod, WorkItem(4168, "https://github.com/dotnet/roslyn-analyzers/issues/4168")]
         public async Task CallSiteUnsupportedShouldNotSuppressSupportedWithSameVersionAndSameLevelAsync()
         {
             var source = @"
@@ -1632,7 +1632,7 @@ class UnsupportedOnBrowserSupportedOnWindowType
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallerSupportsSubsetOfTargetAsync()
         {
             var source = @"
@@ -1665,7 +1665,7 @@ namespace CallerSupportsSubsetOfTarget
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallerUnsupportsNonSubsetOfTargetSupportAsync()
         {
             var source = @"
@@ -1690,7 +1690,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MacOsSuppressesOsxAndViseVersaAsync()
         {
             var source = @"
@@ -1772,7 +1772,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(2).WithArguments("Target.SupportedOnMacOs()", "'macOS/OSX'"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MacOsSuppressesOsxAndViseVersa_UnsupportedAsync()
         {
             var source = @"
@@ -1835,7 +1835,7 @@ namespace ns
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("Target.UnsupportedOnOSXAndLinux()", "'macOS/OSX'", "'macOS/OSX'"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallerUnsupportsSubsetOfTargetUsupportedFirstThenSupportsNotWarnAsync()
         {
             var source = @"
@@ -1869,7 +1869,7 @@ namespace CallerUnsupportsSubsetOfTarget
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallerUnsupportsNonSubsetOfTargetUnsupportedFirstSupportsWarnsAsync()
         {
             var source = @"
@@ -1899,7 +1899,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallerSupportsSupersetOfTarget_AnotherScenarioAsync()
         {
             var source = @"
@@ -1965,7 +1965,7 @@ namespace CallerSupportsSubsetOfTarget
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsAllPlatforms).WithLocation(6).WithArguments("Target.UnsupportedOnWindowsUntilWindows11()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "11.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallerSupportsSupersetOfTargetAsync()
         {
             var source = @"
@@ -2023,7 +2023,7 @@ namespace CallerSupportsSubsetOfTarget
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AllowDenyListMixedApisTestAsync()
         {
             var source = @"
@@ -2084,7 +2084,7 @@ namespace ns
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UnsupportedSamePlatformMustSuppressSupportedAsync()
         {
             var source = @"
@@ -2111,7 +2111,7 @@ class Some
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MergePlatformAttributesCrushTest()
         {
             var source = @"
@@ -2142,7 +2142,7 @@ class Some
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PlatformOverridesAsync()
         {
             var source = @"
@@ -2196,7 +2196,7 @@ namespace PlatformCompatDemo.Bugs
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChildUnsupportedMustParentSupportedPlatformMustNotIgnoredAsync()
         {
             var source = @"
@@ -2227,7 +2227,7 @@ namespace PlatformCompatDemo
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SupportedMustSuppressUnsupportedAssemblyAttributeAsync()
         {
             var source = @"
@@ -2257,7 +2257,7 @@ namespace PlatformCompatDemo
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UsingUnsupportedApiWithinAllowListShouldWarnAsync()
         {
             var source = @"
@@ -2281,7 +2281,7 @@ class SomeWindowsSpecific
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UsingVersionedApiFromAllowListAssemblyNotIgnoredAsync()
         {
             var source = @"
@@ -2307,7 +2307,7 @@ static class Some
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReintroducingHigherApiSupport_WarnAsync()
         {
             var source = @"
@@ -2334,7 +2334,7 @@ static class Some
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MethodOfOsDependentAssemblyCalledWithoutSuppressionWarnsAsync()
         {
             var source = @"
@@ -2375,8 +2375,8 @@ namespace ns
             yield return new object[] { "Windows", "10.1.2.3", "Windows", "8.2.3.3", true };
         }
 
-        [Theory]
-        [MemberData(nameof(SupportedOsAttributeTestData))]
+        [TestMethod]
+        [DynamicData(nameof(SupportedOsAttributeTestData))]
         public async Task MethodOfOsDependentClassSuppressedWithSupportedOsAttributeAsync(string platform, string version, string suppressingPlatform, string suppressingVersion, bool warn)
         {
             var source = @"
@@ -2429,8 +2429,8 @@ public class OsDependentClass
             yield return new object[] { "Windows", "10.1.2.3", "Windows", "8.2.3.4", false };
         }
 
-        [Theory]
-        [MemberData(nameof(UnsupportedAttributeTestData))]
+        [TestMethod]
+        [DynamicData(nameof(UnsupportedAttributeTestData))]
         public async Task MethodOfOsDependentClassSuppressedWithUnsupportedAttributeAsync(string platform,
             string version, string suppressingPlatform, string suppressingVersion, bool warn)
         {
@@ -2470,7 +2470,7 @@ public class OsDependentClass { }
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UnsupportedNotWarnsForUnrelatedSupportedContextAsync()
         {
             var source = @"
@@ -2510,7 +2510,7 @@ public class C
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "Linux")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleAttrbiutesOptionallySupportedListTestAsync()
         {
             var source = @"
@@ -2580,7 +2580,7 @@ public class C
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0.2000")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleAttrbiutesSupportedOnlyWindowsListTestAsync()
         {
             var source = @"
@@ -2639,7 +2639,7 @@ public class C
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0.2000")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteSupportedUnupportedNoMsBuildOptionsAsync()
         {
             var source = @"
@@ -2743,7 +2743,7 @@ namespace PlatformCompatDemo.SupportedUnupported
                 WithArguments("TypeSupportedOnWindows10.FunctionSupportedOnBrowser()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0", "")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteSupportedUnupporteWithMsBuildOptionsAsync()
         {
             var source = @"
@@ -2833,7 +2833,7 @@ namespace PlatformCompatDemo.SupportedUnupported
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "windows", "13.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteCrossPlatform_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -2869,7 +2869,7 @@ public class Test
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "11.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteWindowsOnly_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -2905,7 +2905,7 @@ public class Test
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "11.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteWindows9Only_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -2942,7 +2942,7 @@ public class Test
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "11.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "9.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteAllowList_CallsSupportedUnsupportedVersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -2997,7 +2997,7 @@ public class Test
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "11.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteUnsupportedWindows_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -3029,7 +3029,7 @@ public class Test
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "11.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteUnsupportedWindows9_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -3077,7 +3077,7 @@ public class Test
                     MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "8.0", "10.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "windows", "11.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteUnsupportedWindowsSupportedFrom9_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -3117,7 +3117,7 @@ public class Test
                     "windows", "10.0", "11.0"), Join(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "9.0"), MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllPlatforms)));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteUnsupportsWindows9Supported11_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -3157,7 +3157,7 @@ public class Test
                 "windows", "10.0", "11.0"), Join(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "11.0"), MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllPlatforms)));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CallSiteUnsupportedWindowsSupportedFrom9To12_CallsSupportedUnsupported_VersionedVersionlessAPIsAsync()
         {
             var source = @"
@@ -3198,7 +3198,7 @@ public class Test
                     "windows", "10.0", "11.0"), Join(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "9.0", "12.0"), MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllPlatforms)));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChildParentDifferentSupportedAttributesAsync()
         {
             var source = @"
@@ -3264,7 +3264,7 @@ class TypeSupportedOnlyOnWindows
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "8.0", "10.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChildParentDifferentUnsupportedAttributesAsync()
         {
             var source = @"
@@ -3342,7 +3342,7 @@ class TypeUnsupportedWin8
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "7.0", "9.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChildParentMultipleSupportedCombinationsAsync()
         {
             var source = @"
@@ -3450,7 +3450,7 @@ class TypeSupportedWindows8_14
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "12.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChildParentMultipleUnsupportedCombinationsAsync()
         {
             var source = @"
@@ -3507,7 +3507,7 @@ class UnsupportedWindows8Supported9_14
                     GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "11.0", "13.0")));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChildParentMultiplePlatformAttributesCombinationsAsync()
         {
             var source = @"
@@ -3564,7 +3564,7 @@ class UnsupportedWindows8_9_12_Ios6_7_14
                          GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "12.0"))));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyCallsiteReferencesLocalFunctionNotWarnsAsync()
         {
             var source = @"
@@ -3585,7 +3585,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NarrowedCallsiteReferencesLocalFunctionNotWarnsAsync()
         {
             var source = @"
@@ -3606,7 +3606,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyCallsiteReferencesApiWithinSameAssemblyAttributeNotWarnAsync()
         {
             var source = @"
@@ -3629,7 +3629,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyCallsiteReferencesApiWithImmediateAttributeNotWarnAsync()
         {
             var source = @"
@@ -3653,7 +3653,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyCallsiteReferencesPlatformSpecificLibrariesApisNotWarnAsync()
         {
             var source = @"
@@ -3673,7 +3673,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Empty_NonCallsiteReferencesVersionedApiWithImmediateAttributeAsync()
         {
             var source = @"
@@ -3699,7 +3699,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ChildCanNarrowUpperLevelSupportedPlatformsAsync()
         {
             var source = @"
@@ -3741,7 +3741,7 @@ public class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyCallsiteReferencesSupportedUnsupportedApisNotWarnsAsync()
         {
             var source = @"
@@ -3790,7 +3790,7 @@ class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4920, "https://github.com/dotnet/roslyn-analyzers/issues/4920")]
         public async Task TestTimelyTerminationAsync()
         {
@@ -3827,10 +3827,10 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue("""
 
 {s_msBuildPlatforms}") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(51652, "https://github.com/dotnet/roslyn/issues/51652")]
+        [TestMethod, WorkItem(51652, "https://github.com/dotnet/roslyn/issues/51652")]
         public async Task TestGuardedCheckInsideLoopWithTryCatchAsync()
         {
             var source = @"
@@ -3860,7 +3860,7 @@ class TestType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact, WorkItem(6015, "https://github.com/dotnet/roslyn-analyzers/issues/6015")]
+        [TestMethod, WorkItem(6015, "https://github.com/dotnet/roslyn-analyzers/issues/6015")]
         public async Task TestGuardedCheckInsideLoopWithIfAsync()
         {
             var source = @"
@@ -3892,7 +3892,7 @@ class C
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IosSupportedOnMacCatalystAsync()
         {
             var source = @"
@@ -3962,7 +3962,7 @@ class TestType
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExcludeMacCatalystSupportUnsupportFromIosAsync()
         {
             var source = @"
@@ -4040,7 +4040,7 @@ class AllPlatforms
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IosSupportedOnMacCatalystVersionedAsync()
         {
             var source = @"
@@ -4080,7 +4080,7 @@ class TestType
             await VerifyAnalyzerCSAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IosUnsupportedOnMacCatalystAsync()
         {
             var source = @"
@@ -4119,7 +4119,7 @@ class TestType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IosUnsupportedOnMacCatalystVersionedAsync()
         {
             var source = @"
@@ -4158,6 +4158,104 @@ class TestType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
+        [TestMethod, WorkItem(50337, "https://github.com/dotnet/sdk/issues/50337")]
+        public async Task SuppressedMacCatalystWithinChildAttributesShouldAlsoAppliedToParentAttributesOnMerge()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform (""maccatalyst"")]
+[SupportedOSPlatform (""ios"")]
+partial class TestType {
+    [UnsupportedOSPlatform (""maccatalyst"")]
+    [SupportedOSPlatform (""ios"")]
+    void DoSomething ()
+    {
+        Console.WriteLine (GetSomething);
+    }
+
+    [UnsupportedOSPlatform (""maccatalyst"")]
+    [SupportedOSPlatform (""ios"")]
+    public static object GetSomething {
+        [UnsupportedOSPlatform (""maccatalyst"")]
+        [SupportedOSPlatform (""ios"")]
+        get => """";
+    }
+}";
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [TestMethod]
+        public async Task SuppressedMacCatalystWithinChildAttributesShouldAlsoAppliedToParentAttributesOnMergeRegression()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+    [assembly: SupportedOSPlatform (""maccatalyst"")]
+    [assembly: SupportedOSPlatform (""ios"")]
+    [assembly: SupportedOSPlatform (""macos"")]
+    [assembly: SupportedOSPlatform (""tvos"")]
+
+    [SupportedOSPlatform (""maccatalyst"")]
+    [SupportedOSPlatform (""ios"")]
+    [SupportedOSPlatform (""macos"")]
+    [SupportedOSPlatform (""tvos"")]
+    partial class TestType {
+
+        [UnsupportedOSPlatform (""maccatalyst"")]
+        [SupportedOSPlatform (""ios"")]
+        [SupportedOSPlatform (""macos"")]
+        [SupportedOSPlatform (""tvos"")]
+        public static IntPtr FromContext (INativeObject context)
+        {
+            return context.GetHandle ();
+        }
+    }
+
+    public static class NativeObjectExtensions {
+        static public IntPtr GetHandle (this INativeObject self)
+        {
+            return IntPtr.Zero;
+        }
+    }
+
+    public interface INativeObject {}
+";
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [TestMethod]
+        public async Task ChildMethodNarrowedPlatformSupportCalledShouldWarn()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+    [assembly: SupportedOSPlatform (""macos"")]
+    [assembly: SupportedOSPlatform (""tvos"")]
+
+    [SupportedOSPlatform (""macos"")]
+    [SupportedOSPlatform (""tvos"")]
+    partial class TestType {
+
+        public static IntPtr FromContext ()
+        {
+            return [|GetHandle()|];
+        }
+        
+        [SupportedOSPlatform (""macos"")]
+        [UnsupportedOSPlatform (""tvos"")]
+        static public IntPtr GetHandle ()
+        {
+            return IntPtr.Zero;
+        }
+    }
+";
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         private string GetFormattedString(string resource, params string[] args) =>
             string.Format(CultureInfo.InvariantCulture, resource, args);
 
@@ -4188,7 +4286,7 @@ class TestType
 [*]
 {editorconfigText}
 "));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyAnalyzerCSAsync(string sourceCode, string editorconfigText)
@@ -4199,7 +4297,7 @@ class TestType
 [*]
 {editorconfigText}
 "));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyAnalyzerVBAsync(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
@@ -4213,7 +4311,7 @@ class TestType
 [*]
 {editorconfigText}
 "));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static VerifyVB.Test PopulateTestVb(string sourceCode, params DiagnosticResult[] expected)

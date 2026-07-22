@@ -25,6 +25,7 @@ internal
 #endif
 sealed class VirtualProjectBuilder
 {
+
     internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
 
     internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
@@ -168,6 +169,7 @@ sealed class VirtualProjectBuilder
     {
         return Path.Combine(GetTempSubdirectory(dotNetSubdirectory), name);
     }
+
 
     public static bool IsValidEntryPointPath(string entryPointFilePath)
     {

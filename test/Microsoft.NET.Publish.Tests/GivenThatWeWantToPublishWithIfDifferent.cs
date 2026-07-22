@@ -5,13 +5,10 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishWithIfDifferent : SdkTest
     {
-        public GivenThatWeWantToPublishWithIfDifferent(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_publishes_content_files_with_IfDifferent_metadata()
         {
             var testProject = new TestProject()
@@ -30,7 +27,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["data2.txt"] = "Data file 2 content";
             testProject.SourceFiles["data3.txt"] = "Data file 3 content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             // Update the project file to set CopyToPublishDirectory metadata
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
@@ -62,7 +59,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "data3.txt")).Should().Be("Data file 3 content");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_skips_unchanged_files_with_IfDifferent_on_republish()
         {
             var testProject = new TestProject()
@@ -79,7 +76,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["unchangedData.txt"] = "Original content";
             testProject.SourceFiles["changedData.txt"] = "Original content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -132,7 +129,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "changedData.txt")).Should().Be("Modified content");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_None_items_with_IfDifferent_metadata()
         {
             var testProject = new TestProject()
@@ -145,7 +142,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["config.json"] = "{ \"setting\": \"value\" }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -168,7 +165,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "config.json")).Should().Be("{ \"setting\": \"value\" }");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_Compile_items_with_IfDifferent_metadata()
         {
             var testProject = new TestProject()
@@ -185,7 +182,7 @@ namespace PublishCompileWithIfDifferent
     public class SourceClass { }
 }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -205,7 +202,7 @@ namespace PublishCompileWithIfDifferent
             publishDirectory.Should().HaveFile("SourceFile.cs");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_copies_IfDifferent_files_correctly_with_referenced_projects()
         {
             var referencedProject = new TestProject()
@@ -230,7 +227,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             
             mainProject.SourceFiles["main.txt"] = "Main project content";
 
-            var testAsset = _testAssetsManager.CreateTestProject(mainProject);
+            var testAsset = TestAssetsManager.CreateTestProject(mainProject);
 
             // Configure the referenced project to include the file with IfDifferent
             var referencedProjectFile = Path.Combine(testAsset.Path, referencedProject.Name, $"{referencedProject.Name}.csproj");
@@ -265,7 +262,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "shared.txt")).Should().Be("Shared content from library");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_mixed_CopyToPublishDirectory_metadata_values()
         {
             var testProject = new TestProject()
@@ -281,7 +278,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["ifDifferent.txt"] = "IfDifferent copy";
             testProject.SourceFiles["doNotCopy.txt"] = "Do not copy";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -307,7 +304,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             publishDirectory.Should().NotHaveFile("doNotCopy.txt");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_IfDifferent_files_with_TargetPath()
         {
             var testProject = new TestProject()
@@ -320,7 +317,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles[Path.Combine("source", "data.txt")] = "Data in subfolder";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -344,7 +341,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(targetFile).Should().Be("Data in subfolder");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_IfDifferent_with_self_contained_publish()
         {
             var testProject = new TestProject()
@@ -359,7 +356,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["appdata.txt"] = "Application data";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
@@ -382,7 +379,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "appdata.txt")).Should().Be("Application data");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_content_from_imported_targets_with_correct_path()
         {
             // This test verifies that Content items introduced from imported .targets files
@@ -402,7 +399,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
 
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
 
@@ -456,7 +453,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             potentialEscapedFiles.Should().BeEmpty("Content file should not escape to directories outside publish folder");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_content_with_comma_in_filename()
         {
             // This test verifies that Content items with commas in their filenames can be published
@@ -472,7 +469,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
 
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
 

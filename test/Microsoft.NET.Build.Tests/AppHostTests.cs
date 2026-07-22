@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
-using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class AppHostTests : SdkTest
     {
         private static string[] GetExpectedFilesFromBuild(TestAsset testAsset, string targetFramework)
@@ -22,29 +22,21 @@ namespace Microsoft.NET.Build.Tests
                 $"{testProjectName}.dll",
                 $"{testProjectName}.pdb",
                 $"{testProjectName}.deps.json",
-                $"{testProjectName}.runtimeconfig.json"
+                $"{testProjectName}.runtimeconfig.json",
+                // Debug builds always generate a runtimeconfig.dev.json file (probing paths for pre-net6.0
+                // target frameworks and Hot Reload runtime options for net6.0+).
+                $"{testProjectName}.runtimeconfig.dev.json"
             };
-
-            if (!string.IsNullOrEmpty(targetFramework))
-            {
-                var parsedTargetFramework = NuGetFramework.Parse(targetFramework);
-
-                if (parsedTargetFramework.Version.Major < 6)
-                    expectedFiles.Add($"{testProjectName}.runtimeconfig.dev.json");
-            }
 
             return expectedFiles.ToArray();
         }
 
-        public AppHostTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [RequiresMSBuildVersionTheory("17.1.0.60101")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -79,16 +71,17 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1", "win-x64")]
-        [InlineData("net5.0", "win-x64")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "win-x64")]
-        [InlineData("netcoreapp3.1", "linux-x64")]
-        [InlineData("net5.0", "linux-x64")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "linux-x64")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.OSX)]
+        [DataRow("netcoreapp3.1", "win-x64")]
+        [DataRow("net5.0", "win-x64")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, "win-x64")]
+        [DataRow("netcoreapp3.1", "linux-x64")]
+        [DataRow("net5.0", "linux-x64")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, "linux-x64")]
         public void It_does_not_try_to_codesign_non_osx_app_hosts(string targetFramework, string rid)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework, allowCopyIfPresent: true)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -118,24 +111,24 @@ namespace Microsoft.NET.Build.Tests
             Directory.Delete(buildProjDir, true);
         }
 
-        [Theory]
-        [InlineData("net8.0", "osx-x64", true)]
-        [InlineData("net8.0", "osx-arm64", true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", true)]
-        [InlineData("net8.0", "osx-x64", false)]
-        [InlineData("net8.0", "osx-arm64", false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", false)]
-        [InlineData("net8.0", "osx-x64", null)]
-        [InlineData("net8.0", "osx-arm64", null)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", null)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", null)]
+        [TestMethod]
+        [DataRow("net8.0", "osx-x64", true)]
+        [DataRow("net8.0", "osx-arm64", true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, "osx-x64", true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, "osx-arm64", true)]
+        [DataRow("net8.0", "osx-x64", false)]
+        [DataRow("net8.0", "osx-arm64", false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, "osx-x64", false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, "osx-arm64", false)]
+        [DataRow("net8.0", "osx-x64", null)]
+        [DataRow("net8.0", "osx-arm64", null)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, "osx-x64", null)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, "osx-arm64", null)]
         public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid, bool? enableMacOSCodesign)
         {
             const bool CodesignsByDefault = true;
             const string testAssetName = "HelloWorld";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -167,12 +160,12 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
-        [InlineData("netcoreapp2.1")]
-        [InlineData("netcoreapp2.2")]
+        [TestMethod]
+        [DataRow("netcoreapp2.1")]
+        [DataRow("netcoreapp2.2")]
         public void It_does_not_build_with_an_apphost_by_default_before_netcoreapp_3(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -194,16 +187,17 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("x86")]
-        [InlineData("x64")]
-        [InlineData("AnyCPU")]
-        [InlineData("")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("x86")]
+        [DataRow("x64")]
+        [DataRow("AnyCPU")]
+        [DataRow("")]
         public void It_uses_an_apphost_based_on_platform_target(string target)
         {
             var targetFramework = "netcoreapp3.1";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: target)
                 .WithTargetFramework(targetFramework)
                 .WithSource();
@@ -232,10 +226,10 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_can_disable_cetcompat(bool? cetCompat)
         {
             string rid = "win-x64"; // CET compat support is currently only on Windows x64
@@ -251,7 +245,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
                 .Should()
@@ -267,7 +261,7 @@ namespace Microsoft.NET.Build.Tests
             isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_configure_dotnet_search_options_on_build()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -283,7 +277,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("AppHostDotNetSearch", "AppRelative");
             testProject.AdditionalProperties.Add("AppHostRelativeDotNet", "subdirectory");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -310,10 +304,11 @@ namespace Microsoft.NET.Build.Tests
                 break;
             }
 
-            Assert.True(found, "Expected placeholder sequence for .NET install search options was not found");
+            Assert.IsTrue(found, "Expected placeholder sequence for .NET install search options was not found");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void AppHost_contains_resources_from_the_managed_dll()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -329,7 +324,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AssemblyVersion", version);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -345,11 +340,12 @@ namespace Microsoft.NET.Build.Tests
             apphostVersion.Should().Be(version);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void FSharp_app_can_customize_the_apphost()
         {
             var targetFramework = "netcoreapp3.1";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorldFS")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -377,7 +373,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void If_UseAppHost_is_false_it_does_not_try_to_find_an_AppHost()
         {
             var testProject = new TestProject()
@@ -391,7 +387,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["UseAppHost"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -401,7 +397,8 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [WindowsOnlyFact] // fails on Unix platforms, see https://github.com/dotnet/sdk/issues/48202
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)] // fails on Unix platforms, see https://github.com/dotnet/sdk/issues/48202
         public void It_retries_on_failure_to_create_apphost()
         {
             var testProject = new TestProject()
@@ -414,7 +411,7 @@ namespace Microsoft.NET.Build.Tests
             // enable generating apphost even on macOS
             testProject.AdditionalProperties.Add("UseApphost", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 

@@ -15,7 +15,19 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal static class EnvironmentVariablesToMSBuild
 {
-    private const string PropsFileName = "dotnet-run-env.props";
+    private const string ValueMetadataName = "Value";
+
+    /// <summary>
+    /// Determines whether the project has opted in to receiving environment variables as MSBuild items
+    /// by declaring the <see cref="Constants.RuntimeEnvironmentVariableSupport"/> project capability.
+    /// </summary>
+    /// <param name="projectInstance">The MSBuild project instance to inspect.</param>
+    /// <returns><see langword="true"/> if the project declares the capability; otherwise <see langword="false"/>.</returns>
+    public static bool HasRuntimeEnvironmentVariableSupport(ProjectInstance projectInstance)
+    {
+        return projectInstance.GetItems(Constants.ProjectCapability)
+            .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase));
+    }
 
     /// <summary>
     /// Adds environment variables as MSBuild items to a ProjectInstance.
@@ -29,9 +41,34 @@ internal static class EnvironmentVariablesToMSBuild
         {
             projectInstance.AddItem(Constants.RuntimeEnvironmentVariable, name, new Dictionary<string, string>
             {
-                ["Value"] = value
+                [ValueMetadataName] = value
             });
         }
+    }
+
+    /// <summary>
+    /// Reads the current <c>@(RuntimeEnvironmentVariable)</c> items from a ProjectInstance into a dictionary.
+    /// This captures any additions or modifications made by MSBuild targets (e.g., <c>ComputeRunArguments</c>)
+    /// so they can be applied to the launched process.
+    /// </summary>
+    /// <param name="projectInstance">The MSBuild project instance to read items from.</param>
+    /// <returns>A dictionary mapping environment variable names to their values.</returns>
+    public static IReadOnlyDictionary<string, string> ReadFromItems(ProjectInstance projectInstance)
+    {
+        // Always use an ordinal (case-sensitive) comparer. Although environment variable names
+        // are case-insensitive on Windows, the target (e.g. device/emulator) the app actually
+        // runs on may differ from the OS running 'dotnet run' - for example, building an Android
+        // project on Windows. Switching the comparer based on RuntimeInformation of the current
+        // process would therefore be incorrect, so we preserve every @(RuntimeEnvironmentVariable)
+        // item exactly as MSBuild produced it and leave any case handling to the OS that
+        // ultimately receives the variables.
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var item in projectInstance.GetItems(Constants.RuntimeEnvironmentVariable))
+        {
+            result[item.EvaluatedInclude] = item.GetMetadataValue(ValueMetadataName);
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -45,8 +82,13 @@ internal static class EnvironmentVariablesToMSBuild
     /// Optional intermediate output path where the file will be created.
     /// If null or empty, defaults to "obj" subdirectory of the project directory.
     /// </param>
+    /// <param name="propsFileName">The name of the generated props file.</param>
     /// <returns>The full path to the created props file, or null if no environment variables were specified or projectFilePath is null.</returns>
-    public static string? CreatePropsFile(string? projectFilePath, IReadOnlyDictionary<string, string> environmentVariables, string? intermediateOutputPath = null)
+    public static string? CreatePropsFile(
+        string? projectFilePath,
+        IReadOnlyDictionary<string, string> environmentVariables,
+        string propsFileName,
+        string? intermediateOutputPath = null)
     {
         if (string.IsNullOrEmpty(projectFilePath) || environmentVariables.Count == 0)
         {
@@ -65,7 +107,7 @@ internal static class EnvironmentVariablesToMSBuild
         Directory.CreateDirectory(objDir);
 
         // Ensure we return a full path for MSBuild property usage
-        string propsFilePath = Path.GetFullPath(Path.Combine(objDir, PropsFileName));
+        string propsFilePath = Path.GetFullPath(Path.Combine(objDir, propsFileName));
         using (var stream = File.Create(propsFilePath))
         {
             WritePropsFileContent(stream, environmentVariables);
@@ -137,10 +179,9 @@ internal static class EnvironmentVariablesToMSBuild
         {
             writer.WriteStartElement(Constants.RuntimeEnvironmentVariable);
             writer.WriteAttributeString("Include", name);
-            writer.WriteAttributeString("Value", value);
+            writer.WriteAttributeString(ValueMetadataName, value);
             writer.WriteEndElement();
         }
-
         writer.WriteEndElement(); // ItemGroup
         writer.WriteEndElement(); // Project
     }

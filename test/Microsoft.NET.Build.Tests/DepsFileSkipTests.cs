@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,14 +8,11 @@ using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class DepsFileSkipTests : SdkTest
     {
-        public DepsFileSkipTests(ITestOutputHelper log) : base(log)
-        {
 
-        }
-
-        [Fact]
+        [TestMethod]
         public void RuntimeAssemblyFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -32,7 +29,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "runtime");
         }
 
-        [Fact]
+        [TestMethod]
         public void RuntimeAssemblyFromRuntimePackCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -50,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "runtime");
         }
 
-        [Fact]
+        [TestMethod]
         public void NativeAssetFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -69,7 +66,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "native");
         }
 
-        [Fact]
+        [TestMethod]
         public void RuntimeTargetFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -86,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "runtimeTargets");
         }
 
-        [Fact]
+        [TestMethod]
         public void NativeAssetFromRuntimePackCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -104,7 +101,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "native");
         }
 
-        [Fact]
+        [TestMethod]
         public void ResourceAssetFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -120,7 +117,7 @@ namespace Microsoft.NET.Build.Tests
             string filenameNotToSkip = "es/Humanizer.resources.dll";
             string assetType = "resources";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                .WithProjectChanges(project => AddSkipTarget(project, filenameToSkip));
 
             var buildCommand = new BuildCommand(testAsset);
@@ -160,7 +157,7 @@ namespace Microsoft.NET.Build.Tests
 
         private void TestSkippingFile(TestProject testProject, string filenameToSkip, string assetType)
         {
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: filenameToSkip + assetType)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: filenameToSkip + assetType)
                 .WithProjectChanges(project => AddSkipTarget(project, filenameToSkip));
 
             var buildCommand = new BuildCommand(testAsset);

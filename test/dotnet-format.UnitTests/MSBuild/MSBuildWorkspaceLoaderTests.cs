@@ -1,16 +1,17 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
-using Microsoft.CodeAnalysis.Tools.Tests.XUnit;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {
+    [TestClass]
     public class MSBuildWorkspaceLoaderTests
     {
         // Microsoft.CodeAnalysis.CSharp.ErrorCode
@@ -22,20 +23,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 
         private static string ProjectsPath => TestProjectsPathHelper.GetProjectsDirectory();
 
-        protected ITestOutputHelper TestOutputHelper { get; set; }
+        public TestContext TestContext { get; set; }
 
-        public MSBuildWorkspaceLoaderTests(ITestOutputHelper output)
-        {
-            TestOutputHelper = output;
-        }
+        private ITestOutputHelper _testOutputHelper;
+        protected ITestOutputHelper TestOutputHelper => _testOutputHelper ??= new TestContextOutputHelper(TestContext);
 
-        [MSBuildTheory(typeof(WindowsOnly))]
-        [InlineData("winforms")]
-        [InlineData("winformslib")]
-        [InlineData("wpf")]
-        [InlineData("wpfusercontrollib")]
-        [InlineData("wpflib")]
-        [InlineData("wpfcustomcontrollib")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("winforms")]
+        [DataRow("winformslib")]
+        [DataRow("wpf")]
+        [DataRow("wpfusercontrollib")]
+        [DataRow("wpflib")]
+        [DataRow("wpfcustomcontrollib")]
         public async Task CSharpTemplateProject_WindowsOnly_LoadWithNoDiagnostics(string templateName)
         {
             var ignoredDiagnostics = templateName switch
@@ -48,21 +48,21 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
             await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp, ignoredDiagnostics);
         }
 
-        [MSBuildTheory]
-        [InlineData("web")]
-        [InlineData("grpc")]
-        [InlineData("webapi")]
-        [InlineData("razor")]
-        [InlineData("mvc")]
-        [InlineData("blazor")]
-        [InlineData("blazorwasm")]
-        [InlineData("classlib")]
-        [InlineData("console")]
-        [InlineData("mstest")]
-        [InlineData("nunit")]
-        [InlineData("razorclasslib")]
-        [InlineData("worker")]
-        [InlineData("xunit")]
+        [TestMethod]
+        [DataRow("web")]
+        [DataRow("grpc")]
+        [DataRow("webapi")]
+        [DataRow("razor")]
+        [DataRow("mvc")]
+        [DataRow("blazor")]
+        [DataRow("blazorwasm")]
+        [DataRow("classlib")]
+        [DataRow("console")]
+        [DataRow("mstest")]
+        [DataRow("nunit")]
+        [DataRow("razorclasslib")]
+        [DataRow("worker")]
+        [DataRow("xunit")]
         public async Task CSharpTemplateProject_LoadWithNoDiagnostics(string templateName)
         {
             var ignoredDiagnostics = templateName switch
@@ -73,12 +73,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
             await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp, ignoredDiagnostics);
         }
 
-        [MSBuildTheory]
-        [InlineData("classlib")]
-        [InlineData("console")]
-        [InlineData("mstest")]
-        [InlineData("nunit")]
-        [InlineData("xunit")]
+        [TestMethod]
+        [DataRow("classlib")]
+        [DataRow("console")]
+        [DataRow("mstest")]
+        [DataRow("nunit")]
+        [DataRow("xunit")]
         public async Task VisualBasicTemplateProject_LoadWithNoDiagnostics(string templateName)
         {
             var ignoredDiagnostics = (templateName, isWindows: OperatingSystem.IsWindows()) switch
@@ -124,7 +124,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
             var projectFilePath = GetProjectFilePath(projectPath, languageName);
 
             var exitCode = await DotNetHelper.NewProjectAsync(templateName, projectPath, languageName, outputHelper);
-            Assert.Equal(0, exitCode);
+            Assert.AreEqual(0, exitCode);
 
             return projectFilePath;
         }
@@ -133,9 +133,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         {
             var binaryLogPath = Path.ChangeExtension(projectFilePath, ".binlog");
 
-            using var workspace = (MSBuildWorkspace)await MSBuildWorkspaceLoader.LoadAsync(projectFilePath, WorkspaceType.Project, binaryLogPath, logWorkspaceWarnings: true, logger, CancellationToken.None);
+            using var workspace = (MSBuildWorkspace)await MSBuildWorkspaceLoader.LoadAsync(projectFilePath, WorkspaceType.Project, binaryLogPath, logWorkspaceWarnings: true, logger, targetFramework: null, CancellationToken.None);
 
-            Assert.Empty(workspace.Diagnostics);
+            Assert.IsEmpty(workspace.Diagnostics);
 
             var project = workspace.CurrentSolution.Projects.Single();
             var compilation = await project.GetCompilationAsync();
@@ -144,7 +144,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
             var diagnostics = compilation.GetDiagnostics()
                 .Where(diagnostic => diagnostic.Severity > DiagnosticSeverity.Hidden && ignoredDiagnostics?.Contains(diagnostic.Id) != true);
 
-            Assert.Empty(diagnostics);
+            Assert.IsEmpty(diagnostics);
         }
 
         private static void CleanupProject(string templateName, string languageName)

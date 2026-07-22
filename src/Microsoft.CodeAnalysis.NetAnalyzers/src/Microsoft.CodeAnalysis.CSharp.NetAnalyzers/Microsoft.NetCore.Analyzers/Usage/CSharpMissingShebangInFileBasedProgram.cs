@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -39,22 +40,20 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                         return;
                     }
 
-                    var includeDirective = root.GetLeadingTrivia().FirstOrDefault(IsIncludeDirective);
-                    if (includeDirective == default)
+                    var shebangRequiringDirective = root.GetLeadingTrivia().FirstOrDefault(IsShebangRequiringDirective);
+                    if (shebangRequiringDirective == default)
                     {
                         return;
                     }
 
-                    var location = includeDirective.GetLocation();
+                    var location = shebangRequiringDirective.GetLocation();
                     context.ReportDiagnostic(location.CreateDiagnostic(Rule));
                 });
             });
         }
 
-        private static bool IsIncludeDirective(SyntaxTrivia trivia)
+        private static bool IsShebangRequiringDirective(SyntaxTrivia trivia)
         {
-            const string include = "include";
-
             var structure = trivia.GetStructure();
             if (structure is null)
             {
@@ -68,8 +67,15 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             }
 
             var trimmedContent = content.Text.AsSpan().TrimStart();
-            return trimmedContent.StartsWith(include, StringComparison.Ordinal) &&
-                (trimmedContent.Length == include.Length || char.IsWhiteSpace(trimmedContent[include.Length]));
+            return isDirective(trimmedContent, "include") ||
+                isDirective(trimmedContent, "ref");
+
+            static bool isDirective(ReadOnlySpan<char> content, string directiveName)
+            {
+                return content.StartsWith(directiveName, StringComparison.Ordinal) &&
+                    // `content` is either exactly the directive name or has other text separated from the directive name by whitespace.
+                    (content.Length == directiveName.Length || char.IsWhiteSpace(content[directiveName.Length]));
+            }
         }
     }
 }

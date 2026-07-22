@@ -5,17 +5,18 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToGenerateGlobalUsings_DotNet : SdkTest
     {
-        public GivenThatWeWantToGenerateGlobalUsings_DotNet(ITestOutputHelper log) : base(log) { }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void It_can_generate_global_usings_and_builds_successfully()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -35,17 +36,18 @@ global using System.Collections.Generic;
 global using System.IO;
 global using System.Linq;
 global using System.Net.Http;
+global using System.Net.Http.Json;
 global using System.Threading;
 global using System.Threading.Tasks;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public void Implicit_Usings_Are_Not_Enabled_By_Default()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -59,14 +61,15 @@ global using System.Threading.Tasks;
             outputDirectory.Should().NotHaveFile(globalUsingsFileName);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void It_can_remove_specific_usings_in_project_file()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
             testProject.AddItem("Using", new Dictionary<string, string> { ["Remove"] = "System.IO" });
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
 
@@ -86,12 +89,13 @@ global using System;
 global using System.Collections.Generic;
 global using System.Linq;
 global using System.Net.Http;
+global using System.Net.Http.Json;
 global using System.Threading;
 global using System.Threading.Tasks;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_can_generate_custom_usings()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -111,7 +115,7 @@ global using System.Threading.Tasks;
 </ItemGroup>"));
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -135,7 +139,7 @@ global using static TestStaticNamespace;
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_considers_switches_when_deduping()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -157,7 +161,7 @@ global using static TestStaticNamespace;
 </ItemGroup>"));
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -180,14 +184,15 @@ global using static TestStaticNamespace;
 ");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void It_can_persist_generatedfile_between_cleans()
         {
             // Regression test for https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1405579
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -215,19 +220,53 @@ global using System.Collections.Generic;
 global using System.IO;
 global using System.Linq;
 global using System.Net.Http;
+global using System.Net.Http.Json;
 global using System.Threading;
 global using System.Threading.Tasks;
 ");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        public void It_not_generate_global_usings_for_system_net_http_json_when_targeting_net10_0()
+        {
+            var tfm = "net10.0";
+            var testProject = CreateTestProject(tfm);
+            testProject.AdditionalProperties["ImplicitUsings"] = "enable";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetIntermediateDirectory(tfm);
+
+            outputDirectory.Should().HaveFile(globalUsingsFileName);
+
+            File.ReadAllText(Path.Combine(outputDirectory.FullName, globalUsingsFileName)).Should().Be(
+@"// <auto-generated/>
+global using System;
+global using System.Collections.Generic;
+global using System.IO;
+global using System.Linq;
+global using System.Net.Http;
+global using System.Threading;
+global using System.Threading.Tasks;
+");
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void It_not_generate_global_usings_for_system_net_http_when_multitarget()
         {
             var tfm = "net472;netstandard2.0;net6.0";
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
             testProject.AdditionalProperties["LangVersion"] = "10.0";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);

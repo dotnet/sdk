@@ -7,6 +7,12 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsPackable>true</IsPackable>
     <DefineConstants>$(DefineConstants);FILE_BASED_PROGRAMS_PUBLIC;FILE_BASED_PROGRAMS_SYSTEM_TEXT_JSON</DefineConstants>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +30,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="dotnet" />
+    <InternalsVisibleTo Include="dotnet-aot" />
+    <InternalsVisibleTo Include="dotnet-aot.Tests" />
     <InternalsVisibleTo Include="dotnet-watch.Tests" />
     <InternalsVisibleTo Include="dotnet.Tests" />
     <InternalsVisibleTo Include="Microsoft.NET.Build.Tests" Key="$(MicrosoftSharedPublicKey)" />
