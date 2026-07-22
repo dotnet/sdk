@@ -88,6 +88,11 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CmdNoBuildDescription
         };
 
+        public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(
+            defaultValue: false,
+            forwardAs: null,
+            description: CommandDefinitionStrings.TestCmdNoLogo);
+
         public readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
 
         public readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
@@ -178,6 +183,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
+            Options.Add(NoLogoOption);
             Options.Add(NoDependenciesOption);
             Options.Add(ArtifactsPathOption);
             Options.Add(UseCurrentRuntimeOption);

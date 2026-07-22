@@ -349,15 +349,17 @@ internal static class CommonOptions
     /// </list>
     /// Finally, if neither the option nor the environment variable is set, the option will default to the provided <paramref name="defaultValue"/>.
     /// </summary>
-    public static Option<bool> CreateNoLogoOption(bool defaultValue = true, string forwardAs = "--nologo", string? description = null)
+    public static Option<bool> CreateNoLogoOption(bool defaultValue = true, string? forwardAs = "--nologo", string? description = null)
     {
-        return new Option<bool>("--no-logo", "--nologo", "-nologo", "/nologo")
+        Option<bool> option = new("--no-logo", "--nologo", "-nologo", "/nologo")
         {
             Description = description ?? CommandDefinitionStrings.NoLogoOptionDescription,
             DefaultValueFactory = (ar) => EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable("DOTNET_NOLOGO"), defaultValue),
             CustomParser = (ar) => true,
             Arity = ArgumentArity.Zero
-        }.ForwardIfEnabled(forwardAs);
+        };
+
+        return forwardAs is null ? option : option.ForwardIfEnabled(forwardAs);
     }
 
     public static void ValidateSelfContainedOptions(bool hasSelfContainedOption, bool hasNoSelfContainedOption)
@@ -378,5 +380,4 @@ internal static class CommonOptions
         Arity = ArgumentArity.Zero
     };
 }
-
 
