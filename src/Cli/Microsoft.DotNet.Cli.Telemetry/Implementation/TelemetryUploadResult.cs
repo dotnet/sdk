@@ -28,10 +28,11 @@ internal enum TelemetryUploadOutcome
 /// </summary>
 internal readonly struct TelemetryUploadResult
 {
-    private TelemetryUploadResult(TelemetryUploadOutcome outcome, byte[]? retryPayload)
+    private TelemetryUploadResult(TelemetryUploadOutcome outcome, byte[]? retryPayload, TimeSpan? retryAfter)
     {
         Outcome = outcome;
         RetryPayload = retryPayload;
+        RetryAfter = retryAfter;
     }
 
     public TelemetryUploadOutcome Outcome { get; }
@@ -42,10 +43,37 @@ internal readonly struct TelemetryUploadResult
     /// </summary>
     public byte[]? RetryPayload { get; }
 
-    public static TelemetryUploadResult Accepted { get; } = new(TelemetryUploadOutcome.Accepted, null);
+    /// <summary>
+    /// The server-provided delay before another upload attempt, when present.
+    /// </summary>
+    public TimeSpan? RetryAfter { get; }
 
-    public static TelemetryUploadResult Rejected { get; } = new(TelemetryUploadOutcome.Rejected, null);
+    public static TelemetryUploadResult Accepted { get; } = new(TelemetryUploadOutcome.Accepted, null, null);
 
-    public static TelemetryUploadResult PartiallyAccepted(byte[] retryPayload)
-        => new(TelemetryUploadOutcome.PartiallyAccepted, retryPayload);
+    public static TelemetryUploadResult Rejected { get; } = new(TelemetryUploadOutcome.Rejected, null, null);
+
+    public static TelemetryUploadResult RejectedAfter(TimeSpan retryAfter)
+        => new(TelemetryUploadOutcome.Rejected, null, retryAfter);
+
+    public static TelemetryUploadResult PartiallyAccepted(byte[] retryPayload, TimeSpan? retryAfter = null)
+        => new(TelemetryUploadOutcome.PartiallyAccepted, retryPayload, retryAfter);
+}
+
+/// <summary>
+/// The result of one storage drain pass.
+/// </summary>
+internal readonly struct TelemetryDrainResult
+{
+    public TelemetryDrainResult(int forwardProgress, bool shouldBackOff, TimeSpan? retryAfter)
+    {
+        ForwardProgress = forwardProgress;
+        ShouldBackOff = shouldBackOff;
+        RetryAfter = retryAfter;
+    }
+
+    public int ForwardProgress { get; }
+
+    public bool ShouldBackOff { get; }
+
+    public TimeSpan? RetryAfter { get; }
 }

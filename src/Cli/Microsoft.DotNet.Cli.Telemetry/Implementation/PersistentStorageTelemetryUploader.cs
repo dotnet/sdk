@@ -45,9 +45,12 @@ internal sealed class PersistentStorageTelemetryUploader
     /// Leases, uploads, and deletes persisted blobs. Blobs that fail to upload are left for a
     /// later retry. This method never throws.
     /// </summary>
-    public async Task DrainAsync(CancellationToken cancellationToken)
+    public async Task<TelemetryDrainResult> DrainAsync(CancellationToken cancellationToken)
     {
         var processed = 0;
+        var forwardProgress = 0;
+        var shouldBackOff = false;
+        TimeSpan? retryAfter = null;
         // Retriable remainders from partially-accepted uploads. Persisted AFTER the enumeration
         // completes so we never mutate the storage collection while iterating it.
         List<byte[]>? retriableRemainders = null;
@@ -92,6 +95,8 @@ internal sealed class PersistentStorageTelemetryUploader
                         {
                             (retriableRemainders ??= []).Add(remainder);
                         }
+                        shouldBackOff = true;
+                        retryAfter = result.RetryAfter;
                         deleted = blob.TryDelete();
                         break;
 
@@ -102,6 +107,8 @@ internal sealed class PersistentStorageTelemetryUploader
                     case TelemetryUploadOutcome.Rejected:
                         // Leave the blob in place; its lease will expire and a later invocation
                         // will retry it.
+                        shouldBackOff = true;
+                        retryAfter = result.RetryAfter;
                         break;
                 }
             }
@@ -113,15 +120,30 @@ internal sealed class PersistentStorageTelemetryUploader
             }
             catch (Exception e)
             {
-                // Swallow per-blob failures and keep going; the blob is retried later.
+                // Network and storage failures are normally transient. Stop this pass and let the
+                // caller back off before trying the blob again rather than moving immediately to
+                // the rest of the backlog.
                 Debug.Fail(e.ToString());
+                shouldBackOff = true;
             }
             finally
             {
-                if (leased && !deleted)
+                if (deleted)
+                {
+                    forwardProgress++;
+                }
+                else if (leased)
                 {
                     blob.TryRelease();
                 }
+            }
+
+            if (shouldBackOff)
+            {
+                // A retryable response normally indicates service throttling or a transient
+                // failure. Stop this pass rather than submitting every remaining blob to a
+                // service that has already asked us to retry.
+                break;
             }
         }
 
@@ -132,5 +154,7 @@ internal sealed class PersistentStorageTelemetryUploader
                 _storage.TryPersist(remainder);
             }
         }
+
+        return new TelemetryDrainResult(forwardProgress, shouldBackOff, retryAfter);
     }
 }
