@@ -4,9 +4,12 @@
 #nullable disable
 
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
 using Microsoft.NET.Sdk.Razor.Tool.Json;
 using System.Text.Json;
@@ -143,6 +146,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 return Task.FromResult(ExitCodeFailure);
             }
 
+            if (SourceGeneratorSwitch.UseSourceGenerator)
+            {
+                return Task.FromResult(ExecuteWithSourceGenerator(
+                    projectDirectory: ProjectDirectory.Value(),
+                    outputFilePath: TagHelperManifest.Value(),
+                    assemblies: Assemblies.Values.ToArray()));
+            }
+
             var version = RazorLanguageVersion.Parse(Version.Value());
             var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
 
@@ -180,6 +191,56 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var feature = engine.Engine.Features.OfType<ITagHelperFeature>().Single();
             var tagHelpers = feature.GetTagHelpers();
 
+            WriteTagHelperManifest(outputFilePath, tagHelpers);
+
+            return ExitCodeSuccess;
+        }
+
+        private int ExecuteWithSourceGenerator(string projectDirectory, string outputFilePath, string[] assemblies)
+        {
+            outputFilePath = Path.Combine(projectDirectory, outputFilePath);
+
+            var parseOptions = RazorSourceGeneratorHost.CreateParseOptions(LanguageVersion.Default);
+            var compilation = RazorSourceGeneratorHost.CreateCompilation(assemblies, Parent.AssemblyReferenceProvider);
+
+            // The generator only discovers tag helpers from references when the project has at least one
+            // Razor file. A synthetic empty view satisfies that without contributing a tag helper itself:
+            // only components (.razor files) feed the compilation-based half of discovery.
+            var syntheticPath = Path.Combine(projectDirectory, "__rzc_discover__.cshtml");
+            var inputFiles = new List<RazorInputFile>
+            {
+                new RazorInputFile(syntheticPath, "__rzc_discover__.cshtml", text: SourceText.From(string.Empty, Encoding.UTF8)),
+            };
+
+            var optionsProvider = RazorSourceGeneratorHost.CreateOptionsProvider(
+                razorConfiguration: Configuration.Value(),
+                razorLanguageVersion: Version.Value(),
+                rootNamespace: "ASP",
+                supportLocalizedComponentNames: false,
+                generateMetadataSourceChecksumAttributes: false,
+                projectDirectory: projectDirectory,
+                files: inputFiles);
+            var additionalTexts = RazorSourceGeneratorHost.CreateAdditionalTexts(inputFiles);
+
+            var runResult = RazorSourceGeneratorHost.CreateDriver(parseOptions)
+                .AddAdditionalTexts(additionalTexts)
+                .WithUpdatedAnalyzerConfigOptions(optionsProvider)
+                .RunGeneratorsAndUpdateCompilation(compilation, out _, out _)
+                .GetRunResult().Results.Single();
+
+            if (!RazorSourceGeneratorHostOutput.TryGet(runResult, out var razorResult))
+            {
+                Error.WriteLine("The Razor source generator did not produce the expected host output.");
+                return ExitCodeFailure;
+            }
+
+            WriteTagHelperManifest(outputFilePath, razorResult.TagHelpers);
+
+            return ExitCodeSuccess;
+        }
+
+        private void WriteTagHelperManifest(string outputFilePath, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
             using (var stream = new MemoryStream())
             {
                 Serialize(stream, tagHelpers);
@@ -198,8 +259,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     }
                 }
             }
-
-            return ExitCodeSuccess;
         }
 
         private static byte[] Hash(string path)
