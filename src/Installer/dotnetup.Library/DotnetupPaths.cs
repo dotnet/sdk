@@ -128,8 +128,6 @@ internal static class DotnetupPaths
     {
         get
         {
-            // Allow override for testing — lets tests point the managed hive at a temp directory
-            // without touching the real user profile.
             var overridePath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH");
             if (!string.IsNullOrEmpty(overridePath))
             {

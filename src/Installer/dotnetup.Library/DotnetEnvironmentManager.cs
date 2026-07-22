@@ -49,7 +49,14 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         // default install path; configurable hives are tracked in
         // https://github.com/dotnet/sdk/issues/55346, at which point this check would also consult
         // the persisted root.
-        bool isDotnetupHive = DotnetupUtilities.PathsEqual(currentInstallRoot.Path, GetDefaultDotnetInstallPath());
+        //
+        // Resolve the default path's symlinks too so the comparison is symmetric: currentInstallRoot.Path
+        // is already realpath-resolved above, and the default path's base (LocalApplicationData /
+        // XDG_DATA_HOME, which is not required to be a real directory) may itself be a symlink. Without
+        // this, a symlinked data directory would make dotnetup fail to recognize its own hive.
+        string defaultInstallPath = GetDefaultDotnetInstallPath();
+        string resolvedDefaultInstallPath = ExecutablePathResolver.ResolveRealPath(defaultInstallPath) ?? defaultInstallPath;
+        bool isDotnetupHive = DotnetupUtilities.PathsEqual(currentInstallRoot.Path, resolvedDefaultInstallPath);
         return new(currentInstallRoot, isDotnetupHive);
     }
 
