@@ -1,0 +1,376 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.ToolPackage;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.InternalAbstractions;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
+using NuGet.Packaging;
+using NuGet.Versioning;
+
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
+
+/// <summary>
+///  Advertising-manifest behavior shared between the managed workload commands (via
+///  <see cref="WorkloadManifestUpdater"/>) and, eventually, a NativeAOT closure: background
+///  disable/interval/sentinel handling, checking for newer manifest packages, downloading/extracting
+///  advertising manifests, serializing/deleting the "updatable workloads" file used to display the
+///  update notification, workload-set mode, and the overlay/update calculations used by
+///  <c>dotnet workload list</c>/<c>update</c>.
+///
+///  <para>
+///  This type intentionally has no dependency on <see cref="WorkloadInstallerFactory"/>,
+///  <see cref="FileBasedInstaller"/>, or <see cref="NetSdkMsiInstallerClient"/> - only the narrow
+///  abstractions (<see cref="IWorkloadResolver"/>, <see cref="INuGetPackageDownloader"/>,
+///  <see cref="IWorkloadInstallationRecordRepository"/>, <see cref="IWorkloadManifestInstaller"/>) it
+///  needs to do its work, so it (and its background-update entry point) can eventually be compiled into
+///  a NativeAOT closure that never links the full workload installer or Windows MSI elevation/IPC.
+///  </para>
+///
+///  Rollback, workload-set-from-history, and other install-command-specific manifest computations are
+///  intentionally NOT part of this type; they remain on <see cref="WorkloadManifestUpdater"/>.
+/// </summary>
+internal class WorkloadAdvertisingManifestUpdater(
+    IReporter reporter,
+    IWorkloadResolver workloadResolver,
+    INuGetPackageDownloader nugetPackageDownloader,
+    string userProfileDir,
+    IWorkloadInstallationRecordRepository workloadRecordRepo,
+    IWorkloadManifestInstaller workloadManifestInstaller,
+    PackageSourceLocation? packageSourceLocation = null,
+    Func<string, string?>? getEnvironmentVariable = null,
+    bool displayManifestUpdates = true,
+    SdkFeatureBand? sdkFeatureBand = null)
+{
+    private readonly IReporter _reporter = reporter;
+    private readonly IWorkloadResolver _workloadResolver = workloadResolver;
+    private readonly INuGetPackageDownloader _nugetPackageDownloader = nugetPackageDownloader;
+    private readonly SdkFeatureBand _sdkFeatureBand = sdkFeatureBand ?? new SdkFeatureBand(workloadResolver.GetSdkFeatureBand());
+    private readonly string _userProfileDir = userProfileDir;
+    private readonly PackageSourceLocation? _packageSourceLocation = packageSourceLocation;
+    private readonly Func<string, string?> _getEnvironmentVariable = getEnvironmentVariable ?? Environment.GetEnvironmentVariable;
+    private readonly IWorkloadInstallationRecordRepository _workloadRecordRepo = workloadRecordRepo;
+    private readonly IWorkloadManifestInstaller _workloadManifestInstaller = workloadManifestInstaller;
+    private readonly bool _displayManifestUpdates = displayManifestUpdates;
+
+    public async Task UpdateAdvertisingManifestsAsync(bool includePreviews, bool useWorkloadSets = false, DirectoryPath? offlineCache = null)
+    {
+        if (useWorkloadSets)
+        {
+            await UpdateManifestWithVersionAsync(WorkloadManifestUpdater.WorkloadSetManifestId, includePreviews, _sdkFeatureBand, null, offlineCache);
+        }
+        else
+        {
+            // this updates all the manifests
+            var manifests = _workloadResolver.GetInstalledManifests();
+            await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
+            WriteUpdatableWorkloadsFile();
+        }
+    }
+
+    public async Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync()
+    {
+        if (!BackgroundUpdatesAreDisabled() &&
+            AdManifestSentinelIsDueForUpdate() &&
+            UpdatedAdManifestPackagesExistAsync().GetAwaiter().GetResult())
+        {
+            await UpdateAdvertisingManifestsAsync(false, ShouldUseWorkloadSetMode(_sdkFeatureBand, _userProfileDir));
+            var sentinelPath = GetAdvertisingManifestSentinelPath(_sdkFeatureBand);
+            if (File.Exists(sentinelPath))
+            {
+                File.SetLastAccessTime(sentinelPath, DateTime.Now);
+            }
+            else
+            {
+                File.Create(sentinelPath).Close();
+            }
+        }
+    }
+
+    public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+    {
+        string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
+        var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+        return installStateContents.ShouldUseWorkloadSets();
+    }
+
+    private void WriteUpdatableWorkloadsFile()
+    {
+        var installedWorkloads = _workloadRecordRepo.GetInstalledWorkloads(_sdkFeatureBand);
+        var updatableWorkloads = GetUpdatableWorkloadsToAdvertise(installedWorkloads);
+        var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
+        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray(), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
+        if (Directory.Exists(Path.GetDirectoryName(filePath)))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        }
+        File.WriteAllText(filePath, jsonContent);
+    }
+
+    public void DeleteUpdatableWorkloadsFile()
+    {
+        var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    public string? GetAdvertisedWorkloadSetVersion()
+    {
+        var advertisedPath = GetAdvertisingManifestPath(_sdkFeatureBand, new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId));
+        var workloadSetVersionFilePath = Path.Combine(advertisedPath, Constants.workloadSetVersionFileName);
+        if (File.Exists(workloadSetVersionFilePath))
+        {
+            return File.ReadAllText(workloadSetVersionFilePath);
+        }
+        return null;
+    }
+
+    public IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates()
+    {
+        var currentManifestIds = GetInstalledManifestIds();
+        foreach (var manifestId in currentManifestIds)
+        {
+            var advertisingInfo = GetAdvertisingManifestVersionAndWorkloads(manifestId);
+            if (advertisingInfo == null)
+            {
+                continue;
+            }
+
+            var (installedVersion, installedBand) = GetInstalledManifestVersion(manifestId);
+            var ((adVersion, adBand), adWorkloads) = advertisingInfo.Value;
+            if (adVersion.CompareTo(installedVersion) > 0 && adBand.Equals(installedBand) ||
+                adBand.CompareTo(installedBand) > 0)
+            {
+                var update = new ManifestVersionUpdate(manifestId, adVersion, adBand.ToString());
+                yield return new(update, adWorkloads);
+            }
+        }
+    }
+
+    public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads)
+    {
+        try
+        {
+#if TARGET_WINDOWS
+            if (OperatingSystem.IsWindows())
+            {
+                //  Also advertise updates for workloads installed by Visual Studio
+                InstalledWorkloadsCollection installedVSWorkloads = new InstalledWorkloadsCollection();
+                VisualStudioWorkloads.GetInstalledWorkloads(_workloadResolver, installedVSWorkloads, _sdkFeatureBand);
+                installedWorkloads = [.. installedWorkloads.Concat(installedVSWorkloads.AsEnumerable().Select(kvp => new WorkloadId(kvp.Key))).Distinct()];
+            }
+#endif
+
+            var overlayProvider = new TempDirectoryWorkloadManifestProvider(Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString()), _sdkFeatureBand.ToString());
+            var advertisingManifestResolver = _workloadResolver.CreateOverlayResolver(overlayProvider);
+            return _workloadResolver.GetUpdatedWorkloads(advertisingManifestResolver, installedWorkloads);
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    private IEnumerable<ManifestId> GetInstalledManifestIds() => _workloadResolver.GetInstalledManifests().Select(manifest => new ManifestId(manifest.Id));
+
+    private async Task<bool> UpdateManifestWithVersionAsync(
+        string id,
+        bool includePreviews,
+        SdkFeatureBand band,
+        NuGetVersion? packageVersion = null,
+        DirectoryPath? offlineCache = null)
+    {
+        var manifestId = new ManifestId(id);
+        string? packagePath = null;
+        try
+        {
+            var manifestPackageId = _workloadManifestInstaller.GetManifestPackageId(manifestId, band);
+            try
+            {
+                // If an offline cache is present, use that. Otherwise, try to acquire the package online.
+                packagePath = offlineCache != null ?
+                    Directory.GetFiles(offlineCache.Value.Value)
+                        .Where(path =>
+                        path.EndsWith(".nupkg") &&
+                        Path.GetFileName(path).StartsWith(manifestPackageId.ToString(), StringComparison.OrdinalIgnoreCase) &&
+                        (packageVersion == null || path.Contains(packageVersion.ToString())))
+                        .Max() :
+                    await _nugetPackageDownloader.DownloadPackageAsync(manifestPackageId, packageVersion: packageVersion, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
+            }
+            catch (NuGetPackageNotFoundException)
+            {
+            }
+
+            if (packagePath is null)
+            {
+                return false;
+            }
+
+            var adManifestPath = GetAdvertisingManifestPath(_sdkFeatureBand, manifestId);
+            await _workloadManifestInstaller.ExtractManifestAsync(packagePath, adManifestPath);
+
+            // add file that contains the advertised manifest feature band so GetAdvertisingManifestVersionAndWorkloads will use correct feature band, regardless of if rollback occurred or not
+            File.WriteAllText(Path.Combine(adManifestPath, "AdvertisedManifestFeatureBand.txt"), band.ToString());
+
+            if (id.Equals(WorkloadManifestUpdater.WorkloadSetManifestId))
+            {
+                // Create version file later used as part of installing the workload set in the file-based installer and in the msi-based installer
+                using PackageArchiveReader packageReader = new(packagePath);
+                var downloadedPackageVersion = packageReader.NuspecReader.GetVersion();
+                if (packageVersion != null && !downloadedPackageVersion.Equals(packageVersion))
+                {
+                    throw new NuGetPackageNotFoundException($"Requested workload version {packageVersion} of {id} but found version {downloadedPackageVersion} instead.");
+                }
+
+                var workloadSetVersion = band.GetWorkloadSetPackageVersion(downloadedPackageVersion.ToString());
+                File.WriteAllText(Path.Combine(adManifestPath, Constants.workloadSetVersionFileName), workloadSetVersion);
+            }
+
+            if (_displayManifestUpdates)
+            {
+                _reporter.WriteLine(CliCommandStrings.AdManifestUpdated, manifestId);
+            }
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            _reporter.WriteLine(CliCommandStrings.FailedAdManifestUpdate, manifestId, e.Message);
+            return false;
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(packagePath) && File.Exists(packagePath) && (offlineCache == null || !offlineCache.HasValue))
+            {
+                File.Delete(packagePath);
+            }
+            if (!string.IsNullOrEmpty(packagePath) && (offlineCache == null || !offlineCache.HasValue))
+            {
+                var versionDir = Path.GetDirectoryName(packagePath);
+
+                if (Directory.Exists(versionDir) && !Directory.GetFileSystemEntries(versionDir).Any())
+                {
+                    Directory.Delete(versionDir);
+                    var idDir = Path.GetDirectoryName(versionDir);
+                    if (Directory.Exists(idDir) && !Directory.GetFileSystemEntries(idDir).Any())
+                    {
+                        Directory.Delete(idDir);
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task UpdateAdvertisingManifestAsync(WorkloadManifestInfo manifest, bool includePreviews, DirectoryPath? offlineCache = null)
+    {
+        var fallbackFeatureBand = new SdkFeatureBand(manifest.ManifestFeatureBand);
+        // The bands should be checked in the order defined here.
+        SdkFeatureBand[] bands = [_sdkFeatureBand, fallbackFeatureBand];
+        foreach (var band in bands.Distinct())
+        {
+            if (await UpdateManifestWithVersionAsync(manifest.Id, includePreviews, band, null, offlineCache))
+            {
+                return;
+            }
+        }
+
+        _reporter.WriteLine(CliCommandStrings.AdManifestPackageDoesNotExist, manifest.Id);
+    }
+
+    private (ManifestVersionWithBand ManifestWithBand, WorkloadCollection Workloads)? GetAdvertisingManifestVersionAndWorkloads(ManifestId manifestId)
+    {
+        var manifestPath = Path.Combine(GetAdvertisingManifestPath(_sdkFeatureBand, manifestId), "WorkloadManifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            return null;
+        }
+
+        using FileStream fsSource = new(manifestPath, FileMode.Open, FileAccess.Read);
+        var manifest = WorkloadManifestReader.ReadWorkloadManifest(manifestId.ToString(), fsSource, manifestPath);
+        // we need to know the feature band of the advertised manifest (read it from the AdvertisedManifestFeatureBand.txt file)
+        // if we don't find the file then use the current feature band
+        var adManifestFeatureBandPath = Path.Combine(GetAdvertisingManifestPath(_sdkFeatureBand, manifestId), "AdvertisedManifestFeatureBand.txt");
+
+        SdkFeatureBand adManifestFeatureBand = _sdkFeatureBand;
+        if (File.Exists(adManifestFeatureBandPath))
+        {
+            adManifestFeatureBand = new SdkFeatureBand(File.ReadAllText(adManifestFeatureBandPath));
+        }
+
+        ManifestVersionWithBand manifestWithBand = new(new ManifestVersion(manifest.Version), adManifestFeatureBand);
+        var workloads = manifest.Workloads.Values.OfType<WorkloadDefinition>().ToDictionary(w => w.Id);
+        return (manifestWithBand, workloads);
+    }
+
+    private ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId)
+    {
+        return new(new ManifestVersion(_workloadResolver.GetManifestVersion(manifestId.ToString())), new SdkFeatureBand(_workloadResolver.GetManifestFeatureBand(manifestId.ToString())));
+    }
+
+    private bool BackgroundUpdatesAreDisabled() => bool.TryParse(_getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE), out var disableEnvVar) && disableEnvVar;
+
+    private bool AdManifestSentinelIsDueForUpdate()
+    {
+        var sentinelPath = GetAdvertisingManifestSentinelPath(_sdkFeatureBand);
+        if (!int.TryParse(_getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS), out int updateIntervalHours))
+        {
+            updateIntervalHours = 24;
+        }
+
+        if (File.Exists(sentinelPath))
+        {
+            var lastAccessTime = File.GetLastAccessTime(sentinelPath);
+            if (lastAccessTime.AddHours(updateIntervalHours) > DateTime.Now)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private async Task<bool> UpdatedAdManifestPackagesExistAsync()
+    {
+        var manifests = GetInstalledManifestIds();
+        //  TODO: This doesn't seem to account for differing feature bands
+        var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest))).ConfigureAwait(false);
+        return availableUpdates.Any();
+    }
+
+    private async Task<bool> NewerManifestPackageExists(ManifestId manifest)
+    {
+        try
+        {
+            var currentVersion = NuGetVersion.Parse(_workloadResolver.GetManifestVersion(manifest.ToString()));
+            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(_workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand));
+            return latestVersion > currentVersion;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    private string GetAdvertisingManifestSentinelPath(SdkFeatureBand featureBand) => Path.Combine(_userProfileDir, $".workloadAdvertisingManifestSentinel{featureBand}");
+
+    private string GetAdvertisingWorkloadsFilePath(SdkFeatureBand featureBand) => GetAdvertisingWorkloadsFilePath(_userProfileDir, featureBand);
+
+    internal static string GetAdvertisingWorkloadsFilePath(string userProfileDir, SdkFeatureBand featureBand) => Path.Combine(userProfileDir, $".workloadAdvertisingUpdates{featureBand}");
+
+    private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) => Path.Combine(_userProfileDir, "sdk-advertising", featureBand.ToString(), manifestId.ToString());
+}
+
+internal record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
+
+[JsonSerializable(typeof(string[]))]
+internal partial class WorkloadManifestUpdaterJsonSerializerContext : JsonSerializerContext;
