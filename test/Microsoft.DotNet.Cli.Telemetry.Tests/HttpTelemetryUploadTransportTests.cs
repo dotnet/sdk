@@ -3,6 +3,7 @@
 
 using System.IO.Compression;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.DotNet.Cli.Telemetry.Implementation;
 
@@ -42,6 +43,34 @@ public class HttpTelemetryUploadTransportTests
     }
 
     [TestMethod]
+    public async Task ItPropagatesRetryAfterOnRetriableResponse()
+    {
+        var expectedDelay = TimeSpan.FromSeconds(17);
+        var handler = new StubHandler(HttpStatusCode.ServiceUnavailable, retryAfter: expectedDelay);
+        var transport = new HttpTelemetryUploadTransport(TrackUri, handler);
+
+        var result = await transport.TryUploadAsync([1, 2, 3], CancellationToken.None);
+
+        result.Outcome.Should().Be(TelemetryUploadOutcome.Rejected);
+        result.RetryAfter.Should().Be(expectedDelay);
+    }
+
+    [TestMethod]
+    public async Task ItPropagatesRetryAfterOnPartialAcceptance()
+    {
+        var expectedDelay = TimeSpan.FromSeconds(23);
+        var payload = Encoding.UTF8.GetBytes("{\"env\":0}\n");
+        var body = "{\"itemsReceived\":1,\"itemsAccepted\":0,\"errors\":[{\"index\":0,\"statusCode\":500,\"message\":\"retry\"}]}";
+        var handler = new StubHandler(HttpStatusCode.PartialContent, body, expectedDelay);
+        var transport = new HttpTelemetryUploadTransport(TrackUri, handler);
+
+        var result = await transport.TryUploadAsync(payload, CancellationToken.None);
+
+        result.Outcome.Should().Be(TelemetryUploadOutcome.PartiallyAccepted);
+        result.RetryAfter.Should().Be(expectedDelay);
+    }
+
+    [TestMethod]
     public async Task ItReportsAcceptedWhen206HasNoRetriableErrors()
     {
         var payload = Encoding.UTF8.GetBytes("{\"env\":0}\n");
@@ -67,7 +96,10 @@ public class HttpTelemetryUploadTransportTests
         result.Outcome.Should().Be(TelemetryUploadOutcome.Rejected);
     }
 
-    private sealed class StubHandler(HttpStatusCode status, string? body = null) : HttpMessageHandler
+    private sealed class StubHandler(
+        HttpStatusCode status,
+        string? body = null,
+        TimeSpan? retryAfter = null) : HttpMessageHandler
     {
         public string? RequestContentEncoding { get; private set; }
         public byte[]? DecompressedRequestBody { get; private set; }
@@ -87,6 +119,10 @@ public class HttpTelemetryUploadTransportTests
             if (body is not null)
             {
                 response.Content = new StringContent(body);
+            }
+            if (retryAfter is not null)
+            {
+                response.Headers.RetryAfter = new RetryConditionHeaderValue(retryAfter.Value);
             }
             return response;
         }
