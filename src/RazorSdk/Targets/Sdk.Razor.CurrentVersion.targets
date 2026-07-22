@@ -136,6 +136,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <RazorLangVersion Condition="'$(RazorLangVersion)' == ''">2.1</RazorLangVersion>
 
+    <!--
+      Default RazorWarningLevel controls which Razor warning waves are active.
+      This value is tied to the SDK version (like C#'s WarningLevel) so that newer SDKs
+      surface newer warnings even when targeting older TFMs.
+    -->
+    <RazorWarningLevel Condition="'$(RazorWarningLevel)' == ''">10</RazorWarningLevel>
+
     <!-- Keep this in sync with RazorLangVersion.cs if we introduce new text based values. -->
     <_Targeting30OrNewerRazorLangVersion Condition="
         '$(RazorLangVersion)' == 'Latest' OR
