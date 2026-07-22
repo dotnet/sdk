@@ -10,9 +10,30 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal sealed class AwaitableProcess : IAsyncDisposable
     {
-        // cancel just before we hit timeout used on CI (TestWorkItemTimeout value in test/UnitTests.proj)
-        private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
-            ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(10);
+        // Per-wait timeout for expected process output. A single wait should never take anywhere near the
+        // CI work-item timeout, so this is capped well below Microsoft.Testing.Platform's hang-dump timeout
+        // (which fires at ~80% of the work-item timeout, e.g. 48 min for the 60-min work items configured by
+        // TestWorkItemTimeout in test/UnitTests.proj). Without the cap, deriving the value directly from
+        // HELIX_WORK_ITEM_TIMEOUT (60 min - 10 s = 59:50) means the hang-dump always fires first, converting a
+        // single wedged test into a work-item-wide hang that kills the whole run and loses all results. With
+        // the cap, a genuinely wedged wait fails *this* test fast with a useful "Output not found" message.
+        // See https://github.com/dotnet/sdk/issues/55258 and https://github.com/dotnet/sdk/issues/55044.
+        private static readonly TimeSpan s_timeout = GetOutputWaitTimeout();
+
+        private static TimeSpan GetOutputWaitTimeout()
+        {
+            var cap = TimeSpan.FromMinutes(10);
+
+            // Honor a shorter work-item timeout (fire just before it), but never exceed the cap.
+            if (Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value &&
+                TimeSpan.TryParse(value, out var workItemTimeout))
+            {
+                var derived = workItemTimeout.Subtract(TimeSpan.FromSeconds(10));
+                return derived < cap ? derived : cap;
+            }
+
+            return cap;
+        }
 
         private readonly List<string> _lines = [];
 
