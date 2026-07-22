@@ -96,6 +96,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow("--nologo")]
         [DataRow("-nologo")]
         [DataRow("/nologo")]
+        [DataRow("--no-banner")]
         public void MTPCommandTranslatesNoLogoOptionToNoBanner(string optionAlias)
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
