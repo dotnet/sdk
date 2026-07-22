@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             File.WriteAllText(
                 Path.Combine(testInstance.Path, "Program.cs"),
                 """
-                Console.Error.WriteLine("Option '--unsupported-option' is not recognized.");
+                System.Console.Error.WriteLine("Option '--unsupported-option' is not recognized.");
                 return 5;
                 """);
 
