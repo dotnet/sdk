@@ -17,14 +17,27 @@ internal class TestApplicationActionQueue
 
     private readonly Lock _lock = new();
 
-    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
+    public TestApplicationActionQueue(
+        int degreeOfParallelism,
+        BuildOptions buildOptions,
+        TestOptions testOptions,
+        TerminalTestReporter output,
+        Action<CommandLineOptionMessages> onHelpRequested,
+        CtrlCCancellationManager ctrlC,
+        ArtifactPostProcessingManager artifactPostProcessingManager)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested, ctrlC));
+            _readers[i] = Task.Run(async () => await Read(
+                buildOptions,
+                testOptions,
+                output,
+                onHelpRequested,
+                ctrlC,
+                artifactPostProcessingManager));
         }
     }
 
@@ -48,7 +61,13 @@ internal class TestApplicationActionQueue
         return _aggregateExitCode ?? ExitCode.ZeroTests;
     }
 
-    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
+    private async Task Read(
+        BuildOptions buildOptions,
+        TestOptions testOptions,
+        TerminalTestReporter output,
+        Action<CommandLineOptionMessages> onHelpRequested,
+        CtrlCCancellationManager ctrlC,
+        ArtifactPostProcessingManager artifactPostProcessingManager)
     {
         try
         {
@@ -59,7 +78,13 @@ internal class TestApplicationActionQueue
                     ctrlC.Token.ThrowIfCancellationRequested();
 
                     int result = ExitCode.GenericFailure;
-                    var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested);
+                    var testApp = new TestApplication(
+                        module,
+                        buildOptions,
+                        testOptions,
+                        output,
+                        onHelpRequested,
+                        artifactPostProcessingManager);
                     try
                     {
                         using (testApp)
