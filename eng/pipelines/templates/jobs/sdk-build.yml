@@ -291,9 +291,9 @@ jobs:
       continueOnError: true
       condition: always()
 
-    # Only the AoT legs build the dotnet-aot NativeAOT library, so only they produce the
-    # size-analysis files. Gate on the AoT category so these steps run on every AoT leg (including
-    # the build-only cross-arch legs) and never upload empty artifacts on non-AoT legs.
+    # Only the AOT legs build the dotnet-aot NativeAOT library, so only they produce the
+    # size-analysis files. Gate on the AOT category so these steps run on every AOT leg (including
+    # the build-only cross-arch legs) and never upload empty artifacts on non-AOT legs.
     - ${{ if eq(parameters.categoryName, 'AOT') }}:
       - task: CopyFiles@2
         displayName: 🟣 Copy NativeAOT Size Analysis Files
