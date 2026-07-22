@@ -95,6 +95,29 @@ public class ImageBuilderTests
     }
 
     [TestMethod]
+    public void CanAddAnnotationsToOciImageManifest()
+    {
+        var builder = FromBaseImageConfig(
+            """
+            {
+              "architecture": "amd64",
+              "config": {},
+              "os": "linux",
+              "rootfs": { "type": "layers", "diff_ids": [] }
+            }
+            """);
+        builder.ManifestMediaType = SchemaTypes.OciManifestV1;
+        builder.AddAnnotation("org.opencontainers.image.source", "https://github.com/dotnet/sdk");
+        builder.AddAnnotation("org.opencontainers.image.revision", "abcdef");
+
+        JsonNode? manifest = JsonNode.Parse(builder.Build().Manifest);
+
+        Assert.IsNotNull(manifest);
+        Assert.AreEqual("https://github.com/dotnet/sdk", manifest["annotations"]?["org.opencontainers.image.source"]?.GetValue<string>());
+        Assert.AreEqual("abcdef", manifest["annotations"]?["org.opencontainers.image.revision"]?.GetValue<string>());
+    }
+
+    [TestMethod]
     public void CanPreserveExistingLabels()
     {
         string simpleImageConfig =

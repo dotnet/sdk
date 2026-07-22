@@ -67,6 +67,11 @@ partial class CreateImageIndex
     public string[] ImageTags { get; set; }
 
     /// <summary>
+    /// Annotations that the OCI image index will include in metadata.
+    /// </summary>
+    public ITaskItem[] Annotations { get; set; }
+
+    /// <summary>
     /// The generated archive output path.
     /// </summary>
     [Output]
@@ -90,9 +95,10 @@ partial class CreateImageIndex
         LocalRegistry = string.Empty;
         Repository = string.Empty;
         ImageTags = Array.Empty<string>();
+        Annotations = Array.Empty<ITaskItem>();
         GeneratedArchiveOutputPath = string.Empty;
         GeneratedImageIndex = string.Empty;
 
         TaskResources = Resource.Manager;
     }
-} 
+}
