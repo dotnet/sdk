@@ -338,6 +338,33 @@ public class DotnetupTelemetryTests : IDisposable
     }
 
     [TestMethod]
+    public void GetLocalShutdownBudgetMs_UsesShortBudgetForSuccessfulShellStartup()
+    {
+        using var telemetry = new DotnetupTelemetry(_ => "1");
+        telemetry.StartTrackedCommand("print-env-script");
+
+        Assert.AreEqual(10, telemetry.GetLocalShutdownBudgetMs(0));
+    }
+
+    [TestMethod]
+    public void GetLocalShutdownBudgetMs_UsesFailureBudgetForFailedShellStartup()
+    {
+        using var telemetry = new DotnetupTelemetry(_ => "1");
+        telemetry.StartTrackedCommand("print-env-script");
+
+        Assert.AreEqual(400, telemetry.GetLocalShutdownBudgetMs(1));
+    }
+
+    [TestMethod]
+    public void GetLocalShutdownBudgetMs_UsesDefaultBudgetForSuccessfulCommands()
+    {
+        using var telemetry = new DotnetupTelemetry(_ => "1");
+        telemetry.StartTrackedCommand("install");
+
+        Assert.AreEqual(200, telemetry.GetLocalShutdownBudgetMs(0));
+    }
+
+    [TestMethod]
     public void RecordException_AfterStartTrackedCommand_DoesNotThrow()
     {
         var telemetry = DotnetupTelemetry.Instance;
