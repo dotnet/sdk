@@ -43,7 +43,7 @@ Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.Ite
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.ItemType.init -> void
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetItemMapping(Microsoft.DotNet.FileBasedPrograms.IProjectInstance! project, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> System.Collections.Immutable.ImmutableArray<(string! Extension, string! ItemType)>
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.RequestedTargets.get -> string![]?
-Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.VirtualProjectBuilder(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFileFullPath, string! targetFramework, string![]? requestedTargets = null, string? artifactsPath = null, Microsoft.CodeAnalysis.Text.SourceText? sourceText = null) -> void
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.VirtualProjectBuilder(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFileFullPath, string? targetFramework, string![]? requestedTargets = null, string? artifactsPath = null, Microsoft.CodeAnalysis.Text.SourceText? sourceText = null) -> void
 Microsoft.DotNet.Utilities.Extensions
 Microsoft.DotNet.Utilities.Sha256Hasher
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.KindToString() -> string!
@@ -60,7 +60,7 @@ static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectIns
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.operator !=(Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem left, Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem right) -> bool
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.operator ==(Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem left, Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem right) -> bool
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetArtifactsPath(string! entryPointFileFullPath, string? dotNetSubdirectory = null) -> string!
-static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetDefaultProperties(string! targetFramework) -> System.Collections.Generic.IEnumerable<(string! name, string! value)>!
+static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetDefaultProperties(string? targetFramework) -> System.Collections.Generic.IEnumerable<(string! name, string! value)>!
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetGlobalBuildProperties() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string!>>!
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetPropertyFromSourceFile(string! sourceFilePath, string! propertyName) -> string?
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetTempSubdirectory(string? dotNetSubdirectory = null) -> string!
