@@ -367,6 +367,7 @@ internal class InitWorkflows
             ? Strings.PathTooltipShell + " " + Strings.PathTooltipShellWindowsNote
             : Strings.PathTooltipShell;
 
+        var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
         var options = new List<SelectableOption>
         {
             new(Strings.AccessModeNone, Strings.PathDescriptionNone, isolationTooltip),
@@ -375,17 +376,17 @@ internal class InitWorkflows
 
         if (isWindows)
         {
+            modes.Add(DotnetAccessMode.Everywhere);
             options.Add(new(Strings.AccessModeEverywhere, Strings.PathDescriptionEverywhere, Strings.PathTooltipEverywhere));
         }
 
-        int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
+        // Highlight the recommended mode by default so the customize prompt agrees with the summary
+        // (e.g. Everywhere on Windows), rather than always defaulting to a fixed option.
+        int defaultIndex = Math.Max(0, modes.IndexOf(InitWorkflowDefaults.GetDefaultAccessMode()));
 
-        return selected switch
-        {
-            0 => DotnetAccessMode.None,
-            1 => DotnetAccessMode.Shell,
-            _ => DotnetAccessMode.Everywhere,
-        };
+        int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex);
+
+        return modes[selected];
     }
 
     /// <summary>
@@ -446,9 +447,10 @@ internal class InitWorkflows
             return [];
         }
 
-        // Find the system install path for display purposes
+        // Find the system install path for display purposes. Whether the dotnet winning on PATH is
+        // a dotnetup hive is irrelevant here; we want its location only when it is a system install.
         var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
-        string systemPath = currentInstall?.InstallType == InstallType.System
+        string systemPath = currentInstall is not null && InstallPathClassifier.IsAdminInstallPath(currentInstall.Path)
             ? currentInstall.Path
             : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
 

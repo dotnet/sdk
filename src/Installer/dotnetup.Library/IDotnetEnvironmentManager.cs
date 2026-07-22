@@ -16,6 +16,11 @@ internal interface IDotnetEnvironmentManager
 {
     string GetDefaultDotnetInstallPath();
 
+    /// <summary>
+    /// Resolves the <c>dotnet</c> that currently wins on <c>PATH</c> and reports whether it is a
+    /// dotnetup-managed hive (i.e. an install dotnetup owns and may run or uninstall from).
+    /// Returns <c>null</c> when no <c>dotnet</c> is found on <c>PATH</c>.
+    /// </summary>
     DotnetInstallRootConfiguration? GetCurrentPathConfiguration();
 
     string? GetLatestInstalledSystemVersion();
@@ -75,7 +80,7 @@ public class GlobalJsonInfo
 
 public record DotnetInstallRootConfiguration(
     DotnetInstallRoot InstallRoot,
-    InstallType InstallType)
+    bool IsDotnetupHive)
 {
     public string Path => InstallRoot.Path;
 }

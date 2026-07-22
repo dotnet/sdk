@@ -74,7 +74,7 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
     //
     // We want dotnetup to be available "everywhere".  On Windows we would modify the
     // PATH if we could and that would apply to cmd also, but there's not a good way
-    // to override the Admin PATH that the MSI / Program Files installers set.
+    // to override the system PATH that the MSI / Program Files installers set.
     //
     // Worth noting:
     //   * Most install scripts (rustup, conda init, oh-my-posh, dotnet-install) write to the

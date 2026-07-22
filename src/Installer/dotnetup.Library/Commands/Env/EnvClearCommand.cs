@@ -18,14 +18,12 @@ internal class EnvClearCommand : CommandBase
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public EnvClearCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result)
+    public EnvClearCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result, "env clear")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
-
-    protected override string GetCommandName() => "env clear";
 
     protected override void ExecuteCore()
     {

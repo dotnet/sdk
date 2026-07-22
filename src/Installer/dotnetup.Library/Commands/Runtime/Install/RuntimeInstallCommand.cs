@@ -7,7 +7,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
-internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result)
+internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result, "runtime/install")
 {
     private readonly string[] _componentSpecs = result.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument) ?? [];
     public override IReadOnlyCollection<InstallComponent> MigrationComponents =>
@@ -28,8 +28,6 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
 
     /// <summary>Primary (non-alias) names shown in help text and error messages.</summary>
     private static readonly string[] s_primaryRuntimeTypes = ["runtime", "aspnetcore", "windowsdesktop"];
-
-    protected override string GetCommandName() => "runtime/install";
 
     protected override void ExecuteCore()
     {

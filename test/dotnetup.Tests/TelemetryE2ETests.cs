@@ -110,8 +110,9 @@ public class TelemetryE2ETests
             details.Should().NotBeNullOrWhiteSpace("error.details should contain a meaningful message");
         }
 
-        // The error.type should be present and match between command and root records
         var commandRecord = logRecords.FirstOrDefault(s => s.DisplayName == "command");
+        rootRecord.Attributes.Should().ContainKey("error.type",
+            "error.type is always stamped on the root record, even on the failure path");
         if (commandRecord != null &&
             commandRecord.Attributes.TryGetValue("error.type", out string? commandErrorType) &&
             rootRecord.Attributes.TryGetValue("error.type", out string? rootErrorType))
@@ -142,7 +143,9 @@ public class TelemetryE2ETests
             var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
             if (rootRecord != null)
             {
-                rootRecord.Attributes.Should().NotContainKey("error.type", "--help should not produce error attributes");
+                rootRecord.Attributes.TryGetValue("error.type", out string? helpErrorType)
+                    .Should().BeTrue("error.type is always stamped, even on success");
+                helpErrorType.Should().BeEmpty("--help succeeds, so error.type must be present-but-empty");
                 rootRecord.Attributes.Should().NotContainKey("error.category", "--help should not produce error attributes");
             }
         }

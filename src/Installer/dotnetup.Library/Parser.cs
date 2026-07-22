@@ -7,7 +7,7 @@ using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using System.Reflection;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedSystemPath;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
@@ -57,7 +57,7 @@ internal class Parser
         rootCommand.Subcommands.Add(SdkInstallCommandParser.GetRootInstallCommand());
         rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
         rootCommand.Subcommands.Add(SdkUninstallCommandParser.GetRootUninstallCommand());
-        rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());
+        rootCommand.Subcommands.Add(ElevatedSystemPathCommandParser.GetCommand());
         rootCommand.Subcommands.Add(EnvCommandParser.GetCommand());
         // Hidden top-level alias for `env script`. Kept for backwards
         // compatibility with anything that scripted against `dotnetup print-env-script`.

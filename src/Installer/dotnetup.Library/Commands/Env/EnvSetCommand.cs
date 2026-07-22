@@ -15,7 +15,7 @@ internal class EnvSetCommand : CommandBase
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public EnvSetCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result)
+    public EnvSetCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result, "env set")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
@@ -23,8 +23,6 @@ internal class EnvSetCommand : CommandBase
         _dotnetupOnPathArg = result.GetValue(EnvSetCommandParser.DotnetupOnPathOption);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
-
-    protected override string GetCommandName() => "env set";
 
     protected override void ExecuteCore()
     {

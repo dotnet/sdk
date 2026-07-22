@@ -82,12 +82,19 @@ internal static class InitWorkflowDefaults
     }
 
     /// <summary>
-    /// Returns the recommended access mode without prompting: terminal-profile mode when a
-    /// supported shell is available, otherwise isolation mode. This is the value shown in the
-    /// summary and used by the "proceed with defaults" branch.
+    /// Returns the recommended access mode without prompting. On Windows this is everywhere mode;
+    /// otherwise it is terminal-profile mode when a supported shell is available, and isolation mode
+    /// when it is not. This is the value shown in the summary and used by the "proceed with
+    /// defaults" branch.
     /// </summary>
     public static DotnetAccessMode GetDefaultAccessMode(IEnvShellProvider? shellProvider = null)
     {
+        // Default to Everywhere mode on Windows
+        if (OperatingSystem.IsWindows())
+        {
+            return DotnetAccessMode.Everywhere;
+        }
+
         if ((shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
         {
             return DotnetAccessMode.None;
