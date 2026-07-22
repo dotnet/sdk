@@ -26,7 +26,7 @@ parameters:
   # These publish the test assembly as a NativeAOT binary and run it on the same architecture,
   # validating the AOT CLI entry-point code under NativeAOT compilation. Only enabled where the
   # agent architecture matches the target (the produced native binary must run on the agent);
-  # cross-arch AoT legs leave it false.
+  # cross-arch AOT legs leave it false.
   runNativeAotCliTests: false
   ### MSBUILD ###
   targetArchitecture: x64
