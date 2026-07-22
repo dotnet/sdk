@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
@@ -155,11 +156,34 @@ public class ImageIndexGeneratorTests
             ["org.opencontainers.image.source"] = "https://github.com/dotnet/sdk",
             ["org.opencontainers.image.revision"] = "abcdef"
         };
+        Dictionary<string, string> annotationsInReverseOrder = new()
+        {
+            ["org.opencontainers.image.revision"] = "abcdef",
+            ["org.opencontainers.image.source"] = "https://github.com/dotnet/sdk"
+        };
 
         var (imageIndex, mediaType) = ImageIndexGenerator.GenerateImageIndex(images, annotations);
+        var (imageIndexFromReverseOrder, _) = ImageIndexGenerator.GenerateImageIndex(images, annotationsInReverseOrder);
 
-        Assert.AreEqual("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1+json\",\"manifests\":[{\"mediaType\":\"application/vnd.oci.image.manifest.v1+json\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}}],\"annotations\":{\"org.opencontainers.image.source\":\"https://github.com/dotnet/sdk\",\"org.opencontainers.image.revision\":\"abcdef\"}}", imageIndex);
+        Assert.AreEqual(imageIndex, imageIndexFromReverseOrder);
         Assert.AreEqual(SchemaTypes.OciImageIndexV1, mediaType);
+
+        using JsonDocument document = JsonDocument.Parse(imageIndex);
+        JsonElement root = document.RootElement;
+        Assert.AreEqual(2, root.GetProperty("schemaVersion").GetInt32());
+        Assert.AreEqual(SchemaTypes.OciImageIndexV1, root.GetProperty("mediaType").GetString());
+
+        JsonElement manifest = root.GetProperty("manifests")[0];
+        Assert.AreEqual(SchemaTypes.OciManifestV1, manifest.GetProperty("mediaType").GetString());
+        Assert.AreEqual(3, manifest.GetProperty("size").GetInt64());
+        Assert.AreEqual("sha256:digest1", manifest.GetProperty("digest").GetString());
+        Assert.AreEqual("arch1", manifest.GetProperty("platform").GetProperty("architecture").GetString());
+        Assert.AreEqual("os1", manifest.GetProperty("platform").GetProperty("os").GetString());
+
+        JsonElement serializedAnnotations = root.GetProperty("annotations");
+        Assert.HasCount(2, serializedAnnotations.EnumerateObject());
+        Assert.AreEqual("https://github.com/dotnet/sdk", serializedAnnotations.GetProperty("org.opencontainers.image.source").GetString());
+        Assert.AreEqual("abcdef", serializedAnnotations.GetProperty("org.opencontainers.image.revision").GetString());
     }
 
     [TestMethod]
