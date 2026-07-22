@@ -117,6 +117,11 @@ partial class CreateNewImage
     public ITaskItem[] Labels { get; set; }
 
     /// <summary>
+    /// Annotations that the OCI image manifest will include in metadata.
+    /// </summary>
+    public ITaskItem[] Annotations { get; set; }
+
+    /// <summary>
     /// Container environment variables to set.
     /// </summary>
     public ITaskItem[] ContainerEnvironmentVariables { get; set; }
@@ -206,6 +211,7 @@ partial class CreateNewImage
         AppCommandArgs = Array.Empty<ITaskItem>();
         AppCommandInstruction = "";
         Labels = Array.Empty<ITaskItem>();
+        Annotations = Array.Empty<ITaskItem>();
         ExposedPorts = Array.Empty<ITaskItem>();
         ContainerEnvironmentVariables = Array.Empty<ITaskItem>();
         ContainerRuntimeIdentifier = "";

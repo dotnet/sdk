@@ -31,6 +31,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageDigest.get -> str
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Annotations.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Annotations.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedArchiveOutputPath.get -> string!
@@ -96,6 +98,8 @@ Microsoft.NET.Build.Containers.ManifestLayer.urls.get -> string![]?
 Microsoft.NET.Build.Containers.ManifestLayer.urls.set -> void
 Microsoft.NET.Build.Containers.ManifestListV2
 Microsoft.NET.Build.Containers.ManifestListV2.ManifestListV2() -> void
+Microsoft.NET.Build.Containers.ManifestListV2.annotations.get -> System.Collections.Generic.Dictionary<string!, string!>?
+Microsoft.NET.Build.Containers.ManifestListV2.annotations.init -> void
 Microsoft.NET.Build.Containers.ManifestListV2.ManifestListV2(int schemaVersion, string! mediaType, Microsoft.NET.Build.Containers.PlatformSpecificManifest[]! manifests) -> void
 Microsoft.NET.Build.Containers.ManifestListV2.manifests.get -> Microsoft.NET.Build.Containers.PlatformSpecificManifest[]!
 Microsoft.NET.Build.Containers.ManifestListV2.manifests.set -> void
@@ -105,6 +109,8 @@ Microsoft.NET.Build.Containers.ManifestListV2.schemaVersion.get -> int
 Microsoft.NET.Build.Containers.ManifestListV2.schemaVersion.set -> void
 Microsoft.NET.Build.Containers.ImageIndexV1
 Microsoft.NET.Build.Containers.ImageIndexV1.ImageIndexV1() -> void
+Microsoft.NET.Build.Containers.ImageIndexV1.annotations.get -> System.Collections.Generic.Dictionary<string!, string!>?
+Microsoft.NET.Build.Containers.ImageIndexV1.annotations.init -> void
 Microsoft.NET.Build.Containers.ImageIndexV1.ImageIndexV1(int schemaVersion, string! mediaType, Microsoft.NET.Build.Containers.PlatformSpecificOciManifest[]! manifests) -> void
 Microsoft.NET.Build.Containers.ImageIndexV1.manifests.get -> Microsoft.NET.Build.Containers.PlatformSpecificOciManifest[]!
 Microsoft.NET.Build.Containers.ImageIndexV1.manifests.set -> void
@@ -114,6 +120,8 @@ Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.get -> int
 Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.set -> void
 Microsoft.NET.Build.Containers.ManifestV2
 Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.ManifestConfig
+Microsoft.NET.Build.Containers.ManifestV2.Annotations.get -> System.Collections.Generic.Dictionary<string!, string!>?
+Microsoft.NET.Build.Containers.ManifestV2.Annotations.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.Config.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.GetDigest() -> string!
 Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.get -> string?
@@ -235,6 +243,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.get -> string![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Labels.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Labels.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Annotations.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Annotations.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.LocalRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.LocalRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.get -> string!

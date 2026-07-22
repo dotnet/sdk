@@ -185,12 +185,18 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 (baseImageLabel, baseImageDigest) = imageBuilder.AddBaseImageDigestLabel();
             }
         }
+
         else
         {
             if (GenerateDigestLabel)
             {
                 Log.LogMessageFromResources(nameof(Strings.GenerateDigestLabelWithoutGenerateLabels));
             }
+        }
+
+        foreach (ITaskItem annotation in Annotations)
+        {
+            imageBuilder.AddAnnotation(annotation.ItemSpec, annotation.GetMetadata("Value"));
         }
 
         SetEnvironmentVariables(imageBuilder, ContainerEnvironmentVariables);

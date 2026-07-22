@@ -17,7 +17,7 @@ internal static class ImageIndexGenerator
     /// <returns>Returns json string of image index and image index mediaType.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    internal static (string, string) GenerateImageIndex(BuiltImage[] images)
+    internal static (string, string) GenerateImageIndex(BuiltImage[] images, IReadOnlyDictionary<string, string>? annotations = null)
     {
         if (images.Length == 0)
         {
@@ -37,7 +37,7 @@ internal static class ImageIndexGenerator
         }
         else if (manifestMediaType == SchemaTypes.OciManifestV1)
         {
-            return (GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1), SchemaTypes.OciImageIndexV1);
+            return (GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1, annotations), SchemaTypes.OciImageIndexV1);
         }
         else
         {
@@ -54,7 +54,7 @@ internal static class ImageIndexGenerator
     /// <returns>Returns json string of image index and image index mediaType.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    internal static string GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
+    internal static string GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType, IReadOnlyDictionary<string, string>? annotations = null)
     {
         if (images.Length == 0)
         {
@@ -84,10 +84,26 @@ internal static class ImageIndexGenerator
         {
             schemaVersion = 2,
             mediaType = imageIndexMediaType,
-            manifests = manifests
+            manifests = manifests,
+            annotations = CopyAnnotations(annotations)
         };
 
         return GetJsonStringFromImageIndex(imageIndex);
+    }
+
+    private static Dictionary<string, string>? CopyAnnotations(IReadOnlyDictionary<string, string>? annotations)
+    {
+        if (annotations is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        Dictionary<string, string> result = new(annotations.Count, StringComparer.Ordinal);
+        foreach ((string key, string value) in annotations)
+        {
+            result[key] = value;
+        }
+        return result;
     }
 
     internal static string GenerateImageIndexWithAnnotations(
