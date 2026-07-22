@@ -178,6 +178,32 @@ public class InstallPathResolverTests
         resolvedRoot.Should().Be(actualRoot);
     }
 
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void ResolveRealPath_ResolvesSymlinkedDirectoryToItsRealPath()
+    {
+        // Mirrors a symlinked data directory (e.g. LocalApplicationData / XDG_DATA_HOME pointing
+        // through a symlink): the resolved path must be the real directory so that a default install
+        // path can be compared symmetrically against the realpath-resolved current install root.
+        using var testEnvironment = new TestEnvironment();
+        string actualDir = Path.Combine(testEnvironment.TempRoot, "real-data", "dotnet");
+        Directory.CreateDirectory(actualDir);
+
+        string symlinkedParent = Path.Combine(testEnvironment.TempRoot, "linked-data");
+        Directory.CreateSymbolicLink(symlinkedParent, Path.Combine(testEnvironment.TempRoot, "real-data"));
+
+        string resolved = ExecutablePathResolver.ResolveRealPath(Path.Combine(symlinkedParent, "dotnet"))!;
+
+        resolved.Should().Be(actualDir);
+    }
+
+    [TestMethod]
+    public void ResolveRealPath_ReturnsNull_WhenPathIsNullOrEmpty()
+    {
+        ExecutablePathResolver.ResolveRealPath(null).Should().BeNull();
+        ExecutablePathResolver.ResolveRealPath(string.Empty).Should().BeNull();
+    }
+
     private static GlobalJsonInfo CreateGlobalJsonInfo(string sdkPath)
     {
         // GlobalJsonInfo.SdkPath is computed from GlobalJsonContents.Sdk.Paths relative to GlobalJsonPath

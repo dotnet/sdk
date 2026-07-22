@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -43,11 +42,22 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             ResolveCurrentInstallRootPath(foundDotnet),
             InstallerUtilities.GetDefaultInstallArchitecture());
 
-        // Classify the resolved dotnet by location. InstallPathClassifier.IsAdminInstallPath is the
-        // canonical "is this a system/admin-managed install?" check (Program Files on Windows; the
-        // standard /usr and /opt locations on Unix) used across dotnetup, so both platforms share it.
-        bool isAdminInstall = InstallPathClassifier.IsAdminInstallPath(currentInstallRoot.Path);
-        return new(currentInstallRoot, isAdminInstall ? InstallType.System : InstallType.User);
+        // Report whether the resolved dotnet is a dotnetup-managed hive — an install dotnetup owns
+        // and may run or uninstall from — rather than classifying it as "system vs user". A dotnet
+        // that merely lives in a user-writable location (e.g. a hand-extracted C:\dotnet on PATH) is
+        // NOT dotnetup's and must not be treated as such. Today the only supported hive is the
+        // default install path; configurable hives are tracked in
+        // https://github.com/dotnet/sdk/issues/55346, at which point this check would also consult
+        // the persisted root.
+        //
+        // Resolve the default path's symlinks too so the comparison is symmetric: currentInstallRoot.Path
+        // is already realpath-resolved above, and the default path's base (LocalApplicationData /
+        // XDG_DATA_HOME, which is not required to be a real directory) may itself be a symlink. Without
+        // this, a symlinked data directory would make dotnetup fail to recognize its own hive.
+        string defaultInstallPath = GetDefaultDotnetInstallPath();
+        string resolvedDefaultInstallPath = ExecutablePathResolver.ResolveRealPath(defaultInstallPath) ?? defaultInstallPath;
+        bool isDotnetupHive = DotnetupUtilities.PathsEqual(currentInstallRoot.Path, resolvedDefaultInstallPath);
+        return new(currentInstallRoot, isDotnetupHive);
     }
 
     public string GetDefaultDotnetInstallPath()

@@ -163,7 +163,7 @@
     <value>Arguments to forward to dotnet.</value>
   </data>
   <data name="DotnetCommandDotnetNotFound" xml:space="preserve">
-    <value>Error: dotnet executable not found at '{0}'.</value>
+    <value>dotnet executable not found at '{0}'.</value>
   </data>
   <data name="DotnetCommandInstallFirst" xml:space="preserve">
     <value>Run 'dotnetup install' to install a .NET SDK first.</value>
@@ -283,7 +283,7 @@ Or open a new terminal.</value>
     <value>Open a new terminal for the change to take effect.</value>
   </data>
   <data name="EnvOpenNewTerminalForOtherSurfaces" xml:space="preserve">
-    <value>Open a new terminal for the change to take effect in other terminals and applications.</value>
+    <value>Other open terminals and applications will pick up this change after they're restarted.</value>
   </data>
   <data name="EnvShellRequiredForProfile" xml:space="preserve">
     <value>Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell &lt;{0}&gt; to specify it explicitly.</value>
