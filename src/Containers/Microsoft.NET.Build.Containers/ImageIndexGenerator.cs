@@ -99,7 +99,7 @@ internal static class ImageIndexGenerator
         }
 
         Dictionary<string, string> result = new(annotations.Count, StringComparer.Ordinal);
-        foreach ((string key, string value) in annotations)
+        foreach ((string key, string value) in annotations.OrderBy(annotation => annotation.Key, StringComparer.Ordinal))
         {
             result[key] = value;
         }
