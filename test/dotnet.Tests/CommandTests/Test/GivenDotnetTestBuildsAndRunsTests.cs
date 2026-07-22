@@ -470,6 +470,39 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
+        public void RunDeeplyNestedTraversalProject_ShouldRunEveryReferencedTestProjectAndSkipNonTestProjects(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjectsDeepNested", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Each test-host launch drops a uniquely-named marker file, giving a deterministic count of
+            // how many times each referenced project actually ran.
+            string markerDir = Path.Combine(testInstance.Path, "run-markers");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TRAVERSAL_MARKER_DIR", markerDir)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            // The graph is three levels deep: dirs.proj -> level2\dirs.proj -> level2\level3\dirs.proj.
+            // A test project is referenced at each level; all must run exactly once (proving deep recursion).
+            int MarkerCount(string project) => Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, $"{project}-*.marker").Length : 0;
+
+            MarkerCount("Level1TestProject").Should().Be(1);
+            MarkerCount("Level2TestProject").Should().Be(1);
+            MarkerCount("DeepLeafTestProject").Should().Be(1);
+
+            // NonTestLibrary is a plain class library referenced by the level-2 traversal. It is neither a
+            // test project nor an MTP application, so it must be silently skipped: it never runs and does not
+            // cause an error.
+            MarkerCount("NonTestLibrary").Should().Be(0);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
