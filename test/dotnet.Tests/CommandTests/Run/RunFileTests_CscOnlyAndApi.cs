@@ -1739,6 +1739,66 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
     }
 
+    [Fact]
+    public void Api_VirtualProjectBuilder_CreateProjectRootElement_TargetFrameworkUnspecified()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var appPath = Path.Join(appDir, "Program.cs");
+        File.WriteAllText(appPath, """
+            #:project ../$(LibProjectName)
+            #:property LibProjectName=Lib
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        using var projectCollection = new ProjectCollection();
+        var virtualProjectBuilder = new VirtualProjectBuilder(BuildService.Instance, appPath, targetFramework: null);
+        virtualProjectBuilder.CreateProjectInstance(
+            projectCollection.Wrap(),
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            out var project,
+            out var projectRootElement,
+            evaluatedDirectives: out _);
+
+        var xml = projectRootElement.GetRawXml();
+        Log.WriteLine(xml);
+
+        xml.Should()
+            // directives are evaluated
+            .Contain("""<ProjectReference Include="..\Lib\Lib.csproj" />""".Replace('\\', Path.DirectorySeparatorChar))
+            // it's the virtual project
+            .And.Contain("<FileBasedProgram>true</FileBasedProgram>")
+            // correct target framework is used
+            .And.Contain("<TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>");
+
+        projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
+
+        // TargetFramework can be evaluated.
+        project.GetPropertyValue("TargetFramework").Should().Be(ToolsetInfo.CurrentTargetFramework);
+    }
+
     [Theory, CombinatorialData]
     public void EntryPointFilePath(bool cscOnly)
     {
