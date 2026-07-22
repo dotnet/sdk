@@ -292,10 +292,12 @@ internal static class MSBuildUtility
                     throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
                 }
             }
-            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
-                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
-                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            else if (Path.GetExtension(token).EndsWith("proj", StringComparison.OrdinalIgnoreCase) && File.Exists(token))
             {
+                // Any MSBuild project extension ending in "proj" (.csproj, .vbproj, .fsproj, and traversal
+                // container projects such as dirs.proj / *.proj). This mirrors ValidateProjectOrSolutionPath,
+                // which accepts any "*proj" extension. Recognizing it here ensures the project path is not
+                // accidentally forwarded to the test application as an argument.
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
