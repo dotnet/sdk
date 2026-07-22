@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Configurer;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
@@ -125,6 +127,20 @@ internal static class DotnetupPaths
     /// not drain over the network before the process exits.
     /// </summary>
     public static string TelemetryStorageDirectory => Path.Combine(DataDirectory, TelemetryStorageServiceFolderName);
+
+    /// <summary>
+    /// Gets the telemetry offline storage directory shared with the .NET SDK.
+    /// We share that directory because the SDK is likely used more often and then it can also export our telemetry.
+    public static string? SharedSdkTelemetryStorageDirectory
+    {
+        get
+        {
+            var profileFolder = new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath();
+            return string.IsNullOrEmpty(profileFolder)
+                ? null
+                : Path.Combine(profileFolder, TelemetryStorageServiceFolderName);
+        }
+    }
 
     /// <summary>
     /// Gets the path to the dotnetup telemetry disk log, or <see langword="null"/>
