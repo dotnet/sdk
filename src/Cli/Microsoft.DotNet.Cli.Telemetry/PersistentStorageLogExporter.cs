@@ -32,6 +32,7 @@ internal sealed class PersistentStorageLogExporter : BaseExporter<LogRecord>
     private readonly Uri _ingestionTrackUri;
     private readonly int _leasePeriodMilliseconds;
     private readonly int _maxBlobsPerDrain;
+    private readonly bool _startBackgroundDrain;
     private TelemetryResourceContext? _resourceContext;
     // Guards against starting more than one background drain per exporter.
     private int _drainStarted;
@@ -43,13 +44,15 @@ internal sealed class PersistentStorageLogExporter : BaseExporter<LogRecord>
         string instrumentationKey,
         Uri ingestionTrackUri,
         int leasePeriodMilliseconds,
-        int maxBlobsPerDrain)
+        int maxBlobsPerDrain,
+        bool startBackgroundDrain = true)
     {
         _storage = storage;
         _instrumentationKey = instrumentationKey;
         _ingestionTrackUri = ingestionTrackUri;
         _leasePeriodMilliseconds = leasePeriodMilliseconds;
         _maxBlobsPerDrain = maxBlobsPerDrain;
+        _startBackgroundDrain = startBackgroundDrain;
     }
 
     public override ExportResult Export(in Batch<LogRecord> batch)
@@ -94,6 +97,13 @@ internal sealed class PersistentStorageLogExporter : BaseExporter<LogRecord>
 
     private void StartBackgroundDrainOnce()
     {
+        // When delivery is handled out of band (e.g. a detached drainer process), the exporter
+        // only persists and must never start upload work of its own.
+        if (!_startBackgroundDrain)
+        {
+            return;
+        }
+
         if (Interlocked.Exchange(ref _drainStarted, 1) != 0)
         {
             return;

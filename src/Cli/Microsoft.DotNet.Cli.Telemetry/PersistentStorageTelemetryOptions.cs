@@ -37,4 +37,14 @@ public sealed class PersistentStorageTelemetryOptions
     /// even when a large backlog has accumulated. Remaining blobs are drained by later invocations.
     /// </summary>
     public int MaxBlobsPerDrain { get; set; } = 200;
+
+    /// <summary>
+    /// Whether the exporter starts its own in-process background drain the first time it exports.
+    /// Defaults to <see langword="true"/>, which is appropriate for a long-lived-enough CLI that
+    /// both persists and delivers telemetry in the same process. Set to <see langword="false"/>
+    /// when delivery is handled out of band — for example by a separate detached drainer process
+    /// or by a later invocation of a frequently-run CLI — so the persisting process only writes
+    /// to storage and never spins up upload work of its own.
+    /// </summary>
+    public bool StartBackgroundDrain { get; set; } = true;
 }
