@@ -47,6 +47,8 @@ If the `daily` build of `dotnetup` is broken, we will not guarantee any SLA or t
 
 At our discretion, `daily` builds may be promoted to `preview` versions. We will closely monitor telemetry for potential bugs or regressions added between the `preview` and `daily` build before promoting the `daily` to a `preview` build. `preview` versions are not officially supported by Microsoft but they are offered for public testing ahead of a promotion to a `stable` release.
 
+The first `preview` version of `dotnetup` is targeted for release in `August 2026`.
+
 `preview` versions may be built off the top of `preview` or `lts/sts` versions of .NET.
 
 `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version. Regardless, we aim to publish breaking change notices for expected high-impact changes.
@@ -57,7 +59,7 @@ At our discretion, `daily` builds may be promoted to `preview` versions. We will
 
 Only the most recently published `stable` version of `dotnetup` is supported. Supported `stable` versions receive security and bug fixes as patch versions. `daily` versions will eventually catch up with features added in `preview` versions.
 
-`dotnetup` does not yet have a public timeline for the first`stable` release.
+The `stable` version of `dotnetup` will release in `November 2026` aligning around the .NET 11 timeframe.
 
 `dotnetup` versioning is inspired by [Semantic Versioning](https://semver.org/) but does not strictly implement it. Major, minor, and patch version components communicate the expected scope of a release, but they are not compatibility guarantees; more detail is provided below. Intentional breaking changes will be documented regardless of which version component changes. In general, we will avoid breaking changes and introduce them only when we believe they provide substantial benefits.
 
@@ -83,9 +85,6 @@ Patch versions may include security fixes, bug fixes, and updates to the self-co
 End of support refers to the date when Microsoft no longer provides fixes, updates, or online technical assistance for a product version.
 
 When a new `stable` version of `dotnetup` is published, all previous versions immediately reach end of support.
-
-`dotnetup` is a free product. The Modern Lifecycle Policy's 12-month notification commitment before ending support without a successor does not apply to free products or preview releases. Despite this exception, we will provide at least six months' notice before retiring the `stable` channel without a successor. This retirement notice does not apply when one `stable` version supersedes another under the tip-only support model.
-
 Historical `stable` versions of `dotnetup` will generally remain available for download as official [dotnet releases](https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json) despite their lack of official support, much like historical .NET versions are available today.
 
 PSAs and CVEs are planned to be announced under the [same platform (dotnet release notes)](https://github.com/dotnet/core) used for dotnet releases today, following a similar convention. However, discussions and release tags will exist on the [.NET SDK repository](https://github.com/dotnet/sdk).
