@@ -71,5 +71,15 @@ internal static class Constants
         /// Override for the on-exit flush budget, in milliseconds.
         /// </summary>
         public const string FlushTimeoutOverrideEnvVar = "DOTNETUP_TELEMETRY_FLUSH_TIMEOUT_MS";
+
+        /// <summary>
+        /// Override (ms) for the CI shutdown budget that bounds telemetry export POST wait time.
+        /// </summary>
+        public const string ShutdownTimeoutOverrideEnvVar = "DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS";
+
+        /// <summary>
+        /// A conditional telling dotnetup to focus on flushing telemetry as a detached process rather than execute as dotnetup.
+        /// </summary>
+        public const string DrainModeEnvVar = "DOTNETUP_TELEMETRY_DRAIN";
     }
 }
