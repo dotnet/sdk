@@ -46,4 +46,12 @@
     <EnableMicrosoftTestingExtensionsHangDump>true</EnableMicrosoftTestingExtensionsHangDump>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)testconfig.json"
+          Link="testconfig.json"
+          TargetPath="$(AssemblyName).testconfig.json"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
