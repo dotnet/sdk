@@ -9,6 +9,7 @@
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <LangVersion>preview</LangVersion>
+    <RootNamespace>Microsoft.DotNet.FileBasedPrograms</RootNamespace>
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
