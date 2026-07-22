@@ -178,7 +178,13 @@ internal class WindowsMsiManifestInstaller(
     /// </summary>
     private void ConfigureInstall(string logFile)
     {
+#if CLI_AOT
+        // The AOT advertising path creates this log under Path.GetTempPath() and has no elevated IPC
+        // caller; WindowsUtils validation depends on trusted temp-directory state owned by the full installer.
+        string validatedLogFile = Path.GetFullPath(logFile);
+#else
         string validatedLogFile = WindowsUtils.ValidateLogFilePath(logFile);
+#endif
 
         // Turn off the MSI UI.
         _ = WindowsInstaller.SetInternalUI(InstallUILevel.None);

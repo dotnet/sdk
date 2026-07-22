@@ -82,7 +82,42 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\IWorkloadInstallationRecordRepository.cs" Link="IWorkloadInstallationRecordRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\FileBasedInstallationRecordInstaller.cs" Link="FileBasedInstallationRecordInstaller.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\ReadOnlyWindowsWorkloadInstallationRecordRepository.cs" Link="ReadOnlyWindowsWorkloadInstallationRecordRepository.cs" />
+    <!-- Background workload advertising and SDK vulnerability updates. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\IWorkloadManifestInstaller.cs" Link="IWorkloadManifestInstaller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadManifestUpdater.cs" Link="WorkloadManifestUpdater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadAdvertisingManifestUpdater.cs" Link="WorkloadAdvertisingManifestUpdater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\ManifestUpdateWithWorkloads.cs" Link="ManifestUpdateWithWorkloads.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\NullReporter.cs" Link="NullReporter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\FileBasedManifestInstaller.cs" Link="FileBasedManifestInstaller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WindowsMsiManifestInstaller.cs" Link="WindowsMsiManifestInstaller.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadUtilities.cs" Link="WorkloadUtilities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\SignCheck_Windows.cs" Link="SignCheck_Windows.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\MsiManifest.cs" Link="MsiManifest.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\MsiManifestJsonSerializerContext.cs" Link="MsiManifestJsonSerializerContext.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\MsiPackageData.cs" Link="MsiPackageData.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\RelatedProduct.cs" Link="RelatedProduct.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\UpgradeAttributes.cs" Link="UpgradeAttributes.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\ISetupLogger.cs" Link="ISetupLogger.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\Security\Signature.cs" Link="Signature.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\INuGetPackageDownloader.cs" Link="INuGetPackageDownloader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\NuGetPackageDownloader.cs" Link="NuGetPackageDownloader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\NuGetPackagePathResolver.cs" Link="NuGetPackagePathResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\NuGetConsoleLogger.cs" Link="NuGetConsoleLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\PackageSourceLocation.cs" Link="PackageSourceLocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\RestoreActionConfig.cs" Link="RestoreActionConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\ToolPackageException.cs" Link="ToolPackageException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\WorkloadUnixFilePermissionsFileList.cs" Link="WorkloadUnixFilePermissionsFileList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\IFirstPartyNuGetPackageSigningVerifier.cs" Link="IFirstPartyNuGetPackageSigningVerifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\FirstPartyNuGetPackageSigningVerifier.cs" Link="FirstPartyNuGetPackageSigningVerifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\IFilePermissionSetter.cs" Link="IFilePermissionSetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\FilePermissionSetter.cs" Link="FilePermissionSetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandFactory.cs" Link="CommandFactory\CommandFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkVulnerabilityNotifier.cs" Link="SdkVulnerabilityNotifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkReleaseMetadataCache.cs" Link="SdkReleaseMetadataCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkVulnerabilityChecker.cs" Link="SdkVulnerabilityChecker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkVulnerabilityInfo.cs" Link="SdkVulnerabilityInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
+    <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
   </ItemGroup>
 
   <!-- ASP.NET Core HTTPS developer-certificate package, used by the AOT first-run path's in-process
@@ -113,6 +148,11 @@
     <PackageReference Include="Microsoft.Build.Framework" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.NuGetSdkResolver" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="NuGet.Configuration" />
+    <PackageReference Include="NuGet.Credentials" />
+    <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="NuGet.Protocol" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\Microsoft.Win32.Msi\Microsoft.Win32.Msi.csproj" Condition="'$(TargetOS)' == 'windows'" />
   </ItemGroup>
   <!-- Use NuGet's source-generated System.Text.Json deserialization path and let ILC remove
        the legacy Newtonsoft.Json deserialization path. Keep this in the shared props so the
