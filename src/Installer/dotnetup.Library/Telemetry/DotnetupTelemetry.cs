@@ -50,6 +50,11 @@ public sealed class DotnetupTelemetry : IDisposable
     private readonly List<Activity> _activities = [];
 
     /// <summary>
+    /// True when telemetry needs to be drained from storage externally VS CI environments which wait to exit until a POST is complete
+    /// </summary>
+    private readonly bool _isLocalPersistDelivery;
+
+    /// <summary>
     /// Snapshot of process-level common properties (os.type, device.id,
     /// session.id, dev.build, ...). These also live on the OTel
     /// <see cref="Resource"/>, but the AzMonitor log exporter only maps a
@@ -114,16 +119,23 @@ public sealed class DotnetupTelemetry : IDisposable
             var enablePerfTrace = IsTruthy(getEnvironmentVariable(Constants.Telemetry.EnablePerfTraceEnvVar));
             var enableOtlpExporter = IsOtlpExporterEnabled(disableExport, getEnvironmentVariable);
             var debugConsole = getEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
-            var storageDirectory = ResolveStorageDirectory(getEnvironmentVariable);
+
+            var storageDirectory = IsOneAndDoneEnvironment
+                ? ResolveStorageDirectory(getEnvironmentVariable)
+                : DotnetupTelemetryDrainProcess.ResolveLocalStorageDirectory(getEnvironmentVariable);
+
             var commonAttrs = BuildCommonAttributes();
             _commonProperties = ToLogStateProperties(commonAttrs);
             var resource = BuildResource(commonAttrs);
 
-            _tracerProvider = BuildTracerProvider(resource, enablePerfTrace, enableOtlpExporter, disableExport, debugConsole, storageDirectory);
-            _services = BuildLoggingServices(resource, enableOtlpExporter, disableExport, debugConsole, storageDirectory);
+            _tracerProvider = BuildTracerProvider(resource, IsOneAndDoneEnvironment, enablePerfTrace, enableOtlpExporter, disableExport, debugConsole, storageDirectory);
+            _services = BuildLoggingServices(resource, IsOneAndDoneEnvironment, enableOtlpExporter, disableExport, debugConsole, storageDirectory);
             _loggerProvider = _services.GetService<LoggerProvider>();
             _loggerFactory = _services.GetRequiredService<ILoggerFactory>();
             _logger = _loggerFactory.CreateLogger(Constants.Telemetry.BootstrapperSourceName);
+
+            // Local runs persist synchronously and deliver via a detached drainer on exit.
+            _isLocalPersistDelivery = !IsOneAndDoneEnvironment && !disableExport && !string.IsNullOrWhiteSpace(storageDirectory);
         }
         catch (Exception)
         {
@@ -178,7 +190,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Builds the <see cref="TracerProvider"/>.
     /// Traces should be opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x does not ingest spans.
     /// </summary>
-    private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
+    private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool isOneAndDone, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
         var builder = Sdk.CreateTracerProviderBuilder()
             .SetResourceBuilder(resource)
@@ -198,12 +210,27 @@ public sealed class DotnetupTelemetry : IDisposable
             {
                 builder.AddOtlpExporter();
             }
-            builder.AddAzureMonitorTraceExporter(o =>
+
+            if (isOneAndDone)
             {
-                o.ConnectionString = Constants.Telemetry.ConnectionString;
-                o.EnableLiveMetrics = false;
-                o.StorageDirectory = storageDirectory;
-            });
+                // CI: Deliver telemetry before the program can fully exit as it will not rerun.
+                builder.AddAzureMonitorTraceExporter(o =>
+                {
+                    o.ConnectionString = Constants.Telemetry.ConnectionString;
+                    o.EnableLiveMetrics = false;
+                    o.StorageDirectory = storageDirectory;
+                });
+            }
+            else
+            {
+                // Local: persist synchronously and let the detached drainer POST out of band.
+                builder.AddPersistentStorageExporter(o =>
+                {
+                    o.ConnectionString = Constants.Telemetry.ConnectionString;
+                    o.StorageDirectory = storageDirectory;
+                    o.StartBackgroundDrain = false;
+                });
+            }
         }
 
         if (debugConsole)
@@ -219,7 +246,7 @@ public sealed class DotnetupTelemetry : IDisposable
     ///
     /// The AzMonitor log exporter routes data through the AppInsights <c>traces</c> table which is the only table data-x-platform ingests.
     /// </summary>
-    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
+    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool isOneAndDone, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
         var services = new ServiceCollection();
         services.AddLogging(lb =>
@@ -234,12 +261,25 @@ public sealed class DotnetupTelemetry : IDisposable
                 // OTLP is only for explicitly enabled local scenarios.
                 if (!disableExport)
                 {
-                    o.AddAzureMonitorLogExporter(amo =>
+                    if (isOneAndDone)
                     {
-                        amo.ConnectionString = Constants.Telemetry.ConnectionString;
-                        amo.EnableLiveMetrics = false;
-                        amo.StorageDirectory = storageDirectory;
-                    });
+                        o.AddAzureMonitorLogExporter(amo =>
+                        {
+                            amo.ConnectionString = Constants.Telemetry.ConnectionString;
+                            amo.EnableLiveMetrics = false;
+                            amo.StorageDirectory = storageDirectory;
+                        });
+                    }
+                    else
+                    {
+                        o.AddPersistentStorageExporter(pso =>
+                        {
+                            pso.ConnectionString = Constants.Telemetry.ConnectionString;
+                            pso.StorageDirectory = storageDirectory;
+                            pso.StartBackgroundDrain = false;
+                        });
+                    }
+
                     if (enableOtlpExporter)
                     {
                         o.AddOtlpExporter();
@@ -371,17 +411,19 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Default flush budget (ms) for interactive / shell-startup exits.
-    /// Goal: Should not cause perceptible delay for humans.
-    /// Matches Aspire's CLI shutdown budget (TelemetryManager.ShutDownTimeoutMilliseconds = 200).
+    /// Default CI shutdown budget (ms) used when no override is set. One-and-done runs (CI /
+    /// piped / non-interactive) have no guaranteed next invocation to drain an offline store, so
+    /// they deliver inline: the tracer / logger provider <c>Shutdown</c> drains the Azure Monitor
+    /// batch exporter and waits for the in-flight HTTP POST, bounded by this budget. Matches the
+    /// dotnet CLI default (<c>DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS</c>).
     /// </summary>
-    private const int DefaultFlushTimeoutMs = 200;
+    private const int DefaultCiShutdownBudgetMs = 20000;
 
     /// <summary>
-    /// Durable flush budget (ms) for one-and-done environments (CI / piped /
-    /// non-interactive) that have no guaranteed next run to drain the offline store.
+    /// Teardown budget (ms) for local runs. Telemetry is already persisted synchronously as it is emitted, so shutdown only has to release the providers.
+    /// Based on existing flush delays such as in the Aspire CLI that have not caused detectable UX degradation
     /// </summary>
-    private const int DurableFlushTimeoutMs = 5000;
+    private const int LocalShutdownBudgetMs = 200;
 
     /// <summary>
     /// True when the current invocation is the latency-critical shell-startup command (<c>print-env-script</c>)
@@ -390,75 +432,71 @@ public sealed class DotnetupTelemetry : IDisposable
         string.Equals(CurrentCommandName, "print-env-script", StringComparison.Ordinal);
 
     /// <summary>
-    /// Returns the ideal on-exit flush budget (ms) for the current run.
+    /// Returns the CI shutdown budget (ms): the <c>DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS</c>
+    /// override (with the legacy <c>DOTNETUP_TELEMETRY_FLUSH_TIMEOUT_MS</c> as a fallback), else
+    /// <see cref="DefaultCiShutdownBudgetMs"/>.
     /// </summary>
-    internal int GetFlushTimeoutMs(int exitCode)
+    internal static int GetCiShutdownBudgetMs()
     {
-        var overrideValue = Environment.GetEnvironmentVariable(Constants.Telemetry.FlushTimeoutOverrideEnvVar);
-        if (!string.IsNullOrWhiteSpace(overrideValue)
-            && int.TryParse(overrideValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var forced)
-            && forced >= 0)
+        foreach (var name in new[] { Constants.Telemetry.ShutdownTimeoutOverrideEnvVar, Constants.Telemetry.FlushTimeoutOverrideEnvVar })
         {
-            return forced;
+            var overrideValue = Environment.GetEnvironmentVariable(name);
+            if (!string.IsNullOrWhiteSpace(overrideValue)
+                && int.TryParse(overrideValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var forced)
+                && forced >= 0)
+            {
+                return forced;
+            }
         }
 
-        // Failures are essential to record and not expected in a typical use case,
-        // so we spend the durable budget even in interactive runs. This can hurt
-        // interactive exit latency on the error path; that tradeoff is deliberate
-        // until the persist-then-drain exporter lands and should be revisited then.
-        // Tracked by https://github.com/dotnet/sdk/issues/55184 (see PR #55211).
-        if (exitCode != 0)
-        {
-            return DurableFlushTimeoutMs;
-        }
-
-        // Shell-startup hot path (don't slow down users shells)
-        if (IsShellStartupCommand)
-        {
-            return DefaultFlushTimeoutMs;
-        }
-
-        // Interactive foreground use: keep exit snappy. Redirected output is
-        // treated as non-interactive here, which is conservative: an agent or
-        // helper script driving dotnetup is redirected but effectively
-        // interactive and will pay the durable budget. Intentionally aggressive
-        // for now so we can measure delivery; revisit with the new exporter
-        // (https://github.com/dotnet/sdk/issues/55184).
-        if (!IsOneAndDoneEnvironment && !Console.IsOutputRedirected)
-        {
-            return DefaultFlushTimeoutMs;
-        }
-
-        // CI / piped / non-interactive: one-and-done with no guaranteed next run to drain the offline store
-        return DurableFlushTimeoutMs;
+        return DefaultCiShutdownBudgetMs;
     }
 
     /// <summary>
-    /// Production flush entrypoint. Computes the budget from the process exit
-    /// code and the current environment (see <see cref="GetFlushTimeoutMs(int)"/>),
-    /// then drains the providers. Returns as soon as the queues are empty.
+    /// Production exit entrypoint.
     ///
-    /// Whatever doesn't drain in time falls back to the AzMonitor exporter's <c>StorageDirectory</c> retry queue.
+    /// CI (one-and-done): shuts the providers down against the CI budget, which drains the Azure
+    /// Monitor batch exporter and awaits the in-flight HTTP POST so telemetry is delivered before
+    /// the process exits (see <see cref="GetCiShutdownBudgetMs"/>).
+    ///
+    /// Local: telemetry is already persisted synchronously, so shutdown just releases the providers.
+    /// A short-lived detached drainer is spawned to POST the persisted blobs.
     /// </summary>
-    /// <param name="exitCode">The process exit code; a non-zero value selects the durable budget.</param>
+    /// <param name="exitCode">
+    /// The process exit code of dotnetup, to determine if it was a success or failure.
+    /// </param>
     public void Flush(int exitCode)
     {
-        FlushCore(GetFlushTimeoutMs(exitCode));
+        if (_isLocalPersistDelivery)
+        {
+            ShutdownProviders(LocalShutdownBudgetMs);
+
+            // Skip the out-of-band drainer on the latency-critical shell-startup hot path; those
+            // blobs are delivered by the next dotnetup run or the SDK CLI sharing the store.
+            if (!IsShellStartupCommand)
+            {
+                DotnetupTelemetryDrainProcess.SpawnDetachedDrainer();
+            }
+
+            return;
+        }
+
+        ShutdownProviders(GetCiShutdownBudgetMs());
     }
 
     /// <summary>
-    /// Flushes with an explicit budget, bypassing environment classification.
+    /// Shuts the providers down with an explicit budget, bypassing environment classification.
     /// For tests and diagnostics only.
     /// </summary>
     internal void FlushWithTimeout(int timeoutMilliseconds)
     {
-        FlushCore(timeoutMilliseconds);
+        ShutdownProviders(timeoutMilliseconds);
     }
 
     /// <summary>
-    /// Flushes the providers against a single shared deadline.
+    /// Shuts the logger and tracer providers down against a single shared deadline.
     /// </summary>
-    private void FlushCore(int timeoutMilliseconds)
+    private void ShutdownProviders(int timeoutMilliseconds)
     {
         var budget = Math.Max(0, timeoutMilliseconds);
         var deadline = Environment.TickCount64 + budget;
@@ -467,24 +505,24 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             // Logger first: the primary data-x signal. Each LogRecord is fully
             // decorated by BuildCompletionState at _logger.Log(...) time, so
-            // ForceFlush only has to drain an already-self-described queue.
-            _loggerProvider?.ForceFlush(budget);
+            // Shutdown only has to drain an already-self-described queue.
+            _loggerProvider?.Shutdown(budget);
         }
         catch
         {
-            // Never let telemetry flush failures crash the app.
+            // Never let telemetry shutdown failures crash the app.
         }
 
         try
         {
-            // Tracer gets the leftover budget so the two flushes share one
+            // Tracer gets the leftover budget so the two shutdowns share one
             // deadline rather than summing to 2× on a slow network.
             var remaining = (int)Math.Clamp(deadline - Environment.TickCount64, 0, budget);
-            _tracerProvider?.ForceFlush(remaining);
+            _tracerProvider?.Shutdown(remaining);
         }
         catch
         {
-            // Never let telemetry flush failures crash the app.
+            // Never let telemetry shutdown failures crash the app.
         }
     }
 
