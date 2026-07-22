@@ -46,7 +46,7 @@
     <EnableMicrosoftTestingExtensionsHangDump>true</EnableMicrosoftTestingExtensionsHangDump>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true'">
+  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true' and '$(IsTestApplication)' == 'true'">
     <None Include="$(MSBuildThisFileDirectory)testconfig.json"
           Link="testconfig.json"
           TargetPath="$(AssemblyName).testconfig.json"
