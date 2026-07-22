@@ -108,7 +108,12 @@ projects they control.
 2. **`scripts/EvaluateConditionalTestScopes.cs`** — C# script that runs before test
    submission. It reads `ConditionalTests.props`, computes the git diff against the
    target branch, and determines which scopes to skip. It outputs the
-   `SkippedTestScopes` Azure DevOps pipeline variable.
+   `SkippedTestScopes` Azure DevOps pipeline variable. When more than one scope is
+   skipped, the scope names are joined with `|` rather than `;`. Azure DevOps decodes
+   `%3B` back to `;` when it parses the `##vso[task.setvariable]` command, so an escaped
+   semicolon cannot survive, and a raw `;` would be split by MSBuild's `/p:` property-list
+   parser when the pipeline passes `/p:SkippedTestScopes=<value>`. `ConditionalTests.targets`
+   normalizes `|` back to `;`.
 
 3. **`test/UnitTests.proj`** — imports `ConditionalTests.props` and defines a Target
    (`RemoveSkippedConditionalTestProjects`) that removes skipped test projects from

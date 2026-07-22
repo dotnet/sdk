@@ -15,7 +15,11 @@
 // Output variable format (set via ##vso when running in Azure Pipelines):
 //   - Empty string: no scopes skipped, all tests run.
 //   - "__all__": every defined scope is skipped.
-//   - Semicolon-separated scope names (e.g. "TemplateEngine;ILLink"): only listed scopes are skipped.
+//   - '|'-separated scope names (e.g. "TemplateEngine|ILLink"): only listed scopes are skipped.
+//     '|' is used rather than ';' so the list survives Azure DevOps (which decodes '%3B' back to ';'
+//     in ##vso commands) and MSBuild's /p: property-list parser. ConditionalTests.targets converts
+//     '|' back to ';'.
+//     The human-readable log line below ("Skipped test scopes: ...") still uses ';' for readability.
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -161,7 +165,9 @@ var result = skippedScopes.Count > 0 && skippedScopes.Count == scopes.Count ? "_
 // Set Azure DevOps pipeline variable if running in CI and output variable was specified
 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")) && !string.IsNullOrEmpty(outputVariable))
 {
-    Console.WriteLine($"##vso[task.setvariable variable={outputVariable}]{result}");
+    // Join with '|' as the separator (see the output-format note at the top of this file).
+    var pipelineValue = result.Replace(";", "|");
+    Console.WriteLine($"##vso[task.setvariable variable={outputVariable}]{pipelineValue}");
 }
 
 Console.WriteLine($"Skipped test scopes: {(result == "" ? "(none)" : result)}");

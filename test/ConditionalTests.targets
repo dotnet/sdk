@@ -21,10 +21,14 @@
        property functions in ItemGroup conditions. -->
   <Target Name="_CollectSkippedTestProjects" Outputs="%(ConditionalTestScope.Identity)" Condition="'$(SkippedTestScopes)' != ''">
     <PropertyGroup>
+      <!-- The pipeline passes a '|'-separated list (see EvaluateConditionalTestScopes.cs); normalize
+           it to ';' here. This must be in the target, not a static <PropertyGroup>, because
+           SkippedTestScopes is a global /p: property that a project-level assignment can't override. -->
+      <_NormalizedSkippedScopes>$(SkippedTestScopes.Replace('|',';'))</_NormalizedSkippedScopes>
       <_CurrentScope>%(ConditionalTestScope.Identity)</_CurrentScope>
       <_CurrentTestProjects>%(ConditionalTestScope.TestProjects)</_CurrentTestProjects>
       <_CurrentMechanism>%(ConditionalTestScope.Mechanism)</_CurrentMechanism>
-      <_ShouldSkip Condition="'$(_CurrentMechanism)' == 'project' and ('$(SkippedTestScopes)' == '__all__' or $([System.String]::Concat(';','$(SkippedTestScopes)',';').Contains(';$(_CurrentScope);')))">true</_ShouldSkip>
+      <_ShouldSkip Condition="'$(_CurrentMechanism)' == 'project' and ('$(_NormalizedSkippedScopes)' == '__all__' or $([System.String]::Concat(';','$(_NormalizedSkippedScopes)',';').Contains(';$(_CurrentScope);')))">true</_ShouldSkip>
       <_ShouldSkip Condition="'$(_ShouldSkip)' != 'true'">false</_ShouldSkip>
       <!-- Prepend $(RepoRoot) to each semicolon-separated relative path for glob resolution.
            Replace() escapes semicolons internally, so Unescape restores them for item splitting. -->
