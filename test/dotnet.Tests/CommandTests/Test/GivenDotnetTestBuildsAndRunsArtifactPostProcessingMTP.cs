@@ -21,13 +21,39 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
         EnableTrxReport(testInstance.Path);
         string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
 
-        CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-            .WithWorkingDirectory(testInstance.Path)
+        CommandResult firstResult = Run(testInstance.Path, resultsDirectory);
+        string firstMergedTrxPath = GetMergedTrxPath(firstResult);
+
+        File.Exists(firstMergedTrxPath).Should().BeTrue();
+        Path.GetFileName(firstMergedTrxPath).Should().MatchRegex("^merged-[0-9a-f]{32}\\.trx$");
+        Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories)
+            .Should().HaveCount(3, "the two original reports remain on disk beside the merged report");
+
+        CommandResult secondResult = Run(testInstance.Path, resultsDirectory);
+        string secondMergedTrxPath = GetMergedTrxPath(secondResult);
+
+        secondMergedTrxPath.Should().NotBe(
+            firstMergedTrxPath,
+            "each invocation has distinct execution IDs and must produce a non-colliding merged report");
+        File.Exists(secondMergedTrxPath).Should().BeTrue();
+        Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories)
+            .Should().HaveCount(4, "the original reports are overwritten while each merged run is preserved");
+
+        XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+        XDocument mergedTrx = XDocument.Load(secondMergedTrxPath);
+        mergedTrx.Descendants(ns + "Counters").Single().Attribute("total")!.Value.Should().Be("5");
+    }
+
+    private CommandResult Run(string workingDirectory, string resultsDirectory)
+        => new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(workingDirectory)
             .Execute(
                 "--report-trx",
                 "--results-directory", resultsDirectory,
                 "--configuration", TestingConstants.Debug);
 
+    private static string GetMergedTrxPath(CommandResult result)
+    {
         result.ExitCode.Should().Be(
             ExitCodes.AtLeastOneTestFailed,
             $"the test output was:{Environment.NewLine}{result.StdOut}{Environment.NewLine}{result.StdErr}");
@@ -39,13 +65,7 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
         artifactMatches.Should().ContainSingle();
 
         string mergedTrxPath = artifactMatches[0].Groups["path"].Value;
-        File.Exists(mergedTrxPath).Should().BeTrue();
-        Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories)
-            .Should().HaveCount(3, "the two original reports remain on disk beside the merged report");
-
-        XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-        XDocument mergedTrx = XDocument.Load(mergedTrxPath);
-        mergedTrx.Descendants(ns + "Counters").Single().Attribute("total")!.Value.Should().Be("5");
+        return mergedTrxPath;
     }
 
     private static void EnableTrxReport(string testAssetPath)
