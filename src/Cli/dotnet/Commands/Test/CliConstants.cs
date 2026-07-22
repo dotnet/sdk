@@ -72,6 +72,11 @@ internal static class HandshakeMessagePropertyNames
     // Optional property — older Microsoft.Testing.Platform versions don't send
     // it, in which case the SDK falls back to its previous (no-validation) behavior.
     internal const byte ExecutionMode = 10;
+
+    // Optional 1-based retry attempt number. Multiple test host instances, such as shards,
+    // can belong to the same attempt. Older hosts omit it, so the SDK retains instance-based
+    // retry inference as a compatibility fallback.
+    internal const byte AttemptNumber = 13;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -113,4 +118,6 @@ internal static class ProjectProperties
     internal const string AppDesignerFolder = "AppDesignerFolder";
     internal const string TestTfmsInParallel = "TestTfmsInParallel";
     internal const string BuildInParallel = "BuildInParallel";
+    internal const string IsTraversal = "IsTraversal";
+    internal const string ProjectReferenceItemName = "ProjectReference";
 }

@@ -67,6 +67,8 @@ jobs:
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    - name: SkippedTestScopes
+      value: ''
     dependsOn: ${{ parameters.dependsOn }}
     preSteps: ${{ parameters.preSteps }}
     templateContext:
@@ -149,6 +151,16 @@ jobs:
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
 
+      # Determine which test groups to skip based on changed files and build context.
+      - script: $(Build.SourcesDirectory)/.dotnet/dotnet run $(Build.SourcesDirectory)/scripts/EvaluateConditionalTestScopes.cs --
+            --repo-root "$(Build.SourcesDirectory)"
+            --target-branch "$(System.PullRequest.TargetBranch)"
+            --build-reason "$(Build.Reason)"
+            --output-variable "SkippedTestScopes"
+        displayName: 🟣 Evaluate Conditional Test Scopes
+        # If evaluation fails, the variable remains empty and all tests run.
+        continueOnError: true
+
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: eng/common/build.ps1
@@ -161,6 +173,7 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /p:EnableHelixJobMonitor=true
+            /p:SkippedTestScopes="$(SkippedTestScopes)"
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
@@ -185,6 +198,7 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             /p:EnableHelixJobMonitor=true
+            /p:SkippedTestScopes="$(SkippedTestScopes)"
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.

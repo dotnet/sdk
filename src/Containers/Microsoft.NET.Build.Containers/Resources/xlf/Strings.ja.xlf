@@ -189,6 +189,11 @@
         <target state="translated">CONTAINER1020: コンテナー化されたイメージ ストアが Docker に対して有効になっていないため、イメージを読み込めませんでした。ヒント: Docker Desktop 設定で [イメージのプルと保存にコンテナー化を使用する] をオンにすると、有効にすることができます。</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: ローカル レジストリからのイメージのプルはサポートされていません。</target>

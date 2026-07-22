@@ -33,13 +33,14 @@ Options:
   -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --no-restore                                    Do not restore the project before building. [default: False]
   --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]
+  -nologo, --no-logo                              Run test(s), without displaying Microsoft Testplatform banner [default: False]
   --no-dependencies                               Do not build project-to-project references and only build the specified project. [default: False]
   --artifacts-path <ARTIFACTS_DIR>                The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.
   --ucr, --use-current-runtime                    Use current runtime as the target runtime. [default: False]
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
   --output <Detailed|Normal>                      Verbosity of test output.
-  --list-tests <list-tests>                       List the discovered tests instead of running the tests.
+  --list-tests <text|json>                        List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.
   --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
   --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the application. [default: False]
   --device <DEVICE>                               The device identifier to use for running tests.
@@ -71,6 +72,7 @@ Platform Options:
                                   Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
                                   'auto' shows progress unless the terminal cannot update in place (for example with --no-ansi or in CI).
                                   This option takes precedence over the deprecated --no-progress flag.
+  --show-slowest-tests            Show the specified number of slowest tests (by reported execution duration) in the run summary. Expects a positive integer.
   --show-stderr                   Determines when to show captured error output of a test.
                                   Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
   --show-stdout                   Determines when to show captured standard output of a test.

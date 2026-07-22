@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using System.Runtime.CompilerServices;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
@@ -209,6 +210,11 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateLoggerArguments(parseResult.UnmatchedTokens, out var loggerArgs, out var otherArgs);
 
+        if (parseResult.GetValue(definition.NoLogoOption) && !otherArgs.Contains("--no-banner"))
+        {
+            otherArgs = otherArgs.Add("--no-banner");
+        }
+
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(ref otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
@@ -259,7 +265,8 @@ internal static class MSBuildUtility
             otherArgs,
             msbuildArgs,
             Device: parseResult.GetValue(definition.DeviceOption),
-            ListDevices: parseResult.GetValue(definition.ListDevicesOption));
+            ListDevices: parseResult.GetValue(definition.ListDevicesOption),
+            EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
     }
 
     private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(ref ImmutableArray<string> otherArgs)
@@ -290,10 +297,12 @@ internal static class MSBuildUtility
                     throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
                 }
             }
-            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
-                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
-                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            else if (Path.GetExtension(token).EndsWith("proj", StringComparison.OrdinalIgnoreCase) && File.Exists(token))
             {
+                // Any MSBuild project extension ending in "proj" (.csproj, .vbproj, .fsproj, and traversal
+                // container projects such as dirs.proj / *.proj). This mirrors ValidateProjectOrSolutionPath,
+                // which accepts any "*proj" extension. Recognizing it here ensures the project path is not
+                // accidentally forwarded to the test application as an argument.
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
@@ -338,6 +347,7 @@ internal static class MSBuildUtility
         return (positionalProjectOrSolution, positionalTestModules);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
         if (buildOptions.HasNoBuild)
@@ -360,7 +370,37 @@ internal static class MSBuildUtility
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());
 
-        return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
+        string? envPropsFile = null;
+        try
+        {
+            if (buildOptions.EnvironmentVariables.Count > 0 &&
+                Path.GetExtension(filePath).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+            {
+                var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(parsedMSBuildArgs);
+                using var collection = new ProjectCollection(globalProperties);
+                var project = ProjectInstance.FromFile(filePath, new ProjectOptions
+                {
+                    GlobalProperties = globalProperties,
+                    ProjectCollection = collection,
+                });
+
+                if (EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project))
+                {
+                    envPropsFile = EnvironmentVariablesToMSBuild.CreatePropsFile(
+                        filePath,
+                        buildOptions.EnvironmentVariables,
+                        "dotnet-test-env.props",
+                        project.GetPropertyValue(Constants.IntermediateOutputPath));
+                    parsedMSBuildArgs = EnvironmentVariablesToMSBuild.AddPropsFileToArgs(parsedMSBuildArgs, envPropsFile);
+                }
+            }
+
+            return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
+        }
+        finally
+        {
+            EnvironmentVariablesToMSBuild.DeletePropsFile(envPropsFile);
+        }
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]

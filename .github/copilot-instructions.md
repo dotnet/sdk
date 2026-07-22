@@ -213,6 +213,10 @@ dependency already in use. Add a new dependency only at the narrowest necessary 
     - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
     - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll --filter "ItShowsTheAppropriateMessageToTheUser"`
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
+- This repo uses conditional test filtering to skip expensive test suites on PRs when
+  relevant source files have not changed. When adding new test projects, consider
+  registering them as a scope in [`test/ConditionalTests.props`](../test/ConditionalTests.props).
+  See [`documentation/project-docs/pr-test-filtering.md`](../documentation/project-docs/pr-test-filtering.md) for details.
 
 ## Investigating PR validation failures
 

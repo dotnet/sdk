@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
@@ -290,7 +290,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
-        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
+        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
                 .WithSource();
@@ -328,7 +328,41 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            // The empty module (TestProject) reports exit code 8 (ZeroTests) but is normalized to success at
+            // the aggregate level (microsoft/testfx#7457), so it no longer collides with the failing module's
+            // exit code 2 to produce GenericFailure (1). The run's verdict is now AtLeastOneTestFailed (2).
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunMultipleTestProjectsWhereOneRanZeroTests_ShouldReturnExitCodeSuccess(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithZeroTestsAndPassingTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // One module matched no tests (its process returns exit code 8) while the other ran a passing
+                // test, so the whole run still executed one test and its verdict is a pass.
+                result.StdOut
+                    .Should().Contain("Exit code: 8")
+                    .And.Contain("Test run summary: Passed!")
+                    .And.Contain("total: 1")
+                    .And.Contain("succeeded: 1")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            // The empty module reports exit code 8 (ZeroTests) but is normalized to success at the aggregate
+            // level, and because the whole run executed at least one test the run-level zero-tests verdict does
+            // not apply either. The overall verdict is Success (microsoft/testfx#7457).
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [DataRow(TestingConstants.Debug)]
@@ -409,6 +443,62 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunTraversalProject_ShouldRunReferencedTestProjects(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // The traversal project itself is not a test project. It should expand to its referenced
+                // test projects, both of which run (and report zero tests via the dummy adapter).
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.Contain("total: 0")
+                    .And.Contain("succeeded: 0")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunNestedTraversalProjectWithDiamond_ShouldRunSharedProjectOnce(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjectsNested", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Each test-host launch drops a uniquely-named marker file, giving a deterministic count of
+            // how many times each referenced project actually ran (robust to terminal progress re-rendering).
+            string markerDir = Path.Combine(testInstance.Path, "run-markers");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TRAVERSAL_MARKER_DIR", markerDir)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            // SharedTestProject is referenced by both the top-level dirs.proj and the nested sub\dirs.proj
+            // (a diamond). Cross-recursion de-duplication must ensure it is only run once, while the leaf
+            // project reachable only through the nested traversal must also run (proving recursion works).
+            int sharedRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "SharedTestProject-*.marker").Length : 0;
+            int leafRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "LeafTestProject-*.marker").Length : 0;
+
+            sharedRuns.Should().Be(1);
+            leafRuns.Should().Be(1);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
         [DataRow(TestingConstants.Debug)]

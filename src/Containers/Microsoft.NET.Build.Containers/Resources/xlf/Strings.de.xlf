@@ -189,6 +189,11 @@
         <target state="translated">CONTAINER1020: Fehler beim Laden des Images, weil der Containerimagespeicher für Docker nicht aktiviert ist. Tipp: Aktivieren Sie die Option, indem Sie in den Docker Desktop-Einstellungen die Option "Container zum Pullen und Speichern von Bildern verwenden" aktivieren.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: Das Pullen von Images aus der lokalen Registrierung wird nicht unterstützt.</target>
