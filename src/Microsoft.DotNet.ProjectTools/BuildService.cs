@@ -16,9 +16,9 @@ public sealed class BuildService : IBuildService
     public IProjectInstance CreateProjectInstanceFromProjectRootElement(
         IProjectRootElement projectRoot,
         IProjectCollection projectCollection,
-        IDictionary<string, string> globalProperties)
+        IDictionary<string, string>? additionalGlobalProperties)
     {
-        return ProjectInstance.FromProjectRootElement((ProjectRootElement)projectRoot, (ProjectCollection)projectCollection, globalProperties);
+        return ProjectInstance.FromProjectRootElement((ProjectRootElement)projectRoot, (ProjectCollection)projectCollection, additionalGlobalProperties);
     }
 
     public IProjectRootElement CreateProjectRootElement(XmlReader xmlReader, IProjectCollection projectCollection, string entryPointFilePath)
@@ -77,7 +77,6 @@ sealed file class ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection
     private readonly ConcurrentDictionary<string, Microsoft.Build.Construction.ProjectRootElement> _projectRootElements = new(StringComparer.OrdinalIgnoreCase);
 
     public Microsoft.Build.Evaluation.ProjectCollection Inner => inner;
-    public IDictionary<string, string> GlobalProperties => inner.GlobalProperties;
 
     public void StoreProjectRootElement(string entryPointFilePath, Microsoft.Build.Construction.ProjectRootElement projectRootElement)
     {
@@ -90,12 +89,22 @@ sealed file class ProjectInstance(Microsoft.Build.Execution.ProjectInstance inne
     public static ProjectInstance FromProjectRootElement(
         ProjectRootElement projectRoot,
         ProjectCollection projectCollection,
-        IDictionary<string, string> globalProperties)
+        IDictionary<string, string>? additionalGlobalProperties)
     {
+        var mergedGlobalProperties = new Dictionary<string, string>(projectCollection.Inner.GlobalProperties, StringComparer.OrdinalIgnoreCase);
+
+        if (additionalGlobalProperties != null)
+        {
+            foreach (var pair in additionalGlobalProperties)
+            {
+                mergedGlobalProperties[pair.Key] = pair.Value;
+            }
+        }
+
         return new(Microsoft.Build.Execution.ProjectInstance.FromProjectRootElement(projectRoot.Inner, new()
         {
             ProjectCollection = projectCollection.Inner,
-            GlobalProperties = globalProperties,
+            GlobalProperties = mergedGlobalProperties,
         }));
     }
 

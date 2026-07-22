@@ -300,7 +300,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (!NoRestore && !evalOnly)
             {
                 var restoreRequest = new BuildRequestData(
-                    CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
+                    CreateProjectInstance(projectCollection, additionalGlobalProperties: GetAdditionalRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
                     // We don't include ClearCachesAfterBuild flag unlike MSBuild's implicit restore
@@ -392,23 +392,25 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             consoleLogger?.Shutdown();
         }
 
-        static Action<IDictionary<string, string>> AddRestoreGlobalProperties(ReadOnlyDictionary<string, string>? restoreProperties)
+        static IDictionary<string, string> GetAdditionalRestoreGlobalProperties(ReadOnlyDictionary<string, string>? restoreProperties)
         {
             // Compute the session ID outside the lambda to ensure it's the same for all project instances
             // (since there can be multiple project instances created while evaluating file-level directives).
             var sessionId = Guid.NewGuid().ToString("D");
-            return globalProperties =>
+
+            var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                globalProperties["MSBuildRestoreSessionId"] = sessionId;
-                globalProperties["MSBuildIsRestoring"] = bool.TrueString;
-                foreach (var (key, value) in RestoringCommand.RestoreOptimizationProperties)
-                {
-                    globalProperties[key] = value;
-                }
-                if (restoreProperties is null)
-                {
-                    return;
-                }
+                ["MSBuildRestoreSessionId"] = sessionId,
+                ["MSBuildIsRestoring"] = bool.TrueString,
+            };
+
+            foreach (var (key, value) in RestoringCommand.RestoreOptimizationProperties)
+            {
+                globalProperties[key] = value;
+            }
+
+            if (restoreProperties != null)
+            {
                 foreach (var (key, value) in restoreProperties)
                 {
                     if (value is not null)
@@ -416,7 +418,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         globalProperties[key] = value;
                     }
                 }
-            };
+            }
+
+            return globalProperties;
         }
 
         static Lazy<FacadeLogger>? GetBinaryLogger(IReadOnlyList<string>? args)
@@ -1168,10 +1172,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
-        return CreateProjectInstance(projectCollection, addGlobalProperties: null);
+        return CreateProjectInstance(projectCollection, additionalGlobalProperties: null);
     }
 
-    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
+    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null)
     {
         var projectCollectionWrapped = projectCollection.Wrap();
 
@@ -1182,7 +1186,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             projectRootElement: out _,
             out var evaluatedDirectives,
             Directives,
-            addGlobalProperties);
+            additionalGlobalProperties);
 
         EvaluatedDirectives = evaluatedDirectives;
 
