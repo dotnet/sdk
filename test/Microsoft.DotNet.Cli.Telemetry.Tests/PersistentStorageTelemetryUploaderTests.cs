@@ -102,13 +102,51 @@ public class PersistentStorageTelemetryUploaderTests
         var transport = new FakeTransport(TelemetryUploadResult.PartiallyAccepted(remainder));
         var uploader = new PersistentStorageTelemetryUploader(storage, transport);
 
-        await uploader.DrainAsync(CancellationToken.None);
+        var result = await uploader.DrainAsync(CancellationToken.None);
 
         transport.UploadCount.Should().Be(1);
         // The original blob is deleted (its accepted portion was delivered)...
         storage.Blobs[0].Deleted.Should().BeTrue();
         // ...and the retriable remainder is persisted as a fresh blob for a later retry.
         storage.Blobs.Should().ContainSingle(b => !b.Deleted && b.Data == remainder);
+        result.ShouldBackOff.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public async Task ItStopsPassAndReportsRetryAfterOnRetryableResponse()
+    {
+        var expectedDelay = TimeSpan.FromSeconds(17);
+        var first = new FakeBlob([1, 2, 3]);
+        var second = new FakeBlob([4, 5, 6]);
+        var storage = new FakeBlobStorage(first, second);
+        var transport = new FakeTransport(TelemetryUploadResult.RejectedAfter(expectedDelay));
+        var uploader = new PersistentStorageTelemetryUploader(storage, transport);
+
+        var result = await uploader.DrainAsync(CancellationToken.None);
+
+        transport.UploadCount.Should().Be(1, "the service has already asked this pass to retry later");
+        first.Released.Should().BeTrue();
+        second.Leased.Should().BeFalse();
+        result.ForwardProgress.Should().Be(0);
+        result.ShouldBackOff.Should().BeTrue();
+        result.RetryAfter.Should().Be(expectedDelay);
+    }
+
+    [TestMethod]
+    public async Task ItStopsPassAndBacksOffWhenTransportThrows()
+    {
+        var first = new FakeBlob([1, 2, 3]);
+        var second = new FakeBlob([4, 5, 6]);
+        var storage = new FakeBlobStorage(first, second);
+        var uploader = new PersistentStorageTelemetryUploader(storage, new ThrowingTransport());
+
+        var result = await uploader.DrainAsync(CancellationToken.None);
+
+        first.Released.Should().BeTrue();
+        second.Leased.Should().BeFalse();
+        result.ForwardProgress.Should().Be(0);
+        result.ShouldBackOff.Should().BeTrue();
+        result.RetryAfter.Should().BeNull();
     }
 
     private sealed class FakeBlobStorage(params FakeBlob[] blobs) : ITelemetryBlobStorage
@@ -180,5 +218,11 @@ public class PersistentStorageTelemetryUploaderTests
             cancellationSource.Cancel();
             return Task.FromCanceled<TelemetryUploadResult>(cancellationToken);
         }
+    }
+
+    private sealed class ThrowingTransport : ITelemetryUploadTransport
+    {
+        public Task<TelemetryUploadResult> TryUploadAsync(byte[] payload, CancellationToken cancellationToken)
+            => throw new HttpRequestException("Transient test failure.");
     }
 }
