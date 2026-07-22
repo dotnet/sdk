@@ -52,7 +52,7 @@ The first `preview` version of `dotnetup` is targeted for release in `August 202
 `preview` versions may be built off the top of `preview` or `lts/sts` versions of .NET.
 
 `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version. Regardless, we aim to publish breaking change notices for expected high-impact changes.
-.NET teams may use `preview` versions in its own build infrastructure.
+.NET teams may use `preview` versions in their own build infrastructure.
 
 ### `Stable` Channel Versions
 
