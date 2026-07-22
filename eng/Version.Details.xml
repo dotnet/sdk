@@ -256,20 +256,20 @@
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.19">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4a2048b77c7de671b08320e346c73da6fd6d9aeb</Sha>
+      <Sha>73503f72996be5b5e9f6fcbf2c3f9aea0c1a8642</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.19-servicing.26371.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.19-servicing.26371.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4a2048b77c7de671b08320e346c73da6fd6d9aeb</Sha>
+      <Sha>73503f72996be5b5e9f6fcbf2c3f9aea0c1a8642</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.19">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4a2048b77c7de671b08320e346c73da6fd6d9aeb</Sha>
+      <Sha>73503f72996be5b5e9f6fcbf2c3f9aea0c1a8642</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.19-servicing.26371.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.19-servicing.26371.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4a2048b77c7de671b08320e346c73da6fd6d9aeb</Sha>
+      <Sha>73503f72996be5b5e9f6fcbf2c3f9aea0c1a8642</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.19-rtm.26371.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
