@@ -148,6 +148,7 @@ internal static class DotnetupPaths
     /// <summary>
     /// Gets the telemetry offline storage directory shared with the .NET SDK.
     /// We share that directory because the SDK is likely used more often and then it can also export our telemetry.
+    /// </summary>
     public static string? SharedSdkTelemetryStorageDirectory
     {
         get => GetSharedSdkTelemetryStorageDirectory(Environment.GetEnvironmentVariable);

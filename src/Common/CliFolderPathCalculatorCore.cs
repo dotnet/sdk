@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Configurer
                 // MSBuild tasks running with an isolated TaskEnvironment do not read ambient
                 // process state. Mirror what Environment.GetFolderPath(SpecialFolder.UserProfile)
                 // does internally: USERPROFILE on Windows, HOME on Unix.
-                var userProfileVariableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                var userProfileVariableName = OperatingSystem.IsWindows()
                     ? "USERPROFILE"
                     : "HOME";
                 home = _getEnvironmentVariable(userProfileVariableName);
