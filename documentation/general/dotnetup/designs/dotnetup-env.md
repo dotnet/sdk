@@ -154,9 +154,11 @@ DotnetAccessMode.Shell      = old ShellProfile         // shell profile file onl
 DotnetAccessMode.Everywhere = old FullPathReplacement  // env-var PATH + shell profile
 ```
 
-The JSON serialization writes the new lowercase names (`none` / `shell` / `everywhere`).
-On read, the converter also accepts the legacy spellings (`full`, `fullpathreplacement`,
-etc.) so configs written by earlier internal builds keep their chosen mode.
+The JSON serialization writes the new lowercase names (`none` / `shell` / `everywhere`)
+via the built-in string-enum converter (camel-case, integer values rejected). Legacy
+spellings from earlier internal builds (`full` / `fullpathreplacement`, and the old
+`pathPreference` property) are **not** accepted: an unrecognized value is treated as a
+corrupt config, which re-defaults on the next write rather than silently mapping to a mode.
 
 ## `dotnetup` on PATH: an orthogonal setting
 
