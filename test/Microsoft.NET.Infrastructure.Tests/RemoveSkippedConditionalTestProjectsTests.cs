@@ -73,11 +73,58 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
     {
         using var env = new TestEnvironment(TestAssetsManager, CreateTwoScopeProps());
 
-        var remaining = await RunRemovalTarget(env, skippedScopes: "FeatureA;FeatureB");
+        var remaining = await RunRemovalTarget(env, skippedScopes: "FeatureA|FeatureB");
 
         AssertNoneContain(remaining, "FeatureA", "FeatureA should be removed");
         AssertNoneContain(remaining, "FeatureB", "FeatureB should be removed");
         AssertAnyContains(remaining, "Unrelated", "Unrelated should remain");
+    }
+
+    [TestMethod]
+    public async Task MultipleScopesSkipped_UnskippedScopeKept()
+    {
+        // Three defined scopes; skip two of them and verify both are removed while the third
+        // (not in the skip list) keeps its test project.
+        var props = """
+            <Project>
+              <PropertyGroup>
+                <GlobalTriggerPaths>shared/**</GlobalTriggerPaths>
+              </PropertyGroup>
+              <ItemGroup>
+                <ConditionalTestScope Include="FeatureA">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/FeatureA.Tests/*.csproj</TestProjects>
+                  <TriggerPaths>src/FeatureA/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+                <ConditionalTestScope Include="FeatureB">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/FeatureB.Tests/*.csproj</TestProjects>
+                  <TriggerPaths>src/FeatureB/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+                <ConditionalTestScope Include="FeatureC">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/FeatureC.Tests/*.csproj</TestProjects>
+                  <TriggerPaths>src/FeatureC/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+              </ItemGroup>
+            </Project>
+            """;
+
+        using var env = new TestEnvironment(TestAssetsManager, props, new[]
+        {
+            "test/FeatureA.Tests/FeatureA.Tests.csproj",
+            "test/FeatureB.Tests/FeatureB.Tests.csproj",
+            "test/FeatureC.Tests/FeatureC.Tests.csproj"
+        });
+
+        var remaining = await RunRemovalTarget(env, skippedScopes: "FeatureA|FeatureB");
+
+        AssertNoneContain(remaining, "FeatureA", "FeatureA should be removed");
+        AssertNoneContain(remaining, "FeatureB", "FeatureB should be removed");
+        AssertAnyContains(remaining, "FeatureC", "FeatureC should remain (not in skip list)");
     }
 
     [TestMethod]
@@ -185,14 +232,10 @@ public class RemoveSkippedConditionalTestProjectsTests : SdkTest
         // Use forward slash to avoid the trailing-backslash-before-quote issue on Windows.
         var testRepoRoot = env.Root.TrimEnd(Path.DirectorySeparatorChar) + "/";
 
-        // Escape semicolons in SkippedTestScopes with %3B for the command line.
-        // ConditionalTestRemoval.proj unescapes them via $([MSBuild]::Unescape(...)).
-        var escapedScopes = skippedScopes.Replace(";", "%3B");
-
         var args = $"msbuild \"{_testProjPath}\" /t:VerifyRemoval " +
                    $"/p:TestRepoRoot={testRepoRoot} " +
                    $"/p:RealRepoRoot={_targetsRoot} " +
-                   $"/p:SkippedTestScopes={escapedScopes} " +
+                   $"/p:SkippedTestScopes={skippedScopes} " +
                    $"/p:TestProjectItemsFile={itemsFile} " +
                    $"/v:normal";
 

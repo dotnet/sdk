@@ -168,6 +168,54 @@ public class EvaluateConditionalTestScopesTests : SdkTest
     }
 
     [TestMethod]
+    public async Task PRBuild_MultipleScopesSkipped_PipelineVariableUsesPipeSeparator()
+    {
+        // Two of three scopes are skipped, so the pipeline variable lists both, separated by '|'
+        // (see EvaluateConditionalTestScopes.cs for why '|' rather than ';').
+        var props = """
+            <Project>
+              <PropertyGroup>
+                <GlobalTriggerPaths>shared/**</GlobalTriggerPaths>
+              </PropertyGroup>
+              <ItemGroup>
+                <ConditionalTestScope Include="FeatureA">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/FeatureA.Tests/*.csproj</TestProjects>
+                  <TriggerPaths>src/FeatureA/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+                <ConditionalTestScope Include="FeatureB">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/FeatureB.Tests/*.csproj</TestProjects>
+                  <TriggerPaths>src/FeatureB/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+                <ConditionalTestScope Include="FeatureC">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/FeatureC.Tests/*.csproj</TestProjects>
+                  <TriggerPaths>src/FeatureC/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+              </ItemGroup>
+            </Project>
+            """;
+
+        using var repo = new TestRepo(props, "shared", "src/FeatureA", "src/FeatureB", "src/FeatureC",
+            "test/FeatureA.Tests", "test/FeatureB.Tests", "test/FeatureC.Tests");
+        repo.AddAndCommitFiles("main", "src/Unrelated/file.cs");
+        // Only change files in FeatureC → FeatureA and FeatureB are skipped
+        repo.CreateBranchWithChanges("pr-branch", "src/FeatureC/Code.cs");
+
+        var result = await RunScript(repo.Root, targetBranch: "main", buildReason: "PullRequest", outputVariable: "SkippedTestScopes");
+
+        Assert.AreEqual(0, result.ExitCode, result.StdErr);
+        // The '|'-separated pipeline variable carries both skipped scopes.
+        Assert.Contains("##vso[task.setvariable variable=SkippedTestScopes]FeatureA|FeatureB", result.StdOut);
+        // The human-readable log line stays semicolon-separated for readability.
+        Assert.Contains("Skipped test scopes: FeatureA;FeatureB", result.StdOut);
+    }
+
+    [TestMethod]
     public async Task GlobMatches_DoubleStarSlash_MatchesZeroSegments()
     {
         // Verify **/ pattern matches files directly in the parent (zero intermediate segments)
@@ -392,12 +440,16 @@ public class EvaluateConditionalTestScopesTests : SdkTest
     private static readonly string[] BasicPropsDirs =
         ["test/Microsoft.NET.TestFramework", "src/MyFeature", "test/MyFeature.Tests"];
 
-    private async Task<ScriptResult> RunScript(string repoRoot, string? targetBranch, string buildReason)
+    private async Task<ScriptResult> RunScript(string repoRoot, string? targetBranch, string buildReason, string? outputVariable = null)
     {
         var args = $"run \"{_scriptPath}\" -- --repo-root \"{repoRoot}\" --build-reason \"{buildReason}\"";
         if (targetBranch != null)
         {
             args += $" --target-branch \"{targetBranch}\"";
+        }
+        if (outputVariable != null)
+        {
+            args += $" --output-variable \"{outputVariable}\"";
         }
 
         var psi = new ProcessStartInfo(_dotnetPath, args)
@@ -406,6 +458,13 @@ public class EvaluateConditionalTestScopesTests : SdkTest
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
+
+        // The script only emits the ##vso[task.setvariable] line when TF_BUILD is set
+        // (i.e. running under Azure Pipelines). Simulate that when an output variable is requested.
+        if (outputVariable != null)
+        {
+            psi.Environment["TF_BUILD"] = "true";
+        }
 
         // Remove test-framework env vars that interfere with child dotnet processes
         // (e.g., causing NETSDK1207 AOT errors). SdkTestContext.Initialize() sets these
