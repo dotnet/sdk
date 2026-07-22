@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Build.Evaluation;
@@ -17,6 +18,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 /// Takes JSON from stdin lines, produces JSON on stdout lines, doesn't perform any changes.
 /// Can be used by IDEs to see the project file behind a file-based program.
 /// </summary>
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
     public override int Execute()
@@ -56,6 +58,7 @@ internal abstract class RunApiInput
 {
     private RunApiInput() { }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public abstract RunApiOutput Execute();
 
     public sealed class GetProject : RunApiInput
@@ -63,6 +66,7 @@ internal abstract class RunApiInput
         public string? ArtifactsPath { get; init; }
         public required string EntryPointFileFullPath { get; init; }
 
+        [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         public override RunApiOutput Execute()
         {
             var builder = new VirtualProjectBuilder(
@@ -103,6 +107,7 @@ internal abstract class RunApiInput
         public string? ArtifactsPath { get; init; }
         public required string EntryPointFileFullPath { get; init; }
 
+        [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         public override RunApiOutput Execute()
         {
             var msbuildArgs = MSBuildArgs.FromVerbosity(VerbosityOptions.quiet);
@@ -129,7 +134,7 @@ internal abstract class RunApiInput
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty);
 
             var result = runCommand.ReadLaunchProfileSettings();
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, logger: null);
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
             return new RunApiOutput.RunCommand
             {

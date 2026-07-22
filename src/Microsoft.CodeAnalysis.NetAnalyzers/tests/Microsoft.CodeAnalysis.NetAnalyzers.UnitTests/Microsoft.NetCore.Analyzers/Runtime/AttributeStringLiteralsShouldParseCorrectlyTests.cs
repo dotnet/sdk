@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AttributeStringLiteralsShouldParseCorrectlyAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class AttributeStringLiteralsShouldParseCorrectlyTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2243_BadAttributeStringLiterals_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +60,7 @@ CA2243CSharpDefaultResultAt(29, 6, "BadAttributeStringLiterals.MyLiteralsAttribu
 CA2243CSharpDefaultResultAt(31, 6, "BadAttributeStringLiterals.MyLiteralsAttribute", "url", "bad url", "Uri"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2243_BadGuids_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -137,7 +137,7 @@ CA2243CSharpDefaultResultAt(34, 2, "GuidAttribute", "ThisIsAGuid", "{0xCA761232,
 CA2243CSharpEmptyResultAt(39, 2, "GuidAttribute", "ThisIsAGuid", "Guid"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2243_MiscSymbolsWithBadGuid_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -194,7 +194,7 @@ CA2243CSharpDefaultResultAt(10, 31, "GuidAttribute", "GuidAttribute.GUID", "bad-
 CA2243CSharpDefaultResultAt(21, 20, "GuidAttribute", "GuidAttribute.GUID", "bad-guid", "Guid"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2243_NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -278,7 +278,7 @@ public static class ClassWithExceptionForUri
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2243_BadAttributeStringLiterals_BasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -352,7 +352,7 @@ CA2243BasicDefaultResultAt(11, 6, "BadAttributeStringLiterals.MyLiteralsAttribut
 CA2243BasicDefaultResultAt(12, 28, "BadAttributeStringLiterals.MyLiteralsAttribute", "url", "bad url", "Uri"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2243_BadGuids_BasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -422,7 +422,7 @@ CA2243BasicDefaultResultAt(28, 2, "GuidAttribute", "ThisIsAGuid", "{0xCA761232, 
 CA2243BasicEmptyResultAt(32, 2, "GuidAttribute", "ThisIsAGuid", "Guid"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2243_MiscSymbolsWithBadGuid_BasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -470,7 +470,7 @@ CA2243BasicDefaultResultAt(6, 35, "GuidAttribute", "GuidAttribute.GUID", "bad-gu
 CA2243BasicDefaultResultAt(9, 35, "GuidAttribute", "GuidAttribute.GUID", "bad-guid", "Guid"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2243_NoDiagnostics_BasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -589,7 +589,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(3635, "https://github.com/dotnet/roslyn-analyzers/issues/3635")]
+        [TestMethod, WorkItem(3635, "https://github.com/dotnet/roslyn-analyzers/issues/3635")]
         public async Task ObsoleteAttributeUrlFormat_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -75,15 +75,28 @@ internal sealed class DigestUtils
 
     /// <summary>
     /// Validates a digest string against the OCI grammar and registered
-    /// algorithms, then returns the encoded portion.
+    /// algorithms, then returns the encoded portion as a string.
     /// </summary>
     /// <remarks>
     /// <c>GetEncoded("sha256:e3b0c4...")</c> returns <c>"e3b0c4..."</c>.
     /// </remarks>
     internal static string GetEncoded(string digest)
     {
-        ValidateAndParseDigest(digest, out _, out string encoded);
-        return encoded;
+        ValidateAndParseDigest(digest, out _, out ReadOnlySpan<byte> encoded);
+        return Convert.ToHexStringLower(encoded);
+    }
+
+    /// <summary>
+    /// Validates a digest string against the OCI grammar and registered
+    /// algorithms, then returns the encoded portion as bytes.
+    /// </summary>
+    /// <remarks>
+    /// <c>GetEncoded("sha256:e3b0c4...")</c> returns <c>"e3b0c4..."</c>.
+    /// </remarks>
+    internal static ReadOnlySpan<byte> GetEncodedValue(string digest)
+    {
+        ValidateAndParseDigest(digest, out _, out ReadOnlySpan<byte> encodedValue);
+        return encodedValue;
     }
 
     /// <summary>
@@ -101,6 +114,15 @@ internal sealed class DigestUtils
     }
 
     /// <summary>
+    /// Validates hash value against the expected hash, failing with a
+    /// consistent error message if they don't match.
+    /// </summary>
+    internal static void ValidateHashValueAsync(ReadOnlySpan<byte> actualHash, ReadOnlySpan<byte> expectedHash)
+    {
+        InvalidDigestException.ThrowIfMismatched(expectedHash, actualHash);
+    }
+
+    /// <summary>
     /// Validates a digest string against the OCI grammar and registered
     /// algorithms, returning the parsed algorithm and encoded portions. Throws
     /// <see cref="InvalidDigestException"/> if the digest is malformed, uses an
@@ -111,7 +133,7 @@ internal sealed class DigestUtils
     /// <c>ValidateAndParseDigest("sha256:e3b0c4...", out algorithm, out encoded)</c>
     /// sets <c>algorithm</c> to <c>"sha256"</c> and <c>encoded</c> to <c>"e3b0c4..."</c>.
     /// </remarks>
-    private static void ValidateAndParseDigest(string digest, out string algorithm, out string encoded)
+    private static void ValidateAndParseDigest(string digest, out string algorithm, out ReadOnlySpan<byte> encodedValue)
     {
         Match match = ReferenceParser.AnchoredDigestRegexp.Match(digest);
 
@@ -122,7 +144,7 @@ internal sealed class DigestUtils
         }
 
         algorithm = match.Groups[1].Value;
-        encoded = match.Groups[2].Value;
+        string encoded = match.Groups[2].Value;
 
         if (!s_registeredAlgorithms.TryGetValue(algorithm, out Regex? encodedPattern))
         {
@@ -136,5 +158,7 @@ internal sealed class DigestUtils
             throw new InvalidDigestException(
                 $"Digest '{digest}' encoded value does not match expected pattern for algorithm '{algorithm}': '{encodedPattern}'.");
         }
+
+        encodedValue = Convert.FromHexString(encoded);
     }
 }

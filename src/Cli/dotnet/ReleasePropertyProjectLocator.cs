@@ -4,6 +4,8 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -34,7 +36,7 @@ internal sealed class ReleasePropertyProjectLocator(
 
     private const string SolutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
     private const string SharedProjectGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
-    
+
     private bool _isHandlingSolution = false;
 
     /// <summary>
@@ -42,6 +44,7 @@ internal sealed class ReleasePropertyProjectLocator(
     /// ... a boolean that may or may not exist in the targeted project.
     /// </summary>
     /// <returns>Returns a string such as -property:configuration=value for a projects desired config. May be empty string.</returns>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ReadOnlyDictionary<string, string>? GetCustomDefaultConfigurationValueIfSpecified()
     {
         // Setup
@@ -92,6 +95,7 @@ internal sealed class ReleasePropertyProjectLocator(
     /// </summary>
     /// <returns>A project instance that will be targeted to publish/pack, etc. null if one does not exist.
     /// Will return an arbitrary project in the solution if one exists in the solution and there's no project targeted.</returns>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance? GetTargetedProject(ReadOnlyDictionary<string, string>? globalProps)
     {
         foreach (string arg in commandOptions.SlnOrProjectArgs.Append(Directory.GetCurrentDirectory()))
@@ -238,7 +242,15 @@ internal sealed class ReleasePropertyProjectLocator(
     {
         try
         {
-            return new ProjectInstance(projectPath, globalProperties, "Current");
+            // Only evaluated property values (PublishRelease/PackRelease and FullPath) are read from the
+            // returned instance, never items or targets, so stop after the Properties pass instead of
+            // running a full evaluation (which additionally globs items and registers targets).
+            return ProjectInstance.FromFile(projectPath, new ProjectOptions
+            {
+                GlobalProperties = globalProperties,
+                ToolsVersion = "Current",
+                EvaluationStage = ProjectEvaluationStage.Properties,
+            });
         }
         catch (Exception e) // Catch failed file access, or invalid project files that cause errors when read into memory,
         {

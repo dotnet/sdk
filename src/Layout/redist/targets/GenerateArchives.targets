@@ -2,7 +2,9 @@
 
   <Target Name="GenerateArchives"
           DependsOnTargets="GenerateInstallerLayout"
-          AfterTargets="AfterBuild">
+          AfterTargets="AfterBuild"
+          Condition="'$(SkipBuildingArchives)' != 'true'">
+          <!-- Only generate archives when not skipping installer building because it takes so long and hurts the inner loop. -->
     <!-- When running in Docker under a Windows host, tar is warning "file changed as we read it" for several files and returning exit code 1.
          So this flag allows that to be ignored. -->
     <PropertyGroup Condition="'$(IgnoreTarExitCode)' == ''">

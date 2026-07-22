@@ -1,39 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
+[TestClass]
 public class PackageTests
 {
-    [Fact]
-    public void SanityTest_ContainerizeDependencies()
-    {
-        IReadOnlyList<string> knownPackageReferences = new List<string>()
-        {
-            "System.CommandLine",
-            "Microsoft.Extensions.Logging",
-            "Microsoft.Extensions.Logging.Console"
-        };
-        IReadOnlyList<string> knownProjectReferences = new List<string>()
-        {
-            "..\\Microsoft.NET.Build.Containers\\Microsoft.NET.Build.Containers.csproj",
-            "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
-        };
-
-        string projectFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
-        XDocument project = XDocument.Load(projectFilePath);
-        XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
-
-        IEnumerable<string?> packageReferences = project.Descendants().Where(element => element.Name.Equals(ns + "PackageReference")).Select(element => element.Attribute("Include")?.Value);
-        packageReferences.Should().BeEquivalentTo(knownPackageReferences, $"Known package references for containerize project are different from actual. Check if this is expected. If the new package reference is expected, add it to {nameof(knownPackageReferences)} and verify they are included to NuGet package in package.csproj correctly");
-
-        IEnumerable<string?> projectReferences = project.Descendants().Where(element => element.Name.Equals(ns + "ProjectReference")).Select(element => element.Attribute("Include")?.Value);
-        projectReferences.Should().BeEquivalentTo(knownProjectReferences, $"Known project references for containerize project are different from actual. Check if this is expected. If the new project reference is expected, add it to {nameof(knownProjectReferences)} and verify they are included to NuGet package in package.csproj correctly");
-    }
-
-    [Fact]
+    [TestMethod]
     public void SanityTest_NET_Build_ContainersDependencies()
     {
         IReadOnlyList<string> knownPackageReferences = new List<string>()
@@ -42,8 +17,7 @@ public class PackageTests
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
             "Valleysoft.DockerCredsProvider",
-            "Microsoft.Extensions.Logging",
-            "Microsoft.Extensions.Logging.Abstractions"
+            "Microsoft.Extensions.Logging"
         };
         IReadOnlyList<string> knownProjectReferences = new List<string>()
         {
@@ -62,7 +36,7 @@ public class PackageTests
         projectReferences.Should().BeEquivalentTo(knownProjectReferences, $"Known project references for Microsoft.NET.Build.Containers project are different from actual. Check if this is expected. If the new project reference is expected, add it to {nameof(knownProjectReferences)} and verify they are included to NuGet package in package.csproj correctly");
     }
 
-    [Fact]
+    [TestMethod]
     public void PackageContentTest()
     {
         string ignoredZipFileEntriesPrefix = "package/services/metadata";
@@ -73,31 +47,6 @@ public class PackageTests
               "[Content_Types].xml",
               "build/Microsoft.NET.Build.Containers.props",
               "build/Microsoft.NET.Build.Containers.targets",
-              "containerize/containerize.dll",
-              "containerize/containerize.runtimeconfig.json",
-              "containerize/Microsoft.DotNet.Cli.Utils.dll",
-              "containerize/Microsoft.Extensions.Configuration.Binder.dll",
-              "containerize/Microsoft.Extensions.Configuration.dll",
-              "containerize/Microsoft.Extensions.DependencyInjection.dll",
-              "containerize/Microsoft.Extensions.DependencyModel.dll",
-              "containerize/Microsoft.Extensions.Logging.Configuration.dll",
-              "containerize/Microsoft.Extensions.Logging.Console.dll",
-              "containerize/Microsoft.Extensions.Logging.MSBuild.dll",
-              "containerize/Microsoft.Extensions.Logging.dll",
-              "containerize/Microsoft.Extensions.Options.ConfigurationExtensions.dll",
-              "containerize/Microsoft.NET.Build.Containers.dll",
-              "containerize/Newtonsoft.Json.dll",
-              "containerize/NuGet.Common.dll",
-              "containerize/NuGet.Configuration.dll",
-              "containerize/NuGet.DependencyResolver.Core.dll",
-              "containerize/NuGet.Frameworks.dll",
-              "containerize/NuGet.LibraryModel.dll",
-              "containerize/NuGet.Packaging.dll",
-              "containerize/NuGet.ProjectModel.dll",
-              "containerize/NuGet.Protocol.dll",
-              "containerize/NuGet.Versioning.dll",
-              "containerize/System.CommandLine.dll",
-              "containerize/Valleysoft.DockerCredsProvider.dll",
               "Icon.png",
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",

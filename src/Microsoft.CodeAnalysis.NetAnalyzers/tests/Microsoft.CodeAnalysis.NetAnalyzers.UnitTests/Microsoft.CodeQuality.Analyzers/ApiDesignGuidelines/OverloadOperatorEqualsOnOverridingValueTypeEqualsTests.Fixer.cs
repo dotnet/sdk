@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverloadOperatorEqualsOnOverridingValueTypeEqualsFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public partial class OverloadOperatorEqualsOnOverridingValueTypeEqualsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2231CSharpCodeFixNoEqualsOperatorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -53,7 +53,7 @@ public struct A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231BasicCodeFixNoEqualsOperatorAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -84,7 +84,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231_CSharp_MultipleViolationsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -145,7 +145,7 @@ public struct B
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231_Basic_MultipleViolationsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

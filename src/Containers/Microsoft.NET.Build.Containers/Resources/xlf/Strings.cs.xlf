@@ -179,11 +179,6 @@
         <target state="translated">Image s indexem {0} byla vložena do registru {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">Vytvoření indexu image pro Podman se nepodporuje.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: Nepodařilo se načíst bitovou kopii z místního registru. stdout: {0}</target>
@@ -193,6 +188,11 @@
         <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
         <target state="translated">CONTAINER1020: Image se nepovedlo načíst, protože pro Docker není povolené úložiště kontejnerových imagí. Tip: Tuto možnost můžete povolit tak, že v nastavení Docker Desktopu zaškrtnete Použít kontejnery pro přijímání a ukládání imagí.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
+      </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>

@@ -179,11 +179,6 @@
         <target state="translated">'{0}' 이미지 인덱스를 '{1}' 레지스트리에 푸시했습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">Podman에 대한 이미지 인덱스 만들기는 지원되지 않습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: 로컬 레지스트리에서 이미지를 로드하지 못했습니다. stdout: {0}</target>
@@ -193,6 +188,11 @@
         <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
         <target state="translated">CONTAINER1020: 컨테이너화된 이미지 저장소가 Docker에 대해 사용하도록 설정되어 있지 않으므로 이미지를 로드하지 못했습니다. 팁: Docker Desktop 설정에서 '이미지를 풀하고 저장하는 데 컨테이너 사용'을 선택하여 사용하도록 설정할 수 있습니다.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
+      </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>

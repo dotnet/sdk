@@ -1,8 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -10,9 +15,10 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Test
 {
+    [TestClass]
     public class GenerateV1StaticWebAssetsManifestTest
     {
-        [Fact]
+        [TestMethod]
         public void ReturnsError_WhenBasePathIsMissing()
         {
             // Arrange
@@ -42,7 +48,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsError_WhenContentRootIsMissing()
         {
             // Arrange
@@ -72,7 +78,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void AllowsMultipleContentRootsWithSameBasePath_ForTheSameSourceId()
         {
             // Arrange
@@ -124,7 +130,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Generates_EmptyManifest_WhenNoItems_Passed()
         {
             // Arrange
@@ -159,7 +165,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Generates_Manifest_WhenContentRootsAvailable()
         {
             // Arrange
@@ -204,7 +210,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void SkipsAdditionalElements_WithSameBasePathAndSameContentRoot()
         {
             // Arrange

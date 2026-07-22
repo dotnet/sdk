@@ -45,6 +45,11 @@ internal sealed class TerminalTestReporterOptions
     /// Gets a value indicating the ANSI mode.
     /// </summary>
     public AnsiMode AnsiMode { get; init; }
+
+    /// <summary>
+    /// Gets the format used when listing discovered tests ('--list-tests'). Only relevant in discovery mode.
+    /// </summary>
+    public TestListFormat ListTestsFormat { get; init; }
 }
 
 internal enum AnsiMode

@@ -1,20 +1,21 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Tests.Commands
 {
+    [TestClass]
     public class CommandIntegrationTests : SdkTest
     {
-        public CommandIntegrationTests(ITestOutputHelper log) : base(log) { }
+        public CommandIntegrationTests() { }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoArgumentsProvided()
         {
             var cmd = new DotnetCommand(Log).Execute(string.Empty);
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenOnlyArgumentProvidedIsDiagnosticsFlag()
         {
             var cmd = new DotnetCommand(Log).Execute("-d");
