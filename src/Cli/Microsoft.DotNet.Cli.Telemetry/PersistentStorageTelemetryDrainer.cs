@@ -20,9 +20,9 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 /// happens in that child, the persisting process never blocks on an HTTP POST, yet the current run's
 /// telemetry is still delivered promptly rather than waiting for a future invocation.
 ///
-/// The drainer is safe to over-invoke: a named mutex keyed on the storage directory keeps a single
-/// instance active per directory, and blob leasing prevents any two processes from uploading the
-/// same blob. It never throws.
+/// The drainer is safe to over-invoke: an exclusive-share lock file keyed on the storage
+/// directory keeps a single instance active per directory, and blob leasing prevents any two
+/// processes from uploading the same blob. It never throws.
 /// </summary>
 public static class PersistentStorageTelemetryDrainer
 {
@@ -33,6 +33,9 @@ public static class PersistentStorageTelemetryDrainer
     private static readonly TimeSpan s_initialRetryDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan s_maxRetryDelay = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan s_maxTaskDelay = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+
+    // Name of the exclusive-share lock file that single-instances the drainer per storage directory.
+    private const string LockFileName = ".drain.lock";
 
     /// <summary>
     /// Drains persisted telemetry until the storage empties or <paramref name="maxLifetime"/>
@@ -70,24 +73,14 @@ public static class PersistentStorageTelemetryDrainer
             return;
         }
 
-        Mutex? mutex = null;
-        var acquired = false;
+        FileStream? directoryLock = null;
         try
         {
-            mutex = new Mutex(initiallyOwned: false, BuildMutexName(storageDirectory!));
-            try
+            directoryLock = TryAcquireDirectoryLock(storageDirectory!);
+            if (directoryLock is null)
             {
-                acquired = mutex.WaitOne(TimeSpan.Zero);
-            }
-            catch (AbandonedMutexException)
-            {
-                // A previous drainer exited without releasing the mutex; we now own it.
-                acquired = true;
-            }
-
-            if (!acquired)
-            {
-                // Another drainer is already active for this storage directory.
+                // Another drainer is already active for this storage directory, or the platform
+                // does not support file locking. Skip this run.
                 return;
             }
 
@@ -156,22 +149,10 @@ public static class PersistentStorageTelemetryDrainer
         }
         finally
         {
-            if (mutex is not null)
-            {
-                if (acquired)
-                {
-                    try
-                    {
-                        mutex.ReleaseMutex();
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.Fail(e.ToString());
-                    }
-                }
-
-                mutex.Dispose();
-            }
+            // Releasing an OS file lock has no thread affinity, so unlike a named Mutex it is safe
+            // to dispose on whatever thread pool thread the async loop resumed on. The OS also drops
+            // the lock automatically if this process is killed before reaching here.
+            directoryLock?.Dispose();
         }
     }
 
@@ -191,17 +172,45 @@ public static class PersistentStorageTelemetryDrainer
     internal static TimeSpan GetBoundedTaskDelay(TimeSpan delay)
         => delay > s_maxTaskDelay ? s_maxTaskDelay : delay;
 
-    // A stable, filesystem/path-independent mutex name derived from the storage directory so that
-    // exactly one drainer is active per directory. Uses the "Local\" namespace (per-session), which
-    // is sufficient because drainers only race against other CLI invocations in the same session.
-    private static string BuildMutexName(string storageDirectory)
+    // Single-instance-per-directory guard for the drainer. Returns a held lock handle, or null when
+    // another drainer already owns the directory (or the platform cannot lock).
+    //
+    // Uses an exclusive-share lock file rather than a named Mutex because the drain loop awaits: a
+    // Mutex is thread-affine and must be released on the same thread that acquired it, but an async
+    // continuation can resume on any thread pool thread, so releasing/disposing it could throw. A
+    // file handle has no thread affinity, so it can be released on any thread, and the OS drops it if
+    // the process is killed mid-drain (no abandoned-lock recovery needed).
+    //
+    // On Windows, FileShare.None is a mandatory share-mode lock. On Unix it is an advisory flock,
+    // honored by every other .NET FileStream opener — which is the only contender here. On the rare
+    // filesystem that does not support locking, the runtime silently takes no lock and two drainers
+    // may run at once; that is harmless because blob leasing (an atomic rename) still prevents any
+    // blob from being uploaded twice. Exclusivity comes from holding the handle, not from the file
+    // existing, so a lock file left behind by a killed drainer is simply reopened and re-locked on
+    // the next run; it is intentionally not deleted on close.
+    private static FileStream? TryAcquireDirectoryLock(string storageDirectory)
     {
-        // Normalize casing on Windows where paths are case-insensitive so two spellings of the same
-        // directory map to one mutex.
-        var normalized = OperatingSystem.IsWindows()
-            ? storageDirectory.ToUpperInvariant()
-            : storageDirectory;
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(normalized));
-        return "Local\\dotnet-cli-telemetry-drain-" + Convert.ToHexString(hash);
+        try
+        {
+            Directory.CreateDirectory(storageDirectory);
+            var lockPath = Path.Combine(storageDirectory, LockFileName);
+            return new FileStream(
+                lockPath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None,
+                bufferSize: 1,
+                FileOptions.None);
+        }
+        catch (IOException)
+        {
+            // Sharing violation (Windows) or EWOULDBLOCK (Unix): another drainer holds the lock.
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Some platforms surface a sharing violation as an access denial.
+            return null;
+        }
     }
 }
