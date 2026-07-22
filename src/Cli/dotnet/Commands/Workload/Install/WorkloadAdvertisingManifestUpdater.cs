@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 /// <summary>
 ///  Advertising-manifest behavior shared between the managed workload commands (via
-///  <see cref="WorkloadManifestUpdater"/>) and, eventually, a NativeAOT closure: background
+///  <see cref="WorkloadManifestUpdater"/>) and the NativeAOT closure: background
 ///  disable/interval/sentinel handling, checking for newer manifest packages, downloading/extracting
 ///  advertising manifests, serializing/deleting the "updatable workloads" file used to display the
 ///  update notification, workload-set mode, and the overlay/update calculations used by
