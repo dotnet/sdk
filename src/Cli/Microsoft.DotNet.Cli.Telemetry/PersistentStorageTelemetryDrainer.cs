@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Text;
+using System.IO;
 using System.Threading;
 using Microsoft.DotNet.Cli.Telemetry.Implementation;
 

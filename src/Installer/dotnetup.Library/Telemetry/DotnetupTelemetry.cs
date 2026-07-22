@@ -103,7 +103,7 @@ public sealed class DotnetupTelemetry : IDisposable
         SessionId = Guid.NewGuid().ToString();
         IsOneAndDoneEnvironment = TelemetryCommonProperties.IsCIEnvironment;
 
-        Enabled = !IsTruthy(getEnvironmentVariable(Constants.Telemetry.TelemetryOptOutEnvVar));
+        Enabled = !IsTelemetryOptedOut(getEnvironmentVariable);
 
         if (!Enabled)
         {
@@ -122,7 +122,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
             var storageDirectory = IsOneAndDoneEnvironment
                 ? ResolveStorageDirectory(getEnvironmentVariable)
-                : DotnetupTelemetryDrainProcess.ResolveLocalStorageDirectory(getEnvironmentVariable);
+                : DotnetupPaths.ResolveLocalTelemetryStorageDirectory(getEnvironmentVariable);
 
             var commonAttrs = BuildCommonAttributes();
             _commonProperties = ToLogStateProperties(commonAttrs);
@@ -738,6 +738,9 @@ public sealed class DotnetupTelemetry : IDisposable
     private static bool IsTruthy(string? value) =>
         string.Equals(value, "1", StringComparison.Ordinal) ||
         string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+
+    internal static bool IsTelemetryOptedOut(Func<string, string?> getEnvironmentVariable) =>
+        IsTruthy(getEnvironmentVariable(Constants.Telemetry.TelemetryOptOutEnvVar));
 
     internal static bool IsOtlpExporterEnabled(bool disableExport) =>
         IsOtlpExporterEnabled(disableExport, Environment.GetEnvironmentVariable);

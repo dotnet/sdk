@@ -129,17 +129,36 @@ internal static class DotnetupPaths
     public static string TelemetryStorageDirectory => Path.Combine(DataDirectory, TelemetryStorageServiceFolderName);
 
     /// <summary>
+    /// Resolves the telemetry offline storage directory for local runs. An
+    /// environment override takes precedence, followed by the directory shared
+    /// with the .NET SDK.
+    /// </summary>
+    internal static string ResolveLocalTelemetryStorageDirectory(Func<string, string?> getEnvironmentVariable)
+    {
+        var environmentStoragePath = getEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
+        if (!string.IsNullOrWhiteSpace(environmentStoragePath))
+        {
+            return environmentStoragePath;
+        }
+
+        return GetSharedSdkTelemetryStorageDirectory(getEnvironmentVariable)
+            ?? throw new InvalidOperationException("Could not determine the .NET SDK telemetry storage directory.");
+    }
+
+    /// <summary>
     /// Gets the telemetry offline storage directory shared with the .NET SDK.
     /// We share that directory because the SDK is likely used more often and then it can also export our telemetry.
     public static string? SharedSdkTelemetryStorageDirectory
     {
-        get
-        {
-            var profileFolder = new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath();
-            return string.IsNullOrEmpty(profileFolder)
-                ? null
-                : Path.Combine(profileFolder, TelemetryStorageServiceFolderName);
-        }
+        get => GetSharedSdkTelemetryStorageDirectory(Environment.GetEnvironmentVariable);
+    }
+
+    private static string? GetSharedSdkTelemetryStorageDirectory(Func<string, string?> getEnvironmentVariable)
+    {
+        var profileFolder = new CliFolderPathCalculatorCore(getEnvironmentVariable).GetDotnetUserProfileFolderPath();
+        return string.IsNullOrEmpty(profileFolder)
+            ? null
+            : Path.Combine(profileFolder, TelemetryStorageServiceFolderName);
     }
 
     /// <summary>
