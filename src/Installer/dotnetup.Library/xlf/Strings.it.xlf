@@ -28,8 +28,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DotnetCommandDotnetNotFound">
-        <source>Error: dotnet executable not found at '{0}'.</source>
-        <target state="new">Error: dotnet executable not found at '{0}'.</target>
+        <source>dotnet executable not found at '{0}'.</source>
+        <target state="new">dotnet executable not found at '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetCommandDotnetStartFailed">
@@ -107,8 +107,8 @@ Or open a new terminal.</target>
         <note>{Locked="shell"}</note>
       </trans-unit>
       <trans-unit id="EnvOpenNewTerminalForOtherSurfaces">
-        <source>Open a new terminal for the change to take effect in other terminals and applications.</source>
-        <target state="new">Open a new terminal for the change to take effect in other terminals and applications.</target>
+        <source>Other open terminals and applications will pick up this change after they're restarted.</source>
+        <target state="new">Other open terminals and applications will pick up this change after they're restarted.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvOpenNewTerminalToTakeEffect">

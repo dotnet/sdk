@@ -20,8 +20,8 @@ public class UninstallWorkflowTests
 
     /// <summary>
     /// When no explicit path is provided and dotnet on PATH resolves to an admin install,
-    /// the uninstall should fall back to the default user install path — not the admin path.
-    /// Regression test: previously, GetConfiguredInstallType().Path was used unconditionally,
+    /// the uninstall should fall back to the default hive — not the admin path.
+    /// Regression test: previously, the configured path was used unconditionally,
     /// causing uninstall to target "C:\Program Files\dotnet" when the user meant their user install.
     /// </summary>
     [TestMethod]
@@ -29,27 +29,44 @@ public class UninstallWorkflowTests
     {
         var mock = new MockDotnetInstallManager(
             defaultInstallPath: DefaultUserPath,
-            configuredRoot: CreateConfig(AdminPath, InstallType.System));
+            configuredRoot: CreateConfig(AdminPath, isDotnetupHive: false));
 
         var result = UninstallWorkflow.ResolveInstallPath(null, mock);
 
-        result.Should().Be(DefaultUserPath, "system installs on PATH should not be used; default user path should be used instead");
+        result.Should().Be(DefaultUserPath, "installs on PATH that dotnetup does not own should not be used; default hive should be used instead");
     }
 
     /// <summary>
-    /// When dotnet on PATH resolves to a user install, the uninstall should use that path.
+    /// When dotnet on PATH resolves to the dotnetup-managed hive, the uninstall should use that path.
     /// </summary>
     [TestMethod]
-    public void ResolveInstallPath_UserInstall_UsesConfiguredPath()
+    public void ResolveInstallPath_DotnetupHive_UsesConfiguredPath()
     {
-        string userPath = "/home/user/custom-dotnet";
         var mock = new MockDotnetInstallManager(
             defaultInstallPath: DefaultUserPath,
-            configuredRoot: CreateConfig(userPath, InstallType.User));
+            configuredRoot: CreateConfig(DefaultUserPath, isDotnetupHive: true));
 
         var result = UninstallWorkflow.ResolveInstallPath(null, mock);
 
-        result.Should().Be(userPath, "user install path from configuration should be used");
+        result.Should().Be(DefaultUserPath, "the dotnetup hive on PATH should be used");
+    }
+
+    /// <summary>
+    /// A dotnet that lives in a user-writable location but is not a dotnetup hive (e.g. a
+    /// hand-extracted C:\dotnet that happens to win on PATH) must not be treated as dotnetup's;
+    /// uninstall should fall back to the default hive rather than target the unmanaged install.
+    /// </summary>
+    [TestMethod]
+    public void ResolveInstallPath_UnmanagedUserInstall_FallsBackToDefault()
+    {
+        string looseUserPath = "/home/user/custom-dotnet";
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: DefaultUserPath,
+            configuredRoot: CreateConfig(looseUserPath, isDotnetupHive: false));
+
+        var result = UninstallWorkflow.ResolveInstallPath(null, mock);
+
+        result.Should().Be(DefaultUserPath, "a non-hive install on PATH should not be uninstalled; default hive should be used");
     }
 
     /// <summary>
@@ -60,7 +77,7 @@ public class UninstallWorkflowTests
     {
         var mock = new MockDotnetInstallManager(
             defaultInstallPath: DefaultUserPath,
-            configuredRoot: CreateConfig(AdminPath, InstallType.System));
+            configuredRoot: CreateConfig(AdminPath, isDotnetupHive: false));
 
         var result = UninstallWorkflow.ResolveInstallPath(ExplicitPath, mock);
 
@@ -82,9 +99,9 @@ public class UninstallWorkflowTests
         result.Should().Be(DefaultUserPath);
     }
 
-    private static DotnetInstallRootConfiguration CreateConfig(string path, InstallType installType)
+    private static DotnetInstallRootConfiguration CreateConfig(string path, bool isDotnetupHive)
     {
         var installRoot = new DotnetInstallRoot(path, InstallerUtilities.GetDefaultInstallArchitecture());
-        return new DotnetInstallRootConfiguration(installRoot, installType);
+        return new DotnetInstallRootConfiguration(installRoot, isDotnetupHive);
     }
 }

@@ -22,13 +22,28 @@ internal static class ExecutablePathResolver
     /// </summary>
     public static string? ResolveRealDirectory(string? executablePath)
     {
-        if (string.IsNullOrEmpty(executablePath))
+        string? resolvedPath = ResolveRealPath(executablePath);
+        return resolvedPath is null ? null : Path.GetDirectoryName(resolvedPath);
+    }
+
+    /// <summary>
+    /// Returns <paramref name="path"/> itself with symlinks resolved (unlike
+    /// <see cref="ResolveRealDirectory"/>, which resolves the containing directory of an
+    /// executable). Use this to canonicalize a directory that may be reached through a symlinked
+    /// parent, such as a dotnet install root under a symlinked <c>LocalApplicationData</c> /
+    /// <c>XDG_DATA_HOME</c>. Returns <c>null</c> when the path is null or empty.
+    /// <see cref="FileInterop.ResolveRealPath"/> is a no-op on Windows, and on Unix returns
+    /// <c>null</c> for a path that does not yet exist; in both cases the normalized full path is
+    /// returned so callers still get a usable value.
+    /// </summary>
+    public static string? ResolveRealPath(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
         {
             return null;
         }
 
-        string fullPath = Path.GetFullPath(executablePath);
-        string resolvedPath = FileInterop.ResolveRealPath(fullPath) ?? fullPath;
-        return Path.GetDirectoryName(resolvedPath);
+        string fullPath = Path.GetFullPath(path);
+        return FileInterop.ResolveRealPath(fullPath) ?? fullPath;
     }
 }
