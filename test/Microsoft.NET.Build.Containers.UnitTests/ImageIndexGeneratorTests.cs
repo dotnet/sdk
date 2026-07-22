@@ -136,6 +136,54 @@ public class ImageIndexGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateOciImageIndexWithAnnotations()
+    {
+        BuiltImage[] images =
+        [
+            new BuiltImage
+            {
+                Config = "",
+                Manifest = "123",
+                ManifestDigest = "sha256:digest1",
+                ManifestMediaType = SchemaTypes.OciManifestV1,
+                Architecture = "arch1",
+                OS = "os1"
+            }
+        ];
+        Dictionary<string, string> annotations = new()
+        {
+            ["org.opencontainers.image.source"] = "https://github.com/dotnet/sdk",
+            ["org.opencontainers.image.revision"] = "abcdef"
+        };
+
+        var (imageIndex, mediaType) = ImageIndexGenerator.GenerateImageIndex(images, annotations);
+
+        Assert.AreEqual("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1+json\",\"manifests\":[{\"mediaType\":\"application/vnd.oci.image.manifest.v1+json\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}}],\"annotations\":{\"org.opencontainers.image.source\":\"https://github.com/dotnet/sdk\",\"org.opencontainers.image.revision\":\"abcdef\"}}", imageIndex);
+        Assert.AreEqual(SchemaTypes.OciImageIndexV1, mediaType);
+    }
+
+    [TestMethod]
+    public void DockerManifestListDoesNotIncludeOciAnnotations()
+    {
+        BuiltImage[] images =
+        [
+            new BuiltImage
+            {
+                Config = "",
+                Manifest = "123",
+                ManifestDigest = "sha256:digest1",
+                ManifestMediaType = SchemaTypes.DockerManifestV2,
+                Architecture = "arch1",
+                OS = "os1"
+            }
+        ];
+
+        var (imageIndex, _) = ImageIndexGenerator.GenerateImageIndex(images, new Dictionary<string, string> { ["example.com/key"] = "value" });
+
+        Assert.IsFalse(imageIndex.Contains("annotations", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void GenerateImageIndexWithAnnotations()
     {
         string imageIndex = ImageIndexGenerator.GenerateImageIndexWithAnnotations("mediaType", "sha256:digest", 3, "repository", ["1.0", "2.0"]);
