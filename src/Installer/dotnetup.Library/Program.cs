@@ -18,6 +18,13 @@ public class DotnetupProgram
 {
     public static int Main(string[] args)
     {
+        // Detached telemetry-drainer fast path: deliver previously-persisted telemetry and exit,
+        // before any other work. See DotnetupTelemetryDrainProcess for the full delivery model.
+        if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(out var drainExitCode))
+        {
+            return drainExitCode;
+        }
+
         // Apply the user's UI language before any output (honors DOTNET_CLI_UI_LANGUAGE/VSLANG, and
         // on Linux—where dotnetup runs invariant—detects the OS locale the runtime cannot).
         DotnetupUILanguage.Setup();
@@ -34,20 +41,7 @@ public class DotnetupProgram
         // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
         using AutomaticEncodingRestorer encodingRestorer = new();
         ConfigureConsoleEncoding();
-
-        // Disable Spectre.Console line wrapping when output is redirected (piped),
-        // since wrapping is not useful for non-interactive consumers.
-        if (Console.IsOutputRedirected)
-        {
-            AnsiConsole.Profile.Width = int.MaxValue;
-        }
-
-        // Set up callback to notify user when waiting for another dotnetup process.
-        // Write to stderr so piped stdout (e.g., print-env-script) is not corrupted.
-        ScopedMutex.OnWaitingForMutex = () =>
-        {
-            Console.Error.WriteLine("Another dotnetup process is running. Waiting for it to finish...");
-        };
+        ConfigureConsoleOutput();
 
         // Show first-run telemetry notice if needed
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
@@ -136,5 +130,23 @@ public class DotnetupProgram
             // output is redirected to a file (e.g., `dotnetup print-env-script > env.sh`).
             Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         }
+    }
+
+    /// <summary>
+    /// Configures console output behavior for the current invocation: disables Spectre.Console line
+    /// wrapping when output is redirected (piped), and routes the "waiting for another dotnetup
+    /// process" notice to stderr so piped stdout (e.g. print-env-script) is not corrupted.
+    /// </summary>
+    private static void ConfigureConsoleOutput()
+    {
+        if (Console.IsOutputRedirected)
+        {
+            AnsiConsole.Profile.Width = int.MaxValue;
+        }
+
+        ScopedMutex.OnWaitingForMutex = () =>
+        {
+            Console.Error.WriteLine("Another dotnetup process is running. Waiting for it to finish...");
+        };
     }
 }
