@@ -137,10 +137,10 @@ This file should be imported by eng/Versions.props
     <SystemTextJsonPackageVersion>11.0.0-preview.7.26363.117</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>11.0.0-preview.7.26363.117</SystemWindowsExtensionsPackageVersion>
     <!-- microsoft-testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>2.4.0-preview.26372.14</MicrosoftTestingPlatformPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>2.4.0-preview.26373.11</MicrosoftTestingPlatformPackageVersion>
     <MicrosoftTestingPlatformInternalDotnetTestPackageVersion>2.3.0-preview.26330.8</MicrosoftTestingPlatformInternalDotnetTestPackageVersion>
-    <MSTestPackageVersion>4.4.0-preview.26372.14</MSTestPackageVersion>
-    <MSTestSdkPackageVersion>4.4.0-preview.26372.14</MSTestSdkPackageVersion>
+    <MSTestPackageVersion>4.4.0-preview.26373.11</MSTestPackageVersion>
+    <MSTestSdkPackageVersion>4.4.0-preview.26373.11</MSTestSdkPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
