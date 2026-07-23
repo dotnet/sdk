@@ -76,6 +76,8 @@ public class StandaloneTestResultReportingTests : IDisposable
 
     // TRX not requested (the wasm default today — TrxReport crashes single-threaded wasm) => report
     // pass/fail from the exit code, NOT a handshake failure. A missing TRX here is expected, not a crash.
+    // The exit-code-only path also flags HasExitCodeOnlyResult so a passing run (which has no test count,
+    // TotalTests == 0) is not reclassified as ExitCode.ZeroTests by MicrosoftTestingPlatformTestCommand.
     [TestMethod]
     public void ReportStandaloneResults_NoTrxRequested_ReportsFromExitCodeNotHandshakeFailure()
     {
@@ -83,9 +85,39 @@ public class StandaloneTestResultReportingTests : IDisposable
         handler.ReportStandaloneResults(exitCode: 0, trxFilePath: null, outputData: "run-out", errorData: "");
         reporter.HasHandshakeFailure.Should().BeFalse();
 
+        // A passing exit-code-only run: no per-test results, so the count is zero but the run passed.
+        reporter.TotalTests.Should().Be(0);
+        reporter.HasExitCodeOnlyResult.Should().BeTrue();
+        // This is exactly the guard MicrosoftTestingPlatformTestCommand uses: a Success run with zero
+        // tests is only reclassified as ZeroTests when it is NOT an exit-code-only result.
+        bool wouldBeZeroTests = reporter.TotalTests == 0 && !reporter.HasExitCodeOnlyResult;
+        wouldBeZeroTests.Should().BeFalse();
+
         (TestApplicationHandler failHandler, TerminalTestReporter failReporter, _) = CreateHandler();
         failHandler.ReportStandaloneResults(exitCode: 1, trxFilePath: null, outputData: "run-out", errorData: "");
         failReporter.HasHandshakeFailure.Should().BeFalse();
+        failReporter.HasExitCodeOnlyResult.Should().BeTrue();
+    }
+
+    // When a TRX is replayed there ARE per-test results, so this is not an exit-code-only run and the
+    // ZeroTests guard must not be engaged.
+    [TestMethod]
+    public void ReportStandaloneResults_WithTrx_DoesNotFlagExitCodeOnly()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler();
+
+        string trxPath = WriteTempTrx(OneFailingTestTrx);
+        try
+        {
+            handler.ReportStandaloneResults(exitCode: 1, trxPath, outputData: "std-out", errorData: "std-err");
+        }
+        finally
+        {
+            File.Delete(trxPath);
+        }
+
+        reporter.HasExitCodeOnlyResult.Should().BeFalse();
+        reporter.TotalTests.Should().Be(1);
     }
 
     private (TestApplicationHandler, TerminalTestReporter, CapturingConsole) CreateHandler()

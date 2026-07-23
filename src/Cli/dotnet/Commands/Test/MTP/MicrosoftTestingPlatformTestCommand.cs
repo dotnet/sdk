@@ -103,6 +103,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             else if (exitCode == ExitCode.Success &&
                 !isHelp &&
                 !parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
+                !output.HasExitCodeOnlyResult &&
                 output.TotalTests == 0)
             {
                 // Whole-run "zero tests ran" verdict. Individual modules that matched no tests return exit
@@ -111,6 +112,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 // zero-tests case is decided here so it surfaces once at the run level instead of once per
                 // module. A stricter per-module minimum via -- --minimum-expected-tests N still fails that
                 // module with exit code 9. See https://github.com/microsoft/testfx/issues/7457.
+                //
+                // Standalone hosts that report only an exit code (e.g. wasm today) have no test count, so a
+                // passing run legitimately has TotalTests == 0; HasExitCodeOnlyResult excludes them here so
+                // their pass is not reclassified as ZeroTests.
                 exitCode = ExitCode.ZeroTests;
             }
 

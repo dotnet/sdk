@@ -25,10 +25,12 @@ internal sealed class TestApplication(
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
     private const int LiveOutputTailLineCount = 200;
 
-    // Deterministic TRX name requested from standalone wasm test hosts. A fixed, host-controlled
-    // basename lets dotnet test (and a bridge host copying the file back) agree on the artifact
-    // without trusting a device/VFS directory listing.
-    private const string WasmTestTrxFileName = "blazor-wasm.trx";
+    // A per-run TRX basename requested from a standalone wasm test host. Unique per TestApplication
+    // so concurrently-running modules never share a file, and freshly GUID-stamped each run so a
+    // stale TRX from an earlier run can never be replayed. dotnet test (and a bridge host copying the
+    // file back) agree on the artifact via this SDK-provided --report-trx-filename, not by trusting a
+    // device/VFS directory listing.
+    private readonly string _wasmTestTrxFileName = $"blazor-wasm-{Guid.NewGuid():N}.trx";
     private const string WasmDefaultResultsDirectoryName = "TestResults";
 
     private readonly Lock _requestLock = new();
@@ -95,7 +97,25 @@ internal sealed class TestApplication(
     private string StandaloneResultsDirectory =>
         GetStandaloneResultsDirectory(_buildOptions.PathOptions.ResultsDirectoryPath, defaultForStandalone: true, Directory.GetCurrentDirectory())!;
 
-    private string StandaloneTrxFilePath => Path.Combine(StandaloneResultsDirectory, WasmTestTrxFileName);
+    private string StandaloneTrxFilePath => Path.Combine(StandaloneResultsDirectory, _wasmTestTrxFileName);
+
+    // Best-effort removal of a pre-existing standalone TRX before launch so a stale artifact is never
+    // replayed. Swallows IO errors: if the file can't be deleted the missing/again-stale file is
+    // handled by ReportStandaloneResults (a requested-but-unreadable TRX routes to a handshake failure).
+    private void DeleteStandaloneTrxIfExists()
+    {
+        try
+        {
+            string path = StandaloneTrxFilePath;
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
 
     public async Task<int> RunAsync(CtrlCCancellationManager ctrlC)
     {
@@ -105,6 +125,15 @@ internal sealed class TestApplication(
         }
 
         var processStartInfo = CreateProcessStartInfo();
+
+        // When we ask a standalone host to write a TRX, remove any pre-existing file at the
+        // destination first so a stale TRX (e.g. from a prior run, or a host that crashes before
+        // writing) can never be mistaken for this run's results. The filename is GUID-unique per
+        // TestApplication, so this is defense-in-depth against reuse.
+        if (EmitTrxForStandaloneHost)
+        {
+            DeleteStandaloneTrxIfExists();
+        }
 
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
@@ -325,7 +354,7 @@ internal sealed class TestApplication(
         // NOT emitted for wasm (WasmReportTrxSupported == false) to avoid regressing a run that
         // passes on its exit code; per-test TRX reporting lights up once TrxReport guards that
         // thread (microsoft/testfx browser-enablement track) and WasmReportTrxSupported flips.
-        string hostModeArguments = GetHostModeArguments(LaunchTestHostStandalone, EmitTrxForStandaloneHost, _pipeName, WasmTestTrxFileName);
+        string hostModeArguments = GetHostModeArguments(LaunchTestHostStandalone, EmitTrxForStandaloneHost, _pipeName, _wasmTestTrxFileName);
         if (hostModeArguments.Length > 0)
         {
             builder.Append($" {hostModeArguments}");
@@ -535,6 +564,11 @@ internal sealed class TestApplication(
     }
 
     private bool? GetLiveOutputStreamingState() =>
+        // A standalone (wasm) host performs no protocol handshake, so _protocolNegotiated never
+        // flips and the collector would otherwise buffer stdout/stderr unbounded and then drop it
+        // on success. Decide streaming up front for standalone: stream the output tail live and keep
+        // it bounded (TrimToBoundedTail). Non-standalone runs still wait for protocol negotiation.
+        LaunchTestHostStandalone ? true :
         Volatile.Read(ref _protocolNegotiated) == 0 ? null : IsProtocol_1_1_OrHigher;
 
     private void FlushBufferedOutputIfLiveStreamingEnabled()

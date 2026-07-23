@@ -53,6 +53,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private readonly bool _showActiveTests;
 
     private int _handshakeFailuresCount;
+    private int _exitCodeOnlyResultsCount;
 
     private readonly object _handshakeFailuresLock = new();
     private readonly List<HandshakeFailureRecord> _handshakeFailures = new();
@@ -70,7 +71,16 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private bool _wasCancelled;
 
     public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
+
+    // A standalone host (e.g. a wasm runtime) that reports pass/fail solely via its process exit
+    // code — with no per-test results — has no known test count, so a passing run legitimately ends
+    // with TotalTests == 0. Track that so the whole-run "zero tests ran" verdict is not applied to
+    // it (which would otherwise turn a passing run into ExitCode.ZeroTests). See
+    // MicrosoftTestingPlatformTestCommand.
+    public bool HasExitCodeOnlyResult => Volatile.Read(ref _exitCodeOnlyResultsCount) > 0;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
+
+    internal void ReportExitCodeOnlyResult() => Interlocked.Increment(ref _exitCodeOnlyResultsCount);
 
     // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
     // thread suspends, so the regex gets blamed incorrectly.

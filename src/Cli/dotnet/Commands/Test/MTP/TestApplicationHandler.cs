@@ -596,6 +596,14 @@ internal sealed class TestApplicationHandler
 
         _output.AssemblyRunStarted(_module.TargetPath, _module.TargetFramework, architecture, executionId, instanceId);
 
+        if (report is null)
+        {
+            // Exit-code-only path (no TRX requested, e.g. wasm today): there are no per-test results,
+            // so the reporter's test count stays 0. Flag it so a passing run isn't reclassified as
+            // ExitCode.ZeroTests at the run level.
+            _output.ReportExitCodeOnlyResult();
+        }
+
         // With a TRX, replay per-test results; without one (exit-code-only path, e.g. wasm today),
         // report only the assembly-level pass/fail that AssemblyRunCompleted derives from the exit code.
         foreach (TrxTestResult result in report?.Results ?? [])
