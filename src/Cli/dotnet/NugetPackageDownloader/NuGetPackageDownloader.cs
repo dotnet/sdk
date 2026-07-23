@@ -926,6 +926,10 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             _verboseLogger.LogWarning(e.ToString());
             foundPackages = Enumerable.Empty<PackageSearchMetadata>();
         }
+        catch (FatalProtocolException e)
+        {
+            throw new NuGetPackageInstallerException($"{string.Format(CliStrings.FailedToLoadNuGetSource, source.Source)}: {e.Message}", e);
+        }
 
         return (source, foundPackages);
     }

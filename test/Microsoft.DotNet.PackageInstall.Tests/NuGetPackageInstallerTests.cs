@@ -14,6 +14,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
@@ -91,6 +92,23 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     {
                         "https://nonexist.nuget.source/F/nonexist/api/v3/index.json"
                     })));
+        }
+
+        [TestMethod]
+        public async Task GivenAFailedSourceItShouldIncludeSourceInError()
+        {
+            const string source = "https://nonexist.nuget.source/F/nonexist/api/v3/index.json";
+
+            Func<Task> downloadAction = () =>
+                _installer.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    new PackageSourceLocation(sourceFeedOverrides: new[] { source }));
+
+            var exception = await Assert.ThrowsExactlyAsync<NuGetPackageInstallerException>(downloadAction);
+            exception.Message.Should().Contain(string.Format(CliStrings.FailedToLoadNuGetSource, source));
+            exception.InnerException.Should().BeOfType<FatalProtocolException>();
+            exception.Message.Should().Contain(exception.InnerException.Message);
         }
 
         [TestMethod]
