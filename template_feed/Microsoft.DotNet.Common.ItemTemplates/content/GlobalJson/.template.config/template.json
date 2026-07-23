@@ -68,6 +68,34 @@
         ]
       }
     },
+    "AllowPrerelease": {
+      "type": "parameter",
+      "description": "Whether prerelease SDK versions should be considered when selecting the SDK version to use.",
+      "displayName": "Allow prerelease",
+      "replaces": "ALLOW_PRERELEASE_VALUE",
+      "defaultValue": "",
+      "defaultIfOptionWithoutValue": "true",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "true",
+          "description": "Consider prerelease SDK versions when selecting the .NET SDK version to use.",
+          "displayName": "Allow prerelease"
+        },
+        {
+          "choice": "false",
+          "description": "Don't consider prerelease SDK versions when selecting the .NET SDK version to use.",
+          "displayName": "Disallow prerelease"
+        }
+      ]
+    },
+    "NoSdkVersion": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": false,
+      "description": "Exclude the SDK version from the generated global.json.",
+      "displayName": "No SDK version"
+    },
     "RollForward": {
       "type": "parameter",
       "description": "The roll-forward policy to use when selecting an SDK version.",
