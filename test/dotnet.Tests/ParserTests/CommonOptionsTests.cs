@@ -59,23 +59,24 @@ public class CommonOptionsTests
     }
 
     [TestMethod]
-    public void ExplicitConfigurationPropertyOverridesEnvironmentVariable()
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow("\t")]
+    public void EmptyOrWhitespaceConfigurationEnvironmentVariableIsIgnored(string configuration)
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
 
         try
         {
-            Environment.SetEnvironmentVariable("Configuration", "EnvironmentConfiguration");
+            Environment.SetEnvironmentVariable("Configuration", configuration);
             var command = new RootCommand();
-            var propertyOption = CommonOptions.CreatePropertyOption();
-            var configurationOption = CommonOptions.CreateConfigurationOption("Configuration");
-            command.Options.Add(propertyOption);
-            command.Options.Add(configurationOption);
+            var option = CommonOptions.CreateConfigurationOption("Configuration");
+            command.Options.Add(option);
 
-            var result = command.Parse(["--property:Configuration=PropertyConfiguration"]);
+            var result = command.Parse([]);
 
-            result.OptionValuesToBeForwarded(command).Should().ContainSingle()
-                .Which.Should().Be("--property:Configuration=PropertyConfiguration");
+            result.GetValue(option).Should().BeNull();
+            result.OptionValuesToBeForwarded(command).Should().BeEmpty();
         }
         finally
         {
