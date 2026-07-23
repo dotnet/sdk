@@ -50,6 +50,25 @@ public class PersistentStorageTelemetryUploaderTests
     }
 
     [TestMethod]
+    public async Task ItDeletesPermanentlyRejectedBlobAndContinuesDraining()
+    {
+        var permanentlyRejected = new FakeBlob([1, 2, 3]);
+        var accepted = new FakeBlob([4, 5, 6]);
+        var storage = new FakeBlobStorage(permanentlyRejected, accepted);
+        var transport = new SequenceTransport(
+            TelemetryUploadResult.PermanentlyRejected,
+            TelemetryUploadResult.Accepted);
+        var uploader = new PersistentStorageTelemetryUploader(storage, transport);
+
+        var result = await uploader.DrainAsync(CancellationToken.None);
+
+        transport.UploadCount.Should().Be(2);
+        permanentlyRejected.Deleted.Should().BeTrue();
+        accepted.Deleted.Should().BeTrue("a poison blob must not block later telemetry");
+        result.ShouldBackOff.Should().BeFalse();
+    }
+
+    [TestMethod]
     public async Task ItReleasesLeaseWhenUploadIsCancelled()
     {
         var blob = new FakeBlob([1, 2, 3]);
@@ -208,6 +227,19 @@ public class PersistentStorageTelemetryUploaderTests
         {
             UploadCount++;
             return Task.FromResult(result);
+        }
+    }
+
+    private sealed class SequenceTransport(params TelemetryUploadResult[] results) : ITelemetryUploadTransport
+    {
+        private readonly Queue<TelemetryUploadResult> _results = new(results);
+
+        public int UploadCount { get; private set; }
+
+        public Task<TelemetryUploadResult> TryUploadAsync(byte[] payload, CancellationToken cancellationToken)
+        {
+            UploadCount++;
+            return Task.FromResult(_results.Dequeue());
         }
     }
 

@@ -104,6 +104,12 @@ internal sealed class PersistentStorageTelemetryUploader
                         deleted = blob.TryDelete();
                         break;
 
+                    case TelemetryUploadOutcome.PermanentlyRejected:
+                        // Retrying cannot succeed. Delete this poison blob so later telemetry
+                        // in the storage directory can continue draining.
+                        deleted = blob.TryDelete();
+                        break;
+
                     case TelemetryUploadOutcome.Rejected:
                         // Leave the blob in place; its lease will expire and a later invocation
                         // will retry it.

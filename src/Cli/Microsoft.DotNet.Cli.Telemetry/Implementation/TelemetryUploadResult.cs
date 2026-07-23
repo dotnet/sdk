@@ -15,6 +15,10 @@ internal enum TelemetryUploadOutcome
     /// <see cref="TelemetryUploadResult.RetryPayload"/> and should be persisted for a later retry.</summary>
     PartiallyAccepted,
 
+    /// <summary>The server permanently rejected the payload. Retrying cannot succeed, so the
+    /// blob should be deleted to avoid blocking later telemetry.</summary>
+    PermanentlyRejected,
+
     /// <summary>The server did not accept the payload (throttling, server error, etc.). The
     /// blob should be retained and retried later.</summary>
     Rejected,
@@ -51,6 +55,8 @@ internal readonly struct TelemetryUploadResult
     public static TelemetryUploadResult Accepted { get; } = new(TelemetryUploadOutcome.Accepted, null, null);
 
     public static TelemetryUploadResult Rejected { get; } = new(TelemetryUploadOutcome.Rejected, null, null);
+
+    public static TelemetryUploadResult PermanentlyRejected { get; } = new(TelemetryUploadOutcome.PermanentlyRejected, null, null);
 
     public static TelemetryUploadResult RejectedAfter(TimeSpan retryAfter)
         => new(TelemetryUploadOutcome.Rejected, null, retryAfter);
