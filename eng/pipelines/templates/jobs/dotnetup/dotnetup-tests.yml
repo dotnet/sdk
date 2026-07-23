@@ -73,6 +73,7 @@ jobs:
           if (-not $exe) { throw "Unable to find published dotnetup.exe" }
           & $exe sdk install 0.0.0 --install-path $installPath --no-progress
           if ($LASTEXITCODE -ne 1) { throw "Expected controlled dotnetup failure, got exit code $LASTEXITCODE" }
+          $global:LASTEXITCODE = 0
           New-Item -Path "$(Build.SourcesDirectory)\artifacts\dotnetupTestResults" -ItemType Directory -Force | Out-Null
           [ordered]@{
             build_uri = "$(Build.BuildUri)"
