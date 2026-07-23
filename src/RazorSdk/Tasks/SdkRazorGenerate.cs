@@ -201,14 +201,20 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 builder.AppendLine(Path.GetFullPath(Extensions[i].GetMetadata(AssemblyFilePath)));
             }
 
-            // In source generator mode the tool discovers tag helpers from the compilation instead of a
-            // manifest, so it needs the reference assemblies. The engine path ignores these.
-            if (UseSourceGenerator && Assemblies != null)
+            // In source generator mode the tool hosts the Razor source generator and discovers tag
+            // helpers from the compilation instead of a manifest, so it needs the reference assemblies.
+            // The engine path ignores these.
+            if (UseSourceGenerator)
             {
-                for (var i = 0; i < Assemblies.Length; i++)
+                builder.AppendLine("--use-source-generator");
+
+                if (Assemblies != null)
                 {
-                    builder.AppendLine("-a");
-                    builder.AppendLine(Assemblies[i]);
+                    for (var i = 0; i < Assemblies.Length; i++)
+                    {
+                        builder.AppendLine("-a");
+                        builder.AppendLine(Assemblies[i]);
+                    }
                 }
             }
 

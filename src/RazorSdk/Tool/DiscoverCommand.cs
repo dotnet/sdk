@@ -28,6 +28,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             Configuration = Option("-c", "Razor configuration name", CommandOptionType.SingleValue);
             ExtensionNames = Option("-n", "extension name", CommandOptionType.MultipleValue);
             ExtensionFilePaths = Option("-e", "extension file path", CommandOptionType.MultipleValue);
+            UseSourceGenerator = Option("--use-source-generator", "host the Razor source generator instead of the engine", CommandOptionType.NoValue);
         }
 
         public CommandArgument Assemblies { get; }
@@ -43,6 +44,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         public CommandOption ExtensionNames { get; }
 
         public CommandOption ExtensionFilePaths { get; }
+
+        public CommandOption UseSourceGenerator { get; }
 
         protected override bool ValidateArguments()
         {
@@ -146,7 +149,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 return Task.FromResult(ExitCodeFailure);
             }
 
-            if (SourceGeneratorSwitch.UseSourceGenerator)
+            if (UseSourceGenerator.HasValue())
             {
                 return Task.FromResult(ExecuteWithSourceGenerator(
                     projectDirectory: ProjectDirectory.Value(),

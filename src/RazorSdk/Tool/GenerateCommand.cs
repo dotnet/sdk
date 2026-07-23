@@ -36,6 +36,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             GenerateDeclaration = Option("--generate-declaration", "Generate declaration", CommandOptionType.NoValue);
             SupportLocalizedComponentNames = Option("--support-localized-component-names", "support localized component names", CommandOptionType.NoValue);
             Assemblies = Option("-a", "reference assemblies used for tag helper discovery (source generator mode)", CommandOptionType.MultipleValue);
+            UseSourceGenerator = Option("--use-source-generator", "host the Razor source generator instead of the engine", CommandOptionType.NoValue);
         }
 
         public CommandOption Sources { get; }
@@ -72,6 +73,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         public CommandOption Assemblies { get; }
 
+        public CommandOption UseSourceGenerator { get; }
+
         protected override Task<int> ExecuteCoreAsync()
         {
             if (!Parent.Checker.Check(ExtensionFilePaths.Values))
@@ -86,7 +89,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             // The source generator path handles ordinary generation. Declaration-only generation
             // (--generate-declaration) has no public generator output, so it stays on the engine path.
-            if (SourceGeneratorSwitch.UseSourceGenerator && !GenerateDeclaration.HasValue())
+            if (UseSourceGenerator.HasValue() && !GenerateDeclaration.HasValue())
             {
                 return Task.FromResult(ExecuteWithSourceGenerator(sourceItems));
             }

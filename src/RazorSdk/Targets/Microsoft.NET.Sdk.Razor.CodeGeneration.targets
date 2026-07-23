@@ -39,10 +39,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorGenerateInputsHash></_RazorGenerateInputsHash>
     <_RazorGenerateInputsHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorCoreGenerate.cache</_RazorGenerateInputsHashFile>
 
-    <!-- Opt-in: route the Razor tool's generate step through the hosted source generator.
-         Defaults from the RAZOR_TOOL_USE_SOURCE_GENERATOR environment variable, which also enables
-         the tool itself, so a single knob controls both the task (reference passing) and the tool. -->
-    <_RazorToolUseSourceGenerator Condition="'$(_RazorToolUseSourceGenerator)' == ''">$(RAZOR_TOOL_USE_SOURCE_GENERATOR)</_RazorToolUseSourceGenerator>
+    <!-- Opt-in: route the Razor tool's discover and generate steps through the hosted source
+         generator. Toggle with /p:_RazorToolUseSourceGenerator=true or a project property; the
+         tasks forward it to the tool's use-source-generator switch. -->
+    <_RazorToolUseSourceGenerator Condition="'$(_RazorToolUseSourceGenerator)' == ''">false</_RazorToolUseSourceGenerator>
   </PropertyGroup>
 
   <!--
@@ -113,6 +113,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Extensions="@(ResolvedRazorExtension)"
       Assemblies="@(RazorReferencePath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
+      UseSourceGenerator="$(_RazorToolUseSourceGenerator)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)">
       <Output
         TaskParameter="TagHelperManifest"
