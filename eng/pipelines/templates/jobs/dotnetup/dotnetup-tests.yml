@@ -61,6 +61,31 @@ jobs:
           & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -p:EnforceCodeStyleInBuild=false
         displayName: 🔨 Publish dotnetup AOT (Windows)
       - powershell: |
+          $profile = "dotnetup-ci-e2e-$(Build.BuildId)-$(System.JobAttempt)"
+          $env:DOTNET_CLI_TELEMETRY_OPTOUT = "0"
+          $env:DOTNET_CLI_TELEMETRY_PROFILE = $profile
+          $env:TF_BUILD = "true"
+          $env:DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS = "20000"
+          $installPath = "$(Agent.TempDirectory)\dotnetup-telemetry-e2e"
+          $exe = Get-ChildItem artifacts\bin\dotnetup\Release -Recurse -Filter dotnetup.exe |
+              Where-Object FullName -match "\\publish\\dotnetup\.exe$" |
+              Select-Object -First 1 -ExpandProperty FullName
+          if (-not $exe) { throw "Unable to find published dotnetup.exe" }
+          & $exe sdk install 0.0.0 --install-path $installPath --no-progress
+          if ($LASTEXITCODE -ne 1) { throw "Expected controlled dotnetup failure, got exit code $LASTEXITCODE" }
+          New-Item -Path "$(Build.SourcesDirectory)\artifacts\dotnetupTestResults" -ItemType Directory -Force | Out-Null
+          [ordered]@{
+            build_uri = "$(Build.BuildUri)"
+            build_id = "$(Build.BuildId)"
+            telemetry_profile = $profile
+            expected_error = "No product found for version 0.0.0"
+            expected_ci_detected = "true"
+          } | ConvertTo-Json | Set-Content "$(Build.SourcesDirectory)\artifacts\dotnetupTestResults\telemetry-e2e-probe.json" -Encoding ascii
+          Write-Host "dotnetup telemetry profile: $profile"
+          Write-Host "dotnetup telemetry build: $(Build.BuildUri)"
+        displayName: 📡 Probe CI dotnetup failure telemetry
+        condition: and(succeeded(), eq(variables['RunDotnetupTelemetryE2EProbe'], 'true'))
+      - powershell: |
           New-Item -Path "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults" -ItemType Directory -Force
         displayName: 📁 Create test results directory (Windows)
       - powershell: |

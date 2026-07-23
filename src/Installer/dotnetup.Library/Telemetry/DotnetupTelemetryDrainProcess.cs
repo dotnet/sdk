@@ -38,15 +38,21 @@ internal static class DotnetupTelemetryDrainProcess
         try
         {
             var storageDirectory = DotnetupPaths.ResolveLocalTelemetryStorageDirectory(Environment.GetEnvironmentVariable);
+            var connectionString = Environment.GetEnvironmentVariable(Constants.Telemetry.TestConnectionStringEnvVar)
+                ?? Constants.Telemetry.ConnectionString;
 
             PersistentStorageTelemetryDrainer
-                .RunAsync(Constants.Telemetry.ConnectionString, storageDirectory, s_drainerLifetime)
+                .RunAsync(connectionString, storageDirectory, s_drainerLifetime)
                 .GetAwaiter()
                 .GetResult();
         }
         catch
         {
 
+        }
+        finally
+        {
+            WriteTestCompletionMarker(exitCode);
         }
 
         return true;
@@ -94,5 +100,23 @@ internal static class DotnetupTelemetryDrainProcess
     {
         var name = Path.GetFileNameWithoutExtension(executablePath);
         return string.Equals(name, "dotnetup", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void WriteTestCompletionMarker(int exitCode)
+    {
+        var path = Environment.GetEnvironmentVariable(Constants.Telemetry.TestDrainCompletionPathEnvVar);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        try
+        {
+            using var writer = new StreamWriter(new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read));
+            writer.Write($"ProcessId={Environment.ProcessId}{Environment.NewLine}ExitCode={exitCode}");
+        }
+        catch
+        {
+        }
     }
 }

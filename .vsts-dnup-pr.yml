@@ -15,6 +15,11 @@ parameters:
   type: boolean
   default: true
 
+- name: telemetryE2EProbe
+  displayName: Run the dotnetup telemetry delivery probe
+  type: boolean
+  default: false
+
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
   # Variables used: DncEngPublicBuildPool
@@ -65,6 +70,8 @@ stages:
         os: windows
         emoji: 🪟
       helixTargetQueue: windows.amd64.vs2022.pre.open
+      variables:
+        RunDotnetupTelemetryE2EProbe: ${{ parameters.telemetryE2EProbe }}
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml@self

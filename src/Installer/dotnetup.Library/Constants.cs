@@ -81,5 +81,9 @@ internal static class Constants
         /// A conditional telling dotnetup to focus on flushing telemetry as a detached process rather than execute as dotnetup.
         /// </summary>
         public const string DrainModeEnvVar = "DOTNETUP_TELEMETRY_DRAIN";
+
+        internal const string TestForceLocalDeliveryEnvVar = "DOTNET_TESTHOOK_DOTNETUP_TELEMETRY_FORCE_LOCAL";
+        internal const string TestConnectionStringEnvVar = "DOTNET_TESTHOOK_DOTNETUP_TELEMETRY_CONNECTION_STRING";
+        internal const string TestDrainCompletionPathEnvVar = "DOTNET_TESTHOOK_DOTNETUP_TELEMETRY_DRAIN_COMPLETION_PATH";
     }
 }
