@@ -98,10 +98,11 @@ public sealed class DotnetupTelemetry : IDisposable
     // telemetry-disabled (opt-out) path deterministically, without mutating
     // process-wide environment variables or depending on the Lazy singleton's
     // one-shot, construction-time env read.
-    internal DotnetupTelemetry(Func<string, string?> getEnvironmentVariable)
+    internal DotnetupTelemetry(Func<string, string?> getEnvironmentVariable, bool? isCIEnvironment = null)
     {
         SessionId = Guid.NewGuid().ToString();
-        IsOneAndDoneEnvironment = TelemetryCommonProperties.IsCIEnvironment;
+        IsOneAndDoneEnvironment = !IsTruthy(getEnvironmentVariable(Constants.Telemetry.ForceLocalDeliveryEnvVar))
+            && (isCIEnvironment ?? TelemetryCommonProperties.IsCIEnvironment);
 
         Enabled = !IsTelemetryOptedOut(getEnvironmentVariable);
 
@@ -119,6 +120,7 @@ public sealed class DotnetupTelemetry : IDisposable
             var enablePerfTrace = IsTruthy(getEnvironmentVariable(Constants.Telemetry.EnablePerfTraceEnvVar));
             var enableOtlpExporter = IsOtlpExporterEnabled(disableExport, getEnvironmentVariable);
             var debugConsole = getEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
+            var connectionString = ResolveConnectionString(getEnvironmentVariable);
 
             var storageDirectory = IsOneAndDoneEnvironment
                 ? ResolveStorageDirectory(getEnvironmentVariable)
@@ -128,8 +130,8 @@ public sealed class DotnetupTelemetry : IDisposable
             _commonProperties = ToLogStateProperties(commonAttrs);
             var resource = BuildResource(commonAttrs);
 
-            _tracerProvider = BuildTracerProvider(resource, IsOneAndDoneEnvironment, enablePerfTrace, enableOtlpExporter, disableExport, debugConsole, storageDirectory);
-            _services = BuildLoggingServices(resource, IsOneAndDoneEnvironment, enableOtlpExporter, disableExport, debugConsole, storageDirectory);
+            _tracerProvider = BuildTracerProvider(resource, IsOneAndDoneEnvironment, enablePerfTrace, enableOtlpExporter, disableExport, debugConsole, storageDirectory, connectionString);
+            _services = BuildLoggingServices(resource, IsOneAndDoneEnvironment, enableOtlpExporter, disableExport, debugConsole, storageDirectory, connectionString);
             _loggerProvider = _services.GetService<LoggerProvider>();
             _loggerFactory = _services.GetRequiredService<ILoggerFactory>();
             _logger = _loggerFactory.CreateLogger(Constants.Telemetry.BootstrapperSourceName);
@@ -150,6 +152,14 @@ public sealed class DotnetupTelemetry : IDisposable
         return string.IsNullOrWhiteSpace(environmentStoragePath)
             ? DotnetupPaths.TelemetryStorageDirectory
             : environmentStoragePath;
+    }
+
+    internal static string ResolveConnectionString(Func<string, string?> getEnvironmentVariable)
+    {
+        var overrideValue = getEnvironmentVariable(Constants.Telemetry.E2EConnectionStringEnvVar);
+        return string.IsNullOrWhiteSpace(overrideValue)
+            ? Constants.Telemetry.ConnectionString
+            : overrideValue;
     }
 
     /// <summary>
@@ -190,7 +200,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Builds the <see cref="TracerProvider"/>.
     /// Traces should be opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x does not ingest spans.
     /// </summary>
-    private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool isOneAndDone, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
+    private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool isOneAndDone, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory, string connectionString)
     {
         var builder = Sdk.CreateTracerProviderBuilder()
             .SetResourceBuilder(resource)
@@ -216,7 +226,7 @@ public sealed class DotnetupTelemetry : IDisposable
                 // CI: Deliver telemetry before the program can fully exit as it will not rerun.
                 builder.AddAzureMonitorTraceExporter(o =>
                 {
-                    o.ConnectionString = Constants.Telemetry.ConnectionString;
+                    o.ConnectionString = connectionString;
                     o.EnableLiveMetrics = false;
                     o.StorageDirectory = storageDirectory;
                 });
@@ -226,7 +236,7 @@ public sealed class DotnetupTelemetry : IDisposable
                 // Local: persist synchronously and let the detached drainer POST out of band.
                 builder.AddPersistentStorageExporter(o =>
                 {
-                    o.ConnectionString = Constants.Telemetry.ConnectionString;
+                    o.ConnectionString = connectionString;
                     o.StorageDirectory = storageDirectory;
                     o.StartBackgroundDrain = false;
                 });
@@ -246,7 +256,7 @@ public sealed class DotnetupTelemetry : IDisposable
     ///
     /// The AzMonitor log exporter routes data through the AppInsights <c>traces</c> table which is the only table data-x-platform ingests.
     /// </summary>
-    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool isOneAndDone, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
+    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool isOneAndDone, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory, string connectionString)
     {
         var services = new ServiceCollection();
         services.AddLogging(lb =>
@@ -265,7 +275,7 @@ public sealed class DotnetupTelemetry : IDisposable
                     {
                         o.AddAzureMonitorLogExporter(amo =>
                         {
-                            amo.ConnectionString = Constants.Telemetry.ConnectionString;
+                            amo.ConnectionString = connectionString;
                             amo.EnableLiveMetrics = false;
                             amo.StorageDirectory = storageDirectory;
                         });
@@ -274,7 +284,7 @@ public sealed class DotnetupTelemetry : IDisposable
                     {
                         o.AddPersistentStorageExporter(pso =>
                         {
-                            pso.ConnectionString = Constants.Telemetry.ConnectionString;
+                            pso.ConnectionString = connectionString;
                             pso.StorageDirectory = storageDirectory;
                             pso.StartBackgroundDrain = false;
                         });
@@ -436,10 +446,11 @@ public sealed class DotnetupTelemetry : IDisposable
     private const int FailureShutdownBudgetMs = 400;
 
     /// <summary>
-    /// True when the current invocation is the latency-critical shell-startup command (<c>print-env-script</c>)
+    /// True when the current invocation is the latency-critical shell-startup command
+    /// (<c>env script</c>, including its hidden <c>print-env-script</c> alias).
     /// </summary>
     private bool IsShellStartupCommand =>
-        string.Equals(CurrentCommandName, "print-env-script", StringComparison.Ordinal);
+        string.Equals(CurrentCommandName, "env script", StringComparison.Ordinal);
 
     /// <summary>
     /// Returns the CI shutdown budget (ms): the <c>DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS</c>
@@ -517,6 +528,9 @@ public sealed class DotnetupTelemetry : IDisposable
     private void ShutdownProviders(int timeoutMilliseconds)
     {
         var budget = Math.Max(0, timeoutMilliseconds);
+        TelemetryTestHooks.TryWriteFile(
+            Constants.Telemetry.TestShutdownBudgetPathEnvVar,
+            $"ShutdownBudgetMs={budget}");
         var deadline = Environment.TickCount64 + budget;
 
         try

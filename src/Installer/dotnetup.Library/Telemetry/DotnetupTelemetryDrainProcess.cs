@@ -38,9 +38,10 @@ internal static class DotnetupTelemetryDrainProcess
         try
         {
             var storageDirectory = DotnetupPaths.ResolveLocalTelemetryStorageDirectory(Environment.GetEnvironmentVariable);
+            var connectionString = DotnetupTelemetry.ResolveConnectionString(Environment.GetEnvironmentVariable);
 
             PersistentStorageTelemetryDrainer
-                .RunAsync(Constants.Telemetry.ConnectionString, storageDirectory, s_drainerLifetime)
+                .RunAsync(connectionString, storageDirectory, s_drainerLifetime)
                 .GetAwaiter()
                 .GetResult();
         }
@@ -48,7 +49,6 @@ internal static class DotnetupTelemetryDrainProcess
         {
 
         }
-
         return true;
     }
 
@@ -95,4 +95,5 @@ internal static class DotnetupTelemetryDrainProcess
         var name = Path.GetFileNameWithoutExtension(executablePath);
         return string.Equals(name, "dotnetup", StringComparison.OrdinalIgnoreCase);
     }
+
 }

@@ -53,6 +53,7 @@ For more details on crash exception telemetry, see the
 
 - **`DOTNET_CLI_TELEMETRY_STORAGE_PATH`**: Overrides the directory used to persist telemetry locally before it is uploaded.
 - **`DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS`**: Overrides the bounded `dotnetup` telemetry flush timeout to a custom limit.
+- **`DOTNETUP_TELEMETRY_FORCE_LOCAL_DELIVERY`**: Uses local persist-and-detached-drain delivery even when CI is detected. Intended for diagnostics and end-to-end validation.
 
 ## CI and LLM Agent Detection
 

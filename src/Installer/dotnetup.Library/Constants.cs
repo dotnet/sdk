@@ -57,6 +57,7 @@ internal static class Constants
         public const string DisableTraceExportEnvVar = "DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT";
         public const string DiskLogPathEnvVar = "DOTNET_CLI_TELEMETRY_LOG_PATH";
         public const string EnableOtlpExporterEnvVar = "DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER";
+        public const string ForceLocalDeliveryEnvVar = "DOTNETUP_TELEMETRY_FORCE_LOCAL_DELIVERY";
 
         /// <summary>
         /// Opt-in env var that enables network export of OTel spans via the
@@ -81,5 +82,8 @@ internal static class Constants
         /// A conditional telling dotnetup to focus on flushing telemetry as a detached process rather than execute as dotnetup.
         /// </summary>
         public const string DrainModeEnvVar = "DOTNETUP_TELEMETRY_DRAIN";
+
+        internal const string E2EConnectionStringEnvVar = "DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING";
+        internal const string TestShutdownBudgetPathEnvVar = "DOTNET_TESTHOOK_DOTNETUP_TELEMETRY_SHUTDOWN_BUDGET_PATH";
     }
 }
