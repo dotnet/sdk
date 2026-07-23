@@ -1,17 +1,6 @@
 # Shared dotnetup acquisition helpers (architecture detection, cache freshness, download).
 . (Join-Path $PSScriptRoot 'dotnetup-shared.ps1')
 
-function Get-DotNetInstallFallbackArchitecture {
-    if (-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) {
-        $nativeArch = Get-NativeMachineArchitecture
-        if ($env:TARGET_ARCHITECTURE -ne $nativeArch) {
-            return $env:TARGET_ARCHITECTURE
-        }
-    }
-
-    return ""
-}
-
 function InitializeCustomSDKToolset {
     if ($env:TestFullMSBuild -eq "true") {
         $env:DOTNET_SDK_TEST_MSBUILD_PATH = InitializeVisualStudioMSBuild -install:$true -vsRequirements:$GlobalJson.tools.'vs-opt'
@@ -37,14 +26,33 @@ function InitializeCustomSDKToolset {
     # The following shared frameworks are only needed for testing.
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
-        $fallbackArchitecture = Get-DotNetInstallFallbackArchitecture
-        $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
-        if ([string]::IsNullOrEmpty($fallbackArchitecture)) {
-            # Also install the exact runtime versions that arcade's toolset requires
-            # (from Version.Details.props) so tests can target those specific versions.
-            $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
+        $nativeArch = Get-NativeMachineArchitecture
+        $installArch = ""
+        $installTestRuntimes = $true
+
+        if ((-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) -and ($env:TARGET_ARCHITECTURE -ne $nativeArch)) {
+            # The build targets an architecture that differs from the host machine. These shared
+            # frameworks are installed into the host .dotnet so the host can run tests against them,
+            # so they must be an architecture the host can actually execute. For a genuine
+            # cross-compile (e.g. an x64 agent building arm64) the host cannot run the
+            # target-architecture runtimes: installing them would pollute the host .dotnet with
+            # un-runnable binaries (breaking host tools such as the NuGet credential provider) and
+            # would serve no purpose, since cross-build legs do not run tests locally. Skip the
+            # install in that case. (macOS/arm64 running x64 under Rosetta 2 is handled in
+            # restore-toolset.sh; this script only runs on Windows.)
+            $installTestRuntimes = $false
+            Write-Host "Skipping test-runtime install: host architecture '$nativeArch' cannot run target architecture '$($env:TARGET_ARCHITECTURE)' runtimes on this cross-build leg."
         }
-        InstallDotNetSharedFrameworks -RuntimeSpecs $runtimeSpecs -Architecture $fallbackArchitecture
+
+        if ($installTestRuntimes) {
+            $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
+            if ([string]::IsNullOrEmpty($installArch)) {
+                # Also install the exact runtime versions that arcade's toolset requires
+                # (from Version.Details.props) so tests can target those specific versions.
+                $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
+            }
+            InstallDotNetSharedFrameworks -RuntimeSpecs $runtimeSpecs -Architecture $installArch
+        }
     }
 
     CreateBuildEnvScripts

@@ -31,30 +31,49 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    local install_script_arch=""
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
+    local install_script_arch=""
+    local install_test_runtimes=true
+
     if [[ -n "${TARGET_ARCHITECTURE:-}" && "$TARGET_ARCHITECTURE" != "$native_arch" ]]; then
-      install_script_arch="$TARGET_ARCHITECTURE"
+      # The build targets an architecture that differs from the host machine. These
+      # shared frameworks are installed into the host .dotnet so the host can run tests
+      # against them, so they must be an architecture the host can actually execute.
+      # The only case where a host runs a different architecture is macOS on Apple
+      # Silicon, which runs x64 binaries via Rosetta 2. For a genuine cross-compile
+      # (e.g. an x64 Linux/Windows agent building arm64) the host cannot run the
+      # target-architecture runtimes: installing them would pollute the host .dotnet
+      # with un-runnable binaries (breaking host tools such as the NuGet credential
+      # provider) and would serve no purpose, since cross-build legs do not run tests
+      # locally. Skip the install in that case.
+      if [[ "$(uname)" == "Darwin" && "$native_arch" == "arm64" && "$TARGET_ARCHITECTURE" == "x64" ]]; then
+        install_script_arch="$TARGET_ARCHITECTURE"
+      else
+        install_test_runtimes=false
+        echo "Skipping test-runtime install: host architecture '$native_arch' cannot run target architecture '$TARGET_ARCHITECTURE' runtimes on this cross-build leg."
+      fi
     fi
 
-    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
-    if [[ -z "$install_script_arch" ]]; then
-      # Also install the exact runtime versions that arcade's toolset requires
-      # (from Version.Details.props) so tests can target those specific versions.
-      local runtime_version
-      runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
-      local aspnetcore_version
-      aspnetcore_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
-      if [[ -n "$runtime_version" ]]; then
-        runtime_specs+=("$runtime_version")
+    if [[ "$install_test_runtimes" == true ]]; then
+      local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
+      if [[ -z "$install_script_arch" ]]; then
+        # Also install the exact runtime versions that arcade's toolset requires
+        # (from Version.Details.props) so tests can target those specific versions.
+        local runtime_version
+        runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
+        local aspnetcore_version
+        aspnetcore_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
+        if [[ -n "$runtime_version" ]]; then
+          runtime_specs+=("$runtime_version")
+        fi
+        if [[ -n "$aspnetcore_version" ]]; then
+          runtime_specs+=("aspnetcore@$aspnetcore_version")
+        fi
       fi
-      if [[ -n "$aspnetcore_version" ]]; then
-        runtime_specs+=("aspnetcore@$aspnetcore_version")
-      fi
-    fi
 
-    InstallDotNetSharedFrameworks "$install_script_arch" "${runtime_specs[@]}"
+      InstallDotNetSharedFrameworks "$install_script_arch" "${runtime_specs[@]}"
+    fi
   fi
 
   CreateBuildEnvScript
