@@ -97,6 +97,23 @@ public class HttpTelemetryUploadTransportTests
     }
 
     [TestMethod]
+    [DataRow(HttpStatusCode.RequestTimeout)]
+    [DataRow(HttpStatusCode.TooManyRequests)]
+    [DataRow((HttpStatusCode)439)]
+    [DataRow(HttpStatusCode.InternalServerError)]
+    [DataRow(HttpStatusCode.ServiceUnavailable)]
+    public async Task ItReportsRejectedOnEveryRetriableWholeRequestFailure(HttpStatusCode statusCode)
+    {
+        var handler = new StubHandler(statusCode);
+        var transport = new HttpTelemetryUploadTransport(TrackUri, handler);
+
+        var result = await transport.TryUploadAsync([1, 2, 3], CancellationToken.None);
+
+        result.Outcome.Should().Be(TelemetryUploadOutcome.Rejected,
+            "retriable Breeze failures must retain the blob for another upload attempt");
+    }
+
+    [TestMethod]
     [DataRow(HttpStatusCode.BadRequest)]
     [DataRow(HttpStatusCode.Unauthorized)]
     [DataRow(HttpStatusCode.Forbidden)]
