@@ -7,7 +7,8 @@ parameters:
     publishTaskPrefix: ''
   container: ''
   helixTargetContainer: ''
-  categoryName: Build
+  categoryName: ''
+  platformName: ''
   runTests: true
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
   publishRetryConfig: false
@@ -18,11 +19,14 @@ parameters:
   timeoutInMinutes: ''
   ### ENV VARS ###
   testFullMSBuild: false
+  # Enables the Blazor WebAssembly AoT tests (test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests)
+  # on Helix via the RunAoTTests env var.
   runAoTTests: false
   # Runs the NativeAOT CLI tests (test/dotnet-aot.Tests) on the build agent after the build.
   # These publish the test assembly as a NativeAOT binary and run it on the same architecture,
-  # validating the AOT CLI entry-point code under NativeAOT compilation. This is distinct from
-  # runAoTTests, which runs the Blazor WebAssembly AoT tests on Helix.
+  # validating the AOT CLI entry-point code under NativeAOT compilation. Only enabled where the
+  # agent architecture matches the target (the produced native binary must run on the agent);
+  # cross-arch AOT legs leave it false.
   runNativeAotCliTests: false
   ### MSBUILD ###
   targetArchitecture: x64
@@ -41,12 +45,12 @@ parameters:
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
-    ${{ if eq(parameters.container, '') }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }})'
+    ${{ if eq(parameters.categoryName, '') }}:
+      name: ${{ parameters.platformName }}_${{ parameters.targetArchitecture }}
+      displayName: '${{ parameters.platformName }} ${{ parameters.targetArchitecture }}'
     ${{ else }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}_${{ parameters.container }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }}) [${{ parameters.container }}]'
+      name: ${{ parameters.platformName }}_${{ parameters.targetArchitecture }}_${{ parameters.categoryName }}
+      displayName: '${{ parameters.platformName }} ${{ parameters.targetArchitecture }} ${{ parameters.categoryName }}'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -64,6 +68,8 @@ jobs:
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    - name: SkippedTestScopes
+      value: ''
     dependsOn: ${{ parameters.dependsOn }}
     preSteps: ${{ parameters.preSteps }}
     templateContext:
@@ -146,6 +152,16 @@ jobs:
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
 
+      # Determine which test groups to skip based on changed files and build context.
+      - script: $(Build.SourcesDirectory)/.dotnet/dotnet run $(Build.SourcesDirectory)/scripts/EvaluateConditionalTestScopes.cs --
+            --repo-root "$(Build.SourcesDirectory)"
+            --target-branch "$(System.PullRequest.TargetBranch)"
+            --build-reason "$(Build.Reason)"
+            --output-variable "SkippedTestScopes"
+        displayName: 🟣 Evaluate Conditional Test Scopes
+        # If evaluation fails, the variable remains empty and all tests run.
+        continueOnError: true
+
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: eng/common/build.ps1
@@ -158,6 +174,7 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /p:EnableHelixJobMonitor=true
+            /p:SkippedTestScopes="$(SkippedTestScopes)"
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
@@ -182,6 +199,7 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             /p:EnableHelixJobMonitor=true
+            /p:SkippedTestScopes="$(SkippedTestScopes)"
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
@@ -273,10 +291,10 @@ jobs:
       continueOnError: true
       condition: always()
 
-    # Only the AoT legs publish the dotnet-aot NativeAOT library, so only they produce
-    # the size-analysis files. Gate these steps so they don't run (and upload empty
-    # artifacts) on non-AoT legs like the TestBuild/FullFramework jobs.
-    - ${{ if eq(parameters.runAoTTests, true) }}:
+    # Only the AOT legs build the dotnet-aot NativeAOT library, so only they produce the
+    # size-analysis files. Gate on the AOT category so these steps run on every AOT leg (including
+    # the build-only cross-arch legs) and never upload empty artifacts on non-AOT legs.
+    - ${{ if eq(parameters.categoryName, 'AOT') }}:
       - task: CopyFiles@2
         displayName: 🟣 Copy NativeAOT Size Analysis Files
         inputs:

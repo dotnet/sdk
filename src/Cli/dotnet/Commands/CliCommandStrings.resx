@@ -1962,6 +1962,10 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="StandardOutput" xml:space="preserve">
     <value>Standard output</value>
   </data>
+  <data name="TestApplicationOutputTruncated" xml:space="preserve">
+    <value>... output truncated, {0} lines omitted ...</value>
+    <comment>{0} is the number of output lines that were omitted from the summary.</comment>
+  </data>
   <data name="StatusColumnHeader" xml:space="preserve">
     <value>Status</value>
   </data>
@@ -2664,6 +2668,18 @@ Proceed?</value>
   <data name="MismatchingHandshakeExecutionMode" xml:space="preserve">
     <value>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</value>
     <comment>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</comment>
+  </data>
+  <data name="MismatchingHandshakeHostType" xml:space="preserve">
+    <value>The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</value>
+    <comment>{Locked="dotnet test"}</comment>
+  </data>
+  <data name="ArtifactPostProcessingFailed" xml:space="preserve">
+    <value>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</value>
+    <comment>{0} is the test application path. {1} is the failure reason.</comment>
+  </data>
+  <data name="ArtifactPostProcessingProcessFailed" xml:space="preserve">
+    <value>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</value>
+    <comment>{0} is the test application path. {1} is the process exit code.</comment>
   </data>
   <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
     <value>A message of type '{0}' was received in help mode, which is not expected.</value>

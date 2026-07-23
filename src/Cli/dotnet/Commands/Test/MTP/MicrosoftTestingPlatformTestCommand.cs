@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.CommandLine;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Definition;
@@ -40,28 +39,37 @@ internal partial class MicrosoftTestingPlatformTestCommand
             throw new GracefulException(CliCommandStrings.CmdDeviceOptionsRequireProject);
         }
 
-        // --list-devices: list available devices for the project and exit early.
-        // Never builds, deploys, or runs tests.
-        if (buildOptions.ListDevices)
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], "dotnet-test");
+        ITestHandler testHandler;
+        try
         {
-            return HandleListDevices(buildOptions);
+            // --list-devices: list available devices for the project and exit early.
+            // Never builds, deploys, or runs tests.
+            if (buildOptions.ListDevices)
+            {
+                return HandleListDevices(buildOptions, logger);
+            }
+
+            // When --device is specified, force single target framework selection because
+            // a device is platform-specific and we need to know which TFM was intended.
+            if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+            {
+                buildOptions = HandleDeviceWithTargetFrameworkSelection(buildOptions, logger);
+            }
+
+            testHandler = buildOptions.PathOptions.TestModules is { } testModules
+                ? new TestModulesFilterHandler(testModules, parseResult)
+                : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions, logger)
+                    : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
+
+            if (!testHandler.Initialize())
+            {
+                return ExitCode.GenericFailure;
+            }
         }
-
-        // When --device is specified, force single target framework selection because
-        // a device is platform-specific and we need to know which TFM was intended.
-        if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+        finally
         {
-            buildOptions = HandleDeviceWithTargetFrameworkSelection(buildOptions);
-        }
-
-        ITestHandler testHandler = buildOptions.PathOptions.TestModules is { } testModules
-            ? new TestModulesFilterHandler(testModules, parseResult)
-            : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions)
-                : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
-
-        if (!testHandler.Initialize())
-        {
-            return ExitCode.GenericFailure;
+            logger?.ReallyShutdown();
         }
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
@@ -69,15 +77,28 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var testOptions = new TestOptions(
             IsHelp: isHelp,
             IsDiscovery: parseResult.HasOption(definition.ListTestsOption),
-            EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
+            ListTestsFormat: GetListTestsFormat(parseResult, definition));
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
+        var artifactPostProcessingManager = new ArtifactPostProcessingManager();
         int? exitCode = null;
         try
         {
-            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested, ctrlC);
+            var actionQueue = new TestApplicationActionQueue(
+                degreeOfParallelism,
+                buildOptions,
+                testOptions,
+                output,
+                OnHelpRequested,
+                ctrlC,
+                artifactPostProcessingManager);
             exitCode = testHandler.RunTestApplications(actionQueue);
+
+            if (!testOptions.IsHelp && !testOptions.IsDiscovery && !ctrlC.Token.IsCancellationRequested)
+            {
+                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC).GetAwaiter().GetResult();
+            }
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
             if (exitCode == ExitCode.Success && output.HasHandshakeFailure)
@@ -92,6 +113,19 @@ internal partial class MicrosoftTestingPlatformTestCommand
             {
                 exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
             }
+            else if (exitCode == ExitCode.Success &&
+                !isHelp &&
+                !parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
+                output.TotalTests == 0)
+            {
+                // Whole-run "zero tests ran" verdict. Individual modules that matched no tests return exit
+                // code 8, but TestApplicationActionQueue normalizes that to success so a single empty module
+                // does not fail the whole run (e.g. with --test-modules or a global --filter). The aggregate
+                // zero-tests case is decided here so it surfaces once at the run level instead of once per
+                // module. A stricter per-module minimum via -- --minimum-expected-tests N still fails that
+                // module with exit code 9. See https://github.com/microsoft/testfx/issues/7457.
+                exitCode = ExitCode.ZeroTests;
+            }
 
             return exitCode.Value;
         }
@@ -99,6 +133,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
         {
             output.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
         }
+    }
+
+    private static TestListFormat GetListTestsFormat(ParseResult parseResult, TestCommandDefinition.MicrosoftTestingPlatform definition)
+    {
+        // '--list-tests' has ZeroOrOne arity. A bare '--list-tests' (no value) defaults to text.
+        // The accepted values are constrained to 'text'/'json' by the option definition.
+        string? value = parseResult.GetValue(definition.ListTestsOption);
+        return string.Equals(value, TestCommandDefinition.MicrosoftTestingPlatform.ListTestsFormatJson, StringComparison.Ordinal)
+            ? TestListFormat.Json
+            : TestListFormat.Text;
     }
 
     private static TerminalTestReporter InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions)
@@ -109,6 +153,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var showPassedTests = parseResult.GetValue(definition.OutputOption) == OutputOptions.Detailed;
         var noProgress = parseResult.HasOption(definition.NoProgressOption);
         var noAnsi = parseResult.HasOption(definition.NoAnsiOption);
+
+        // When emitting machine-readable JSON discovery output, stdout must contain only the JSON
+        // document. Force off ANSI, progress rendering and the per-assembly "Discovering tests from..."
+        // banners so nothing else is interleaved with the JSON.
+        bool isJsonDiscovery = testOptions.IsDiscovery && testOptions.ListTestsFormat == TestListFormat.Json;
+        if (isJsonDiscovery)
+        {
+            noProgress = true;
+            noAnsi = true;
+        }
 
         // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
@@ -133,9 +187,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
             ShowProgress = !noProgress,
             ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
             AnsiMode = ansiMode,
-            ShowAssembly = true,
-            ShowAssemblyStartAndComplete = true,
+            ShowAssembly = !isJsonDiscovery,
+            ShowAssemblyStartAndComplete = !isJsonDiscovery,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
+            ListTestsFormat = testOptions.ListTestsFormat,
         });
 
         // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
@@ -167,7 +222,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// Solutions are rejected because each project may have its own device list, so
     /// applying a single --device value across a solution is ambiguous.
     /// </summary>
-    private static BuildOptions HandleDeviceWithTargetFrameworkSelection(BuildOptions buildOptions)
+    private static BuildOptions HandleDeviceWithTargetFrameworkSelection(BuildOptions buildOptions, FacadeLogger? logger)
     {
         var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
 
@@ -191,7 +246,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
         if (!globalProperties.ContainsKey(ProjectProperties.TargetFramework))
         {
             // Evaluate the project to get TargetFrameworks
-            using var collection = new ProjectCollection(globalProperties);
+            using var collection = new ProjectCollection(
+                globalProperties,
+                logger is null ? null : [logger],
+                ToolsetDefinitionLocations.Default);
             var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
             {
                 GlobalProperties = globalProperties,
@@ -241,7 +299,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// <see cref="RunCommandSelector.TrySelectDevice"/>, and exits without
     /// building, deploying, or running tests.
     /// </summary>
-    private static int HandleListDevices(BuildOptions buildOptions)
+    private static int HandleListDevices(BuildOptions buildOptions, FacadeLogger? logger)
     {
         if (!ValidationUtility.ValidateBuildPathOptions(buildOptions.PathOptions, out var projectPath, out bool isSolution))
         {
@@ -258,7 +316,6 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool isInteractive = !Console.IsOutputRedirected && !new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
 
         var standardArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
-
         // Mirror the `dotnet run --list-devices` flow: a single RunCommandSelector
         // handles both target framework selection and device listing, with
         // InvalidateGlobalProperties between steps so the device list is computed
@@ -267,8 +324,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
             projectPath,
             isInteractive,
             standardArgs,
-            ImmutableDictionary<string, string>.Empty,
-            commandName: "dotnet test");
+            buildOptions.EnvironmentVariables,
+            commandName: "dotnet test",
+            logger);
 
         // Step 1: Prompt for TargetFramework if the project is multi-targeted and -f wasn't provided.
         if (!selector.TrySelectTargetFramework(out string? selectedFramework))

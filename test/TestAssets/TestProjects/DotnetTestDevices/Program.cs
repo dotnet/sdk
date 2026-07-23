@@ -6,6 +6,9 @@ using Microsoft.Testing.Platform.Capabilities.TestFramework;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestFramework;
 
+Console.WriteLine(
+    $"Runtime environment variables: FOO={Environment.GetEnvironmentVariable("FOO")}, INJECTED={Environment.GetEnvironmentVariable("INJECTED")}");
+
 var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
 
 testApplicationBuilder.RegisterTestFramework(_ => new TestFrameworkCapabilities(), (_, __) => new DummyTestAdapter());
