@@ -13,8 +13,10 @@ using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
+using Microsoft.DotNet.Cli.Commands.Sdk;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
@@ -23,6 +25,10 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
 using Command = System.CommandLine.Command;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+
+
 
 #if !CLI_AOT
 using System.CommandLine.StaticCompletions;
@@ -44,8 +50,6 @@ using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.Api;
-using Microsoft.DotNet.Cli.Commands.Sdk;
-using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Commands.Workload;
 #endif
@@ -77,7 +81,10 @@ public static class Parser
 #if CLI_AOT
         ConfigureAotActions(rootCommand);
 #else
-        ConfigureManagedActions(rootCommand);
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            ConfigureManagedActions(rootCommand);
+        }
 #endif
 
         rootCommand.SetAction(parseResult =>
@@ -116,13 +123,26 @@ public static class Parser
             }
             else if (option is HelpOption helpOption)
             {
+#if CLI_AOT
+                // On the AOT path some commands keep their static definition, but the managed CLI produces
+                // their help dynamically with content that has no static equivalent:
+                //   * `new` is replaced with a template-engine-backed command that adds the template
+                //     short-name/args usage line, the Arguments section, and per-template options.
+                //   * `test` (Microsoft.Testing.Platform mode) builds and forwards `--help` to the test
+                //     application, which contributes the "Extension Options:" section and per-extension options.
+                // Rendering the static definition's help here would omit all of that, so defer help for those
+                // subtrees to the managed CLI to keep the output in parity.
+                helpOption.Action = new AotPrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value, rootCommand.NewCommand, rootCommand.TestCommand);
+#else
                 helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
+#endif
                 helpOption.Description = CliStrings.ShowHelpDescription;
             }
         }
     }
 
 #if !CLI_AOT
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static void ConfigureManagedActions(DotNetCommandDefinition rootCommand)
     {
         // Augment the definition of each subcommand with command-specific actions and completions.
@@ -191,8 +211,18 @@ public static class Parser
 
         // Commands that can run entirely in AOT mode wire their real implementations on top of the
         // fallback defaults above. SolutionCommandParser is AOT-aware: it keeps real implementations
-        // for `sln list`/`migrate`/`remove` and falls back for `sln` and `sln add`.
+        // for `sln`/`sln list`/`migrate`/`remove` (bare `sln` renders help from AOT) and falls back
+        // only for `sln add`, which requires MSBuild.
         SolutionCommandParser.ConfigureCommand(rootCommand.SolutionCommand);
+
+        // SdkCommandParser is AOT-aware: `sdk check` runs natively and bare `dotnet sdk` renders
+        // help from AOT (no managed fallback needed).
+        SdkCommandParser.ConfigureCommand(rootCommand.SdkCommand);
+
+        // ToolCommandParser is AOT-aware: it keeps real implementations for the local `tool list`/
+        // `tool uninstall`, `tool run`, and `tool search`, and falls back to the managed CLI for the
+        // global/tool-path variants and for install/update/restore/execute.
+        ToolCommandParser.ConfigureCommand(rootCommand.ToolCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
@@ -227,6 +257,39 @@ public static class Parser
             }
 
             return 0;
+        }
+    }
+
+    /// <summary>
+    ///  Help action for the AOT CLI. It renders help entirely from the shared command tree (like the
+    ///  managed CLI) except for commands whose managed help is produced dynamically and therefore has
+    ///  no static equivalent in the AOT definition. For those it throws
+    ///  <see cref="CommandNotAvailableInAotException"/> so <c>NativeEntryPoint</c> defers to the managed
+    ///  CLI, whose help output the snapshot tests expect. Such commands include <c>new</c> (the managed
+    ///  CLI replaces it with a template-engine-backed command that adds the template short-name/args usage
+    ///  line, the Arguments section, and per-template options) and <c>test</c> (Microsoft.Testing.Platform
+    ///  mode builds and forwards <c>--help</c> to the test application, which contributes the
+    ///  "Extension Options:" section and per-extension options).
+    /// </summary>
+    private sealed class AotPrintHelpAction(Option option, HelpBuilder builder, params Command[] managedHelpCommands)
+        : PrintHelpAction(option, builder)
+    {
+        private readonly Command[] _managedHelpCommands = managedHelpCommands;
+
+        public override int Invoke(ParseResult parseResult)
+        {
+            // Walk from the innermost parsed command up to the root; if any command whose help the
+            // managed CLI generates dynamically is anywhere in that chain, defer to the managed CLI.
+            for (System.CommandLine.Parsing.SymbolResult? result = parseResult.CommandResult; result is not null; result = result.Parent)
+            {
+                if (result is System.CommandLine.Parsing.CommandResult commandResult
+                    && Array.Exists(_managedHelpCommands, c => ReferenceEquals(c, commandResult.Command)))
+                {
+                    throw new CommandNotAvailableInAotException();
+                }
+            }
+
+            return base.Invoke(parseResult);
         }
     }
 #endif

@@ -2,24 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Integration tests that run the actual AOT binary (dn.exe / dn) end-to-end.
 ///  These tests require the AOT binary to be present in the SDK layout.
-///  They are traited with "Category=AOT" so they can be filtered in CI.
+///  They are categorized with <c>[TestCategory("AOT")]</c> so they can be filtered in CI
+///  (e.g. by the <c>AOT</c> test category).
 /// </summary>
-[Trait("Category", "AOT")]
-public class AotIntegrationTests
+[TestCategory("AOT")]
+[TestClass]
+public partial class AotIntegrationTests
 {
-    private readonly ITestOutputHelper _log;
+    public TestContext TestContext { get; set; } = null!;
 
-    public AotIntegrationTests(ITestOutputHelper log)
-    {
-        _log = log;
-    }
+    private ITestOutputHelper? _logBacking;
+    private ITestOutputHelper _log => _logBacking ??= new TestContextOutputHelper(TestContext);
 
     private static string? FindDnPath()
     {
@@ -44,7 +43,8 @@ public class AotIntegrationTests
     private (int exitCode, string stdout, string stderr) RunDn(
         string[] args,
         bool enableAot = true,
-        int timeoutMs = 30_000)
+        int timeoutMs = 30_000,
+        Dictionary<string, string>? extraEnv = null)
     {
         string? dnPath = FindDnPath();
         if (dnPath is null)
@@ -72,7 +72,17 @@ public class AotIntegrationTests
         }
         else
         {
-            psi.Environment.Remove("DOTNET_CLI_ENABLEAOT");
+            // The AOT fast path is enabled by default, so explicitly disable it (rather than just
+            // removing the variable) to exercise the managed-fallback behavior.
+            psi.Environment["DOTNET_CLI_ENABLEAOT"] = "false";
+        }
+
+        if (extraEnv is not null)
+        {
+            foreach (KeyValuePair<string, string> entry in extraEnv)
+            {
+                psi.Environment[entry.Key] = entry.Value;
+            }
         }
 
         _log.WriteLine($"Running: {dnPath} {string.Join(" ", args)}");
@@ -82,8 +92,8 @@ public class AotIntegrationTests
 
         // Read streams asynchronously before WaitForExit to avoid deadlocks
         // when the child process fills the OS pipe buffer.
-        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
-        Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+        Task<string> stderrTask = process.StandardError.ReadToEndAsync(TestContext.CancellationToken);
 
         if (!process.WaitForExit(timeoutMs))
         {
@@ -105,46 +115,114 @@ public class AotIntegrationTests
     {
         if (FindDnPath() is null)
         {
-            Assert.Skip("AOT binary (dn) not found in SDK layout. Build with NativeAOT to enable these tests.");
+            Assert.Inconclusive("AOT binary (dn) not found in SDK layout. Build with NativeAOT to enable these tests.");
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void AotVersion_WithEnableAot_OutputsVersionAndExitsZero()
     {
         SkipIfDnUnavailable();
 
         var (exitCode, stdout, _) = RunDn(["--version"], enableAot: true);
 
-        Assert.Equal(0, exitCode);
-        Assert.False(string.IsNullOrWhiteSpace(stdout), "Expected version output");
+        Assert.AreEqual(0, exitCode);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(stdout), "Expected version output");
     }
 
-    [Fact]
+    [TestMethod]
+    public void AotInfo_SeparatedLayout_BasePathIsResolvedSdkDirectory()
+    {
+        SkipIfDnUnavailable();
+        RunSeparatedLayoutBasePathTest(selfLocate: false);
+    }
+
+    [TestMethod]
+    public void AotInfo_SeparatedLayout_SelfLocate_BasePathIsResolvedSdkDirectory()
+    {
+        SkipIfDnUnavailable();
+        RunSeparatedLayoutBasePathTest(selfLocate: true);
+    }
+
+    // Emulates the deployed muxer layout: dotnet-aot lives in a directory other than dn's own, so
+    // AppContext.BaseDirectory is no longer the SDK directory. Verifies that --info's Base Path still
+    // reports the resolved SDK directory - whether it was passed in as sdk_dir (selfLocate: false) or
+    // self-located from the loaded module (selfLocate: true).
+    private void RunSeparatedLayoutBasePathTest(bool selfLocate)
+    {
+        string dnPath = FindDnPath()!;
+        string sdkLayoutDir = Path.GetDirectoryName(dnPath)!;
+        string aotLib = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
+            : OperatingSystem.IsMacOS() ? "dotnet-aot.dylib"
+            : "dotnet-aot.so";
+        string aotSource = Path.Combine(sdkLayoutDir, aotLib);
+        if (!File.Exists(aotSource))
+        {
+            Assert.Inconclusive($"{aotLib} not found next to dn; build with NativeAOT to enable this test.");
+        }
+
+        string sdkSubDir = Path.Combine(Path.GetTempPath(), "aot-sep-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(sdkSubDir);
+        try
+        {
+            File.Copy(aotSource, Path.Combine(sdkSubDir, aotLib));
+
+            var env = new Dictionary<string, string> { ["DOTNET_AOT_SDK_DIR"] = sdkSubDir };
+            if (selfLocate)
+            {
+                env["DOTNET_AOT_BLANK_SDKDIR"] = "1";
+            }
+
+            var (exitCode, stdout, _) = RunDn(["--info"], enableAot: true, extraEnv: env);
+
+            Assert.AreEqual(0, exitCode);
+
+            bool basePathReferencesSdkDir = false;
+            foreach (string line in stdout.Split('\n'))
+            {
+                if (line.Contains("Base Path:") && line.Contains(sdkSubDir))
+                {
+                    basePathReferencesSdkDir = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(basePathReferencesSdkDir,
+                $"--info Base Path did not reference the resolved SDK directory '{sdkSubDir}'. Output:\n{stdout}");
+        }
+        finally
+        {
+            Directory.Delete(sdkSubDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void AotInfo_WithEnableAot_OutputsInfoAndExitsZero()
     {
         SkipIfDnUnavailable();
 
         var (exitCode, stdout, _) = RunDn(["--info"], enableAot: true);
 
-        Assert.Equal(0, exitCode);
-        Assert.Contains(".NET SDK:", stdout);
-        Assert.Contains("Version:", stdout);
-        Assert.Contains("Runtime Environment:", stdout);
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().Contain(".NET SDK:");
+        stdout.Should().Contain("Version:");
+        stdout.Should().Contain("Workload version:");
+        stdout.Should().Contain("MSBuild version:");
+        stdout.Should().Contain("Runtime Environment:");
     }
 
-    [Fact]
+    [TestMethod]
     public void AotNoArgs_WithEnableAot_ShowsUsage()
     {
         SkipIfDnUnavailable();
 
         var (exitCode, stdout, _) = RunDn([], enableAot: true);
 
-        Assert.Equal(0, exitCode);
-        Assert.Contains("Usage:", stdout);
+        Assert.AreEqual(0, exitCode);
+        stdout.Should().Contain("Usage:");
     }
 
-    [Fact]
+    [TestMethod]
     public void AotBuild_WithEnableAot_FallsBackToManaged()
     {
         SkipIfDnUnavailable();
@@ -156,16 +234,16 @@ public class AotIntegrationTests
         // If managed fallback works, it should show build help (exit 0)
         // If managed fallback is missing, it returns 1
         // Either way, it shouldn't crash or timeout
-        Assert.True(exitCode == 0 || exitCode == 1,
+        Assert.IsTrue(exitCode == 0 || exitCode == 1,
             $"Expected exit code 0 or 1, got {exitCode}. Stderr: {stderr}");
     }
 
-    [Fact]
-    public void Version_WithoutEnableAot_StillWorks()
+    [TestMethod]
+    public void Version_WithAotDisabled_StillWorks()
     {
         SkipIfDnUnavailable();
 
-        // Without DOTNET_CLI_ENABLEAOT, everything goes through managed fallback
+        // With DOTNET_CLI_ENABLEAOT disabled, everything goes through managed fallback
         var (exitCode, stdout, stderr) = RunDn(["--version"], enableAot: false);
 
         // Managed fallback requires dotnet.dll + all dependencies in the layout.
@@ -173,15 +251,15 @@ public class AotIntegrationTests
         // the fallback correctly fails because dotnet.dll is missing.
         if (exitCode != 0 && stderr.Contains("dotnet.dll"))
         {
-            Assert.Skip("Managed fallback not available (dotnet.dll not in layout)");
+            Assert.Inconclusive("Managed fallback not available (dotnet.dll not in layout)");
         }
 
-        Assert.Equal(0, exitCode);
-        Assert.False(string.IsNullOrWhiteSpace(stdout));
+        Assert.AreEqual(0, exitCode);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(stdout));
     }
 
-    [Fact]
-    public void Info_WithoutEnableAot_ShowsFullInfo()
+    [TestMethod]
+    public void Info_WithAotDisabled_ShowsFullInfo()
     {
         SkipIfDnUnavailable();
 
@@ -189,11 +267,11 @@ public class AotIntegrationTests
 
         if (exitCode != 0 && stderr.Contains("dotnet.dll"))
         {
-            Assert.Skip("Managed fallback not available (dotnet.dll not in layout)");
+            Assert.Inconclusive("Managed fallback not available (dotnet.dll not in layout)");
         }
 
-        Assert.Equal(0, exitCode);
+        Assert.AreEqual(0, exitCode);
         // Managed fallback should include workload and MSBuild info
-        Assert.Contains("Version:", stdout);
+        stdout.Should().Contain("Version:");
     }
 }

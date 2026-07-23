@@ -1,14 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[TestClass]
 public class UpdatePackageStaticWebAssetsTest : IDisposable
 {
     private readonly string _tempDir;
@@ -38,7 +44,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_PackageAssets_ArePassedThrough()
     {
         // Arrange
@@ -64,7 +70,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         task.UpdatedAssets[0].GetMetadata("SourceType").Should().Be("Package");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_AreMaterialized()
     {
         // Arrange
@@ -99,7 +105,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         File.ReadAllText(expectedPath).Should().Be("console.log('framework');");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_SourceTypeChangedToDiscovered()
     {
         // Arrange
@@ -127,7 +133,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         updated.GetMetadata("AssetMode").Should().Be("CurrentProject");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_ContentRootPointsToFxDirectory()
     {
         // Arrange
@@ -154,7 +160,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         updated.GetMetadata("ContentRoot").Should().Be(expectedContentRoot);
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_MissingSourceFile_LogsError()
     {
         // Arrange
@@ -178,7 +184,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         _errorMessages.Should().ContainSingle(e => e.Contains("does not exist") && e.Contains("does_not_exist.js"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_MixedAssets_ProcessesBothTypes()
     {
         // Arrange
@@ -211,7 +217,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         task.UpdatedAssets[1].GetMetadata("SourceType").Should().Be("Discovered");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_PreservesOriginalFingerprintAndIntegrity()
     {
         // Arrange
@@ -242,7 +248,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         updated.GetMetadata("Integrity").Should().Be(originalIntegrity);
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_IncrementalSkipsCopy_WhenUpToDate()
     {
         // Arrange
@@ -278,7 +284,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         _logMessages.Should().Contain(m => m.Contains("already up to date"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_OverwritesStaleDestination()
     {
         // Arrange
@@ -313,7 +319,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         _logMessages.Should().Contain(m => m.Contains("Materialized framework asset"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_NoFrameworkAssets_EndpointsNotRemapped()
     {
         // Arrange
@@ -348,7 +354,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         task.RemappedEndpoints.Should().BeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_EndpointsAreRemapped()
     {
         // Arrange
@@ -387,7 +393,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         remapped.GetMetadata("AssetFile").Should().Be(expectedPath);
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_MultipleEndpoints_SameIdentity_AllRemapped()
     {
         // Arrange — two endpoints share the same Identity (e.g. same route, different selectors)
@@ -435,7 +441,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         task.RemappedEndpoints[1].GetMetadata("AssetFile").Should().Be(expectedPath);
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_EndpointsNotMatchingFramework_AreNotRemapped()
     {
         // Arrange — endpoint pointing to a file that is NOT a framework asset
@@ -482,7 +488,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         task.RemappedEndpoints[0].ItemSpec.Should().Be("framework.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_NullEndpoints_DoesNotRemapAndSucceeds()
     {
         // Arrange
@@ -508,7 +514,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         task.RemappedEndpoints.Should().BeNullOrEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_EmptyAssetsArray_Succeeds()
     {
         // Arrange
@@ -530,7 +536,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         task.OriginalAssets.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_SubdirectoriesArePreserved()
     {
         // Arrange
@@ -640,7 +646,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         });
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_RemapsEndpointRoutes_StripOldBasePath()
     {
         // Arrange
@@ -679,7 +685,7 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
         task.OriginalFrameworkEndpoints[0].ItemSpec.Should().Be("_content/FxLib/js/framework.js");
     }
 
-    [Fact]
+    [TestMethod]
     public void Execute_FrameworkAssets_RemapsEndpointRoutes_ToConsumerBasePath()
     {
         // Arrange

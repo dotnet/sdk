@@ -74,6 +74,7 @@
     <Project Path="src/Cli/Microsoft.DotNet.Cli.CommandLine/Microsoft.DotNet.Cli.CommandLine.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.CoreUtils/Microsoft.DotNet.Cli.CoreUtils.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.Definitions/Microsoft.DotNet.Cli.Definitions.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.Telemetry/Microsoft.DotNet.Cli.Telemetry.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.FileBasedPrograms/Microsoft.DotNet.FileBasedPrograms.Package.csproj" />
@@ -100,7 +101,6 @@
     <Project Path="src/Compatibility/GenAPI/Microsoft.DotNet.GenAPI/Microsoft.DotNet.GenAPI.csproj" />
   </Folder>
   <Folder Name="/src/Containers/">
-    <Project Path="src/Containers/containerize/containerize.csproj" />
     <Project Path="src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" />
     <Project Path="src/Containers/packaging/package.csproj" />
   </Folder>
@@ -349,7 +349,6 @@
     <Project Path="test/Microsoft.NET.Build.Tasks.Tests/Microsoft.NET.Build.Tasks.Tests.csproj" />
     <Project Path="test/ArgumentForwarding.Tests/ArgumentForwarding.Tests.csproj" />
     <Project Path="test/ArgumentsReflector/ArgumentsReflector.csproj" />
-    <Project Path="test/containerize.UnitTests/containerize.UnitTests.csproj" />
     <Project Path="test/dotnet-format.UnitTests/dotnet-format.UnitTests.csproj" />
     <Project Path="test/dotnet-MsiInstallation.Tests/dotnet-MsiInstallation.Tests.csproj" />
     <Project Path="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj" />
@@ -357,6 +356,7 @@
     <Project Path="test/dotnet-watch.Tests/dotnet-watch.Tests.csproj" />
     <Project Path="test/dotnet-aot.Tests/dotnet-aot.Tests.csproj" />
     <Project Path="test/dotnet.Tests/dotnet.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.Cli.Telemetry.Tests/Microsoft.DotNet.Cli.Telemetry.Tests.csproj" />
     <Project Path="test/EndToEnd.Tests/EndToEnd.Tests.csproj" />
     <Project Path="test/HelixTasks/HelixTasks.csproj" />
     <Project Path="test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj" />
@@ -367,11 +367,13 @@
     <Project Path="test/Microsoft.DotNet.MSBuildSdkResolver.Tests/Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.PackageInstall.Tests/Microsoft.DotNet.PackageInstall.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.TemplateLocator.Tests/Microsoft.DotNet.TemplateLocator.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.Test.MSTest.Utilities/Microsoft.DotNet.Test.MSTest.Utilities.csproj" />
     <Project Path="test/Microsoft.DotNet.Tools.Tests.ComponentMocks/Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <Project Path="test/Microsoft.Extensions.DotNetDeltaApplier.Tests/Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Build.Containers.IntegrationTests/Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
     <Project Path="test/Microsoft.NET.Build.Containers.UnitTests/Microsoft.NET.Build.Containers.UnitTests.csproj" />
     <Project Path="test/Microsoft.NET.Build.Tests/Microsoft.NET.Build.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Infrastructure.Tests/Microsoft.NET.Infrastructure.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Clean.Tests/Microsoft.NET.Clean.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Pack.Tests/Microsoft.NET.Pack.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Publish.Tests/Microsoft.NET.Publish.Tests.csproj" />
@@ -429,20 +431,21 @@
   <Folder Name="/test/Common/CommandLine/">
     <File Path="test/Common/CommandLine/TestCommandLine.Default.cs" />
   </Folder>
-  <Folder Name="/test/Compatibility/" />
+  <Folder Name="/test/Compatibility/">
+    <Project Path="test/Compatibility/Microsoft.DotNet.ApiSymbolExtensions.Tests/Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj" />
+  </Folder>
   <Folder Name="/test/Compatibility/ApiCompat/">
-    <Project Path="test/Microsoft.DotNet.ApiCompat.IntegrationTests/Microsoft.DotNet.ApiCompat.IntegrationTests.csproj" />
-    <Project Path="test/Microsoft.DotNet.ApiCompat.Tests/Microsoft.DotNet.ApiCompat.Tests.csproj" />
-    <Project Path="test/Microsoft.DotNet.ApiCompatibility.Tests/Microsoft.DotNet.ApiCompatibility.Tests.csproj" />
-    <Project Path="test/Microsoft.DotNet.ApiSymbolExtensions.Tests/Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj" />
-    <Project Path="test/Microsoft.DotNet.PackageValidation.Tests/Microsoft.DotNet.PackageValidation.Tests.csproj" />
+    <Project Path="test/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompat.IntegrationTests/Microsoft.DotNet.ApiCompat.IntegrationTests.csproj" />
+    <Project Path="test/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompat.Tests/Microsoft.DotNet.ApiCompat.Tests.csproj" />
+    <Project Path="test/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompatibility.Tests/Microsoft.DotNet.ApiCompatibility.Tests.csproj" />
+    <Project Path="test/Compatibility/ApiCompat/Microsoft.DotNet.PackageValidation.Tests/Microsoft.DotNet.PackageValidation.Tests.csproj" />
   </Folder>
   <Folder Name="/test/Compatibility/ApiDiff/">
-    <Project Path="test/Microsoft.DotNet.ApiDiff.IntegrationTests/Microsoft.DotNet.ApiDiff.IntegrationTests.csproj" />
-    <Project Path="test/Microsoft.DotNet.ApiDiff.Tests/Microsoft.DotNet.ApiDiff.Tests.csproj" />
+    <Project Path="test/Compatibility/ApiDiff/Microsoft.DotNet.ApiDiff.IntegrationTests/Microsoft.DotNet.ApiDiff.IntegrationTests.csproj" />
+    <Project Path="test/Compatibility/ApiDiff/Microsoft.DotNet.ApiDiff.Tests/Microsoft.DotNet.ApiDiff.Tests.csproj" />
   </Folder>
   <Folder Name="/test/Compatibility/GenAPI/">
-    <Project Path="test/Microsoft.DotNet.GenAPI.IntegrationTests/Microsoft.DotNet.GenAPI.IntegrationTests.csproj" />
-    <Project Path="test/Microsoft.DotNet.GenAPI.Tests/Microsoft.DotNet.GenAPI.Tests.csproj" />
+    <Project Path="test/Compatibility/GenAPI/Microsoft.DotNet.GenAPI.IntegrationTests/Microsoft.DotNet.GenAPI.IntegrationTests.csproj" />
+    <Project Path="test/Compatibility/GenAPI/Microsoft.DotNet.GenAPI.Tests/Microsoft.DotNet.GenAPI.Tests.csproj" />
   </Folder>
 </Solution>

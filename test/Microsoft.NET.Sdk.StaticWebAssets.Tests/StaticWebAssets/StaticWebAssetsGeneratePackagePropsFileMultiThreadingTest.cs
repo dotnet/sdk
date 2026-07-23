@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -9,13 +15,10 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation this test performs.
+[TestClass]
 public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest), Guid.NewGuid().ToString("N"));

@@ -3,7 +3,6 @@
 
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -13,7 +12,8 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  process path walk-up, and hostfxr discovery.
 ///  Path construction uses Path.Combine for cross-platform compatibility.
 /// </summary>
-public class DotnetRootResolverTests
+[TestClass]
+public partial class DotnetRootResolverTests
 {
     // Helper to build platform-appropriate paths for test inputs/outputs.
     // When isWindows=true, uses a Windows-style root; otherwise Unix-style.
@@ -23,7 +23,7 @@ public class DotnetRootResolverTests
         return segments.Length == 0 ? root : Path.Combine(root, Path.Combine(segments));
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_WithDotnetRootEnvVar_ReturnsThatPath()
     {
         string dotnetDir = BuildPath(true, "dotnet");
@@ -38,10 +38,10 @@ public class DotnetRootResolverTests
             fileExists: _ => false,
             baseDirectory: fallback);
 
-        Assert.Equal(dotnetDir, result);
+        Assert.AreEqual(dotnetDir, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_WithArchSpecificEnvVar_OnWindows_ReturnsThatPath()
     {
         string dotnetX64 = BuildPath(true, "dotnet-x64");
@@ -56,10 +56,10 @@ public class DotnetRootResolverTests
             fileExists: _ => false,
             baseDirectory: fallback);
 
-        Assert.Equal(dotnetX64, result);
+        Assert.AreEqual(dotnetX64, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_ArchSpecificEnvVar_IgnoredOnNonWindows()
     {
         string baseDir = BuildPath(false, "usr", "lib", "dotnet") + Path.DirectorySeparatorChar;
@@ -76,10 +76,10 @@ public class DotnetRootResolverTests
             baseDirectory: baseDir);
 
         // On non-Windows, arch-specific env vars are ignored; falls to baseDirectory parent
-        Assert.Equal(expected, result);
+        Assert.AreEqual(expected, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_WithDotnetRootNotExisting_SkipsIt()
     {
         string nonexistent = BuildPath(true, "nonexistent");
@@ -96,10 +96,10 @@ public class DotnetRootResolverTests
             baseDirectory: baseDir);
 
         // Non-existent DOTNET_ROOT is skipped; falls to baseDirectory parent
-        Assert.Equal(expected, result);
+        Assert.AreEqual(expected, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_WalksUpFromProcessPath()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -116,10 +116,10 @@ public class DotnetRootResolverTests
             fileExists: path => path == dotnetExe,
             baseDirectory: fallback);
 
-        Assert.Equal(dotnetRoot, result);
+        Assert.AreEqual(dotnetRoot, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveDotnetRoot_NoDotnetAncestor_FallsBackToBaseDirectory()
     {
         string processPath = BuildPath(true, "app", "bin", "myapp.exe");
@@ -136,10 +136,10 @@ public class DotnetRootResolverTests
             baseDirectory: baseDir);
 
         // Last resort: parent of baseDirectory
-        Assert.Equal(expected, result);
+        Assert.AreEqual(expected, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_WithValidFxrDir_ReturnsPath()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -155,10 +155,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { fxrVersion },
             fileExists: path => path == expectedPath);
 
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_PicksHighestVersion()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -176,32 +176,134 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { v800, v901, v900 },
             fileExists: _ => true);
 
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 
-    [Fact]
-    public void ResolveHostfxrPath_SkipsPrereleaseDirectories()
+    [TestMethod]
+    public void ResolveHostfxrPath_FindsPrereleaseVersionDirectory()
     {
+        // On a preview-only install, host/fxr contains a single prerelease-named
+        // directory (e.g. "10.0.0-preview.5"). Version.TryParse can't parse that string,
+        // so the numeric core must be used instead of skipping the directory.
         string dotnetRoot = BuildPath(true, "dotnet");
         string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
         string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
-        string v900 = Path.Combine(fxrDir, "9.0.0");
-        string expectedPath = Path.Combine(v900, "hostfxr.dll");
+        string expectedPath = Path.Combine(preview, "hostfxr.dll");
 
-        // Version.TryParse fails for prerelease strings like "10.0.0-preview.5"
         string result = DotnetRootResolver.ResolveHostfxrPath(
             dotnetRoot: dotnetRoot,
             isWindows: true,
             isMacOS: false,
             directoryExists: _ => true,
-            getDirectories: _ => new[] { preview, v900 },
+            getDirectories: _ => new[] { preview },
             fileExists: _ => true);
 
-        // Should pick 9.0.0 since the preview dir is skipped
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 
-    [Fact]
+    [TestMethod]
+    public void ResolveHostfxrPath_PicksHighestVersion_IncludingPrerelease()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string v900 = Path.Combine(fxrDir, "9.0.0");
+        string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
+        string expectedPath = Path.Combine(preview, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { v900, preview },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_PrefersStableOverPrereleaseOfSameCore()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string stable = Path.Combine(fxrDir, "10.0.0");
+        string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
+        string expectedPath = Path.Combine(stable, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { preview, stable },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_TreatsBuildMetadataAsStable()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string stable = Path.Combine(fxrDir, "10.0.0+build.1");
+        string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
+        string expectedPath = Path.Combine(stable, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { preview, stable },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_OrdersPrereleaseSegmentsNumerically()
+    {
+        // "preview.10" must sort after "preview.6"; a plain ordinal compare gets this wrong.
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string preview6 = Path.Combine(fxrDir, "10.0.0-preview.6");
+        string preview10 = Path.Combine(fxrDir, "10.0.0-preview.10");
+        string expectedPath = Path.Combine(preview10, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { preview6, preview10 },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
+    public void ResolveHostfxrPath_SkipsInvalidSemanticVersions()
+    {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string twoPartVersion = Path.Combine(fxrDir, "99.0");
+        string leadingZero = Path.Combine(fxrDir, "98.0.0-preview.01");
+        string valid = Path.Combine(fxrDir, "10.0.0");
+        string expectedPath = Path.Combine(valid, "hostfxr.dll");
+
+        string result = DotnetRootResolver.ResolveHostfxrPath(
+            dotnetRoot: dotnetRoot,
+            isWindows: true,
+            isMacOS: false,
+            directoryExists: _ => true,
+            getDirectories: _ => new[] { twoPartVersion, leadingZero, valid },
+            fileExists: _ => true);
+
+        Assert.AreEqual(expectedPath, result);
+    }
+
+    [TestMethod]
     public void ResolveHostfxrPath_MissingFxrDirectory_ReturnsEmpty()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -214,10 +316,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => Array.Empty<string>(),
             fileExists: _ => false);
 
-        Assert.Equal(string.Empty, result);
+        Assert.AreEqual(string.Empty, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_FxrDirExistsButNoHostfxrFile_ReturnsEmpty()
     {
         string dotnetRoot = BuildPath(true, "dotnet");
@@ -232,10 +334,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { fxrVersion },
             fileExists: _ => false);
 
-        Assert.Equal(string.Empty, result);
+        Assert.AreEqual(string.Empty, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_OnMacOS_LooksForDylib()
     {
         string dotnetRoot = Path.Combine("/", "usr", "local", "share", "dotnet");
@@ -251,10 +353,10 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { fxrVersion },
             fileExists: path => path == expectedPath);
 
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveHostfxrPath_OnLinux_LooksForSo()
     {
         string dotnetRoot = Path.Combine("/", "usr", "share", "dotnet");
@@ -270,6 +372,6 @@ public class DotnetRootResolverTests
             getDirectories: _ => new[] { fxrVersion },
             fileExists: path => path == expectedPath);
 
-        Assert.Equal(expectedPath, result);
+        Assert.AreEqual(expectedPath, result);
     }
 }

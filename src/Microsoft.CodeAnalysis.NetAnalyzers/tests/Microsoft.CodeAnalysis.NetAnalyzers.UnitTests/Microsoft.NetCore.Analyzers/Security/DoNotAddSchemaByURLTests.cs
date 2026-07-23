@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotAddSchemaByURL,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotAddSchemaByURLTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestAddWithStringStringParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -45,7 +45,7 @@ End Class",
             GetBasicResultAt(8, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAddWithNullStringParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +75,7 @@ End Class",
             GetBasicResultAt(8, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAddWithXmlSchemaCollectionParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +92,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAddWithXmlSchemaParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -109,7 +109,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalAddMethodNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -8,10 +9,11 @@ using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class TestApplicationHandlerTests : IDisposable
 {
     // TerminalTestReporter is IDisposable and starts progress tracking via TestExecutionStarted
-    // inside CreateHandler. xUnit instantiates the test class per test, so disposing this list in
+    // inside CreateHandler. MSTest instantiates the test class per test, so disposing this list in
     // Dispose() releases every reporter built for the current test.
     private readonly List<IDisposable> _disposables = new();
 
@@ -32,7 +34,7 @@ public class TestApplicationHandlerTests : IDisposable
     /// than to <c>AssemblyRunCompleted</c> (which would hit the defensive empty-path fallback in
     /// <c>TerminalTestReporter</c> and drop the assembly identifier from the output).
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void OnTestProcessExited_WhenOnlyControllerHandshakeReceived_RoutesToHandshakeFailureWithModuleContext()
     {
         var capturingConsole = new CapturingConsole();
@@ -56,9 +58,10 @@ public class TestApplicationHandlerTests : IDisposable
             IsTestingPlatformApplication: true,
             LaunchSettings: null,
             TargetPath: targetPath,
-            DotnetRootArchVariableName: null);
+            DotnetRootArchVariableName: null,
+            EnvironmentVariables: new Dictionary<string, string>());
 
-        var testOptions = new TestOptions(IsHelp: false, IsDiscovery: false, EnvironmentVariables: new Dictionary<string, string>());
+        var testOptions = new TestOptions(IsHelp: false, IsDiscovery: false, ListTestsFormat: TestListFormat.Text);
 
         var handler = new TestApplicationHandler(reporter, module, testOptions);
 
@@ -101,10 +104,10 @@ public class TestApplicationHandlerTests : IDisposable
     /// https://github.com/microsoft/testfx/pull/8794). When the property is absent the SDK must keep
     /// today's behavior and not perform any execution-mode validation.
     /// </summary>
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
     public void OnHandshakeReceived_WhenExecutionModePropertyIsAbsent_AcceptsHandshakeAndDoesNotReportFailure(bool isHelp, bool isDiscovery)
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: isHelp, isDiscovery: isDiscovery);
@@ -118,10 +121,10 @@ public class TestApplicationHandlerTests : IDisposable
         console.GetOutput().Should().NotContain("MismatchingHandshakeExecutionMode");
     }
 
-    [Theory]
-    [InlineData(false, false, HandshakeMessageExecutionModes.Run)]
-    [InlineData(true, false, HandshakeMessageExecutionModes.Help)]
-    [InlineData(false, true, HandshakeMessageExecutionModes.Discover)]
+    [TestMethod]
+    [DataRow(false, false, HandshakeMessageExecutionModes.Run)]
+    [DataRow(true, false, HandshakeMessageExecutionModes.Help)]
+    [DataRow(false, true, HandshakeMessageExecutionModes.Discover)]
     public void OnHandshakeReceived_WhenExecutionModeMatchesSdkExpectation_AcceptsHandshake(bool isHelp, bool isDiscovery, string executionMode)
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: isHelp, isDiscovery: isDiscovery);
@@ -134,17 +137,36 @@ public class TestApplicationHandlerTests : IDisposable
         reporter.HasHandshakeFailure.Should().BeFalse();
     }
 
+    [TestMethod]
+    public void OnHandshakeReceived_WithExplicitAttemptNumber_UsesReportedAttempt()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            showAssembly: true);
+
+        var handshake = BuildHandshake(
+            executionMode: HandshakeMessageExecutionModes.Run,
+            attemptNumber: 3);
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().Contain("(try 3)");
+    }
+
     /// <summary>
     /// Drives the new validation added in this change: if the host reports an execution mode that
     /// doesn't match what <c>dotnet test</c> intended (e.g. <c>RunArguments</c> or
     /// <c>launchSettings.json</c> injected a <c>--help</c> or <c>--list-tests</c> option), the SDK
     /// must reject the handshake at the protocol level and report the mismatch.
     /// </summary>
-    [Theory]
-    [InlineData(false, false, HandshakeMessageExecutionModes.Help, HandshakeMessageExecutionModes.Run)]
-    [InlineData(false, false, HandshakeMessageExecutionModes.Discover, HandshakeMessageExecutionModes.Run)]
-    [InlineData(true, false, HandshakeMessageExecutionModes.Run, HandshakeMessageExecutionModes.Help)]
-    [InlineData(false, true, HandshakeMessageExecutionModes.Run, HandshakeMessageExecutionModes.Discover)]
+    [TestMethod]
+    [DataRow(false, false, HandshakeMessageExecutionModes.Help, HandshakeMessageExecutionModes.Run)]
+    [DataRow(false, false, HandshakeMessageExecutionModes.Discover, HandshakeMessageExecutionModes.Run)]
+    [DataRow(true, false, HandshakeMessageExecutionModes.Run, HandshakeMessageExecutionModes.Help)]
+    [DataRow(false, true, HandshakeMessageExecutionModes.Run, HandshakeMessageExecutionModes.Discover)]
     public void OnHandshakeReceived_WhenExecutionModeMismatch_RejectsHandshakeAndReportsFailure(
         bool isHelp, bool isDiscovery, string reportedMode, string expectedMode)
     {
@@ -168,7 +190,7 @@ public class TestApplicationHandlerTests : IDisposable
     /// <c>reportEvenWhenHelp: true</c> opt-out around the legacy "swallow handshake failures in help
     /// mode" workaround in <see cref="TerminalTestReporter.HandshakeFailure"/>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void OnHandshakeReceived_WhenSdkInHelpModeAndExecutionModeMismatch_StillReportsFailure()
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: true, isDiscovery: false);
@@ -188,7 +210,7 @@ public class TestApplicationHandlerTests : IDisposable
     /// is intentionally scoped to <c>OnTestProcessExited</c> calling <c>HandshakeFailure</c>
     /// without ever having received a real handshake (older MTP behavior on <c>--help</c>).
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void OnHandshakeReceived_WhenSdkInHelpModeAndRequiredPropertyMissing_StillReportsFailure()
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: true, isDiscovery: false);
@@ -210,7 +232,7 @@ public class TestApplicationHandlerTests : IDisposable
     /// rejection makes any subsequent property validation moot (and it would be confusing to
     /// surface two distinct failures for one handshake).
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void OnHandshakeReceived_WhenUnsupportedProtocolVersion_DoesNotAlsoReportExecutionModeMismatch()
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
@@ -236,10 +258,10 @@ public class TestApplicationHandlerTests : IDisposable
     /// value without bumping the protocol version, or a host that sends an empty value, is not silently
     /// accepted; we reject so we don't try to interpret a message stream we don't understand.
     /// </summary>
-    [Theory]
-    [InlineData("future-mode")]
-    [InlineData("")]
-    [InlineData("   ")]
+    [TestMethod]
+    [DataRow("future-mode")]
+    [DataRow("")]
+    [DataRow("   ")]
     public void OnHandshakeReceived_WhenExecutionModeIsUnknownOrEmpty_RejectsHandshake(string executionMode)
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: false, isDiscovery: false);
@@ -257,7 +279,7 @@ public class TestApplicationHandlerTests : IDisposable
     /// ExecutionMode must still be rejected — the validation lives in <c>OnHandshakeReceived</c>,
     /// not in a code path gated on <c>HostType == "TestHost"</c>.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void OnHandshakeReceived_WhenControllerHostReportsMismatchedExecutionMode_RejectsHandshake()
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: false, isDiscovery: false);
@@ -281,7 +303,7 @@ public class TestApplicationHandlerTests : IDisposable
     /// <c>reportEvenWhenHelp</c> opt-out must not break this — only the explicit protocol-level
     /// mismatch path opts in.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void OnTestProcessExited_WhenSdkInHelpModeAndNoHandshakeReceived_DoesNotReportFailure()
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: true, isDiscovery: false);
@@ -296,7 +318,7 @@ public class TestApplicationHandlerTests : IDisposable
     private const string ProjectPath = "/repo/MyTest.csproj";
     private const string TargetFramework = "net9.0";
 
-    private (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(bool isHelp, bool isDiscovery)
+    private (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(bool isHelp, bool isDiscovery, bool showAssembly = false)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -304,6 +326,8 @@ public class TestApplicationHandlerTests : IDisposable
         {
             AnsiMode = AnsiMode.SimpleAnsi,
             ShowProgress = false,
+            ShowAssembly = showAssembly,
+            ShowAssemblyStartAndComplete = showAssembly,
         };
 
         var reporter = new TerminalTestReporter(capturingConsole, reporterOptions);
@@ -321,14 +345,15 @@ public class TestApplicationHandlerTests : IDisposable
             IsTestingPlatformApplication: true,
             LaunchSettings: null,
             TargetPath: TargetPath,
-            DotnetRootArchVariableName: null);
+            DotnetRootArchVariableName: null,
+            EnvironmentVariables: new Dictionary<string, string>());
 
-        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: isDiscovery, EnvironmentVariables: new Dictionary<string, string>());
+        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: isDiscovery, ListTestsFormat: TestListFormat.Text);
 
         return (new TestApplicationHandler(reporter, module, testOptions), reporter, capturingConsole);
     }
 
-    private static HandshakeMessage BuildHandshake(string? executionMode, string hostType = "TestHost", bool includeInstanceId = true)
+    private static HandshakeMessage BuildHandshake(string? executionMode, string hostType = "TestHost", bool includeInstanceId = true, int? attemptNumber = null)
     {
         var properties = new Dictionary<byte, string>
         {
@@ -350,6 +375,11 @@ public class TestApplicationHandlerTests : IDisposable
         if (executionMode is not null)
         {
             properties[HandshakeMessagePropertyNames.ExecutionMode] = executionMode;
+        }
+
+        if (attemptNumber.HasValue)
+        {
+            properties[HandshakeMessagePropertyNames.AttemptNumber] = attemptNumber.Value.ToString(CultureInfo.InvariantCulture);
         }
 
         return new HandshakeMessage(properties);

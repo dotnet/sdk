@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
@@ -10,9 +10,10 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestBuildsAndRunsTests : SdkTest
     {
-        public GivenDotnetTestBuildsAndRunsTests(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestBuildsAndRunsTests()
         {
         }
 
@@ -20,9 +21,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         private static string EnvironmentVariableReference(string name)
             => $"%{name}%";
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectWithNoTests_ShouldReturnExitCodeZeroTests(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
@@ -45,9 +46,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectWithWithRetryFeature_ShouldSucceed(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppSimpleWithRetry", Guid.NewGuid().ToString())
@@ -72,9 +73,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunMultipleTestProjectsWithNoTests_ShouldReturnExitCodeZeroTests(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
@@ -98,9 +99,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
@@ -124,7 +125,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         public void RunTestProjectWithTestsAndLaunchSettings_ShouldReturnExitCodeSuccess(
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration, bool runJson)
         {
@@ -177,9 +178,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectWithTestsAndNoLaunchSettings_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
@@ -196,7 +197,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .And.NotContain("Using launch settings from");
         }
 
-        [Fact]
+        [TestMethod]
         public void RunTestProjectWithTestsAndLaunchSettingsAndExecutableProfile()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
@@ -229,9 +230,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Contain("FAILED to find argument from launchSettings.json");
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectWithTestsAndNoLaunchSettingsArguments_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
@@ -251,9 +252,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Contain("FAILED to find argument from launchSettings.json");
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunMultipleTestProjectsWithFailingTests_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
@@ -275,10 +276,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 // Issue #52128: per-assembly summary lines must show their own counts in the
                 // compact bracketed form that mirrors the in-progress indicator. The subprocess
                 // stdout is redirected, so the SDK renders the ASCII glyph form "[+P/xF/?S]".
-                Assert.Matches(
+                Assert.MatchesRegex(
                     GeneratePerAssemblyCountsRegexPattern("TestProject", TestingConstants.Failed, configuration, passed: 1, failed: 1, skipped: 1),
                     result.StdOut);
-                Assert.Matches(
+                Assert.MatchesRegex(
                     GeneratePerAssemblyCountsRegexPattern("OtherTestProject", TestingConstants.Passed, configuration, passed: 1, failed: 0, skipped: 1),
                     result.StdOut);
             }
@@ -286,10 +287,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
                 .WithSource();
@@ -301,21 +302,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.ZeroTestsRan, true, configuration, "8"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Failed, true, configuration, "2"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.ZeroTestsRan, true, configuration, "8"), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Failed, true, configuration, "2"), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
                 // Issue #52128: per-assembly summary lines must show their own counts in the
                 // compact bracketed form even when no tests ran in the assembly ("Zero tests ran")
                 // and when an assembly failed. The subprocess stdout is redirected, so the SDK
                 // renders the ASCII glyph form "[+P/xF/?S]".
-                Assert.Matches(
+                Assert.MatchesRegex(
                     GeneratePerAssemblyCountsRegexPattern("TestProject", TestingConstants.ZeroTestsRan, configuration, passed: 0, failed: 0, skipped: 0),
                     result.StdOut);
-                Assert.Matches(
+                Assert.MatchesRegex(
                     GeneratePerAssemblyCountsRegexPattern("OtherTestProject", TestingConstants.Failed, configuration, passed: 1, failed: 1, skipped: 1),
                     result.StdOut);
-                Assert.Matches(
+                Assert.MatchesRegex(
                     GeneratePerAssemblyCountsRegexPattern("AnotherTestProject", TestingConstants.Passed, configuration, passed: 1, failed: 0, skipped: 0),
                     result.StdOut);
 
@@ -327,12 +328,46 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            // The empty module (TestProject) reports exit code 8 (ZeroTests) but is normalized to success at
+            // the aggregate level (microsoft/testfx#7457), so it no longer collides with the failing module's
+            // exit code 2 to produce GenericFailure (1). The run's verdict is now AtLeastOneTestFailed (2).
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunMultipleTestProjectsWhereOneRanZeroTests_ShouldReturnExitCodeSuccess(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithZeroTestsAndPassingTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // One module matched no tests (its process returns exit code 8) while the other ran a passing
+                // test, so the whole run still executed one test and its verdict is a pass.
+                result.StdOut
+                    .Should().Contain("Exit code: 8")
+                    .And.Contain("Test run summary: Passed!")
+                    .And.Contain("total: 1")
+                    .And.Contain("succeeded: 1")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            // The empty module reports exit code 8 (ZeroTests) but is normalized to success at the aggregate
+            // level, and because the whole run executed at least one test the run-level zero-tests verdict does
+            // not apply either. The overall verdict is Success (microsoft/testfx#7457).
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
@@ -350,9 +385,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectsWithClassLibraryHavingIsTestProjectAndMTPProject_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("ClassLibraryWithIsTestProjectAndOtherTestProjects", Guid.NewGuid().ToString())
@@ -370,9 +405,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunOnEmptyFolder_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())
@@ -390,9 +425,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultipleTestProjectsWithoutSolution", Guid.NewGuid().ToString())
@@ -410,9 +445,65 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunTraversalProject_ShouldRunReferencedTestProjects(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // The traversal project itself is not a test project. It should expand to its referenced
+                // test projects, both of which run (and report zero tests via the dummy adapter).
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.Contain("total: 0")
+                    .And.Contain("succeeded: 0")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunNestedTraversalProjectWithDiamond_ShouldRunSharedProjectOnce(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjectsNested", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Each test-host launch drops a uniquely-named marker file, giving a deterministic count of
+            // how many times each referenced project actually ran (robust to terminal progress re-rendering).
+            string markerDir = Path.Combine(testInstance.Path, "run-markers");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TRAVERSAL_MARKER_DIR", markerDir)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            // SharedTestProject is referenced by both the top-level dirs.proj and the nested sub\dirs.proj
+            // (a diamond). Cross-recursion de-duplication must ensure it is only run once, while the leaf
+            // project reachable only through the nested traversal must also run (proving recursion works).
+            int sharedRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "SharedTestProject-*.marker").Length : 0;
+            int leafRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "LeafTestProject-*.marker").Length : 0;
+
+            sharedRuns.Should().Be(1);
+            leafRuns.Should().Be(1);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
@@ -430,7 +521,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public void RunOnProjectWithClassLibrary_ShouldReturnExitCodeSuccess(
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
@@ -461,9 +552,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunningWithGlobalPropertyShouldProperlyPropagate(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithConditionOnGlobalProperty", Guid.NewGuid().ToString())
@@ -489,7 +580,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [Fact]
+        [TestMethod]
         public void RunMTPProjectWithUseAppHostFalse_ShouldWork()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
@@ -504,12 +595,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [Theory]
-        [InlineData("3", ExitCodes.Success)]
-        [InlineData("5", ExitCodes.Success)]
-        [InlineData("7", ExitCodes.Success)]
-        [InlineData("10", ExitCodes.Success)]
-        [InlineData("11", ExitCodes.MinimumExpectedTestsPolicyViolation)]
+        [TestMethod]
+        [DataRow("3", ExitCodes.Success)]
+        [DataRow("5", ExitCodes.Success)]
+        [DataRow("7", ExitCodes.Success)]
+        [DataRow("10", ExitCodes.Success)]
+        [DataRow("11", ExitCodes.MinimumExpectedTestsPolicyViolation)]
         public void RunMTPSolutionWithMinimumExpectedTests(string value, int expectedExitCode)
         {
             // The solution has two test projects. Each reports 5 tests. So, total 10 tests.
@@ -523,7 +614,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(expectedExitCode);
         }
 
-        [Fact]
+        [TestMethod]
         public void RunMTPProjectThatCrashesWithExitCodeZero_ShouldFail()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())
@@ -556,11 +647,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Contains("Test run completed with non-success exit code: 1 (see: https://aka.ms/testingplatform/exitcodes)");
+                result.StdOut.Should().Contain("Test run completed with non-success exit code: 1 (see: https://aka.ms/testingplatform/exitcodes)");
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void RunMTPProjectThatCrashesWithExitCodeNonZero_ShouldFail_WithSameExitCode()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrashNonZero", Guid.NewGuid().ToString())
@@ -585,13 +676,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Contains("Test run completed with non-success exit code: 47 (see: https://aka.ms/testingplatform/exitcodes)");
+                result.StdOut.Should().Contain("Test run completed with non-success exit code: 47 (see: https://aka.ms/testingplatform/exitcodes)");
             }
         }
 
-        [Theory]
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
+        [TestMethod]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
         public void RunTestProjectWithEnvVariable(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectShowingEnvVariable", Guid.NewGuid().ToString())
@@ -621,9 +712,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DotnetTest_MTPChildProcessHangTestProject_ShouldNotHang(string configuration)
         {
             var testInstance = TestAssetsManager.CopyTestAsset("MTPChildProcessHangTest", Guid.NewGuid().ToString())

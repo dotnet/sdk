@@ -3,18 +3,18 @@
 
 using System.Text;
 using Microsoft.TemplateEngine.Core.Util;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
+    [TestClass]
     public class TokenTrieTests
     {
-        [Theory(DisplayName = nameof(VerifyTokenTrieLookArounds))]
-        [InlineData("Hello There!", 0, 5, true, null, "Hello", null)]
-        [InlineData("Hello There!", 0, 6, true, "Hello", " ", null)]
-        [InlineData("Hello There!", 1, 1, false, "Hello", " ", null)]
-        [InlineData("Hello There!", 5, 6, true, null, " ", "There!")]
-        [InlineData("Hello There!", 0, 6, true, "Hello", " ", "There!")]
+        [TestMethod]
+        [DataRow("Hello There!", 0, 5, true, null, "Hello", null)]
+        [DataRow("Hello There!", 0, 6, true, "Hello", " ", null)]
+        [DataRow("Hello There!", 1, 1, false, "Hello", " ", null)]
+        [DataRow("Hello There!", 5, 6, true, null, " ", "There!")]
+        [DataRow("Hello There!", 0, 6, true, "Hello", " ", "There!")]
         public void VerifyTokenTrieLookArounds(string original, int checkPosition, int expectedPosition, bool success, string? after, string value, string? before)
         {
             byte[] data = Encoding.UTF8.GetBytes(original);
@@ -35,11 +35,11 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             t.AddToken(builder.ToToken(Encoding.UTF8));
 
             int pos = checkPosition;
-            Assert.Equal(success, t.GetOperation(data, data.Length, ref pos, out _));
-            Assert.Equal(expectedPosition, pos);
+            Assert.AreEqual(success, t.GetOperation(data, data.Length, ref pos, out _));
+            Assert.AreEqual(expectedPosition, pos);
         }
 
-        [Fact(DisplayName = nameof(VerifyTokenTrieAtBegin))]
+        [TestMethod]
         public void VerifyTokenTrieAtBegin()
         {
             byte[] hello = "hello"u8.ToArray();
@@ -59,31 +59,31 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] source6 = "he"u8.ToArray();
 
             int pos = 0;
-            Assert.True(t.GetOperation(source1, source1.Length, ref pos, out int token));
-            Assert.Equal(0, token);
+            Assert.IsTrue(t.GetOperation(source1, source1.Length, ref pos, out int token));
+            Assert.AreEqual(0, token);
 
             pos = 0;
-            Assert.True(t.GetOperation(source2, source2.Length, ref pos, out token));
-            Assert.Equal(0, token);
+            Assert.IsTrue(t.GetOperation(source2, source2.Length, ref pos, out token));
+            Assert.AreEqual(0, token);
 
             pos = 0;
-            Assert.True(t.GetOperation(source3, source3.Length, ref pos, out token));
-            Assert.Equal(1, token);
+            Assert.IsTrue(t.GetOperation(source3, source3.Length, ref pos, out token));
+            Assert.AreEqual(1, token);
 
             pos = 0;
-            Assert.True(t.GetOperation(source4, source4.Length, ref pos, out token));
-            Assert.Equal(2, token);
+            Assert.IsTrue(t.GetOperation(source4, source4.Length, ref pos, out token));
+            Assert.AreEqual(2, token);
 
             pos = 0;
-            Assert.True(t.GetOperation(source5, source5.Length, ref pos, out token));
-            Assert.Equal(2, token);
+            Assert.IsTrue(t.GetOperation(source5, source5.Length, ref pos, out token));
+            Assert.AreEqual(2, token);
 
             pos = 0;
-            Assert.False(t.GetOperation(source6, source6.Length, ref pos, out token));
-            Assert.Equal(-1, token);
+            Assert.IsFalse(t.GetOperation(source6, source6.Length, ref pos, out token));
+            Assert.AreEqual(-1, token);
         }
 
-        [Fact(DisplayName = nameof(VerifyTokenTrieNotEnoughBufferLeft))]
+        [TestMethod]
         public void VerifyTokenTrieNotEnoughBufferLeft()
         {
             byte[] hello = "hello"u8.ToArray();
@@ -97,19 +97,19 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] source2 = " hello"u8.ToArray();
 
             int pos = 0;
-            Assert.False(t.GetOperation(source1, source1.Length, ref pos, out int token));
-            Assert.Equal(-1, token);
+            Assert.IsFalse(t.GetOperation(source1, source1.Length, ref pos, out int token));
+            Assert.AreEqual(-1, token);
 
             pos = 1;
-            Assert.True(t.GetOperation(source2, source2.Length, ref pos, out token));
-            Assert.Equal(0, token);
+            Assert.IsTrue(t.GetOperation(source2, source2.Length, ref pos, out token));
+            Assert.AreEqual(0, token);
 
             pos = 2;
-            Assert.False(t.GetOperation(source2, source2.Length, ref pos, out token));
-            Assert.Equal(-1, token);
+            Assert.IsFalse(t.GetOperation(source2, source2.Length, ref pos, out token));
+            Assert.AreEqual(-1, token);
         }
 
-        [Fact(DisplayName = nameof(VerifyTokenTrieCombine))]
+        [TestMethod]
         public void VerifyTokenTrieCombine()
         {
             byte[] hello = "hello"u8.ToArray();
@@ -135,20 +135,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] source4 = "there!"u8.ToArray();
 
             int pos = 0;
-            Assert.True(t.GetOperation(source1, source1.Length, ref pos, out int token));
-            Assert.Equal(0, token);
+            Assert.IsTrue(t.GetOperation(source1, source1.Length, ref pos, out int token));
+            Assert.AreEqual(0, token);
 
             pos = 0;
-            Assert.True(t.GetOperation(source2, source2.Length, ref pos, out token));
-            Assert.Equal(1, token);
+            Assert.IsTrue(t.GetOperation(source2, source2.Length, ref pos, out token));
+            Assert.AreEqual(1, token);
 
             pos = 0;
-            Assert.True(t.GetOperation(source3, source3.Length, ref pos, out token));
-            Assert.Equal(2, token);
+            Assert.IsTrue(t.GetOperation(source3, source3.Length, ref pos, out token));
+            Assert.AreEqual(2, token);
 
             pos = 0;
-            Assert.True(t.GetOperation(source4, source4.Length, ref pos, out token));
-            Assert.Equal(3, token);
+            Assert.IsTrue(t.GetOperation(source4, source4.Length, ref pos, out token));
+            Assert.AreEqual(3, token);
         }
     }
 }

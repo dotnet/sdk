@@ -7,29 +7,28 @@ using Microsoft.Build.Framework;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.MSBuildSdkResolver;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
-        public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
+        public GivenAnMSBuildSdkResolver() : base()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHasCorrectNameAndPriority()
         {
             var resolver = new DotNetMSBuildSdkResolver();
 
-            Assert.Equal(5000, resolver.Priority);
-            Assert.Equal("Microsoft.DotNet.MSBuildSdkResolver", resolver.Name);
+            Assert.AreEqual(5000, resolver.Priority);
+            Assert.AreEqual("Microsoft.DotNet.MSBuildSdkResolver", resolver.Name);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotFindMSBuildSdkThatIsMissingFromLocatedNETCoreSdk()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -50,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().NotBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItFindsTheVersionSpecifiedInGlobalJson()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -74,9 +73,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
         public void ItUsesProjectDirectoryIfSolutionFilePathIsNullOrWhitespace(string? solutionFilePath)
         {
             const string version = "99.0.0";
@@ -99,11 +98,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData("", null)]
-        [InlineData("", "")]
-        [InlineData(null, "")]
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("", null)]
+        [DataRow("", "")]
+        [DataRow(null, "")]
         public void ItUsesCurrentDirectoryIfSolutionFilePathAndProjectFilePathIsNullOrWhitespace(string? solutionFilePath, string? projectFilePath)
         {
             const string version = "99.0.0";
@@ -126,7 +125,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullIfTheVersionFoundDoesNotSatisfyTheMinVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -147,7 +146,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.NETCoreSDKSmallerThanMinimumRequestedVersion, "99.99.99", "999.99.99"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenTheSDKRequiresAHigherVersionOfMSBuildThanAnyOneAvailable()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -173,9 +172,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.MSBuildSmallerThanMinimumVersion, "99.99.99", "2.0", "1.0"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuild(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString())
@@ -219,7 +218,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenALocalSdkIsResolvedItReturnsHostFromThatSDKInsteadOfAmbientGlobalSdk()
         {
             // create a test that sets up a TestEnvironment with
@@ -254,9 +253,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.PropertiesToAdd[DotnetHostExperimentalKey].Should().Be(localDotnetBinary);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItDoesNotReturnHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundOutsideOfVisualStudio(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItDoesNotReturnHighest___", identifier: disallowPreviews.ToString())
@@ -291,9 +290,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().NotBeEmpty();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundAndRunningInVisualStudio(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItReturnsHighest___", identifier: disallowPreviews.ToString())
@@ -342,7 +341,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenTheDefaultVSRequiredSDKVersionIsHigherThanTheSDKVersionAvailable()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -364,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudio, "1.0.1", "1.0.4"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenTheTheVSRequiredSDKVersionIsHigherThanTheSDKVersionAvailable()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -387,7 +386,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudio, "1.0.1", "2.0.0"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsTheVersionIfItIsEqualToTheMinVersionAndTheVSDefinedMinVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -409,7 +408,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsTheVersionIfItIsHigherThanTheMinVersionAndTheVSDefinedMinVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -431,9 +430,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItDisallowsPreviewsBasedOnDefault(bool disallowPreviewsByDefault)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviewsByDefault.ToString());
@@ -458,9 +457,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItDisallowsPreviewsBasedOnFile(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString());
@@ -486,7 +485,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItObservesChangesToVSSettingsFile()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -535,7 +534,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             Check(disallowPreviews: false, message: "file deleted to return to default");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItAllowsPreviewWhenGlobalJsonHasPreviewIrrespectiveOfSetting()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -560,7 +559,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRespectsAmbientVSSettings()
         {
             // When run in test explorer in VS, this will actually locate the settings for the current VS instance
@@ -589,7 +588,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenTemplateLocatorItCanResolveSdkVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
