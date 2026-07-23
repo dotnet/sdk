@@ -288,12 +288,25 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [TestMethod]
-        [DataRow(PublishRelease)]
-        [DataRow(PackRelease)]
-        public void It_fails_with_conflicting_PublishRelease_or_PackRelease_values_in_solution_file(string pReleaseVar)
+        [DataRow(PublishRelease, false)]
+        [DataRow(PublishRelease, true)]
+        [DataRow(PackRelease, false)]
+        [DataRow(PackRelease, true)]
+        public void It_fails_with_conflicting_PublishRelease_or_PackRelease_values_in_solution_file(string pReleaseVar, bool useSlnx)
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
-            var (testAsset, _) = Setup(new List<string> { tfm }, new List<string> { tfm }, pReleaseVar, "true", "false");
+            var (testAsset, _) = Setup(new List<string> { tfm }, new List<string> { tfm }, pReleaseVar, "true", "false", identifier: $"{pReleaseVar}-{useSlnx}");
+
+            if (useSlnx)
+            {
+                string slnPath = Directory.GetFiles(testAsset.Path, "*.sln").Single();
+                new DotnetCommand(Log)
+                    .WithWorkingDirectory(testAsset.Path)
+                    .Execute("sln", Path.GetFileName(slnPath), "migrate")
+                    .Should()
+                    .Pass();
+                File.Delete(slnPath);
+            }
 
             var expectedError = string.Format(Strings.SolutionProjectConfigurationsConflict, pReleaseVar, "");
 

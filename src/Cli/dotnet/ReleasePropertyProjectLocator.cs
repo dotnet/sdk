@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
@@ -63,8 +64,10 @@ internal sealed class ReleasePropertyProjectLocator(
         if (commandOptions.ConfigurationOption != null || globalProperties is not null && globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
             return new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase) { [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "true" }.AsReadOnly(); // Don't throw error if publish* conflicts but global config specified.
 
+        EvaluationContext evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.SharedSDKCache);
+
         // Determine the project being acted upon
-        ProjectInstance? project = GetTargetedProject(globalProperties);
+        ProjectInstance? project = GetTargetedProject(globalProperties, evaluationContext);
 
         // Determine the correct value to return
         if (project != null)
@@ -96,7 +99,7 @@ internal sealed class ReleasePropertyProjectLocator(
     /// <returns>A project instance that will be targeted to publish/pack, etc. null if one does not exist.
     /// Will return an arbitrary project in the solution if one exists in the solution and there's no project targeted.</returns>
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    public ProjectInstance? GetTargetedProject(ReadOnlyDictionary<string, string>? globalProps)
+    public ProjectInstance? GetTargetedProject(ReadOnlyDictionary<string, string>? globalProps, EvaluationContext evaluationContext)
     {
         foreach (string arg in commandOptions.SlnOrProjectArgs.Append(Directory.GetCurrentDirectory()))
         {
@@ -107,18 +110,18 @@ internal sealed class ReleasePropertyProjectLocator(
             }
             else if (IsValidProjectFilePath(arg))
             {
-                return TryGetProjectInstance(arg, globalProps);
+                return TryGetProjectInstance(arg, globalProps, evaluationContext);
             }
             else if (IsValidSlnFilePath(arg))
             {
-                return GetArbitraryProjectFromSolution(arg, globalProps);
+                return GetArbitraryProjectFromSolution(arg, globalProps, evaluationContext);
             }
             else if (Directory.Exists(arg)) // Get here if the user did not provide a .proj or a .sln. (See CWD appended to args above)
             {
                 // First, look for a project in the directory.
                 if (MsbuildProject.TryGetProjectFileFromDirectory(arg, out var projectFilePath))
                 {
-                    return TryGetProjectInstance(projectFilePath, globalProps);
+                    return TryGetProjectInstance(projectFilePath, globalProps, evaluationContext);
                 }
 
                 // Fall back to looking for a solution if multiple project files are found, or there's no project in the directory.
@@ -126,7 +129,7 @@ internal sealed class ReleasePropertyProjectLocator(
 
                 if (!string.IsNullOrEmpty(potentialSln))
                 {
-                    return GetArbitraryProjectFromSolution(potentialSln, globalProps);
+                    return GetArbitraryProjectFromSolution(potentialSln, globalProps, evaluationContext);
                 }
             }
         }
@@ -135,7 +138,7 @@ internal sealed class ReleasePropertyProjectLocator(
 
     /// <returns>An arbitrary existant project in a solution file. Returns null if no projects exist.
     /// Throws exception if two+ projects disagree in PublishRelease, PackRelease, or whatever _propertyToCheck is, and have it defined.</returns>
-    public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, ReadOnlyDictionary<string, string>? globalProps)
+    public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, ReadOnlyDictionary<string, string>? globalProps, EvaluationContext evaluationContext)
     {
         string slnFullPath = Path.GetFullPath(slnPath);
         if (!Path.Exists(slnFullPath))
@@ -156,22 +159,50 @@ internal sealed class ReleasePropertyProjectLocator(
         List<ProjectInstance> configuredProjects = [];
         HashSet<string> configValues = [];
         object projectDataLock = new();
+        var solutionProjects = sln.SolutionProjects.AsEnumerable().ToList();
 
         if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))
         {
             // Evaluate only one project for speed if this environment variable is used. Will break more customers if enabled (adding 8.0 project to SLN with other project TFMs with no Publish or PackRelease.)
-            return GetSingleProjectFromSolution(sln, slnFullPath, globalProps);
+            return GetSingleProjectFromSolution(sln, slnFullPath, globalProps, evaluationContext);
         }
 
-        Parallel.ForEach(sln.SolutionProjects.AsEnumerable(), (project, state) =>
+        int firstAnalyzableProjectIndex = -1;
+        for (int index = 0; index < solutionProjects.Count; index++)
         {
+            SolutionProjectModel project = solutionProjects[index];
+#pragma warning disable CS8604 // Possible null reference argument.
+            string projectFullPath = Path.GetFullPath(project.FilePath, Path.GetDirectoryName(slnFullPath));
+#pragma warning restore CS8604 // Possible null reference argument.
+            if (!IsUnanalyzableProjectInSolution(project, projectFullPath))
+            {
+                // Seed the shared SDK cache in solution order before the remaining projects evaluate in parallel.
+                firstAnalyzableProjectIndex = index;
+                EvaluateProject(projectFullPath);
+                break;
+            }
+        }
+
+        Parallel.For(0, solutionProjects.Count, index =>
+        {
+            if (index == firstAnalyzableProjectIndex)
+            {
+                return;
+            }
+
+            SolutionProjectModel project = solutionProjects[index];
 #pragma warning disable CS8604 // Possible null reference argument.
             string projectFullPath = Path.GetFullPath(project.FilePath, Path.GetDirectoryName(slnFullPath));
 #pragma warning restore CS8604 // Possible null reference argument.
             if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                 return;
 
-            var projectData = TryGetProjectInstance(projectFullPath, globalProps);
+            EvaluateProject(projectFullPath);
+        });
+
+        void EvaluateProject(string projectFullPath)
+        {
+            var projectData = TryGetProjectInstance(projectFullPath, globalProps, evaluationContext);
             if (projectData == null)
             {
                 return;
@@ -186,7 +217,7 @@ internal sealed class ReleasePropertyProjectLocator(
                     configValues.Add(pReleasePropertyValue.ToLower());
                 }
             }
-        });
+        }
 
         if (configuredProjects.Any() && configValues.Count > 1)
         {
@@ -205,7 +236,7 @@ internal sealed class ReleasePropertyProjectLocator(
     /// <param name="solution">The solution to get an arbitrary project from.</param>
     /// <param name="globalProps">The global properties to load into the project.</param>
     /// <returns>null if no project exists in the solution that can be evaluated properly. Else, the first project in the solution that can be.</returns>
-    private ProjectInstance? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, ReadOnlyDictionary<string, string>? globalProps)
+    private ProjectInstance? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, ReadOnlyDictionary<string, string>? globalProps, EvaluationContext evaluationContext)
     {
         foreach (var project in sln.SolutionProjects.AsEnumerable())
         {
@@ -215,7 +246,7 @@ internal sealed class ReleasePropertyProjectLocator(
             if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                 continue;
 
-            var projectData = TryGetProjectInstance(projectFullPath, globalProps);
+            var projectData = TryGetProjectInstance(projectFullPath, globalProps, evaluationContext);
             if (projectData != null)
             {
                 return projectData;
@@ -238,7 +269,7 @@ internal sealed class ReleasePropertyProjectLocator(
     }
 
     /// <returns>Creates a ProjectInstance if the project is valid, elsewise, fails.</returns>
-    private static ProjectInstance? TryGetProjectInstance(string projectPath, ReadOnlyDictionary<string, string>? globalProperties)
+    private static ProjectInstance? TryGetProjectInstance(string projectPath, ReadOnlyDictionary<string, string>? globalProperties, EvaluationContext evaluationContext)
     {
         try
         {
@@ -250,6 +281,7 @@ internal sealed class ReleasePropertyProjectLocator(
                 GlobalProperties = globalProperties,
                 ToolsVersion = "Current",
                 EvaluationStage = ProjectEvaluationStage.Properties,
+                EvaluationContext = evaluationContext,
             });
         }
         catch (Exception e) // Catch failed file access, or invalid project files that cause errors when read into memory,
