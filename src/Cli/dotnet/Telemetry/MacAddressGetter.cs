@@ -29,28 +29,18 @@ internal static class MacAddressGetter
     private static List<string> GetMacAddressesByNetworkInterface()
     {
         NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
-        var macs = new List<string>();
 
         if (nics == null || nics.Length < 1)
         {
-            return macs;
+            return new List<string>();
         }
 
-        foreach (NetworkInterface adapter in nics)
-        {
-            byte[] bytes = adapter.GetPhysicalAddress().GetAddressBytes();
-            if (bytes.Length == 0 || bytes.SequenceEqual(AllZeroBytes))
-            {
-                continue;
-            }
-
-            macs.Add(string.Join("-", bytes.Select(x => x.ToString("X2"))));
-            if (macs.Count >= 10)
-            {
-                break;
-            }
-        }
-
-        return macs;
+        return nics
+            .Where(nic => nic.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                          nic.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+            .Select(nic => nic.GetPhysicalAddress().GetAddressBytes())
+            .Where(bytes => bytes.Length == 6 && !bytes.SequenceEqual(AllZeroBytes))
+            .Select(bytes => string.Join("-", bytes.Select(b => b.ToString("X2"))))
+            .ToList();
     }
 }
