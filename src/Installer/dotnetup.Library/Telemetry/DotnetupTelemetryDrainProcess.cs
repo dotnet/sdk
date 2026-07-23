@@ -18,8 +18,10 @@ internal static class DotnetupTelemetryDrainProcess
 
     /// <summary>
     /// When this process was launched as a detached drainer (<see cref="Constants.Telemetry.DrainModeEnvVar"/>
-    /// == <c>1</c>), drains persisted telemetry to Azure Monitor and returns <see langword="true"/>
-    /// with the process exit code. Otherwise returns <see langword="false"/> and does nothing.
+    /// == <c>1</c>), best-effort drains persisted telemetry to Azure Monitor and returns
+    /// <see langword="true"/> with exit code <c>0</c>. Drain failures are intentionally swallowed
+    /// because telemetry delivery must not affect the host process. Otherwise returns
+    /// <see langword="false"/> and does nothing.
     /// </summary>
     public static bool TryRunAsDrainer(out int exitCode)
     {

@@ -96,6 +96,22 @@ public class HttpTelemetryUploadTransportTests
         result.Outcome.Should().Be(TelemetryUploadOutcome.Rejected);
     }
 
+    [TestMethod]
+    [DataRow(HttpStatusCode.BadRequest)]
+    [DataRow(HttpStatusCode.Unauthorized)]
+    [DataRow(HttpStatusCode.Forbidden)]
+    [DataRow(HttpStatusCode.NotFound)]
+    public async Task ItReportsPermanentRejectionOnPermanentWholeRequestFailure(HttpStatusCode statusCode)
+    {
+        var handler = new StubHandler(statusCode);
+        var transport = new HttpTelemetryUploadTransport(TrackUri, handler);
+
+        var result = await transport.TryUploadAsync([1, 2, 3], CancellationToken.None);
+
+        result.Outcome.Should().Be(TelemetryUploadOutcome.PermanentlyRejected,
+            "permanent failures must be discarded so they do not block later blobs");
+    }
+
     private sealed class StubHandler(
         HttpStatusCode status,
         string? body = null,
