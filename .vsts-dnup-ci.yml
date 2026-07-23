@@ -157,10 +157,10 @@ extends:
           parameters:
             pool:
               name: $(DncEngInternalBuildPool)
-              image: windows.vs2022.amd64
+              image: windows.vs2026.amd64
               os: windows
               emoji: 🪟
-            helixTargetQueue: windows.amd64.vs2022.pre
+            helixTargetQueue: windows.amd64.vs2026.pre.scout
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
@@ -194,7 +194,7 @@ extends:
           parameters:
             pool:
               name: $(DncEngInternalBuildPool)
-              image: windows.vs2022.amd64
+              image: windows.vs2026.amd64
               os: windows
             oneESCompat:
               templateFolderName: templates-official
