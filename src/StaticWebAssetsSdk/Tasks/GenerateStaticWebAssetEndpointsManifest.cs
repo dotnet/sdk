@@ -36,16 +36,17 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
 
     public override bool Execute()
     {
-        AbsolutePath manifestAbsolutePath = !string.IsNullOrWhiteSpace(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : default;
-        AbsolutePath cacheAbsolutePath = !string.IsNullOrWhiteSpace(CacheFilePath) ? TaskEnvironment.GetAbsolutePath(CacheFilePath) : default;
-        AbsolutePath exclusionCacheAbsolutePath = !string.IsNullOrWhiteSpace(ExclusionPatternsCacheFilePath) ? TaskEnvironment.GetAbsolutePath(ExclusionPatternsCacheFilePath) : default;
+        var absoluteManifestPath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : (AbsolutePath?)null;
+        var manifestAbsolutePath = absoluteManifestPath?.Value ?? ManifestPath;
+        var cacheAbsolutePath = !string.IsNullOrEmpty(CacheFilePath) ? TaskEnvironment.GetAbsolutePath(CacheFilePath).Value : CacheFilePath;
+        var exclusionCacheAbsolutePath = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) ? TaskEnvironment.GetAbsolutePath(ExclusionPatternsCacheFilePath).Value : ExclusionPatternsCacheFilePath;
 
         var (patternString, parsedPatterns) = ParseAndSortPatterns(ExclusionPatterns);
-        var existingPatternString = !string.IsNullOrWhiteSpace(ExclusionPatternsCacheFilePath) && File.Exists(exclusionCacheAbsolutePath)
+        var existingPatternString = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) && File.Exists(exclusionCacheAbsolutePath)
             ? File.ReadAllText(exclusionCacheAbsolutePath)
             : null;
         existingPatternString = string.IsNullOrEmpty(existingPatternString) ? null : existingPatternString;
-        if (!string.IsNullOrWhiteSpace(CacheFilePath) && File.Exists(manifestAbsolutePath) && File.GetLastWriteTimeUtc(manifestAbsolutePath) > File.GetLastWriteTimeUtc(cacheAbsolutePath))
+        if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(manifestAbsolutePath) && File.GetLastWriteTimeUtc(manifestAbsolutePath) > File.GetLastWriteTimeUtc(cacheAbsolutePath))
         {
             // Check if exclusion patterns cache is also up to date
             if (string.Equals(patternString, existingPatternString, StringComparison.Ordinal))
@@ -136,7 +137,14 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
                 Endpoints = [.. filteredEndpoints]
             };
 
-            this.PersistFileIfChanged(manifest, manifestAbsolutePath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
+            if (absoluteManifestPath is { } path)
+            {
+                this.PersistFileIfChanged(manifest, path, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
+            }
+            else
+            {
+                this.PersistFileIfChanged(manifest, ManifestPath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
+            }
         }
         catch (Exception ex)
         {
@@ -202,9 +210,9 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
         return (string.Join(Environment.NewLine, parsed), parsed);
     }
 
-    private void UpdateExclusionPatternsCache(string existingPatternString, string patternString, AbsolutePath manifestAbsolutePath, AbsolutePath exclusionCacheAbsolutePath)
+    private void UpdateExclusionPatternsCache(string existingPatternString, string patternString, string manifestAbsolutePath, string exclusionCacheAbsolutePath)
     {
-        if (string.IsNullOrWhiteSpace(ExclusionPatternsCacheFilePath))
+        if (string.IsNullOrEmpty(ExclusionPatternsCacheFilePath))
         {
             return;
         }

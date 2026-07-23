@@ -9,13 +9,10 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation this test performs.
+[TestClass]
 public class GenerateStaticWebAssetEndpointsManifestMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void WritesEndpointsManifestAndExclusionCacheRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         // Layout: place project and decoy in disjoint subtrees so that the same
@@ -37,9 +34,12 @@ public class GenerateStaticWebAssetEndpointsManifestMultiThreadingTest
             Directory.SetCurrentDirectory(spawnDir);
 
             var errorMessages = new List<string>();
+            var messages = new List<string>();
             var buildEngine = new Mock<IBuildEngine>();
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
+                .Callback<BuildMessageEventArgs>(args => messages.Add(args.Message));
 
             var task = new GenerateStaticWebAssetEndpointsManifest
             {
@@ -64,6 +64,8 @@ public class GenerateStaticWebAssetEndpointsManifestMultiThreadingTest
 
             File.Exists(Path.Combine(spawnOutputDir, "endpoints.json")).Should().BeFalse();
             File.Exists(Path.Combine(spawnOutputDir, "exclusions.cache")).Should().BeFalse();
+            messages.Should().Contain($"Creating artifact because artifact file '{task.ManifestPath}' does not exist.");
+            messages.Should().NotContain(message => message.Contains(projectDir, StringComparison.Ordinal));
         }
         finally
         {
@@ -72,6 +74,35 @@ public class GenerateStaticWebAssetEndpointsManifestMultiThreadingTest
             {
                 Directory.Delete(testRoot, recursive: true);
             }
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    public void WritesEndpointsManifestWhenPathIsWhitespace()
+    {
+        var projectDir = Path.Combine(AppContext.BaseDirectory, nameof(WritesEndpointsManifestWhenPathIsWhitespace), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(projectDir);
+
+        try
+        {
+            var task = new GenerateStaticWebAssetEndpointsManifest
+            {
+                BuildEngine = new Mock<IBuildEngine>().Object,
+                TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
+                Assets = [],
+                Endpoints = [],
+                Source = "MyProject",
+                ManifestType = "Build",
+                ManifestPath = " ",
+            };
+
+            task.Execute().Should().BeTrue();
+            File.Exists(Path.Combine(projectDir, " ")).Should().BeTrue();
+        }
+        finally
+        {
+            Directory.Delete(projectDir, recursive: true);
         }
     }
 }

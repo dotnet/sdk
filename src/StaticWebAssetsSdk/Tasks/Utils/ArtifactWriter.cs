@@ -16,7 +16,16 @@ public static class ArtifactWriter
         return PersistFileIfChanged(task, data, artifactPath);
     }
 
+    public static bool PersistFileIfChanged<T>(this Task task, T manifest, AbsolutePath artifactPath, JsonTypeInfo<T> serializer)
+    {
+        var data = JsonSerializer.SerializeToUtf8Bytes(manifest, serializer);
+        return PersistFileIfChanged(task, data, artifactPath.Value, artifactPath.OriginalValue);
+    }
+
     public static bool PersistFileIfChanged(this Task task, byte[] data, string artifactPath)
+        => PersistFileIfChanged(task, data, artifactPath, artifactPath);
+
+    private static bool PersistFileIfChanged(Task task, byte[] data, string artifactPath, string artifactPathForLogging)
     {
         var newHash = ComputeHash(data);
         var fileExists = File.Exists(artifactPath);
@@ -24,7 +33,7 @@ public static class ArtifactWriter
 
         if (!fileExists)
         {
-            task.Log.LogMessage(MessageImportance.Low, $"Creating artifact because artifact file '{artifactPath}' does not exist.");
+            task.Log.LogMessage(MessageImportance.Low, $"Creating artifact because artifact file '{artifactPathForLogging}' does not exist.");
             File.WriteAllBytes(artifactPath, data);
             return true;
         }
