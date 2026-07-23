@@ -39,6 +39,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private readonly Lock _assembliesLock = new();
 
     private readonly List<TestRunArtifact> _artifacts = [];
+    private readonly Lock _artifactsLock = new();
 
     private readonly TerminalTestReporterOptions _options;
 
@@ -224,7 +225,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private void AppendTestRunSummary(ITerminal terminal, int? exitCode)
     {
-        IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = _artifacts.GroupBy(a => a.OutOfProcess);
+        TestRunArtifact[] artifacts;
+        lock (_artifactsLock)
+        {
+            artifacts = [.. _artifacts];
+        }
+
+        IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = artifacts.GroupBy(a => a.OutOfProcess);
 
         if (artifactGroups.Any())
         {
@@ -1040,7 +1047,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
     public void Dispose() => _terminalWithProgress.Dispose();
 
     public void ArtifactAdded(bool outOfProcess, string? assembly, string? targetFramework, string? architecture, string? executionId, string? testName, string path)
-        => _artifacts.Add(new TestRunArtifact(outOfProcess, assembly, targetFramework, architecture, executionId, testName, path));
+    {
+        lock (_artifactsLock)
+        {
+            _artifacts.Add(new TestRunArtifact(outOfProcess, assembly, targetFramework, architecture, executionId, testName, path));
+        }
+    }
+
+    public void RemoveArtifacts(IReadOnlySet<string> paths)
+    {
+        lock (_artifactsLock)
+        {
+            _artifacts.RemoveAll(artifact => paths.Contains(artifact.Path));
+        }
+    }
 
     internal void WriteMessage(string text) =>
         _terminalWithProgress.WriteToTerminal(terminal =>

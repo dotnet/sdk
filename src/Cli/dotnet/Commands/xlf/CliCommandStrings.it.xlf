@@ -77,6 +77,16 @@
         <target state="translated">Consente il downgrade del pacchetto durante l'installazione di un pacchetto di strumenti .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArtifactPostProcessingFailed">
+        <source>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</source>
+        <target state="new">Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</target>
+        <note>{0} is the test application path. {1} is the failure reason.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactPostProcessingProcessFailed">
+        <source>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</source>
+        <target state="new">Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</target>
+        <note>{0} is the test application path. {1} is the process exit code.</note>
+      </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
         <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
         <target state="translated">Il carico di lavoro Aspire è deprecato e non è più necessario. Aspire ora è disponibile come pacchetti NuGet che puoi aggiungere direttamente ai tuoi progetti. Per altre informazioni, visita https://aka.ms/aspire/support-policy</target>
@@ -146,6 +156,11 @@
         <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
         <target state="new">The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</target>
         <note>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</note>
+      </trans-unit>
+      <trans-unit id="MismatchingHandshakeHostType">
+        <source>The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</source>
+        <target state="new">The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</target>
+        <note>{Locked="dotnet test"}</note>
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
