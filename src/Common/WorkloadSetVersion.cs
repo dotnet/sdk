@@ -48,13 +48,15 @@ internal static class WorkloadSetVersion
             return false;
         }
 
-        // All three components must parse as non-negative integers
-        if (!int.TryParse(coreComponents[0], out int major) || major < 0 ||
-            !int.TryParse(coreComponents[1], out int minor) || minor < 0 ||
-            !int.TryParse(coreComponents[2], out int patch) || patch < 0)
+        // Use System.Version to validate numeric components instead of manual int.TryParse
+        if (!Version.TryParse(sections[0], out var parsedVersion))
         {
             return false;
         }
+
+        int major = parsedVersion.Major;
+        int minor = parsedVersion.Minor;
+        int patch = parsedVersion.Build;
 
         // The correct workload-set version always has 0 as the second (minor) component.
         // A non-zero minor is the tell-tale sign of the package version format.

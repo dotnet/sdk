@@ -161,9 +161,9 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             throw new GracefulException(CliCommandStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
 
-        // CS0436: WorkloadSetVersion is defined in both dotnet.csproj (linked source) and
-        // Microsoft.DotNet.Cli.Definitions (also links the same source). Both definitions are
-        // identical, so using the local one here is correct.
+        // CS0436: WorkloadSetVersion.cs is linked into both dotnet.csproj and
+        // Microsoft.DotNet.Cli.Definitions.csproj, so the compiler sees two identical
+        // definitions. The pragma suppresses the resulting warning.
 #pragma warning disable CS0436
         if (SpecifiedWorkloadSetVersionOnCommandLine)
         {
@@ -171,14 +171,13 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             {
                 if (!version.Contains('@') && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(version, out var suggestedVersion))
                 {
-                    throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, version, suggestedVersion), isUserError: true);
+                    throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, version, suggestedVersion, string.Empty), isUserError: true);
                 }
             }
         }
-
-        if (SpecifiedWorkloadSetVersionInGlobalJson && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(_workloadSetVersionFromGlobalJson!, out var suggestedGlobalJsonVersion))
+        else if (SpecifiedWorkloadSetVersionInGlobalJson && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(_workloadSetVersionFromGlobalJson!, out var suggestedGlobalJsonVersion))
         {
-            throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormatGlobalJson, _workloadSetVersionFromGlobalJson, suggestedGlobalJsonVersion, _globalJsonPath), isUserError: true);
+            throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, _workloadSetVersionFromGlobalJson, suggestedGlobalJsonVersion, string.Format(CliCommandStrings.WorkloadSetVersionSpecifiedInGlobalJson, _globalJsonPath)), isUserError: true);
         }
 #pragma warning restore CS0436
 
