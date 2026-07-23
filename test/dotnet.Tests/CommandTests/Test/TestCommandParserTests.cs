@@ -92,6 +92,61 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow("--no-logo")]
+        [DataRow("--nologo")]
+        [DataRow("-nologo")]
+        [DataRow("/nologo")]
+        [DataRow("--no-banner")]
+        public void MTPCommandTranslatesNoLogoOptionToNoBanner(string optionAlias)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([optionAlias]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain(optionAlias);
+        }
+
+        [TestMethod]
+        public void MTPCommandDoesNotDuplicateNoBannerOption()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--nologo", "--no-banner"]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+        }
+
+        [TestMethod]
+        public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
+        {
+            string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
+            try
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "true");
+                var enabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var enabledBuildOptions = MSBuildUtility.GetBuildOptions(enabledCommand.Parse([]));
+
+                enabledBuildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "false");
+                var disabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var disabledBuildOptions = MSBuildUtility.GetBuildOptions(disabledCommand.Parse([]));
+
+                disabledBuildOptions.TestApplicationArguments.Should().NotContain("--no-banner");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", previousValue);
+            }
+        }
+
+        [TestMethod]
         [DataRow("--use-current-runtime")]
         [DataRow("--ucr")]
         public void MTPCommandForwardsUseCurrentRuntimeOption(string optionAlias)

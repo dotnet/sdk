@@ -448,6 +448,95 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
+        public void RunTraversalProject_ShouldRunReferencedTestProjects(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // The traversal project itself is not a test project. It should expand to its referenced
+                // test projects, both of which run (and report zero tests via the dummy adapter).
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.Contain("total: 0")
+                    .And.Contain("succeeded: 0")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunNestedTraversalProjectWithDiamond_ShouldRunSharedProjectOnce(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjectsNested", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Each test-host launch drops a uniquely-named marker file, giving a deterministic count of
+            // how many times each referenced project actually ran (robust to terminal progress re-rendering).
+            string markerDir = Path.Combine(testInstance.Path, "run-markers");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TRAVERSAL_MARKER_DIR", markerDir)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            // SharedTestProject is referenced by both the top-level dirs.proj and the nested sub\dirs.proj
+            // (a diamond). Cross-recursion de-duplication must ensure it is only run once, while the leaf
+            // project reachable only through the nested traversal must also run (proving recursion works).
+            int sharedRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "SharedTestProject-*.marker").Length : 0;
+            int leafRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "LeafTestProject-*.marker").Length : 0;
+
+            sharedRuns.Should().Be(1);
+            leafRuns.Should().Be(1);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunDeeplyNestedTraversalProject_ShouldRunEveryReferencedTestProjectAndSkipNonTestProjects(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjectsDeepNested", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Each test-host launch drops a uniquely-named marker file, giving a deterministic count of
+            // how many times each referenced project actually ran.
+            string markerDir = Path.Combine(testInstance.Path, "run-markers");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TRAVERSAL_MARKER_DIR", markerDir)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            // The graph is three levels deep: dirs.proj -> level2\dirs.proj -> level2\level3\dirs.proj.
+            // A test project is referenced at each level; all must run exactly once (proving deep recursion).
+            int MarkerCount(string project) => Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, $"{project}-*.marker").Length : 0;
+
+            MarkerCount("Level1TestProject").Should().Be(1);
+            MarkerCount("Level2TestProject").Should().Be(1);
+            MarkerCount("DeepLeafTestProject").Should().Be(1);
+
+            // NonTestLibrary is a plain class library referenced by the level-2 traversal. It is neither a
+            // test project nor an MTP application, so it must be silently skipped: it never runs and does not
+            // cause an error.
+            MarkerCount("NonTestLibrary").Should().Be(0);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
