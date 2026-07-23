@@ -3,12 +3,86 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Tests.ParserTests;
 
 [TestClass]
 public class CommonOptionsTests
 {
+    [TestMethod]
+    public void ConfigurationDefaultsToEnvironmentVariable()
+    {
+        string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
+
+        try
+        {
+            Environment.SetEnvironmentVariable("Configuration", "EnvironmentConfiguration");
+            var command = new RootCommand();
+            var option = CommonOptions.CreateConfigurationOption("Configuration");
+            command.Options.Add(option);
+
+            var result = command.Parse([]);
+
+            result.GetValue(option).Should().Be("EnvironmentConfiguration");
+            result.OptionValuesToBeForwarded(command).Should().ContainSingle()
+                .Which.Should().Be("--property:Configuration=EnvironmentConfiguration");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("Configuration", originalConfiguration);
+        }
+    }
+
+    [TestMethod]
+    public void ExplicitConfigurationOverridesEnvironmentVariable()
+    {
+        string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
+
+        try
+        {
+            Environment.SetEnvironmentVariable("Configuration", "EnvironmentConfiguration");
+            var command = new RootCommand();
+            var option = CommonOptions.CreateConfigurationOption("Configuration");
+            command.Options.Add(option);
+
+            var result = command.Parse(["--configuration", "ExplicitConfiguration"]);
+
+            result.GetValue(option).Should().Be("ExplicitConfiguration");
+            result.OptionValuesToBeForwarded(command).Should().ContainSingle()
+                .Which.Should().Be("--property:Configuration=ExplicitConfiguration");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("Configuration", originalConfiguration);
+        }
+    }
+
+    [TestMethod]
+    public void ExplicitConfigurationPropertyOverridesEnvironmentVariable()
+    {
+        string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
+
+        try
+        {
+            Environment.SetEnvironmentVariable("Configuration", "EnvironmentConfiguration");
+            var command = new RootCommand();
+            var propertyOption = CommonOptions.CreatePropertyOption();
+            var configurationOption = CommonOptions.CreateConfigurationOption("Configuration");
+            command.Options.Add(propertyOption);
+            command.Options.Add(configurationOption);
+
+            var result = command.Parse(["--property:Configuration=PropertyConfiguration"]);
+
+            result.OptionValuesToBeForwarded(command).Should().ContainSingle()
+                .Which.Should().Be("--property:Configuration=PropertyConfiguration");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("Configuration", originalConfiguration);
+        }
+    }
+
     [TestMethod]
     public void Duplicates()
     {
