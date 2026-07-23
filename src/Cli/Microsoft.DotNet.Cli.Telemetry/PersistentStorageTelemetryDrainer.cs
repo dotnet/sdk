@@ -84,63 +84,21 @@ public static class PersistentStorageTelemetryDrainer
                 return;
             }
 
+            var storage = new FileSystemTelemetryBlobStorage(storageDirectory!);
+            var transport = new HttpTelemetryUploadTransport(parsedConnectionString.TrackUri);
+            var uploader = new PersistentStorageTelemetryUploader(storage, transport, leasePeriodMilliseconds, maxBlobsPerDrain);
             using var lifetimeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             if (maxLifetime > TimeSpan.Zero)
             {
                 lifetimeCts.CancelAfter(GetBoundedTaskDelay(maxLifetime));
             }
 
-            var token = lifetimeCts.Token;
-            var storage = new FileSystemTelemetryBlobStorage(storageDirectory!);
-            var transport = new HttpTelemetryUploadTransport(parsedConnectionString.TrackUri);
-            var uploader = new PersistentStorageTelemetryUploader(storage, transport, leasePeriodMilliseconds, maxBlobsPerDrain);
-            var consecutiveRetryPasses = 0;
-
-            while (!token.IsCancellationRequested)
-            {
-                TelemetryDrainResult result;
-                try
-                {
-                    result = await uploader.DrainAsync(token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-                catch (Exception e)
-                {
-                    // The drainer must never surface errors. Stop on unexpected failure.
-                    Debug.Fail(e.ToString());
-                    break;
-                }
-
-                if (result.ForwardProgress == 0 && !result.ShouldBackOff)
-                {
-                    // No forward progress: the storage is drained, or all remaining blobs are
-                    // leased by another process or were rejected. Either way, stop.
-                    break;
-                }
-
-                var delay = s_interPassDelay;
-                if (result.ShouldBackOff)
-                {
-                    consecutiveRetryPasses++;
-                    delay = GetRetryDelay(consecutiveRetryPasses, result.RetryAfter);
-                }
-                else
-                {
-                    consecutiveRetryPasses = 0;
-                }
-
-                try
-                {
-                    await Task.Delay(delay, token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-            }
+            await RunCoreAsync(
+                uploader,
+                maxLifetime,
+                lifetimeCts.Token,
+                static (delay, token) => Task.Delay(delay, token),
+                TimeProvider.System).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -172,6 +130,90 @@ public static class PersistentStorageTelemetryDrainer
     internal static TimeSpan GetBoundedTaskDelay(TimeSpan delay)
         => delay > s_maxTaskDelay ? s_maxTaskDelay : delay;
 
+    internal static async Task RunCoreAsync(
+        PersistentStorageTelemetryUploader uploader,
+        TimeSpan maxLifetime,
+        CancellationToken cancellationToken,
+        Func<TimeSpan, CancellationToken, Task> delayAsync,
+        TimeProvider timeProvider)
+    {
+        var startTimestamp = timeProvider.GetTimestamp();
+        var consecutiveRetryPasses = 0;
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var remainingLifetime = GetRemainingLifetime(maxLifetime, timeProvider, startTimestamp);
+            if (remainingLifetime is { } remaining && remaining <= TimeSpan.Zero)
+            {
+                break;
+            }
+
+            TelemetryDrainResult result;
+            try
+            {
+                result = await uploader.DrainAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception e)
+            {
+                // The drainer must never surface errors. Stop on unexpected failure.
+                Debug.Fail(e.ToString());
+                break;
+            }
+
+            if (result.ForwardProgress == 0 && !result.ShouldBackOff)
+            {
+                // No forward progress: the storage is drained, or all remaining blobs are
+                // leased by another process or were rejected. Either way, stop.
+                break;
+            }
+
+            var delay = s_interPassDelay;
+            if (result.ShouldBackOff)
+            {
+                consecutiveRetryPasses++;
+                delay = GetRetryDelay(consecutiveRetryPasses, result.RetryAfter);
+            }
+            else
+            {
+                consecutiveRetryPasses = 0;
+            }
+
+            remainingLifetime = GetRemainingLifetime(maxLifetime, timeProvider, startTimestamp);
+            if (remainingLifetime is { } remainingDelay)
+            {
+                if (remainingDelay <= TimeSpan.Zero)
+                {
+                    break;
+                }
+
+                delay = TimeSpan.FromTicks(Math.Min(delay.Ticks, remainingDelay.Ticks));
+            }
+
+            try
+            {
+                await delayAsync(delay, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+        }
+    }
+
+    private static TimeSpan? GetRemainingLifetime(TimeSpan maxLifetime, TimeProvider timeProvider, long startTimestamp)
+    {
+        if (maxLifetime <= TimeSpan.Zero)
+        {
+            return null;
+        }
+
+        return maxLifetime - timeProvider.GetElapsedTime(startTimestamp);
+    }
+
     // Single-instance-per-directory guard for the drainer. Returns a held lock handle, or null when
     // another drainer already owns the directory (or the platform cannot lock).
     //
@@ -188,7 +230,7 @@ public static class PersistentStorageTelemetryDrainer
     // blob from being uploaded twice. Exclusivity comes from holding the handle, not from the file
     // existing, so a lock file left behind by a killed drainer is simply reopened and re-locked on
     // the next run; it is intentionally not deleted on close.
-    private static FileStream? TryAcquireDirectoryLock(string storageDirectory)
+    internal static FileStream? TryAcquireDirectoryLock(string storageDirectory)
     {
         try
         {
