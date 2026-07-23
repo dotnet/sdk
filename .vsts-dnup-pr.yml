@@ -35,7 +35,7 @@ stages:
       displayName: '📏 dotnetup style check'
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
       helixRepo: dotnet/sdk
       timeoutInMinutes: 15
@@ -66,10 +66,10 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
         emoji: 🪟
-      helixTargetQueue: windows.amd64.vs2022.pre.open
+      helixTargetQueue: windows.amd64.vs2026.pre.scout.open
       variables:
         RunDotnetupTelemetryE2EProbe: ${{ parameters.telemetryE2EProbe }}
 
