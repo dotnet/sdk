@@ -18,7 +18,7 @@ parameters:
 - name: telemetryE2EProbe
   displayName: Run the dotnetup telemetry delivery probe
   type: boolean
-  default: false
+  default: true
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
