@@ -37,7 +37,7 @@ internal static class DotnetupTelemetryDrainProcess
 
         try
         {
-            var storageDirectory = DotnetupPaths.ResolveLocalTelemetryStorageDirectory(Environment.GetEnvironmentVariable);
+            var storageDirectory = DotnetupPaths.ResolveTelemetryStorageDirectory(Environment.GetEnvironmentVariable);
             var connectionString = DotnetupTelemetry.ResolveConnectionString(Environment.GetEnvironmentVariable);
 
             PersistentStorageTelemetryDrainer

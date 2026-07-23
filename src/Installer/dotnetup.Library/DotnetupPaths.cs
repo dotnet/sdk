@@ -122,18 +122,10 @@ internal static class DotnetupPaths
     public static string TelemetrySentinelPath => Path.Combine(DataDirectory, TelemetrySentinelFileName);
 
     /// <summary>
-    /// Gets the path to the telemetry offline storage directory. The Azure
-    /// Monitor exporter uses this as its retry queue for telemetry that does
-    /// not drain over the network before the process exits.
+    /// Resolves the telemetry offline storage directory shared with the .NET SDK.
+    /// The SDK's environment override takes precedence over its default profile directory.
     /// </summary>
-    public static string TelemetryStorageDirectory => Path.Combine(DataDirectory, TelemetryStorageServiceFolderName);
-
-    /// <summary>
-    /// Resolves the telemetry offline storage directory for local runs. An
-    /// environment override takes precedence, followed by the directory shared
-    /// with the .NET SDK.
-    /// </summary>
-    internal static string ResolveLocalTelemetryStorageDirectory(Func<string, string?> getEnvironmentVariable)
+    internal static string ResolveTelemetryStorageDirectory(Func<string, string?> getEnvironmentVariable)
     {
         var environmentStoragePath = getEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
         if (!string.IsNullOrWhiteSpace(environmentStoragePath))
@@ -141,25 +133,10 @@ internal static class DotnetupPaths
             return environmentStoragePath;
         }
 
-        return GetSharedSdkTelemetryStorageDirectory(getEnvironmentVariable)
-            ?? throw new InvalidOperationException("Could not determine the .NET SDK telemetry storage directory.");
-    }
-
-    /// <summary>
-    /// Gets the telemetry offline storage directory shared with the .NET SDK.
-    /// We share that directory because the SDK is likely used more often and then it can also export our telemetry.
-    /// </summary>
-    public static string? SharedSdkTelemetryStorageDirectory
-    {
-        get => GetSharedSdkTelemetryStorageDirectory(Environment.GetEnvironmentVariable);
-    }
-
-    private static string? GetSharedSdkTelemetryStorageDirectory(Func<string, string?> getEnvironmentVariable)
-    {
         var profileFolder = new CliFolderPathCalculatorCore(getEnvironmentVariable).GetDotnetUserProfileFolderPath();
-        return string.IsNullOrEmpty(profileFolder)
-            ? null
-            : Path.Combine(profileFolder, TelemetryStorageServiceFolderName);
+        return !string.IsNullOrEmpty(profileFolder)
+            ? Path.Combine(profileFolder, TelemetryStorageServiceFolderName)
+            : throw new InvalidOperationException("Could not determine the .NET SDK telemetry storage directory.");
     }
 
     /// <summary>

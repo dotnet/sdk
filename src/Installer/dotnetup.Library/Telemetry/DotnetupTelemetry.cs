@@ -122,9 +122,7 @@ public sealed class DotnetupTelemetry : IDisposable
             var debugConsole = getEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
             var connectionString = ResolveConnectionString(getEnvironmentVariable);
 
-            var storageDirectory = IsOneAndDoneEnvironment
-                ? ResolveStorageDirectory(getEnvironmentVariable)
-                : DotnetupPaths.ResolveLocalTelemetryStorageDirectory(getEnvironmentVariable);
+            var storageDirectory = DotnetupPaths.ResolveTelemetryStorageDirectory(getEnvironmentVariable);
 
             var commonAttrs = BuildCommonAttributes();
             _commonProperties = ToLogStateProperties(commonAttrs);
@@ -144,14 +142,6 @@ public sealed class DotnetupTelemetry : IDisposable
             // Telemetry should never crash the app
             Enabled = false;
         }
-    }
-
-    private static string ResolveStorageDirectory(Func<string, string?> getEnvironmentVariable)
-    {
-        var environmentStoragePath = getEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
-        return string.IsNullOrWhiteSpace(environmentStoragePath)
-            ? DotnetupPaths.TelemetryStorageDirectory
-            : environmentStoragePath;
     }
 
     internal static string ResolveConnectionString(Func<string, string?> getEnvironmentVariable)

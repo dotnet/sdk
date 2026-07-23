@@ -12,22 +12,22 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
 public class DotnetupTelemetryDrainProcessTests
 {
     [TestMethod]
-    public void ResolveLocalTelemetryStorageDirectory_HonorsEnvOverride()
+    public void ResolveTelemetryStorageDirectory_HonorsEnvOverride()
     {
         var expected = Path.Combine(Path.GetTempPath(), "custom-telemetry-storage");
 
-        var resolved = DotnetupPaths.ResolveLocalTelemetryStorageDirectory(
+        var resolved = DotnetupPaths.ResolveTelemetryStorageDirectory(
             name => name == Constants.Telemetry.StoragePathEnvVar ? expected : null);
 
         Assert.AreEqual(expected, resolved);
     }
 
     [TestMethod]
-    public void ResolveLocalTelemetryStorageDirectory_IgnoresWhitespaceOverride()
+    public void ResolveTelemetryStorageDirectory_IgnoresWhitespaceOverride()
     {
         // A blank/whitespace override must not be treated as a real path.
         var dotnetCliHome = Path.Combine(Path.GetTempPath(), "dotnet-cli-home");
-        var resolved = DotnetupPaths.ResolveLocalTelemetryStorageDirectory(
+        var resolved = DotnetupPaths.ResolveTelemetryStorageDirectory(
             name => name switch
             {
                 Constants.Telemetry.StoragePathEnvVar => "   ",
@@ -41,10 +41,10 @@ public class DotnetupTelemetryDrainProcessTests
     }
 
     [TestMethod]
-    public void ResolveLocalTelemetryStorageDirectory_FallsBackToSdkDirectory()
+    public void ResolveTelemetryStorageDirectory_FallsBackToSdkDirectory()
     {
         var dotnetCliHome = Path.Combine(Path.GetTempPath(), "dotnet-cli-home");
-        var resolved = DotnetupPaths.ResolveLocalTelemetryStorageDirectory(
+        var resolved = DotnetupPaths.ResolveTelemetryStorageDirectory(
             name => name == CliFolderPathCalculatorCore.DotnetHomeVariableName ? dotnetCliHome : null);
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(resolved), "a storage directory must always resolve");

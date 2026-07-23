@@ -40,7 +40,7 @@ public class PersistentStorageTelemetryDrainerTests
     public async Task RunCoreAsync_StopsAtLifetimeWithoutWaiting()
     {
         var storage = new FakeBlobStorage(new FakeBlob([1]));
-        var transport = new FakeTransport(TelemetryUploadResult.Rejected);
+        var transport = new FakeTransport(TelemetryUploadResult.Rejected, TelemetryUploadResult.Rejected);
         var uploader = new PersistentStorageTelemetryUploader(storage, transport);
         var clock = new FakeTimeProvider();
         var delays = new RecordingDelay(clock);

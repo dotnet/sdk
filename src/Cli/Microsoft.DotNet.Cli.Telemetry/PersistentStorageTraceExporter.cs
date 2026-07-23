@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Threading;
 using Microsoft.DotNet.Cli.Telemetry.Implementation;
 using OpenTelemetry;
 
@@ -28,15 +27,8 @@ internal sealed class PersistentStorageTraceExporter : BaseExporter<Activity>
 {
     private readonly ITelemetryBlobStorage _storage;
     private readonly string _instrumentationKey;
-    private readonly Uri _ingestionTrackUri;
-    private readonly int _leasePeriodMilliseconds;
-    private readonly int _maxBlobsPerDrain;
-    private readonly bool _startBackgroundDrain;
+    private readonly PersistentStorageTelemetryBackgroundWorker? _backgroundWorker;
     private TelemetryResourceContext? _resourceContext;
-    // Guards against starting more than one background drain per exporter.
-    private int _drainStarted;
-    private CancellationTokenSource? _drainCts;
-    private Task? _drainTask;
 
     public PersistentStorageTraceExporter(
         ITelemetryBlobStorage storage,
@@ -48,10 +40,14 @@ internal sealed class PersistentStorageTraceExporter : BaseExporter<Activity>
     {
         _storage = storage;
         _instrumentationKey = instrumentationKey;
-        _ingestionTrackUri = ingestionTrackUri;
-        _leasePeriodMilliseconds = leasePeriodMilliseconds;
-        _maxBlobsPerDrain = maxBlobsPerDrain;
-        _startBackgroundDrain = startBackgroundDrain;
+        if (startBackgroundDrain)
+        {
+            _backgroundWorker = new PersistentStorageTelemetryBackgroundWorker(
+                storage,
+                ingestionTrackUri,
+                leasePeriodMilliseconds,
+                maxBlobsPerDrain);
+        }
     }
 
     public override ExportResult Export(in Batch<Activity> batch)
@@ -62,7 +58,7 @@ internal sealed class PersistentStorageTraceExporter : BaseExporter<Activity>
             // persisted by this and previous invocations. Doing this here (rather than at
             // construction) ties the drain to the exporter actually being started and keeps it
             // from running when telemetry is opted out (no spans are exported in that case).
-            StartBackgroundDrainOnce();
+            _backgroundWorker?.StartOnce();
 
             var resource = _resourceContext ??= TelemetryResourceContextFactory.FromResource(ParentProvider?.GetResource());
             var bytes = AzureMonitorTelemetrySerializer.SerializeBatch(in batch, resource, _instrumentationKey);
@@ -83,58 +79,6 @@ internal sealed class PersistentStorageTraceExporter : BaseExporter<Activity>
 
     protected override bool OnShutdown(int timeoutMilliseconds)
     {
-        // Signal the background drain to stop and wait for it to finish within the
-        // remaining shutdown budget. This ensures inflight HTTP POSTs are cancelled and
-        // the drain loop persists any retriable remainders before the process exits.
-        _drainCts?.Cancel();
-        if (_drainTask is not null)
-        {
-            try
-            {
-                return _drainTask.Wait(timeoutMilliseconds);
-            }
-            catch (AggregateException)
-            {
-                // The drain swallows its own exceptions; this handles edge cases like
-                // ObjectDisposedException from the CTS during shutdown.
-                return true;
-            }
-        }
-        return true;
-    }
-
-    private void StartBackgroundDrainOnce()
-    {
-        // When delivery is handled out of band (e.g. a detached drainer process), the exporter
-        // only persists and must never start upload work of its own.
-        if (!_startBackgroundDrain)
-        {
-            return;
-        }
-
-        if (Interlocked.Exchange(ref _drainStarted, 1) != 0)
-        {
-            return;
-        }
-
-        _drainCts = new CancellationTokenSource();
-        var transport = new HttpTelemetryUploadTransport(_ingestionTrackUri);
-        var uploader = new PersistentStorageTelemetryUploader(_storage, transport, _leasePeriodMilliseconds, _maxBlobsPerDrain);
-        _drainTask = Task.Run(async () =>
-        {
-            try
-            {
-                await uploader.DrainAsync(_drainCts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when shutdown is signalled.
-            }
-            catch (Exception e)
-            {
-                // Background telemetry drain must never surface errors.
-                Debug.Fail(e.ToString());
-            }
-        });
+        return _backgroundWorker?.Shutdown(timeoutMilliseconds) ?? true;
     }
 }
