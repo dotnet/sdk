@@ -46,7 +46,9 @@
     <EnableMicrosoftTestingExtensionsHangDump>true</EnableMicrosoftTestingExtensionsHangDump>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true' and '$(IsTestApplication)' == 'true'">
+  <!-- Live capture can block high-volume parallel test runs when CI output is redirected through
+       Helix. Keep CI on MSTest's default result capture while streaming output in local runs. -->
+  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true' and '$(IsTestApplication)' == 'true' and '$(ContinuousIntegrationBuild)' != 'true'">
     <None Include="$(MSBuildThisFileDirectory)testconfig.json"
           Link="testconfig.json"
           TargetPath="$(AssemblyName).testconfig.json"
