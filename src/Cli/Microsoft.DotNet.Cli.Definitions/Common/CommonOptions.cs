@@ -196,13 +196,35 @@ internal static class CommonOptions
 
     public const string ConfigurationOptionName = "--configuration";
 
-    public static Option<string?> CreateConfigurationOption(string description) =>
-        new Option<string?>(ConfigurationOptionName, "-c")
+    public static Option<string?> CreateConfigurationOption(string description)
+    {
+        var option = new Option<string?>(ConfigurationOptionName, "-c")
         {
             Description = description,
             HelpName = CommandDefinitionStrings.ConfigurationArgumentName,
-            IsDynamic = true
-        }.ForwardAsSingle(o => $"--property:Configuration={o}");
+            IsDynamic = true,
+            DefaultValueFactory = _ => Environment.GetEnvironmentVariable("Configuration")
+        };
+
+        return option.SetForwardingFunction((configuration, parseResult) =>
+        {
+            if (configuration is null)
+            {
+                return [];
+            }
+
+            var propertyOption = parseResult.CommandResult.Command.Options.FirstOrDefault(o => o.Name == "--property");
+            if (parseResult.GetResult(option) is OptionResult { Implicit: true } &&
+                propertyOption is not null &&
+                parseResult.GetResult(propertyOption) is OptionResult propertyResult &&
+                propertyResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>()?.ContainsKey("Configuration") is true)
+            {
+                return [];
+            }
+
+            return [$"--property:Configuration={configuration}"];
+        });
+    }
 
     public static Option<string> CreateVersionSuffixOption() =>
         new Option<string>("--version-suffix")
@@ -380,4 +402,3 @@ internal static class CommonOptions
         Arity = ArgumentArity.Zero
     };
 }
-
