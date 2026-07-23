@@ -337,13 +337,27 @@ internal sealed class HotReloadDotNetWatcher
                         var changedFiles = NormalizePathChanges(changedPaths)
                             .Select(changedPath =>
                             {
+                                var changeKind = changedPath.Kind;
+
+                                // A change reported as Add or Update may target a file that has already been
+                                // deleted or renamed away by the time we process the change. This happens when a
+                                // source file is renamed via delete+create (the deletion of the old file may be
+                                // reported as an Update, or a delete-...-add sequence may be normalized to Update),
+                                // or when the OS file watcher coalesces/reorders events. Reading such a file to
+                                // apply the change would throw FileNotFoundException, so treat a missing file as a
+                                // deletion instead.
+                                if (changeKind is ChangeKind.Add or ChangeKind.Update && !File.Exists(changedPath.Path))
+                                {
+                                    changeKind = ChangeKind.Delete;
+                                }
+
                                 // On macOS may report Update followed by Add when a new file is created or just updated.
                                 // We normalize Update + Add to just Add and Update + Add + Delete to Update above.
                                 // To distinguish between an addition and an update we check if the file exists.
 
                                 if (evaluationResult.Files.TryGetValue(changedPath.Path, out var existingFileItem))
                                 {
-                                    var changeKind = changedPath.Kind == ChangeKind.Add ? ChangeKind.Update : changedPath.Kind;
+                                    changeKind = changeKind == ChangeKind.Add ? ChangeKind.Update : changeKind;
 
                                     return new ChangedFile(existingFileItem, changeKind);
                                 }
@@ -352,7 +366,7 @@ internal sealed class HotReloadDotNetWatcher
                                 // The file could have been deleted and Add + Delete sequence could have been normalized to Update.
                                 return new ChangedFile(
                                     new FileItem() { FilePath = changedPath.Path, ContainingProjectPaths = [] },
-                                    changedPath.Kind);
+                                    changeKind);
                             })
                             .ToList();
 
