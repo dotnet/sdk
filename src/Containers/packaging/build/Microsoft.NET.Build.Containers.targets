@@ -414,8 +414,8 @@
         Include="$(_ContainerLabel)"/>
       <ContainerLabel
         Condition="@(_ParsedContainerLabel->Count()) > 0 "
-        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[0])"
-        Value="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[1])" />
+        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':', 2)[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':', 2)[1])" />
 
       <_ParsedContainerPort
         Condition="'$(_ContainerPort)' != ':'"

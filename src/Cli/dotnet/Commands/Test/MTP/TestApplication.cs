@@ -20,15 +20,24 @@ internal sealed class TestApplication(
     BuildOptions buildOptions,
     TestOptions testOptions,
     TerminalTestReporter output,
-    Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
+    Action<CommandLineOptionMessages> onHelpRequested,
+    ArtifactPostProcessingManager? artifactPostProcessingManager = null,
+    ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
+    private static readonly TimeSpan ArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
     private const int LiveOutputTailLineCount = 200;
 
     private readonly Lock _requestLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
-    private readonly TestApplicationHandler _handler = new(output, module, testOptions);
+    private readonly TestApplicationHandler _handler = new(
+        output,
+        module,
+        testOptions,
+        artifactPostProcessingManager,
+        artifactPostProcessingInvocation);
+    private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
 
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
@@ -107,7 +116,28 @@ internal sealed class TestApplication(
 
             // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
             // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
-            await process.WaitForExitAsync();
+            bool artifactPostProcessingTimedOut = false;
+            if (_artifactPostProcessingInvocation is null)
+            {
+                await process.WaitForExitAsync();
+            }
+            else
+            {
+                try
+                {
+                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout);
+                }
+                catch (TimeoutException)
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill(entireProcessTree: true);
+                        await process.WaitForExitAsync();
+                    }
+
+                    artifactPostProcessingTimedOut = true;
+                }
+            }
 
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
             // We might not be able to consume all the output if the test app has exited but left a child process alive.
@@ -117,6 +147,11 @@ internal sealed class TestApplication(
             }
             catch (TimeoutException)
             {
+            }
+
+            if (artifactPostProcessingTimedOut)
+            {
+                throw new TimeoutException();
             }
 
             var exitCode = process.ExitCode;
@@ -177,7 +212,8 @@ internal sealed class TestApplication(
                 processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
-            if (!_buildOptions.NoLaunchProfileArguments &&
+            if (_artifactPostProcessingInvocation is null &&
+                !_buildOptions.NoLaunchProfileArguments &&
                 !string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
             {
                 processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
@@ -209,7 +245,24 @@ internal sealed class TestApplication(
         // RunArguments is intentionally not escaped. It can contain multiple arguments and spaces there shouldn't cause the whole
         // value to be wrapped in double quotes. This matches dotnet run behavior.
         // In short, it's expected to already be escaped properly.
-        StringBuilder builder = new(Module.RunProperties.Arguments);
+        StringBuilder builder = new(
+            _artifactPostProcessingInvocation is null
+                ? Module.RunProperties.Arguments
+                : GetArtifactPostProcessingLaunchArguments(Module));
+
+        if (_artifactPostProcessingInvocation is not null)
+        {
+            builder.Append($" {CliConstants.ArtifactPostProcessingToolName}");
+            builder.Append($" {CliConstants.ArtifactPostProcessingManifestOptionKey} {ArgumentEscaper.EscapeSingleArg(_artifactPostProcessingInvocation.ManifestPath)}");
+
+            if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } toolDiagnosticOutputDirectoryPath)
+            {
+                builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(toolDiagnosticOutputDirectoryPath)}");
+            }
+
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
+            return builder.ToString();
+        }
 
         if (TestOptions.IsHelp)
         {
@@ -245,6 +298,14 @@ internal sealed class TestApplication(
 
         return builder.ToString();
     }
+
+    internal static string GetArtifactPostProcessingLaunchArguments(TestModule module)
+        => string.Equals(
+            Path.GetFileNameWithoutExtension(module.RunProperties.Command),
+            "dotnet",
+            StringComparison.OrdinalIgnoreCase)
+            ? $"exec {ArgumentEscaper.EscapeSingleArg(module.TargetPath)}"
+            : string.Empty;
 
     private async Task WaitConnectionAsync(CancellationToken token)
     {

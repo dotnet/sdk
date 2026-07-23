@@ -81,11 +81,24 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
+        var artifactPostProcessingManager = new ArtifactPostProcessingManager();
         int? exitCode = null;
         try
         {
-            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested, ctrlC);
+            var actionQueue = new TestApplicationActionQueue(
+                degreeOfParallelism,
+                buildOptions,
+                testOptions,
+                output,
+                OnHelpRequested,
+                ctrlC,
+                artifactPostProcessingManager);
             exitCode = testHandler.RunTestApplications(actionQueue);
+
+            if (!testOptions.IsHelp && !testOptions.IsDiscovery && !ctrlC.Token.IsCancellationRequested)
+            {
+                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC).GetAwaiter().GetResult();
+            }
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
             if (exitCode == ExitCode.Success && output.HasHandshakeFailure)
