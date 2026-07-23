@@ -148,11 +148,35 @@ Copyright (c) .NET Foundation. All rights reserved.
     </_CorePublishTargets>
 
     <_PublishNoBuildAlternativeDependsOn>$(_BeforePublishNoBuildTargets);$(_CorePublishTargets)</_PublishNoBuildAlternativeDependsOn>
+
+    <!-- For AOT publish, we only need Compile (not full Build) since IlcCompile reads from
+         @(IntermediateAssembly) in obj\, not from bin\ output. Skipping Build avoids producing
+         unnecessary self-contained managed output (apphost, deps.json, runtimeconfig, runtime
+         pack files) in the output directory that would confuse users and automation.
+         Set UseAotOptimizedPublish=false to restore the previous behavior of running full Build. -->
+    <UseAotOptimizedPublish Condition="'$(UseAotOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">true</UseAotOptimizedPublish>
+    <_BeforePublishAotBuildTargets Condition="'$(UseAotOptimizedPublish)' == 'true'">
+      BuildOnlySettings;
+      PrepareForBuild;
+      PrepareResources;
+      Compile;
+      CreateSatelliteAssemblies;
+    </_BeforePublishAotBuildTargets>
   </PropertyGroup>
 
   <Target Name="_PublishBuildAlternative"
-          Condition="'$(NoBuild)' != 'true'"
+          Condition="'$(NoBuild)' != 'true' and '$(UseAotOptimizedPublish)' != 'true'"
           DependsOnTargets="Build;$(_CorePublishTargets)" />
+
+  <!-- $(_AdditionalAotBuildAlternativeTargets) is an extension point for SDKs (e.g. Static Web Assets)
+       that hook additional work into the full Build via targets which the AOT-optimized path skips.
+       It is referenced in the DependsOnTargets attribute (not a pre-computed property) so it is expanded
+       at build time, allowing contributions from targets imported after this file. It runs after
+       Compile so contributors can rely on the intermediate assembly, and before the core publish
+       targets that consume its outputs. -->
+  <Target Name="_PublishAotBuildAlternative"
+          Condition="'$(NoBuild)' != 'true' and '$(UseAotOptimizedPublish)' == 'true'"
+          DependsOnTargets="$(_BeforePublishAotBuildTargets);$(_AdditionalAotBuildAlternativeTargets);$(_CorePublishTargets)" />
 
   <Target Name="_PublishNoBuildAlternative"
           Condition="'$(NoBuild)' == 'true'"
@@ -160,7 +184,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="Publish"
           Condition="$(IsPublishable) == 'true'"
-          DependsOnTargets="_PublishBuildAlternative;_PublishNoBuildAlternative" >
+          DependsOnTargets="_PublishBuildAlternative;_PublishAotBuildAlternative;_PublishNoBuildAlternative" >
 
     <!-- Ensure there is minimal verbosity output pointing to the publish directory and not just the
          build step's minimal output. Otherwise there is no indication at minimal verbosity of where

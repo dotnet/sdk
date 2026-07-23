@@ -303,6 +303,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GenerateStaticWebAssetsManifestDependsOn>$(GenerateStaticWebAssetsManifestDependsOn);ResolveBuildStaticWebAssets</GenerateStaticWebAssetsManifestDependsOn>
 
+    <!-- The AOT-optimized publish path (UseAotOptimizedPublish) runs Compile instead of full Build,
+         which skips PrepareForRun and therefore GenerateStaticWebAssetsManifest. The publish pipeline
+         still expects the static web assets build manifest (staticwebassets.build.json) to exist, so
+         contribute manifest generation to the AOT build-alternative extension point. This writes only
+         to the intermediate (obj\) directory and does not copy assets to the output (bin\) directory. -->
+    <_AdditionalAotBuildAlternativeTargets>$(_AdditionalAotBuildAlternativeTargets);GenerateStaticWebAssetsManifest</_AdditionalAotBuildAlternativeTargets>
+
     <!-- There are now three stages:
       ResolveCoreStaticWebAssets: This is the stage where we resolve the static web assets for the current project, packages and project references. These assets exist on disk
       and are part of the project or one of its dependencies.
