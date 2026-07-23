@@ -140,6 +140,34 @@ public class TargetsTests
 
     private static bool LabelMatch(string label, string value, ProjectItemInstance item) => item.EvaluatedInclude == label && item.GetMetadata("Value") is { } v && v.EvaluatedValue == value;
 
+    [TestMethod]
+    public void MultiArchContainerLabelsPreserveColonsInValues()
+    {
+        var expectedLabels = new Dictionary<string, string>
+        {
+            ["org.opencontainers.image.source"] = "https://github.com/dotnet/sdk",
+            ["org.opencontainers.image.created"] = "2026-07-22T12:34:56.7890000Z",
+        };
+        var serializedLabels = string.Join(';', expectedLabels.Select(label => $"{label.Key}:{label.Value}"));
+
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["_ContainerLabel"] = serializedLabels,
+        }, projectName: nameof(MultiArchContainerLabelsPreserveColonsInValues));
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build(["_ParseItemsForPublishingSingleContainer"], [logger])
+            .Should().BeTrue("Build should have succeeded but failed due to {0}", string.Join('\n', logger.AllMessages));
+
+        var labels = instance.GetItems(ContainerLabel);
+        labels.Should().HaveCount(expectedLabels.Count);
+        foreach (var expectedLabel in expectedLabels)
+        {
+            labels.Should().ContainSingle(label => LabelMatch(expectedLabel.Key, expectedLabel.Value, label));
+        }
+    }
+
     [DataRow(true)]
     [DataRow(false)]
     [TestMethod]
