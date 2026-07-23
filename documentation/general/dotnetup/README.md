@@ -53,6 +53,7 @@ Select an example channel to get started: (Enter to confirm)
   none          I'll tell you what to install later.
   lts           Long Term Support  → 10.0.300
   preview       Latest preview  → 11.0.100-preview.4.26230.115
+  daily         Latest daily build  → 11.0.100-preview.7.26301.1
   10.0          Major.Minor channel  → 10.0.300
 
 (use ↑↓ arrows)
@@ -67,14 +68,19 @@ Channels determine which version of .NET to install and how it gets updated. Pic
 | `latest`    | The newest stable .NET SDK | Updates to the latest GA release |
 | `lts`       | The current Long Term Support release | Updates within the LTS line |
 | `preview`   | The latest preview/RC release | Updates to newer previews |
+| `daily`     | The latest daily SDK build | Updates to newer daily builds |
+| `10-daily`  | The latest daily SDK for .NET 10 | Updates within the .NET 10 daily channel |
 | `10.0`      | The latest SDK for .NET 10.0 | Updates within the 10.0 major.minor |
+| `10.0-daily` | The latest daily SDK for .NET 10.0 | Updates within the 10.0 daily channel |
 | `10.0.1xx`  | The latest SDK in the 10.0.1xx feature band | Updates within the feature band |
+| `10.0.1xx-daily` | The latest daily SDK in the 10.0.1xx feature band | Updates within the daily feature band |
 | `10.0.100`  | Exactly SDK 10.0.100 | Never updates (pinned) |
-| `11.0.100-preview.6.26277.104` (or any other nightly build number)     | A specific version number of a daily VMR builds | Never updates |
+| `11.0.100-preview.6.26277.104` (or any other daily build number) | A specific daily build version | Never updates |
 | `none`      | Skips the initial install | You can install later with `dotnetup sdk install` |
 
-In general, there are two kinds of channels: **version-based** and **feature-based**.
-- **Version-based** channels specify an exact version or a range of versions - `10`,  `10.0.2xx`, and so on
+Common channel categories include:
+- **Version-based** channels specify an exact version or a range of versions - `10`, `10.0.2xx`, and so on
+- **Daily** channels install CI-produced builds and use the `-daily` suffix for version scopes - `daily`, `10-daily`, `10.0-daily`, `10.0.1xx-daily`, and so on (note that daily builds are not code-signed)
 - **Feature-based** channels group versions by their characteristics - `preview`, `lts`, and so on
 
 ### Step 2: Choose How to Access .NET
