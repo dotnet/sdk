@@ -7,7 +7,8 @@ parameters:
     publishTaskPrefix: ''
   container: ''
   helixTargetContainer: ''
-  categoryName: Build
+  categoryName: ''
+  platformName: ''
   runTests: true
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
   publishRetryConfig: false
@@ -25,7 +26,7 @@ parameters:
   # These publish the test assembly as a NativeAOT binary and run it on the same architecture,
   # validating the AOT CLI entry-point code under NativeAOT compilation. Only enabled where the
   # agent architecture matches the target (the produced native binary must run on the agent);
-  # cross-arch AoT legs leave it false.
+  # cross-arch AOT legs leave it false.
   runNativeAotCliTests: false
   ### MSBUILD ###
   targetArchitecture: x64
@@ -44,12 +45,12 @@ parameters:
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
-    ${{ if eq(parameters.container, '') }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }})'
+    ${{ if eq(parameters.categoryName, '') }}:
+      name: ${{ parameters.platformName }}_${{ parameters.targetArchitecture }}
+      displayName: '${{ parameters.platformName }} ${{ parameters.targetArchitecture }}'
     ${{ else }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}_${{ parameters.container }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }}) [${{ parameters.container }}]'
+      name: ${{ parameters.platformName }}_${{ parameters.targetArchitecture }}_${{ parameters.categoryName }}
+      displayName: '${{ parameters.platformName }} ${{ parameters.targetArchitecture }} ${{ parameters.categoryName }}'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -290,11 +291,10 @@ jobs:
       continueOnError: true
       condition: always()
 
-    # Only the AoT legs build the dotnet-aot NativeAOT library, so only they produce the
-    # size-analysis files. Gate on the AoT category so these steps run on every AoT leg (including
-    # the build-only cross-arch legs) and never upload empty artifacts on non-AoT legs like the
-    # TestBuild/FullFramework jobs.
-    - ${{ if eq(parameters.categoryName, 'AoT') }}:
+    # Only the AOT legs build the dotnet-aot NativeAOT library, so only they produce the
+    # size-analysis files. Gate on the AOT category so these steps run on every AOT leg (including
+    # the build-only cross-arch legs) and never upload empty artifacts on non-AOT legs.
+    - ${{ if eq(parameters.categoryName, 'AOT') }}:
       - task: CopyFiles@2
         displayName: 🟣 Copy NativeAOT Size Analysis Files
         inputs:
