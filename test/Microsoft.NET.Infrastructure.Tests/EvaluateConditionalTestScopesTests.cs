@@ -430,6 +430,33 @@ public class EvaluateConditionalTestScopesTests : SdkTest
     }
 
     [TestMethod]
+    public async Task Validation_WildcardInDirectoryName_ValidatesParentSegment()
+    {
+        // A wildcard can appear within a path segment (e.g. "test/dotnet-format.*/**").
+        // Validation should trim back to the last complete directory segment ("test")
+        // rather than treating the partial segment ("test/dotnet-format.") as a directory.
+        var props = """
+            <Project>
+              <ItemGroup>
+                <ConditionalTestScope Include="WildcardDirName">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/*.csproj</TestProjects>
+                  <TriggerPaths>test/dotnet-format.*/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+              </ItemGroup>
+            </Project>
+            """;
+
+        // The parent segment "test" exists, but no "test/dotnet-format." directory does.
+        using var repo = new TestRepo(props, "test");
+
+        var result = await RunScript(repo.Root, targetBranch: null, buildReason: "PullRequest");
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+    }
+
+    [TestMethod]
     public async Task RenamedFile_OutOfTriggerPath_ScopeRuns()
     {
         // A file renamed OUT of a trigger path should still trigger that scope

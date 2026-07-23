@@ -323,8 +323,9 @@ static void ValidatePatternBaseDir(string repoRoot, string pattern, string conte
         return;
     }
 
-    // Get the last complete directory segment before the first wildcard.
-    // For "test/dotnet-format.*/**", this gives "test" (not "test/dotnet-format.").
+    // Get the directory portion before the first wildcard. The wildcard may appear
+    // within a path segment (e.g. "test/dotnet-format.*/**"), so trim back to the last
+    // '/' to avoid treating a partial segment name as a real directory.
     var prefixBeforeWildcard = normalized[..firstWildcard];
     var lastSlash = prefixBeforeWildcard.LastIndexOf('/');
     var baseDir = lastSlash >= 0 ? prefixBeforeWildcard[..lastSlash] : "";
