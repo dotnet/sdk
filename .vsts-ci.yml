@@ -65,9 +65,9 @@ extends:
     ${{ else }}:
       # Internal PR builds run under the 1ES Unofficial template. They restore from
       # public feeds (nuget.org, npm, yarn), so network isolation is not applicable
-      # and is disabled to avoid spurious CFS clean violations.
+      # and so we set it to permissive and requested an exception
       settings:
-        networkIsolationMode: None
+        networkIsolationPolicy: Permissive
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
