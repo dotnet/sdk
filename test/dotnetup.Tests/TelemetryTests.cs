@@ -338,6 +338,66 @@ public class DotnetupTelemetryTests : IDisposable
     }
 
     [TestMethod]
+    public void GetLocalShutdownBudgetMs_UsesShortBudgetForSuccessfulShellStartup()
+    {
+        using var telemetry = new DotnetupTelemetry(_ => "1");
+        telemetry.StartTrackedCommand("env script");
+
+        Assert.AreEqual(10, telemetry.GetLocalShutdownBudgetMs(0));
+    }
+
+    [TestMethod]
+    public void GetLocalShutdownBudgetMs_UsesFailureBudgetForFailedShellStartup()
+    {
+        using var telemetry = new DotnetupTelemetry(_ => "1");
+        telemetry.StartTrackedCommand("env script");
+
+        Assert.AreEqual(400, telemetry.GetLocalShutdownBudgetMs(1));
+    }
+
+    [TestMethod]
+    public void GetLocalShutdownBudgetMs_UsesDefaultBudgetForSuccessfulCommands()
+    {
+        using var telemetry = new DotnetupTelemetry(_ => "1");
+        telemetry.StartTrackedCommand("install");
+
+        Assert.AreEqual(200, telemetry.GetLocalShutdownBudgetMs(0));
+    }
+
+    [TestMethod]
+    public void ForceLocalDelivery_OverridesCIEnvironmentClassification()
+    {
+        using var telemetry = new DotnetupTelemetry(
+            name => name == Constants.Telemetry.ForceLocalDeliveryEnvVar ? "1" : null,
+            isCIEnvironment: true);
+
+        Assert.IsFalse(telemetry.IsOneAndDoneEnvironment);
+    }
+
+    [TestMethod]
+    public void ResolveConnectionString_UsesE2EOverride()
+    {
+        const string expected = "InstrumentationKey=test;IngestionEndpoint=http://127.0.0.1/";
+
+        var actual = DotnetupTelemetry.ResolveConnectionString(
+            name => name == Constants.Telemetry.E2EConnectionStringEnvVar ? expected : null);
+
+        Assert.AreEqual(expected, actual);
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void ResolveConnectionString_UsesProductionDefaultForMissingOverride(string? overrideValue)
+    {
+        var actual = DotnetupTelemetry.ResolveConnectionString(
+            name => name == Constants.Telemetry.E2EConnectionStringEnvVar ? overrideValue : null);
+
+        Assert.AreEqual(Constants.Telemetry.ConnectionString, actual);
+    }
+
+    [TestMethod]
     public void RecordException_AfterStartTrackedCommand_DoesNotThrow()
     {
         var telemetry = DotnetupTelemetry.Instance;

@@ -65,11 +65,36 @@ internal sealed class HttpTelemetryUploadTransport : ITelemetryUploadTransport
             // blob is done. Otherwise re-persist just the retriable envelopes.
             return retriable is null
                 ? TelemetryUploadResult.Accepted
-                : TelemetryUploadResult.PartiallyAccepted(retriable);
+                : TelemetryUploadResult.PartiallyAccepted(retriable, GetRetryAfter(response));
         }
 
-        // Throttling, server errors, etc.: retain the blob and retry it later.
-        return TelemetryUploadResult.Rejected;
+        // Retain only statuses that Azure Monitor defines as retriable. Treat permanent
+        // whole-request failures as terminal so one poison blob cannot block later telemetry.
+        if (!BreezePartialContent.IsRetriableStatusCode((int)response.StatusCode))
+        {
+            return TelemetryUploadResult.PermanentlyRejected;
+        }
+
+        return GetRetryAfter(response) is { } retryAfter
+            ? TelemetryUploadResult.RejectedAfter(retryAfter)
+            : TelemetryUploadResult.Rejected;
+    }
+
+    private static TimeSpan? GetRetryAfter(HttpResponseMessage response)
+    {
+        var retryAfter = response.Headers.RetryAfter;
+        if (retryAfter?.Delta is { } delta)
+        {
+            return delta < TimeSpan.Zero ? TimeSpan.Zero : delta;
+        }
+
+        if (retryAfter?.Date is { } date)
+        {
+            var delay = date - DateTimeOffset.UtcNow;
+            return delay < TimeSpan.Zero ? TimeSpan.Zero : delay;
+        }
+
+        return null;
     }
 
     /// <summary>
