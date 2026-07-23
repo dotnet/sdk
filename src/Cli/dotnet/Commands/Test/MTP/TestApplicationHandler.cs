@@ -564,6 +564,77 @@ internal sealed class TestApplicationHandler
         LogTestProcessExit(exitCode, outputData, errorData);
     }
 
+    /// <summary>
+    /// Reports results for a standalone (wasm) test host that ran without the named pipe. There is
+    /// no handshake or streamed messages, so we report from what's available:
+    /// <list type="bullet">
+    /// <item><paramref name="trxFilePath"/> is <see langword="null"/> (TRX not requested — the
+    /// current wasm default; see <c>WasmReportTrxSupported</c>): report assembly-level pass/fail
+    /// from the process exit code, with no per-test detail.</item>
+    /// <item><paramref name="trxFilePath"/> is set and the TRX exists: replay its per-test results
+    /// into the reporter as if they had arrived over the pipe.</item>
+    /// <item><paramref name="trxFilePath"/> is set but the TRX is missing: the host crashed before
+    /// finishing (TRX present ⇒ ran to completion), so surface the process output and exit code via
+    /// <see cref="TerminalTestReporter.HandshakeFailure"/>.</item>
+    /// </list>
+    /// </summary>
+    internal void ReportStandaloneResults(int exitCode, string? trxFilePath, string outputData, string errorData)
+    {
+        TrxReport? report = trxFilePath is not null ? TrxTestResultParser.TryParse(trxFilePath) : null;
+
+        // A requested-but-missing TRX means the host crashed before writing results.
+        if (trxFilePath is not null && report is null)
+        {
+            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
+            LogTestProcessExit(exitCode, outputData, errorData);
+            return;
+        }
+
+        string executionId = Guid.NewGuid().ToString();
+        string instanceId = Guid.NewGuid().ToString();
+        string? architecture = GetWasmArchitecture(_module.RunProperties.RuntimeIdentifier);
+
+        _output.AssemblyRunStarted(_module.TargetPath, _module.TargetFramework, architecture, executionId, instanceId);
+
+        if (report is null)
+        {
+            // Exit-code-only path (no TRX requested, e.g. wasm today): there are no per-test results,
+            // so the reporter's test count stays 0. Flag it so a passing run isn't reclassified as
+            // ExitCode.ZeroTests at the run level.
+            _output.ReportExitCodeOnlyResult();
+        }
+
+        // With a TRX, replay per-test results; without one (exit-code-only path, e.g. wasm today),
+        // report only the assembly-level pass/fail that AssemblyRunCompleted derives from the exit code.
+        foreach (TrxTestResult result in report?.Results ?? [])
+        {
+            // TRX has no structured expected/actual (only inline in the message), so both are null.
+            Terminal.FlatException[]? exceptions = result.ErrorMessage is not null || result.StackTrace is not null
+                ? [new Terminal.FlatException(result.ErrorMessage, ErrorType: null, result.StackTrace)]
+                : null;
+
+            _output.TestCompleted(
+                _module.TargetPath,
+                _module.TargetFramework,
+                architecture,
+                executionId,
+                instanceId,
+                testNodeUid: result.Uid,
+                displayName: result.DisplayName,
+                informativeMessage: null,
+                ToOutcome(result.Outcome),
+                result.Duration,
+                exceptions,
+                expected: null,
+                actual: null,
+                standardOutput: result.StandardOutput,
+                errorOutput: result.ErrorOutput);
+        }
+
+        _output.AssemblyRunCompleted(executionId, exitCode, outputData, errorData);
+        LogTestProcessExit(exitCode, outputData, errorData);
+    }
+
     private static TestOutcome ToOutcome(byte? testState) => testState switch
     {
         TestStates.Passed => TestOutcome.Passed,
@@ -574,6 +645,30 @@ internal sealed class TestApplicationHandler
         TestStates.Cancelled => TestOutcome.Canceled,
         _ => throw new ArgumentOutOfRangeException(nameof(testState), $"Invalid test state value {testState}")
     };
+
+    // Maps a TRX <UnitTestResult> @outcome to a reporter outcome. MTP's TRX only emits
+    // Passed/Failed/NotExecuted (Timeout/Error/Cancelled collapse to Failed at the result level),
+    // but a few extra values are mapped defensively. Unknown/other values are treated as failures
+    // so problems are never silently hidden.
+    internal static TestOutcome ToOutcome(string trxOutcome) => trxOutcome switch
+    {
+        "Passed" => TestOutcome.Passed,
+        "NotExecuted" => TestOutcome.Skipped,
+        "Timeout" => TestOutcome.Timeout,
+        "Aborted" => TestOutcome.Canceled,
+        "Error" => TestOutcome.Error,
+        _ => TestOutcome.Fail,
+    };
+
+    // Derives a short architecture label (e.g. "wasm") from a runtime identifier such as
+    // "browser-wasm" / "wasi-wasm" for display in the reporter.
+    private static string? GetWasmArchitecture(string runtimeIdentifier)
+    {
+        int dash = runtimeIdentifier.LastIndexOf('-');
+        return dash >= 0 && dash < runtimeIdentifier.Length - 1
+            ? runtimeIdentifier[(dash + 1)..]
+            : runtimeIdentifier;
+    }
 
     private static void LogHandshake(HandshakeMessage handshakeMessage)
     {

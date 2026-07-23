@@ -25,6 +25,14 @@ internal sealed class TestApplication(
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
     private const int LiveOutputTailLineCount = 200;
 
+    // A per-run TRX basename requested from a standalone wasm test host. Unique per TestApplication
+    // so concurrently-running modules never share a file, and freshly GUID-stamped each run so a
+    // stale TRX from an earlier run can never be replayed. dotnet test (and a bridge host copying the
+    // file back) agree on the artifact via this SDK-provided --report-trx-filename, not by trusting a
+    // device/VFS directory listing.
+    private readonly string _wasmTestTrxFileName = $"blazor-wasm-{Guid.NewGuid():N}.trx";
+    private const string WasmDefaultResultsDirectoryName = "TestResults";
+
     private readonly Lock _requestLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
@@ -50,6 +58,65 @@ internal sealed class TestApplication(
         _negotiatedProtocolVersion is { } negotiatedProtocolVersion &&
         negotiatedProtocolVersion.CompareTo(ProtocolVersion_1_1) >= 0;
 
+    // Microsoft.Testing.Platform's server mode (the "--server dotnettestcli --dotnet-test-pipe"
+    // options) requires the test host to connect back to a named pipe. On wasm runtimes
+    // (browser/wasi) the sandbox cannot open a named pipe, so requesting server mode makes the
+    // host throw PlatformNotSupportedException before any test runs (see
+    // microsoft/testfx DotnetTestConnection, which hard-instantiates a NamedPipeClient). For
+    // these modules we launch the host standalone and rely on its process exit code (and the
+    // streamed stdout tail) instead of the live pipe.
+    // TODO: when a bridge host (e.g. the Blazor Gateway) fronts the wasm app and can relay the
+    // pipe, gate this on a host-declared capability instead of the runtime identifier so server
+    // mode (and live per-test reporting) can be re-enabled.
+    private bool LaunchTestHostStandalone => IsWasmRuntimeIdentifier(Module.RunProperties.RuntimeIdentifier);
+
+    internal static bool IsWasmRuntimeIdentifier(string? runtimeIdentifier) =>
+        runtimeIdentifier is not null &&
+        (runtimeIdentifier.StartsWith("browser", StringComparison.OrdinalIgnoreCase) ||
+         runtimeIdentifier.StartsWith("wasi", StringComparison.OrdinalIgnoreCase));
+
+    // TrxReport's TrxResultStreamingStore starts a background thread (SystemTask.RunLongRunning,
+    // which is [UnsupportedOSPlatform("browser")]) in its constructor, so requesting --report-trx
+    // crashes a standalone wasm host with PlatformNotSupportedException before results are written
+    // (confirmed on Microsoft.Testing.Extensions.TrxReport shipped with MSTest 4.4.0-preview /
+    // MTP 2.4.0-preview). Emitting --report-trx to a wasm host therefore breaks a run that would
+    // otherwise pass on its exit code. Until TrxReport guards that thread on single-threaded wasm
+    // (microsoft/testfx browser-enablement track), we do NOT request a TRX from wasm hosts and
+    // report pass/fail from the exit code instead. The TRX reader (TrxTestResultParser /
+    // TestApplicationHandler.ReportStandaloneResults) stays in place for when this flips.
+    // TODO: flip to true (or gate on a detected TrxReport version / host capability) once the
+    // streaming-store fix ships in a Microsoft.Testing.Extensions.TrxReport release.
+    private const bool WasmReportTrxSupported = false;
+
+    // True when we should ask a standalone (wasm) host to write an on-disk TRX. Off today because
+    // of the TrxReport single-threaded-wasm crash above; see WasmReportTrxSupported.
+    private bool EmitTrxForStandaloneHost => LaunchTestHostStandalone && WasmReportTrxSupported;
+
+    // The results directory passed to a standalone (wasm) host, and where dotnet test reads the
+    // resulting TRX from after the host exits. Only meaningful when LaunchTestHostStandalone is true.
+    private string StandaloneResultsDirectory =>
+        GetStandaloneResultsDirectory(_buildOptions.PathOptions.ResultsDirectoryPath, defaultForStandalone: true, Directory.GetCurrentDirectory())!;
+
+    private string StandaloneTrxFilePath => Path.Combine(StandaloneResultsDirectory, _wasmTestTrxFileName);
+
+    // Best-effort removal of a pre-existing standalone TRX before launch so a stale artifact is never
+    // replayed. Swallows IO errors: if the file can't be deleted the missing/again-stale file is
+    // handled by ReportStandaloneResults (a requested-but-unreadable TRX routes to a handshake failure).
+    private void DeleteStandaloneTrxIfExists()
+    {
+        try
+        {
+            string path = StandaloneTrxFilePath;
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
     public async Task<int> RunAsync(CtrlCCancellationManager ctrlC)
     {
         if (Interlocked.Exchange(ref _hasRun, 1) != 0)
@@ -59,9 +126,23 @@ internal sealed class TestApplication(
 
         var processStartInfo = CreateProcessStartInfo();
 
+        // When we ask a standalone host to write a TRX, remove any pre-existing file at the
+        // destination first so a stale TRX (e.g. from a prior run, or a host that crashes before
+        // writing) can never be mistaken for this run's results. The filename is GUID-unique per
+        // TestApplication, so this is defense-in-depth against reuse.
+        if (EmitTrxForStandaloneHost)
+        {
+            DeleteStandaloneTrxIfExists();
+        }
+
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
+
+        // Standalone wasm hosts never connect back (server mode is not requested for them), so
+        // don't spin up a named-pipe server that nobody will connect to.
+        var testAppPipeConnectionLoop = LaunchTestHostStandalone
+            ? Task.CompletedTask
+            : Task.Run(async () => await WaitConnectionAsync(cancellationToken));
 
         Process? process = null;
         try
@@ -120,6 +201,17 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
+
+            if (LaunchTestHostStandalone)
+            {
+                // Standalone wasm hosts don't use the pipe. When TRX is enabled (see
+                // EmitTrxForStandaloneHost) recover per-test results from the on-disk TRX the host
+                // wrote; otherwise (today) report pass/fail from the exit code alone.
+                string? trxFilePath = EmitTrxForStandaloneHost ? StandaloneTrxFilePath : null;
+                _handler.ReportStandaloneResults(exitCode, trxFilePath, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
+                return exitCode;
+            }
+
             _handler.OnTestProcessExited(exitCode, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
@@ -221,7 +313,15 @@ internal sealed class TestApplication(
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
-        if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
+        // A standalone (wasm) host reports through an on-disk TRX, so when TRX is enabled default a
+        // results directory for it (the host writes the TRX there and dotnet test reads it back).
+        // Today TRX is gated off for wasm (see EmitTrxForStandaloneHost / WasmReportTrxSupported),
+        // so this only defaults once TrxReport supports single-threaded wasm; non-wasm runs keep the
+        // existing behavior of setting it only when explicitly requested.
+        string? resultsDirectoryPath = GetStandaloneResultsDirectory(
+            _buildOptions.PathOptions.ResultsDirectoryPath, EmitTrxForStandaloneHost, Directory.GetCurrentDirectory());
+
+        if (resultsDirectoryPath is not null)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
@@ -241,9 +341,48 @@ internal sealed class TestApplication(
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
+        // Server mode makes the test host connect back to our named pipe. On wasm runtimes the
+        // sandbox can't open a pipe, so we run the host standalone. When TRX is enabled we also ask
+        // it to write an on-disk TRX (which dotnet test reads back); when it isn't, the host runs
+        // bare and results come from the exit code. This assumes the test project includes the
+        // Microsoft.Testing.Extensions.TrxReport extension (MSTest.Sdk does by default).
+        //
+        // KNOWN LIMITATION (Blazor `dotnet test`, dotnet/sdk#54091): as of MSTest 4.4.0-preview /
+        // Microsoft.Testing.Platform 2.4.0-preview, requesting `--report-trx` crashes a wasm host
+        // because TrxReport's TrxResultStreamingStore starts a background Thread, which throws
+        // PlatformNotSupportedException on single-threaded wasm. So `--report-trx` is currently
+        // NOT emitted for wasm (WasmReportTrxSupported == false) to avoid regressing a run that
+        // passes on its exit code; per-test TRX reporting lights up once TrxReport guards that
+        // thread (microsoft/testfx browser-enablement track) and WasmReportTrxSupported flips.
+        string hostModeArguments = GetHostModeArguments(LaunchTestHostStandalone, EmitTrxForStandaloneHost, _pipeName, _wasmTestTrxFileName);
+        if (hostModeArguments.Length > 0)
+        {
+            builder.Append($" {hostModeArguments}");
+        }
 
         return builder.ToString();
+    }
+
+    // Resolves the results directory to pass to the host. When defaultForStandalone is true (a wasm
+    // host that will write a TRX) default it if the user didn't pass one, so the host and dotnet
+    // test agree on the location; otherwise only set it when explicitly requested.
+    internal static string? GetStandaloneResultsDirectory(string? userResultsDirectory, bool defaultForStandalone, string currentDirectory) =>
+        userResultsDirectory ?? (defaultForStandalone ? Path.Combine(currentDirectory, WasmDefaultResultsDirectoryName) : null);
+
+    // Trailing host arguments that depend on run mode:
+    //  - non-standalone: the server-mode named-pipe options;
+    //  - standalone (wasm) with TRX enabled: request an on-disk TRX;
+    //  - standalone (wasm) with TRX disabled: nothing (run bare, report from the exit code).
+    internal static string GetHostModeArguments(bool launchStandalone, bool reportTrx, string pipeName, string trxFileName)
+    {
+        if (!launchStandalone)
+        {
+            return $"{CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}";
+        }
+
+        return reportTrx
+            ? $"{CliConstants.ReportTrxOptionKey} {CliConstants.ReportTrxFileNameOptionKey} {ArgumentEscaper.EscapeSingleArg(trxFileName)}"
+            : string.Empty;
     }
 
     private async Task WaitConnectionAsync(CancellationToken token)
@@ -425,6 +564,11 @@ internal sealed class TestApplication(
     }
 
     private bool? GetLiveOutputStreamingState() =>
+        // A standalone (wasm) host performs no protocol handshake, so _protocolNegotiated never
+        // flips and the collector would otherwise buffer stdout/stderr unbounded and then drop it
+        // on success. Decide streaming up front for standalone: stream the output tail live and keep
+        // it bounded (TrimToBoundedTail). Non-standalone runs still wait for protocol negotiation.
+        LaunchTestHostStandalone ? true :
         Volatile.Read(ref _protocolNegotiated) == 0 ? null : IsProtocol_1_1_OrHigher;
 
     private void FlushBufferedOutputIfLiveStreamingEnabled()

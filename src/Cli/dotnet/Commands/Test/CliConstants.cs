@@ -9,6 +9,11 @@ internal static class CliConstants
     public const string HelpOptionKey = "--help";
     public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
 
+    // Microsoft.Testing.Extensions.TrxReport options. Used to request an on-disk TRX from
+    // standalone (wasm) test hosts that cannot stream results back over the named pipe.
+    public const string ReportTrxOptionKey = "--report-trx";
+    public const string ReportTrxFileNameOptionKey = "--report-trx-filename";
+
     public const string ServerOptionValue = "dotnettestcli";
 
     public const string SemiColon = ";";
