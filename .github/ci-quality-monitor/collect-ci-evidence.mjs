@@ -342,16 +342,33 @@ function summarizeTestMechanism(errorMessage, outcome) {
   return sanitizeText((salient.length > 0 ? salient : lines).slice(0, 8).join("\n") || `${outcome} test result`);
 }
 
+export function sharedTestMechanism(errorMessage, outcome) {
+  const lines = `${errorMessage ?? ""}`.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const diagnosticLines = lines.filter(line => /\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b/i.test(line));
+  const responseLines = lines.filter(line => /response status code/i.test(line))
+    .map(line => line.slice(line.search(/response status code/i)));
+  const operationalLines = responseLines.length > 0 ? responseLines
+    : lines.filter(line => /service unavailable|timed? ?out|connection|refused|not found|access denied/i.test(line));
+  const exceptionLines = lines.filter(line => !/^Test method .+ threw exception:?$/i.test(line))
+    .filter(line => /(?:system\.)?\w+exception/i.test(line));
+  const rootCauseLines = diagnosticLines.length > 0 ? diagnosticLines
+    : operationalLines.length > 0 ? operationalLines
+      : exceptionLines;
+  const distinctLines = [...new Set(rootCauseLines.length > 0 ? rootCauseLines : lines.slice(-3))];
+  return sanitizeText(distinctLines.slice(0, 4).join("\n") || `${outcome} test result`);
+}
+
 function createTestObservation(reference, test) {
   const component = test.fullyQualifiedName || test.testName;
   const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
+  const sharedMechanism = sharedTestMechanism(test.errorMessage, test.outcome);
   return {
     kind: "test",
     category: "test-failure",
     component,
     mechanism,
     signature: createFailureSignature("test", component, mechanism),
-    mechanismSignature: createFailureSignature("test-mechanism", "shared", mechanism),
+    mechanismSignature: createFailureSignature("test-mechanism", "shared", sharedMechanism),
     actionable: true,
     workItem: reference.workItem,
     jobId: reference.jobId,

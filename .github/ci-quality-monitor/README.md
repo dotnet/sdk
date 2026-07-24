@@ -18,7 +18,8 @@ job runs before the agent:
 2. Read [`pipelines.json`](pipelines.json) and query the latest 20 completed
    builds for each allowlisted pipeline and branch.
 3. Exclude PR builds and builds already present in the ledger.
-4. Collect bounded timeline, test-result, and log evidence for new failures.
+4. Collect bounded timeline, public Helix work-item, TRX, artifact, and log
+  evidence for new failures.
 5. Save the updated ledger under a run-specific immutable cache key.
 6. Skip the agent when there are no new failed builds.
 7. Give the agent a structured dossier when investigation is required.
@@ -30,15 +31,30 @@ the selected build, which makes repeatable validation possible.
 ## Public Data Boundary
 
 Anonymous access currently works for public SDK build metadata and timeline
-records, including structured task issues. Anonymous test-run queries return
-`404`, and direct build-log downloads return `500` for the tested public SDK
-builds. The collector records these responses as unavailable evidence and never
-invents missing test or log details.
+records, including structured task issues. Public Helix work-item APIs also
+provide exit codes, console logs, TRX files, binlogs, and dumps; the collector
+uses those artifacts to recover named test failures or classify result-less
+timeouts and crashes. Anonymous AzDO test-run queries return `404`, and direct
+AzDO build-log downloads return `500` for the tested public SDK builds. The
+collector records unavailable evidence and never invents missing test details.
 
-This boundary means an issue can be previewed only when the accessible timeline
-contains a sufficiently specific recurring failure. Adding Azure DevOps
-authentication later would improve evidence quality but is not required for the
-initial experiment.
+Adding Azure DevOps authentication later would improve non-Helix test evidence,
+but is not required for the initial experiment.
+
+## Failure Model
+
+The collector emits independent observations for pipeline configuration,
+startup, setup, restore, build, test, and Helix work-item failures. Artifact
+download cascades and generic Helix monitor parents are context only.
+
+Named tests retain per-test signatures and a separate mechanism signature.
+Different tests can share one issue only when their mechanism signatures and
+stable evidence match. The same test can therefore map to multiple issues when
+it fails for different reasons.
+
+A branch heartbeat compares the registered GitHub head with recent AzDO builds.
+It tolerates batched CI, waits 90 minutes, and requires two consecutive misses
+before reporting that a pipeline did not start.
 
 ## State and Bootstrap
 
@@ -55,8 +71,9 @@ creating a burst of historical issues.
 
 Issue creation is initially configured in staged mode. A preview requires:
 
-- substantially the same stable failure in the current build and at least one
-  recent failed build
+- substantially the same stable test/crash/timeout failure in the current build
+  and at least one recent failed build, or one specific deterministic
+  build/YAML break after a passing build
 - at least two distinct searches for existing open or recently closed issues
 - evidence that the problem is SDK-owned rather than broad Helix or Azure
   DevOps infrastructure
@@ -67,8 +84,9 @@ labels. The monitor never applies `cookie`. The normal issue-triage workflow can
 add `Test Debt`, an area label, and `cookie` when the issue describes bounded
 work suitable for Issue Monster.
 
-After maintainers review staged output quality, remove `staged: true` from the
-workflow safe outputs to enable issue creation.
+At most three distinct mechanism issues are previewed per run. After maintainers
+review staged output quality, remove `staged: true` from the workflow safe
+outputs to enable issue creation.
 
 ## Adding Pipelines or Branches
 

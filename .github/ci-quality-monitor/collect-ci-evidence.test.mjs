@@ -13,6 +13,7 @@ import {
   parseHelixWorkItemReferences,
   parseTestResultXml,
   sanitizeText,
+  sharedTestMechanism,
   selectUnprocessedFailures
 } from "./collect-ci-evidence.mjs";
 
@@ -175,4 +176,19 @@ test("createHeartbeatObservation tolerates batching and detects an unbuilt branc
   ], now);
   assert.equal(missed.category, "pipeline-not-triggered");
   assert.equal(missed.actionable, false);
+});
+
+test("sharedTestMechanism removes test identity and keeps a shared service failure", () => {
+  const first = sharedTestMechanism(
+    "Test method Sdk.Tests.First threw exception:\nAssertionException: command failed\nResponse status code does not indicate success: 503 (Service Unavailable).\nResponse status code does not indicate success: 503 (Service Unavailable).",
+    "Failed");
+  const second = sharedTestMechanism(
+    "Test method Sdk.Tests.Second threw exception:\nHttpRequestException: request failed\nUnhandled exception: Response status code does not indicate success: 503 (Service Unavailable).",
+    "Failed");
+
+  assert.match(first, /503 \(Service Unavailable\)/);
+  assert.match(second, /503 \(Service Unavailable\)/);
+  assert.equal(first, second);
+  assert.doesNotMatch(first, /Sdk.Tests.First/);
+  assert.doesNotMatch(second, /Sdk.Tests.Second/);
 });
