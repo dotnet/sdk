@@ -77,12 +77,24 @@ Issue creation is initially configured in staged mode. A preview requires:
 - at least two distinct searches for existing open or recently closed issues
 - evidence that the problem is SDK-owned rather than broad Helix or Azure
   DevOps infrastructure
-- a specific Build Analysis `ErrorMessage` copied from accessible evidence
+- for test KBEs, a collector-generated Build Analysis `ErrorMessage` validated
+  against the original TRX lines using Arcade's ordered `String.Contains`
+  semantics
 
-Previews receive the existing `agentic-workflows` and `Known Build Error`
-labels. The monitor never applies `cookie`. The normal issue-triage workflow can
-add `Test Debt`, an area label, and `cookie` when the issue describes bounded
-work suitable for Issue Monster.
+The custom issue applicator enforces two separate paths:
+
+- Ordinary build, YAML, heartbeat, Helix crash/timeout, and infrastructure
+  issues receive only `agentic-workflows` and never contain Build Analysis JSON.
+- A recurring named-test KBE receives `agentic-workflows` and
+  `Known Build Error` only when its collector-generated pattern validated
+  against the original TRX and the same test/mechanism appeared in a prior
+  build. The applicator rejects non-recurring or unvalidated signatures and
+  generates the `## Error Message` block; the agent cannot author or override
+  it.
+
+The monitor never applies `cookie`. Normal issue triage can add an area, type,
+`Test Debt`, and `cookie` when the resulting work is bounded enough for Issue
+Monster.
 
 At most three distinct mechanism issues are previewed per run. After maintainers
 review staged output quality, remove `staged: true` from the workflow safe
