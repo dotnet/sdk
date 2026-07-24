@@ -525,4 +525,13 @@
     <value>CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</value>
     <comment>{StrBegins="CONTAINER2032: "}</comment>
   </data>
+  <data name="InvalidContainerAnnotationScope" xml:space="preserve">
+    <value>Container annotation '{0}' has invalid Scope '{1}'. Valid values are Manifest, Index, or Manifest,Index.</value>
+  </data>
+  <data name="ManifestAnnotationsRequireOci" xml:space="preserve">
+    <value>Manifest-scoped container annotations cannot be written to Docker image manifests. Use the OCI image format or remove the applicable annotations.</value>
+  </data>
+  <data name="IndexAnnotationsRequireOci" xml:space="preserve">
+    <value>Index-scoped container annotations cannot be written to Docker manifest lists. Use the OCI image format or remove the applicable annotations.</value>
+  </data>
 </root>

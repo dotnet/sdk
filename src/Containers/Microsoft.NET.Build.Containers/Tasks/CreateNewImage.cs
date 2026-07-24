@@ -169,6 +169,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
+        if (!ContainerAnnotationScopes.TryFilter(Annotations, ContainerAnnotationScope.Manifest, Log, out ITaskItem[] manifestAnnotations))
+        {
+            return false;
+        }
+
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
@@ -246,6 +251,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             requestedImageFormat,
             destinationImageReference);
         DateTime createdAt = sourceDateEpoch ?? DateTime.UtcNow;
+
+        if (manifestAnnotations.Length > 0 && imageBuilder.ManifestMediaType == SchemaTypes.DockerManifestV2)
+        {
+            Log.LogError(Resource.GetString("ManifestAnnotationsRequireOci"));
+            return false;
+        }
+
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
         Layer newLayer = Layer.FromDirectory(
             PublishDirectory,
@@ -290,7 +302,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             }
         }
 
-        foreach (ITaskItem annotation in Annotations)
+        foreach (ITaskItem annotation in manifestAnnotations)
         {
             imageBuilder.AddAnnotation(annotation.ItemSpec, annotation.GetMetadata("Value"));
         }

@@ -141,34 +141,6 @@ public class TargetsTests
 
     private static bool LabelMatch(string label, string value, ProjectItemInstance item) => item.EvaluatedInclude == label && item.GetMetadata("Value") is { } v && v.EvaluatedValue == value;
 
-    [TestMethod]
-    public void MultiArchContainerLabelsPreserveColonsInValues()
-    {
-        var expectedLabels = new Dictionary<string, string>
-        {
-            ["org.opencontainers.image.source"] = "https://github.com/dotnet/sdk",
-            ["org.opencontainers.image.created"] = "2026-07-22T12:34:56.7890000Z",
-        };
-        var serializedLabels = string.Join(';', expectedLabels.Select(label => $"{label.Key}:{label.Value}"));
-
-        var (project, logger, d) = ProjectInitializer.InitProject(new()
-        {
-            ["_ContainerLabel"] = serializedLabels,
-        }, projectName: nameof(MultiArchContainerLabelsPreserveColonsInValues));
-        using var _ = d;
-        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-
-        instance.Build(["_ParseItemsForPublishingSingleContainer"], [logger])
-            .Should().BeTrue("Build should have succeeded but failed due to {0}", string.Join('\n', logger.AllMessages));
-
-        var labels = instance.GetItems(ContainerLabel);
-        labels.Should().HaveCount(expectedLabels.Count);
-        foreach (var expectedLabel in expectedLabels)
-        {
-            labels.Should().ContainSingle(label => LabelMatch(expectedLabel.Key, expectedLabel.Value, label));
-        }
-    }
-
     private static bool AnnotationMatch(string annotation, string value, ProjectItemInstance item) => item.EvaluatedInclude == annotation && item.GetMetadata("Value") is { } v && v.EvaluatedValue == value;
 
     [TestMethod]
@@ -197,7 +169,43 @@ public class TargetsTests
             .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.version", "1.2.3", annotation))
             .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.description", "SDK container", annotation));
         annotations.Should().NotContain(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.base.name" || annotation.EvaluatedInclude == "net.dot.sdk.version");
+        annotations.Should().OnlyContain(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index");
         instance.GetPropertyValue("ContainerImageFormat").Should().Be("OCI");
+    }
+
+    [DataRow("", true)]
+    [DataRow("false", false)]
+    [TestMethod]
+    public void OciFormatControlsDefaultAnnotationGeneration(string generateAnnotations, bool shouldGenerateAnnotations)
+    {
+        Dictionary<string, string> properties = new()
+        {
+            ["ContainerImageFormat"] = "OCI",
+            ["Description"] = "SDK container"
+        };
+        if (generateAnnotations.Length > 0)
+        {
+            properties["ContainerGenerateAnnotations"] = generateAnnotations;
+        }
+
+        var (project, logger, d) = ProjectInitializer.InitProject(properties,
+            projectName: $"{nameof(OciFormatControlsDefaultAnnotationGeneration)}_{shouldGenerateAnnotations}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build([ComputeContainerConfig], [logger]).Should().BeTrue(String.Join(Environment.NewLine, logger.AllMessages));
+        var annotations = instance.GetItems("ContainerAnnotation");
+        if (shouldGenerateAnnotations)
+        {
+            annotations.Should()
+                .ContainSingle(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.created")
+                .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.description", "SDK container", annotation))
+                .And.OnlyContain(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index");
+        }
+        else
+        {
+            annotations.Should().BeEmpty();
+        }
     }
 
     [DataRow("", true, "OCI")]
@@ -219,7 +227,74 @@ public class TargetsTests
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
 
         instance.Build([ComputeContainerConfig], [logger]).Should().Be(shouldSucceed, String.Join(Environment.NewLine, logger.AllMessages));
+        instance.GetItems("ContainerAnnotation").Should().ContainSingle(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest");
         instance.GetPropertyValue("ContainerImageFormat").Should().Be(expectedFormat);
+    }
+
+    [TestMethod]
+    public void WhitespaceAnnotationScopeDefaultsToManifest()
+    {
+        var annotation = new Microsoft.Build.Utilities.TaskItem("example.com/annotation");
+        annotation.SetMetadata("Scope", "   ");
+        annotation.SetMetadata("Value", "value");
+        var (project, logger, d) = ProjectInitializer.InitProject([], bonusItems: new()
+        {
+            ["ContainerAnnotation"] = [annotation]
+        }, projectName: nameof(WhitespaceAnnotationScopeDefaultsToManifest));
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build([ComputeContainerConfig], [logger]).Should().BeTrue(String.Join(Environment.NewLine, logger.AllMessages));
+        instance.GetItems("ContainerAnnotation").Should().ContainSingle(item => item.GetMetadata("Scope")!.EvaluatedValue == "Manifest");
+        instance.GetPropertyValue("ContainerImageFormat").Should().Be("OCI");
+    }
+
+    [TestMethod]
+    public void IndexOnlyAnnotationDoesNotRequireOciForSinglePlatformImage()
+    {
+        var annotation = new Microsoft.Build.Utilities.TaskItem("example.com/annotation");
+        annotation.SetMetadata("Scope", "Index");
+        annotation.SetMetadata("Value", "value");
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["ContainerImageFormat"] = "Docker"
+        }, bonusItems: new()
+        {
+            ["ContainerAnnotation"] = [annotation]
+        }, projectName: nameof(IndexOnlyAnnotationDoesNotRequireOciForSinglePlatformImage));
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build([ComputeContainerConfig], [logger]).Should().BeTrue(String.Join(Environment.NewLine, logger.AllMessages));
+        instance.GetPropertyValue("ContainerImageFormat").Should().Be("Docker");
+    }
+
+    [TestMethod]
+    public void MultiArchContainerLabelsPreserveColonsInValues()
+    {
+        var expectedLabels = new Dictionary<string, string>
+        {
+            ["org.opencontainers.image.source"] = "https://github.com/dotnet/sdk",
+            ["org.opencontainers.image.created"] = "2026-07-22T12:34:56.7890000Z",
+        };
+        var serializedLabels = string.Join(';', expectedLabels.Select(label => $"{label.Key}:{label.Value}"));
+
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["_ContainerLabel"] = serializedLabels,
+        }, projectName: nameof(MultiArchContainerLabelsPreserveColonsInValues));
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build(["_ParseItemsForPublishingSingleContainer"], [logger])
+            .Should().BeTrue("Build should have succeeded but failed due to {0}", string.Join('\n', logger.AllMessages));
+
+        var labels = instance.GetItems(ContainerLabel);
+        labels.Should().HaveCount(expectedLabels.Count);
+        foreach (var expectedLabel in expectedLabels)
+        {
+            labels.Should().ContainSingle(label => LabelMatch(expectedLabel.Key, expectedLabel.Value, label));
+        }
     }
 
     [DataRow(true)]

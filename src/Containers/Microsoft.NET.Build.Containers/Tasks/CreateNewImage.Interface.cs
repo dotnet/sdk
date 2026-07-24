@@ -117,7 +117,8 @@ partial class CreateNewImage
     public ITaskItem[] Labels { get; set; }
 
     /// <summary>
-    /// Annotations that the OCI image manifest will include in metadata.
+    /// Annotations that the OCI image manifest will include in metadata. Items whose comma-separated Scope metadata includes Manifest are used;
+    /// for direct task callers, missing or empty Scope defaults to Manifest.
     /// </summary>
     public ITaskItem[] Annotations { get; set; }
 
