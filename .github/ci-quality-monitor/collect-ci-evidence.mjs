@@ -149,8 +149,32 @@ async function getTestFailures(pipeline, buildId, fetchImplementation = fetch) {
   return failures;
 }
 
+async function getRelatedFailureSummaries(pipeline, buildId, history, fetchImplementation = fetch) {
+  const related = [];
+  const failedBuilds = history
+    .filter(build => build.id !== buildId)
+    .filter(build => build.result === "failed" || build.result === "partiallySucceeded")
+    .slice(0, 5);
+  for (const build of failedBuilds) {
+    try {
+      related.push({
+        build: normalizeBuild(build),
+        timelineFailures: await getTimelineFailures(pipeline, build.id, fetchImplementation)
+      });
+    } catch (error) {
+      related.push({ build: normalizeBuild(build), unavailable: sanitizeText(error.message) });
+    }
+  }
+  return related;
+}
+
 async function collectFailureEvidence(pipeline, build, history, fetchImplementation = fetch) {
   const timelineFailures = await getTimelineFailures(pipeline, build.id, fetchImplementation);
+  const relatedFailureSummaries = await getRelatedFailureSummaries(
+    pipeline,
+    build.id,
+    history,
+    fetchImplementation);
   const logFailures = [];
   for (const failure of timelineFailures.filter(candidate => candidate.logId).slice(0, 3)) {
     try {
@@ -170,6 +194,7 @@ async function collectFailureEvidence(pipeline, build, history, fetchImplementat
     build: normalizeBuild(build),
     recentBuilds: history.map(normalizeBuild),
     timelineFailures,
+    relatedFailureSummaries,
     testFailures,
     logFailures
   };
