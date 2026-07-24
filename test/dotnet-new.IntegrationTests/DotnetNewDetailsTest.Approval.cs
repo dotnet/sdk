@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Newtonsoft.Json.Linq;
@@ -204,19 +205,24 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private async Task<string> GetLatestVersion(string packageName)
         {
-            using (HttpClient client = new HttpClient())
+            using HttpClient client = new();
+            // Resolve the PackageBaseAddress endpoint from the V3 service index
+            string indexJson = await client.GetStringAsync("https://packagefeedproxy.microsoft.io/nuget/v3/index.json");
+            JObject index = JObject.Parse(indexJson);
+            string baseAddress = index["resources"]!
+                .First(r => r["@type"]!.ToString().StartsWith("PackageBaseAddress"))["@id"]!
+                .ToString().TrimEnd('/');
+
+            string json = await client.GetStringAsync($"{baseAddress}/{packageName.ToLowerInvariant()}/index.json");
+            JObject obj = JObject.Parse(json);
+
+            var versions = obj["versions"]?.ToObject<List<string>>();
+            if (versions == null || versions.Count == 0)
             {
-                string json = await client.GetStringAsync($"https://api.nuget.org/v3-flatcontainer/{packageName.ToLowerInvariant()}/index.json");
-                JObject obj = JObject.Parse(json);
-
-                var versions = obj["versions"]?.ToObject<List<string>>();
-                if (versions == null || versions.Count == 0)
-                {
-                    throw new Exception("No versions found.");
-                }
-
-                return versions.Last();
+                throw new Exception("No versions found.");
             }
+
+            return versions.Last();
         }
 
         private string ExtractVersion(string? stdOut)
