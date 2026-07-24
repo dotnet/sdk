@@ -9,6 +9,7 @@ const API_VERSION = "7.1";
 const DEFAULT_BUILD_LIMIT = 20;
 const MAX_FAILURES = 10;
 const MAX_LOG_CHARACTERS = 4_000;
+const MAX_CONSOLE_CHARACTERS = 16_000;
 const MAX_PROCESSED_BUILD_IDS = 100;
 const MAX_TEST_FAILURES = 20;
 const MAX_TIMELINE_FAILURES = 100;
@@ -91,13 +92,13 @@ export function parseArguments(argumentsList) {
   return options;
 }
 
-export function sanitizeText(value) {
+export function sanitizeText(value, maxCharacters = MAX_LOG_CHARACTERS) {
   return `${value ?? ""}`
     .replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "<guid>")
     .replace(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\b/g, "<timestamp>")
     .replace(/[A-Za-z]:\\h\\w\\[^\r\n ]+/gi, "<helix-path>")
     .replace(/(?:[A-Za-z]:\\|\/)[^\r\n ]*(?:artifacts|tmp|temp)[^\r\n ]*/gi, "<temporary-path>")
-    .slice(0, MAX_LOG_CHARACTERS);
+    .slice(0, maxCharacters);
 }
 
 export function normalizeBuild(build) {
@@ -344,14 +345,38 @@ function selectArtifactLinks(files = []) {
 
 async function getHelixText(url, fetchImplementation = fetch) {
   const text = await (await fetchResponse(url, fetchImplementation)).text();
-  return sanitizeText(text.slice(-MAX_LOG_CHARACTERS));
+  return sanitizeText(text.slice(-MAX_CONSOLE_CHARACTERS), MAX_CONSOLE_CHARACTERS);
 }
 
 async function getHelixTestFailures(workItem, fetchImplementation = fetch) {
   const testFile = (workItem.Files ?? []).find(file => /\.(?:trx|xml)$/i.test(file.FileName));
-  if (!testFile) return [];
+  if (!testFile) return { summary: null, failures: [] };
   const response = await fetchResponse(testFile.Uri, fetchImplementation);
-  return parseTestResultXml(Buffer.from(await response.arrayBuffer())).slice(0, MAX_TEST_FAILURES);
+  const results = parseTestResultXml(Buffer.from(await response.arrayBuffer()));
+  return { ...results, failures: results.failures.slice(0, MAX_TEST_FAILURES) };
+}
+
+export function summarizeHelixConsole(consoleText) {
+  const lines = `${consoleText ?? ""}`.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const runningTestsMarker = lines.findIndex(line => /tests were still running when dump was taken/i.test(line));
+  const markedActiveTest = runningTestsMarker >= 0
+    ? lines.slice(runningTestsMarker + 1).find(line => /^\[[\d:.]+\]\s+\S/.test(line))
+    : null;
+  const relevant = lines
+    .filter(line => /hang|timed? ?out|active test|currently running|process tree|test host crashed|exit code|dump|permission denied|diagnostics IPC/i.test(line))
+    .filter(line => !/^[-*]?\s*(?:\/|[A-Za-z]:\\)/.test(line));
+  const hostExitCode = [...lines].reverse().map(line => line.match(/exit code(?: is)?\s*['"]?(-?\d+)/i)?.[1])
+    .find(Boolean);
+  const activeTest = markedActiveTest
+    ?? [...relevant].reverse().find(line => /active test|currently running|has been running/i.test(line));
+  if (activeTest && !relevant.includes(activeTest)) relevant.push(activeTest);
+  const dumpFailures = relevant.filter(line => /dump.*(?:fail|error)|permission denied|diagnostics IPC/i.test(line)).slice(-4);
+  return {
+    activeTest: activeTest ? sanitizeText(activeTest) : null,
+    hostExitCode: hostExitCode ? Number(hostExitCode) : null,
+    hangEvidence: [...new Set(relevant.slice(-12).map(line => sanitizeText(line)))],
+    dumpFailures: [...new Set(dumpFailures.map(line => sanitizeText(line)))]
+  };
 }
 
 function summarizeTestMechanism(errorMessage, outcome) {
@@ -376,7 +401,7 @@ export function sharedTestMechanism(errorMessage, outcome) {
   return sanitizeText(distinctLines.slice(0, 4).join("\n") || `${outcome} test result`);
 }
 
-function createTestObservation(reference, test) {
+function createTestObservation(reference, test, testSummary) {
   const component = test.fullyQualifiedName || test.testName;
   const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
   const sharedMechanism = sharedTestMechanism(test.errorMessage, test.outcome);
@@ -394,6 +419,7 @@ function createTestObservation(reference, test) {
     queue: reference.queue,
     outcome: test.outcome,
     duration: test.duration,
+    testSummary,
     stackTrace: sanitizeText(test.stackTrace),
     kbe: createTestKbeCandidate(test, signature)
   };
@@ -403,7 +429,7 @@ async function collectHelixObservation(reference, fetchImplementation = fetch) {
   const url = helixWorkItemUrl(reference);
   const workItem = await fetchJson(url, fetchImplementation);
   let consoleText = "";
-  let testFailures = [];
+  let testResults = { summary: null, failures: [] };
   const unavailable = [];
   try {
     consoleText = await getHelixText(`${url}/console`, fetchImplementation);
@@ -411,15 +437,21 @@ async function collectHelixObservation(reference, fetchImplementation = fetch) {
     unavailable.push(sanitizeText(error.message));
   }
   try {
-    testFailures = await getHelixTestFailures(workItem, fetchImplementation);
+    testResults = await getHelixTestFailures(workItem, fetchImplementation);
   } catch (error) {
     unavailable.push(sanitizeText(error.message));
   }
-  if (testFailures.length > 0) {
-    return testFailures.map(test => createTestObservation(reference, test));
+  if (testResults.failures.length > 0) {
+    return testResults.failures.map(test => createTestObservation(reference, test, testResults.summary));
   }
   const category = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
-  const mechanism = consoleText.split(/\r?\n/).filter(Boolean).slice(-8).join("\n") || `Exit code ${workItem.ExitCode ?? reference.exitCode}`;
+  const consoleSummary = summarizeHelixConsole(consoleText);
+  const causalConsoleLines = consoleSummary.hangEvidence.filter(line => line === consoleSummary.activeTest
+    || /still running|hang timeout|timed? ?out|test host crashed|recovered \d+ test result|exit code/i.test(line));
+  const mechanismLines = causalConsoleLines.length > 0
+    ? causalConsoleLines
+    : consoleText.split(/\r?\n/).filter(Boolean).slice(-8);
+  const mechanism = mechanismLines.join("\n") || `Exit code ${workItem.ExitCode ?? reference.exitCode}`;
   return [{
     kind: "helix-work-item",
     category,
@@ -433,6 +465,8 @@ async function collectHelixObservation(reference, fetchImplementation = fetch) {
     state: workItem.State,
     machine: workItem.MachineName,
     duration: workItem.Duration,
+    testSummary: testResults.summary,
+    consoleSummary,
     consoleUrl: workItem.ConsoleOutputUri,
     artifacts: selectArtifactLinks(workItem.Files),
     unavailable

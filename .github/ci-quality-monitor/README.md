@@ -19,7 +19,9 @@ job runs before the agent:
    builds for each allowlisted pipeline and branch.
 3. Exclude PR builds and builds already present in the ledger.
 4. Collect bounded timeline, public Helix work-item, TRX, artifact, and log
-  evidence for new failures.
+  evidence for new failures. TRX evidence includes aggregate result counts;
+  hang/crash evidence includes the active-test line, host exit code, watchdog
+  sequence, and dump-capture failures when present.
 5. Save the updated ledger under a run-specific immutable cache key.
 6. Skip the agent when there are no new failed builds.
 7. Give the agent a structured dossier when investigation is required.
@@ -34,7 +36,9 @@ Anonymous access currently works for public SDK build metadata and timeline
 records, including structured task issues. Public Helix work-item APIs also
 provide exit codes, console logs, TRX files, binlogs, and dumps; the collector
 uses those artifacts to recover named test failures or classify result-less
-timeouts and crashes. Anonymous AzDO test-run queries return `404`, and direct
+timeouts and crashes. It retains recovered TRX pass/fail totals even when no
+assertion failed, and extracts bounded hang/watchdog, host-exit, and dump-capture
+details so a wrapper crash is not mistaken for a test assertion. Anonymous AzDO test-run queries return `404`, and direct
 AzDO build-log downloads return `500` for the tested public SDK builds. The
 collector records unavailable evidence and never invents missing test details.
 
@@ -86,6 +90,13 @@ level, alternatives or unknowns, and the next discriminating check. Recurrence
 can establish that a failure is flaky, but it does not by itself establish why
 the failure occurs. Checks that need broader context are recorded as suggested
 investigation rather than represented as completed analysis.
+
+The bounded dossier intentionally does not include dump contents, source-level
+test mapping, PR changed-file correlation, target-branch comparison, Build
+Analysis status, or full multi-commit progression. Those are deeper interactive
+checks. The issue RCA must identify them as missing evidence when they are
+needed to move from a high-confidence proximate cause, such as a watchdog
+terminating a hung test host, to the underlying product or infrastructure cause.
 
 ## State and Bootstrap
 

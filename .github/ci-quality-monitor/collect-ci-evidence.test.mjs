@@ -15,6 +15,7 @@ import {
   parseHelixWorkItemReferences,
   parseTestResultXml,
   sanitizeText,
+  summarizeHelixConsole,
   sharedTestMechanism,
   shouldRunAgent,
   selectUnprocessedFailures
@@ -148,16 +149,20 @@ test("createFailureSignature removes volatile numeric values", () => {
     "test|itcanupdatepackages|http-<n>-on-port-<n>");
 });
 
-test("parseTestResultXml returns independent named failures", () => {
+test("parseTestResultXml returns recovered totals and independent named failures", () => {
   const results = parseTestResultXml(`<?xml version="1.0" encoding="UTF-8"?>
     <TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
       <TestDefinitions><UnitTest id="test-1" name="ShortName"><TestMethod className="Sdk.Tests.Example" name="Fails" /></UnitTest></TestDefinitions>
       <Results><UnitTestResult testId="test-1" testName="ShortName" outcome="Failed" duration="00:00:01">
         <Output><ErrorInfo><Message>Expected zero but found one.</Message><StackTrace>at Sdk.Tests.Example.Fails()</StackTrace></ErrorInfo></Output>
-      </UnitTestResult></Results>
+      </UnitTestResult><UnitTestResult testId="test-2" testName="Passes" outcome="Passed" duration="00:00:01" /></Results>
+      <ResultSummary outcome="Failed"><Counters total="2" executed="2" passed="1" failed="1" error="0" timeout="0" aborted="0" /></ResultSummary>
     </TestRun>`);
 
-  assert.deepEqual(results, [{
+  assert.deepEqual(results.summary, {
+    total: 2, executed: 2, passed: 1, failed: 1, error: 0, timeout: 0, aborted: 0
+  });
+  assert.deepEqual(results.failures, [{
     testName: "ShortName",
     fullyQualifiedName: "Sdk.Tests.Example.Fails",
     outcome: "Failed",
@@ -165,6 +170,21 @@ test("parseTestResultXml returns independent named failures", () => {
     errorMessage: "Expected zero but found one.",
     stackTrace: "at Sdk.Tests.Example.Fails()"
   }]);
+});
+
+test("summarizeHelixConsole preserves hang, host exit, and dump failures", () => {
+  const summary = summarizeHelixConsole(`
+    The following tests were still running when dump was taken (format: [<time-elapsed-since-start>] <name>):
+    [50:03] Microsoft.DotNet.Watcher.Tools.Tests.BrowserTests.BrowserDiagnostics
+    Hang timeout expired. Capturing process tree and hang dumps.
+    Failed to collect dump for dotnet-watch-test-browser: Permission denied.
+    Test host crashed.
+    Test application process didn't exit gracefully, exit code is '137'.`);
+
+  assert.match(summary.activeTest, /BrowserDiagnostics/);
+  assert.equal(summary.hostExitCode, 137);
+  assert.match(summary.hangEvidence.join("\n"), /Hang timeout expired/);
+  assert.match(summary.dumpFailures.join("\n"), /Permission denied/);
 });
 
 test("createTaskObservations preserves roots and suppresses cascades", () => {

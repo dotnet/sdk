@@ -30,6 +30,30 @@ def test_definitions(root):
     return definitions
 
 
+def result_summary(root):
+    counters = next((node for node in root.iter() if local_name(node) == "Counters"), None)
+    if counters is not None:
+        return {
+            key: int(counters.attrib.get(key, 0))
+            for key in ("total", "executed", "passed", "failed", "error", "timeout", "aborted")
+        }
+
+    outcomes = [
+        result.attrib.get("outcome", "").lower()
+        for result in root.iter()
+        if local_name(result) == "UnitTestResult"
+    ]
+    return {
+        "total": len(outcomes),
+        "executed": len(outcomes),
+        "passed": outcomes.count("passed"),
+        "failed": outcomes.count("failed"),
+        "error": outcomes.count("error"),
+        "timeout": outcomes.count("timeout"),
+        "aborted": outcomes.count("aborted"),
+    }
+
+
 def failed_results(root):
     definitions = test_definitions(root)
     failures = []
@@ -54,7 +78,7 @@ def failed_results(root):
 
 def main():
     root = ET.fromstring(sys.stdin.buffer.read())
-    json.dump(failed_results(root), sys.stdout)
+    json.dump({"summary": result_summary(root), "failures": failed_results(root)}, sys.stdout)
 
 
 if __name__ == "__main__":
