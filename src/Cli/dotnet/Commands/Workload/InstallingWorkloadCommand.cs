@@ -161,10 +161,6 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             throw new GracefulException(CliCommandStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
 
-        // CS0436: WorkloadSetVersion.cs is linked into both dotnet.csproj and
-        // Microsoft.DotNet.Cli.Definitions.csproj, so the compiler sees two identical
-        // definitions. The pragma suppresses the resulting warning.
-#pragma warning disable CS0436
         if (SpecifiedWorkloadSetVersionOnCommandLine)
         {
             foreach (var version in _workloadSetVersionFromCommandLine!)
@@ -179,7 +175,6 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
         {
             throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, _workloadSetVersionFromGlobalJson, suggestedGlobalJsonVersion, string.Format(CliCommandStrings.WorkloadSetVersionSpecifiedInGlobalJson, _globalJsonPath)), isUserError: true);
         }
-#pragma warning restore CS0436
 
         //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
     }
