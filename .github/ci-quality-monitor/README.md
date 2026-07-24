@@ -26,15 +26,24 @@ job runs before the agent:
 6. Skip the agent when there are no new failed builds.
 7. Give the agent a structured dossier when investigation is required.
 
-The collector code follows three boundaries:
+The collector code follows these boundaries:
 
-- `EvidenceCollector` owns one collection run: its pipeline registry, mutable
-  consumption ledger, injected HTTP implementation, and configured Azure and
-  Helix clients. Candidate selection and evidence orchestration are methods on
-  this service rather than a chain of functions carrying the same dependencies.
-- `AzureDevOpsClient`, `HelixClient`, and `HttpClient` own external communication.
-  A client instance binds its endpoint context and HTTP dependency once.
-- Classification, parsing, signatures, normalization, and KBE matching remain
+- `CiEvidenceCollector` coordinates one dossier and owns the shared Azure client
+  cache. It delegates rather than implementing selection or evidence parsing.
+- `BuildCandidateSelector` decides which manual, event, or scheduled builds are
+  eligible and records their processed state.
+- `FailureEvidenceCollector` retrieves and assembles timeline, task-log, test,
+  related-build, and Helix evidence for one selected failure.
+- `PipelineHealthMonitor` compares GitHub branch heads with recent Azure builds
+  and records heartbeat observations.
+- `collector-policy.mjs` owns pure build matching, heartbeat, timeline, and
+  recurrence rules. These computations remain separate from the collector's
+  external I/O and mutable state.
+- `AzureDevOpsClient`, `HelixEvidenceClient`, and `HttpClient` own external
+  communication. A client instance binds its endpoint context and HTTP
+  dependency once; the Helix client also converts retrieved artifacts into
+  Helix observations.
+- Classification, parsing, fingerprints, normalization, and KBE matching remain
   pure functions. Serialized pipeline, observation, candidate, and dossier
   shapes are declared in [`types.d.ts`](types.d.ts); policy limits are collected
   in [`constants.mjs`](constants.mjs).
@@ -69,10 +78,16 @@ The collector emits independent observations for pipeline configuration,
 startup, setup, restore, build, test, and Helix work-item failures. Artifact
 download cascades and generic Helix monitor parents are context only.
 
-Named tests retain per-test signatures and a separate mechanism signature.
-Different tests can share one issue only when their mechanism signatures and
+Named tests retain per-test fingerprints and a separate mechanism fingerprint.
+Different tests can share one issue only when their mechanism fingerprints and
 stable evidence match. The same test can therefore map to multiple issues when
 it fails for different reasons.
+
+Fingerprints are generated locally from the observation category, component, and
+normalized mechanism; they are not downloaded from Azure or Helix. Evidence
+normalization removes volatile GUIDs, timestamps, and machine-specific paths
+and bounds text size. It is domain-specific stability and data minimization,
+not HTML or command sanitization.
 
 A branch heartbeat compares the registered GitHub head with recent AzDO builds.
 It tolerates batched CI, waits 90 minutes, and requires two consecutive misses
@@ -119,7 +134,7 @@ terminating a hung test host, to the underlying product or infrastructure cause.
 ## State and Bootstrap
 
 State is keyed by Azure DevOps organization, project, definition ID, and branch.
-Each entry retains up to 100 consumption keys. A key contains build ID, finish
+Each entry retains up to 100 processing keys. A key contains build ID, finish
 time, and result, so a retried attempt that updates an existing build ID can be
 analyzed again. Every poll re-reads the latest 20 builds to tolerate builds
 finishing out of queue order.
@@ -134,11 +149,11 @@ AI:
   retained for 30 days.
 
 The new checkpoint is uploaded by the collector job before agent activation.
-This gives scheduled runs **at-most-once automatic AI delivery** per consumption
+This gives scheduled runs **at-most-once automatic AI delivery** per processing
 key: if inference, detection, or issue application later fails, the next
 scheduled run does not automatically spend tokens on the same completed build.
 Use manual dispatch with `build_id` for an intentional retry; manual evaluation
-bypasses the consumption ledger.
+bypasses the processed-build ledger.
 
 When no state can be restored, the run is marked as bootstrap. Bootstrap records
 the current window and gathers at most one historical failure, but the
@@ -183,7 +198,7 @@ For both paths, the prompt requires `Build Information`, `Failure History`,
 `Error Details`, `Root Cause Analysis`, and `Suggested Investigation`. The RCA
 must explicitly include observed evidence, assessment, confidence, and
 alternatives or unknowns. The body also carries the exact collector observation
-signature so the agent can search for an existing issue before filing. Native
+fingerprint so the agent can search for an existing issue before filing. Native
 title deduplication is a second, approximate safeguard.
 
 The monitor never applies `cookie`. Normal issue triage can add an area, type,
