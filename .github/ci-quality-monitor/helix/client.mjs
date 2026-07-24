@@ -136,7 +136,3 @@ export class HelixClient {
     return observations;
   }
 }
-
-export async function collectHelixObservations(timelineFailures, fetchImplementation = fetch, maxReferences = Number.POSITIVE_INFINITY) {
-  return new HelixClient(fetchImplementation).collectObservations(timelineFailures, maxReferences);
-}

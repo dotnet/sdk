@@ -16,7 +16,6 @@ export {
   createPipelineObservation,
   createTaskObservations
 } from "./azure/observations.mjs";
-export { getBuild, listCompletedBuilds } from "./azure/client.mjs";
 export {
   applyKbeRecurrence,
   collectEvidence,

@@ -40,11 +40,3 @@ export function createTestKbeCandidate(test, signature) {
     validation
   };
 }
-
-export function createErrorMessageBlock(candidate) {
-  return `## Error Message\n\n\`\`\`json\n${JSON.stringify({
-    ErrorMessage: candidate.errorMessage,
-    BuildRetry: candidate.buildRetry,
-    ExcludeConsoleLog: candidate.excludeConsoleLog
-  }, null, 2)}\n\`\`\``;
-}

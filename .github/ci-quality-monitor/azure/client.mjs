@@ -102,31 +102,3 @@ export class AzureDevOpsClient {
     return failures;
   }
 }
-
-export async function listCompletedBuilds(pipeline, branch, fetchImplementation = fetch) {
-  return new AzureDevOpsClient(pipeline, fetchImplementation).listCompletedBuilds(branch);
-}
-
-export async function listRecentBuilds(pipeline, branch, fetchImplementation = fetch) {
-  return new AzureDevOpsClient(pipeline, fetchImplementation).listRecentBuilds(branch);
-}
-
-export async function findPullRequestBuildByHead(pipeline, headSha, fetchImplementation = fetch) {
-  return new AzureDevOpsClient(pipeline, fetchImplementation).findPullRequestBuildByHead(headSha);
-}
-
-export async function getBuild(pipeline, buildId, fetchImplementation = fetch) {
-  return new AzureDevOpsClient(pipeline, fetchImplementation).getBuild(buildId);
-}
-
-export async function getTimeline(pipeline, buildId, fetchImplementation = fetch) {
-  return new AzureDevOpsClient(pipeline, fetchImplementation).getTimeline(buildId);
-}
-
-export async function getFailureLog(pipeline, buildId, logId, logUrl, fetchImplementation = fetch) {
-  return new AzureDevOpsClient(pipeline, fetchImplementation).getFailureLog(buildId, logId, logUrl);
-}
-
-export async function getTestFailures(pipeline, buildId, fetchImplementation = fetch) {
-  return new AzureDevOpsClient(pipeline, fetchImplementation).getTestFailures(buildId);
-}

@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  createErrorMessageBlock,
   createTestKbeCandidate,
   validateErrorMessagePattern
 } from "./known-build-error.mjs";
@@ -32,14 +31,4 @@ test("ordered validation rejects two values on one line", () => {
 
   assert.equal(validation.valid, false);
   assert.equal(validation.missing, "503");
-});
-
-test("KBE block contains only Build Analysis fields", () => {
-  const block = createErrorMessageBlock(createTestKbeCandidate(failure, "test|package|503"));
-
-  assert.match(block, /^## Error Message/);
-  assert.match(block, /"ErrorMessage"/);
-  assert.match(block, /"BuildRetry": true/);
-  assert.match(block, /"ExcludeConsoleLog": false/);
-  assert.doesNotMatch(block, /ErrorPattern/);
 });

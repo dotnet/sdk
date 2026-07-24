@@ -137,12 +137,6 @@ jobs:
             )
           fi
           node .github/ci-quality-monitor/collect-ci-evidence.mjs "${args[@]}"
-      - name: Upload CI quality dossier
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: ci-quality-dossier
-          path: .ci-quality-monitor/dossier.json
-          retention-days: 1
       - name: Upload durable state checkpoint
         if: hashFiles('.ci-quality-monitor/state.json') != ''
         uses: actions/upload-artifact@v7.0.1

@@ -40,8 +40,7 @@ The collector code follows three boundaries:
   in [`constants.mjs`](constants.mjs).
 
 [`collect-ci-evidence.mjs`](collect-ci-evidence.mjs) is the CLI entry point and
-compatibility export surface. The run implementation lives in
-[`collector.mjs`](collector.mjs).
+test export surface. The run implementation lives in [`collector.mjs`](collector.mjs).
 
 The workflow runs one daily routine and can be dispatched manually with a public
 Azure DevOps build ID. The daily routine reconciles stable-branch events and
