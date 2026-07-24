@@ -7,6 +7,7 @@ const API_VERSION = "7.1";
 const DEFAULT_BUILD_LIMIT = 20;
 const MAX_FAILURES = 10;
 const MAX_LOG_CHARACTERS = 4_000;
+const MAX_PROCESSED_BUILD_IDS = 100;
 
 export function parseArguments(argumentsList) {
   const options = {};
@@ -186,29 +187,53 @@ async function selectManualBuild(pipelines, buildId, fetchImplementation = fetch
   throw new Error(`Build ${buildId} is not a non-PR build in the pipeline registry.`);
 }
 
-async function collectCandidates(registry, buildId, fetchImplementation = fetch) {
+function stateKey(pipeline, branch) {
+  return `${pipeline.organization}/${pipeline.project}/${pipeline.definitionId}:${branch}`;
+}
+
+function updateState(state, key, history) {
+  const previousIds = state.pipelines[key]?.processedBuildIds ?? [];
+  const processedBuildIds = [...new Set([...history.map(build => build.id), ...previousIds])]
+    .slice(0, MAX_PROCESSED_BUILD_IDS);
+  state.pipelines[key] = { processedBuildIds, lastCheckedAt: new Date().toISOString() };
+}
+
+function selectUnprocessedFailures(state, key, history) {
+  const previous = state.pipelines[key];
+  const processedIds = new Set(previous?.processedBuildIds ?? []);
+  const unprocessed = previous ? history.filter(build => !processedIds.has(build.id)) : history;
+  const failures = unprocessed.filter(build => build.result === "failed" || build.result === "partiallySucceeded");
+  return { bootstrap: !previous, failures: previous ? failures : failures.slice(0, 1) };
+}
+
+async function collectCandidates(registry, buildId, state, fetchImplementation = fetch) {
   if (buildId) {
     const selected = await selectManualBuild(registry.pipelines, buildId, fetchImplementation);
     const history = await listCompletedBuilds(selected.pipeline, selected.build.sourceBranch, fetchImplementation);
-    return [{ ...selected, history }];
+    return { candidates: [{ ...selected, history }], bootstrap: false };
   }
   const candidates = [];
+  let bootstrap = false;
   for (const pipeline of registry.pipelines) {
     for (const branch of pipeline.branches) {
-      const history = await listCompletedBuilds(pipeline, branch, fetchImplementation);
-      const latest = history.find(build => isRegisteredBuild(build, pipeline));
-      if (latest?.result === "failed" || latest?.result === "partiallySucceeded") {
-        candidates.push({ pipeline, build: latest, history });
+      const history = (await listCompletedBuilds(pipeline, branch, fetchImplementation))
+        .filter(build => isRegisteredBuild(build, pipeline));
+      const key = stateKey(pipeline, branch);
+      const selected = selectUnprocessedFailures(state, key, history);
+      bootstrap ||= selected.bootstrap;
+      for (const build of selected.failures) {
+        candidates.push({ pipeline, build, history });
       }
+      updateState(state, key, history);
     }
   }
-  return candidates;
+  return { candidates, bootstrap };
 }
 
-export async function collectEvidence(registry, buildId, fetchImplementation = fetch) {
-  const candidates = await collectCandidates(registry, buildId, fetchImplementation);
+export async function collectEvidence(registry, buildId, state, fetchImplementation = fetch) {
+  const selected = await collectCandidates(registry, buildId, state, fetchImplementation);
   const failures = [];
-  for (const candidate of candidates) {
+  for (const candidate of selected.candidates) {
     failures.push(await collectFailureEvidence(
       candidate.pipeline,
       candidate.build,
@@ -219,8 +244,23 @@ export async function collectEvidence(registry, buildId, fetchImplementation = f
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
     manualBuildId: buildId || null,
+    bootstrap: selected.bootstrap,
     failures
   };
+}
+
+async function readState(statePath) {
+  if (!statePath) return { schemaVersion: 1, pipelines: {} };
+  try {
+    const state = JSON.parse(await readFile(statePath, "utf8"));
+    if (state.schemaVersion !== 1 || typeof state.pipelines !== "object") {
+      throw new Error("Unsupported CI quality monitor state format.");
+    }
+    return state;
+  } catch (error) {
+    if (error.code === "ENOENT") return { schemaVersion: 1, pipelines: {} };
+    throw error;
+  }
 }
 
 async function writeGitHubOutputs(outputPath, dossier) {
@@ -235,9 +275,14 @@ async function writeGitHubOutputs(outputPath, dossier) {
 async function main() {
   const options = parseArguments(process.argv.slice(2));
   const registry = JSON.parse(await readFile(options.registry, "utf8"));
-  const dossier = await collectEvidence(registry, options["build-id"]);
+  const state = await readState(options.state);
+  const dossier = await collectEvidence(registry, options["build-id"], state);
   await mkdir(path.dirname(options.output), { recursive: true });
   await writeFile(options.output, `${JSON.stringify(dossier, null, 2)}\n`);
+  if (options["state-output"]) {
+    await mkdir(path.dirname(options["state-output"]), { recursive: true });
+    await writeFile(options["state-output"], `${JSON.stringify(state, null, 2)}\n`);
+  }
   await writeGitHubOutputs(options["github-output"], dossier);
   console.log(`Collected ${dossier.failures.length} failed build dossier(s) in ${options.output}.`);
 }
