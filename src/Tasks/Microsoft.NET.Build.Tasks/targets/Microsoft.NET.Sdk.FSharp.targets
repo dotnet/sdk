@@ -24,4 +24,26 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <Import Condition=" '$(IsCrossTargetingBuild)' != 'true' and Exists('$(FSharpOverridesTargetsShim)') " Project="$(FSharpOverridesTargetsShim)" />
 
+  <!--
+    Enable hot reload in 6.0 and newer F# projects, but only for dotnet-watch builds
+    (dotnet-watch sets DotNetWatchBuild=true) or when a project explicitly opts in with
+    SupportsHotReload=true. Unlike the equivalent C#/VB blocks (Microsoft.NET.Sdk.CSharp.targets,
+    Microsoft.NET.Sdk.VisualBasic.targets), the capability is deliberately not advertised
+    unconditionally: ProjectCapabilities are read by other hosts such as Visual Studio, which has
+    no F# Edit-and-Continue support, so advertising SupportsHotReload process-wide could change
+    VS debugger behavior for F# projects. Setting SupportsHotReload=false always disables the
+    capability, matching the C#/VB opt-out.
+  -->
+  <PropertyGroup>
+    <_FSharpHotReloadEnabled Condition="'$(SupportsHotReload)' != 'false' AND ('$(DotNetWatchBuild)' == 'true' OR '$(SupportsHotReload)' == 'true') AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">true</_FSharpHotReloadEnabled>
+
+    <!-- The disk build and the in-memory FCS session must use the same lowering mode. Otherwise
+         the runtime can accept a delta whose method tokens do not update the loaded baseline. -->
+    <OtherFlags Condition="'$(_FSharpHotReloadEnabled)' == 'true'">$(OtherFlags) --test:HotReloadDeltas</OtherFlags>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_FSharpHotReloadEnabled)' == 'true'">
+    <ProjectCapability Include="SupportsHotReload" />
+  </ItemGroup>
+
 </Project>

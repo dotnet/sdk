@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <!-- Issue: https://github.com/dotnet/sdk/issues/1150 -->
+    <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
+    <OtherFlags>$(OtherFlags) --test:HotReloadDeltas</OtherFlags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Lib.fs" />
+    <PackageReference Update="FSharp.Core" Version="6.0.1" />
+  </ItemGroup>
+
+</Project>
