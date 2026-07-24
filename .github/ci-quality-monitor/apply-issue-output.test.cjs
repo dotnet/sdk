@@ -55,6 +55,15 @@ test("ordinary issues never receive KBE label or block", () => {
   assert.match(issue.body, /<!-- ci-quality-signature-sha256: [a-f0-9]{64} -->/);
 });
 
+test("trusted title prefix is applied exactly once", () => {
+  const agentOutput = output("ordinary");
+  agentOutput.items[0].title = "[AI discovered CI] [AI discovered CI] Investigate failure";
+
+  const issue = prepareIssues(agentOutput, { failures: [{ observations: [validatedTest] }] })[0];
+
+  assert.equal(issue.title, "[AI discovered CI] Investigate failure");
+});
+
 test("validated named test KBE receives fixed label and generated block", () => {
   const issue = prepareIssues(output("test-kbe"), { failures: [{ observations: [validatedTest] }] })[0];
 

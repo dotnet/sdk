@@ -55,13 +55,17 @@ function withLiveEvaluationDisclaimer(body) {
   return `${LIVE_EVALUATION_DISCLAIMER}\n\n${body}`;
 }
 
+function withTitlePrefix(title) {
+  return `${TITLE_PREFIX}${title.replace(/^(?:\[AI discovered CI\]\s*)+/i, "")}`;
+}
+
 function prepareOrdinaryIssue(item) {
   validateIssueBody(item.body);
   if (/^## Error Message\s*$/m.test(item.body)) {
     throw new Error("Ordinary CI issues must not contain a Build Analysis Error Message section.");
   }
   return {
-    title: `${TITLE_PREFIX}${item.title}`,
+    title: withTitlePrefix(item.title),
     body: withSignature(withLiveEvaluationDisclaimer(item.body), item.signature),
     labels: process.env.CI_QUALITY_LIVE_EVALUATION === "true"
       ? ["agentic-workflows", "cookie", "Test Debt"]
@@ -82,7 +86,7 @@ function prepareKbeIssue(item, observations) {
   }
   const body = withLiveEvaluationDisclaimer(`${item.body.trim()}\n\n${errorMessageBlock(observation.kbe)}`);
   return {
-    title: `${TITLE_PREFIX}${item.title}`,
+    title: withTitlePrefix(item.title),
     body: withSignature(body, item.signature),
     labels: allowNonRecurring
       ? ["agentic-workflows", "Known Build Error", "cookie", "Test Debt"]
