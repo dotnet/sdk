@@ -7,6 +7,7 @@ import {
   classifyTaskFailure,
   classifyWorkItem,
   createFailureSignature,
+  createHeartbeatObservation,
   normalizeBuild,
   parseArguments,
   parseHelixWorkItemReferences,
@@ -157,4 +158,21 @@ test("createPipelineObservation represents YAML rejection and empty execution", 
   assert.equal(empty.category, "pipeline-startup");
   assert.equal(empty.actionable, false);
   assert.equal(createPipelineObservation({}, [{ id: "stage" }]), null);
+});
+
+test("createHeartbeatObservation tolerates batching and detects an unbuilt branch head", () => {
+  const pipeline = { repository: "dotnet/sdk", definitionId: 101 };
+  const branch = "refs/heads/main";
+  const head = { sha: "head", committedAt: "2026-07-24T12:00:00Z", url: "https://example.test/head" };
+  const now = Date.parse("2026-07-24T14:00:00Z");
+
+  assert.equal(createHeartbeatObservation(pipeline, branch, head, [
+    { sourceVersion: "batched-head", queueTime: "2026-07-24T12:05:00Z" }
+  ], now), null);
+
+  const missed = createHeartbeatObservation(pipeline, branch, head, [
+    { sourceVersion: "old", queueTime: "2026-07-24T11:59:00Z", definition: { id: 101 } }
+  ], now);
+  assert.equal(missed.category, "pipeline-not-triggered");
+  assert.equal(missed.actionable, false);
 });

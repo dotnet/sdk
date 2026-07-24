@@ -12,6 +12,7 @@ const MAX_PROCESSED_BUILD_IDS = 100;
 const MAX_TEST_FAILURES = 20;
 const MAX_TIMELINE_FAILURES = 100;
 const MODULE_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const PIPELINE_HEARTBEAT_AGE_MS = 90 * 60 * 1000;
 
 export function parseHelixWorkItemReferences(messages) {
   const pattern = /Work item '([^']+)' in job '(.+) \(([0-9a-f-]{36})\)' failed \([^,]+, exit code (-?\d+)\)\./i;
@@ -161,6 +162,57 @@ export async function listCompletedBuilds(pipeline, branch, fetchImplementation 
   });
   const result = await fetchJson(`${buildApiBase(pipeline)}/build/builds?${query}`, fetchImplementation);
   return result.value ?? [];
+}
+
+async function listRecentBuilds(pipeline, branch, fetchImplementation = fetch) {
+  const query = new URLSearchParams({
+    definitions: `${pipeline.definitionId}`,
+    branchName: branch,
+    queryOrder: "queueTimeDescending",
+    "$top": `${DEFAULT_BUILD_LIMIT}`,
+    "api-version": API_VERSION
+  });
+  const result = await fetchJson(`${buildApiBase(pipeline)}/build/builds?${query}`, fetchImplementation);
+  return result.value ?? [];
+}
+
+async function getGitHubBranchHead(pipeline, branch, fetchImplementation = fetch) {
+  const branchName = branch.replace(/^refs\/heads\//, "");
+  const url = `https://api.github.com/repos/${pipeline.repository}/commits/${encodeURIComponent(branchName)}`;
+  const commit = await fetchJson(url, fetchImplementation);
+  return {
+    sha: commit.sha,
+    committedAt: commit.commit?.committer?.date ?? commit.commit?.author?.date,
+    url: commit.html_url
+  };
+}
+
+export function createHeartbeatObservation(pipeline, branch, head, builds, now = Date.now()) {
+  const committedAt = Date.parse(head.committedAt);
+  if (!Number.isFinite(committedAt) || now - committedAt < PIPELINE_HEARTBEAT_AGE_MS) return null;
+  const covered = builds.some(build => build.sourceVersion === head.sha
+    || Date.parse(build.queueTime) >= committedAt);
+  if (covered) return null;
+  const mechanism = `No ${pipeline.definitionId} build was queued for branch head ${head.sha} within 90 minutes.`;
+  return {
+    kind: "pipeline-heartbeat",
+    category: "pipeline-not-triggered",
+    component: `${pipeline.repository}:${branch}`,
+    mechanism,
+    signature: createFailureSignature("pipeline-not-triggered", pipeline.definitionId, branch),
+    actionable: false,
+    branch,
+    branchHead: head,
+    latestBuild: builds[0] ? normalizeBuild(builds[0]) : null
+  };
+}
+
+function updateHeartbeatState(state, key, observation) {
+  const previousMisses = state.pipelines[key]?.heartbeatMisses ?? 0;
+  const heartbeatMisses = observation ? previousMisses + 1 : 0;
+  state.pipelines[key] = { ...state.pipelines[key], heartbeatMisses };
+  if (!observation) return null;
+  return { ...observation, missedChecks: heartbeatMisses, actionable: heartbeatMisses >= 2 };
 }
 
 export async function getBuild(pipeline, buildId, fetchImplementation = fetch) {
@@ -479,7 +531,7 @@ function updateState(state, key, history) {
   const previousIds = state.pipelines[key]?.processedBuildIds ?? [];
   const processedBuildIds = [...new Set([...history.map(build => build.id), ...previousIds])]
     .slice(0, MAX_PROCESSED_BUILD_IDS);
-  state.pipelines[key] = { processedBuildIds, lastCheckedAt: new Date().toISOString() };
+  state.pipelines[key] = { ...state.pipelines[key], processedBuildIds, lastCheckedAt: new Date().toISOString() };
 }
 
 export function selectUnprocessedFailures(state, key, history) {
@@ -494,9 +546,10 @@ async function collectCandidates(registry, buildId, state, fetchImplementation =
   if (buildId) {
     const selected = await selectManualBuild(registry.pipelines, buildId, fetchImplementation);
     const history = await listCompletedBuilds(selected.pipeline, selected.build.sourceBranch, fetchImplementation);
-    return { candidates: [{ ...selected, history }], bootstrap: false };
+    return { candidates: [{ ...selected, history }], bootstrap: false, pipelineHealth: [] };
   }
   const candidates = [];
+  const pipelineHealth = [];
   let bootstrap = false;
   for (const pipeline of registry.pipelines) {
     for (const branch of pipeline.branches) {
@@ -508,10 +561,31 @@ async function collectCandidates(registry, buildId, state, fetchImplementation =
       for (const build of selected.failures) {
         candidates.push({ pipeline, build, history });
       }
+      try {
+        const [head, recentBuilds] = await Promise.all([
+          getGitHubBranchHead(pipeline, branch, fetchImplementation),
+          listRecentBuilds(pipeline, branch, fetchImplementation)
+        ]);
+        const heartbeat = createHeartbeatObservation(
+          pipeline,
+          branch,
+          head,
+          recentBuilds.filter(build => isRegisteredBuild(build, pipeline)));
+        const trackedHeartbeat = updateHeartbeatState(state, key, heartbeat);
+        if (trackedHeartbeat) pipelineHealth.push(trackedHeartbeat);
+      } catch (error) {
+        pipelineHealth.push({
+          kind: "pipeline-heartbeat",
+          category: "heartbeat-unavailable",
+          component: `${pipeline.repository}:${branch}`,
+          mechanism: sanitizeText(error.message),
+          actionable: false
+        });
+      }
       updateState(state, key, history);
     }
   }
-  return { candidates, bootstrap };
+  return { candidates, bootstrap, pipelineHealth };
 }
 
 export async function collectEvidence(registry, buildId, state, fetchImplementation = fetch) {
@@ -529,6 +603,7 @@ export async function collectEvidence(registry, buildId, state, fetchImplementat
     generatedAt: new Date().toISOString(),
     manualBuildId: buildId || null,
     bootstrap: selected.bootstrap,
+    pipelineHealth: selected.pipelineHealth,
     failures
   };
 }
@@ -551,8 +626,9 @@ async function writeGitHubOutputs(outputPath, dossier) {
   if (!outputPath) return;
   const delimiter = `CI_QUALITY_${Date.now()}`;
   const compactDossier = JSON.stringify(dossier);
-  await appendFile(outputPath, `should_run=${dossier.failures.length > 0}\n`);
-  await appendFile(outputPath, `failure_count=${dossier.failures.length}\n`);
+  const actionableHealth = dossier.pipelineHealth.filter(observation => observation.actionable).length;
+  await appendFile(outputPath, `should_run=${dossier.failures.length + actionableHealth > 0}\n`);
+  await appendFile(outputPath, `failure_count=${dossier.failures.length + actionableHealth}\n`);
   await appendFile(outputPath, `dossier<<${delimiter}\n${compactDossier}\n${delimiter}\n`);
 }
 
