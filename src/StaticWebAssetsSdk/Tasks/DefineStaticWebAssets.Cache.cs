@@ -17,9 +17,7 @@ public partial class DefineStaticWebAssets : Task
     {
         // Absolutize the cache manifest path relative to the project directory so file I/O in the cache
         // does not depend on the process working directory (required for multithreaded task execution).
-        // Treat null/empty/whitespace uniformly as "no cache" so we never call GetAbsolutePath on a blank
-        // value (which throws) nor fall through to File.OpenWrite("") when persisting the manifest.
-        var cacheManifestPath = string.IsNullOrWhiteSpace(CacheManifestPath)
+        var cacheManifestPath = string.IsNullOrEmpty(CacheManifestPath)
             ? null
             : TaskEnvironment.GetAbsolutePath(CacheManifestPath).Value;
         var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, cacheManifestPath);
@@ -83,6 +81,7 @@ public partial class DefineStaticWebAssets : Task
         string[] candidateAssetMetadata)
 #endif
     {
+        const int metadataOffset = 3;
         var candidateAssets = CandidateAssets ?? [];
         var inputHashes = new Dictionary<string, ITaskItem>(candidateAssets.Length);
         for (var i = 0; i < candidateAssets.Length; i++)
@@ -90,26 +89,14 @@ public partial class DefineStaticWebAssets : Task
             var candidate = candidateAssets[i];
             var candidateFullPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(candidate.ItemSpec));
             var file = new FileInfo(candidateFullPath);
-            var originalItemSpecFullPath = "";
-            if (!file.Exists)
-            {
-                var originalItemSpec = candidate.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec));
-                if (!string.IsNullOrEmpty(originalItemSpec))
-                {
-                    originalItemSpecFullPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(originalItemSpec));
-                    file = new FileInfo(originalItemSpecFullPath);
-                }
-            }
 
-            var values = new string[candidateAssetMetadata.Length + 5];
+            var values = new string[candidateAssetMetadata.Length + metadataOffset];
             values[0] = candidate.ItemSpec;
             values[1] = candidateFullPath;
-            values[2] = originalItemSpecFullPath;
-            values[3] = file.Exists ? file.Length.ToString(CultureInfo.InvariantCulture) : "";
-            values[4] = file.Exists ? file.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) : "";
+            values[2] = file.Exists ? file.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) : "";
             for (var j = 0; j < candidateAssetMetadata.Length; j++)
             {
-                values[j + 5] = candidate.GetMetadata(candidateAssetMetadata[j]);
+                values[j + metadataOffset] = candidate.GetMetadata(candidateAssetMetadata[j]);
             }
 
             inputHashes.Add(Convert.ToBase64String(HashingUtils.ComputeHash(memoryStream, values)), candidate);
