@@ -128,7 +128,7 @@ public class FishShellProvider : IShellProvider
             // Single-value options (arity exactly 1): skip the next token
             var singleValueNames = valueOptions
                 .Where(o => o.Arity.MaximumNumberOfValues == 1)
-                .SelectMany(o => o.Names())
+                .SelectMany(o => o.Names().Where(n => n.StartsWith('-')))
                 .ToArray();
             if (singleValueNames.Length > 0)
             {
@@ -145,7 +145,7 @@ public class FishShellProvider : IShellProvider
                 .GroupBy(o => o.Arity.MaximumNumberOfValues);
             foreach (var group in multiValueByArity)
             {
-                var names = string.Join(" ", group.SelectMany(o => o.Names()));
+                var names = string.Join(" ", group.SelectMany(o => o.Names().Where(n => n.StartsWith('-'))));
                 writer.WriteLine($"case {names}");
                 writer.Indent++;
                 WriteMultiValueSkipLoop(writer, group.Key);
@@ -257,7 +257,7 @@ public class FishShellProvider : IShellProvider
 
             foreach (var option in valueOptions)
             {
-                var names = string.Join(" ", option.Names());
+                var names = string.Join(" ", option.Names().Where(n => n.StartsWith('-')));
                 var maxValues = option.Arity.MaximumNumberOfValues;
                 bool isBounded = maxValues < UnboundedArityThreshold;
 
@@ -331,7 +331,7 @@ public class FishShellProvider : IShellProvider
             foreach (var option in cmd.HierarchicalOptions().Where(o => !o.Hidden))
             {
                 var desc = SanitizeDescription(option.Description);
-                foreach (var name in option.Names())
+                foreach (var name in option.Names().Where(n => n.StartsWith('-')))
                 {
                     WriteCandidate(writer, name, desc);
                 }

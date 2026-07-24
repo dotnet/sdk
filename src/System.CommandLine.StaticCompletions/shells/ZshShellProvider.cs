@@ -84,7 +84,7 @@ fi
             var helpText = SanitizeHelp(option.Description);
             if (option.IsFlag())
             {
-                foreach (var name in option.Names())
+                foreach (var name in option.Names().Where(n => n.StartsWith('-')))
                 {
                     writer.WriteLine($"'{multiplicity}{name}[{helpText}]' \\");
                 }
@@ -97,7 +97,7 @@ fi
                 }
                 var argumentName = option.HelpName ?? " ";
                 var argumentValues = ZshValueExpression(option);
-                foreach (var name in option.Names())
+                foreach (var name in option.Names().Where(n => n.StartsWith('-')))
                 {
                     writer.Write($"'{multiplicity}{name}=[{helpText}]:{argumentName}");
                     WriteValueExpression(writer, argumentValues);
