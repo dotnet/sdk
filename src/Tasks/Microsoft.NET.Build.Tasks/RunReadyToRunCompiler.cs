@@ -11,9 +11,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class RunReadyToRunCompiler : ToolTask, IMultiThreadableTask
     {
-#if NET
-        public override TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-#elif NETFRAMEWORK
+#if NETFRAMEWORK
         public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 #endif
 

@@ -39,7 +39,10 @@ public class GivenARunReadyToRunCompilerMultiThreading : SdkTest
         var task = CreateTask(projectDirectory, string.Empty, Path.Combine("input", "app.dll"));
 
         task.ValidateParametersForTest().Should().BeFalse();
-        ((MockBuildEngine)task.BuildEngine).Errors.Should().ContainSingle();
+        MockBuildEngine buildEngine = (MockBuildEngine)task.BuildEngine;
+        buildEngine.Errors.Should().ContainSingle();
+        buildEngine.Errors.Single().Message.Should().Be(
+            string.Format(Strings.Crossgen2ToolExecutableNotFound, string.Empty));
     }
 
     private static TestableRunReadyToRunCompiler CreateTask(
