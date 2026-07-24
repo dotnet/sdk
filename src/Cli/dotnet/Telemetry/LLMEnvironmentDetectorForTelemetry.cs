@@ -14,6 +14,8 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         new EnvironmentDetectionRuleWithResult<string>("gemini", new BooleanEnvironmentRule("GEMINI_CLI")),
         // GitHub Copilot
         new EnvironmentDetectionRuleWithResult<string>("copilot", new BooleanEnvironmentRule("GITHUB_COPILOT_CLI_MODE", "COPILOT_CLI")),
+        // GitHub Copilot desktop application running as an AI agent
+        new EnvironmentDetectionRuleWithResult<string>("copilot-app", new EnvironmentVariableValueRule("AI_AGENT", "github_copilot_app_agent")),
         // Codex CLI
         new EnvironmentDetectionRuleWithResult<string>("codex", new AnyPresentEnvironmentRule("CODEX_CLI", "CODEX_SANDBOX")),
         // Aider

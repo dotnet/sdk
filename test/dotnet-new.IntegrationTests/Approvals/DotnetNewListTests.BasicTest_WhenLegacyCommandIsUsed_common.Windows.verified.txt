@@ -12,6 +12,7 @@ dotnet
 Dotnet
 EditorConfig
 global.json
+MCP
 MSBuild
 MSTest
 MVC

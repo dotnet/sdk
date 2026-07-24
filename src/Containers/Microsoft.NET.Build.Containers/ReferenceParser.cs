@@ -126,15 +126,45 @@ internal static class ReferenceParser
     public static readonly Regex anchoredTagRegexp = new(anchoredTag);
 
     /// <summary>
-    /// needed because the original golang used `[[:xdigit:]]` which .Net doesn't support.
-    /// `[[:xdigit:]]` is the set of valid hex digits, which is 0-9, a-f, and A-F.
+    /// This is a custom addition - <see cref="digestPat"/> was decomposed into
+    /// its algorithm and encoded components to allow for capturing group
+    /// variants. These components follow the OCI image-spec digest grammar
+    /// rather than the more restrictive upstream implementation
+    /// (see <see href="https://github.com/distribution/reference/blob/main/regexp.go">distribution/reference</see>),
+    /// which only allows hex-encoded digests with a minimum of 32 characters
+    /// and requires algorithm components to start with a letter.
+    ///
+    /// See also:
+    /// <see href="https://github.com/distribution/reference/blob/c577ba6addb2513df8704d4663b26c60eb0ac3f6/regexp.go#L70-L78">
+    /// upstream TODO acknowledging this divergence
+    /// </see>.
+    ///
+    /// <see cref="digestAlgorithmComponent"/> matches the algorithm portion of
+    /// a digest (e.g. "sha256", "sha512", "multihash+base58"). Per OCI spec,
+    /// algorithm components are lowercase alphanumeric.
+    ///
+    /// <see href="https://github.com/opencontainers/image-spec/blob/a4c6ade7bb82b316d45391f572727a63e268b252/descriptor.md#digests">
+    /// OCI descriptor digest grammar
+    /// </see>
     /// </summary>
-    private static readonly string hexDigit = "[0-9A-Fa-f]";
+    private static readonly string digestAlgorithmComponent = @"[a-z0-9]+(?:[+._-][a-z0-9]+)*";
+
+    /// <summary>
+    /// This is a custom addition - see <see cref="digestAlgorithmComponent"/>.
+    /// <see cref="digestEncodedComponent"/> matches the encoded portion of a
+    /// digest. Per OCI spec, this allows alphanumeric characters plus "=",
+    /// "_", and "-" to support encodings beyond hex (e.g. base64url, base58).
+    ///
+    /// <see href="https://github.com/opencontainers/image-spec/blob/a4c6ade7bb82b316d45391f572727a63e268b252/descriptor.md#digests">
+    /// OCI descriptor digest grammar
+    /// </see>
+    /// </summary>
+    private static readonly string digestEncodedComponent = @"[a-zA-Z0-9=_-]+";
 
     /// <summary>
     /// digestPat matches valid digests.
     /// </summary>
-    private static readonly string digestPat = $"[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*[:]{hexDigit}{{32,}}";
+    private static readonly string digestPat = $"{digestAlgorithmComponent}[:]{digestEncodedComponent}";
 
     /// <summary>
     /// DigestRegexp matches valid digests.
@@ -142,16 +172,18 @@ internal static class ReferenceParser
     public static readonly Regex DigestRegexp = new(digestPat);
 
     /// <summary>
-    /// anchoredDigest matches valid digests, anchored at the start and
-    /// end of the matched string.
+    /// <see cref="AnchoredDigestRegexp"/> matches valid digests, anchored at
+    /// the start and end of the matched string. This is based on the upstream
+    /// anchoredDigestRegexp, with capturing groups added for the algorithm
+    /// (group 1) and the encoded value (group 2).
+    ///
+    /// <see href="https://github.com/opencontainers/image-spec/blob/a4c6ade7bb82b316d45391f572727a63e268b252/descriptor.md#digests">OCI descriptor digest grammar</see>
     /// </summary>
-    private static readonly string anchoredDigest = anchored(digestPat);
-
-    /// <summary>
-    /// anchoredDigestRegexp matches valid digests, anchored at the start and
-    /// end of the matched string.
-    /// </summary>
-    private static readonly Regex anchoredDigestRegexp = new(anchoredDigest);
+    public static readonly Regex AnchoredDigestRegexp = new(anchored(
+        capture(digestAlgorithmComponent),
+        literal(":"),
+        capture(digestEncodedComponent)
+    ));
 
     /// <summary>
     /// namePat is the format for the name component of references. The
