@@ -1,7 +1,55 @@
 # CI Quality Investigator 🕵️
 
+## Summary
+
+An agentic workflow that investigates CI evidence and files
+actionable build, test, and infrastructure issues in the .NET SDK repository.
+
+Eligible issues can then be assigned to Copilot by the [Issue Monster](https://github.com/dotnet/sdk/pull/55243) for a proposed fix.
+
 This specification defines the investigator's monitoring policy and separates
 current behavior from planned categories and priorities.
+
+## Expected Impact
+
+- Reduce engineering time spent discovering and investigating CI failures.
+- Reduce the time required to detect a CI failure.
+- Reduce the time/SLA from failure detection to a proposed fix.
+- Reduce the operational burden, compute cost, and elapsed time consumed by
+  broken or repeatedly retried CI.
+- Accelerate development by reducing the time that CI failures block PR merges.
+- Reduce accumulated build, test, and infrastructure technical debt.
+
+## Success Criteria
+
+1. The workflow does not overwhelm repository contributors with duplicate,
+  speculative, or low-quality issues.
+2. Every filed issue includes a reasonable root cause analysis and empirical,
+  verifiable build evidence with links to the relevant build, task, test,
+  console output, or artifact.
+3. The workflow does not file an issue when no actionable failure exists, when
+  the signal is only a downstream cascade, or when an existing issue already
+  covers the same mechanism.
+4. Automatic delivery does not spend AI tokens re-analyzing an audit context
+  that has already been consumed. A retry or trusted priority promotion is
+  audited only under the context-qualified rules below.
+5. PR analysis does not spend tokens or file repository-wide findings for failures
+  caused only by the PR's own changes.
+6. `cookie` is applied only when a finding is eligible for Issue Monster.
+  Stable live incidents and technical or infrastructure debt receive their
+  corresponding trusted labels.
+7. Test flakes are filed only as validated Known Build Errors. A KBE match must
+  not hide or permit unrelated failures in the same CI run.
+8. The investigator detects pipeline YAML rejection, including failures that
+  occur before any job or timeline record exists.
+9. The investigator detects Helix work-item hangs and crashes and distinguishes
+  them from test assertion failures or post-test harness failures.
+10. The investigator detects named test failures and preserves enough evidence
+   to distinguish independent test mechanisms.
+11. Event-driven paths begin investigation when CI completes unsuccessfully,
+   without waiting for a maintainer to notice or request an investigation.
+12. The workflow has potential to be broadly applied at an organizational level to scale reduced costs & SLA impact.
+13. Added token spend is feasibly under the budget of net savings from the workflow.
 
 ## Terms
 
@@ -82,44 +130,7 @@ the target branch moved between validation and merge.
 
 ## Audit Consumption and Promotion
 
-### Current Behavior
-
-The collector currently identifies an Azure build attempt with:
-
-```text
-<build ID>:<finish time>:<result>
-```
-
-Including finish time and result allows Azure to reuse a build ID for a retried
-attempt without suppressing the new result. Automatic state is partitioned by
-pipeline and source ref:
-
-```text
-<organization>/<project>/<definition ID>:<source branch or PR merge ref>
-```
-
-Before AI runs, the collector stores recent attempt keys in
-`consumedBuildKeys`. State is restored first from the newest Actions cache and,
-if that is unavailable, from the newest non-expired `ci-quality-state` artifact
-for the workflow branch. The updated checkpoint is uploaded before agent
-activation. Consequently, an inference or issue-output failure does not cause
-the next automatic run to spend AI on the same attempt again.
-
-| Delivery path | Current consumption behavior |
-| --- | --- |
-| Check-suite event | Resolve the Azure PR build, check its attempt key in the PR-ref state bucket, and consume it before AI. Redelivery of the same suite does not re-audit it. |
-| Daily stable-branch reconciliation | Compare recent direct branch attempts with the branch state bucket. Previously consumed attempts are skipped. |
-| Updated Azure retry | A changed finish time or result creates a new attempt key and is eligible for audit. |
-| Manual `build_id` | Intentionally bypasses automatic consumption so maintainers can repeat an evaluation. It must not let the caller choose or elevate monitoring priority. |
-
-This build-attempt-only model is insufficient for priority promotion. If a PR
-build is audited while the PR is open and that same failed validation is later
-merged into a stable branch, the existing key would suppress the higher-priority
-stable-branch audit even though the risk context changed.
-
-### Planned Context-Qualified Audit Key
-
-Automatic deduplication should use both the Azure attempt and a trusted audit
+Automatic deduplication uses both the Azure build attempt and its trusted audit
 context:
 
 ```text
@@ -133,19 +144,37 @@ context:
 | Developer PR | `developer-pr:<PR number>` | Audit once at LOW after the daily sampler and independent-recurrence gate select it. |
 | Merged into stable branch | `stable-merge:<PR number>:<landed commit SHA>` | Permit one HIGH audit even if the same Azure attempt was already consumed under an infrastructure-PR or developer-PR context. Redelivery of the same merge event is suppressed. |
 
-The merged-PR event usually does not have a new Azure run. It should locate the
+Finish time and result distinguish an updated Azure retry that reuses a build ID
+from the earlier attempt. Context identity distinguishes a meaningful priority
+promotion from duplicate delivery of the same evidence.
+
+Before AI runs, the collector records the audit key in its pipeline state. State
+is restored first from the newest Actions cache and, if that is unavailable,
+from the newest non-expired `ci-quality-state` artifact for the workflow branch.
+The updated checkpoint is uploaded before agent activation. An inference or
+issue-output failure therefore does not cause the next automatic delivery to
+spend AI on the same audit context again.
+
+| Delivery path | Consumption behavior |
+| --- | --- |
+| Check-suite event | Resolve and verify the Azure build, derive its monitoring category and context identity, and consume that audit key before AI. Redelivery of the suite is suppressed. |
+| Daily stable-branch reconciliation | Derive the same `stable-direct` key as event delivery, so a build seen through either path is audited once. |
+| Updated Azure retry | A changed finish time or result creates a distinct audit key and is eligible in the same context. |
+| Manual `build_id` | Bypass automatic consumption for repeatable investigation, while still deriving category and priority from trusted metadata. |
+
+The merged-PR event usually does not have a new Azure run. It locates the
 final completed definition `101` PR build by PR number and final head SHA, then
 create the `stable-merge` audit context from trusted GitHub merge metadata. This
 is an intentional promotion audit, not an unrestricted rerun. Only a transition
 to a higher-priority context permits reuse of the Azure evidence; events at the
 same or lower priority remain consumed.
 
-The promotion audit must also coordinate with issue deduplication. The current
-hidden failure-signature marker prevents duplicate issues regardless of audit
+The promotion audit coordinates with issue deduplication. The hidden
+failure-signature marker identifies an existing issue regardless of audit
 context. If a MED or LOW issue already tracks the mechanism, a later HIGH audit
-should update and relabel that issue with stable-branch evidence rather than
-silently skip the incident or open an indistinguishable duplicate. If no issue
-exists, the HIGH audit may create the live incident normally.
+updates and relabels that issue with stable-branch evidence instead of silently
+skipping the incident or opening an indistinguishable duplicate. If no issue
+exists, the HIGH audit creates the live incident normally.
 
 ## Monitoring Priority
 
