@@ -223,6 +223,23 @@ test("createTaskObservations classifies restore failures from task logs", () => 
   assert.equal(observations[0].actionable, true);
 });
 
+test("checkout observations use the stable fatal cause instead of randomized retry delays", () => {
+  const failures = [3.784, 9.696].map((delay, index) => ({
+    type: "Task",
+    name: "Checkout dotnet/sdk",
+    issues: [`Git fetch failed with exit code 128, back off ${delay} seconds before retry.`],
+    path: ["Build", `Leg ${index}`, "Checkout dotnet/sdk"],
+    logId: index
+  }));
+  const logs = new Map(failures.map(failure => [failure.logId,
+    "fatal: couldn't find remote ref refs/pull/55429/merge\nGit fetch failed with exit code: 128"]));
+
+  const observations = createTaskObservations(failures, logs);
+
+  assert.equal(observations[0].mechanism, "fatal: couldn't find remote ref refs/pull/55429/merge");
+  assert.equal(observations[0].signature, observations[1].signature);
+});
+
 test("createPipelineObservation represents YAML rejection and empty execution", () => {
   const rejected = createPipelineObservation({
     definition: { name: "sdk-ci" },

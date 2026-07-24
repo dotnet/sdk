@@ -292,7 +292,10 @@ export function createTaskObservations(timelineFailures, logsById = new Map()) {
       const logExcerpt = summarizeTaskLog(logsById.get(failure.logId));
       const evidence = [...failure.issues, ...logExcerpt];
       const category = classifyTaskFailure(failure.name, evidence);
-      const mechanism = evidence.find(issue => !/^Bash exited with code/i.test(issue)) ?? failure.name;
+      const mechanism = evidence.find(issue => /\b(?:fatal|error\b|MSB\d{4}|NETSDK\d{4}|CS\d{4})/i.test(issue)
+        && !/back off .* before retry/i.test(issue))
+        ?? evidence.find(issue => !/^Bash exited with code/i.test(issue) && !/back off .* before retry/i.test(issue))
+        ?? failure.name;
       return {
         kind: "pipeline-task",
         category,
