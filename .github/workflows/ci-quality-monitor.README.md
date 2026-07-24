@@ -44,12 +44,12 @@ current behavior from planned categories and priorities.
   occur before any job or timeline record exists.
 9. The investigator detects Helix work-item hangs and crashes and distinguishes
   them from test assertion failures or post-test harness failures.
-10. The investigator detects named test failures and preserves enough evidence
+10. Added token spend is feasibly under the budget of net savings from the workflow.
+11. The investigator detects named test failures and preserves enough evidence
    to distinguish independent test mechanisms.
-11. Event-driven paths begin investigation when CI completes unsuccessfully,
+12. Event-driven paths begin investigation when CI completes unsuccessfully,
    without waiting for a maintainer to notice or request an investigation.
-12. The workflow has potential to be broadly applied at an organizational level to scale reduced costs & SLA impact.
-13. Added token spend is feasibly under the budget of net savings from the workflow.
+13. The workflow has potential to be broadly applied at an organizational level to scale reduced costs & SLA impact.
 
 ## Terms
 
