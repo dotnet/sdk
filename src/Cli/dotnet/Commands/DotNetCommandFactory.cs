@@ -12,7 +12,7 @@ using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.FileBasedPrograms;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli;

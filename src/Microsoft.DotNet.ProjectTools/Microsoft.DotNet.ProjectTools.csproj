@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsPackable>true</IsPackable>
+    <DefineConstants>$(DefineConstants);FILE_BASED_PROGRAMS_PUBLIC;FILE_BASED_PROGRAMS_SYSTEM_TEXT_JSON</DefineConstants>
 
     <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
