@@ -72,6 +72,14 @@ deterministic collector and gives the agent a bounded public dossier. It does
 not imply that Build Analysis, target-branch behavior, PR correlation, or a
 binlog was checked when those facts are absent.
 
+`ci-analysis` also routes broad engineering-service failures to
+`dotnet/dnceng`. The monitor's constrained output can create issues only in the
+SDK repository, so production runs report only repository-specific tests,
+product build breaks, and SDK-owned CI integrations. A broad Azure DevOps,
+Helix, machine-pool, or external-feed outage becomes a no-op with an explicit
+routing reason rather than a misplaced SDK issue. Fork-only evaluation may
+still create such issues to exercise classification and issue formatting.
+
 Every proposed issue must therefore contain a bounded root cause analysis with
 the observed facts, the most specific supported causal chain, a confidence
 level, alternatives or unknowns, and the next discriminating check. Recurrence
