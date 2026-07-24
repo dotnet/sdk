@@ -49,7 +49,7 @@
       "test\\Microsoft.NET.Sdk.WorkloadManifestReader.Tests\\Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj",
       "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj",
       "test\\Microsoft.NET.ToolPack.Tests\\Microsoft.NET.ToolPack.Tests.csproj",
-      "test\\Microsoft.Win32.Msi.Manual.Tests\\Microsoft.Win32.Msi.Manual.Tests.csproj",
+      "test\\Microsoft.Win32.Msi.ManualTester\\Microsoft.Win32.Msi.ManualTester.csproj",
       "test\\Microsoft.Win32.Msi.Tests\\Microsoft.Win32.Msi.Tests.csproj",
       "test\\Msbuild.Tests.Utilities\\Msbuild.Tests.Utilities.csproj",
       "test\\TelemetryStdOutLogger\\TelemetryStdOutLogger.csproj",

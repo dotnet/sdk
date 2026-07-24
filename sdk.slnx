@@ -408,7 +408,7 @@
     <Project Path="test/TemplateEngine/Microsoft.TemplateSearch.Common.UnitTests/Microsoft.TemplateSearch.Common.UnitTests.csproj" />
     <Project Path="test/TemplateEngine/Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests/Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests.csproj" />
     <Project Path="test/Microsoft.WebTools.AspireService.Tests/Microsoft.WebTools.AspireService.Tests.csproj" />
-    <Project Path="test/Microsoft.Win32.Msi.Manual.Tests/Microsoft.Win32.Msi.Manual.Tests.csproj" />
+    <Project Path="test/Microsoft.Win32.Msi.ManualTester/Microsoft.Win32.Msi.ManualTester.csproj" />
     <Project Path="test/Microsoft.Win32.Msi.Tests/Microsoft.Win32.Msi.Tests.csproj" />
     <Project Path="test/msbuild.Integration.Tests/msbuild.Integration.Tests.csproj" />
     <Project Path="test/Msbuild.Tests.Utilities/Msbuild.Tests.Utilities.csproj" />
