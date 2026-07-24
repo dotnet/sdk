@@ -2,6 +2,7 @@
 emoji: "🔎"
 name: CI Quality Monitor
 description: Reviews public dotnet/sdk CI failures and identifies actionable, previously untracked build and test quality issues.
+# See `ci-quality-monitor.README.md` for trigger coverage and fallback behavior.
 on:
   push:
     branches: [nagilson/ci-quality-monitor-live-evaluation]

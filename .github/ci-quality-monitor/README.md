@@ -26,6 +26,23 @@ job runs before the agent:
 6. Skip the agent when there are no new failed builds.
 7. Give the agent a structured dossier when investigation is required.
 
+The collector code follows three boundaries:
+
+- `EvidenceCollector` owns one collection run: its pipeline registry, mutable
+  consumption ledger, injected HTTP implementation, and configured Azure and
+  Helix clients. Candidate selection and evidence orchestration are methods on
+  this service rather than a chain of functions carrying the same dependencies.
+- `AzureDevOpsClient`, `HelixClient`, and `HttpClient` own external communication.
+  A client instance binds its endpoint context and HTTP dependency once.
+- Classification, parsing, signatures, normalization, and KBE matching remain
+  pure functions. Serialized pipeline, observation, candidate, and dossier
+  shapes are declared in [`types.d.ts`](types.d.ts); policy limits are collected
+  in [`constants.mjs`](constants.mjs).
+
+[`collect-ci-evidence.mjs`](collect-ci-evidence.mjs) is the CLI entry point and
+compatibility export surface. The run implementation lives in
+[`collector.mjs`](collector.mjs).
+
 The workflow runs every 30 minutes and can be dispatched manually with a public
 Azure DevOps build ID. Manual dispatch ignores the processed-build ledger for
 the selected build, which makes repeatable validation possible.

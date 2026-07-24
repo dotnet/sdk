@@ -1,6 +1,4 @@
-function nonEmptyLines(value) {
-  return `${value ?? ""}`.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-}
+import { textLines } from "./evidence-utils.mjs";
 
 function exceptionTypeLine(lines) {
   const line = lines.find(candidate => /(?:\b|\.)(?:\w+Exception|AssertionFailedException)\s*:/i.test(candidate));
@@ -18,7 +16,7 @@ function stableDiagnosticLine(lines) {
 }
 
 export function validateErrorMessagePattern(pattern, logContent) {
-  const logLines = nonEmptyLines(logContent);
+  const logLines = textLines(logContent);
   let previousIndex = -1;
   for (const value of pattern) {
     const index = logLines.findIndex((line, candidateIndex) => candidateIndex > previousIndex && line.includes(value));
@@ -29,7 +27,7 @@ export function validateErrorMessagePattern(pattern, logContent) {
 }
 
 export function createTestKbeCandidate(test, signature) {
-  const lines = nonEmptyLines(test.errorMessage);
+  const lines = textLines(test.errorMessage);
   const testName = test.fullyQualifiedName || test.testName;
   const pattern = [testName, exceptionTypeLine(lines), stableDiagnosticLine(lines)].filter(Boolean);
   const validation = validateErrorMessagePattern(pattern, test.errorMessage);
