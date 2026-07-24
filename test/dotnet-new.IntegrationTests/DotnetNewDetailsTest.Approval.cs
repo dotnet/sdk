@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Newtonsoft.Json.Linq;
@@ -209,9 +208,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Resolve the PackageBaseAddress endpoint from the V3 service index
             string indexJson = await client.GetStringAsync("https://packagefeedproxy.microsoft.io/nuget/v3/index.json");
             JObject index = JObject.Parse(indexJson);
-            string baseAddress = index["resources"]!
-                .First(r => r["@type"]!.ToString().StartsWith("PackageBaseAddress"))["@id"]!
-                .ToString().TrimEnd('/');
+            JToken? packageBaseAddressResource = index["resources"]?
+                .FirstOrDefault(r => HasResourceType(r["@type"], "PackageBaseAddress"));
+            string? baseAddress = packageBaseAddressResource?["@id"]?.ToString().TrimEnd('/');
+            if (string.IsNullOrEmpty(baseAddress))
+            {
+                throw new InvalidOperationException("PackageBaseAddress resource was not found in the NuGet service index.");
+            }
 
             string json = await client.GetStringAsync($"{baseAddress}/{packageName.ToLowerInvariant()}/index.json");
             JObject obj = JObject.Parse(json);
@@ -224,6 +227,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             return versions.Last();
         }
+
+        private static bool HasResourceType(JToken? resourceType, string typePrefix) =>
+            resourceType switch
+            {
+                JValue { Type: JTokenType.String } => resourceType.ToString().StartsWith(typePrefix, StringComparison.Ordinal),
+                JArray array => array.Values<string>().Any(type => type?.StartsWith(typePrefix, StringComparison.Ordinal) == true),
+                _ => false,
+            };
 
         private string ExtractVersion(string? stdOut)
         {
