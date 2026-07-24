@@ -20,7 +20,14 @@ import {
 import { getGitHubBranchHead } from "./github/client.mjs";
 import { HelixClient } from "./helix/client.mjs";
 import { parseHelixWorkItemReferences } from "./helix/parsing.mjs";
-import { selectUnprocessedFailures, stateKey, updateState } from "./state.mjs";
+import {
+  auditConsumptionKey,
+  consumeAudit,
+  isAuditConsumed,
+  selectUnprocessedFailures,
+  stateKey,
+  updateState
+} from "./state.mjs";
 
 /** @typedef {import("./types.d.ts").CandidateSelection} CandidateSelection */
 /** @typedef {import("./types.d.ts").CollectionDossier} CollectionDossier */
@@ -68,6 +75,12 @@ function isPullRequestBuild(build, pipeline) {
   return matchesPipeline(build, pipeline)
     && build.reason?.toLowerCase() === "pullrequest"
     && /^refs\/pull\/\d+\/merge$/.test(build.sourceBranch);
+}
+
+function isStableBranchBuild(build, pipeline) {
+  return matchesPipeline(build, pipeline)
+    && (pipeline.stableBranches ?? []).includes(build.sourceBranch)
+    && build.reason?.toLowerCase() !== "pullrequest";
 }
 
 export function getTimelineFailuresFromRecords(records = []) {
@@ -135,7 +148,7 @@ export class EvidenceCollector {
     return related;
   }
 
-  async collectFailureEvidence(pipeline, build, history) {
+  async collectFailureEvidence(pipeline, build, history, candidate = {}) {
     const azure = this.azure(pipeline);
     const detailedBuild = build.validationResults ? build : await azure.getBuild(build.id);
     const timeline = await azure.getTimeline(build.id);
@@ -156,6 +169,10 @@ export class EvidenceCollector {
     return {
       pipeline,
       build: normalizeBuild(build),
+      monitoringCategory: candidate.monitoringCategory ?? null,
+      priority: candidate.priority ?? null,
+      auditContext: candidate.auditContext ?? null,
+      mergedPullRequest: candidate.mergedPullRequest ?? null,
       recentBuilds: history.map(normalizeBuild),
       observations: applyKbeRecurrence(
         [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
@@ -198,42 +215,73 @@ export class EvidenceCollector {
     throw new Error(`Build ${buildId} is not from a pipeline and repository in the registry.`);
   }
 
-  async collectEventCandidate(buildId) {
+  async collectEventCandidate(buildId, mergedPullRequest = null) {
     const selected = await this.selectManualBuild(buildId);
-    if (!isPullRequestBuild(selected.build, selected.pipeline)) return emptySelection();
+    if (isStableBranchBuild(selected.build, selected.pipeline)) {
+      const history = (await this.azure(selected.pipeline).listCompletedBuilds(selected.build.sourceBranch))
+        .filter(build => isStableBranchBuild(build, selected.pipeline));
+      return this.selectHighCandidate(
+        selected.pipeline,
+        selected.build,
+        history,
+        `stable-direct:${selected.build.sourceBranch}`);
+    }
+    if (!mergedPullRequest?.number || !mergedPullRequest.baseRef || !mergedPullRequest.mergeCommitSha
+      || !isPullRequestBuild(selected.build, selected.pipeline)) return emptySelection();
+    const stableTarget = `refs/heads/${mergedPullRequest.baseRef}`;
+    if (!(selected.pipeline.stableBranches ?? []).includes(stableTarget)
+      || `${selected.build.triggerInfo?.["pr.number"]}` !== `${mergedPullRequest.number}`) {
+      return emptySelection();
+    }
     const history = (await this.azure(selected.pipeline).listCompletedBuilds(selected.build.sourceBranch))
       .filter(build => isPullRequestBuild(build, selected.pipeline));
-    const key = stateKey(selected.pipeline, selected.build.sourceBranch);
-    const consumedKeys = new Set(this.state.pipelines[key]?.consumedBuildKeys ?? []);
-    const candidate = !consumedKeys.has(buildConsumptionKey(selected.build)) && isFailedBuild(selected.build)
-      ? selected.build
+    return this.selectHighCandidate(
+      selected.pipeline,
+      selected.build,
+      history,
+      `stable-merge:${mergedPullRequest.number}:${mergedPullRequest.mergeCommitSha}`,
+      mergedPullRequest);
+  }
+
+  selectHighCandidate(pipeline, build, history, auditContext, mergedPullRequest = null) {
+    const auditKey = auditConsumptionKey(build, "stable-branch", auditContext);
+    const candidate = !isAuditConsumed(this.state, pipeline, auditKey) && isFailedBuild(build)
+      ? build
       : null;
-    updateState(this.state, key, history);
+    consumeAudit(this.state, pipeline, auditKey);
     return {
-      candidates: candidate ? [{ pipeline: selected.pipeline, build: candidate, history }] : [],
+      candidates: candidate ? [{
+        pipeline,
+        build: candidate,
+        history,
+        monitoringCategory: "stable-branch",
+        priority: "HIGH",
+        auditContext,
+        mergedPullRequest
+      }] : [],
       bootstrap: false,
       pipelineHealth: []
     };
   }
 
-  async collectEventCandidateByHead(headSha) {
+  async collectEventCandidateByHead(headSha, mergedPullRequest = null) {
     for (const pipeline of this.registry.pipelines) {
       const build = await this.azure(pipeline).findPullRequestBuildByHead(headSha);
-      if (build) return this.collectEventCandidate(`${build.id}`);
+      if (build) return this.collectEventCandidate(`${build.id}`, mergedPullRequest);
     }
     return emptySelection();
   }
 
   /** @returns {Promise<CandidateSelection>} */
-  async collectCandidates(buildId, eventBuildId, eventHeadSha) {
+  async collectCandidates(buildId, eventBuildId, eventHeadSha, mergedPullRequest) {
     if (buildId) {
       const selected = await this.selectManualBuild(buildId);
       if (selected.build.status?.toLowerCase() !== "completed") return emptySelection();
       const history = await this.azure(selected.pipeline).listCompletedBuilds(selected.build.sourceBranch);
       return { candidates: [{ ...selected, history }], bootstrap: false, pipelineHealth: [] };
     }
-    if (eventBuildId) return this.collectEventCandidate(eventBuildId);
-    if (eventHeadSha) return this.collectEventCandidateByHead(eventHeadSha);
+    if (eventBuildId) return this.collectEventCandidate(eventBuildId, mergedPullRequest);
+    if (eventHeadSha) return this.collectEventCandidateByHead(eventHeadSha, mergedPullRequest);
     return this.collectScheduledCandidates();
   }
 
@@ -249,7 +297,23 @@ export class EvidenceCollector {
         const key = stateKey(pipeline, branch);
         const selected = selectUnprocessedFailures(this.state, key, history);
         bootstrap ||= selected.bootstrap;
-        candidates.push(...selected.failures.map(build => ({ pipeline, build, history })));
+        for (const build of selected.failures) {
+          if ((pipeline.stableBranches ?? []).includes(branch)) {
+            const auditContext = `stable-direct:${branch}`;
+            const auditKey = auditConsumptionKey(build, "stable-branch", auditContext);
+            if (!isAuditConsumed(this.state, pipeline, auditKey)) {
+              consumeAudit(this.state, pipeline, auditKey);
+              candidates.push({
+                pipeline,
+                build,
+                history,
+                monitoringCategory: "stable-branch",
+                priority: "HIGH",
+                auditContext
+              });
+            }
+          }
+        }
         await this.collectHeartbeat(pipeline, branch, azure, key, pipelineHealth);
         updateState(this.state, key, history);
       }
@@ -282,11 +346,11 @@ export class EvidenceCollector {
   }
 
   /** @returns {Promise<CollectionDossier>} */
-  async collect(buildId, eventBuildId = null, eventHeadSha = null) {
-    const selected = await this.collectCandidates(buildId, eventBuildId, eventHeadSha);
+  async collect(buildId, eventBuildId = null, eventHeadSha = null, mergedPullRequest = null) {
+    const selected = await this.collectCandidates(buildId, eventBuildId, eventHeadSha, mergedPullRequest);
     const failures = [];
     for (const candidate of selected.candidates) {
-      failures.push(await this.collectFailureEvidence(candidate.pipeline, candidate.build, candidate.history));
+      failures.push(await this.collectFailureEvidence(candidate.pipeline, candidate.build, candidate.history, candidate));
     }
     return {
       schemaVersion: 1,
@@ -294,6 +358,7 @@ export class EvidenceCollector {
       manualBuildId: buildId || null,
       eventBuildId: eventBuildId || null,
       eventHeadSha: eventHeadSha || null,
+      mergedPullRequest,
       bootstrap: selected.bootstrap,
       pipelineHealth: selected.pipelineHealth,
       failures
@@ -305,6 +370,7 @@ function emptySelection() {
   return { candidates: [], bootstrap: false, pipelineHealth: [] };
 }
 
-export async function collectEvidence(registry, buildId, state, fetchImplementation = fetch, eventBuildId = null, eventHeadSha = null) {
-  return new EvidenceCollector(registry, state, fetchImplementation).collect(buildId, eventBuildId, eventHeadSha);
+export async function collectEvidence(registry, buildId, state, fetchImplementation = fetch, eventBuildId = null, eventHeadSha = null, mergedPullRequest = null) {
+  return new EvidenceCollector(registry, state, fetchImplementation)
+    .collect(buildId, eventBuildId, eventHeadSha, mergedPullRequest);
 }

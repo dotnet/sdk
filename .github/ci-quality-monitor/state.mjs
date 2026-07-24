@@ -5,6 +5,29 @@ export function stateKey(pipeline, branch) {
   return `${pipeline.organization}/${pipeline.project}/${pipeline.definitionId}:${branch}`;
 }
 
+export function auditConsumptionKey(build, monitoringCategory, contextIdentity) {
+  return `${buildConsumptionKey(build)}|${monitoringCategory}:${contextIdentity}`;
+}
+
+function auditStateKey(pipeline) {
+  return stateKey(pipeline, "audit-contexts");
+}
+
+export function isAuditConsumed(state, pipeline, auditKey) {
+  return (state.pipelines[auditStateKey(pipeline)]?.consumedAuditKeys ?? []).includes(auditKey);
+}
+
+export function consumeAudit(state, pipeline, auditKey) {
+  const key = auditStateKey(pipeline);
+  const previous = state.pipelines[key] ?? {};
+  state.pipelines[key] = {
+    ...previous,
+    consumedAuditKeys: [...new Set([auditKey, ...(previous.consumedAuditKeys ?? [])])]
+      .slice(0, MAX_PROCESSED_BUILD_IDS),
+    lastCheckedAt: new Date().toISOString()
+  };
+}
+
 export function updateState(state, key, history) {
   const previous = state.pipelines[key] ?? {};
   const previousKeys = previous.consumedBuildKeys ?? [];

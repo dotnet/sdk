@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 
-const { prepareIssues } = require("./apply-issue-output.cjs");
+const { applyIssue, prepareIssues } = require("./apply-issue-output.cjs");
 
 const validatedTest = {
   kind: "test",
@@ -88,16 +88,16 @@ test("non-test and unvalidated signatures cannot become KBEs", () => {
 
 test("ordinary issues cannot smuggle a KBE block", () => {
   assert.throws(
-    () => prepareIssues(output("ordinary", `${validBody}\n\n## Error Message\n\`\`\`json\n{}\n\`\`\``), { failures: [] }),
+    () => prepareIssues(output("ordinary", `${validBody}\n\n## Error Message\n\`\`\`json\n{}\n\`\`\``), { failures: [{ observations: [validatedTest] }] }),
     /must not contain/);
 });
 
 test("issues require a bounded root cause analysis", () => {
   assert.throws(
-    () => prepareIssues(output("ordinary", "## Build Information\nBuild failed."), { failures: [] }),
+    () => prepareIssues(output("ordinary", "## Build Information\nBuild failed."), { failures: [{ observations: [validatedTest] }] }),
     /missing required sections/);
   assert.throws(
-    () => prepareIssues(output("ordinary", validBody.replace("**Confidence:** Medium", "**Confidence:** Maybe")), { failures: [] }),
+    () => prepareIssues(output("ordinary", validBody.replace("**Confidence:** Medium", "**Confidence:** Maybe")), { failures: [{ observations: [validatedTest] }] }),
     /confidence must be High, Medium, or Low/);
 });
 
@@ -115,4 +115,51 @@ test("live evaluation applies requested fork labels without changing production 
   } finally {
     delete process.env.CI_QUALITY_LIVE_EVALUATION;
   }
+});
+
+test("HIGH stable-branch labels are derived from trusted dossier metadata", () => {
+  const issue = prepareIssues(output("ordinary"), {
+    failures: [{ monitoringCategory: "stable-branch", priority: "HIGH", observations: [validatedTest] }]
+  })[0];
+
+  assert.deepEqual(issue.labels, ["agentic-workflows", "Test Debt", "live-build-incident"]);
+});
+
+test("ordinary issues require an actionable collector signature", () => {
+  assert.throws(
+    () => prepareIssues(output("ordinary"), { failures: [{ observations: [{ ...validatedTest, actionable: false }] }] }),
+    /not an actionable collector observation/);
+});
+
+test("an existing issue receives missing HIGH promotion labels", async () => {
+  const added = [];
+  const github = { rest: {
+    search: { issuesAndPullRequests: async () => ({ data: { total_count: 1, items: [{ number: 42, labels: ["agentic-workflows"] }] } }) },
+    issues: { addLabels: async options => added.push(options) }
+  } };
+  const issue = prepareIssues(output("ordinary"), {
+    failures: [{ monitoringCategory: "stable-branch", priority: "HIGH", observations: [validatedTest] }]
+  })[0];
+
+  await applyIssue(issue, github, { repo: { owner: "dotnet", repo: "sdk" } }, { info() {} }, false);
+
+  assert.deepEqual(added, [{
+    owner: "dotnet", repo: "sdk", issue_number: 42,
+    labels: ["Test Debt", "live-build-incident"]
+  }]);
+});
+
+test("the trusted applicator rejects more than three issue writes", () => {
+  const agentOutput = output("ordinary");
+  agentOutput.items = Array.from({ length: 4 }, () => ({ ...agentOutput.items[0] }));
+
+  assert.throws(
+    () => prepareIssues(agentOutput, { failures: [{ observations: [validatedTest] }] }),
+    /At most 3/);
+});
+
+test("issue application fails closed without a trusted signature marker", async () => {
+  await assert.rejects(
+    () => applyIssue({ body: "unsigned", labels: [] }, {}, {}, {}, false),
+    /missing its trusted signature marker/);
 });

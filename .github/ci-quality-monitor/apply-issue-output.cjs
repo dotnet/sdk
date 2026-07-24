@@ -59,7 +59,23 @@ function withTitlePrefix(title) {
   return `${TITLE_PREFIX}${title.replace(/^(?:\[AI discovered CI\]\s*)+/i, "")}`;
 }
 
-function prepareOrdinaryIssue(item) {
+function productionLabels(item, dossier, knownBuildError = false) {
+  const failure = (dossier.failures ?? []).find(candidate =>
+    (candidate.observations ?? []).some(observation => observation.signature === item.signature));
+  const labels = ["agentic-workflows"];
+  if (knownBuildError) labels.push("Known Build Error");
+  if (failure?.monitoringCategory === "stable-branch" && failure.priority === "HIGH") {
+    labels.push("Test Debt", "live-build-incident");
+  }
+  return labels;
+}
+
+function prepareOrdinaryIssue(item, observations, dossier) {
+  const observation = observations.find(candidate =>
+    candidate.signature === item.signature && candidate.actionable !== false);
+  if (!observation) {
+    throw new Error(`Ordinary issue signature '${item.signature}' is not an actionable collector observation.`);
+  }
   validateIssueBody(item.body);
   if (/^## Error Message\s*$/m.test(item.body)) {
     throw new Error("Ordinary CI issues must not contain a Build Analysis Error Message section.");
@@ -69,11 +85,11 @@ function prepareOrdinaryIssue(item) {
     body: withSignature(withLiveEvaluationDisclaimer(item.body), item.signature),
     labels: process.env.CI_QUALITY_LIVE_EVALUATION === "true"
       ? ["agentic-workflows", "cookie", "Test Debt"]
-      : ["agentic-workflows"]
+      : productionLabels(item, dossier)
   };
 }
 
-function prepareKbeIssue(item, observations) {
+function prepareKbeIssue(item, observations, dossier) {
   const observation = observations.find(candidate => candidate.signature === item.signature);
   const allowNonRecurring = process.env.CI_QUALITY_LIVE_EVALUATION === "true";
   if (!observation || observation.kind !== "test" || !observation.kbe?.eligible
@@ -90,7 +106,7 @@ function prepareKbeIssue(item, observations) {
     body: withSignature(body, item.signature),
     labels: allowNonRecurring
       ? ["agentic-workflows", "Known Build Error", "cookie", "Test Debt"]
-      : ["agentic-workflows", "Known Build Error"]
+      : productionLabels(item, dossier, true)
   };
 }
 
@@ -99,20 +115,29 @@ function prepareIssues(agentOutput, dossier) {
   if (items.length > MAX_ISSUES) throw new Error(`At most ${MAX_ISSUES} CI quality issues may be created per run.`);
   const observations = allObservations(dossier);
   return items.map(item => item.issue_kind === "test-kbe"
-    ? prepareKbeIssue(item, observations)
-    : prepareOrdinaryIssue(item));
+    ? prepareKbeIssue(item, observations, dossier)
+    : prepareOrdinaryIssue(item, observations, dossier));
 }
 
-async function issueExists(github, context, signatureHash) {
+async function findExistingIssue(github, context, signatureHash) {
   const query = `repo:${context.repo.owner}/${context.repo.repo} is:issue in:body \"ci-quality-signature-sha256: ${signatureHash}\"`;
   const result = await github.rest.search.issuesAndPullRequests({ q: query, per_page: 1 });
-  return result.data.total_count > 0;
+  return result.data.items?.[0] ?? null;
 }
 
 async function applyIssue(issue, github, context, core, staged) {
   const signatureHash = issue.body.match(/<!-- ci-quality-signature-sha256: ([a-f0-9]{64}) -->/)?.[1];
-  if (await issueExists(github, context, signatureHash)) {
-    core.info(`Skipping existing CI quality issue for ${signatureHash}.`);
+  if (!signatureHash) throw new Error("Prepared CI quality issue is missing its trusted signature marker.");
+  const existing = await findExistingIssue(github, context, signatureHash);
+  if (existing) {
+    const labelsToAdd = issue.labels.filter(label => !existing.labels?.some(existingLabel =>
+      (typeof existingLabel === "string" ? existingLabel : existingLabel.name) === label));
+    if (!staged && labelsToAdd.length > 0) {
+      await github.rest.issues.addLabels({ ...context.repo, issue_number: existing.number, labels: labelsToAdd });
+      core.info(`Promoted existing CI quality issue #${existing.number} with: ${labelsToAdd.join(", ")}.`);
+    } else {
+      core.info(`Skipping existing CI quality issue for ${signatureHash}.`);
+    }
     return;
   }
   if (staged) {
@@ -132,4 +157,4 @@ async function main({ core, github, context }) {
   }
 }
 
-module.exports = { main, prepareIssues };
+module.exports = { applyIssue, main, prepareIssues };

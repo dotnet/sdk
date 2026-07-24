@@ -8,6 +8,8 @@ on:
     branches: [nagilson/ci-quality-monitor-live-evaluation]
   check_suite:
     types: [completed]
+  pull_request:
+    types: [closed]
   schedule: daily
   workflow_dispatch:
     inputs:
@@ -24,9 +26,11 @@ concurrency:
 jobs:
   collect:
     if: >-
-      github.event_name != 'check_suite' ||
-      (github.event.check_suite.app.slug == 'azure-pipelines' &&
-        github.event.check_suite.conclusion != 'success')
+      (github.event_name != 'check_suite' && github.event_name != 'pull_request') ||
+      (github.event_name == 'check_suite' &&
+       github.event.check_suite.app.slug == 'azure-pipelines' &&
+       github.event.check_suite.conclusion != 'success') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -64,6 +68,16 @@ jobs:
             }
             core.setOutput('build_id', buildId ?? '');
             core.setOutput('head_sha', context.payload.check_suite.head_sha);
+      - name: Resolve merged pull request context
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+        id: resolve-merged-pr
+        uses: actions/github-script@v9.0.0
+        with:
+          script: |
+            core.setOutput('head_sha', context.payload.pull_request.head.sha);
+            core.setOutput('number', `${context.payload.pull_request.number}`);
+            core.setOutput('base_ref', context.payload.pull_request.base.ref);
+            core.setOutput('merge_commit_sha', context.payload.pull_request.merge_commit_sha ?? '');
       - name: Restore processed-build ledger
         id: restore-state-cache
         uses: actions/cache/restore@v6.1.0
@@ -103,7 +117,10 @@ jobs:
         env:
           BUILD_ID: ${{ inputs.build_id }}
           EVENT_BUILD_ID: ${{ steps.resolve-check-suite.outputs.build_id }}
-          EVENT_HEAD_SHA: ${{ steps.resolve-check-suite.outputs.head_sha }}
+          EVENT_HEAD_SHA: ${{ steps.resolve-check-suite.outputs.head_sha || steps.resolve-merged-pr.outputs.head_sha }}
+          MERGED_PR_NUMBER: ${{ steps.resolve-merged-pr.outputs.number }}
+          MERGED_PR_BASE_REF: ${{ steps.resolve-merged-pr.outputs.base_ref }}
+          MERGED_PR_COMMIT_SHA: ${{ steps.resolve-merged-pr.outputs.merge_commit_sha }}
         run: |
           mkdir -p .ci-quality-monitor
           args=(
@@ -121,6 +138,13 @@ jobs:
             args+=(--event-head-sha "$EVENT_HEAD_SHA")
           elif [[ "$GITHUB_REF_NAME" == "nagilson/ci-quality-monitor-live-evaluation" ]]; then
             args+=(--build-id "$(cat .github/ci-quality-monitor/evaluation-build-id.txt)")
+          fi
+          if [[ -n "$MERGED_PR_NUMBER" ]]; then
+            args+=(
+              --merged-pr-number "$MERGED_PR_NUMBER"
+              --merged-pr-base-ref "$MERGED_PR_BASE_REF"
+              --merged-pr-commit-sha "$MERGED_PR_COMMIT_SHA"
+            )
           fi
           node .github/ci-quality-monitor/collect-ci-evidence.mjs "${args[@]}"
       - name: Upload CI quality dossier
@@ -261,7 +285,7 @@ Follow these steps in order:
 12. For each remaining candidate, form an evidence-bounded causal chain: the observed failure, its proximate cause, any supported trigger or contributing condition, and the resulting impact. Separate facts from inference. Explicitly reject generic parent failures and artifact cascades as causes.
 13. Assign `High`, `Medium`, or `Low` confidence. Use `High` only when a specific diagnostic or artifact establishes the causal chain; recurrence alone establishes a flake pattern, not its underlying cause. Never call a failure flaky, infrastructure, PR-related, or safe to retry without the corresponding evidence in the dossier.
 14. Record plausible alternatives or missing evidence and name the cheapest next check that would distinguish them. Relevant checks may include target-branch comparison, PR changed-file correlation, build progression, Build Analysis status, a binlog, dump analysis, or source inspection; describe these as follow-up work, not completed verification.
-15. If no actionable candidate remains, call `noop` with the reason. Otherwise call `create_ci_quality_issue` at most three times, one per distinct root-cause mechanism. Never request or apply `cookie`; normal issue triage decides whether each issue is bounded enough for Issue Monster.
+15. If no actionable candidate remains, call `noop` with the reason. Otherwise call `create_ci_quality_issue` at most three times. When one run has more than three distinct actionable mechanisms, create the two highest-impact issues separately and use the third issue as an overflow aggregate whose title says `multiple additional CI mechanisms`; list every remaining signature, component, build link, and next check in its body. Use one listed observation signature as the aggregate's constrained-output signature. Never silently omit an actionable HIGH mechanism. Never request or apply `cookie`; normal issue triage decides whether each issue is bounded enough for Issue Monster.
 
 ## Ordinary CI issue requirements
 

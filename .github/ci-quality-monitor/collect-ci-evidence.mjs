@@ -88,7 +88,12 @@ async function main() {
     state,
     fetch,
     options["event-build-id"],
-    options["event-head-sha"]);
+    options["event-head-sha"],
+    options["merged-pr-number"] ? {
+      number: Number(options["merged-pr-number"]),
+      baseRef: options["merged-pr-base-ref"],
+      mergeCommitSha: options["merged-pr-commit-sha"]
+    } : null);
   await mkdir(path.dirname(options.output), { recursive: true });
   await writeFile(options.output, `${JSON.stringify(dossier, null, 2)}\n`);
   if (options["state-output"]) {
