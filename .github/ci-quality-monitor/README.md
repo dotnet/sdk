@@ -137,3 +137,6 @@ Compile the agentic workflow after any source change:
 ```
 
 The generated `.lock.yml` must be committed with its source workflow.
+
+For verified public failure examples and batch evaluation, see
+[`EVALUATION.md`](EVALUATION.md) and [`evaluation-builds.json`](evaluation-builds.json).
