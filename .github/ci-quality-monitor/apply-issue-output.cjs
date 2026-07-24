@@ -1,4 +1,5 @@
 const fs = require("node:fs");
+const { createHash } = require("node:crypto");
 
 const MAX_ISSUES = 3;
 const TITLE_PREFIX = "[AI discovered CI] ";
@@ -19,8 +20,9 @@ function errorMessageBlock(candidate) {
 }
 
 function withSignature(body, signature) {
-  const marker = `<!-- ci-quality-signature: ${signature} -->`;
-  return body.includes("<!-- ci-quality-signature:") ? body : `${body.trim()}\n\n${marker}`;
+  const hash = createHash("sha256").update(signature).digest("hex");
+  const marker = `<!-- ci-quality-signature-sha256: ${hash} -->`;
+  return body.includes("<!-- ci-quality-signature-sha256:") ? body : `${body.trim()}\n\n${marker}`;
 }
 
 function prepareOrdinaryIssue(item) {
@@ -60,16 +62,16 @@ function prepareIssues(agentOutput, dossier) {
     : prepareOrdinaryIssue(item));
 }
 
-async function issueExists(github, context, signature) {
-  const query = `repo:${context.repo.owner}/${context.repo.repo} is:issue in:body \"ci-quality-signature: ${signature}\"`;
+async function issueExists(github, context, signatureHash) {
+  const query = `repo:${context.repo.owner}/${context.repo.repo} is:issue in:body \"ci-quality-signature-sha256: ${signatureHash}\"`;
   const result = await github.rest.search.issuesAndPullRequests({ q: query, per_page: 1 });
   return result.data.total_count > 0;
 }
 
 async function applyIssue(issue, github, context, core, staged) {
-  const signature = issue.body.match(/<!-- ci-quality-signature: (.+?) -->/)?.[1];
-  if (await issueExists(github, context, signature)) {
-    core.info(`Skipping existing CI quality issue for ${signature}.`);
+  const signatureHash = issue.body.match(/<!-- ci-quality-signature-sha256: ([a-f0-9]{64}) -->/)?.[1];
+  if (await issueExists(github, context, signatureHash)) {
+    core.info(`Skipping existing CI quality issue for ${signatureHash}.`);
     return;
   }
   if (staged) {

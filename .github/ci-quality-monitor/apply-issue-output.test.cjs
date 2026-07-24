@@ -31,6 +31,7 @@ test("ordinary issues never receive KBE label or block", () => {
 
   assert.deepEqual(issue.labels, ["agentic-workflows"]);
   assert.doesNotMatch(issue.body, /^## Error Message$/m);
+  assert.match(issue.body, /<!-- ci-quality-signature-sha256: [a-f0-9]{64} -->/);
 });
 
 test("validated named test KBE receives fixed label and generated block", () => {
