@@ -19,6 +19,9 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
     outputs:
       dossier: ${{ steps.collect.outputs.dossier }}
       failure_count: ${{ steps.collect.outputs.failure_count }}
@@ -27,12 +30,39 @@ jobs:
       - name: Check out monitor configuration
         uses: actions/checkout@v7.0.0
       - name: Restore processed-build ledger
+        id: restore-state-cache
         uses: actions/cache/restore@v6.1.0
         with:
           path: .ci-quality-monitor/state.json
           key: ci-quality-monitor-state-${{ github.run_id }}
           restore-keys: |
             ci-quality-monitor-state-
+      - name: Find latest durable state checkpoint
+        if: hashFiles('.ci-quality-monitor/state.json') == ''
+        id: find-state-checkpoint
+        uses: actions/github-script@v9.0.0
+        with:
+          script: |
+            const artifacts = await github.paginate(github.rest.actions.listArtifactsForRepo, {
+              ...context.repo,
+              name: 'ci-quality-state',
+              per_page: 100
+            });
+            const branch = context.ref.replace('refs/heads/', '');
+            const checkpoint = artifacts
+              .filter(artifact => !artifact.expired
+                && artifact.workflow_run?.id !== context.runId
+                && artifact.workflow_run?.head_branch === branch)
+              .sort((left, right) => new Date(right.created_at) - new Date(left.created_at))[0];
+            core.setOutput('run_id', checkpoint?.workflow_run?.id ?? '');
+      - name: Restore durable state checkpoint
+        if: hashFiles('.ci-quality-monitor/state.json') == '' && steps.find-state-checkpoint.outputs.run_id != ''
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: ci-quality-state
+          path: .ci-quality-monitor
+          run-id: ${{ steps.find-state-checkpoint.outputs.run_id }}
+          github-token: ${{ github.token }}
       - name: Collect public CI evidence
         id: collect
         env:
@@ -56,6 +86,13 @@ jobs:
           name: ci-quality-dossier
           path: .ci-quality-monitor/dossier.json
           retention-days: 1
+      - name: Upload durable state checkpoint
+        if: hashFiles('.ci-quality-monitor/state.json') != ''
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ci-quality-state
+          path: .ci-quality-monitor/state.json
+          retention-days: 30
       - name: Save processed-build ledger
         if: always() && hashFiles('.ci-quality-monitor/state.json') != ''
         uses: actions/cache/save@v6.1.0

@@ -59,13 +59,37 @@ before reporting that a pipeline did not start.
 ## State and Bootstrap
 
 State is keyed by Azure DevOps organization, project, definition ID, and branch.
-Each entry retains up to 100 build IDs, while every poll re-reads the latest 20
-builds to tolerate builds finishing out of queue order.
+Each entry retains up to 100 consumption keys. A key contains build ID, finish
+time, and result, so a retried attempt that updates an existing build ID can be
+analyzed again. Every poll re-reads the latest 20 builds to tolerate builds
+finishing out of queue order.
+
+The collector restores state through two layers before deciding whether to run
+AI:
+
+1. A branch-scoped Actions cache is the fast path. Immutable run-specific keys
+  restore the most recent prefix match.
+2. If the cache is missing or evicted, the collector restores the newest
+  non-expired `ci-quality-state` artifact from the same branch. Checkpoints are
+  retained for 30 days.
+
+The new checkpoint is uploaded by the collector job before agent activation.
+This gives scheduled runs **at-most-once automatic AI delivery** per consumption
+key: if inference, detection, or issue application later fails, the next
+scheduled run does not automatically spend tokens on the same completed build.
+Use manual dispatch with `build_id` for an intentional retry; manual evaluation
+bypasses the consumption ledger.
 
 When no state can be restored, the run is marked as bootstrap. Bootstrap records
-the current window and gathers at most one historical failure, but policy
-requires the agent to call `noop`. This prevents a lost or expired cache from
+the current window and gathers at most one historical failure, but the
+deterministic collector emits `should_run=false`, so no agent job is created.
+This prevents a lost cache and artifact checkpoint from spending AI credits or
 creating a burst of historical issues.
+
+The checkpoint contains no credentials or untrusted executable content. It is
+JSON build metadata only. Workflow concurrency queues scheduled runs under one
+group, preventing two collectors from claiming the same newly completed build
+at once.
 
 ## Issue Policy
 
