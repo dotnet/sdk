@@ -114,4 +114,33 @@ public class TestRunPolicyTests
 
         policy.Complete().Should().Be(TestRunCancellationReason.MaximumFailedTests);
     }
+
+    [Fact]
+    public async Task ConcurrentStartAndExitAtTimeoutBoundaryDoesNotThrow()
+    {
+        // Regression: OnTestApplicationExited can drive the remaining timeout non-positive a moment
+        // before it flips Reason to Timeout. A test application starting in that window must not
+        // construct a Timer with a negative due time (which previously threw and corrupted the
+        // active-application accounting).
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: TimeSpan.FromMilliseconds(30));
+
+        var workers = new Task[3];
+        for (int w = 0; w < workers.Length; w++)
+        {
+            workers[w] = Task.Run(async () =>
+            {
+                while (policy.Reason == TestRunCancellationReason.None)
+                {
+                    policy.OnTestApplicationStarted();
+                    await Task.Delay(1, cancellationToken);
+                    policy.OnTestApplicationExited();
+                }
+            }, cancellationToken);
+        }
+
+        await Task.WhenAll(workers).WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+
+        policy.Reason.Should().Be(TestRunCancellationReason.Timeout);
+    }
 }

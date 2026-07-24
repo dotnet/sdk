@@ -92,10 +92,16 @@ internal sealed class TestRunPolicy : IDisposable
                 _remainingTimeout is { } remainingTimeout)
             {
                 _timerStartedTimestamp = Stopwatch.GetTimestamp();
+
+                // A concurrent OnTestApplicationExited can drive _remainingTimeout non-positive a
+                // moment before it flips Reason to Timeout, so clamp to avoid passing a negative due
+                // time to Timer (which throws ArgumentOutOfRangeException). A zero due time fires
+                // immediately and OnTimeout performs the cancellation.
+                TimeSpan dueTime = remainingTimeout > TimeSpan.Zero ? remainingTimeout : TimeSpan.Zero;
                 _timer = new Timer(
                     static state => ((TestRunPolicy)state!).OnTimeout(),
                     this,
-                    remainingTimeout,
+                    dueTime,
                     Timeout.InfiniteTimeSpan);
             }
         }
