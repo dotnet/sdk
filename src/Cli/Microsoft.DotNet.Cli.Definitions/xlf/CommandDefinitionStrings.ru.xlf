@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../CommandDefinitionStrings.resx">
     <body>
@@ -574,6 +574,11 @@ The specified directory will be created if it does not exist.</source>
       <trans-unit id="CmdRuntimeOptionDescription">
         <source>The target runtime to restore packages for.</source>
         <target state="translated">Целевая среда выполнения для восстановления пакетов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSdk">
+        <source>SDK_NAME</source>
+        <target state="new">SDK_NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdServiceableDescription">
@@ -1736,6 +1741,16 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">Отобразить схему команды в формате JSON.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SdkAddAppFullName">
+        <source>Add an SDK reference to the project.</source>
+        <target state="new">Add an SDK reference to the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkAddCmdNoRestoreDescription">
+        <source>Add the SDK reference without running restore.</source>
+        <target state="new">Add the SDK reference without running restore.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SdkAppFullName">
         <source>.NET SDK Command</source>
         <target state="translated">Команда .NET SDK</target>
@@ -1744,6 +1759,31 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="SdkCheckAppFullName">
         <source>.NET SDK Check Command</source>
         <target state="translated">Команда проверки пакета SDK для .NET</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkIdentityArgumentDescription">
+        <source>SDK reference in the form of an SDK name like '{0}' or SDK name and version separated by '@' like '{0}@{1}'.</source>
+        <target state="new">SDK reference in the form of an SDK name like '{0}' or SDK name and version separated by '@' like '{0}@{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkIdentityArgumentIdIsNull">
+        <source>SDK reference name must not be null or empty.</source>
+        <target state="new">SDK reference name must not be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkIdentityArgumentVersionIsEmpty">
+        <source>SDK version must not be empty when specified using the '@' separator.</source>
+        <target state="new">SDK version must not be empty when specified using the '@' separator.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkRemoveAppFullName">
+        <source>Remove an SDK reference from the project.</source>
+        <target state="new">Remove an SDK reference from the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkRemoveAppHelpText">
+        <source>The SDK reference to remove.</source>
+        <target state="new">The SDK reference to remove.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">

@@ -1253,6 +1253,49 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
     {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</comment>
   </data>
+  <data name="SdkReferenceAddedToProject" xml:space="preserve">
+    <value>SDK reference '{0}'{1} added to project '{2}'.</value>
+    <comment>{0} is SDK name. {1} is optional version suffix like " version '6.2.0'". {2} is project path.</comment>
+  </data>
+  <data name="SdkReferenceUpdatedInProject" xml:space="preserve">
+    <value>SDK reference '{0}'{1} updated in project '{2}'.</value>
+    <comment>{0} is SDK name. {1} is optional version suffix like " version '6.2.0'". {2} is project path.</comment>
+  </data>
+  <data name="SdkReferenceUpdatedInFile" xml:space="preserve">
+    <value>SDK reference '{0}'{1} updated in file '{2}'.</value>
+    <comment>{0} is SDK name. {1} is optional version suffix. {2} is C# file path.</comment>
+  </data>
+  <data name="SdkReferenceUnchangedInProject" xml:space="preserve">
+    <value>SDK reference '{0}' is already present in project '{1}'.</value>
+  </data>
+  <data name="SdkReferenceAddedToFile" xml:space="preserve">
+    <value>SDK reference '{0}'{1} added to file '{2}'.</value>
+    <comment>{0} is SDK name. {1} is optional version suffix. {2} is C# file path.</comment>
+  </data>
+  <data name="SdkReferenceUnchangedInFile" xml:space="preserve">
+    <value>SDK reference '{0}' is already present in file '{1}'.</value>
+  </data>
+  <data name="SdkReferenceRemovedFromProject" xml:space="preserve">
+    <value>Removing SDK reference '{0}' from project '{1}'.</value>
+  </data>
+  <data name="SdkReferenceNotFoundInProject" xml:space="preserve">
+    <value>SDK reference '{0}' not found in project '{1}'.</value>
+  </data>
+  <data name="SdkReferenceNotFoundInFile" xml:space="preserve">
+    <value>SDK reference '{0}' not found in file '{1}'.</value>
+  </data>
+  <data name="CannotRemovePrimarySdkReference" xml:space="preserve">
+    <value>Cannot remove the primary SDK '{0}'. This SDK must remain as the project's main SDK reference.</value>
+  </data>
+  <data name="CannotRemovePrimarySdkReferenceInFile" xml:space="preserve">
+    <value>Cannot remove the primary SDK '{0}' specified by the first '#:sdk' directive.</value>
+  </data>
+  <data name="GlobalJsonFileParsingFailed" xml:space="preserve">
+    <value>Could not parse global.json file '{0}': {1}</value>
+  </data>
+  <data name="SdkVersionResolutionFailed" xml:space="preserve">
+    <value>Could not resolve a NuGet version for SDK '{0}'. Specify a version explicitly. {1}</value>
+  </data>
   <data name="PackagesCommandNameCollisionConclusion" xml:space="preserve">
     <value>Command names conflict. Command names are case insensitive.
 {0}</value>
