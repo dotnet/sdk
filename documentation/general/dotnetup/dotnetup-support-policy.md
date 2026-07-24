@@ -8,7 +8,7 @@
 Looking for the support policy for the .NET Platform? See the [.NET Support Policy](https://dotnet.microsoft.com/platform/support/policy) page.
 `dotnetup`'s official support policy document is still underway; here, we aim to communicate version intent to allow users to pick which version of `dotnetup` to use.
 
-Unlike the .NET SDK, `dotnetup` is a tip-only product. Only the most recently published `stable` version of `dotnetup` is supported. When a new `stable` version is published, it immediately supersedes the previous `stable` version. `daily` and `preview` versions are not supported. This policy may change as the product matures or when an official support policy page supersedes this document.
+Unlike the .NET SDK, `dotnetup` is a tip-only product. Fixes and updates are only provided for the latest `stable` version.  When a new `stable` version is published, it immediately supersedes the previous `stable` version. `daily` and `preview` versions may recieve updates but have a lower quality bar and are not recommended for use in production. This policy may change as the product matures or when an official support policy page supersedes this document.
 
 `dotnetup` is a standalone tool with a lifecycle that is independent of the .NET SDK lifecycle.
 
