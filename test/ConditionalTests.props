@@ -45,6 +45,26 @@
       <RunAlways>CI</RunAlways>
     </ConditionalTestScope>
 
+    <ConditionalTestScope Include="DotnetFormat">
+      <Mechanism>project</Mechanism>
+      <TestProjects>test/dotnet-format.*/**/*.csproj</TestProjects>
+      <TriggerPaths>
+        src/Cli/dotnet/Commands/Format/**;
+        src/Dotnet.Format/**;
+        test/dotnet-format.*/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+
+    <ConditionalTestScope Include="NetAnalyzers">
+      <Mechanism>project</Mechanism>
+      <TestProjects>src/Microsoft.CodeAnalysis.NetAnalyzers/tests/**/*.csproj</TestProjects>
+      <TriggerPaths>
+        src/Microsoft.CodeAnalysis.NetAnalyzers/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+
     <ConditionalTestScope Include="TemplateEngine">
       <Mechanism>project</Mechanism>
       <TestProjects>test/TemplateEngine/**/*.csproj</TestProjects>
@@ -54,14 +74,6 @@
         template_feed/Microsoft.TemplateEngine.Authoring.Templates/**;
         test/TemplateEngine/**;
         test/TestAssets/TestPackages/TemplateEngine/**
-      </TriggerPaths>
-      <RunAlways>CI</RunAlways>
-    </ConditionalTestScope>
-    <ConditionalTestScope Include="NetAnalyzers">
-      <Mechanism>project</Mechanism>
-      <TestProjects>src/Microsoft.CodeAnalysis.NetAnalyzers/tests/**/*.csproj</TestProjects>
-      <TriggerPaths>
-        src/Microsoft.CodeAnalysis.NetAnalyzers/**
       </TriggerPaths>
       <RunAlways>CI</RunAlways>
     </ConditionalTestScope>

@@ -54,8 +54,8 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/Commands/Format @phil-allen-msft
-/test/dotnet-format.UnitTests @phil-allen-msft
+/src/Cli/dotnet/Commands/Format @mwiemer-microsoft
+/test/dotnet-format.*Tests @mwiemer-microsoft
 
 # Area-NuGet
 /src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
@@ -119,7 +119,7 @@
 
 # Area-Format
 /src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
-/test/dotnet-format.UnitTests @dotnet/roslyn-ide
+/test/dotnet-format.*Tests @dotnet/roslyn-ide
 
 # Area-Microsoft.CodeAnalysis.NetAnalyzers
 /src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers
