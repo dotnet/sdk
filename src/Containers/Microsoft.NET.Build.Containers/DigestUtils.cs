@@ -64,14 +64,50 @@ internal sealed class DigestUtils
     }
 
     /// <summary>
-    /// Validates a digest string against the OCI grammar and registered
-    /// algorithms. Throws <see cref="InvalidDigestException"/> if the digest
-    /// is invalid.
+    /// Validates a digest string against the OCI grammar and registered algorithms.
     /// </summary>
     /// <remarks>
-    /// <c>ValidateDigest("sha256:e3b0c4...")</c> succeeds.
+    /// Does not check the digest against any actual content.
     /// </remarks>
-    internal static void ValidateDigest(string digest) => ValidateAndParseDigest(digest, out _, out _);
+    /// <throws cref="InvalidDigestException">Thrown if the digest is invalid.</throws>
+    internal static void ValidateDigestFormat(string digest, out string algorithm, out ReadOnlySpan<byte> encodedValue)
+    {
+        if (TryParseDigest(digest, out algorithm, out encodedValue, out DigestParseFailure parseFailure))
+        {
+            return;
+        }
+
+        string message = parseFailure switch
+        {
+            DigestParseFailure.InvalidFormat =>
+                $"Digest '{digest}' does not match expected pattern '{ReferenceParser.AnchoredDigestRegexp}'.",
+            DigestParseFailure.UnsupportedAlgorithm =>
+                $"Unsupported digest algorithm '{algorithm}'. Supported algorithms: {string.Join(", ", s_registeredAlgorithms.Keys)}.",
+            DigestParseFailure.InvalidEncodedValue =>
+                $"Digest '{digest}' encoded value does not match expected pattern for algorithm '{algorithm}': '{s_registeredAlgorithms[algorithm]}'.",
+            _ => throw new InvalidOperationException($"Unexpected digest parse failure '{parseFailure}'."),
+        };
+
+        throw new InvalidDigestException(message);
+    }
+
+    /// <summary>
+    /// Validates that digest is correctly formatted and that it matches the
+    /// digest of the provided content.
+    /// </summary>
+    /// <throws cref="InvalidDigestException">
+    /// Thrown if the digest is invalid or does not match the content.
+    /// </throws>
+    internal static void ValidateDigestContent(string digest, ReadOnlySpan<byte> content)
+    {
+        ValidateDigestFormat(digest, out _, out _);
+        string actualDigest = FormatSha256Digest(ComputeSha256(content));
+        if (!string.Equals(actualDigest, digest, StringComparison.Ordinal))
+        {
+            throw new InvalidDigestException(
+                $"Content does not match expected digest '{digest}'. Computed digest was '{actualDigest}'.");
+        }
+    }
 
     /// <summary>
     /// Validates a digest string against the OCI grammar and registered
@@ -82,7 +118,7 @@ internal sealed class DigestUtils
     /// </remarks>
     internal static string GetEncoded(string digest)
     {
-        ValidateAndParseDigest(digest, out _, out ReadOnlySpan<byte> encoded);
+        ValidateDigestFormat(digest, out _, out ReadOnlySpan<byte> encoded);
         return Convert.ToHexStringLower(encoded);
     }
 
@@ -95,7 +131,7 @@ internal sealed class DigestUtils
     /// </remarks>
     internal static ReadOnlySpan<byte> GetEncodedValue(string digest)
     {
-        ValidateAndParseDigest(digest, out _, out ReadOnlySpan<byte> encodedValue);
+        ValidateDigestFormat(digest, out _, out ReadOnlySpan<byte> encodedValue);
         return encodedValue;
     }
 
@@ -106,10 +142,12 @@ internal sealed class DigestUtils
     /// <remarks>
     /// <c>ComputeSha256("")</c> returns <c>"e3b0c4..."</c>.
     /// </remarks>
-    internal static string ComputeSha256(string content)
+    internal static string ComputeSha256(string content) => ComputeSha256(Encoding.UTF8.GetBytes(content));
+
+    private static string ComputeSha256(ReadOnlySpan<byte> content)
     {
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
-        SHA256.HashData(Encoding.UTF8.GetBytes(content), hash);
+        SHA256.HashData(content, hash);
         return Convert.ToHexStringLower(hash);
     }
 
@@ -123,24 +161,30 @@ internal sealed class DigestUtils
     }
 
     /// <summary>
-    /// Validates a digest string against the OCI grammar and registered
-    /// algorithms, returning the parsed algorithm and encoded portions. Throws
-    /// <see cref="InvalidDigestException"/> if the digest is malformed, uses an
-    /// unsupported algorithm, or the encoded value does not match the
-    /// algorithm's expected format.
+    /// Attempts to parse a digest string against the OCI grammar and registered algorithms.
     /// </summary>
     /// <remarks>
-    /// <c>ValidateAndParseDigest("sha256:e3b0c4...", out algorithm, out encoded)</c>
-    /// sets <c>algorithm</c> to <c>"sha256"</c> and <c>encoded</c> to <c>"e3b0c4..."</c>.
+    /// For "sha256:e3b0c4...", algorithm="sha256" and encoded="e3b0c4..."
     /// </remarks>
-    private static void ValidateAndParseDigest(string digest, out string algorithm, out ReadOnlySpan<byte> encodedValue)
+    internal static bool TryParseDigest(string digest, out string algorithm, out ReadOnlySpan<byte> encodedValue) =>
+        TryParseDigest(digest, out algorithm, out encodedValue, out _);
+
+    private static bool TryParseDigest(
+        string digest,
+        out string algorithm,
+        out ReadOnlySpan<byte> encodedValue,
+        out DigestParseFailure parseFailure)
     {
+        algorithm = string.Empty;
+        encodedValue = default;
+        parseFailure = DigestParseFailure.None;
+
         Match match = ReferenceParser.AnchoredDigestRegexp.Match(digest);
 
         if (!match.Success)
         {
-            throw new InvalidDigestException(
-                $"Digest '{digest}' does not match expected pattern '{ReferenceParser.AnchoredDigestRegexp}'.");
+            parseFailure = DigestParseFailure.InvalidFormat;
+            return false;
         }
 
         algorithm = match.Groups[1].Value;
@@ -148,16 +192,24 @@ internal sealed class DigestUtils
 
         if (!s_registeredAlgorithms.TryGetValue(algorithm, out Regex? encodedPattern))
         {
-            string supportedAlgorithms = string.Join(", ", s_registeredAlgorithms.Keys);
-            throw new InvalidDigestException(
-                $"Unsupported digest algorithm '{algorithm}'. Supported algorithms: {supportedAlgorithms}.");
+            parseFailure = DigestParseFailure.UnsupportedAlgorithm;
+            return false;
         }
 
         if (!encodedPattern.IsMatch(encoded))
         {
-            throw new InvalidDigestException(
-                $"Digest '{digest}' encoded value does not match expected pattern for algorithm '{algorithm}': '{encodedPattern}'.");
+            parseFailure = DigestParseFailure.InvalidEncodedValue;
+            return false;
         }
         encodedValue = Convert.FromHexString(encoded);
+        return true;
+    }
+
+    private enum DigestParseFailure
+    {
+        None,
+        InvalidFormat,
+        UnsupportedAlgorithm,
+        InvalidEncodedValue,
     }
 }

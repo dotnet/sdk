@@ -37,18 +37,46 @@ internal class DefaultManifestOperations : IManifestOperations
         };
     }
 
-    public async Task<HttpResponseMessage> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken)
+    public async Task<ManifestResponse> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}")).AcceptManifestFormats();
-        HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        return response.StatusCode switch
+        using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (response.StatusCode is not HttpStatusCode.OK)
         {
-            HttpStatusCode.OK => response,
-            HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryName, reference),
-            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
-            _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
-        };
+            return response.StatusCode switch
+            {
+                HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryName, reference),
+                HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
+                _ => await LogAndThrowContainerHttpException<ManifestResponse>(response, cancellationToken).ConfigureAwait(false)
+            };
+        }
+
+        ReadOnlyMemory<byte> content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+
+        string? contentDigest =
+            response.Headers.TryGetValues("Docker-Content-Digest", out IEnumerable<string>? values)
+                ? values.FirstOrDefault()
+                : null;
+
+        string? knownDigest = DigestUtils.TryParseDigest(reference, out _, out _)
+            ? reference
+            : contentDigest;
+
+        // SAFETY: OCI registry specification does not require the Docker-Content-Digest header.
+        // Content fetched by tag can only be validated when the header is present.
+        // See https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests
+        if (knownDigest is not null)
+        {
+            DigestUtils.ValidateDigestContent(knownDigest, content.Span);
+        }
+
+        return new ManifestResponse(
+            Content: content,
+            KnownDigest: knownDigest,
+            MediaType: response.Content.Headers.ContentType?.MediaType
+        );
     }
 
     public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
