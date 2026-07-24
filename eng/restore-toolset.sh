@@ -31,15 +31,21 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    local install_script_arch=""
+    local install_test_runtimes=true
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
     if [[ -n "${TARGET_ARCHITECTURE:-}" && "$TARGET_ARCHITECTURE" != "$native_arch" ]]; then
-      install_script_arch="$TARGET_ARCHITECTURE"
+      # On macOS arm64, x64 binaries can run via Rosetta 2, so we still install.
+      if [[ "$(uname)" == "Darwin" && "$native_arch" == "arm64" && "$TARGET_ARCHITECTURE" == "x64" ]]; then
+        : # Allow — Rosetta 2 can run x64 on arm64
+      else
+        install_test_runtimes=false
+        echo "Skipping test-runtime install: host architecture '$native_arch' cannot run target architecture '$TARGET_ARCHITECTURE' runtimes on this cross-build leg."
+      fi
     fi
 
-    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
-    if [[ -z "$install_script_arch" ]]; then
+    if [[ "$install_test_runtimes" == true ]]; then
+      local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
       # Also install the exact runtime versions that arcade's toolset requires
       # (from Version.Details.props) so tests can target those specific versions.
       local runtime_version
@@ -52,9 +58,9 @@ function InitializeCustomSDKToolset {
       if [[ -n "$aspnetcore_version" ]]; then
         runtime_specs+=("aspnetcore@$aspnetcore_version")
       fi
-    fi
 
-    InstallDotNetSharedFrameworks "$install_script_arch" "${runtime_specs[@]}"
+      InstallDotNetSharedFrameworks "" "${runtime_specs[@]}"
+    fi
   fi
 
   CreateBuildEnvScript

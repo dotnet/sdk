@@ -1,16 +1,6 @@
 # Shared dotnetup acquisition helpers (architecture detection, cache freshness, download).
 . (Join-Path $PSScriptRoot 'dotnetup-shared.ps1')
 
-function Get-DotNetInstallFallbackArchitecture {
-    if (-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) {
-        $nativeArch = Get-NativeMachineArchitecture
-        if ($env:TARGET_ARCHITECTURE -ne $nativeArch) {
-            return $env:TARGET_ARCHITECTURE
-        }
-    }
-
-    return ""
-}
 
 function InitializeCustomSDKToolset {
     if ($env:TestFullMSBuild -eq "true") {
@@ -37,14 +27,22 @@ function InitializeCustomSDKToolset {
     # The following shared frameworks are only needed for testing.
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
-        $fallbackArchitecture = Get-DotNetInstallFallbackArchitecture
-        $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
-        if ([string]::IsNullOrEmpty($fallbackArchitecture)) {
+        $installTestRuntimes = $true
+        if (-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) {
+            $nativeArch = Get-NativeMachineArchitecture
+            if ($env:TARGET_ARCHITECTURE -ne $nativeArch) {
+                $installTestRuntimes = $false
+                Write-Host "Skipping test-runtime install: host architecture '$nativeArch' cannot run target architecture '$env:TARGET_ARCHITECTURE' runtimes on this cross-build leg."
+            }
+        }
+
+        if ($installTestRuntimes) {
+            $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
             # Also install the exact runtime versions that arcade's toolset requires
             # (from Version.Details.props) so tests can target those specific versions.
             $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
+            InstallDotNetSharedFrameworks -RuntimeSpecs $runtimeSpecs
         }
-        InstallDotNetSharedFrameworks -RuntimeSpecs $runtimeSpecs -Architecture $fallbackArchitecture
     }
 
     CreateBuildEnvScripts
