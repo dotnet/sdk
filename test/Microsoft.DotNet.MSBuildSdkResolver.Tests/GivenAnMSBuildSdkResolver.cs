@@ -173,8 +173,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuild(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString())
@@ -254,8 +253,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItDoesNotReturnHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundOutsideOfVisualStudio(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItDoesNotReturnHighest___", identifier: disallowPreviews.ToString())
@@ -291,8 +289,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundAndRunningInVisualStudio(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItReturnsHighest___", identifier: disallowPreviews.ToString())
@@ -431,8 +428,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItDisallowsPreviewsBasedOnDefault(bool disallowPreviewsByDefault)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviewsByDefault.ToString());
@@ -458,8 +454,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItDisallowsPreviewsBasedOnFile(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString());
