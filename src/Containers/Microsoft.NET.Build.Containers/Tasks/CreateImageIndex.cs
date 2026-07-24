@@ -68,8 +68,19 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             return false;
         }
 
+        if (!ContainerAnnotationScopes.TryFilter(Annotations, ContainerAnnotationScope.Index, Log, out ITaskItem[] indexAnnotations))
+        {
+            return false;
+        }
+        if (indexAnnotations.Length > 0 && destinationImageReference.Kind == DestinationImageReferenceKind.RemoteRegistry &&
+            images.Any(image => image.ManifestMediaType == SchemaTypes.DockerManifestV2))
+        {
+            Log.LogError(Resource.GetString("IndexAnnotationsRequireOci"));
+            return false;
+        }
+
         Dictionary<string, string> annotations = new(StringComparer.Ordinal);
-        foreach (ITaskItem annotation in Annotations)
+        foreach (ITaskItem annotation in indexAnnotations)
         {
             annotations[annotation.ItemSpec] = annotation.GetMetadata("Value");
         }

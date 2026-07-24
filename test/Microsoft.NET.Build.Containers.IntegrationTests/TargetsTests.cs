@@ -168,7 +168,43 @@ public class TargetsTests
             .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.version", "1.2.3", annotation))
             .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.description", "SDK container", annotation));
         annotations.Should().NotContain(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.base.name" || annotation.EvaluatedInclude == "net.dot.sdk.version");
+        annotations.Should().OnlyContain(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index");
         instance.GetPropertyValue("ContainerImageFormat").Should().Be("OCI");
+    }
+
+    [DataRow("", true)]
+    [DataRow("false", false)]
+    [TestMethod]
+    public void OciFormatControlsDefaultAnnotationGeneration(string generateAnnotations, bool shouldGenerateAnnotations)
+    {
+        Dictionary<string, string> properties = new()
+        {
+            ["ContainerImageFormat"] = "OCI",
+            ["Description"] = "SDK container"
+        };
+        if (generateAnnotations.Length > 0)
+        {
+            properties["ContainerGenerateAnnotations"] = generateAnnotations;
+        }
+
+        var (project, logger, d) = ProjectInitializer.InitProject(properties,
+            projectName: $"{nameof(OciFormatControlsDefaultAnnotationGeneration)}_{shouldGenerateAnnotations}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build([ComputeContainerConfig], [logger]).Should().BeTrue(String.Join(Environment.NewLine, logger.AllMessages));
+        var annotations = instance.GetItems("ContainerAnnotation");
+        if (shouldGenerateAnnotations)
+        {
+            annotations.Should()
+                .ContainSingle(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.created")
+                .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.description", "SDK container", annotation))
+                .And.OnlyContain(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index");
+        }
+        else
+        {
+            annotations.Should().BeEmpty();
+        }
     }
 
     [DataRow("", true, "OCI")]
@@ -190,7 +226,46 @@ public class TargetsTests
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
 
         instance.Build([ComputeContainerConfig], [logger]).Should().Be(shouldSucceed, String.Join(Environment.NewLine, logger.AllMessages));
+        instance.GetItems("ContainerAnnotation").Should().ContainSingle(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest");
         instance.GetPropertyValue("ContainerImageFormat").Should().Be(expectedFormat);
+    }
+
+    [TestMethod]
+    public void WhitespaceAnnotationScopeDefaultsToManifest()
+    {
+        var annotation = new Microsoft.Build.Utilities.TaskItem("example.com/annotation");
+        annotation.SetMetadata("Scope", "   ");
+        annotation.SetMetadata("Value", "value");
+        var (project, logger, d) = ProjectInitializer.InitProject([], bonusItems: new()
+        {
+            ["ContainerAnnotation"] = [annotation]
+        }, projectName: nameof(WhitespaceAnnotationScopeDefaultsToManifest));
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build([ComputeContainerConfig], [logger]).Should().BeTrue(String.Join(Environment.NewLine, logger.AllMessages));
+        instance.GetItems("ContainerAnnotation").Should().ContainSingle(item => item.GetMetadata("Scope")!.EvaluatedValue == "Manifest");
+        instance.GetPropertyValue("ContainerImageFormat").Should().Be("OCI");
+    }
+
+    [TestMethod]
+    public void IndexOnlyAnnotationDoesNotRequireOciForSinglePlatformImage()
+    {
+        var annotation = new Microsoft.Build.Utilities.TaskItem("example.com/annotation");
+        annotation.SetMetadata("Scope", "Index");
+        annotation.SetMetadata("Value", "value");
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["ContainerImageFormat"] = "Docker"
+        }, bonusItems: new()
+        {
+            ["ContainerAnnotation"] = [annotation]
+        }, projectName: nameof(IndexOnlyAnnotationDoesNotRequireOciForSinglePlatformImage));
+        using var _ = d;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+
+        instance.Build([ComputeContainerConfig], [logger]).Should().BeTrue(String.Join(Environment.NewLine, logger.AllMessages));
+        instance.GetPropertyValue("ContainerImageFormat").Should().Be("Docker");
     }
 
     [TestMethod]

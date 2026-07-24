@@ -204,6 +204,11 @@
         <target state="translated">Impossible de créer l’index d’image, car aucune image n’a été fournie.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IndexAnnotationsRequireOci">
+        <source>Index-scoped container annotations cannot be written to Docker manifest lists. Use the OCI image format or remove the applicable annotations.</source>
+        <target state="new">Index-scoped container annotations cannot be written to Docker manifest lists. Use the OCI image format or remove the applicable annotations.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
         <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
@@ -218,6 +223,11 @@
         <source>bearer realm '{0}' is not a valid absolute URI</source>
         <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
+      </trans-unit>
+      <trans-unit id="InvalidContainerAnnotationScope">
+        <source>Container annotation '{0}' has invalid Scope '{1}'. Valid values are Manifest, Index, or Manifest,Index.</source>
+        <target state="new">Container annotation '{0}' has invalid Scope '{1}'. Valid values are Manifest, Index, or Manifest,Index.</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
@@ -323,6 +333,11 @@
         <source>The daemon server reported errors: {0}</source>
         <target state="translated">Le serveur démon a signalé des erreurs : {0}</target>
         <note>{0} are the list of messages, each message starts with new line</note>
+      </trans-unit>
+      <trans-unit id="ManifestAnnotationsRequireOci">
+        <source>Manifest-scoped container annotations cannot be written to Docker image manifests. Use the OCI image format or remove the applicable annotations.</source>
+        <target state="new">Manifest-scoped container annotations cannot be written to Docker image manifests. Use the OCI image format or remove the applicable annotations.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MissingLinkToRegistry">
         <source>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</source>

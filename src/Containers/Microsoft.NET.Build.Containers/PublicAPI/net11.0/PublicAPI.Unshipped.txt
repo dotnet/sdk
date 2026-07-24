@@ -1,4 +1,15 @@
 ﻿const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Docker = "Docker" -> string!
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.Annotations.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.Annotations.set -> void
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.ConvertContainerAnnotations() -> void
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.DecodedAnnotations.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.DecodedAnnotations.set -> void
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.EncodedAnnotations.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.EncodedAnnotations.set -> void
+override Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.Execute() -> bool
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.SerializedAnnotations.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ConvertContainerAnnotations.SerializedAnnotations.set -> void
 const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Podman = "Podman" -> string!
 const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Wslc = "Wslc" -> string!
 const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.MacOSContainer = "MacOSContainer" -> string!
