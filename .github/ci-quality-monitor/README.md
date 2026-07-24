@@ -3,7 +3,9 @@
 The CI Quality Monitor is a scheduled GitHub Agentic Workflow that polls public
 Azure DevOps builds and previews issues for recurring, previously untracked SDK
 build and test failures. It does not require an Azure DevOps service hook or
-credential.
+credential. The initial experiment uses the GitHub Actions token for Copilot
+inference through `copilot-requests: write`; migrate back to the shared PAT pool
+before enabling the workflow in dotnet/sdk production.
 
 ## Architecture
 
