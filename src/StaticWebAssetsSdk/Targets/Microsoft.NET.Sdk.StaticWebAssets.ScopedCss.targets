@@ -90,6 +90,11 @@ Integration with static web assets:
     BundleScopedCssFiles;
   </GenerateComputedBuildStaticWebAssetsDependsOn>
 
+  <GenerateStaticWebAssetsPublishManifestDependsOn Condition="'$(ExcludeScopedCssAssets)' == 'true'">
+    $(GenerateStaticWebAssetsPublishManifestDependsOn);
+    _RemoveScopedCssAssetsFromPublish
+  </GenerateStaticWebAssetsPublishManifestDependsOn>
+
 </PropertyGroup>
 
 <Target Name="GenerateScopedCssFiles" DependsOnTargets="$(GenerateScopedCssFilesDependsOn)" />
@@ -102,6 +107,19 @@ Integration with static web assets:
     <StaticWebAssetEndpoint Include="@(_ScopedCssAppBundleStaticWebAssetEndpoint)" Condition="'$(DisableScopedCssBundling)' != 'true'" />
     <StaticWebAssetEndpoint Include="@(_ScopedCssProjectBundleStaticWebAssetEndpoint)" Condition="'$(DisableScopedCssBundling)' != 'true'" />
     <StaticWebAssetEndpoint Include="@(_ScopedCssStaticWebAssetEndpoint)" Condition="'$(DisableScopedCssBundling)' == 'true'" />
+  </ItemGroup>
+</Target>
+
+<Target Name="_RemoveScopedCssAssetsFromPublish">
+  <ItemGroup>
+    <_ScopedCssPublishAsset
+      Include="@(StaticWebAsset)"
+      Condition="'%(StaticWebAsset.AssetTraitName)' == 'ScopedCss' and ('%(StaticWebAsset.AssetTraitValue)' == 'ApplicationBundle' or '%(StaticWebAsset.AssetTraitValue)' == 'ProjectBundle' or '%(StaticWebAsset.AssetTraitValue)' == 'ScopedCssFile')">
+      <AssetFile>%(StaticWebAsset.Identity)</AssetFile>
+    </_ScopedCssPublishAsset>
+
+    <StaticWebAsset Remove="@(_ScopedCssPublishAsset)" />
+    <StaticWebAssetEndpoint Remove="@(_ScopedCssPublishAsset)" MatchOnMetadata="AssetFile" />
   </ItemGroup>
 </Target>
 
