@@ -3,8 +3,18 @@ emoji: "🔎"
 name: CI Quality Monitor
 description: Reviews public dotnet/sdk CI failures and identifies actionable, previously untracked build and test quality issues.
 on:
+  schedule: every 30m
   workflow_dispatch:
+    inputs:
+      build_id:
+        description: Optional public Azure DevOps build ID to inspect.
+        required: false
+        type: string
   permissions: {}
+
+concurrency:
+  group: ci-quality-monitor
+  cancel-in-progress: false
 
 imports:
   - uses: shared/pat_pool.md
