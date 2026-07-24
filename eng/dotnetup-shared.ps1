@@ -79,9 +79,88 @@ function Invoke-DotnetupNativeCommand([scriptblock]$Command) {
     }
 }
 
+# Downloads a URL to a file, retrying with exponential backoff. Invoke-WebRequest's
+# built-in -MaximumRetryCount is unavailable on Windows PowerShell 5.1, so retry manually.
+function Invoke-DotnetupDownload([string]$Uri, [string]$OutFile, [string]$Description) {
+    $maxAttempts = 3
+    for ($attempt = 1; $true; $attempt++) {
+        try {
+            Invoke-WebRequest -Uri $Uri -OutFile $OutFile -UseBasicParsing
+            return
+        }
+        catch {
+            if ($attempt -ge $maxAttempts) {
+                throw "$Description failed after $maxAttempts attempts ($Uri): $($_.Exception.Message)"
+            }
+            $delaySeconds = [Math]::Pow(2, $attempt)
+            Write-Host "$Description failed (attempt $attempt of $maxAttempts): $($_.Exception.Message). Retrying in $delaySeconds seconds..." -ForegroundColor Yellow
+            Start-Sleep -Seconds $delaySeconds
+        }
+    }
+}
+
+# Follows redirects for a mutable 'daily' shortlink and returns the concrete,
+# versioned URL it currently points at (or $null if it cannot be resolved). The
+# daily aka.ms link is a moving pointer, so downloading the script and its
+# .sha512 as two separate requests can straddle a new build publish and yield a
+# script from one build with a checksum from another. Resolving the shortlink to
+# a single concrete URL first lets us derive both the script and checksum URLs
+# from the same build so they always match. This mirrors the standalone
+# get-dotnetup script's own binary check, but is kept as a deliberately separate
+# copy here because that script does not exist in this branch and must stand alone.
+function Resolve-DotnetupFinalUrl([string]$Url) {
+    # Require an actual curl executable; on Windows PowerShell 5.1 'curl' is an alias for Invoke-WebRequest, so -CommandType Application excludes it.
+    $curl = Get-Command curl.exe -CommandType Application -ErrorAction SilentlyContinue
+    if (-not $curl) { $curl = Get-Command curl -CommandType Application -ErrorAction SilentlyContinue }
+    if ($curl) {
+        $sink = [System.IO.Path]::GetTempFileName()
+        try {
+            # --head resolves redirects without downloading the body.
+            $final = & $curl.Source --silent --show-error --location --head `
+                --output $sink --write-out '%{url_effective}' $Url 2>$null
+            if ($LASTEXITCODE -eq 0 -and $final) { return "$final".Trim() }
+        }
+        catch { }
+        finally { Remove-Item $sink -Force -ErrorAction SilentlyContinue }
+    }
+
+    # Fallback for hosts without a curl executable (e.g. Windows PowerShell 5.1):
+    try {
+        $req = [System.Net.WebRequest]::Create($Url)
+        $req.Method = "HEAD"
+        $req.AllowAutoRedirect = $true
+        $resp = $req.GetResponse()
+        try { return $resp.ResponseUri.AbsoluteUri }
+        finally { $resp.Dispose() }
+    }
+    catch {
+        return $null
+    }
+}
+
+# Computes the lowercase SHA-512 hex digest of a file. Uses .NET directly rather
+# than Get-FileHash, which is not always resolvable in stripped-down PowerShell hosts.
+function Get-DotnetupSha512([string]$Path) {
+    $sha512 = [System.Security.Cryptography.SHA512]::Create()
+    try {
+        $stream = [System.IO.File]::OpenRead($Path)
+        try {
+            $hashBytes = $sha512.ComputeHash($stream)
+        }
+        finally {
+            $stream.Dispose()
+        }
+    }
+    finally {
+        $sha512.Dispose()
+    }
+    return ([System.BitConverter]::ToString($hashBytes) -replace '-', '').ToLowerInvariant()
+}
+
 # Downloads the public dotnetup installer from aka.ms
-# (https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.ps1) and runs it to install dotnetup into
-# $DotnetupDir. Throws on failure so callers can choose how to react.
+# (https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.ps1), verifies its SHA-512
+# checksum, and runs it to install dotnetup into $DotnetupDir. Throws on failure
+# so callers can choose how to react.
 #
 # If a local get-dotnetup.ps1 script exists in the repo (scripts/get-dotnetup.ps1),
 # it is used directly instead of downloading from aka.ms. This supports branches
@@ -99,30 +178,40 @@ function Install-DotnetupFromAkaMs([string]$DotnetupDir) {
     }
 
     $getterUrl = 'https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.ps1'
-    $getterScript = Join-Path ([System.IO.Path]::GetTempPath()) ("get-dotnetup-{0}.ps1" -f [System.IO.Path]::GetRandomFileName())
+    $checksumUrl = "$getterUrl.sha512"
 
-    # Download the installer with retry/backoff. Invoke-WebRequest's built-in
-    # -MaximumRetryCount is unavailable on Windows PowerShell 5.1, so retry manually.
-    $maxAttempts = 3
-    for ($attempt = 1; $true; $attempt++) {
-        try {
-            Invoke-WebRequest -Uri $getterUrl -OutFile $getterScript -UseBasicParsing
-            break
-        }
-        catch {
-            if ($attempt -ge $maxAttempts) {
-                throw "Failed to download dotnetup installer from $getterUrl after $maxAttempts attempts: $($_.Exception.Message)"
-            }
-            $delaySeconds = [Math]::Pow(2, $attempt)
-            Write-Host "Download of dotnetup installer failed (attempt $attempt of $maxAttempts): $($_.Exception.Message). Retrying in $delaySeconds seconds..." -ForegroundColor Yellow
-            Start-Sleep -Seconds $delaySeconds
-        }
+    # Pin the mutable 'daily' shortlink to the concrete build it currently resolves
+    # to, then derive both the script and checksum URLs from that single build so a
+    # publish happening mid-download cannot cause a spurious checksum mismatch.
+    $resolvedUrl = Resolve-DotnetupFinalUrl $getterUrl
+    if ($resolvedUrl -and $resolvedUrl -like "*/public/*") {
+        Write-Host "Resolved get-dotnetup.ps1 to concrete build: $resolvedUrl" -ForegroundColor DarkGray
+        $getterUrl = $resolvedUrl
+        # Checksums live under the sibling 'public-checksums' path with a .sha512 suffix.
+        $checksumUrl = ($resolvedUrl -replace '/public/', '/public-checksums/') + ".sha512"
+    }
+    else {
+        Write-Host "Could not resolve get-dotnetup.ps1 shortlink to a concrete build; using shortlink URLs directly." -ForegroundColor DarkGray
     }
 
+    $getterScript = Join-Path ([System.IO.Path]::GetTempPath()) ("get-dotnetup-{0}.ps1" -f [System.IO.Path]::GetRandomFileName())
+    $checksumFile = "$getterScript.sha512"
+
     try {
+        Invoke-DotnetupDownload -Uri $getterUrl -OutFile $getterScript -Description "Download of dotnetup installer"
+        Invoke-DotnetupDownload -Uri $checksumUrl -OutFile $checksumFile -Description "Download of dotnetup installer checksum"
+
+        $expected = ((Get-Content $checksumFile -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
+        $actual = Get-DotnetupSha512 $getterScript
+        if ($expected -ne $actual) {
+            throw "get-dotnetup.ps1 checksum mismatch.`n  Expected: $expected`n  Actual:   $actual"
+        }
+        Write-Host "get-dotnetup.ps1 checksum verified." -ForegroundColor DarkGray
+
         Invoke-GetDotnetupScript -ScriptPath $getterScript -InstallDir $DotnetupDir -ErrorLabel "get-dotnetup.ps1"
     }
     finally {
         Remove-Item $getterScript -Force -ErrorAction SilentlyContinue
+        Remove-Item $checksumFile -Force -ErrorAction SilentlyContinue
     }
 }
