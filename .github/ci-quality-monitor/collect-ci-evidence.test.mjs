@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  applyKbeRecurrence,
   createPipelineObservation,
   createTaskObservations,
   classifyTaskFailure,
@@ -191,4 +192,30 @@ test("sharedTestMechanism removes test identity and keeps a shared service failu
   assert.equal(first, second);
   assert.doesNotMatch(first, /Sdk.Tests.First/);
   assert.doesNotMatch(second, /Sdk.Tests.Second/);
+});
+
+test("applyKbeRecurrence requires the same test and mechanism", () => {
+  const current = {
+    kind: "test",
+    component: "Sdk.Tests.Flaky",
+    mechanismSignature: "test-mechanism|shared|timeout",
+    kbe: { eligible: true }
+  };
+  const related = [{
+    build: { id: 41 },
+    observations: [
+      { kind: "test", component: "Sdk.Tests.Flaky", mechanismSignature: "test-mechanism|shared|timeout" },
+      { kind: "test", component: "Sdk.Tests.Other", mechanismSignature: "test-mechanism|shared|timeout" }
+    ]
+  }];
+
+  const result = applyKbeRecurrence([current], related)[0];
+  assert.equal(result.kbe.recurring, true);
+  assert.deepEqual(result.kbe.matchingBuilds, [{ id: 41 }]);
+
+  const different = applyKbeRecurrence([current], [{
+    build: { id: 40 },
+    observations: [{ kind: "test", component: "Sdk.Tests.Flaky", mechanismSignature: "different" }]
+  }])[0];
+  assert.equal(different.kbe.recurring, false);
 });

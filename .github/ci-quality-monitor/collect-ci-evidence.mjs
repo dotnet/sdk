@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { createTestKbeCandidate } from "./known-build-error.mjs";
 
 const API_VERSION = "7.1";
 const DEFAULT_BUILD_LIMIT = 20;
@@ -362,12 +363,13 @@ function createTestObservation(reference, test) {
   const component = test.fullyQualifiedName || test.testName;
   const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
   const sharedMechanism = sharedTestMechanism(test.errorMessage, test.outcome);
+  const signature = createFailureSignature("test", component, mechanism);
   return {
     kind: "test",
     category: "test-failure",
     component,
     mechanism,
-    signature: createFailureSignature("test", component, mechanism),
+    signature,
     mechanismSignature: createFailureSignature("test-mechanism", "shared", sharedMechanism),
     actionable: true,
     workItem: reference.workItem,
@@ -375,7 +377,8 @@ function createTestObservation(reference, test) {
     queue: reference.queue,
     outcome: test.outcome,
     duration: test.duration,
-    stackTrace: sanitizeText(test.stackTrace)
+    stackTrace: sanitizeText(test.stackTrace),
+    kbe: createTestKbeCandidate(test, signature)
   };
 }
 
@@ -419,9 +422,9 @@ async function collectHelixObservation(reference, fetchImplementation = fetch) {
   }];
 }
 
-async function collectHelixObservations(timelineFailures, fetchImplementation = fetch) {
+async function collectHelixObservations(timelineFailures, fetchImplementation = fetch, maxReferences = Number.POSITIVE_INFINITY) {
   const observations = [];
-  for (const reference of getHelixReferences(timelineFailures)) {
+  for (const reference of getHelixReferences(timelineFailures).slice(0, maxReferences)) {
     try {
       observations.push(...await collectHelixObservation(reference, fetchImplementation));
     } catch (error) {
@@ -479,15 +482,36 @@ async function getRelatedFailureSummaries(pipeline, buildId, history, fetchImple
     .slice(0, 5);
   for (const build of failedBuilds) {
     try {
+      const timelineFailures = await getTimelineFailures(pipeline, build.id, fetchImplementation);
       related.push({
         build: normalizeBuild(build),
-        timelineFailures: await getTimelineFailures(pipeline, build.id, fetchImplementation)
+        timelineFailures,
+        observations: await collectHelixObservations(timelineFailures, fetchImplementation, 10)
       });
     } catch (error) {
       related.push({ build: normalizeBuild(build), unavailable: sanitizeText(error.message) });
     }
   }
   return related;
+}
+
+export function applyKbeRecurrence(observations, relatedFailureSummaries) {
+  const relatedTests = relatedFailureSummaries.flatMap(summary =>
+    (summary.observations ?? []).filter(observation => observation.kind === "test")
+      .map(observation => ({ observation, build: summary.build })));
+  return observations.map(observation => {
+    if (observation.kind !== "test" || !observation.kbe) return observation;
+    const matches = relatedTests.filter(candidate => candidate.observation.component === observation.component
+      && candidate.observation.mechanismSignature === observation.mechanismSignature);
+    return {
+      ...observation,
+      kbe: {
+        ...observation.kbe,
+        recurring: matches.length > 0,
+        matchingBuilds: matches.map(match => match.build)
+      }
+    };
+  });
 }
 
 async function collectFailureEvidence(pipeline, build, history, fetchImplementation = fetch) {
@@ -520,7 +544,9 @@ async function collectFailureEvidence(pipeline, build, history, fetchImplementat
     pipeline,
     build: normalizeBuild(build),
     recentBuilds: history.map(normalizeBuild),
-    observations: [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
+    observations: applyKbeRecurrence(
+      [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
+      relatedFailureSummaries),
     timelineFailures,
     relatedFailureSummaries,
     testFailures,
