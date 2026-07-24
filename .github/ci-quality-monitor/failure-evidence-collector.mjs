@@ -42,6 +42,9 @@ export class FailureEvidenceCollector {
     const taskObservations = createTaskObservations(
       timelineFailures,
       new Map(logFailures.filter(failure => failure.text).map(failure => [failure.logId, failure.text])));
+    const observations = applyKbeRecurrence(
+      [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
+      relatedFailureSummaries);
     return {
       pipeline,
       build: createBuildSummary(build),
@@ -50,9 +53,8 @@ export class FailureEvidenceCollector {
       auditContext: candidate.auditContext ?? null,
       mergedPullRequest: candidate.mergedPullRequest ?? null,
       recentBuilds: history.map(createBuildSummary),
-      observations: applyKbeRecurrence(
-        [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
-        relatedFailureSummaries),
+      issueCandidates: observations.filter(observation => observation.actionable),
+      observations,
       timelineFailures,
       relatedFailureSummaries,
       testFailures: await this.collectAzureTestFailures(azure, build.id),

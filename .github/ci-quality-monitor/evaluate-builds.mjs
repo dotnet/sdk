@@ -15,12 +15,32 @@ function parseArguments(argumentsList) {
 }
 
 function evaluateExample(example, dossier) {
-  const observations = dossier.failures.flatMap(failure => failure.observations ?? []);
-  const categories = [...new Set(observations.map(observation => observation.category))];
+  const candidates = dossier.failures.flatMap(failure => failure.issueCandidates ?? []);
+  const categories = [...new Set(candidates.map(candidate => candidate.category))];
   const missing = example.expectedCategories.filter(category => !categories.includes(category));
   const minimum = example.minimumObservations ?? 1;
-  const matchingCount = observations.filter(observation => example.expectedCategories.includes(observation.category)).length;
-  return { passed: missing.length === 0 && matchingCount >= minimum, categories, matchingCount, missing };
+  const categoryMatches = candidates.filter(candidate => example.expectedCategories.includes(candidate.category));
+  const mechanismTerms = example.expectedMechanismIncludes ?? [];
+  const componentTerm = example.expectedComponentIncludes?.toLowerCase();
+  const exactMatches = categoryMatches.filter(candidate =>
+    mechanismTerms.every(term => candidate.mechanism?.toLowerCase().includes(term.toLowerCase()))
+    && (!componentTerm || candidate.component?.toLowerCase().includes(componentTerm)));
+  const sharedMechanismTerms = example.expectedMatchingMechanismIncludes ?? [];
+  const matchingCandidates = candidates.filter(candidate =>
+    sharedMechanismTerms.every(term => candidate.mechanism?.toLowerCase().includes(term.toLowerCase())));
+  const minimumMatchingCandidates = example.minimumMatchingCandidates ?? 0;
+  const passed = missing.length === 0
+    && categoryMatches.length >= minimum
+    && exactMatches.length > 0
+    && matchingCandidates.length >= minimumMatchingCandidates;
+  return {
+    passed,
+    categories,
+    categoryMatchCount: categoryMatches.length,
+    exactMatchCount: exactMatches.length,
+    matchingCandidateCount: matchingCandidates.length,
+    missing
+  };
 }
 
 async function main() {

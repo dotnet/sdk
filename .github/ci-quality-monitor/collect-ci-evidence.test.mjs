@@ -461,3 +461,40 @@ test("applyKbeRecurrence requires the same test and mechanism", () => {
   }])[0];
   assert.equal(different.kbe.recurring, false);
 });
+
+test("issue candidates contain only actionable observations from the selected build", async () => {
+  const build = {
+    id: 45, status: "completed", result: "failed", reason: "manual",
+    sourceBranch: "refs/heads/main", finishTime: "2026-07-24T14:00:00Z",
+    definition: { id: 101 }, repository: { id: "dotnet/sdk" },
+    validationResults: [{ result: "error", message: "Current YAML failure" }]
+  };
+  const related = {
+    ...build, id: 44, finishTime: "2026-07-24T13:00:00Z", validationResults: undefined
+  };
+  const fetchImplementation = async url => {
+    if (url.includes("builds/45?")) return new Response(JSON.stringify(build), { status: 200 });
+    if (url.includes("builds?") && url.includes("branchName")) {
+      return new Response(JSON.stringify({ value: [build, related] }), { status: 200 });
+    }
+    if (url.includes("builds/45/timeline")) return new Response(JSON.stringify({ records: [] }), { status: 200 });
+    if (url.includes("builds/44/timeline")) {
+      return new Response(JSON.stringify({ records: [{
+        type: "Task", name: "Related Build", result: "failed",
+        issues: [{ message: "CS1000 related failure" }]
+      }] }), { status: 200 });
+    }
+    if (url.includes("vstmr.dev.azure.com")) return new Response("not found", { status: 404 });
+    throw new Error(`Unexpected URL ${url}`);
+  };
+  const registry = { pipelines: [{
+    organization: "dnceng-public", project: "public", definitionId: 101,
+    repository: "dotnet/sdk", branches: ["refs/heads/main"], stableBranches: ["refs/heads/main"]
+  }] };
+
+  const dossier = await collectCiEvidence(
+    registry, "45", { schemaVersion: 1, pipelines: {} }, fetchImplementation);
+
+  assert.deepEqual(dossier.failures[0].issueCandidates.map(candidate => candidate.mechanism), ["Current YAML failure"]);
+  assert.match(dossier.failures[0].relatedFailureSummaries[0].timelineFailures[0].issues[0], /related failure/);
+});

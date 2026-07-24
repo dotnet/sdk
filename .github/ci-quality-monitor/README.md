@@ -77,6 +77,9 @@ but is not required for the initial experiment.
 The collector emits independent observations for pipeline configuration,
 startup, setup, restore, build, test, and Helix work-item failures. Artifact
 download cascades and generic Helix monitor parents are context only.
+Each failure also exposes `issueCandidates`, the actionable observations from
+the selected current build. Related-build observations are recurrence context
+and cannot directly anchor an issue.
 
 Named tests retain per-test fingerprints and a separate mechanism fingerprint.
 Different tests can share one issue only when their mechanism fingerprints and

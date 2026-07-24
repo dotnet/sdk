@@ -41,5 +41,9 @@ export interface CiEvidenceDossier {
   eventHeadSha: string | null;
   bootstrap: boolean;
   pipelineHealth: Observation[];
-  failures: Array<Record<string, unknown>>;
+  failures: Array<{
+    issueCandidates: Observation[];
+    observations: Observation[];
+    [detail: string]: unknown;
+  }>;
 }

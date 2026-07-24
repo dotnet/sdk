@@ -9,7 +9,7 @@ issue in `nagilson/sdk`.
 | --- | --- | --- | --- |
 | Pipeline YAML | [1521345](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1521345) | PR 55404 | Zero-duration build, no timeline, `Unexpected parameter 'useFullyQualifiedTestName'`. |
 | Setup/checkout | [1523420](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523420) | PR 55429 | Checkout failed across multiple jobs after `git fetch` exit 128. |
-| Restore/feed | [1525302](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525302) | PR 55399 | Arcade SDK acquisition failed when the dotnet10 feed returned HTTP 503. |
+| Restore/feed | [1523525](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523525) | PR 55431 | NuGet restore failed with HTTP 503; named tests also reported NU1301 against the dotnet6 feed. |
 | Compiler build break | [1525235](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525235) | PR 55339 | `CS0114` in `RunReadyToRunCompiler.TaskEnvironment` failed multiple legs before tests. |
 | Release build break | [1522972](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1522972) | `release/8.0.4xx` | `MSB4018` SignToolTask failure; `sn.exe` had an exec-format error on Linux/macOS. Build [1522971](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1522971) is the equivalent `release/8.0.1xx` case. |
 | Multiple named tests | [1525292](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525292) | `main` | Four named failures from Helix TRX; two package tests share an HTTP 503 mechanism. |
