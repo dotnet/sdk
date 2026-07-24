@@ -12,24 +12,39 @@ internal class TestApplicationActionQueue
 {
     private readonly Channel<ParallelizableTestModuleGroupWithSequentialInnerModules> _channel;
     private readonly Task[] _readers;
+    private readonly CancellationToken _cancellationToken;
 
     private int? _aggregateExitCode;
 
     private readonly Lock _lock = new();
 
-    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
+    public TestApplicationActionQueue(
+        int degreeOfParallelism,
+        BuildOptions buildOptions,
+        TestOptions testOptions,
+        TerminalTestReporter output,
+        Action<CommandLineOptionMessages> onHelpRequested,
+        CtrlCCancellationManager ctrlC,
+        TestRunPolicy testRunPolicy,
+        CancellationToken cancellationToken)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
+        _cancellationToken = cancellationToken;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested, ctrlC));
+            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested, ctrlC, testRunPolicy));
         }
     }
 
     public void Enqueue(ParallelizableTestModuleGroupWithSequentialInnerModules testApplication)
     {
+        if (_cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
         if (!_channel.Writer.TryWrite(testApplication))
         {
             throw new InvalidOperationException($"Failed to write to channel for test application: {testApplication}");
@@ -48,18 +63,24 @@ internal class TestApplicationActionQueue
         return _aggregateExitCode ?? ExitCode.ZeroTests;
     }
 
-    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
+    private async Task Read(
+        BuildOptions buildOptions,
+        TestOptions testOptions,
+        TerminalTestReporter output,
+        Action<CommandLineOptionMessages> onHelpRequested,
+        CtrlCCancellationManager ctrlC,
+        TestRunPolicy testRunPolicy)
     {
         try
         {
-            await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync(ctrlC.Token))
+            await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync(_cancellationToken))
             {
                 foreach (var module in nonParallelizedGroup)
                 {
-                    ctrlC.Token.ThrowIfCancellationRequested();
+                    _cancellationToken.ThrowIfCancellationRequested();
 
                     int result = ExitCode.GenericFailure;
-                    var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested);
+                    var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested, testRunPolicy);
                     try
                     {
                         using (testApp)
@@ -111,12 +132,11 @@ internal class TestApplicationActionQueue
                 }
             }
         }
-        catch (OperationCanceledException) when (ctrlC.Token.IsCancellationRequested)
+        catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested)
         {
-            // Stop scheduling new test apps once the user has pressed Ctrl+C the first time.
+            // Stop scheduling new test apps once cancellation is requested.
             // Already-running test apps are left alone so they can gracefully cancel themselves
-            // (and report final session state via IPC); a second Ctrl+C is what force-kills them
-            // via the CtrlCCancellationManager.
+            // and report final session state via IPC.
         }
     }
 }

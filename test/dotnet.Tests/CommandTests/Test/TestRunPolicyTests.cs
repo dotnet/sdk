@@ -1,0 +1,117 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Cli.Commands.Test;
+
+namespace dotnet.Tests.CommandTests.Test;
+
+public class TestRunPolicyTests
+{
+    [Fact]
+    public async Task MaximumFailedTestsCancelsWhenThresholdIsReached()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        TestRunCancellationReason? callbackReason = null;
+        using var policy = new TestRunPolicy(
+            maximumFailedTests: 3,
+            timeout: null,
+            onCancellation: reason => callbackReason = reason);
+
+        policy.ReportFailedTests(2);
+
+        policy.Token.IsCancellationRequested.Should().BeFalse();
+        policy.Reason.Should().Be(TestRunCancellationReason.None);
+
+        policy.ReportFailedTests(1);
+
+        TestRunCancellationReason reason = await policy.Cancellation.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+        reason.Should().Be(TestRunCancellationReason.MaximumFailedTests);
+        policy.Token.IsCancellationRequested.Should().BeTrue();
+        policy.FailedTests.Should().Be(3);
+        callbackReason.Should().Be(TestRunCancellationReason.MaximumFailedTests);
+    }
+
+    [Fact]
+    public async Task FailureCountingIsIndependentOfRetryBookkeeping()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        using var policy = new TestRunPolicy(maximumFailedTests: 2, timeout: null);
+
+        policy.ReportFailedTests(1);
+        policy.ReportFailedTests(1);
+
+        TestRunCancellationReason reason = await policy.Cancellation.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+        reason.Should().Be(TestRunCancellationReason.MaximumFailedTests);
+        policy.FailedTests.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task TimeoutStartsWithFirstTestApplication()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: TimeSpan.FromMilliseconds(100));
+
+        await Task.Delay(200, cancellationToken);
+        policy.Reason.Should().Be(TestRunCancellationReason.None);
+
+        policy.OnTestApplicationStarted();
+
+        TestRunCancellationReason reason = await policy.Cancellation.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+        reason.Should().Be(TestRunCancellationReason.Timeout);
+    }
+
+    [Fact]
+    public void StartingAdditionalTestApplicationsDoesNotRestartTimeout()
+    {
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: TimeSpan.FromMinutes(1));
+
+        policy.OnTestApplicationStarted();
+        policy.OnTestApplicationStarted();
+
+        policy.Reason.Should().Be(TestRunCancellationReason.None);
+    }
+
+    [Fact]
+    public async Task TimeoutOnlyCountsTimeWithActiveTestApplications()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: TimeSpan.FromMilliseconds(300));
+
+        policy.OnTestApplicationStarted();
+        await Task.Delay(100, cancellationToken);
+        policy.OnTestApplicationExited();
+
+        await Task.Delay(300, cancellationToken);
+        policy.Reason.Should().Be(TestRunCancellationReason.None);
+
+        policy.OnTestApplicationStarted();
+        TestRunCancellationReason reason = await policy.Cancellation.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+
+        reason.Should().Be(TestRunCancellationReason.Timeout);
+    }
+
+    [Fact]
+    public async Task CompletingPolicyPreventsLateTimeout()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        using var policy = new TestRunPolicy(maximumFailedTests: null, timeout: TimeSpan.FromMilliseconds(100));
+
+        policy.OnTestApplicationStarted();
+        TestRunCancellationReason reason = policy.Complete();
+        await Task.Delay(200, cancellationToken);
+
+        reason.Should().Be(TestRunCancellationReason.None);
+        policy.Reason.Should().Be(TestRunCancellationReason.None);
+        policy.Token.IsCancellationRequested.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CompletingPolicyPreservesCancellationReason()
+    {
+        using var policy = new TestRunPolicy(maximumFailedTests: 1, timeout: null);
+
+        policy.ReportFailedTests(1);
+
+        policy.Complete().Should().Be(TestRunCancellationReason.MaximumFailedTests);
+    }
+}

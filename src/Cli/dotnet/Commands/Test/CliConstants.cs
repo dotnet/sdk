@@ -64,6 +64,10 @@ internal static class HandshakeMessagePropertyNames
     // Optional property — older Microsoft.Testing.Platform versions don't send
     // it, in which case the SDK falls back to its previous (no-validation) behavior.
     internal const byte ExecutionMode = 10;
+
+    // Reply-only capability that tells Microsoft.Testing.Platform where to open
+    // the reverse channel used for server-initiated session cancellation.
+    internal const byte ServerControlPipeName = 12;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -84,6 +88,11 @@ internal static class ProtocolConstants
     /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
     /// </summary>
     internal const string SupportedVersions = "1.0.0;1.1.0";
+}
+
+internal static class ServerControlKinds
+{
+    internal const byte CancelSession = 1;
 }
 
 internal static class ProjectProperties

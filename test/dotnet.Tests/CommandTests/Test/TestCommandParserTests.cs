@@ -104,6 +104,99 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
+        public void MTPCommandParsesGlobalMaximumFailedTests()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--maximum-failed-tests", "5"]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("--maximum-failed-tests=5")]
+        [InlineData("--maximum-failed-tests:5")]
+        public void MTPCommandParsesInlineGlobalMaximumFailedTests(string argument)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([argument]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+        }
+
+        [Theory]
+        [InlineData("0")]
+        [InlineData("-1")]
+        public void MTPCommandRejectsNonPositiveGlobalMaximumFailedTests(string value)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--maximum-failed-tests", value]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [Theory]
+        [InlineData("500ms", 500)]
+        [InlineData("2s", 2_000)]
+        [InlineData("1.5m", 90_000)]
+        public void MTPCommandParsesGlobalTimeout(string value, double expectedMilliseconds)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--timeout", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.TimeoutOption)!.Value.TotalMilliseconds.Should().Be(expectedMilliseconds);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("--timeout=2s")]
+        [InlineData("--timeout:2s")]
+        public void MTPCommandParsesInlineGlobalTimeout(string argument)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([argument]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.TimeoutOption).Should().Be(TimeSpan.FromSeconds(2));
+        }
+
+        [Theory]
+        [InlineData("200")]
+        [InlineData("0s")]
+        [InlineData("-1s")]
+        [InlineData("50d")]
+        [InlineData("invalid")]
+        public void MTPCommandRejectsInvalidGlobalTimeout(string value)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--timeout", value]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public void MTPCommandForwardsPolicyOptionsAfterSeparator()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([
+                "--maximum-failed-tests", "5",
+                "--timeout", "1m",
+                "--",
+                "--maximum-failed-tests", "2",
+                "--timeout", "10s"]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+            parseResult.GetValue(command.TimeoutOption).Should().Be(TimeSpan.FromMinutes(1));
+            parseResult.UnmatchedTokens.Should().Equal(
+                "--maximum-failed-tests", "2",
+                "--timeout", "10s");
+        }
+
+        [Fact]
         public void DllDetectionShouldExcludeRunArgumentsAndGlobalProperties()
         {
             var parseResult = Parser.Parse("""test -p:"RunConfig=abd.dll" -- RunConfig=abd.dll -p:"RunConfig=abd.dll" --results-directory hey.dll""");

@@ -159,3 +159,15 @@ internal static class TestInProgressMessageFieldsId
     public const ushort Uid = 1;
     public const ushort DisplayName = 2;
 }
+
+internal static class WaitForServerControlRequestFieldsId
+{
+    public const int MessagesSerializerId = 13;
+}
+
+internal static class ServerControlMessageFieldsId
+{
+    public const int MessagesSerializerId = 14;
+
+    public const ushort Kind = 1;
+}
