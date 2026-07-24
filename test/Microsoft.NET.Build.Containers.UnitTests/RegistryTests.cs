@@ -589,6 +589,79 @@ public class RegistryTests : IDisposable
     }
 
     [TestMethod]
+    [DoNotParallelize]
+    public async Task DownloadBlobAsync_RedownloadsCachedBlobWithInvalidDigest()
+    {
+        var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RedownloadsCachedBlobWithInvalidDigest));
+        string repoName = "testRepo";
+        byte[] expectedContent = [1, 2, 3];
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81", expectedContent.Length);
+        var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
+        mockRegistryAPI
+            .Setup(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, CancellationToken.None))
+            .ReturnsAsync(new MemoryStream(expectedContent));
+
+        DirectoryInfo artifactRoot = Directory.CreateTempSubdirectory();
+        string priorArtifactRoot = ContentStore.ArtifactRoot;
+
+        try
+        {
+            ContentStore.ArtifactRoot = artifactRoot.FullName;
+            string localPath = ContentStore.PathForDescriptor(descriptor);
+            await File.WriteAllBytesAsync(localPath, [4, 5, 6], TestContext.CancellationToken);
+
+            string result = await new Registry(repoName, logger, mockRegistryAPI.Object)
+                .DownloadBlobAsync(repoName, descriptor, CancellationToken.None);
+
+            Assert.AreEqual(localPath, result);
+            Assert.AreSequenceEqual(expectedContent, await File.ReadAllBytesAsync(result, TestContext.CancellationToken));
+            mockRegistryAPI.Verify(
+                api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, CancellationToken.None),
+                Times.Once());
+        }
+        finally
+        {
+            ContentStore.ArtifactRoot = priorArtifactRoot;
+            artifactRoot.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    public async Task DownloadBlobAsync_RejectsDownloadedBlobWithInvalidDigest()
+    {
+        var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RejectsDownloadedBlobWithInvalidDigest));
+        string repoName = "testRepo";
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81", 3);
+        var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
+        mockRegistryAPI
+            .Setup(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, CancellationToken.None))
+            .ReturnsAsync(() => new MemoryStream([4, 5, 6]));
+
+        DirectoryInfo artifactRoot = Directory.CreateTempSubdirectory();
+        string priorArtifactRoot = ContentStore.ArtifactRoot;
+
+        try
+        {
+            ContentStore.ArtifactRoot = artifactRoot.FullName;
+            Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
+
+            await Assert.ThrowsExactlyAsync<UnableToDownloadFromRepositoryException>(
+                () => registry.DownloadBlobAsync(repoName, descriptor, CancellationToken.None));
+
+            mockRegistryAPI.Verify(
+                api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, CancellationToken.None),
+                Times.Exactly(5));
+            Assert.IsEmpty(Directory.EnumerateFiles(ContentStore.TempPath));
+        }
+        finally
+        {
+            ContentStore.ArtifactRoot = priorArtifactRoot;
+            artifactRoot.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task DownloadBlobAsync_ThrowsAfterMaxRetries()
     {
         // Arrange
