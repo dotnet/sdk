@@ -223,7 +223,7 @@ function updateState(state, key, history) {
   state.pipelines[key] = { processedBuildIds, lastCheckedAt: new Date().toISOString() };
 }
 
-function selectUnprocessedFailures(state, key, history) {
+export function selectUnprocessedFailures(state, key, history) {
   const previous = state.pipelines[key];
   const processedIds = new Set(previous?.processedBuildIds ?? []);
   const unprocessed = previous ? history.filter(build => !processedIds.has(build.id)) : history;
