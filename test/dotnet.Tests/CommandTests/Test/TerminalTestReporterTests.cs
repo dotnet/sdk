@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
+using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -147,6 +150,40 @@ public class TerminalTestReporterTests
         GetAssemblySummaryLine(output, assemblyB).Should().Contain("[+5/x0/?2]");
     }
 
+    [TestMethod]
+    public void TestExecutionCompleted_WithZeroTestsAndPassingAssemblies_PrintsPassedSummary()
+    {
+        var capturingConsole = new CapturingConsole();
+
+        var options = new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = false,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 2, isDiscovery: false, isHelp: false, isRetry: false);
+
+        const string emptyAssembly = "/repo/bin/Debug/net9.0/Empty.Tests.dll";
+        const string passingAssembly = "/repo/bin/Debug/net9.0/Passing.Tests.dll";
+
+        reporter.AssemblyRunStarted(emptyAssembly, "net9.0", "x64", executionId: "exec-empty", instanceId: "inst-empty");
+        reporter.AssemblyRunStarted(passingAssembly, "net9.0", "x64", executionId: "exec-passing", instanceId: "inst-passing");
+        ReportTest(reporter, passingAssembly, executionId: "exec-passing", instanceId: "inst-passing", testUid: "passing-1", TestOutcome.Passed);
+
+        reporter.AssemblyRunCompleted(executionId: "exec-empty", exitCode: TestExitCode.ZeroTests, outputData: null, errorData: null);
+        reporter.AssemblyRunCompleted(executionId: "exec-passing", exitCode: TestExitCode.Success, outputData: null, errorData: null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.Success);
+
+        string output = StripAnsi(capturingConsole.GetOutput());
+        output.Should().Contain("Test run summary: Passed!");
+        GetAssemblySummaryLine(output, emptyAssembly).Should().Contain("Zero tests ran");
+        output.Should().NotContain("error:");
+    }
+
     /// <summary>
     /// When an assembly's tests were retried, the per-assembly summary should append a
     /// "/r{N}" segment to the compact counts block so users can tell the final counts came from retries.
@@ -262,6 +299,88 @@ public class TerminalTestReporterTests
         output.Should().Contain("Option '--show-live-output' has invalid arguments");
         output.Should().Contain("lines omitted");
         output.Should().NotContain("help line 350");
+    }
+
+    /// <summary>
+    /// '--list-tests json' renders a machine-readable JSON document from the discovered-test data the
+    /// SDK already receives over the 'dotnet test' IPC protocol. The document is a versioned envelope
+    /// grouped by test container (assembly + TFM + architecture), preserving every field the wire
+    /// contract carries (uid, namespace, typeName, methodName, parameterTypeFullNames, traits, location).
+    /// See https://github.com/dotnet/sdk/issues/49754.
+    /// </summary>
+    [TestMethod]
+    public void TestExecutionCompleted_WhenDiscoveryJsonFormat_EmitsMachineReadableJson()
+    {
+        var capturingConsole = new CapturingConsole();
+
+        var options = new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowProgress = false,
+            ShowAssembly = false,
+            ShowAssemblyStartAndComplete = false,
+            ListTestsFormat = TestListFormat.Json,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: true, isHelp: false, isRetry: false);
+
+        const string assembly = "/repo/bin/Debug/net9.0/MyTests.dll";
+        const string executionId = "exec-1";
+
+        reporter.AssemblyRunStarted(assembly, targetFramework: "net9.0", architecture: "x64", executionId, instanceId: "inst-1");
+
+        reporter.TestDiscovered(executionId, new DiscoveredTestInfo(
+            DisplayName: "MyMethod(x: 1)",
+            Uid: "uid-1",
+            FilePath: "/repo/MyTests.cs",
+            LineNumber: 42,
+            Namespace: "My.Ns",
+            TypeName: "MyClass",
+            MethodName: "MyMethod",
+            ParameterTypeFullNames: ["System.Int32"],
+            Traits: [("Category", "Fast")]));
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: 0);
+
+        string output = capturingConsole.GetOutput();
+        int start = output.IndexOf('{');
+        start.Should().BeGreaterThanOrEqualTo(0, "the discovery output should contain a JSON document");
+
+        using var document = JsonDocument.Parse(output.Substring(start));
+        JsonElement root = document.RootElement;
+
+        root.GetProperty("version").GetString().Should().Be("1.0");
+
+        JsonElement containers = root.GetProperty("testContainers");
+        containers.GetArrayLength().Should().Be(1);
+
+        JsonElement container = containers[0];
+        container.GetProperty("assemblyPath").GetString().Should().Be(assembly);
+        container.GetProperty("targetFramework").GetString().Should().Be("net9.0");
+        container.GetProperty("architecture").GetString().Should().Be("x64");
+
+        JsonElement tests = container.GetProperty("tests");
+        tests.GetArrayLength().Should().Be(1);
+
+        JsonElement test = tests[0];
+        test.GetProperty("uid").GetString().Should().Be("uid-1");
+        test.GetProperty("displayName").GetString().Should().Be("MyMethod(x: 1)");
+        test.GetProperty("namespace").GetString().Should().Be("My.Ns");
+        test.GetProperty("typeName").GetString().Should().Be("MyClass");
+        test.GetProperty("methodName").GetString().Should().Be("MyMethod");
+        test.GetProperty("filePath").GetString().Should().Be("/repo/MyTests.cs");
+        test.GetProperty("lineNumber").GetInt32().Should().Be(42);
+
+        JsonElement parameters = test.GetProperty("parameterTypeFullNames");
+        parameters.GetArrayLength().Should().Be(1);
+        parameters[0].GetString().Should().Be("System.Int32");
+
+        JsonElement traits = test.GetProperty("traits");
+        traits.GetArrayLength().Should().Be(1);
+        traits[0].GetProperty("key").GetString().Should().Be("Category");
+        traits[0].GetProperty("value").GetString().Should().Be("Fast");
     }
 
     private static void ReportTest(TerminalTestReporter reporter, string assembly, string executionId, string instanceId, string testUid, TestOutcome outcome)

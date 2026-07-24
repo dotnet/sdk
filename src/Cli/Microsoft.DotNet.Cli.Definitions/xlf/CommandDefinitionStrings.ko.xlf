@@ -377,8 +377,8 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">테스트 실행 대신 검색한 테스트를 나열합니다.</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">테스트 실행 대신 검색한 테스트를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">

@@ -92,6 +92,61 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow("--no-logo")]
+        [DataRow("--nologo")]
+        [DataRow("-nologo")]
+        [DataRow("/nologo")]
+        [DataRow("--no-banner")]
+        public void MTPCommandTranslatesNoLogoOptionToNoBanner(string optionAlias)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([optionAlias]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain(optionAlias);
+        }
+
+        [TestMethod]
+        public void MTPCommandDoesNotDuplicateNoBannerOption()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--nologo", "--no-banner"]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+        }
+
+        [TestMethod]
+        public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
+        {
+            string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
+            try
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "true");
+                var enabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var enabledBuildOptions = MSBuildUtility.GetBuildOptions(enabledCommand.Parse([]));
+
+                enabledBuildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "false");
+                var disabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var disabledBuildOptions = MSBuildUtility.GetBuildOptions(disabledCommand.Parse([]));
+
+                disabledBuildOptions.TestApplicationArguments.Should().NotContain("--no-banner");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", previousValue);
+            }
+        }
+
+        [TestMethod]
         [DataRow("--use-current-runtime")]
         [DataRow("--ucr")]
         public void MTPCommandForwardsUseCurrentRuntimeOption(string optionAlias)
@@ -102,6 +157,44 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             forwarded.Should().Contain("--property:UseCurrentRuntimeIdentifier=True",
                 $"{optionAlias} should be forwarded to MSBuild as UseCurrentRuntimeIdentifier=True so restore and build target the current runtime.");
+        }
+
+        [TestMethod]
+        [DataRow("text")]
+        [DataRow("json")]
+        public void MTPCommandAcceptsListTestsFormatValue(string format)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", format]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.HasOption(command.ListTestsOption).Should().BeTrue();
+            parseResult.GetValue(command.ListTestsOption).Should().Be(format);
+        }
+
+        [TestMethod]
+        public void MTPCommandAcceptsBareListTestsWithoutValue()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", "-c", "Release"]);
+
+            // A bare '--list-tests' (followed by another option) has no value; discovery defaults to text.
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.HasOption(command.ListTestsOption).Should().BeTrue();
+            parseResult.GetValue(command.ListTestsOption).Should().BeNull();
+        }
+
+        [TestMethod]
+        [DataRow("foo")]
+        [DataRow("JSON")]
+        [DataRow("TEXT")]
+        public void MTPCommandRejectsInvalidListTestsFormatValue(string format)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", format]);
+
+            // Accepted values are constrained to the lowercase 'text'/'json' keys matching MTP.
+            parseResult.Errors.Should().NotBeEmpty();
         }
 
         [TestMethod]

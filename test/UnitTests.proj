@@ -47,8 +47,8 @@
        - The FullFramework leg sets TestFullMSBuild=true and uses a Windows queue. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomTestProject Include="
-      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
-      Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
+      Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
+      Compatibility\GenAPI\Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
                            TargetFramework="net472"
                            RuntimeTargetFramework="net472" />
   </ItemGroup>
@@ -116,6 +116,8 @@
     <HelixTargetQueue Include="$(CustomHelixTargetQueue)" />
   </ItemGroup>
 
+  <Import Project="ConditionalTests.targets" />
+
   <Import Project="test-runner\TestRunner.targets" />
 
   <!-- need to be a target in order to have IsPosixShell available -->
@@ -162,6 +164,14 @@
       </TestExecutionDirectoryFiles>
       <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\ManualVersions.props">
         <DestinationFolder>eng/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
+
+      <!-- Infrastructure test files: conditional test scopes script and targets -->
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)scripts\EvaluateConditionalTestScopes.cs">
+        <DestinationFolder>scripts/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)test\ConditionalTests.targets">
+        <DestinationFolder>test/</DestinationFolder>
       </TestExecutionDirectoryFiles>
 
       <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />

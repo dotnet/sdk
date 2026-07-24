@@ -377,8 +377,8 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">Testleri çalıştırmak yerine bulunan testleri listeler.</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">Testleri çalıştırmak yerine bulunan testleri listeler.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">

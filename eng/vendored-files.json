@@ -25,8 +25,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
-          "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
-          "baseline_blob_sha": "5c71c4fb437bb4f9898fd89dea17b30bbf99d16e",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "d21531909dd2620f3d0f4c61190f05a82b383f44",
           "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
         }
       ]
@@ -40,8 +40,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "992ddffeb9e28fe1526da63444f45dbb319e3871",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "26135cc81bcd492e730a58b490b5cba9b8623ade",
           "scope": "reporter partial"
         },
         {
@@ -88,8 +88,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Messaging.cs",
-          "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
-          "baseline_blob_sha": "e4d77d967be687b0c84804d711c44c98e87741f7",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "04266b4e32ef754245b45f29838f5482d5817e45",
           "scope": "reporter partial"
         },
         {
@@ -149,8 +149,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminal.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "9f8920d5af4a6c33fbbaf2d4d4902ecd3d0429dc",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "6d2f09cffe5bfb96ab600aa0bfc77e7f2b7835c7",
           "scope": "entire file"
         }
       ]
@@ -164,8 +164,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "6a7b784d6b1eae9de031b57de801114548efc976",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "831f5e0718bb1a61f3a41a4c3092f4d765fad01a",
           "scope": "entire file"
         }
       ]
@@ -224,8 +224,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/ITerminal.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "75c07201db35a17fe286df1175efa87342f0ecdf",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "30ae2cbbe2f02e0b94f4f5bd82627a9c397e4c47",
           "scope": "entire file"
         }
       ]
@@ -284,8 +284,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleTerminalBase.cs",
-          "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
-          "baseline_blob_sha": "3f305c8240d5e9caef94dde9c7eb396e84813b0e",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "786ff445c6a535e5a7bb69b05f91d0722cc5efa6",
           "scope": "entire file"
         }
       ]
@@ -389,8 +389,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressStateAwareTerminal.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "15498557b4e8be651940f93384507c7790379c62",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "9acf46a59f32349a8c784f57ac2742ab7a2c6eaf",
           "scope": "entire file"
         }
       ]

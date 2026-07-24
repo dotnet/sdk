@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -27,12 +28,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     internal const string DoubleIndentation = $"{SingleIndentation}{SingleIndentation}";
 
+    /// <summary>
+    /// Schema version of the '--list-tests json' output. Bump on breaking shape changes.
+    /// </summary>
+    private const string DiscoveryJsonVersion = "1.0";
+
     internal Func<IStopwatch> CreateStopwatch { get; set; } = SystemStopwatch.StartNew;
 
     private readonly ConcurrentDictionary<string, TestProgressState> _assemblies = new();
     private readonly Lock _assembliesLock = new();
 
     private readonly List<TestRunArtifact> _artifacts = [];
+    private readonly Lock _artifactsLock = new();
 
     private readonly TerminalTestReporterOptions _options;
 
@@ -218,7 +225,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private void AppendTestRunSummary(ITerminal terminal, int? exitCode)
     {
-        IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = _artifacts.GroupBy(a => a.OutOfProcess);
+        TestRunArtifact[] artifacts;
+        lock (_artifactsLock)
+        {
+            artifacts = [.. _artifacts];
+        }
+
+        IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = artifacts.GroupBy(a => a.OutOfProcess);
 
         if (artifactGroups.Any())
         {
@@ -453,16 +466,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// </summary>
     private static void AppendAssemblyResult(ITerminal terminal, TestProgressState state)
     {
-        if (!state.Success)
+        if (state.ExitCode == ExitCode.ZeroTests)
         {
             terminal.SetColor(TerminalColor.DarkRed);
-            // If the build failed, we print one of three red strings.
-            string text = (state.FailedTests > 0, state.TotalTests == 0) switch
-            {
-                (true, _) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, state.FailedTests),
-                (false, true) => CliCommandStrings.ZeroTestsRan,
-                (false, false) => CliCommandStrings.FailedLowercase,
-            };
+            terminal.Append(CliCommandStrings.ZeroTestsRan);
+            terminal.ResetColor();
+        }
+        else if (!state.Success)
+        {
+            terminal.SetColor(TerminalColor.DarkRed);
+            string text = state.FailedTests > 0
+                ? string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, state.FailedTests)
+                : CliCommandStrings.FailedLowercase;
             terminal.Append(text);
             terminal.ResetColor();
         }
@@ -831,7 +846,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
+        assemblyRun.ExitCode = exitCode;
+        assemblyRun.Success = (exitCode == ExitCode.Success || exitCode == ExitCode.ZeroTests)
+            && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
         _terminalWithProgress.RemoveWorker(assemblyRun.SlotIndex);
@@ -1030,7 +1047,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
     public void Dispose() => _terminalWithProgress.Dispose();
 
     public void ArtifactAdded(bool outOfProcess, string? assembly, string? targetFramework, string? architecture, string? executionId, string? testName, string path)
-        => _artifacts.Add(new TestRunArtifact(outOfProcess, assembly, targetFramework, architecture, executionId, testName, path));
+    {
+        lock (_artifactsLock)
+        {
+            _artifacts.Add(new TestRunArtifact(outOfProcess, assembly, targetFramework, architecture, executionId, testName, path));
+        }
+    }
+
+    public void RemoveArtifacts(IReadOnlySet<string> paths)
+    {
+        lock (_artifactsLock)
+        {
+            _artifacts.RemoveAll(artifact => paths.Contains(artifact.Path));
+        }
+    }
 
     internal void WriteMessage(string text) =>
         _terminalWithProgress.WriteToTerminal(terminal =>
@@ -1076,10 +1106,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     internal void TestDiscovered(
         string executionId,
-        string? displayName,
-        string? uid,
-        string? filePath,
-        int? lineNumber)
+        DiscoveredTestInfo test)
     {
         if (!_isDiscovery)
         {
@@ -1092,12 +1119,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
-        asm.DiscoverTest(displayName, uid, filePath, lineNumber);
+        asm.DiscoverTest(test);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
     public void AppendTestDiscoverySummary(ITerminal terminal, int? exitCode)
     {
+        if (_options.ListTestsFormat == TestListFormat.Json)
+        {
+            AppendTestDiscoveryJson(terminal);
+            return;
+        }
+
         terminal.AppendLine();
 
         var assemblies = _assemblies.Select(asm => asm.Value).OrderBy(a => a.Assembly).Where(a => a is not null).ToList();
@@ -1107,25 +1140,25 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         foreach (TestProgressState assembly in assemblies)
         {
-            List<(string? DisplayName, string? UID, string? FilePath, int? LineNumber)> discoveredTestNames = assembly.DiscoveredTestNames;
+            List<DiscoveredTestInfo> discoveredTestNames = assembly.DiscoveredTestNames;
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, discoveredTestNames.Count));
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid, string? filePath, int? lineNumber) in discoveredTestNames)
+            foreach (DiscoveredTestInfo test in discoveredTestNames)
             {
-                if (displayName is not null)
+                if (test.DisplayName is not null)
                 {
                     terminal.Append(SingleIndentation);
-                    terminal.Append(displayName);
-                    if (!string.IsNullOrEmpty(filePath))
+                    terminal.Append(test.DisplayName);
+                    if (!string.IsNullOrEmpty(test.FilePath))
                     {
                         terminal.Append(" [");
-                        terminal.Append(filePath);
-                        if (lineNumber is > 0)
+                        terminal.Append(test.FilePath);
+                        if (test.LineNumber is > 0)
                         {
                             terminal.Append(':');
-                            terminal.Append(lineNumber.Value.ToString(CultureInfo.InvariantCulture));
+                            terminal.Append(test.LineNumber.Value.ToString(CultureInfo.InvariantCulture));
                         }
 
                         terminal.Append(']');
@@ -1158,6 +1191,90 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         AppendExitCodeAndUrl(terminal, exitCode, isRun: false);
+    }
+
+    private void AppendTestDiscoveryJson(ITerminal terminal)
+    {
+        var assemblies = _assemblies.Select(asm => asm.Value).Where(a => a is not null).OrderBy(a => a.Assembly).ToList();
+
+        using var buffer = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = true }))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("version", DiscoveryJsonVersion);
+            writer.WriteStartArray("testContainers");
+
+            foreach (TestProgressState assembly in assemblies)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("assemblyPath", assembly.Assembly);
+                WriteNullableString(writer, "targetFramework", assembly.TargetFramework);
+                WriteNullableString(writer, "architecture", assembly.Architecture);
+
+                writer.WriteStartArray("tests");
+                foreach (DiscoveredTestInfo test in assembly.DiscoveredTestNames)
+                {
+                    writer.WriteStartObject();
+                    WriteNullableString(writer, "uid", test.Uid);
+                    WriteNullableString(writer, "displayName", test.DisplayName);
+                    WriteNullableString(writer, "namespace", test.Namespace);
+                    WriteNullableString(writer, "typeName", test.TypeName);
+                    WriteNullableString(writer, "methodName", test.MethodName);
+
+                    writer.WriteStartArray("parameterTypeFullNames");
+                    foreach (string parameterTypeFullName in test.ParameterTypeFullNames)
+                    {
+                        writer.WriteStringValue(parameterTypeFullName);
+                    }
+
+                    writer.WriteEndArray();
+
+                    writer.WriteStartArray("traits");
+                    foreach ((string key, string value) in test.Traits)
+                    {
+                        writer.WriteStartObject();
+                        writer.WriteString("key", key);
+                        writer.WriteString("value", value);
+                        writer.WriteEndObject();
+                    }
+
+                    writer.WriteEndArray();
+
+                    WriteNullableString(writer, "filePath", test.FilePath);
+                    if (test.LineNumber is { } lineNumber)
+                    {
+                        writer.WriteNumber("lineNumber", lineNumber);
+                    }
+                    else
+                    {
+                        writer.WriteNull("lineNumber");
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+
+        terminal.Append(Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length));
+        terminal.AppendLine();
+    }
+
+    private static void WriteNullableString(Utf8JsonWriter writer, string propertyName, string? value)
+    {
+        if (value is null)
+        {
+            writer.WriteNull(propertyName);
+        }
+        else
+        {
+            writer.WriteString(propertyName, value);
+        }
     }
 
     public void AssemblyDiscoveryCompleted(int testCount) =>

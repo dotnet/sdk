@@ -216,12 +216,12 @@ public class TestProgressStateTests
             stopwatch: stopwatchMock.Object,
             isDiscovery: true);
 
-        state.DiscoverTest(displayName, uid, filePath: null, lineNumber: null);
+        state.DiscoverTest(new DiscoveredTestInfo(displayName, uid, FilePath: null, LineNumber: null, Namespace: null, TypeName: null, MethodName: null, ParameterTypeFullNames: [], Traits: []));
 
         state.DiscoveredTests.Should().Be(1);
         state.DiscoveredTestNames.Count.Should().Be(1);
         state.DiscoveredTestNames[0].DisplayName.Should().Be(displayName);
-        state.DiscoveredTestNames[0].UID.Should().Be(uid);
+        state.DiscoveredTestNames[0].Uid.Should().Be(uid);
         state.DiscoveredTestNames[0].FilePath.Should().BeNull();
         state.DiscoveredTestNames[0].LineNumber.Should().BeNull();
     }
@@ -238,7 +238,7 @@ public class TestProgressStateTests
             stopwatch: stopwatchMock.Object,
             isDiscovery: true);
 
-        state.DiscoverTest("MyTest", "uid-1", filePath: "C:/repo/MyTests.cs", lineNumber: 42);
+        state.DiscoverTest(new DiscoveredTestInfo("MyTest", "uid-1", FilePath: "C:/repo/MyTests.cs", LineNumber: 42, Namespace: null, TypeName: null, MethodName: null, ParameterTypeFullNames: [], Traits: []));
 
         state.DiscoveredTestNames.Count.Should().Be(1);
         state.DiscoveredTestNames[0].FilePath.Should().Be("C:/repo/MyTests.cs");

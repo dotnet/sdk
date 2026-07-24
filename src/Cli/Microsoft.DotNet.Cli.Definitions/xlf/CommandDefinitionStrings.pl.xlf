@@ -377,8 +377,8 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">Wyświetl listę odnalezionych testów zamiast uruchamiać testy.</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">Wyświetl listę odnalezionych testów zamiast uruchamiać testy.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">

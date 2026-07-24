@@ -11,7 +11,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
     private readonly Lock _lock = new();
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
     private readonly Dictionary<string, int> _instanceIdToAttemptNumber = new();
-    private readonly List<(string? DisplayName, string? UID, string? FilePath, int? LineNumber)> _discoveredTestNames = [];
+    private readonly List<DiscoveredTestInfo> _discoveredTestNames = [];
     private int _discoveredTests;
     private int _failedTests;
     private int _passedTests;
@@ -114,7 +114,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public long Version { get; internal set; }
 
-    public List<(string? DisplayName, string? UID, string? FilePath, int? LineNumber)> DiscoveredTestNames
+    public List<DiscoveredTestInfo> DiscoveredTestNames
     {
         get
         {
@@ -143,6 +143,8 @@ internal sealed class TestProgressState(long id, string assembly, string? target
             }
         }
     }
+
+    public int? ExitCode { get; internal set; }
 
     public bool IsDiscovery { get; } = isDiscovery;
 
@@ -222,12 +224,12 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         }, static @this => @this._failedTests++);
     }
 
-    public void DiscoverTest(string? displayName, string? uid, string? filePath, int? lineNumber)
+    public void DiscoverTest(DiscoveredTestInfo test)
     {
         lock (_lock)
         {
             _discoveredTests++;
-            _discoveredTestNames.Add(new(displayName, uid, filePath, lineNumber));
+            _discoveredTestNames.Add(test);
         }
     }
 
@@ -283,3 +285,19 @@ internal sealed class TestProgressState(long id, string assembly, string? target
             ? attemptNumber
             : throw new UnreachableException($"The instanceId '{instanceId}' not found.");
 }
+
+/// <summary>
+/// Rich information about a single discovered test node, as received over the 'dotnet test' IPC
+/// protocol (<c>DiscoveredTestMessage</c>). Carries every field the wire contract provides so the
+/// SDK can render both the human-readable and the machine-readable ('--list-tests json') output.
+/// </summary>
+internal sealed record DiscoveredTestInfo(
+    string? DisplayName,
+    string? Uid,
+    string? FilePath,
+    int? LineNumber,
+    string? Namespace,
+    string? TypeName,
+    string? MethodName,
+    string[] ParameterTypeFullNames,
+    (string Key, string Value)[] Traits);
