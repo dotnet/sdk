@@ -1,11 +1,11 @@
 # CI Quality Investigator 🕵️
 
 The CI Quality Investigator is a GitHub Agentic Workflow that reviews public
-Azure DevOps builds and previews issues for recurring, previously untracked SDK
-build and test failures. It does not require an Azure DevOps service hook or
-credential. The initial experiment uses the GitHub Actions token for Copilot
-inference through `copilot-requests: write`; migrate back to the shared PAT pool
-before enabling the workflow in dotnet/sdk production.
+Azure DevOps builds and previews issues for actionable, previously untracked SDK
+build, test, and CI-integration failures. It does not require an Azure DevOps
+service hook or credential. The experiment uses the GitHub Actions token for Copilot
+inference through the scoped `copilot-requests: write` permission and keeps all
+repository writes in GitHub AW safe-output jobs.
 
 ## Architecture
 
@@ -17,13 +17,17 @@ job runs before the agent:
    cache entry.
 2. Read [`pipelines.json`](pipelines.json) and query the latest 20 completed
    builds for each allowlisted pipeline and branch.
-3. Exclude PR builds and builds already present in the ledger.
+3. During daily branch polling, exclude PR builds and builds already present in
+  the ledger. Event paths separately verify direct stable-branch failures and
+  final PR validation associated with a merged PR.
 4. Collect bounded timeline, public Helix work-item, TRX, artifact, and log
   evidence for new failures. TRX evidence includes aggregate result counts;
   hang/crash evidence includes the active-test line, host exit code, watchdog
   sequence, and dump-capture failures when present.
-5. Save the updated ledger under a run-specific immutable cache key.
-6. Skip the agent when there are no new failed builds.
+5. Save the updated ledger under a run-specific immutable cache key and a
+  branch-scoped durable artifact checkpoint.
+6. Skip the agent when there are no selected failed builds or actionable
+  pipeline-health observations.
 7. Give the agent a structured dossier when investigation is required.
 
 The collector code follows these boundaries:
@@ -84,7 +88,8 @@ and cannot directly anchor an issue.
 Named tests retain per-test fingerprints and a separate mechanism fingerprint.
 Different tests can share one issue only when their mechanism fingerprints and
 stable evidence match. The same test can therefore map to multiple issues when
-it fails for different reasons.
+it fails for different reasons. KBE recurrence requires the same test and
+mechanism on a different commit; retries of one commit do not count.
 
 Fingerprints are generated locally from the observation category, component, and
 normalized mechanism; they are not downloaded from Azure or Helix. Evidence
@@ -93,8 +98,10 @@ and bounds text size. It is domain-specific stability and data minimization,
 not HTML or command sanitization.
 
 A branch heartbeat compares the registered GitHub head with recent AzDO builds.
-It tolerates batched CI, waits 90 minutes, and requires two consecutive misses
-before reporting that a pipeline did not start.
+It tolerates batched CI and records a miss only after the head is at least 90
+minutes old. Reporting requires misses in two consecutive daily routines, so
+ordinary detection latency is approximately 24–48 hours; 90 minutes is not the
+reporting SLA.
 
 ## Relationship to `ci-analysis`
 
@@ -128,18 +135,20 @@ the failure occurs. Checks that need broader context are recorded as suggested
 investigation rather than represented as completed analysis.
 
 The bounded dossier intentionally does not include dump contents, source-level
-test mapping, PR changed-file correlation, target-branch comparison, Build
-Analysis status, or full multi-commit progression. Those are deeper interactive
-checks. The issue RCA must identify them as missing evidence when they are
+test mapping, PR changed-file correlation, tested-versus-landed tree comparison,
+target-branch comparison, Build Analysis status, or full multi-commit
+progression. Those are deeper interactive checks. The issue RCA must identify them as missing evidence when they are
 needed to move from a high-confidence proximate cause, such as a watchdog
 terminating a hung test host, to the underlying product or infrastructure cause.
 
 ## State and Bootstrap
 
-State is keyed by Azure DevOps organization, project, definition ID, and branch.
-Each entry retains up to 100 processing keys. A key contains build ID, finish
-time, and result, so a retried attempt that updates an existing build ID can be
-analyzed again. Every poll re-reads the latest 20 builds to tolerate builds
+Branch polling state is keyed by Azure DevOps organization, project, definition
+ID, and branch. Automatic investigation state additionally retains trusted audit
+contexts such as direct stable-branch delivery or merged-PR promotion. Each
+entry retains up to 100 keys. Build attempt keys contain build ID, finish time,
+and result, so a retried attempt that updates an existing build ID can be
+analyzed again. Every daily poll re-reads the latest 20 builds to tolerate builds
 finishing out of queue order.
 
 The collector restores state through two layers before deciding whether to run
@@ -171,10 +180,12 @@ at once.
 
 ## Issue Policy
 
-Issue creation is initially configured in staged mode. A preview requires:
+Production issue creation is configured in staged mode; the disposable
+live-evaluation branch writes fork-only test issues. A production preview
+requires:
 
 - substantially the same stable test/crash/timeout failure in the current build
-  and at least one recent failed build, or one specific deterministic
+  and at least one recent build from a different commit, or one specific deterministic
   build/YAML break after a passing build
 - at least two distinct searches for existing open or recently closed issues
 - evidence that the problem is SDK-owned rather than broad Helix or Azure
@@ -205,9 +216,10 @@ fingerprint as a visible Build Information item so the agent can search for an
 existing issue before filing. Native title deduplication is a second,
 approximate safeguard.
 
-The monitor never applies `cookie`. Normal issue triage can add an area, type,
-`Test Debt`, and `cookie` when the resulting work is bounded enough for Issue
-Monster.
+Production monitoring never requests `cookie`. Normal issue triage can add an
+area, type, `Test Debt`, and `cookie` when the resulting work is bounded enough
+for Issue Monster. The disposable live-evaluation branch requests `cookie` only
+to exercise that downstream handoff.
 
 GitHub AW applies the title prefix, fixed `agentic-workflows` label, staged-mode
 behavior, and limit of three issue writes per run. The agent may request only

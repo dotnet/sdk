@@ -44,7 +44,8 @@ export class FailureEvidenceCollector {
       new Map(logFailures.filter(failure => failure.text).map(failure => [failure.logId, failure.text])));
     const observations = applyKbeRecurrence(
       [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
-      relatedFailureSummaries);
+      relatedFailureSummaries,
+      createBuildSummary(build));
     return {
       pipeline,
       build: createBuildSummary(build),

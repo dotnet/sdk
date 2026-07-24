@@ -35,9 +35,10 @@ current behavior from planned categories and priorities.
   audited only under the context-qualified rules below.
 5. PR analysis does not spend tokens or file repository-wide findings for failures
   caused only by the PR's own changes.
-6. `cookie` is applied only when a finding is eligible for Issue Monster.
+6. Production monitoring does not apply `cookie`; normal triage controls Issue
+  Monster eligibility. Fork-only evaluation may apply it to test the handoff.
   Stable live incidents and technical or infrastructure debt receive their
-  corresponding trusted labels.
+  corresponding allowlisted labels.
 7. Test flakes are filed only as validated Known Build Errors. A KBE match must
   not hide or permit unrelated failures in the same CI run.
 8. The investigator detects pipeline YAML rejection, including failures that
@@ -118,14 +119,18 @@ does not replace a direct build of the stable branch. PR
 [#55280](https://github.com/dotnet/sdk/pull/55280) is a verified example where
 the target branch moved between validation and merge.
 
+The current collector records merge metadata but does not perform that tree
+comparison. Therefore current issues must treat exact landed-content validation
+as unknown unless another evidence source establishes it.
+
 ## Trigger Category
 
 | Trigger | Candidate monitoring categories | Policy |
 | --- | --- | --- |
 | Azure `check_suite: completed` | Stable branch; infrastructure PR | For a non-success `azure-pipelines` suite, resolve and verify the definition `101` build. A direct allowlisted stable-branch failure is HIGH. Planned MED support may accept verified codeflow PR failures. Ordinary open PR failures do not file in the HIGH-only milestone. |
-| `pull_request: closed` with `merged == true` | Stable branch; infrastructure PR lifecycle | A merge is an evidence and lifecycle event, not a failure by itself. Link the PR to its final Azure validation. If that final validation failed and the target is allowlisted as stable, create a HIGH candidate. A successful PR build creates no incident. Compare tested and landed trees when claiming exact landed-content validation. |
+| `pull_request: closed` with `merged == true` | Stable branch; infrastructure PR lifecycle | A merge is an evidence and lifecycle event, not a failure by itself. Link the PR to its final Azure validation. If that final validation failed and the target is allowlisted as stable, create a HIGH candidate. A successful PR build creates no incident. The current collector does not compare tested and landed trees, so it cannot claim exact landed-content validation. |
 | Daily routine | Stable branch; planned developer PR | Reconcile missed stable-branch check-suite events and poll only branches verified to have direct public branch CI. Detect a branch head for which Azure created no build record after two daily polls. The planned LOW extension will use this same run to select at most three newest unprocessed, completed, non-draft failures from distinct PRs and apply the independent-recurrence policy before AI may file anything. |
-| Manual dispatch with `build_id` | Any category | Accept any completed registered public build for investigation. Derive category and priority from trusted metadata; the caller cannot promote a build. Manual runs may intentionally bypass automatic processing state for repeatable evaluation. |
+| Manual dispatch with `build_id` | Evaluation only | Accept any completed registered public build for repeatable investigation and bypass automatic processing state. The current manual path does not assign a production monitoring category or priority and therefore cannot promote a build to HIGH. |
 | Fork-only evaluation push | Test harness only | Disposable validation mechanism. It is not a production monitoring category or production trigger policy. |
 
 ## Audit Processing and Promotion
@@ -211,7 +216,7 @@ does not retroactively assign production priority.
 | Stable release build break | [Build 1522972](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1522972) | On `release/8.0.4xx`, `SignToolTask` failed with `MSB4018` because `sn.exe` produced an exec-format error on Linux and macOS. | Direct stable-branch Azure build; schedule/manual evaluation. This is representative of HIGH stable-branch monitoring. |
 | Multiple named tests | [Build 1525292](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525292) | Four named tests failed; two package tests shared an HTTP 503 mechanism and required mechanism-aware grouping. | Helix work-item APIs and TRX parsing on a direct `main` build. |
 | Helix hang or host crash | [Build 1524763](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1524763), [PR #55431](https://github.com/dotnet/sdk/pull/55431) | `BrowserDiagnostics` remained active for 50 minutes, the watchdog captured hang dumps, 83 streamed results contained no failed assertion, and the test host exited 137/work-item exit 7. A potential issue should describe the proximate watchdog termination separately from the still-unknown underlying hang. | Azure check suite identified the PR build; the deterministic collector recovered Helix console, TRX totals, exit codes, and dump links; AI produced the bounded RCA. Under the planned developer-PR policy this would require independent recurrence before a KBE could be filed. |
-| Pipeline not triggered | Synthetic heartbeat case | A registered direct-CI branch head remained without any Azure build record across two daily polls. The head must first be at least 90 minutes old, so daily scheduling makes the practical detection latency approximately 24–48 hours. Invalid YAML with a recorded Azure build is not this category. | Daily GitHub-to-Azure heartbeat only; no completion event can exist when no Azure run exists. |
+| Pipeline not triggered | Synthetic heartbeat case | A registered direct-CI branch head remained without any Azure build record across two consecutive daily routines. The 90-minute threshold is only the minimum head age for recording each miss; daily scheduling makes ordinary detection latency approximately 24–48 hours. Invalid YAML with a recorded Azure build is not this category. | Daily GitHub-to-Azure heartbeat only; no completion event can exist when no Azure run exists. |
 | Internal or official CI | `dnceng/internal`, including definition `286` | Not scanned. Internal evidence may contain credentials or require authentication and is outside the public monitor registry. | None. |
 
 ## Scope Boundaries
@@ -227,4 +232,5 @@ does not retroactively assign production priority.
   separate enrollment decisions.
 - Developer PR LOW support requires independent recurrence data and bounded
   daily sampling before it can be enabled.
-- Manual evaluation does not change trusted monitoring category or priority.
+- Manual evaluation bypasses automatic processing state but currently assigns
+  no production monitoring category or priority.

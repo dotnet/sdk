@@ -8,7 +8,7 @@ export function createHeartbeatObservation(pipeline, branch, head, builds, now =
   if (!Number.isFinite(committedAt) || now - committedAt < PIPELINE_HEARTBEAT_AGE_MS) return null;
   const covered = builds.some(build => build.sourceVersion === head.sha || Date.parse(build.queueTime) >= committedAt);
   if (covered) return null;
-  const mechanism = `No ${pipeline.definitionId} build was queued for branch head ${head.sha} within 90 minutes.`;
+  const mechanism = `No ${pipeline.definitionId} build was queued for branch head ${head.sha}; the head was at least 90 minutes old when checked.`;
   return {
     kind: "pipeline-heartbeat",
     category: "pipeline-not-triggered",
@@ -57,9 +57,10 @@ export function getTimelineFailuresFromRecords(records = []) {
   return parseTimelineFailures(records, parseHelixWorkItemReferences);
 }
 
-export function applyKbeRecurrence(observations, relatedFailureSummaries) {
+export function applyKbeRecurrence(observations, relatedFailureSummaries, currentBuild = null) {
   const relatedTests = relatedFailureSummaries.flatMap(summary =>
-    (summary.observations ?? []).filter(observation => observation.kind === "test")
+    (summary.build?.commit === currentBuild?.commit ? [] : summary.observations ?? [])
+      .filter(observation => observation.kind === "test")
       .map(observation => ({ observation, build: summary.build })));
   return observations.map(observation => {
     if (observation.kind !== "test" || !observation.kbe) return observation;

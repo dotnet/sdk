@@ -444,21 +444,21 @@ test("applyKbeRecurrence requires the same test and mechanism", () => {
     kbe: { eligible: true }
   };
   const related = [{
-    build: { id: 41 },
+    build: { id: 41, commit: "related-commit" },
     observations: [
       { kind: "test", component: "Sdk.Tests.Flaky", mechanismFingerprint: "test-mechanism|shared|timeout" },
       { kind: "test", component: "Sdk.Tests.Other", mechanismFingerprint: "test-mechanism|shared|timeout" }
     ]
   }];
 
-  const result = applyKbeRecurrence([current], related)[0];
+  const result = applyKbeRecurrence([current], related, { id: 42, commit: "current-commit" })[0];
   assert.equal(result.kbe.recurring, true);
-  assert.deepEqual(result.kbe.matchingBuilds, [{ id: 41 }]);
+  assert.deepEqual(result.kbe.matchingBuilds, [{ id: 41, commit: "related-commit" }]);
 
   const different = applyKbeRecurrence([current], [{
     build: { id: 40 },
     observations: [{ kind: "test", component: "Sdk.Tests.Flaky", mechanismFingerprint: "different" }]
-  }])[0];
+  }], { id: 42, commit: "current-commit" })[0];
   assert.equal(different.kbe.recurring, false);
 });
 
@@ -497,4 +497,18 @@ test("issue candidates contain only actionable observations from the selected bu
 
   assert.deepEqual(dossier.failures[0].issueCandidates.map(candidate => candidate.mechanism), ["Current YAML failure"]);
   assert.match(dossier.failures[0].relatedFailureSummaries[0].timelineFailures[0].issues[0], /related failure/);
+});
+
+test("applyKbeRecurrence ignores retries of the current commit", () => {
+  const current = {
+    kind: "test", component: "Sdk.Tests.Flaky", mechanismFingerprint: "test-mechanism|shared|timeout",
+    kbe: { eligible: true, validation: { valid: true } }
+  };
+  const result = applyKbeRecurrence([current], [{
+    build: { id: 41, commit: "same-commit" },
+    observations: [{ kind: "test", component: current.component, mechanismFingerprint: current.mechanismFingerprint }]
+  }], { id: 42, commit: "same-commit" });
+
+  assert.equal(result[0].kbe.recurring, false);
+  assert.deepEqual(result[0].kbe.matchingBuilds, []);
 });
