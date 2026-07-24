@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  classifyTaskFailure,
+  classifyWorkItem,
+  createFailureSignature,
   normalizeBuild,
   parseArguments,
+  parseHelixWorkItemReferences,
   sanitizeText,
   selectUnprocessedFailures
 } from "./collect-ci-evidence.mjs";
@@ -68,4 +72,39 @@ test("subsequent polls select only unseen failures", () => {
 
   assert.equal(selected.bootstrap, false);
   assert.deepEqual(selected.failures.map(build => build.id), [4]);
+});
+
+test("parseHelixWorkItemReferences extracts SDK timeline warnings", () => {
+  const references = parseHelixWorkItemReferences([
+    "Work item 'dotnet.Tests.dll.16' in job 'Windows x64 - windows.amd64.open (851425f3-3af7-4195-adf3-3851bbbcf57f)' failed (Finished, exit code 2).",
+    "Bash exited with code '1'."
+  ]);
+
+  assert.deepEqual(references, [{
+    workItem: "dotnet.Tests.dll.16",
+    queue: "Windows x64 - windows.amd64.open",
+    jobId: "851425f3-3af7-4195-adf3-3851bbbcf57f",
+    exitCode: 2
+  }]);
+});
+
+test("classifyWorkItem distinguishes tests, timeout, crash, and infrastructure", () => {
+  assert.equal(classifyWorkItem(2, "", [{ test: "Example" }]), "test-failure");
+  assert.equal(classifyWorkItem(143, "WORKLOAD TIMED OUT"), "timeout");
+  assert.equal(classifyWorkItem(139, "Segmentation fault (core dumped)"), "crash");
+  assert.equal(classifyWorkItem(81, "DEVICE_NOT_FOUND"), "infrastructure");
+  assert.equal(classifyWorkItem(80, "Test run completed\nAPP_CRASH"), "post-test-harness-failure");
+});
+
+test("classifyTaskFailure identifies roots and artifact cascades", () => {
+  assert.equal(classifyTaskFailure("Download Previous Build", ["Artifact not found"]), "cascade");
+  assert.equal(classifyTaskFailure("Initialize containers", []), "setup");
+  assert.equal(classifyTaskFailure("Build", ["error NETSDK1005"]), "build");
+  assert.equal(classifyTaskFailure("Validate pipeline", ["Unexpected value 'jobs'"]), "pipeline-configuration");
+});
+
+test("createFailureSignature removes volatile numeric values", () => {
+  assert.equal(
+    createFailureSignature("test", "ItCanUpdatePackages", "HTTP 503 on port 443"),
+    "test|itcanupdatepackages|http-<n>-on-port-<n>");
 });

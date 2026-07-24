@@ -9,6 +9,67 @@ const MAX_FAILURES = 10;
 const MAX_LOG_CHARACTERS = 4_000;
 const MAX_PROCESSED_BUILD_IDS = 100;
 
+export function parseHelixWorkItemReferences(messages) {
+  const pattern = /Work item '([^']+)' in job '(.+) \(([0-9a-f-]{36})\)' failed \([^,]+, exit code (-?\d+)\)\./i;
+  return messages.flatMap(message => {
+    const match = `${message}`.match(pattern);
+    return match ? [{
+      workItem: match[1],
+      queue: match[2],
+      jobId: match[3],
+      exitCode: Number.parseInt(match[4], 10)
+    }] : [];
+  });
+}
+
+export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
+  if (testFailures.length > 0) return "test-failure";
+  const text = `${consoleText ?? ""}`;
+  if (/test run completed|detected test end tag/i.test(text)
+      && /app_crash|timed_out|exit(?:ed)? with (?:80|143)/i.test(text)) {
+    return "post-test-harness-failure";
+  }
+  if (/workload timed out|run timed out|timed_out|timeout|timed out/i.test(text)
+      || exitCode === 130 || exitCode === 143) {
+    return "timeout";
+  }
+  if (/segmentation fault|stack overflow|core dump|assert failed|app_crash|crash dump/i.test(text)
+      || [133, 134, 139].includes(exitCode)) {
+    return "crash";
+  }
+  if (/device_not_found|infrastructure error|agent connection|machine is not available/i.test(text)
+      || [-4, 71, 81].includes(exitCode)) {
+    return "infrastructure";
+  }
+  return "work-item-failure";
+}
+
+export function classifyTaskFailure(name, issues = []) {
+  const text = `${name}\n${issues.join("\n")}`;
+  if (/artifact (?:was )?not found|download previous build|missing artifact/i.test(text)) return "cascade";
+  if (/yaml|pipeline validation|unexpected value|mapping was not expected|template expression/i.test(text)) return "pipeline-configuration";
+  if (/monitor helix jobs|send to helix|testbuild tests/i.test(text)) return "helix";
+  if (/checkout|initialize container|install|acquire|setup/i.test(text)) return "setup";
+  if (/restore|nuget|feed/i.test(text)) return "restore";
+  if (/\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b|\bbuild\b|compile/i.test(text)) return "build";
+  if (/test/i.test(text)) return "test";
+  return "pipeline-task";
+}
+
+export function normalizeSignaturePart(value) {
+  return sanitizeText(value)
+    .toLowerCase()
+    .replace(/https?:\/\/[^\s]+/g, "<url>")
+    .replace(/\b\d+\b/g, "<n>")
+    .replace(/[^a-z0-9<>._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 180);
+}
+
+export function createFailureSignature(category, component, mechanism) {
+  return [category, component, mechanism].map(normalizeSignaturePart).join("|");
+}
+
 export function parseArguments(argumentsList) {
   const options = {};
   for (let index = 0; index < argumentsList.length; index += 2) {
