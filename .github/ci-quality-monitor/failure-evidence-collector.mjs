@@ -1,0 +1,89 @@
+import { createPipelineObservation, createTaskObservations } from "./azure/observations.mjs";
+import { MAX_RELATED_BUILDS, MAX_RELATED_HELIX_REFERENCES, MAX_TASK_LOGS } from "./constants.mjs";
+import { isFailedBuild, normalizeBuild, sanitizeText } from "./evidence-utils.mjs";
+import { applyKbeRecurrence, getTimelineFailuresFromRecords } from "./collector-policy.mjs";
+
+export class FailureEvidenceCollector {
+  constructor(getAzureClient, helixEvidenceClient) {
+    this.getAzureClient = getAzureClient;
+    this.helixEvidence = helixEvidenceClient;
+  }
+
+  async collectRelatedFailures(pipeline, buildId, history) {
+    const related = [];
+    const failedBuilds = history
+      .filter(build => build.id !== buildId && isFailedBuild(build))
+      .slice(0, MAX_RELATED_BUILDS);
+    for (const build of failedBuilds) {
+      try {
+        const timeline = await this.getAzureClient(pipeline).getTimeline(build.id);
+        const timelineFailures = getTimelineFailuresFromRecords(timeline.records);
+        related.push({
+          build: normalizeBuild(build),
+          timelineFailures,
+          observations: await this.helixEvidence.collectObservations(timelineFailures, MAX_RELATED_HELIX_REFERENCES)
+        });
+      } catch (error) {
+        related.push({ build: normalizeBuild(build), unavailable: sanitizeText(error.message) });
+      }
+    }
+    return related;
+  }
+
+  async collect(pipeline, build, history, candidate = {}) {
+    const azure = this.getAzureClient(pipeline);
+    const detailedBuild = build.validationResults ? build : await azure.getBuild(build.id);
+    const timeline = await azure.getTimeline(build.id);
+    const timelineFailures = getTimelineFailuresFromRecords(timeline.records);
+    const pipelineObservation = createPipelineObservation(detailedBuild, timeline.records ?? []);
+    const helixObservations = await this.helixEvidence.collectObservations(timelineFailures);
+    const relatedFailureSummaries = await this.collectRelatedFailures(pipeline, build.id, history);
+    const logFailures = await this.collectTaskLogs(azure, build.id, timelineFailures);
+    const taskObservations = createTaskObservations(
+      timelineFailures,
+      new Map(logFailures.filter(failure => failure.text).map(failure => [failure.logId, failure.text])));
+    return {
+      pipeline,
+      build: normalizeBuild(build),
+      monitoringCategory: candidate.monitoringCategory ?? null,
+      priority: candidate.priority ?? null,
+      auditContext: candidate.auditContext ?? null,
+      mergedPullRequest: candidate.mergedPullRequest ?? null,
+      recentBuilds: history.map(normalizeBuild),
+      observations: applyKbeRecurrence(
+        [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
+        relatedFailureSummaries),
+      timelineFailures,
+      relatedFailureSummaries,
+      testFailures: await this.collectAzureTestFailures(azure, build.id),
+      logFailures
+    };
+  }
+
+  async collectAzureTestFailures(azure, buildId) {
+    try {
+      return await azure.getTestFailures(buildId);
+    } catch (error) {
+      return [{ unavailable: sanitizeText(error.message) }];
+    }
+  }
+
+  async collectTaskLogs(azure, buildId, timelineFailures) {
+    const logs = [];
+    const failedTasks = [...new Map(
+      timelineFailures.filter(candidate => candidate.type === "Task" && candidate.logId)
+        .map(candidate => [candidate.logId, candidate])).values()].slice(0, MAX_TASK_LOGS);
+    for (const failure of failedTasks) {
+      try {
+        logs.push({
+          name: failure.name,
+          logId: failure.logId,
+          text: await azure.getFailureLog(buildId, failure.logId, failure.logUrl)
+        });
+      } catch (error) {
+        logs.push({ name: failure.name, unavailable: sanitizeText(error.message) });
+      }
+    }
+    return logs;
+  }
+}

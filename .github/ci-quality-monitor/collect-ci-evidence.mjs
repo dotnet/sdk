@@ -17,12 +17,14 @@ export {
   createTaskObservations
 } from "./azure/observations.mjs";
 export {
-  applyKbeRecurrence,
   collectEvidence,
-  createHeartbeatObservation,
-  EvidenceCollector,
-  getTimelineFailuresFromRecords
+  CiEvidenceCollector
 } from "./collector.mjs";
+export {
+  applyKbeRecurrence,
+  createHeartbeatObservation,
+  getTimelineFailuresFromRecords
+} from "./collector-policy.mjs";
 export {
   classifyWorkItem,
   parseHelixWorkItemReferences,

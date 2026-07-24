@@ -4,6 +4,7 @@ export function textLines(value) {
   return `${value ?? ""}`.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
 }
 
+// Stabilizes and bounds untrusted evidence; it is not an HTML or shell sanitizer.
 export function sanitizeText(value, maxCharacters = MAX_LOG_CHARACTERS) {
   return `${value ?? ""}`
     .replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "<guid>")

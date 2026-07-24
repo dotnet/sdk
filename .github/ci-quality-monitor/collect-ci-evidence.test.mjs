@@ -11,7 +11,7 @@ import {
   createFailureSignature,
   createHeartbeatObservation,
   collectEvidence,
-  EvidenceCollector,
+  CiEvidenceCollector,
   getTimelineFailuresFromRecords,
   normalizeBuild,
   parseArguments,
@@ -24,12 +24,12 @@ import {
   selectUnprocessedFailures
 } from "./collect-ci-evidence.mjs";
 
-test("EvidenceCollector owns one Azure client per registered pipeline", () => {
+test("CiEvidenceCollector owns one Azure client per registered pipeline", () => {
   const pipeline = {
     organization: "dnceng-public", project: "public", definitionId: 101,
     repository: "dotnet/sdk", branches: ["refs/heads/main"]
   };
-  const collector = new EvidenceCollector(
+  const collector = new CiEvidenceCollector(
     { pipelines: [pipeline] },
     { schemaVersion: 1, pipelines: {} },
     async () => { throw new Error("not called"); });

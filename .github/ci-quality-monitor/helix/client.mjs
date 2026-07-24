@@ -50,7 +50,7 @@ function createTestObservation(reference, test, testSummary) {
   };
 }
 
-export class HelixClient {
+export class HelixEvidenceClient {
   constructor(fetchImplementation = fetch) {
     this.http = new HttpClient(fetchImplementation);
   }
