@@ -55,6 +55,8 @@ stages:
   jobs:
   ############### HELIX JOB MONITOR ###############
   - template: /eng/common/core-templates/job/helix-job-monitor.yml
+    parameters:
+      useFullyQualifiedTestName: true
 
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
