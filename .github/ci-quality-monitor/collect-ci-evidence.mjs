@@ -10,6 +10,7 @@ const MAX_FAILURES = 10;
 const MAX_LOG_CHARACTERS = 4_000;
 const MAX_PROCESSED_BUILD_IDS = 100;
 const MAX_TEST_FAILURES = 20;
+const MAX_TIMELINE_FAILURES = 100;
 const MODULE_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 
 export function parseHelixWorkItemReferences(messages) {
@@ -174,13 +175,28 @@ function isRegisteredBuild(build, pipeline) {
     && build.reason?.toLowerCase() !== "pullrequest";
 }
 
-async function getTimelineFailures(pipeline, buildId, fetchImplementation = fetch) {
+async function getTimeline(pipeline, buildId, fetchImplementation = fetch) {
   const url = `${buildApiBase(pipeline)}/build/builds/${buildId}/timeline?api-version=${API_VERSION}`;
-  const timeline = await fetchJson(url, fetchImplementation);
-  return (timeline.records ?? [])
+  return fetchJson(url, fetchImplementation);
+}
+
+function timelinePath(record, recordsById) {
+  const names = [record.name];
+  let parentId = record.parentId;
+  while (parentId && recordsById.has(parentId)) {
+    const parent = recordsById.get(parentId);
+    names.unshift(parent.name);
+    parentId = parent.parentId;
+  }
+  return names;
+}
+
+function getTimelineFailuresFromRecords(records = []) {
+  const recordsById = new Map(records.map(record => [record.id, record]));
+  return records
     .filter(record => record.result === "failed" || record.result === "partiallySucceeded")
     .filter(record => record.type === "Job" || record.type === "Task")
-    .slice(0, MAX_FAILURES)
+    .slice(0, MAX_TIMELINE_FAILURES)
     .map(record => {
       const messages = (record.issues ?? []).map(issue => issue.message);
       return {
@@ -188,13 +204,21 @@ async function getTimelineFailures(pipeline, buildId, fetchImplementation = fetc
         name: record.name,
         result: record.result,
         logId: record.log?.id,
+        path: timelinePath(record, recordsById),
+        startedAt: record.startTime,
+        finishedAt: record.finishTime,
         helixReferences: parseHelixWorkItemReferences(messages),
         issues: messages.map(sanitizeText)
       };
     });
 }
 
-function createTaskObservations(timelineFailures) {
+async function getTimelineFailures(pipeline, buildId, fetchImplementation = fetch) {
+  const timeline = await getTimeline(pipeline, buildId, fetchImplementation);
+  return getTimelineFailuresFromRecords(timeline.records);
+}
+
+export function createTaskObservations(timelineFailures) {
   return timelineFailures
     .filter(failure => failure.type === "Task")
     .map(failure => {
@@ -207,10 +231,29 @@ function createTaskObservations(timelineFailures) {
         mechanism,
         signature: createFailureSignature(category, failure.name, mechanism),
         actionable: category !== "cascade" && category !== "helix",
+        path: failure.path,
         issues: failure.issues,
         logId: failure.logId
       };
     });
+}
+
+export function createPipelineObservation(build, timelineRecords = []) {
+  const validations = (build.validationResults ?? [])
+    .filter(validation => `${validation.result ?? ""}`.toLowerCase() !== "ok")
+    .map(validation => sanitizeText(validation.message ?? validation.result));
+  if (validations.length === 0 && timelineRecords.length > 0) return null;
+  const category = validations.length > 0 ? "pipeline-configuration" : "pipeline-startup";
+  const mechanism = validations.join("\n") || "Pipeline failed without creating stages, jobs, or tasks.";
+  return {
+    kind: "pipeline",
+    category,
+    component: build.definition?.name ?? "Azure DevOps pipeline",
+    mechanism,
+    signature: createFailureSignature(category, build.definition?.name ?? "pipeline", mechanism),
+    actionable: validations.length > 0,
+    validationResults: validations
+  };
 }
 
 function getHelixReferences(timelineFailures) {
@@ -379,7 +422,10 @@ async function getRelatedFailureSummaries(pipeline, buildId, history, fetchImple
 }
 
 async function collectFailureEvidence(pipeline, build, history, fetchImplementation = fetch) {
-  const timelineFailures = await getTimelineFailures(pipeline, build.id, fetchImplementation);
+  const detailedBuild = build.validationResults ? build : await getBuild(pipeline, build.id, fetchImplementation);
+  const timeline = await getTimeline(pipeline, build.id, fetchImplementation);
+  const timelineFailures = getTimelineFailuresFromRecords(timeline.records);
+  const pipelineObservation = createPipelineObservation(detailedBuild, timeline.records ?? []);
   const taskObservations = createTaskObservations(timelineFailures);
   const helixObservations = await collectHelixObservations(timelineFailures, fetchImplementation);
   const relatedFailureSummaries = await getRelatedFailureSummaries(
@@ -405,7 +451,7 @@ async function collectFailureEvidence(pipeline, build, history, fetchImplementat
     pipeline,
     build: normalizeBuild(build),
     recentBuilds: history.map(normalizeBuild),
-    observations: [...taskObservations, ...helixObservations],
+    observations: [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
     timelineFailures,
     relatedFailureSummaries,
     testFailures,

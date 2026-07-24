@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  createPipelineObservation,
+  createTaskObservations,
   classifyTaskFailure,
   classifyWorkItem,
   createFailureSignature,
@@ -128,4 +130,31 @@ test("parseTestResultXml returns independent named failures", () => {
     errorMessage: "Expected zero but found one.",
     stackTrace: "at Sdk.Tests.Example.Fails()"
   }]);
+});
+
+test("createTaskObservations preserves roots and suppresses cascades", () => {
+  const observations = createTaskObservations([
+    { type: "Task", name: "Build", issues: ["error NETSDK1005"], path: ["Build", "Windows", "Build"], logId: 1 },
+    { type: "Task", name: "Download Previous Build", issues: ["Artifact not found"], path: ["Validate", "Download Previous Build"], logId: 2 }
+  ]);
+
+  assert.equal(observations[0].category, "build");
+  assert.equal(observations[0].actionable, true);
+  assert.deepEqual(observations[0].path, ["Build", "Windows", "Build"]);
+  assert.equal(observations[1].category, "cascade");
+  assert.equal(observations[1].actionable, false);
+});
+
+test("createPipelineObservation represents YAML rejection and empty execution", () => {
+  const rejected = createPipelineObservation({
+    definition: { name: "sdk-ci" },
+    validationResults: [{ result: "error", message: "Unexpected value 'jobs'" }]
+  }, []);
+  const empty = createPipelineObservation({ definition: { name: "sdk-ci" } }, []);
+
+  assert.equal(rejected.category, "pipeline-configuration");
+  assert.equal(rejected.actionable, true);
+  assert.equal(empty.category, "pipeline-startup");
+  assert.equal(empty.actionable, false);
+  assert.equal(createPipelineObservation({}, [{ id: "stage" }]), null);
 });
