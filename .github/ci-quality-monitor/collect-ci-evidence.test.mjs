@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   applyKbeRecurrence,
+  buildConsumptionKey,
   createPipelineObservation,
   createTaskObservations,
   classifyTaskFailure,
@@ -15,6 +16,7 @@ import {
   parseTestResultXml,
   sanitizeText,
   sharedTestMechanism,
+  shouldRunAgent,
   selectUnprocessedFailures
 } from "./collect-ci-evidence.mjs";
 
@@ -68,16 +70,46 @@ test("bootstrap selects at most one historical failure", () => {
 
 test("subsequent polls select only unseen failures", () => {
   const history = [
-    { id: 4, result: "failed" },
-    { id: 3, result: "succeeded" },
-    { id: 2, result: "failed" }
+    { id: 4, result: "failed", finishTime: "2026-07-24T14:00:00Z" },
+    { id: 3, result: "succeeded", finishTime: "2026-07-24T13:00:00Z" },
+    { id: 2, result: "failed", finishTime: "2026-07-24T12:00:00Z" }
   ];
-  const state = { pipelines: { "pipeline:main": { processedBuildIds: [3, 2] } } };
+  const state = { pipelines: { "pipeline:main": { consumedBuildKeys: history.slice(1).map(buildConsumptionKey) } } };
 
   const selected = selectUnprocessedFailures(state, "pipeline:main", history);
 
   assert.equal(selected.bootstrap, false);
   assert.deepEqual(selected.failures.map(build => build.id), [4]);
+});
+
+test("same build ID is reconsidered when its completed attempt changes", () => {
+  const original = { id: 4, result: "failed", finishTime: "2026-07-24T14:00:00Z" };
+  const retried = { id: 4, result: "failed", finishTime: "2026-07-24T15:00:00Z" };
+  const state = { pipelines: { "pipeline:main": { consumedBuildKeys: [buildConsumptionKey(original)] } } };
+
+  const selected = selectUnprocessedFailures(state, "pipeline:main", [retried]);
+
+  assert.deepEqual(selected.failures, [retried]);
+});
+
+test("legacy processed build IDs remain consumable during migration", () => {
+  const build = { id: 4, result: "failed", finishTime: "2026-07-24T14:00:00Z" };
+  const state = { pipelines: { "pipeline:main": { processedBuildIds: [4] } } };
+
+  const selected = selectUnprocessedFailures(state, "pipeline:main", [build]);
+
+  assert.deepEqual(selected.failures, []);
+});
+
+test("agent gating skips bootstrap and previously consumed windows", () => {
+  assert.equal(shouldRunAgent({ bootstrap: true, pipelineHealth: [], failures: [{ build: { id: 4 } }] }), false);
+  assert.equal(shouldRunAgent({ bootstrap: false, pipelineHealth: [], failures: [] }), false);
+  assert.equal(shouldRunAgent({ bootstrap: false, pipelineHealth: [], failures: [{ build: { id: 4 } }] }), true);
+  assert.equal(shouldRunAgent({
+    bootstrap: false,
+    pipelineHealth: [{ actionable: false }, { actionable: true }],
+    failures: []
+  }), true);
 });
 
 test("parseHelixWorkItemReferences extracts SDK timeline warnings", () => {

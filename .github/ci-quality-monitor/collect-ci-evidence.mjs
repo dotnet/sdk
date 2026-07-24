@@ -118,6 +118,10 @@ export function normalizeBuild(build) {
   };
 }
 
+export function buildConsumptionKey(build) {
+  return `${build.id}:${build.finishTime ?? ""}:${build.result ?? ""}`;
+}
+
 function buildApiBase(pipeline) {
   const organization = encodeURIComponent(pipeline.organization);
   const project = encodeURIComponent(pipeline.project);
@@ -599,16 +603,21 @@ function stateKey(pipeline, branch) {
 }
 
 function updateState(state, key, history) {
-  const previousIds = state.pipelines[key]?.processedBuildIds ?? [];
-  const processedBuildIds = [...new Set([...history.map(build => build.id), ...previousIds])]
+  const previous = state.pipelines[key] ?? {};
+  const previousKeys = previous.consumedBuildKeys ?? [];
+  const consumedBuildKeys = [...new Set([...history.map(buildConsumptionKey), ...previousKeys])]
     .slice(0, MAX_PROCESSED_BUILD_IDS);
-  state.pipelines[key] = { ...state.pipelines[key], processedBuildIds, lastCheckedAt: new Date().toISOString() };
+  const { processedBuildIds: _legacyProcessedBuildIds, ...existing } = previous;
+  state.pipelines[key] = { ...existing, consumedBuildKeys, lastCheckedAt: new Date().toISOString() };
 }
 
 export function selectUnprocessedFailures(state, key, history) {
   const previous = state.pipelines[key];
-  const processedIds = new Set(previous?.processedBuildIds ?? []);
-  const unprocessed = previous ? history.filter(build => !processedIds.has(build.id)) : history;
+  const consumedKeys = new Set(previous?.consumedBuildKeys ?? []);
+  const legacyProcessedIds = new Set(previous?.processedBuildIds ?? []);
+  const unprocessed = previous ? history.filter(build => consumedKeys.size > 0
+    ? !consumedKeys.has(buildConsumptionKey(build))
+    : !legacyProcessedIds.has(build.id)) : history;
   const failures = unprocessed.filter(build => build.result === "failed" || build.result === "partiallySucceeded");
   return { bootstrap: !previous, failures: previous ? failures : failures.slice(0, 1) };
 }
@@ -693,12 +702,18 @@ async function readState(statePath) {
   }
 }
 
+export function shouldRunAgent(dossier) {
+  if (dossier.bootstrap) return false;
+  const actionableHealth = dossier.pipelineHealth.filter(observation => observation.actionable).length;
+  return dossier.failures.length + actionableHealth > 0;
+}
+
 async function writeGitHubOutputs(outputPath, dossier) {
   if (!outputPath) return;
   const delimiter = `CI_QUALITY_${Date.now()}`;
   const compactDossier = JSON.stringify(dossier);
   const actionableHealth = dossier.pipelineHealth.filter(observation => observation.actionable).length;
-  await appendFile(outputPath, `should_run=${dossier.failures.length + actionableHealth > 0}\n`);
+  await appendFile(outputPath, `should_run=${shouldRunAgent(dossier)}\n`);
   await appendFile(outputPath, `failure_count=${dossier.failures.length + actionableHealth}\n`);
   await appendFile(outputPath, `dossier<<${delimiter}\n${compactDossier}\n${delimiter}\n`);
 }
