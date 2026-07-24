@@ -230,7 +230,8 @@ function isRegisteredBuild(build, pipeline) {
 
 async function getTimeline(pipeline, buildId, fetchImplementation = fetch) {
   const url = `${buildApiBase(pipeline)}/build/builds/${buildId}/timeline?api-version=${API_VERSION}`;
-  return fetchJson(url, fetchImplementation);
+  const response = await fetchResponse(url, fetchImplementation);
+  return response.status === 204 ? { records: [] } : response.json();
 }
 
 function timelinePath(record, recordsById) {
@@ -257,6 +258,7 @@ function getTimelineFailuresFromRecords(records = []) {
         name: record.name,
         result: record.result,
         logId: record.log?.id,
+        logUrl: record.log?.url,
         path: timelinePath(record, recordsById),
         startedAt: record.startTime,
         finishedAt: record.finishTime,
@@ -271,12 +273,21 @@ async function getTimelineFailures(pipeline, buildId, fetchImplementation = fetc
   return getTimelineFailuresFromRecords(timeline.records);
 }
 
-export function createTaskObservations(timelineFailures) {
+function summarizeTaskLog(logText) {
+  const lines = `${logText ?? ""}`.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const diagnostics = lines.filter(line => /\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b|response status|unable to|service unavailable|timed? ?out|connection refused|exec format error/i.test(line));
+  const fallback = lines.filter(line => /\b(?:error|fatal|exception|failed)\b/i.test(line) && !/\bat\s+\S+\(/i.test(line));
+  return [...new Set((diagnostics.length > 0 ? diagnostics : fallback.length > 0 ? fallback : lines).slice(-8))];
+}
+
+export function createTaskObservations(timelineFailures, logsById = new Map()) {
   return timelineFailures
     .filter(failure => failure.type === "Task")
     .map(failure => {
-      const category = classifyTaskFailure(failure.name, failure.issues);
-      const mechanism = failure.issues.find(issue => !/^Bash exited with code/i.test(issue)) ?? failure.name;
+      const logExcerpt = summarizeTaskLog(logsById.get(failure.logId));
+      const evidence = [...failure.issues, ...logExcerpt];
+      const category = classifyTaskFailure(failure.name, evidence);
+      const mechanism = evidence.find(issue => !/^Bash exited with code/i.test(issue)) ?? failure.name;
       return {
         kind: "pipeline-task",
         category,
@@ -286,7 +297,9 @@ export function createTaskObservations(timelineFailures) {
         actionable: category !== "cascade" && category !== "helix",
         path: failure.path,
         issues: failure.issues,
-        logId: failure.logId
+        logExcerpt,
+        logId: failure.logId,
+        logUrl: failure.logUrl
       };
     });
 }
@@ -442,11 +455,15 @@ async function collectHelixObservations(timelineFailures, fetchImplementation = 
   return observations;
 }
 
-async function getFailureLog(pipeline, buildId, logId, fetchImplementation = fetch) {
+async function getFailureLog(pipeline, buildId, logId, logUrl, fetchImplementation = fetch) {
   if (!logId) return null;
-  const url = `${buildApiBase(pipeline)}/build/builds/${buildId}/logs/${logId}?api-version=${API_VERSION}`;
-  const response = await fetchResponse(url, fetchImplementation);
-  return sanitizeText(await response.text());
+  const url = logUrl ?? `${buildApiBase(pipeline)}/build/builds/${buildId}/logs/${logId}?api-version=${API_VERSION}`;
+  const response = await fetchImplementation(url, {
+    headers: { Accept: "text/plain", "User-Agent": "dotnet-sdk-ci-quality-monitor" }
+  });
+  if (!response.ok) throw new Error(`GET ${url} returned ${response.status} ${response.statusText}.`);
+  const text = await response.text();
+  return sanitizeText(text.slice(-MAX_LOG_CHARACTERS));
 }
 
 async function getTestFailures(pipeline, buildId, fetchImplementation = fetch) {
@@ -519,7 +536,6 @@ async function collectFailureEvidence(pipeline, build, history, fetchImplementat
   const timeline = await getTimeline(pipeline, build.id, fetchImplementation);
   const timelineFailures = getTimelineFailuresFromRecords(timeline.records);
   const pipelineObservation = createPipelineObservation(detailedBuild, timeline.records ?? []);
-  const taskObservations = createTaskObservations(timelineFailures);
   const helixObservations = await collectHelixObservations(timelineFailures, fetchImplementation);
   const relatedFailureSummaries = await getRelatedFailureSummaries(
     pipeline,
@@ -527,13 +543,23 @@ async function collectFailureEvidence(pipeline, build, history, fetchImplementat
     history,
     fetchImplementation);
   const logFailures = [];
-  for (const failure of timelineFailures.filter(candidate => candidate.logId).slice(0, 3)) {
+  const failedTasks = [...new Map(
+    timelineFailures.filter(candidate => candidate.type === "Task" && candidate.logId)
+      .map(candidate => [candidate.logId, candidate])).values()].slice(0, 10);
+  for (const failure of failedTasks) {
     try {
-      logFailures.push({ name: failure.name, text: await getFailureLog(pipeline, build.id, failure.logId, fetchImplementation) });
+      logFailures.push({
+        name: failure.name,
+        logId: failure.logId,
+        text: await getFailureLog(pipeline, build.id, failure.logId, failure.logUrl, fetchImplementation)
+      });
     } catch (error) {
       logFailures.push({ name: failure.name, unavailable: sanitizeText(error.message) });
     }
   }
+  const taskObservations = createTaskObservations(
+    timelineFailures,
+    new Map(logFailures.filter(failure => failure.text).map(failure => [failure.logId, failure.text])));
   let testFailures = [];
   try {
     testFailures = await getTestFailures(pipeline, build.id, fetchImplementation);
@@ -558,12 +584,14 @@ async function selectManualBuild(pipelines, buildId, fetchImplementation = fetch
   for (const pipeline of pipelines) {
     try {
       const build = await getBuild(pipeline, buildId, fetchImplementation);
-      if (isRegisteredBuild(build, pipeline)) return { pipeline, build };
+      const matchesPipeline = build.definition?.id === pipeline.definitionId
+        && build.repository?.id?.toLowerCase() === pipeline.repository.toLowerCase();
+      if (matchesPipeline) return { pipeline, build };
     } catch (error) {
       if (!error.message.includes("returned 404")) throw error;
     }
   }
-  throw new Error(`Build ${buildId} is not a non-PR build in the pipeline registry.`);
+  throw new Error(`Build ${buildId} is not from a pipeline and repository in the registry.`);
 }
 
 function stateKey(pipeline, branch) {

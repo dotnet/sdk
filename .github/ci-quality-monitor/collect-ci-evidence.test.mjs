@@ -148,6 +148,16 @@ test("createTaskObservations preserves roots and suppresses cascades", () => {
   assert.equal(observations[1].actionable, false);
 });
 
+test("createTaskObservations classifies restore failures from task logs", () => {
+  const observations = createTaskObservations([{
+    type: "Task", name: "Build", issues: [], path: ["Build", "Linux", "Build"], logId: 28
+  }], new Map([[28, "error: Unable to load the service index for NuGet source.\nResponse status code does not indicate success: 503 (Service Unavailable)."]]));
+
+  assert.equal(observations[0].category, "restore");
+  assert.match(observations[0].mechanism, /NuGet source/);
+  assert.equal(observations[0].actionable, true);
+});
+
 test("createPipelineObservation represents YAML rejection and empty execution", () => {
   const rejected = createPipelineObservation({
     definition: { name: "sdk-ci" },
