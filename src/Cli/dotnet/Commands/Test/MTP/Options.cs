@@ -18,7 +18,7 @@ internal enum TestListFormat
     Json,
 }
 
-internal record TestOptions(bool IsHelp, bool IsDiscovery, TestListFormat ListTestsFormat);
+internal record TestOptions(bool IsHelp, bool IsDiscovery, TestListFormat ListTestsFormat, bool IsArtifactPostProcessing = false);
 
 internal record PathOptions(string? ProjectOrSolutionPath, string? SolutionPath, string? TestModules, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
 
