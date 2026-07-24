@@ -815,7 +815,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandPrereleaseOptionDescription">
         <source>Allows prerelease packages to be installed.</source>
-        <target state="translated">Разрешает установку пакетов предварительной версии.</target>
+        <target state="translated">Разрешает установку пакетов предварительного выпуска.</target>
         <note />
       </trans-unit>
       <trans-unit id="Command_AliasAdd_Description">
@@ -1450,7 +1450,7 @@ If command is specified without the argument, it lists all the template packages
       </trans-unit>
       <trans-unit id="PackageSearchPrereleaseDescription">
         <source>Include prerelease packages.</source>
-        <target state="translated">Включить предварительные версии пакетов.</target>
+        <target state="translated">Включить пакеты предварительного выпуска.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchSearchTermArgumentName">
