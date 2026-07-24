@@ -201,7 +201,12 @@ internal static class CommonOptions
         {
             Description = description,
             HelpName = CommandDefinitionStrings.ConfigurationArgumentName,
-            IsDynamic = true
+            IsDynamic = true,
+            DefaultValueFactory = _ =>
+            {
+                string? configuration = Environment.GetEnvironmentVariable("Configuration");
+                return string.IsNullOrWhiteSpace(configuration) ? null : configuration;
+            }
         }.ForwardAsSingle(o => $"--property:Configuration={o}");
 
     public static Option<string> CreateVersionSuffixOption() =>
@@ -380,4 +385,3 @@ internal static class CommonOptions
         Arity = ArgumentArity.Zero
     };
 }
-
