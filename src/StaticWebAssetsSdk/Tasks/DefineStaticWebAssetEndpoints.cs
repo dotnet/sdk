@@ -162,7 +162,7 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
 
         private readonly List<StaticWebAsset.StaticWebAssetResolvedRoute> _resolvedRoutes = new(2);
 
-        private void CreateAnAddEndpoints(
+        private void CreateAndAddEndpoints(
             StaticWebAsset asset,
             string length,
             string lastModified,
@@ -361,7 +361,7 @@ public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
                 }
             }
 
-            CreateAnAddEndpoints(asset, length, lastWriteTime, matchContext);
+            CreateAndAddEndpoints(asset, length, lastWriteTime, matchContext);
 
             return this;
         }
