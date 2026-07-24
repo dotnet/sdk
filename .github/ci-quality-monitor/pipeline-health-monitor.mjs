@@ -1,5 +1,5 @@
 import { createHeartbeatObservation, isRegisteredBuild, updateHeartbeatState } from "./collector-policy.mjs";
-import { sanitizeText } from "./evidence-utils.mjs";
+import { normalizeEvidenceText } from "./evidence-utils.mjs";
 import { getGitHubBranchHead } from "./github/client.mjs";
 
 export class PipelineHealthMonitor {
@@ -23,7 +23,7 @@ export class PipelineHealthMonitor {
         kind: "pipeline-heartbeat",
         category: "heartbeat-unavailable",
         component: `${pipeline.repository}:${branch}`,
-        mechanism: sanitizeText(error.message),
+        mechanism: normalizeEvidenceText(error.message),
         actionable: false
       });
     }

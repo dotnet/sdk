@@ -1,12 +1,12 @@
 import { MAX_CONSOLE_CHARACTERS, MAX_TEST_FAILURES } from "../constants.mjs";
-import { createFailureSignature, sanitizeText } from "../evidence-utils.mjs";
+import { createFailureFingerprint, normalizeEvidenceText } from "../evidence-utils.mjs";
 import { createTestKbeCandidate } from "../known-build-error.mjs";
 import { parseTestResultXml } from "../test-results.mjs";
 import { HttpClient } from "../http-client.mjs";
 import {
   classifyWorkItem,
-  sharedTestMechanism,
   summarizeHelixConsole,
+  summarizeSharedTestMechanism,
   summarizeTestMechanism
 } from "./parsing.mjs";
 
@@ -29,15 +29,15 @@ function selectArtifactLinks(files = []) {
 function createTestObservation(reference, test, testSummary) {
   const component = test.fullyQualifiedName || test.testName;
   const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
-  const sharedMechanism = sharedTestMechanism(test.errorMessage, test.outcome);
-  const signature = createFailureSignature("test", component, mechanism);
+  const sharedMechanism = summarizeSharedTestMechanism(test.errorMessage, test.outcome);
+  const fingerprint = createFailureFingerprint("test", component, mechanism);
   return {
     kind: "test",
     category: "test-failure",
     component,
     mechanism,
-    signature,
-    mechanismSignature: createFailureSignature("test-mechanism", "shared", sharedMechanism),
+    fingerprint,
+    mechanismFingerprint: createFailureFingerprint("test-mechanism", "shared", sharedMechanism),
     actionable: true,
     workItem: reference.workItem,
     jobId: reference.jobId,
@@ -45,8 +45,8 @@ function createTestObservation(reference, test, testSummary) {
     outcome: test.outcome,
     duration: test.duration,
     testSummary,
-    stackTrace: sanitizeText(test.stackTrace),
-    kbe: createTestKbeCandidate(test, signature)
+    stackTrace: normalizeEvidenceText(test.stackTrace),
+    kbe: createTestKbeCandidate(test, fingerprint)
   };
 }
 
@@ -55,9 +55,9 @@ export class HelixEvidenceClient {
     this.http = new HttpClient(fetchImplementation);
   }
 
-  async getText(url) {
+  async getConsoleEvidence(url) {
     const text = await (await this.http.response(url)).text();
-    return sanitizeText(text.slice(-MAX_CONSOLE_CHARACTERS), MAX_CONSOLE_CHARACTERS);
+    return normalizeEvidenceText(text.slice(-MAX_CONSOLE_CHARACTERS), MAX_CONSOLE_CHARACTERS);
   }
 
   async getTestFailures(workItem) {
@@ -68,21 +68,21 @@ export class HelixEvidenceClient {
     return { ...results, failures: results.failures.slice(0, MAX_TEST_FAILURES) };
   }
 
-  async collectObservation(reference) {
+  async collectWorkItemObservations(reference) {
     const url = helixWorkItemUrl(reference);
     const workItem = await this.http.json(url);
     let consoleText = "";
     let testResults = { summary: null, failures: [] };
     const unavailable = [];
     try {
-      consoleText = await this.getText(`${url}/console`);
+      consoleText = await this.getConsoleEvidence(`${url}/console`);
     } catch (error) {
-      unavailable.push(sanitizeText(error.message));
+      unavailable.push(normalizeEvidenceText(error.message));
     }
     try {
       testResults = await this.getTestFailures(workItem);
     } catch (error) {
-      unavailable.push(sanitizeText(error.message));
+      unavailable.push(normalizeEvidenceText(error.message));
     }
     if (testResults.failures.length > 0) {
       return testResults.failures.map(test => createTestObservation(reference, test, testResults.summary));
@@ -100,7 +100,7 @@ export class HelixEvidenceClient {
       category,
       component: reference.workItem,
       mechanism,
-      signature: createFailureSignature(category, reference.workItem, mechanism),
+      fingerprint: createFailureFingerprint(category, reference.workItem, mechanism),
       actionable: category !== "infrastructure",
       jobId: reference.jobId,
       queue: reference.queue,
@@ -120,14 +120,14 @@ export class HelixEvidenceClient {
     const observations = [];
     for (const reference of getHelixReferences(timelineFailures).slice(0, maxReferences)) {
       try {
-        observations.push(...await this.collectObservation(reference));
+        observations.push(...await this.collectWorkItemObservations(reference));
       } catch (error) {
         observations.push({
           kind: "helix-work-item",
           category: "work-item-failure",
           component: reference.workItem,
-          mechanism: sanitizeText(error.message),
-          signature: createFailureSignature("work-item-failure", reference.workItem, error.message),
+          mechanism: normalizeEvidenceText(error.message),
+          fingerprint: createFailureFingerprint("work-item-failure", reference.workItem, error.message),
           actionable: false,
           ...reference
         });

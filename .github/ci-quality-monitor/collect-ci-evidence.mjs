@@ -5,11 +5,11 @@ import { pathToFileURL } from "node:url";
 import { collectEvidence } from "./collector.mjs";
 
 export {
-  buildConsumptionKey,
-  createFailureSignature,
-  normalizeBuild,
-  normalizeSignaturePart,
-  sanitizeText
+  createBuildProcessingKey,
+  createBuildSummary,
+  createFailureFingerprint,
+  createFingerprintSegment,
+  normalizeEvidenceText
 } from "./evidence-utils.mjs";
 export {
   classifyTaskFailure,
@@ -28,8 +28,8 @@ export {
 export {
   classifyWorkItem,
   parseHelixWorkItemReferences,
-  sharedTestMechanism,
-  summarizeHelixConsole
+  summarizeHelixConsole,
+  summarizeSharedTestMechanism
 } from "./helix/parsing.mjs";
 export { selectUnprocessedFailures } from "./state.mjs";
 export { parseTestResultXml } from "./test-results.mjs";

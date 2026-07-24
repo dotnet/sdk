@@ -12,7 +12,7 @@ export interface Observation {
   category: string;
   component: string;
   mechanism: string;
-  signature?: string;
+  fingerprint?: string;
   actionable: boolean;
   [detail: string]: unknown;
 }

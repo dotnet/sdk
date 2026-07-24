@@ -3,23 +3,23 @@ import test from "node:test";
 
 import {
   applyKbeRecurrence,
-  buildConsumptionKey,
+  createBuildProcessingKey,
   createPipelineObservation,
   createTaskObservations,
   classifyTaskFailure,
   classifyWorkItem,
-  createFailureSignature,
+  createFailureFingerprint,
   createHeartbeatObservation,
   collectEvidence,
   CiEvidenceCollector,
   getTimelineFailuresFromRecords,
-  normalizeBuild,
+  createBuildSummary,
   parseArguments,
   parseHelixWorkItemReferences,
   parseTestResultXml,
-  sanitizeText,
+  normalizeEvidenceText,
   summarizeHelixConsole,
-  sharedTestMechanism,
+  summarizeSharedTestMechanism,
   shouldRunAgent,
   selectUnprocessedFailures
 } from "./collect-ci-evidence.mjs";
@@ -45,16 +45,16 @@ test("parseArguments requires registry and output", () => {
   assert.throws(() => parseArguments(["registry", "pipelines.json"]), /Invalid argument/);
 });
 
-test("sanitizeText removes volatile values and bounds output", () => {
+test("normalizeEvidenceText removes volatile values and bounds output", () => {
   const input = "2026-07-24T17:25:31.817Z job 123e4567-e89b-12d3-a456-426614174000 ";
-  const sanitized = sanitizeText(input + "x".repeat(5_000));
+  const normalizedEvidence = normalizeEvidenceText(input + "x".repeat(5_000));
 
-  assert.match(sanitized, /^<timestamp> job <guid>/);
-  assert.equal(sanitized.length, 4_000);
+  assert.match(normalizedEvidence, /^<timestamp> job <guid>/);
+  assert.equal(normalizedEvidence.length, 4_000);
 });
 
-test("normalizeBuild retains only evidence fields", () => {
-  const normalized = normalizeBuild({
+test("createBuildSummary retains only evidence fields", () => {
+  const summary = createBuildSummary({
     id: 42,
     buildNumber: "20260724.1",
     result: "failed",
@@ -67,9 +67,9 @@ test("normalizeBuild retains only evidence fields", () => {
     untrustedExtraField: "excluded"
   });
 
-  assert.equal(normalized.id, 42);
-  assert.equal(normalized.url, "https://example.test/build/42");
-  assert.equal("untrustedExtraField" in normalized, false);
+  assert.equal(summary.id, 42);
+  assert.equal(summary.url, "https://example.test/build/42");
+  assert.equal("untrustedExtraField" in summary, false);
 });
 
 test("bootstrap selects at most one historical failure", () => {
@@ -91,7 +91,7 @@ test("subsequent polls select only unseen failures", () => {
     { id: 3, result: "succeeded", finishTime: "2026-07-24T13:00:00Z" },
     { id: 2, result: "failed", finishTime: "2026-07-24T12:00:00Z" }
   ];
-  const state = { pipelines: { "pipeline:main": { consumedBuildKeys: history.slice(1).map(buildConsumptionKey) } } };
+  const state = { pipelines: { "pipeline:main": { processedBuildKeys: history.slice(1).map(createBuildProcessingKey) } } };
 
   const selected = selectUnprocessedFailures(state, "pipeline:main", history);
 
@@ -102,14 +102,14 @@ test("subsequent polls select only unseen failures", () => {
 test("same build ID is reconsidered when its completed attempt changes", () => {
   const original = { id: 4, result: "failed", finishTime: "2026-07-24T14:00:00Z" };
   const retried = { id: 4, result: "failed", finishTime: "2026-07-24T15:00:00Z" };
-  const state = { pipelines: { "pipeline:main": { consumedBuildKeys: [buildConsumptionKey(original)] } } };
+  const state = { pipelines: { "pipeline:main": { processedBuildKeys: [createBuildProcessingKey(original)] } } };
 
   const selected = selectUnprocessedFailures(state, "pipeline:main", [retried]);
 
   assert.deepEqual(selected.failures, [retried]);
 });
 
-test("legacy processed build IDs remain consumable during migration", () => {
+test("legacy processed build IDs remain recognized during migration", () => {
   const build = { id: 4, result: "failed", finishTime: "2026-07-24T14:00:00Z" };
   const state = { pipelines: { "pipeline:main": { processedBuildIds: [4] } } };
 
@@ -262,7 +262,7 @@ test("merged PR audits require a landed commit identity", async () => {
   assert.equal(dossier.failures.length, 0);
 });
 
-test("agent gating skips bootstrap and previously consumed windows", () => {
+test("agent gating skips bootstrap and previously processed windows", () => {
   assert.equal(shouldRunAgent({ bootstrap: true, pipelineHealth: [], failures: [{ build: { id: 4 } }] }), false);
   assert.equal(shouldRunAgent({ bootstrap: false, pipelineHealth: [], failures: [] }), false);
   assert.equal(shouldRunAgent({ bootstrap: false, pipelineHealth: [], failures: [{ build: { id: 4 } }] }), true);
@@ -303,9 +303,9 @@ test("classifyTaskFailure identifies roots and artifact cascades", () => {
   assert.equal(classifyTaskFailure("Validate pipeline", ["Unexpected value 'jobs'"]), "pipeline-configuration");
 });
 
-test("createFailureSignature removes volatile numeric values", () => {
+test("createFailureFingerprint removes volatile numeric values", () => {
   assert.equal(
-    createFailureSignature("test", "ItCanUpdatePackages", "HTTP 503 on port 443"),
+    createFailureFingerprint("test", "ItCanUpdatePackages", "HTTP 503 on port 443"),
     "test|itcanupdatepackages|http-<n>-on-port-<n>");
 });
 
@@ -396,7 +396,7 @@ test("checkout observations use the stable fatal cause instead of randomized ret
   const observations = createTaskObservations(failures, logs);
 
   assert.equal(observations[0].mechanism, "fatal: couldn't find remote ref refs/pull/55429/merge");
-  assert.equal(observations[0].signature, observations[1].signature);
+  assert.equal(observations[0].fingerprint, observations[1].fingerprint);
 });
 
 test("createPipelineObservation represents YAML rejection and empty execution", () => {
@@ -430,11 +430,11 @@ test("createHeartbeatObservation tolerates batching and detects an unbuilt branc
   assert.equal(missed.actionable, false);
 });
 
-test("sharedTestMechanism removes test identity and keeps a shared service failure", () => {
-  const first = sharedTestMechanism(
+test("summarizeSharedTestMechanism removes test identity and keeps a shared service failure", () => {
+  const first = summarizeSharedTestMechanism(
     "Test method Sdk.Tests.First threw exception:\nAssertionException: command failed\nResponse status code does not indicate success: 503 (Service Unavailable).\nResponse status code does not indicate success: 503 (Service Unavailable).",
     "Failed");
-  const second = sharedTestMechanism(
+  const second = summarizeSharedTestMechanism(
     "Test method Sdk.Tests.Second threw exception:\nHttpRequestException: request failed\nUnhandled exception: Response status code does not indicate success: 503 (Service Unavailable).",
     "Failed");
 
@@ -449,14 +449,14 @@ test("applyKbeRecurrence requires the same test and mechanism", () => {
   const current = {
     kind: "test",
     component: "Sdk.Tests.Flaky",
-    mechanismSignature: "test-mechanism|shared|timeout",
+    mechanismFingerprint: "test-mechanism|shared|timeout",
     kbe: { eligible: true }
   };
   const related = [{
     build: { id: 41 },
     observations: [
-      { kind: "test", component: "Sdk.Tests.Flaky", mechanismSignature: "test-mechanism|shared|timeout" },
-      { kind: "test", component: "Sdk.Tests.Other", mechanismSignature: "test-mechanism|shared|timeout" }
+      { kind: "test", component: "Sdk.Tests.Flaky", mechanismFingerprint: "test-mechanism|shared|timeout" },
+      { kind: "test", component: "Sdk.Tests.Other", mechanismFingerprint: "test-mechanism|shared|timeout" }
     ]
   }];
 
@@ -466,7 +466,7 @@ test("applyKbeRecurrence requires the same test and mechanism", () => {
 
   const different = applyKbeRecurrence([current], [{
     build: { id: 40 },
-    observations: [{ kind: "test", component: "Sdk.Tests.Flaky", mechanismSignature: "different" }]
+    observations: [{ kind: "test", component: "Sdk.Tests.Flaky", mechanismFingerprint: "different" }]
   }])[0];
   assert.equal(different.kbe.recurring, false);
 });

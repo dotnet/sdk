@@ -1,4 +1,4 @@
-import { textLines } from "./evidence-utils.mjs";
+import { splitNonEmptyLines } from "./evidence-utils.mjs";
 
 function exceptionTypeLine(lines) {
   const line = lines.find(candidate => /(?:\b|\.)(?:\w+Exception|AssertionFailedException)\s*:/i.test(candidate));
@@ -16,7 +16,7 @@ function stableDiagnosticLine(lines) {
 }
 
 export function validateErrorMessagePattern(pattern, logContent) {
-  const logLines = textLines(logContent);
+  const logLines = splitNonEmptyLines(logContent);
   let previousIndex = -1;
   for (const value of pattern) {
     const index = logLines.findIndex((line, candidateIndex) => candidateIndex > previousIndex && line.includes(value));
@@ -26,13 +26,13 @@ export function validateErrorMessagePattern(pattern, logContent) {
   return { valid: true, missing: null };
 }
 
-export function createTestKbeCandidate(test, signature) {
-  const lines = textLines(test.errorMessage);
+export function createTestKbeCandidate(test, fingerprint) {
+  const lines = splitNonEmptyLines(test.errorMessage);
   const testName = test.fullyQualifiedName || test.testName;
   const pattern = [testName, exceptionTypeLine(lines), stableDiagnosticLine(lines)].filter(Boolean);
   const validation = validateErrorMessagePattern(pattern, test.errorMessage);
   return {
-    signature,
+    fingerprint,
     eligible: pattern.length >= 2 && validation.valid,
     errorMessage: pattern,
     buildRetry: /(?:status code[^\r\n]*(?:429|5\d\d)|timed? ?out|connection refused)/i.test(pattern.join("\n")),

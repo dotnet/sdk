@@ -1,11 +1,10 @@
 import { MAX_LOG_CHARACTERS } from "./constants.mjs";
 
-export function textLines(value) {
+export function splitNonEmptyLines(value) {
   return `${value ?? ""}`.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
 }
 
-// Stabilizes and bounds untrusted evidence; it is not an HTML or shell sanitizer.
-export function sanitizeText(value, maxCharacters = MAX_LOG_CHARACTERS) {
+export function normalizeEvidenceText(value, maxCharacters = MAX_LOG_CHARACTERS) {
   return `${value ?? ""}`
     .replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "<guid>")
     .replace(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\b/g, "<timestamp>")
@@ -14,8 +13,8 @@ export function sanitizeText(value, maxCharacters = MAX_LOG_CHARACTERS) {
     .slice(0, maxCharacters);
 }
 
-export function normalizeSignaturePart(value) {
-  return sanitizeText(value)
+export function createFingerprintSegment(value) {
+  return normalizeEvidenceText(value)
     .toLowerCase()
     .replace(/https?:\/\/[^\s]+/g, "<url>")
     .replace(/\b\d+\b/g, "<n>")
@@ -24,11 +23,11 @@ export function normalizeSignaturePart(value) {
     .slice(0, 180);
 }
 
-export function createFailureSignature(category, component, mechanism) {
-  return [category, component, mechanism].map(normalizeSignaturePart).join("|");
+export function createFailureFingerprint(category, component, mechanism) {
+  return [category, component, mechanism].map(createFingerprintSegment).join("|");
 }
 
-export function normalizeBuild(build) {
+export function createBuildSummary(build) {
   return {
     id: build.id,
     number: build.buildNumber,
@@ -46,7 +45,7 @@ export function normalizeBuild(build) {
   };
 }
 
-export function buildConsumptionKey(build) {
+export function createBuildProcessingKey(build) {
   return `${build.id}:${build.finishTime ?? ""}:${build.result ?? ""}`;
 }
 

@@ -1,4 +1,4 @@
-import { sanitizeText, textLines } from "../evidence-utils.mjs";
+import { normalizeEvidenceText, splitNonEmptyLines } from "../evidence-utils.mjs";
 
 export function parseHelixWorkItemReferences(messages) {
   const pattern = /Work item '([^']+)' in job '(.+) \(([0-9a-f-]{36})\)' failed \([^,]+, exit code (-?\d+)\)\./i;
@@ -36,7 +36,7 @@ export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
 }
 
 export function summarizeHelixConsole(consoleText) {
-  const lines = textLines(consoleText);
+  const lines = splitNonEmptyLines(consoleText);
   const runningTestsMarker = lines.findIndex(line => /tests were still running when dump was taken/i.test(line));
   const markedActiveTest = runningTestsMarker >= 0
     ? lines.slice(runningTestsMarker + 1).find(line => /^\[[\d:.]+\]\s+\S/.test(line))
@@ -51,21 +51,21 @@ export function summarizeHelixConsole(consoleText) {
   if (activeTest && !relevant.includes(activeTest)) relevant.push(activeTest);
   const dumpFailures = relevant.filter(line => /dump.*(?:fail|error)|permission denied|diagnostics IPC/i.test(line)).slice(-4);
   return {
-    activeTest: activeTest ? sanitizeText(activeTest) : null,
+    activeTest: activeTest ? normalizeEvidenceText(activeTest) : null,
     hostExitCode: hostExitCode ? Number(hostExitCode) : null,
-    hangEvidence: [...new Set(relevant.slice(-12).map(line => sanitizeText(line)))],
-    dumpFailures: [...new Set(dumpFailures.map(line => sanitizeText(line)))]
+    hangEvidence: [...new Set(relevant.slice(-12).map(line => normalizeEvidenceText(line)))],
+    dumpFailures: [...new Set(dumpFailures.map(line => normalizeEvidenceText(line)))]
   };
 }
 
 export function summarizeTestMechanism(errorMessage, outcome) {
-  const lines = textLines(errorMessage);
+  const lines = splitNonEmptyLines(errorMessage);
   const salient = lines.filter(line => /exception|error|expected|actual|exit code|status code|timed? ?out|failed/i.test(line));
-  return sanitizeText((salient.length > 0 ? salient : lines).slice(0, 8).join("\n") || `${outcome} test result`);
+  return normalizeEvidenceText((salient.length > 0 ? salient : lines).slice(0, 8).join("\n") || `${outcome} test result`);
 }
 
-export function sharedTestMechanism(errorMessage, outcome) {
-  const lines = textLines(errorMessage);
+export function summarizeSharedTestMechanism(errorMessage, outcome) {
+  const lines = splitNonEmptyLines(errorMessage);
   const diagnosticLines = lines.filter(line => /\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b/i.test(line));
   const responseLines = lines.filter(line => /response status code/i.test(line))
     .map(line => line.slice(line.search(/response status code/i)));
@@ -77,5 +77,5 @@ export function sharedTestMechanism(errorMessage, outcome) {
     : operationalLines.length > 0 ? operationalLines
       : exceptionLines;
   const distinctLines = [...new Set(rootCauseLines.length > 0 ? rootCauseLines : lines.slice(-3))];
-  return sanitizeText(distinctLines.slice(0, 4).join("\n") || `${outcome} test result`);
+  return normalizeEvidenceText(distinctLines.slice(0, 4).join("\n") || `${outcome} test result`);
 }

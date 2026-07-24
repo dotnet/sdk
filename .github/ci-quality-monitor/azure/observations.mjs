@@ -1,5 +1,5 @@
 import { MAX_TIMELINE_FAILURES } from "../constants.mjs";
-import { createFailureSignature, sanitizeText, textLines } from "../evidence-utils.mjs";
+import { createFailureFingerprint, normalizeEvidenceText, splitNonEmptyLines } from "../evidence-utils.mjs";
 
 export function classifyTaskFailure(name, issues = []) {
   const text = `${name}\n${issues.join("\n")}`;
@@ -42,13 +42,13 @@ export function getTimelineFailuresFromRecords(records = [], parseHelixReference
         startedAt: record.startTime,
         finishedAt: record.finishTime,
         helixReferences: parseHelixReferences(messages),
-        issues: messages.map(message => sanitizeText(message))
+        issues: messages.map(message => normalizeEvidenceText(message))
       };
     });
 }
 
 function summarizeTaskLog(logText) {
-  const lines = textLines(logText);
+  const lines = splitNonEmptyLines(logText);
   const diagnostics = lines.filter(line => /\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b|response status|unable to|service unavailable|timed? ?out|connection refused|exec format error/i.test(line));
   const fallback = lines.filter(line => /\b(?:error|fatal|exception|failed)\b/i.test(line) && !/\bat\s+\S+\(/i.test(line));
   return [...new Set((diagnostics.length > 0 ? diagnostics : fallback.length > 0 ? fallback : lines).slice(-8))];
@@ -70,7 +70,7 @@ export function createTaskObservations(timelineFailures, logsById = new Map()) {
         category,
         component: failure.name,
         mechanism,
-        signature: createFailureSignature(category, failure.name, mechanism),
+        fingerprint: createFailureFingerprint(category, failure.name, mechanism),
         actionable: category !== "cascade" && category !== "helix",
         path: failure.path,
         issues: failure.issues,
@@ -84,7 +84,7 @@ export function createTaskObservations(timelineFailures, logsById = new Map()) {
 export function createPipelineObservation(build, timelineRecords = []) {
   const validations = (build.validationResults ?? [])
     .filter(validation => `${validation.result ?? ""}`.toLowerCase() !== "ok")
-    .map(validation => sanitizeText(validation.message ?? validation.result));
+    .map(validation => normalizeEvidenceText(validation.message ?? validation.result));
   if (validations.length === 0 && timelineRecords.length > 0) return null;
   const category = validations.length > 0 ? "pipeline-configuration" : "pipeline-startup";
   const mechanism = validations.join("\n") || "Pipeline failed without creating stages, jobs, or tasks.";
@@ -93,7 +93,7 @@ export function createPipelineObservation(build, timelineRecords = []) {
     category,
     component: build.definition?.name ?? "Azure DevOps pipeline",
     mechanism,
-    signature: createFailureSignature(category, build.definition?.name ?? "pipeline", mechanism),
+    fingerprint: createFailureFingerprint(category, build.definition?.name ?? "pipeline", mechanism),
     actionable: validations.length > 0,
     validationResults: validations
   };

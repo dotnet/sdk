@@ -1,5 +1,5 @@
 import { PIPELINE_HEARTBEAT_AGE_MS } from "./constants.mjs";
-import { createFailureSignature, normalizeBuild } from "./evidence-utils.mjs";
+import { createBuildSummary, createFailureFingerprint } from "./evidence-utils.mjs";
 import { getTimelineFailuresFromRecords as parseTimelineFailures } from "./azure/observations.mjs";
 import { parseHelixWorkItemReferences } from "./helix/parsing.mjs";
 
@@ -14,11 +14,11 @@ export function createHeartbeatObservation(pipeline, branch, head, builds, now =
     category: "pipeline-not-triggered",
     component: `${pipeline.repository}:${branch}`,
     mechanism,
-    signature: createFailureSignature("pipeline-not-triggered", pipeline.definitionId, branch),
+    fingerprint: createFailureFingerprint("pipeline-not-triggered", pipeline.definitionId, branch),
     actionable: false,
     branch,
     branchHead: head,
-    latestBuild: builds[0] ? normalizeBuild(builds[0]) : null
+    latestBuild: builds[0] ? createBuildSummary(builds[0]) : null
   };
 }
 
@@ -64,7 +64,7 @@ export function applyKbeRecurrence(observations, relatedFailureSummaries) {
   return observations.map(observation => {
     if (observation.kind !== "test" || !observation.kbe) return observation;
     const matches = relatedTests.filter(candidate => candidate.observation.component === observation.component
-      && candidate.observation.mechanismSignature === observation.mechanismSignature);
+      && candidate.observation.mechanismFingerprint === observation.mechanismFingerprint);
     return {
       ...observation,
       kbe: {

@@ -4,7 +4,7 @@ import {
   MAX_LOG_CHARACTERS,
   MAX_TEST_FAILURES
 } from "../constants.mjs";
-import { sanitizeText } from "../evidence-utils.mjs";
+import { normalizeEvidenceText } from "../evidence-utils.mjs";
 import { HttpClient } from "../http-client.mjs";
 
 function buildApiBase(pipeline) {
@@ -74,7 +74,7 @@ export class AzureDevOpsClient {
     const url = logUrl ?? `${buildApiBase(this.pipeline)}/build/builds/${buildId}/logs/${logId}?api-version=${AZURE_API_VERSION}`;
     const response = await this.fetchResponse(url, "text/plain");
     const text = await response.text();
-    return sanitizeText(text.slice(-MAX_LOG_CHARACTERS));
+    return normalizeEvidenceText(text.slice(-MAX_LOG_CHARACTERS));
   }
 
   async getTestFailures(buildId) {
@@ -94,8 +94,8 @@ export class AzureDevOpsClient {
         runName: run.name,
         test: result.testCaseTitle,
         outcome: result.outcome,
-        error: sanitizeText(result.errorMessage),
-        stackTrace: sanitizeText(result.stackTrace)
+        error: normalizeEvidenceText(result.errorMessage),
+        stackTrace: normalizeEvidenceText(result.stackTrace)
       })));
       if (failures.length >= MAX_TEST_FAILURES) break;
     }

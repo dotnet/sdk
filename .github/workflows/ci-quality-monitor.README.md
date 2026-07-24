@@ -31,7 +31,7 @@ current behavior from planned categories and priorities.
   the signal is only a downstream cascade, or when an existing issue already
   covers the same mechanism.
 4. Automatic delivery does not spend AI tokens re-analyzing an audit context
-  that has already been consumed. A retry or trusted priority promotion is
+  that has already been processed. A retry or trusted priority promotion is
   audited only under the context-qualified rules below.
 5. PR analysis does not spend tokens or file repository-wide findings for failures
   caused only by the PR's own changes.
@@ -81,7 +81,7 @@ It must:
 	been introduced by an open PR.
 4. Suppress duplicate issues, generic parent failures, and downstream cascades.
 5. Require an evidence-bounded root cause analysis in every filed issue.
-6. Consume each automatic build attempt before AI runs so event and schedule
+6. Mark each automatic build attempt processed before AI runs so event and schedule
 	delivery cannot spend AI twice.
 7. Keep internal or official CI outside scope until an authenticated internal
 	evidence path is deliberately designed.
@@ -124,11 +124,11 @@ the target branch moved between validation and merge.
 | --- | --- | --- |
 | Azure `check_suite: completed` | Stable branch; infrastructure PR | For a non-success `azure-pipelines` suite, resolve and verify the definition `101` build. A direct allowlisted stable-branch failure is HIGH. Planned MED support may accept verified codeflow PR failures. Ordinary open PR failures do not file in the HIGH-only milestone. |
 | `pull_request: closed` with `merged == true` | Stable branch; infrastructure PR lifecycle | A merge is an evidence and lifecycle event, not a failure by itself. Link the PR to its final Azure validation. If that final validation failed and the target is allowlisted as stable, create a HIGH candidate. A successful PR build creates no incident. Compare tested and landed trees when claiming exact landed-content validation. |
-| Daily routine | Stable branch; planned developer PR | Reconcile missed stable-branch check-suite events and poll only branches verified to have direct public branch CI. Detect a branch head for which Azure created no build record after two daily polls. The planned LOW extension will use this same run to select at most three newest unconsumed, completed, non-draft failures from distinct PRs and apply the independent-recurrence policy before AI may file anything. |
-| Manual dispatch with `build_id` | Any category | Accept any completed registered public build for investigation. Derive category and priority from trusted metadata; the caller cannot promote a build. Manual runs may intentionally bypass automatic consumption for repeatable evaluation. |
+| Daily routine | Stable branch; planned developer PR | Reconcile missed stable-branch check-suite events and poll only branches verified to have direct public branch CI. Detect a branch head for which Azure created no build record after two daily polls. The planned LOW extension will use this same run to select at most three newest unprocessed, completed, non-draft failures from distinct PRs and apply the independent-recurrence policy before AI may file anything. |
+| Manual dispatch with `build_id` | Any category | Accept any completed registered public build for investigation. Derive category and priority from trusted metadata; the caller cannot promote a build. Manual runs may intentionally bypass automatic processing state for repeatable evaluation. |
 | Fork-only evaluation push | Test harness only | Disposable validation mechanism. It is not a production monitoring category or production trigger policy. |
 
-## Audit Consumption and Promotion
+## Audit Processing and Promotion
 
 Automatic deduplication uses both the Azure build attempt and its trusted audit
 context:
@@ -142,7 +142,7 @@ context:
 | Direct stable branch | `stable-direct:<full branch ref>` | Audit once at HIGH for that Azure attempt. Event and daily reconciliation share this key. |
 | Infrastructure PR | `infra-pr:<PR number>` | Audit once at MED while the PR is open. Repeated delivery and repeated analysis of the same Azure attempt are suppressed. |
 | Developer PR | `developer-pr:<PR number>` | Audit once at LOW after the daily sampler and independent-recurrence gate select it. |
-| Merged into stable branch | `stable-merge:<PR number>:<landed commit SHA>` | Permit one HIGH audit even if the same Azure attempt was already consumed under an infrastructure-PR or developer-PR context. Redelivery of the same merge event is suppressed. |
+| Merged into stable branch | `stable-merge:<PR number>:<landed commit SHA>` | Permit one HIGH audit even if the same Azure attempt was already processed under an infrastructure-PR or developer-PR context. Redelivery of the same merge event is suppressed. |
 
 Finish time and result distinguish an updated Azure retry that reuses a build ID
 from the earlier attempt. Context identity distinguishes a meaningful priority
@@ -155,22 +155,22 @@ The updated checkpoint is uploaded before agent activation. An inference or
 issue-output failure therefore does not cause the next automatic delivery to
 spend AI on the same audit context again.
 
-| Delivery path | Consumption behavior |
+| Delivery path | Processing behavior |
 | --- | --- |
-| Check-suite event | Resolve and verify the Azure build, derive its monitoring category and context identity, and consume that audit key before AI. Redelivery of the suite is suppressed. |
+| Check-suite event | Resolve and verify the Azure build, derive its monitoring category and context identity, and mark that audit key processed before AI. Redelivery of the suite is suppressed. |
 | Daily stable-branch reconciliation | Derive the same `stable-direct` key as event delivery, so a build seen through either path is audited once. |
 | Updated Azure retry | A changed finish time or result creates a distinct audit key and is eligible in the same context. |
-| Manual `build_id` | Bypass automatic consumption for repeatable investigation, while still deriving category and priority from trusted metadata. |
+| Manual `build_id` | Bypass automatic processing state for repeatable investigation, while still deriving category and priority from trusted metadata. |
 
 The merged-PR event usually does not have a new Azure run. It locates the
 final completed definition `101` PR build by PR number and final head SHA, then
 create the `stable-merge` audit context from trusted GitHub merge metadata. This
 is an intentional promotion audit, not an unrestricted rerun. Only a transition
 to a higher-priority context permits reuse of the Azure evidence; events at the
-same or lower priority remain consumed.
+same or lower priority remain processed.
 
 The promotion audit coordinates with issue deduplication. The issue body carries
-the exact collector failure signature, and the agent searches for that marker
+the exact collector failure fingerprint, and the agent searches for that marker
 before filing. If an issue already tracks the mechanism, the agent does not open
 an indistinguishable duplicate. Native title deduplication provides an
 additional approximate safeguard. Under the current minimal implementation,

@@ -6,12 +6,12 @@ import {
   matchesPipeline
 } from "./collector-policy.mjs";
 import {
-  auditConsumptionKey,
-  consumeAudit,
-  isAuditConsumed,
+  createAuditProcessingKey,
+  isAuditProcessed,
+  markAuditProcessed,
+  recordProcessedBuilds,
   selectUnprocessedFailures,
-  stateKey,
-  updateState
+  stateKey
 } from "./state.mjs";
 
 /** @typedef {import("./types.d.ts").CandidateSelection} CandidateSelection */
@@ -41,9 +41,9 @@ export class BuildCandidateSelector {
   }
 
   selectHighCandidate(pipeline, build, history, auditContext, mergedPullRequest = null) {
-    const auditKey = auditConsumptionKey(build, "stable-branch", auditContext);
-    const candidate = !isAuditConsumed(this.state, pipeline, auditKey) && isFailedBuild(build) ? build : null;
-    consumeAudit(this.state, pipeline, auditKey);
+    const auditKey = createAuditProcessingKey(build, "stable-branch", auditContext);
+    const candidate = !isAuditProcessed(this.state, pipeline, auditKey) && isFailedBuild(build) ? build : null;
+    markAuditProcessed(this.state, pipeline, auditKey);
     return {
       candidates: candidate ? [{
         pipeline, build: candidate, history, monitoringCategory: "stable-branch", priority: "HIGH",
@@ -112,9 +112,9 @@ export class BuildCandidateSelector {
         for (const build of selected.failures) {
           if ((pipeline.stableBranches ?? []).includes(branch)) {
             const auditContext = `stable-direct:${branch}`;
-            const auditKey = auditConsumptionKey(build, "stable-branch", auditContext);
-            if (!isAuditConsumed(this.state, pipeline, auditKey)) {
-              consumeAudit(this.state, pipeline, auditKey);
+            const auditKey = createAuditProcessingKey(build, "stable-branch", auditContext);
+            if (!isAuditProcessed(this.state, pipeline, auditKey)) {
+              markAuditProcessed(this.state, pipeline, auditKey);
               candidates.push({
                 pipeline, build, history, monitoringCategory: "stable-branch", priority: "HIGH", auditContext
               });
@@ -122,7 +122,7 @@ export class BuildCandidateSelector {
           }
         }
         await this.pipelineHealthMonitor.collect(pipeline, branch, azure, key, pipelineHealth);
-        updateState(this.state, key, history);
+        recordProcessedBuilds(this.state, key, history);
       }
     }
     return { candidates, bootstrap, pipelineHealth };

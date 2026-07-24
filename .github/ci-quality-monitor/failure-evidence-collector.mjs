@@ -1,6 +1,6 @@
 import { createPipelineObservation, createTaskObservations } from "./azure/observations.mjs";
 import { MAX_RELATED_BUILDS, MAX_RELATED_HELIX_REFERENCES, MAX_TASK_LOGS } from "./constants.mjs";
-import { isFailedBuild, normalizeBuild, sanitizeText } from "./evidence-utils.mjs";
+import { createBuildSummary, isFailedBuild, normalizeEvidenceText } from "./evidence-utils.mjs";
 import { applyKbeRecurrence, getTimelineFailuresFromRecords } from "./collector-policy.mjs";
 
 export class FailureEvidenceCollector {
@@ -9,7 +9,7 @@ export class FailureEvidenceCollector {
     this.helixEvidence = helixEvidenceClient;
   }
 
-  async collectRelatedFailures(pipeline, buildId, history) {
+  async collectRelatedFailureEvidence(pipeline, buildId, history) {
     const related = [];
     const failedBuilds = history
       .filter(build => build.id !== buildId && isFailedBuild(build))
@@ -19,12 +19,12 @@ export class FailureEvidenceCollector {
         const timeline = await this.getAzureClient(pipeline).getTimeline(build.id);
         const timelineFailures = getTimelineFailuresFromRecords(timeline.records);
         related.push({
-          build: normalizeBuild(build),
+          build: createBuildSummary(build),
           timelineFailures,
           observations: await this.helixEvidence.collectObservations(timelineFailures, MAX_RELATED_HELIX_REFERENCES)
         });
       } catch (error) {
-        related.push({ build: normalizeBuild(build), unavailable: sanitizeText(error.message) });
+        related.push({ build: createBuildSummary(build), unavailable: normalizeEvidenceText(error.message) });
       }
     }
     return related;
@@ -37,19 +37,19 @@ export class FailureEvidenceCollector {
     const timelineFailures = getTimelineFailuresFromRecords(timeline.records);
     const pipelineObservation = createPipelineObservation(detailedBuild, timeline.records ?? []);
     const helixObservations = await this.helixEvidence.collectObservations(timelineFailures);
-    const relatedFailureSummaries = await this.collectRelatedFailures(pipeline, build.id, history);
+    const relatedFailureSummaries = await this.collectRelatedFailureEvidence(pipeline, build.id, history);
     const logFailures = await this.collectTaskLogs(azure, build.id, timelineFailures);
     const taskObservations = createTaskObservations(
       timelineFailures,
       new Map(logFailures.filter(failure => failure.text).map(failure => [failure.logId, failure.text])));
     return {
       pipeline,
-      build: normalizeBuild(build),
+      build: createBuildSummary(build),
       monitoringCategory: candidate.monitoringCategory ?? null,
       priority: candidate.priority ?? null,
       auditContext: candidate.auditContext ?? null,
       mergedPullRequest: candidate.mergedPullRequest ?? null,
-      recentBuilds: history.map(normalizeBuild),
+      recentBuilds: history.map(createBuildSummary),
       observations: applyKbeRecurrence(
         [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
         relatedFailureSummaries),
@@ -64,7 +64,7 @@ export class FailureEvidenceCollector {
     try {
       return await azure.getTestFailures(buildId);
     } catch (error) {
-      return [{ unavailable: sanitizeText(error.message) }];
+      return [{ unavailable: normalizeEvidenceText(error.message) }];
     }
   }
 
@@ -81,7 +81,7 @@ export class FailureEvidenceCollector {
           text: await azure.getFailureLog(buildId, failure.logId, failure.logUrl)
         });
       } catch (error) {
-        logs.push({ name: failure.name, unavailable: sanitizeText(error.message) });
+        logs.push({ name: failure.name, unavailable: normalizeEvidenceText(error.message) });
       }
     }
     return logs;
