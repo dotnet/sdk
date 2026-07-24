@@ -48,10 +48,27 @@ internal class TelemetryFilter(Func<string, string>? hash) : ITelemetryFilter
             yield break;
         }
 
+        // When a top-level terminating option (--help, --version, --info) is invoked without a
+        // subcommand, RootSubCommandResult() returns empty string.  Use the option name as the
+        // verb so these invocations are visible in telemetry.
+        if (string.IsNullOrEmpty(topLevelCommandName)
+            && parseResult.Action is InvocableOptionAction { Terminating: true } topLevelOptionAction)
+        {
+            topLevelCommandName = topLevelOptionAction.Option.Name;
+        }
+
         Dictionary<string, string?> properties = new() { ["verb"] = topLevelCommandName };
         if (!string.IsNullOrEmpty(globalJsonState))
         {
             properties["globalJson"] = globalJsonState;
+        }
+
+        // When --help is the active action on any command (e.g. "dotnet build --help"),
+        // record that the invocation was a help request so it can be distinguished from
+        // an actual command execution.
+        if (parseResult.Action is PrintHelpAction)
+        {
+            properties["help"] = "true";
         }
 
         yield return new TelemetryEntryFormat("toplevelparser/command", properties);

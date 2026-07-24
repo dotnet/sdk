@@ -189,6 +189,11 @@
         <target state="translated">CONTAINER1020: nie można załadować obrazu, ponieważ kontenerowy magazyn obrazów nie jest włączony dla platformy Docker. Porada: możesz ją włączyć, zaznaczając pozycję "Użyj kontenera do ściągania i przechowywania obrazów" w ustawieniach programu Docker Desktop.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: Ściąganie obrazów z rejestru lokalnego nie jest obsługiwane.</target>

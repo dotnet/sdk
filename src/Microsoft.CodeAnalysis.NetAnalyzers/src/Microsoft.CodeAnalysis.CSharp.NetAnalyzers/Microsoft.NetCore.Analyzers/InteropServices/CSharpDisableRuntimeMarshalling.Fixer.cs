@@ -149,13 +149,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             return false;
                         }
 
-                        SyntaxAnnotation renameIdentiferAnnotation = RenameAnnotation.Create();
+                        SyntaxAnnotation renameIdentifierAnnotation = RenameAnnotation.Create();
 
                         IdentifierNameSyntax nonNullPtrIdentifierNode = SyntaxFactory.IdentifierName(nonNullPtrIdentifier);
 
                         if (addRenameAnnotation)
                         {
-                            nonNullPtrIdentifierNode = nonNullPtrIdentifierNode.WithAdditionalAnnotations(renameIdentiferAnnotation);
+                            nonNullPtrIdentifierNode = nonNullPtrIdentifierNode.WithAdditionalAnnotations(renameIdentifierAnnotation);
                         }
 
                         var pointerCast = editor.Generator.CastExpression(
