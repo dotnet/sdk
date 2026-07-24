@@ -61,3 +61,17 @@ test("ordinary issues cannot smuggle a KBE block", () => {
     () => prepareIssues(output("ordinary", "## Error Message\n```json\n{}\n```"), { failures: [] }),
     /must not contain/);
 });
+
+test("live evaluation applies requested fork labels without changing production defaults", () => {
+  process.env.CI_QUALITY_LIVE_EVALUATION = "true";
+  try {
+    const issue = prepareIssues(output("ordinary"), { failures: [{ observations: [validatedTest] }] })[0];
+    assert.deepEqual(issue.labels, ["agentic-workflows", "cookie", "Test Debt"]);
+
+    const nonRecurring = { ...validatedTest, kbe: { ...validatedTest.kbe, recurring: false } };
+    const kbe = prepareIssues(output("test-kbe"), { failures: [{ observations: [nonRecurring] }] })[0];
+    assert.deepEqual(kbe.labels, ["agentic-workflows", "Known Build Error", "cookie", "Test Debt"]);
+  } finally {
+    delete process.env.CI_QUALITY_LIVE_EVALUATION;
+  }
+});

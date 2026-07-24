@@ -32,14 +32,17 @@ function prepareOrdinaryIssue(item) {
   return {
     title: `${TITLE_PREFIX}${item.title}`,
     body: withSignature(item.body, item.signature),
-    labels: ["agentic-workflows"]
+    labels: process.env.CI_QUALITY_LIVE_EVALUATION === "true"
+      ? ["agentic-workflows", "cookie", "Test Debt"]
+      : ["agentic-workflows"]
   };
 }
 
 function prepareKbeIssue(item, observations) {
   const observation = observations.find(candidate => candidate.signature === item.signature);
-  if (!observation || observation.kind !== "test" || !observation.kbe?.eligible
-      || !observation.kbe.validation?.valid || !observation.kbe.recurring) {
+    const allowNonRecurring = process.env.CI_QUALITY_LIVE_EVALUATION === "true";
+    if (!observation || observation.kind !== "test" || !observation.kbe?.eligible
+      || !observation.kbe.validation?.valid || (!observation.kbe.recurring && !allowNonRecurring)) {
     throw new Error(`KBE signature '${item.signature}' is not a recurring, collector-validated named test failure.`);
   }
   if (/^## Error Message\s*$/m.test(item.body)) {
@@ -49,7 +52,9 @@ function prepareKbeIssue(item, observations) {
   return {
     title: `${TITLE_PREFIX}${item.title}`,
     body: withSignature(body, item.signature),
-    labels: ["agentic-workflows", "Known Build Error"]
+    labels: allowNonRecurring
+      ? ["agentic-workflows", "Known Build Error", "cookie", "Test Debt"]
+      : ["agentic-workflows", "Known Build Error"]
   };
 }
 
