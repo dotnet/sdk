@@ -1,13 +1,16 @@
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import process from "node:process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const API_VERSION = "7.1";
 const DEFAULT_BUILD_LIMIT = 20;
 const MAX_FAILURES = 10;
 const MAX_LOG_CHARACTERS = 4_000;
 const MAX_PROCESSED_BUILD_IDS = 100;
+const MAX_TEST_FAILURES = 20;
+const MODULE_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 
 export function parseHelixWorkItemReferences(messages) {
   const pattern = /Work item '([^']+)' in job '(.+) \(([0-9a-f-]{36})\)' failed \([^,]+, exit code (-?\d+)\)\./i;
@@ -33,7 +36,7 @@ export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
       || exitCode === 130 || exitCode === 143) {
     return "timeout";
   }
-  if (/segmentation fault|stack overflow|core dump|assert failed|app_crash|crash dump/i.test(text)
+  if (/segmentation fault|stack overflow|core dump(?:ed)?|assert failed|app_crash|created crash dump/i.test(text)
       || [133, 134, 139].includes(exitCode)) {
     return "crash";
   }
@@ -89,6 +92,7 @@ export function sanitizeText(value) {
   return `${value ?? ""}`
     .replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "<guid>")
     .replace(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\b/g, "<timestamp>")
+    .replace(/[A-Za-z]:\\h\\w\\[^\r\n ]+/gi, "<helix-path>")
     .replace(/(?:[A-Za-z]:\\|\/)[^\r\n ]*(?:artifacts|tmp|temp)[^\r\n ]*/gi, "<temporary-path>")
     .slice(0, MAX_LOG_CHARACTERS);
 }
@@ -137,6 +141,14 @@ async function fetchJson(url, fetchImplementation = fetch) {
   return (await fetchResponse(url, fetchImplementation)).json();
 }
 
+export function parseTestResultXml(xml, command = process.env.PYTHON || (process.platform === "win32" ? "python" : "python3")) {
+  const parser = path.join(MODULE_DIRECTORY, "parse-test-results.py");
+  const result = spawnSync(command, [parser], { input: xml, encoding: "utf8", maxBuffer: 2 * 1024 * 1024 });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`TRX parser failed: ${result.stderr.trim()}`);
+  return JSON.parse(result.stdout);
+}
+
 export async function listCompletedBuilds(pipeline, branch, fetchImplementation = fetch) {
   const query = new URLSearchParams({
     definitions: `${pipeline.definitionId}`,
@@ -169,13 +181,150 @@ async function getTimelineFailures(pipeline, buildId, fetchImplementation = fetc
     .filter(record => record.result === "failed" || record.result === "partiallySucceeded")
     .filter(record => record.type === "Job" || record.type === "Task")
     .slice(0, MAX_FAILURES)
-    .map(record => ({
-      type: record.type,
-      name: record.name,
-      result: record.result,
-      logId: record.log?.id,
-      issues: (record.issues ?? []).map(issue => sanitizeText(issue.message))
-    }));
+    .map(record => {
+      const messages = (record.issues ?? []).map(issue => issue.message);
+      return {
+        type: record.type,
+        name: record.name,
+        result: record.result,
+        logId: record.log?.id,
+        helixReferences: parseHelixWorkItemReferences(messages),
+        issues: messages.map(sanitizeText)
+      };
+    });
+}
+
+function createTaskObservations(timelineFailures) {
+  return timelineFailures
+    .filter(failure => failure.type === "Task")
+    .map(failure => {
+      const category = classifyTaskFailure(failure.name, failure.issues);
+      const mechanism = failure.issues.find(issue => !/^Bash exited with code/i.test(issue)) ?? failure.name;
+      return {
+        kind: "pipeline-task",
+        category,
+        component: failure.name,
+        mechanism,
+        signature: createFailureSignature(category, failure.name, mechanism),
+        actionable: category !== "cascade" && category !== "helix",
+        issues: failure.issues,
+        logId: failure.logId
+      };
+    });
+}
+
+function getHelixReferences(timelineFailures) {
+  const references = timelineFailures.flatMap(failure => failure.helixReferences ?? []);
+  return [...new Map(references.map(reference => [`${reference.jobId}:${reference.workItem}`, reference])).values()];
+}
+
+function helixWorkItemUrl(reference) {
+  return `https://helix.dot.net/api/2019-06-17/jobs/${encodeURIComponent(reference.jobId)}/workitems/${encodeURIComponent(reference.workItem)}`;
+}
+
+function selectArtifactLinks(files = []) {
+  return files
+    .filter(file => /\.(?:trx|xml|binlog|dmp|core|crash|log)$/i.test(file.FileName))
+    .slice(0, 10)
+    .map(file => ({ name: file.FileName, url: file.Uri }));
+}
+
+async function getHelixText(url, fetchImplementation = fetch) {
+  const text = await (await fetchResponse(url, fetchImplementation)).text();
+  return sanitizeText(text.slice(-MAX_LOG_CHARACTERS));
+}
+
+async function getHelixTestFailures(workItem, fetchImplementation = fetch) {
+  const testFile = (workItem.Files ?? []).find(file => /\.(?:trx|xml)$/i.test(file.FileName));
+  if (!testFile) return [];
+  const response = await fetchResponse(testFile.Uri, fetchImplementation);
+  return parseTestResultXml(Buffer.from(await response.arrayBuffer())).slice(0, MAX_TEST_FAILURES);
+}
+
+function summarizeTestMechanism(errorMessage, outcome) {
+  const lines = `${errorMessage ?? ""}`.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const salient = lines.filter(line => /exception|error|expected|actual|exit code|status code|timed? ?out|failed/i.test(line));
+  return sanitizeText((salient.length > 0 ? salient : lines).slice(0, 8).join("\n") || `${outcome} test result`);
+}
+
+function createTestObservation(reference, test) {
+  const component = test.fullyQualifiedName || test.testName;
+  const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
+  return {
+    kind: "test",
+    category: "test-failure",
+    component,
+    mechanism,
+    signature: createFailureSignature("test", component, mechanism),
+    mechanismSignature: createFailureSignature("test-mechanism", "shared", mechanism),
+    actionable: true,
+    workItem: reference.workItem,
+    jobId: reference.jobId,
+    queue: reference.queue,
+    outcome: test.outcome,
+    duration: test.duration,
+    stackTrace: sanitizeText(test.stackTrace)
+  };
+}
+
+async function collectHelixObservation(reference, fetchImplementation = fetch) {
+  const url = helixWorkItemUrl(reference);
+  const workItem = await fetchJson(url, fetchImplementation);
+  let consoleText = "";
+  let testFailures = [];
+  const unavailable = [];
+  try {
+    consoleText = await getHelixText(`${url}/console`, fetchImplementation);
+  } catch (error) {
+    unavailable.push(sanitizeText(error.message));
+  }
+  try {
+    testFailures = await getHelixTestFailures(workItem, fetchImplementation);
+  } catch (error) {
+    unavailable.push(sanitizeText(error.message));
+  }
+  if (testFailures.length > 0) {
+    return testFailures.map(test => createTestObservation(reference, test));
+  }
+  const category = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
+  const mechanism = consoleText.split(/\r?\n/).filter(Boolean).slice(-8).join("\n") || `Exit code ${workItem.ExitCode ?? reference.exitCode}`;
+  return [{
+    kind: "helix-work-item",
+    category,
+    component: reference.workItem,
+    mechanism,
+    signature: createFailureSignature(category, reference.workItem, mechanism),
+    actionable: category !== "infrastructure",
+    jobId: reference.jobId,
+    queue: reference.queue,
+    exitCode: workItem.ExitCode ?? reference.exitCode,
+    state: workItem.State,
+    machine: workItem.MachineName,
+    duration: workItem.Duration,
+    consoleUrl: workItem.ConsoleOutputUri,
+    artifacts: selectArtifactLinks(workItem.Files),
+    unavailable
+  }];
+}
+
+async function collectHelixObservations(timelineFailures, fetchImplementation = fetch) {
+  const observations = [];
+  for (const reference of getHelixReferences(timelineFailures)) {
+    try {
+      observations.push(...await collectHelixObservation(reference, fetchImplementation));
+    } catch (error) {
+      observations.push({
+        kind: "helix-work-item",
+        category: "work-item-failure",
+        component: reference.workItem,
+        mechanism: sanitizeText(error.message),
+        signature: createFailureSignature("work-item-failure", reference.workItem, error.message),
+        actionable: false,
+        ...reference
+      });
+    }
+  }
+  return observations;
 }
 
 async function getFailureLog(pipeline, buildId, logId, fetchImplementation = fetch) {
@@ -231,6 +380,8 @@ async function getRelatedFailureSummaries(pipeline, buildId, history, fetchImple
 
 async function collectFailureEvidence(pipeline, build, history, fetchImplementation = fetch) {
   const timelineFailures = await getTimelineFailures(pipeline, build.id, fetchImplementation);
+  const taskObservations = createTaskObservations(timelineFailures);
+  const helixObservations = await collectHelixObservations(timelineFailures, fetchImplementation);
   const relatedFailureSummaries = await getRelatedFailureSummaries(
     pipeline,
     build.id,
@@ -254,6 +405,7 @@ async function collectFailureEvidence(pipeline, build, history, fetchImplementat
     pipeline,
     build: normalizeBuild(build),
     recentBuilds: history.map(normalizeBuild),
+    observations: [...taskObservations, ...helixObservations],
     timelineFailures,
     relatedFailureSummaries,
     testFailures,

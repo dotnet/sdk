@@ -8,6 +8,7 @@ import {
   normalizeBuild,
   parseArguments,
   parseHelixWorkItemReferences,
+  parseTestResultXml,
   sanitizeText,
   selectUnprocessedFailures
 } from "./collect-ci-evidence.mjs";
@@ -94,6 +95,7 @@ test("classifyWorkItem distinguishes tests, timeout, crash, and infrastructure",
   assert.equal(classifyWorkItem(139, "Segmentation fault (core dumped)"), "crash");
   assert.equal(classifyWorkItem(81, "DEVICE_NOT_FOUND"), "infrastructure");
   assert.equal(classifyWorkItem(80, "Test run completed\nAPP_CRASH"), "post-test-harness-failure");
+  assert.equal(classifyWorkItem(2, "Copy all crash dumps to upload directory"), "work-item-failure");
 });
 
 test("classifyTaskFailure identifies roots and artifact cascades", () => {
@@ -107,4 +109,23 @@ test("createFailureSignature removes volatile numeric values", () => {
   assert.equal(
     createFailureSignature("test", "ItCanUpdatePackages", "HTTP 503 on port 443"),
     "test|itcanupdatepackages|http-<n>-on-port-<n>");
+});
+
+test("parseTestResultXml returns independent named failures", () => {
+  const results = parseTestResultXml(`<?xml version="1.0" encoding="UTF-8"?>
+    <TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+      <TestDefinitions><UnitTest id="test-1" name="ShortName"><TestMethod className="Sdk.Tests.Example" name="Fails" /></UnitTest></TestDefinitions>
+      <Results><UnitTestResult testId="test-1" testName="ShortName" outcome="Failed" duration="00:00:01">
+        <Output><ErrorInfo><Message>Expected zero but found one.</Message><StackTrace>at Sdk.Tests.Example.Fails()</StackTrace></ErrorInfo></Output>
+      </UnitTestResult></Results>
+    </TestRun>`);
+
+  assert.deepEqual(results, [{
+    testName: "ShortName",
+    fullyQualifiedName: "Sdk.Tests.Example.Fails",
+    outcome: "Failed",
+    duration: "00:00:01",
+    errorMessage: "Expected zero but found one.",
+    stackTrace: "at Sdk.Tests.Example.Fails()"
+  }]);
 });
