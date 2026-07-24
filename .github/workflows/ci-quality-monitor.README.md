@@ -170,7 +170,7 @@ to a higher-priority context permits reuse of the Azure evidence; events at the
 same or lower priority remain processed.
 
 The promotion audit coordinates with issue deduplication. The issue body carries
-the exact collector failure fingerprint, and the agent searches for that marker
+the exact collector failure fingerprint as visible Build Information, and the agent searches for that value
 before filing. If an issue already tracks the mechanism, the agent does not open
 an indistinguishable duplicate. Native title deduplication provides an
 additional approximate safeguard. Under the current minimal implementation,

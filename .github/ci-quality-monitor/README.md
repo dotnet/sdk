@@ -201,8 +201,9 @@ For both paths, the prompt requires `Build Information`, `Failure History`,
 `Error Details`, `Root Cause Analysis`, and `Suggested Investigation`. The RCA
 must explicitly include observed evidence, assessment, confidence, and
 alternatives or unknowns. The body also carries the exact collector observation
-fingerprint so the agent can search for an existing issue before filing. Native
-title deduplication is a second, approximate safeguard.
+fingerprint as a visible Build Information item so the agent can search for an
+existing issue before filing. Native title deduplication is a second,
+approximate safeguard.
 
 The monitor never applies `cookie`. Normal issue triage can add an area, type,
 `Test Debt`, and `cookie` when the resulting work is bounded enough for Issue
