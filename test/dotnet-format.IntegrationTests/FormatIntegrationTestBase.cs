@@ -48,7 +48,7 @@ public abstract class FormatIntegrationTestBase : SdkTest
             return;
         }
 
-        _repoPath = Path.Combine(Path.GetTempPath(), "dotnet-format-tests", RepoName);
+        _repoPath = TestAssetsManager.CreateTestDirectory(GetType().Name, RepoName).Path;
 
         if (IsAlreadyAtCorrectSha())
         {
