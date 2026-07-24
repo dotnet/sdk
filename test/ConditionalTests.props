@@ -49,6 +49,7 @@
       <Mechanism>project</Mechanism>
       <TestProjects>test/dotnet-format.*/**/*.csproj</TestProjects>
       <TriggerPaths>
+        src/Cli/dotnet/Commands/Format/**;
         src/Dotnet.Format/**;
         test/dotnet-format.*/**
       </TriggerPaths>
