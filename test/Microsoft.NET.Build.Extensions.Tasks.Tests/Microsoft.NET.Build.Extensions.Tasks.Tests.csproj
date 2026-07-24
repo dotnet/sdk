@@ -30,4 +30,8 @@
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\TaskTestEnvironment.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Combinatorial.MSTest" />
+    <Using Include="Combinatorial.MSTest" />
+  </ItemGroup>
 </Project>
