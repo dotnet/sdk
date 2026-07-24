@@ -15,9 +15,11 @@ issue in `nagilson/sdk`.
 | Multiple named tests | [1525292](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525292) | `main` | Four named failures from Helix TRX; two package tests share an HTTP 503 mechanism. |
 | Helix hang/host crash | [1524763](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1524763) | PR 55431 | `BrowserDiagnostics` hung for 50 minutes, hang dumps were captured, and the host crashed with work-item exit 7. |
 
-Manual-dispatch the workflow with one build ID at a time. PR and release builds
-are accepted for manual evaluation even though scheduled monitoring remains
-restricted to registered rolling branches.
+Manual-dispatch the workflow with one build ID at a time and wait for that run
+to finish before starting the next. The workflow concurrency group permits one
+running and one pending run; GitHub cancels an older pending run when another is
+queued. PR and release builds are accepted for manual evaluation even though
+scheduled monitoring remains restricted to registered rolling branches.
 
 Run all historical classifications locally:
 

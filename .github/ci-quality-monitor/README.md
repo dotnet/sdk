@@ -56,6 +56,29 @@ A branch heartbeat compares the registered GitHub head with recent AzDO builds.
 It tolerates batched CI, waits 90 minutes, and requires two consecutive misses
 before reporting that a pipeline did not start.
 
+## Relationship to `ci-analysis`
+
+The monitor follows the same core investigation rules as the `ci-analysis`
+skill: classify every failure independently, recover test results from crashed
+or canceled Helix work items, suppress dependency cascades, cross-reference
+existing issues per failure, and avoid calling a failure flaky,
+infrastructure-owned, PR-related, or safe to retry without evidence.
+
+The two workflows have different operating constraints. `ci-analysis` is an
+interactive PR investigation that can query Build Analysis, PR metadata and
+changed files, target-branch builds, build progression, binlogs, and additional
+AzDO or Helix data. This scheduled monitor pays the retrieval cost once in its
+deterministic collector and gives the agent a bounded public dossier. It does
+not imply that Build Analysis, target-branch behavior, PR correlation, or a
+binlog was checked when those facts are absent.
+
+Every proposed issue must therefore contain a bounded root cause analysis with
+the observed facts, the most specific supported causal chain, a confidence
+level, alternatives or unknowns, and the next discriminating check. Recurrence
+can establish that a failure is flaky, but it does not by itself establish why
+the failure occurs. Checks that need broader context are recorded as suggested
+investigation rather than represented as completed analysis.
+
 ## State and Bootstrap
 
 State is keyed by Azure DevOps organization, project, definition ID, and branch.
@@ -104,6 +127,9 @@ Issue creation is initially configured in staged mode. A preview requires:
 - for test KBEs, a collector-generated Build Analysis `ErrorMessage` validated
   against the original TRX lines using Arcade's ordered `String.Contains`
   semantics
+- an evidence-bounded root cause analysis that separates observed facts from
+  inference, states `High`, `Medium`, or `Low` confidence, identifies remaining
+  alternatives or unknowns, and leads with the next discriminating check
 
 The custom issue applicator enforces two separate paths:
 
@@ -115,6 +141,11 @@ The custom issue applicator enforces two separate paths:
   build. The applicator rejects non-recurring or unvalidated signatures and
   generates the `## Error Message` block; the agent cannot author or override
   it.
+
+For both paths, the applicator rejects bodies missing `Build Information`,
+`Failure History`, `Error Details`, `Root Cause Analysis`, or `Suggested
+Investigation`. The RCA must explicitly include observed evidence, assessment,
+confidence, and alternatives or unknowns.
 
 The monitor never applies `cookie`. Normal issue triage can add an area, type,
 `Test Debt`, and `cookie` when the resulting work is bounded enough for Issue
