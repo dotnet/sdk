@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 "0.5.135",
                 details: new Dictionary<string, string>
                 {
-                    { InstallerConstants.NuGetSourcesKey, "https://api.nuget.org/v3/index.json" }
+                    { InstallerConstants.NuGetSourcesKey, "https://packagefeedproxy.microsoft.io/nuget/v3/index.json" }
                 });
 
             IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None);
@@ -113,7 +113,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.AreEqual("Global Settings", source.Provider.Factory.DisplayName);
             Assert.AreEqual("NuGet", source.Installer.Factory.Name);
             source.GetDetails()["Author"].Should().NotBeNullOrEmpty();
-            Assert.AreEqual("https://api.nuget.org/v3/index.json", source.GetDetails()["NuGetSource"]);
+            Assert.AreEqual("https://packagefeedproxy.microsoft.io/nuget/v3/index.json", source.GetDetails()["NuGetSource"]);
             Assert.AreEqual("0.5.135", source.Version);
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);

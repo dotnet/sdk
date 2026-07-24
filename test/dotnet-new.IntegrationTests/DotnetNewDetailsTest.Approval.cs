@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 <configuration>
   <packageSources>
     <clear />
-    <add key=""NuGet.org"" value=""https://api.nuget.org/v3/index.json"" />
+    <add key=""NuGet.org"" value=""https://packagefeedproxy.microsoft.io/nuget/v3/index.json"" />
   </packageSources>
 </configuration>
 ");
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public Task CanDisplayDetails_InstalledPackage_NuGetFeed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", _nuGetPackageId, "--nuget-source", "https://api.nuget.org/v3/index.json")
+            new DotnetNewCommand(_log, "install", _nuGetPackageId, "--nuget-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
                 .WithoutBuiltInTemplates().WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()

@@ -15,7 +15,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         [TestMethod]
         public async Task CanReadPackageInfo()
         {
-            string nuGetOrgFeed = "https://api.nuget.org/v3/index.json";
+            string nuGetOrgFeed = "https://packagefeedproxy.microsoft.io/nuget/v3/index.json";
             var repository = Repository.Factory.GetCoreV3(nuGetOrgFeed);
             ServiceIndexResourceV3 indexResource = repository.GetResource<ServiceIndexResourceV3>(TestContext.Current!.CancellationToken)
                 ?? throw new InvalidOperationException("Failed to get ServiceIndexResourceV3.");

@@ -2,7 +2,7 @@
    Package version: 4.8.0-dev.792
    Reserved: True
    Details: Package Description
-   Source Feed: NuGet.org [https://api.nuget.org/v3/index.json]
+   Source Feed: NuGet.org [https://packagefeedproxy.microsoft.io/nuget/v3/index.json]
    Authors:
       nventive
    Owners:

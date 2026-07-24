@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public TestContext TestContext { get; set; } = null!;
 
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
-        private readonly IList<string> _additionalSources = new[] { "https://api.nuget.org/v3/index.json" };
+        private readonly IList<string> _additionalSources = new[] { "https://packagefeedproxy.microsoft.io/nuget/v3/index.json" };
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)

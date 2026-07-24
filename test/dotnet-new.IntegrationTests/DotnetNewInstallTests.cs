@@ -157,7 +157,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [TestMethod]
         public void CanInstallRemoteNuGetPackageWithPrereleaseVersion()
         {
-            new DotnetNewCommand(_log, "-i", "Microsoft.Azure.WebJobs.ProjectTemplates@4.0.1844-preview1", "--nuget-source", "https://api.nuget.org/v3/index.json")
+            new DotnetNewCommand(_log, "-i", "Microsoft.Azure.WebJobs.ProjectTemplates@4.0.1844-preview1", "--nuget-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanInstallRemoteNuGetPackageWithNuGetSource(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, commandName, "Take.Blip.Client.Templates", "--nuget-source", "https://api.nuget.org/v3/index.json")
+            new DotnetNewCommand(_log, commandName, "Take.Blip.Client.Templates", "--nuget-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching($"Success: Take\\.Blip\\.Client\\.Templates@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("blip-console");
 
-            new DotnetNewCommand(_log, commandName, "Take.Blip.Client.Templates", "--add-source", "https://api.nuget.org/v3/index.json")
+            new DotnetNewCommand(_log, commandName, "Take.Blip.Client.Templates", "--add-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
