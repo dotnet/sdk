@@ -11,8 +11,11 @@ namespace Microsoft.NET.Build.Tasks
 {
     //  Locates the root NuGet package directory for each of the input items that has PackageName and PackageVersion,
     //  but not PackageDirectory metadata specified
-    public class GetPackageDirectory : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GetPackageDirectory : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         public ITaskItem[] Items { get; set; } = Array.Empty<ITaskItem>();
 
         public string[] PackageFolders { get; set; } = Array.Empty<string>();
@@ -30,14 +33,32 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
+            // The package folder paths (PackageFolders and those read from the assets file) are already
+            // absolute, as they originate from NuGet restore. Likewise, the package directory resolved
+            // below is an absolute on-disk path. These paths are intentionally not wrapped in AbsolutePath:
+            // doing so would not change behavior and would only complicate this code.
             if (!string.IsNullOrEmpty(AssetsFileWithAdditionalPackageFolders))
             {
+                AbsolutePath assetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFileWithAdditionalPackageFolders);
                 var lockFileCache = new LockFileCache(this);
-                var lockFile = lockFileCache.GetLockFile(AssetsFileWithAdditionalPackageFolders);
+                var lockFile = lockFileCache.GetLockFile(assetsFilePath);
                 PackageFolders = PackageFolders.Concat(lockFile.PackageFolders.Select(p => p.Path)).ToArray();
             }
 
-            var packageResolver = NuGetPackageResolver.CreateResolver(PackageFolders);
+            string[] absolutePackageFolders = PackageFolders
+                .Select(p => string.IsNullOrEmpty(p) ? p : (string)TaskEnvironment.GetAbsolutePath(p))
+                .ToArray();
+
+            var originalByAbsolute = new Dictionary<string, string>(PackageFolders.Length, StringComparer.Ordinal);
+            for (int i = 0; i < PackageFolders.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(absolutePackageFolders[i]))
+                {
+                    originalByAbsolute[absolutePackageFolders[i]] = PackageFolders[i];
+                }
+            }
+
+            var packageResolver = NuGetPackageResolver.CreateResolver(absolutePackageFolders);
 
             int index = 0;
             var updatedItems = new ITaskItem[Items.Length];
@@ -55,12 +76,21 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 var parsedPackageVersion = NuGetVersion.Parse(packageVersion);
-                string packageDirectory = packageResolver.GetPackageDirectory(packageName, parsedPackageVersion);
+                string packageDirectory = packageResolver.GetPackageDirectory(packageName, parsedPackageVersion, out string packageRoot);
 
                 if (packageDirectory == null)
                 {
                     updatedItems[index++] = item;
                     continue;
+                }
+
+                // Restore the caller's original (possibly relative) folder prefix so the
+                // PackageDirectory metadata is unchanged from before absolutization.
+                if (packageRoot != null
+                    && originalByAbsolute.TryGetValue(packageRoot, out string originalRoot)
+                    && !string.Equals(originalRoot, packageRoot, StringComparison.Ordinal))
+                {
+                    packageDirectory = originalRoot + packageDirectory.Substring(packageRoot.Length);
                 }
 
                 var newItem = new TaskItem(item);

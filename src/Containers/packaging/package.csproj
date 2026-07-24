@@ -25,12 +25,6 @@
                           OutputItemType="ContainerLibraryOutput"
                           GlobalPropertiesToRemove="PublishDir"/>
 
-        <ProjectReference Include="../containerize/containerize.csproj"
-                          PrivateAssets="all"
-                          IncludeAssets="runtime"
-                          ReferenceOutputAssembly="true"
-                          Condition="'$(DotNetBuildSourceOnly)' != 'true'"
-                          GlobalPropertiesToRemove="PublishDir" />
     </ItemGroup>
 
     <Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec">
@@ -41,18 +35,6 @@
     </Target>
 
     <Target Name="AddItemsForPackaging" AfterTargets="Build">
-        <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-            <!-- containerize folder -->
-            <Content Include="$(OutDir)containerize.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)containerize.runtimeconfig.json" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)Newtonsoft.Json.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)NuGet.*.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)Microsoft.DotNet.Cli.Utils.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)System.CommandLine.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)Valleysoft.DockerCredsProvider.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)Microsoft.Extensions.*.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="@(ContainerLibraryOutput)" Pack="true" PackagePath="containerize/" />
-        </ItemGroup>
         <MSBuild Projects="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" Properties="TargetFramework=$(TargetFramework)" Targets="ResolveAssemblyReferences">
             <Output TaskParameter="TargetOutputs" ItemName="_AllNetContainerTaskDependencies" />
         </MSBuild>

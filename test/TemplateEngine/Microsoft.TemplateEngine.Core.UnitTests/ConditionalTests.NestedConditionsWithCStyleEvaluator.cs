@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
@@ -11,7 +10,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         /// <summary>
         /// Tests that the inner if-elseif-else with special tokens gets processed correctly.
         /// </summary>
-        [Fact(DisplayName = nameof(VerifyOuterIfAndEmbeddedConditionals))]
+        [TestMethod]
         public void VerifyOuterIfAndEmbeddedConditionals()
         {
             string originalValue = @"Lead content
@@ -94,7 +93,7 @@ moar trailing content";
             RunAndVerify(originalValue, expectedValue, processor, 9999);
         }
 
-        [Fact(DisplayName = nameof(VerifyThreeLevelEmbedding))]
+        [TestMethod]
         public void VerifyThreeLevelEmbedding()
         {
             string originalValue = @"Lead content

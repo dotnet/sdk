@@ -1,15 +1,14 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Issue2753_CS_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -31,7 +30,7 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(11, 13));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Issue2753_VB_DiagnosticAsync()
         {
             await VerifyVisualBasicAnalyzerAsync(
@@ -48,7 +47,7 @@ End Module",
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(7, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorSetResolverToNullShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -82,7 +81,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorUseSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -116,7 +115,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorUseSecureResolverWithPermissionsShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -170,7 +169,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorSetResolverToNullInTryClauseShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -212,7 +211,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorUseNonSecureResolverInCatchClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -257,7 +256,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorUseNonSecureResolverInFinallyClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -303,7 +302,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorDoNotSetResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -337,7 +336,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorUseNonSecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -374,7 +373,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoCtorUseNonSecureResolverInTryClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -419,7 +418,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetInsecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -467,7 +466,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentCreatedAsTempSetResolverToNullShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -510,7 +509,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentCreatedAsTempSetInsecureResolverShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(

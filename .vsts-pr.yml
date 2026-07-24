@@ -19,19 +19,16 @@ pr:
     - src
     - template_feed
     - test
+    - .config
     - '*.yml'
     - '*.props'
     - '*.targets'
+    - global.json
     exclude:
+    - .github/ISSUE_TEMPLATE/*
     - documentation/*
     - README.md
     - CODEOWNERS
-
-parameters:
-- name: enableArm64Job
-  displayName: Enables the ARM64 job
-  type: boolean
-  default: true
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -41,30 +38,86 @@ variables:
 resources:
   containers:
   - container: azureLinux30Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-build-amd64
+  # Cross-compilation prereq image (clang + /crossrootfs/arm64 sysroot) used by the Linux arm64
+  # AOT leg. NativeAOT cross-links dotnet-aot for linux-arm64 from an x64 host; the container
+  # provides the native toolchain + sysroot and sets ROOTFS_DIR, and the leg passes
+  # /p:CrossBuild=true so ILC emits --sysroot/--target.
+  - container: azureLinuxCrossArm64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-cross-arm64
+    env:
+      ROOTFS_DIR: /crossrootfs/arm64
 
 stages:
 ############### BUILD STAGE ###############
 - stage: build
   displayName: Build
   jobs:
+  ############### HELIX JOB MONITOR ###############
+  - template: /eng/common/core-templates/job/helix-job-monitor.yml
+
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
+
+  ### AOT (win-arm64 cross-build) ###
+  # dotnet-aot is built with NativeAOT, which can cross-compile win-x64 -> win-arm64 (the MSVC arm64
+  # linker and the RID-specific ILCompiler package handle the cross-link; no sysroot is required).
+  # This leg BUILDS on the win-x64 pool with /p:CrossBuild=true and produces the dotnet-aot .dll plus
+  # its mstat/dgml size-analysis artifacts (that step is gated on the AOT category). It is build-only
+  # (runTests: false): there is no wired windows arm64 Helix queue yet, so running the *.AoT.Tests on
+  # arm64 hardware is a follow-up pending a windows.11.arm64 queue.
+  # The VS 2026 build image is required for the arm64 linker used by this cross-build.
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+    parameters:
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals windows.vs2026.amd64.open
+        os: windows
+      helixTargetQueue: windows.amd64.vs2026.pre.scout.open
+      windowsJobParameterSets:
+      - categoryName: AOT
+        targetArchitecture: arm64
+        runtimeIdentifier: win-arm64
+        osProperties: /p:CrossBuild=true
+        runTests: false
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
       helixTargetQueue: ubuntu.2204.amd64.open
+
+  ### AOT (linux-arm64 cross-build) ###
+  # dotnet-aot is built with NativeAOT, which can cross-compile for linux-arm64 from an x64 host
+  # given a cross toolchain and target sysroot. This leg therefore runs on the regular x64 Linux
+  # pool inside the azurelinux cross-arm64 prereq container (which provides clang + the
+  # /crossrootfs/arm64 sysroot and sets ROOTFS_DIR) and passes /p:CrossBuild=true. Consistent with
+  # the other linux-arm64 legs, this only performs the build (the x64 AOT leg provides the running
+  # test coverage).
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals build.azurelinux.3.amd64.open
+        os: linux
+      helixTargetQueue: ubuntu.2204.amd64.open
+      timeoutInMinutes: 90
+      linuxJobParameterSets:
+      - categoryName: AOT
+        container: azureLinuxCrossArm64
+        targetArchitecture: arm64
+        runtimeIdentifier: linux-arm64
+        osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
+        runTests: false
 
   ############### MACOS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -73,20 +126,36 @@ stages:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
-      helixTargetQueue: osx.15.amd64.open
-  ### ARM64 ###
-  - ${{ if eq(parameters.enableArm64Job, true) }}:
+      helixTargetQueue: osx.15.arm64.open
+  ### AOT (osx-arm64 cross-build) ###
+  # dotnet-aot is built with NativeAOT, which can cross-compile osx-x64 -> osx-arm64 (clang/link on
+  # macOS are multi-target and need no extra sysroot). This leg BUILDS on the x64 macOS pool with
+  # /p:CrossBuild=true; because AOT tests are dispatched to Helix, the *.AoT.Tests still run on the
+  # osx.15.arm64 Helix queue, so there is no macOS AOT test-coverage loss.
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-latest
+        os: macOS
+      helixTargetQueue: osx.15.arm64.open
+      macOSJobParameterSets:
+      - categoryName: AOT
+        runAoTTests: true
+        targetArchitecture: arm64
+        runtimeIdentifier: osx-arm64
+        osProperties: /p:CrossBuild=true
+  ### x64 (CI only) ###
+  - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
       parameters:
         pool:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
-        helixTargetQueue: osx.15.arm64.open
+        helixTargetQueue: osx.15.amd64.open
         macOSJobParameterSets:
-        - categoryName: TestBuild
-          targetArchitecture: arm64
-          runtimeIdentifier: osx-arm64
+        - runtimeIdentifier: osx-x64
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml

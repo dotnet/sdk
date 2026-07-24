@@ -12,16 +12,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public partial class GetDependsOnNETStandard : TaskBase, IMultiThreadableTask
     {
-        #if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
-            set => _taskEnvironment = value;
-        }
-        #else
-        public TaskEnvironment TaskEnvironment { get; set; } = null!;
-        #endif
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         private const string NetStandardAssemblyName = "netstandard";
 

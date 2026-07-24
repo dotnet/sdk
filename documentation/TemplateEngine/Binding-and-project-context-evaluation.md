@@ -59,7 +59,7 @@ Once project is located, its MSBuild properties are evaluated. The project shoul
 Only .NET [SDK-style projects](https://docs.microsoft.com/en-us/dotnet/core/project-sdk/overview) are supported.
 
 It is recommended to configure `defaultValue` for `bind` symbol that will be used in case evaluation fails. 
-If applicable, it is also recommended to use [project capability constraint](https://github.com/dotnet/templating/wiki/Constraints#Project-capabilities) to define the projects that the template can be added to.
+If applicable, it is also recommended to use [project capability constraint](Constraints.md#project-capabilities) to define the projects that the template can be added to.
 
 Example - binds `DefaultNamespace` symbol to `RootNamespace` of the project:
 ```json

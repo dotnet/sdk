@@ -218,15 +218,15 @@ Hello, World!
 # Running unit tests
 
 ## Narrative
-Writing tests is important, and our developer knows that. She is now writing out the shared logic in her class library and she wants to make sure that she has test coverage. Investigating the manuals, she realizes that the CLI toolset comes with support for xUnit tests including the test runner.  
+Writing tests is important, and our developer knows that. She is now writing out the shared logic in her class library and she wants to make sure that she has test coverage. Investigating the manuals, she realizes that the CLI toolset comes with support for MSTest tests including the test runner.
 
 ## Steps
 
-1. Create a new xunit test project using `dotnet new`
+1. Create a new MSTest test project using `dotnet new`
 
 ```
-/> dotnet new tests --type xunit
-Created "tests" xunit test project in "tests".
+/> dotnet new mstest -o tests
+Created "tests" MSTest test project in "tests".
 
 /tests>
 ```
@@ -246,17 +246,18 @@ Created "tests" xunit test project in "tests".
 
 3. Add a test to the test class
 ```
-using System;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace tests
 {
+    [TestClass]
     public class Tests
     {
-        [Fact]
-        public void AssertTrue() {
-            Assert.True(true);
-        }        
+        [TestMethod]
+        public void AssertTrue()
+        {
+            Assert.IsTrue(true);
+        }
     }
 }
 ```

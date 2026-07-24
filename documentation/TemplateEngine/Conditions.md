@@ -17,15 +17,15 @@
 
 Conditions are used to drive [dynamic content generating or replacing](Conditional-processing-and-comment-syntax.md).
 
-Conditions use C++ style of [conditional preprocessor expressions](https://docs.microsoft.com/en-us/cpp/preprocessor/hash-if-hash-elif-hash-else-and-hash-endif-directives-c-cpp?view=msvc-170). Expressions are composed from constant literals (strings, numbers, `true`, `false`), [operators](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Core/Expressions/Cpp/Operator.cs), [symbols](https://github.com/dotnet/templating/blob/main/docs/Available-Symbols-Generators.md), brackets and whitespaces. Only single line expressions are supported. Boolean and numerical expressions are supported (nonzero value is interpreted as `true`)
+Conditions use C++ style of [conditional preprocessor expressions](https://docs.microsoft.com/en-us/cpp/preprocessor/hash-if-hash-elif-hash-else-and-hash-endif-directives-c-cpp?view=msvc-170). Expressions are composed from constant literals (strings, numbers, `true`, `false`), [operators](../../src/TemplateEngine/Microsoft.TemplateEngine.Core/Expressions/Cpp/Operator.cs), [symbols](Available-Symbols-Generators.md), brackets and whitespaces. Only single line expressions are supported. Boolean and numerical expressions are supported (nonzero value is interpreted as `true`)
 
-[Sample conditions in source code](https://github.com/dotnet/templating/blob/main/test/Microsoft.TemplateEngine.Core.UnitTests/ConditionalTests.CStyleEvaluator.cs)
+[Sample conditions in source code](../../test/TemplateEngine/Microsoft.TemplateEngine.Core.UnitTests/ConditionalTests.CStyleEvaluator.cs)
 
 ### Generated Conditions
 Unlike C++ preprocessor conditions, template engine allows ability for using conditional expressions that are based on results of other expressions. Specifically [Evaluate](Available-Symbols-Generators.md#evaluate) and [Computed](Reference-for-template.json.md#computed-symbol) symbols can be leveraged for this purpose.
 
 ### Example 
-(other related sample in [GeneratorTest.json](https://github.com/dotnet/templating/blob/main/test/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/SchemaTests/GeneratorTest.json#L82-L84)):
+(other related sample in [GeneratorTest.json](https://github.com/dotnet/sdk/blob/6423cf7db53/test/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/SchemaTests/GeneratorTest.json#L82-L84)):
 
 `template.json`:
 ```json
@@ -77,7 +77,7 @@ This allows for easier authoring of nested generated conditions.
 
 Information about multi-choice symbols can be found in [Reference for `template.json`](Reference-for-template.json.md#multichoice-symbols-specifics)
 
-Comparison to multi-choice symbol results in operation checking of a presence of any value of a multi-choice parameter - meaning `==` operator behaves as `contains()` operation. Example (sourced from [integration test](https://github.com/dotnet/templating/tree/main/test/Microsoft.TemplateEngine.TestTemplates/test_templates/TemplateWithMultiValueChoice)):
+Comparison to multi-choice symbol results in operation checking of a presence of any value of a multi-choice parameter - meaning `==` operator behaves as `contains()` operation. Example (sourced from [integration test](../../test/TestAssets/TestPackages/TemplateEngine/test_templates/TemplateWithMultiValueChoice)):
 
 `template.json`:
 ```json

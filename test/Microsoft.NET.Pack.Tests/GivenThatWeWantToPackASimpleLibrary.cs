@@ -3,13 +3,12 @@
 
 namespace Microsoft.NET.Pack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPackASimpleLibrary : SdkTest
     {
-        public GivenThatWeWantToPackASimpleLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
         public void It_packs_successfully()
         {
             var testAsset = TestAssetsManager
@@ -35,6 +34,7 @@ namespace Microsoft.NET.Pack.Tests
                 $"HelloWorld.pdb",
                 $"HelloWorld.deps.json",
                 $"HelloWorld.runtimeconfig.json",
+                $"HelloWorld.runtimeconfig.dev.json",
                 $"HelloWorld{EnvironmentInfo.ExecutableExtension}",
             });
         }

@@ -30,7 +30,7 @@ build.cmd
 
 The build script will output a `dotnet` installation to `artifacts\bin\redist\Debug\dotnet` that will include any local changes to the .NET Core CLI.
 
-As part of the build, some intermediate files will get generated which may run into long-path issues. If you encounter a build failure with an error message similar to `Resource file [filename].resx cannot be found.`, [enable long paths](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later) and try again.
+As part of the build, some intermediate files will get generated which may run into long-path issues. If you encounter a build failure with an error message similar to `Resource file [filename].resx cannot be found.`, [enable long paths in Windows](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later) and in Git (`git config core.longpaths true`), then try again.
 
 #### Using Visual Studio
 
@@ -228,7 +228,6 @@ infrastructure issues unrelated to the PR.
 Example reasons:
 
 - `/ba-g deadletter` - Helix work item crashed with "DeadLetter" status.
-- `/ba-g docs-only change` - PR did not change any source code.
 - `/ba-g insufficient info in logs` - No good unique pattern in the logs to open a known issue.
 - `/ba-g recently fixed known issue #<number>` - The known issue fix was already merged, but CI ran
   before it.
