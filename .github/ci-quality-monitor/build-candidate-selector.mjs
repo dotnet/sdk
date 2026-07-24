@@ -6,12 +6,12 @@ import {
   matchesPipeline
 } from "./collector-policy.mjs";
 import {
-  createAuditProcessingKey,
+  createAuditKey,
+  createPipelineStateKey,
   isAuditProcessed,
   markAuditProcessed,
   recordProcessedBuilds,
-  selectUnprocessedFailures,
-  stateKey
+  selectUnprocessedFailures
 } from "./state.mjs";
 
 /** @typedef {import("./types.d.ts").CandidateSelection} CandidateSelection */
@@ -41,7 +41,7 @@ export class BuildCandidateSelector {
   }
 
   selectHighCandidate(pipeline, build, history, auditContext, mergedPullRequest = null) {
-    const auditKey = createAuditProcessingKey(build, "stable-branch", auditContext);
+    const auditKey = createAuditKey(build, "stable-branch", auditContext);
     const candidate = !isAuditProcessed(this.state, pipeline, auditKey) && isFailedBuild(build) ? build : null;
     markAuditProcessed(this.state, pipeline, auditKey);
     return {
@@ -54,7 +54,7 @@ export class BuildCandidateSelector {
     };
   }
 
-  async selectEventBuild(buildId, mergedPullRequest = null) {
+  async selectEventCandidate(buildId, mergedPullRequest = null) {
     const selected = await this.selectManualBuild(buildId);
     if (isStableBranchBuild(selected.build, selected.pipeline)) {
       const history = (await this.getAzureClient(selected.pipeline).listCompletedBuilds(selected.build.sourceBranch))
@@ -76,29 +76,29 @@ export class BuildCandidateSelector {
       `stable-merge:${mergedPullRequest.number}:${mergedPullRequest.mergeCommitSha}`, mergedPullRequest);
   }
 
-  async selectEventBuildByHead(headSha, mergedPullRequest = null) {
+  async selectEventCandidateByHead(headSha, mergedPullRequest = null) {
     for (const pipeline of this.registry.pipelines) {
       const build = await this.getAzureClient(pipeline).findPullRequestBuildByHead(headSha);
-      if (build) return this.selectEventBuild(`${build.id}`, mergedPullRequest);
+      if (build) return this.selectEventCandidate(`${build.id}`, mergedPullRequest);
     }
     return emptySelection();
   }
 
   /** @returns {Promise<CandidateSelection>} */
-  async select(buildId, eventBuildId, eventHeadSha, mergedPullRequest) {
+  async selectCandidates(buildId, eventBuildId, eventHeadSha, mergedPullRequest) {
     if (buildId) {
       const selected = await this.selectManualBuild(buildId);
       if (selected.build.status?.toLowerCase() !== "completed") return emptySelection();
       const history = await this.getAzureClient(selected.pipeline).listCompletedBuilds(selected.build.sourceBranch);
       return { candidates: [{ ...selected, history }], bootstrap: false, pipelineHealth: [] };
     }
-    if (eventBuildId) return this.selectEventBuild(eventBuildId, mergedPullRequest);
-    if (eventHeadSha) return this.selectEventBuildByHead(eventHeadSha, mergedPullRequest);
-    return this.selectScheduledBuilds();
+    if (eventBuildId) return this.selectEventCandidate(eventBuildId, mergedPullRequest);
+    if (eventHeadSha) return this.selectEventCandidateByHead(eventHeadSha, mergedPullRequest);
+    return this.selectScheduledCandidates();
   }
 
   /** @returns {Promise<CandidateSelection>} */
-  async selectScheduledBuilds() {
+  async selectScheduledCandidates() {
     const candidates = [];
     const pipelineHealth = [];
     let bootstrap = false;
@@ -106,13 +106,13 @@ export class BuildCandidateSelector {
       for (const branch of pipeline.branches) {
         const azure = this.getAzureClient(pipeline);
         const history = (await azure.listCompletedBuilds(branch)).filter(build => isRegisteredBuild(build, pipeline));
-        const key = stateKey(pipeline, branch);
+        const key = createPipelineStateKey(pipeline, branch);
         const selected = selectUnprocessedFailures(this.state, key, history);
         bootstrap ||= selected.bootstrap;
         for (const build of selected.failures) {
           if ((pipeline.stableBranches ?? []).includes(branch)) {
             const auditContext = `stable-direct:${branch}`;
-            const auditKey = createAuditProcessingKey(build, "stable-branch", auditContext);
+            const auditKey = createAuditKey(build, "stable-branch", auditContext);
             if (!isAuditProcessed(this.state, pipeline, auditKey)) {
               markAuditProcessed(this.state, pipeline, auditKey);
               candidates.push({
@@ -121,7 +121,8 @@ export class BuildCandidateSelector {
             }
           }
         }
-        await this.pipelineHealthMonitor.collect(pipeline, branch, azure, key, pipelineHealth);
+        const healthObservation = await this.pipelineHealthMonitor.checkPipeline(pipeline, branch, azure, key);
+        if (healthObservation) pipelineHealth.push(healthObservation);
         recordProcessedBuilds(this.state, key, history);
       }
     }

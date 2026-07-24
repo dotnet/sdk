@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-import { collectEvidence } from "./collect-ci-evidence.mjs";
+import { collectCiEvidence } from "./collect-ci-evidence.mjs";
 
 function parseArguments(argumentsList) {
   const options = { catalog: ".github/ci-quality-monitor/evaluation-builds.json", output: "artifacts/tmp/ci-quality-monitor/evaluations" };
@@ -30,7 +30,7 @@ async function main() {
   await mkdir(options.output, { recursive: true });
   const results = [];
   for (const example of catalog.examples) {
-    const dossier = await collectEvidence(registry, `${example.buildId}`, { schemaVersion: 1, pipelines: {} });
+    const dossier = await collectCiEvidence(registry, `${example.buildId}`, { schemaVersion: 1, pipelines: {} });
     const result = evaluateExample(example, dossier);
     results.push({ ...example, ...result });
     await writeFile(path.join(options.output, `${example.buildId}.json`), `${JSON.stringify(dossier, null, 2)}\n`);

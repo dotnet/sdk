@@ -1,4 +1,4 @@
-import { createHeartbeatObservation, isRegisteredBuild, updateHeartbeatState } from "./collector-policy.mjs";
+import { createHeartbeatObservation, isRegisteredBuild, recordHeartbeatCheck } from "./collector-policy.mjs";
 import { normalizeEvidenceText } from "./evidence-utils.mjs";
 import { getGitHubBranchHead } from "./github/client.mjs";
 
@@ -8,7 +8,7 @@ export class PipelineHealthMonitor {
     this.fetch = fetchImplementation;
   }
 
-  async collect(pipeline, branch, azure, stateKey, observations) {
+  async checkPipeline(pipeline, branch, azure, stateKey) {
     try {
       const [head, recentBuilds] = await Promise.all([
         getGitHubBranchHead(pipeline, branch, this.fetch),
@@ -16,16 +16,16 @@ export class PipelineHealthMonitor {
       ]);
       const heartbeat = createHeartbeatObservation(
         pipeline, branch, head, recentBuilds.filter(build => isRegisteredBuild(build, pipeline)));
-      const trackedHeartbeat = updateHeartbeatState(this.state, stateKey, heartbeat);
-      if (trackedHeartbeat) observations.push(trackedHeartbeat);
+      const trackedHeartbeat = recordHeartbeatCheck(this.state, stateKey, heartbeat);
+      return trackedHeartbeat;
     } catch (error) {
-      observations.push({
+      return {
         kind: "pipeline-heartbeat",
         category: "heartbeat-unavailable",
         component: `${pipeline.repository}:${branch}`,
         mechanism: normalizeEvidenceText(error.message),
         actionable: false
-      });
+      };
     }
   }
 }

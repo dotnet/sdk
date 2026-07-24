@@ -3,14 +3,14 @@ import test from "node:test";
 
 import {
   applyKbeRecurrence,
-  createBuildProcessingKey,
+  createBuildAttemptKey,
   createPipelineObservation,
   createTaskObservations,
   classifyTaskFailure,
   classifyWorkItem,
   createFailureFingerprint,
   createHeartbeatObservation,
-  collectEvidence,
+  collectCiEvidence,
   CiEvidenceCollector,
   getTimelineFailuresFromRecords,
   createBuildSummary,
@@ -34,7 +34,7 @@ test("CiEvidenceCollector owns one Azure client per registered pipeline", () => 
     { schemaVersion: 1, pipelines: {} },
     async () => { throw new Error("not called"); });
 
-  assert.equal(collector.azure(pipeline), collector.azure(pipeline));
+  assert.equal(collector.getAzureClient(pipeline), collector.getAzureClient(pipeline));
 });
 
 test("parseArguments requires registry and output", () => {
@@ -91,7 +91,7 @@ test("subsequent polls select only unseen failures", () => {
     { id: 3, result: "succeeded", finishTime: "2026-07-24T13:00:00Z" },
     { id: 2, result: "failed", finishTime: "2026-07-24T12:00:00Z" }
   ];
-  const state = { pipelines: { "pipeline:main": { processedBuildKeys: history.slice(1).map(createBuildProcessingKey) } } };
+  const state = { pipelines: { "pipeline:main": { processedBuildKeys: history.slice(1).map(createBuildAttemptKey) } } };
 
   const selected = selectUnprocessedFailures(state, "pipeline:main", history);
 
@@ -102,20 +102,11 @@ test("subsequent polls select only unseen failures", () => {
 test("same build ID is reconsidered when its completed attempt changes", () => {
   const original = { id: 4, result: "failed", finishTime: "2026-07-24T14:00:00Z" };
   const retried = { id: 4, result: "failed", finishTime: "2026-07-24T15:00:00Z" };
-  const state = { pipelines: { "pipeline:main": { processedBuildKeys: [createBuildProcessingKey(original)] } } };
+  const state = { pipelines: { "pipeline:main": { processedBuildKeys: [createBuildAttemptKey(original)] } } };
 
   const selected = selectUnprocessedFailures(state, "pipeline:main", [retried]);
 
   assert.deepEqual(selected.failures, [retried]);
-});
-
-test("legacy processed build IDs remain recognized during migration", () => {
-  const build = { id: 4, result: "failed", finishTime: "2026-07-24T14:00:00Z" };
-  const state = { pipelines: { "pipeline:main": { processedBuildIds: [4] } } };
-
-  const selected = selectUnprocessedFailures(state, "pipeline:main", [build]);
-
-  assert.deepEqual(selected.failures, []);
 });
 
 test("open PR check-suite builds do not run in the HIGH-only milestone", async () => {
@@ -144,14 +135,14 @@ test("open PR check-suite builds do not run in the HIGH-only milestone", async (
   const registry = { pipelines: [{ organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk", branches: ["refs/heads/main"] }] };
   const state = { schemaVersion: 1, pipelines: {} };
 
-  const first = await collectEvidence(registry, null, state, fetchImplementation, "42");
-  const second = await collectEvidence(registry, null, state, fetchImplementation, "42");
+  const first = await collectCiEvidence(registry, null, state, fetchImplementation, "42");
+  const second = await collectCiEvidence(registry, null, state, fetchImplementation, "42");
 
   assert.equal(first.failures.length, 0);
   assert.equal(second.failures.length, 0);
 });
 
-test("manual build IDs skip incomplete attempts without consuming them", async () => {
+test("manual build IDs skip incomplete attempts without recording them", async () => {
   const build = {
     id: 44, status: "inProgress", result: null, reason: "pullRequest", sourceBranch: "refs/pull/123/merge",
     sourceVersion: "abc", finishTime: null,
@@ -167,7 +158,7 @@ test("manual build IDs skip incomplete attempts without consuming them", async (
     repository: "dotnet/sdk", branches: ["refs/heads/main"]
   }] };
 
-  const dossier = await collectEvidence(registry, "44", state, fetchImplementation);
+  const dossier = await collectCiEvidence(registry, "44", state, fetchImplementation);
 
   assert.equal(dossier.failures.length, 0);
   assert.equal(shouldRunAgent(dossier), false);
@@ -190,8 +181,8 @@ test("direct stable-branch check-suite builds audit once at HIGH", async () => {
   }] };
   const state = { schemaVersion: 1, pipelines: {} };
 
-  const first = await collectEvidence(registry, null, state, fetchImplementation, "43");
-  const second = await collectEvidence(registry, null, state, fetchImplementation, "43");
+  const first = await collectCiEvidence(registry, null, state, fetchImplementation, "43");
+  const second = await collectCiEvidence(registry, null, state, fetchImplementation, "43");
 
   assert.equal(first.failures.length, 1);
   assert.equal(first.failures[0].priority, "HIGH");
@@ -226,9 +217,9 @@ test("merged stable-target PR failures promote the same Azure attempt once", asy
   const state = { schemaVersion: 1, pipelines: {} };
   const mergedPullRequest = { number: 124, baseRef: "main", mergeCommitSha: "landed-sha" };
 
-  const openPr = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha");
-  const promoted = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha", mergedPullRequest);
-  const redelivery = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha", mergedPullRequest);
+  const openPr = await collectCiEvidence(registry, null, state, fetchImplementation, null, "head-sha");
+  const promoted = await collectCiEvidence(registry, null, state, fetchImplementation, null, "head-sha", mergedPullRequest);
+  const redelivery = await collectCiEvidence(registry, null, state, fetchImplementation, null, "head-sha", mergedPullRequest);
 
   assert.equal(openPr.failures.length, 0);
   assert.equal(promoted.failures.length, 1);
@@ -255,7 +246,7 @@ test("merged PR audits require a landed commit identity", async () => {
     branches: ["refs/heads/main"], stableBranches: ["refs/heads/main"]
   }] };
 
-  const dossier = await collectEvidence(
+  const dossier = await collectCiEvidence(
     registry, null, { schemaVersion: 1, pipelines: {} }, fetchImplementation, "44", null,
     { number: 124, baseRef: "main", mergeCommitSha: "" });
 

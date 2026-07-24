@@ -2,10 +2,10 @@ import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
-import { collectEvidence } from "./collector.mjs";
+import { collectCiEvidence } from "./collector.mjs";
 
 export {
-  createBuildProcessingKey,
+  createBuildAttemptKey,
   createBuildSummary,
   createFailureFingerprint,
   createFingerprintSegment,
@@ -17,7 +17,7 @@ export {
   createTaskObservations
 } from "./azure/observations.mjs";
 export {
-  collectEvidence,
+  collectCiEvidence,
   CiEvidenceCollector
 } from "./collector.mjs";
 export {
@@ -83,7 +83,7 @@ async function main() {
   const options = parseArguments(process.argv.slice(2));
   const registry = JSON.parse(await readFile(options.registry, "utf8"));
   const state = await readState(options.state);
-  const dossier = await collectEvidence(
+  const dossier = await collectCiEvidence(
     registry,
     options["build-id"],
     state,

@@ -45,7 +45,7 @@ export function createBuildSummary(build) {
   };
 }
 
-export function createBuildProcessingKey(build) {
+export function createBuildAttemptKey(build) {
   return `${build.id}:${build.finishTime ?? ""}:${build.result ?? ""}`;
 }
 

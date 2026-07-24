@@ -30,7 +30,7 @@ export class FailureEvidenceCollector {
     return related;
   }
 
-  async collect(pipeline, build, history, candidate = {}) {
+  async collectFailureEvidence(pipeline, build, history, candidate = {}) {
     const azure = this.getAzureClient(pipeline);
     const detailedBuild = build.validationResults ? build : await azure.getBuild(build.id);
     const timeline = await azure.getTimeline(build.id);

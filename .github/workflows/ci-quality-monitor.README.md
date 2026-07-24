@@ -188,7 +188,7 @@ creates the live incident normally.
 
 "Always file" for HIGH means every distinct **actionable root mechanism**, not
 every red task or every merge. Generic Helix monitors, dependency cancellations,
-artifact download cascades, duplicate signatures, and successful events remain
+artifact download cascades, duplicate fingerprints, and successful events remain
 non-issues.
 
 For MED lifecycle management, the issue should carry a trusted hidden PR marker.

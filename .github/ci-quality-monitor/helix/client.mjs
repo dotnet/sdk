@@ -10,7 +10,7 @@ import {
   summarizeTestMechanism
 } from "./parsing.mjs";
 
-function getHelixReferences(timelineFailures) {
+function getUniqueHelixReferences(timelineFailures) {
   const references = timelineFailures.flatMap(failure => failure.helixReferences ?? []);
   return [...new Map(references.map(reference => [`${reference.jobId}:${reference.workItem}`, reference])).values()];
 }
@@ -60,7 +60,7 @@ export class HelixEvidenceClient {
     return normalizeEvidenceText(text.slice(-MAX_CONSOLE_CHARACTERS), MAX_CONSOLE_CHARACTERS);
   }
 
-  async getTestFailures(workItem) {
+  async getTestResults(workItem) {
     const testFile = (workItem.Files ?? []).find(file => /\.(?:trx|xml)$/i.test(file.FileName));
     if (!testFile) return { summary: null, failures: [] };
     const response = await this.http.response(testFile.Uri);
@@ -80,7 +80,7 @@ export class HelixEvidenceClient {
       unavailable.push(normalizeEvidenceText(error.message));
     }
     try {
-      testResults = await this.getTestFailures(workItem);
+      testResults = await this.getTestResults(workItem);
     } catch (error) {
       unavailable.push(normalizeEvidenceText(error.message));
     }
@@ -118,7 +118,7 @@ export class HelixEvidenceClient {
 
   async collectObservations(timelineFailures, maxReferences = Number.POSITIVE_INFINITY) {
     const observations = [];
-    for (const reference of getHelixReferences(timelineFailures).slice(0, maxReferences)) {
+    for (const reference of getUniqueHelixReferences(timelineFailures).slice(0, maxReferences)) {
       try {
         observations.push(...await this.collectWorkItemObservations(reference));
       } catch (error) {

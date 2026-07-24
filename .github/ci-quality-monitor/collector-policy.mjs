@@ -22,7 +22,7 @@ export function createHeartbeatObservation(pipeline, branch, head, builds, now =
   };
 }
 
-export function updateHeartbeatState(state, key, observation) {
+export function recordHeartbeatCheck(state, key, observation) {
   const previousMisses = state.pipelines[key]?.heartbeatMisses ?? 0;
   const heartbeatMisses = observation ? previousMisses + 1 : 0;
   state.pipelines[key] = { ...state.pipelines[key], heartbeatMisses };

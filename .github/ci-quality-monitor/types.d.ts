@@ -33,7 +33,7 @@ export interface CandidateSelection {
   pipelineHealth: Observation[];
 }
 
-export interface CollectionDossier {
+export interface CiEvidenceDossier {
   schemaVersion: 1;
   generatedAt: string;
   manualBuildId: string | null;
