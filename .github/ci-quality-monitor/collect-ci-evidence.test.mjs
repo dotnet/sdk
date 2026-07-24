@@ -10,6 +10,7 @@ import {
   classifyWorkItem,
   createFailureSignature,
   createHeartbeatObservation,
+  collectEvidence,
   getTimelineFailuresFromRecords,
   normalizeBuild,
   parseArguments,
@@ -101,6 +102,89 @@ test("legacy processed build IDs remain consumable during migration", () => {
   const selected = selectUnprocessedFailures(state, "pipeline:main", [build]);
 
   assert.deepEqual(selected.failures, []);
+});
+
+test("PR check-suite builds analyze once without bootstrap suppression", async () => {
+  const build = {
+    id: 42,
+    result: "failed",
+    reason: "pullRequest",
+    sourceBranch: "refs/pull/123/merge",
+    sourceVersion: "abc",
+    finishTime: "2026-07-24T14:00:00Z",
+    definition: { id: 101, name: "dotnet-sdk-public-ci" },
+    repository: { id: "dotnet/sdk" },
+    validationResults: []
+  };
+  const responses = new Map([
+    ["/build/builds/42?", build],
+    ["/build/builds?", { value: [build] }],
+    ["/build/builds/42/timeline?", { records: [] }],
+    ["/runs?", { value: [] }]
+  ]);
+  const fetchImplementation = async url => {
+    const match = [...responses].find(([fragment]) => url.includes(fragment));
+    assert.ok(match, `Unexpected URL: ${url}`);
+    return { ok: true, status: 200, json: async () => match[1] };
+  };
+  const registry = { pipelines: [{ organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk", branches: ["refs/heads/main"] }] };
+  const state = { schemaVersion: 1, pipelines: {} };
+
+  const first = await collectEvidence(registry, null, state, fetchImplementation, "42");
+  const second = await collectEvidence(registry, null, state, fetchImplementation, "42");
+
+  assert.equal(first.bootstrap, false);
+  assert.equal(first.failures.length, 1);
+  assert.equal(second.failures.length, 0);
+});
+
+test("check-suite events silently ignore non-PR Azure builds", async () => {
+  const build = {
+    id: 43,
+    result: "failed",
+    reason: "batchedCI",
+    sourceBranch: "refs/heads/main",
+    definition: { id: 101 },
+    repository: { id: "dotnet/sdk" }
+  };
+  const fetchImplementation = async () => ({ ok: true, json: async () => build });
+  const registry = { pipelines: [{ organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk", branches: ["refs/heads/main"] }] };
+
+  const dossier = await collectEvidence(registry, null, { schemaVersion: 1, pipelines: {} }, fetchImplementation, "43");
+
+  assert.equal(dossier.failures.length, 0);
+  assert.equal(shouldRunAgent(dossier), false);
+});
+
+test("neutral PR suites resolve YAML failures by source head SHA", async () => {
+  const build = {
+    id: 44,
+    result: "failed",
+    reason: "pullRequest",
+    sourceBranch: "refs/pull/124/merge",
+    sourceVersion: "merge-sha",
+    finishTime: "2026-07-24T15:00:00Z",
+    triggerInfo: { "pr.sourceSha": "head-sha" },
+    definition: { id: 101, name: "dotnet-sdk-public-ci" },
+    repository: { id: "dotnet/sdk" },
+    validationResults: [{ result: "error", message: "Unexpected parameter 'example'" }]
+  };
+  const fetchImplementation = async url => {
+    if (url.includes("/build/builds/44?")) return { ok: true, json: async () => build };
+    if (url.includes("/build/builds/44/timeline?")) return { ok: true, status: 204, json: async () => ({ records: [] }) };
+    if (url.includes("/runs?")) return { ok: true, json: async () => ({ value: [] }) };
+    if (url.includes("/build/builds?")) return { ok: true, json: async () => ({ value: [build] }) };
+    assert.fail(`Unexpected URL: ${url}`);
+  };
+  const registry = { pipelines: [{ organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk", branches: ["refs/heads/main"] }] };
+  const state = { schemaVersion: 1, pipelines: {} };
+
+  const first = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha");
+  const second = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha");
+
+  assert.equal(first.failures.length, 1);
+  assert.equal(first.failures[0].observations[0].category, "pipeline-configuration");
+  assert.equal(second.failures.length, 0);
 });
 
 test("agent gating skips bootstrap and previously consumed windows", () => {

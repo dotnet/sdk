@@ -5,6 +5,8 @@ description: Reviews public dotnet/sdk CI failures and identifies actionable, pr
 on:
   push:
     branches: [nagilson/ci-quality-monitor-live-evaluation]
+  check_suite:
+    types: [completed]
   schedule: every 30m
   workflow_dispatch:
     inputs:
@@ -20,9 +22,14 @@ concurrency:
 
 jobs:
   collect:
+    if: >-
+      github.event_name != 'check_suite' ||
+      (github.event.check_suite.app.slug == 'azure-pipelines' &&
+        github.event.check_suite.conclusion != 'success')
     runs-on: ubuntu-latest
     permissions:
       actions: read
+      checks: read
       contents: read
     outputs:
       dossier: ${{ steps.collect.outputs.dossier }}
@@ -31,6 +38,31 @@ jobs:
     steps:
       - name: Check out monitor configuration
         uses: actions/checkout@v7.0.0
+      - name: Resolve Azure build from completed check suite
+        if: github.event_name == 'check_suite'
+        id: resolve-check-suite
+        uses: actions/github-script@v9.0.0
+        with:
+          script: |
+            const checks = await github.paginate(github.rest.checks.listForSuite, {
+              ...context.repo,
+              check_suite_id: context.payload.check_suite.id,
+              per_page: 100
+            });
+            const roots = checks.filter(check => check.name === 'dotnet-sdk-public-ci');
+            if (roots.length > 1) {
+              core.setFailed(`Expected at most one dotnet-sdk-public-ci root check, found ${roots.length}.`);
+              return;
+            }
+            const buildId = roots.length === 1
+              ? new URL(roots[0].details_url).searchParams.get('buildId')
+              : null;
+            if (buildId !== null && !/^\d+$/.test(buildId)) {
+              core.setFailed('The Azure root check URL did not contain a numeric buildId.');
+              return;
+            }
+            core.setOutput('build_id', buildId ?? '');
+            core.setOutput('head_sha', context.payload.check_suite.head_sha);
       - name: Restore processed-build ledger
         id: restore-state-cache
         uses: actions/cache/restore@v6.1.0
@@ -69,6 +101,8 @@ jobs:
         id: collect
         env:
           BUILD_ID: ${{ inputs.build_id }}
+          EVENT_BUILD_ID: ${{ steps.resolve-check-suite.outputs.build_id }}
+          EVENT_HEAD_SHA: ${{ steps.resolve-check-suite.outputs.head_sha }}
         run: |
           mkdir -p .ci-quality-monitor
           args=(
@@ -80,6 +114,10 @@ jobs:
           )
           if [[ -n "$BUILD_ID" ]]; then
             args+=(--build-id "$BUILD_ID")
+          elif [[ -n "$EVENT_BUILD_ID" ]]; then
+            args+=(--event-build-id "$EVENT_BUILD_ID")
+          elif [[ -n "$EVENT_HEAD_SHA" ]]; then
+            args+=(--event-head-sha "$EVENT_HEAD_SHA")
           elif [[ "$GITHUB_REF_NAME" == "nagilson/ci-quality-monitor-live-evaluation" ]]; then
             args+=(--build-id "$(cat .github/ci-quality-monitor/evaluation-build-id.txt)")
           fi

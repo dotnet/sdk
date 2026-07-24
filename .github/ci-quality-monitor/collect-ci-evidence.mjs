@@ -182,6 +182,19 @@ async function listRecentBuilds(pipeline, branch, fetchImplementation = fetch) {
   return result.value ?? [];
 }
 
+async function findPullRequestBuildByHead(pipeline, headSha, fetchImplementation = fetch) {
+  const query = new URLSearchParams({
+    definitions: `${pipeline.definitionId}`,
+    statusFilter: "completed",
+    queryOrder: "finishTimeDescending",
+    "$top": `${DEFAULT_BUILD_LIMIT}`,
+    "api-version": API_VERSION
+  });
+  const result = await fetchJson(`${buildApiBase(pipeline)}/build/builds?${query}`, fetchImplementation);
+  return (result.value ?? []).find(build => build.reason?.toLowerCase() === "pullrequest"
+    && build.triggerInfo?.["pr.sourceSha"] === headSha);
+}
+
 async function getGitHubBranchHead(pipeline, branch, fetchImplementation = fetch) {
   const branchName = branch.replace(/^refs\/heads\//, "");
   const url = `https://api.github.com/repos/${pipeline.repository}/commits/${encodeURIComponent(branchName)}`;
@@ -659,12 +672,50 @@ export function selectUnprocessedFailures(state, key, history) {
   return { bootstrap: !previous, failures: previous ? failures : failures.slice(0, 1) };
 }
 
-async function collectCandidates(registry, buildId, state, fetchImplementation = fetch) {
+function isPullRequestBuild(build, pipeline) {
+  return build.definition?.id === pipeline.definitionId
+    && build.repository?.id?.toLowerCase() === pipeline.repository.toLowerCase()
+    && build.reason?.toLowerCase() === "pullrequest"
+    && /^refs\/pull\/\d+\/merge$/.test(build.sourceBranch);
+}
+
+async function collectEventCandidate(registry, buildId, state, fetchImplementation = fetch) {
+  const selected = await selectManualBuild(registry.pipelines, buildId, fetchImplementation);
+  if (!isPullRequestBuild(selected.build, selected.pipeline)) {
+    return { candidates: [], bootstrap: false, pipelineHealth: [] };
+  }
+  const history = (await listCompletedBuilds(selected.pipeline, selected.build.sourceBranch, fetchImplementation))
+    .filter(build => isPullRequestBuild(build, selected.pipeline));
+  const key = stateKey(selected.pipeline, selected.build.sourceBranch);
+  const consumedKeys = new Set(state.pipelines[key]?.consumedBuildKeys ?? []);
+  const candidate = !consumedKeys.has(buildConsumptionKey(selected.build))
+    && (selected.build.result === "failed" || selected.build.result === "partiallySucceeded")
+    ? selected.build
+    : null;
+  updateState(state, key, history);
+  return {
+    candidates: candidate ? [{ pipeline: selected.pipeline, build: candidate, history }] : [],
+    bootstrap: false,
+    pipelineHealth: []
+  };
+}
+
+async function collectEventCandidateByHead(registry, headSha, state, fetchImplementation = fetch) {
+  for (const pipeline of registry.pipelines) {
+    const build = await findPullRequestBuildByHead(pipeline, headSha, fetchImplementation);
+    if (build) return collectEventCandidate(registry, `${build.id}`, state, fetchImplementation);
+  }
+  return { candidates: [], bootstrap: false, pipelineHealth: [] };
+}
+
+async function collectCandidates(registry, buildId, eventBuildId, eventHeadSha, state, fetchImplementation = fetch) {
   if (buildId) {
     const selected = await selectManualBuild(registry.pipelines, buildId, fetchImplementation);
     const history = await listCompletedBuilds(selected.pipeline, selected.build.sourceBranch, fetchImplementation);
     return { candidates: [{ ...selected, history }], bootstrap: false, pipelineHealth: [] };
   }
+  if (eventBuildId) return collectEventCandidate(registry, eventBuildId, state, fetchImplementation);
+  if (eventHeadSha) return collectEventCandidateByHead(registry, eventHeadSha, state, fetchImplementation);
   const candidates = [];
   const pipelineHealth = [];
   let bootstrap = false;
@@ -705,8 +756,8 @@ async function collectCandidates(registry, buildId, state, fetchImplementation =
   return { candidates, bootstrap, pipelineHealth };
 }
 
-export async function collectEvidence(registry, buildId, state, fetchImplementation = fetch) {
-  const selected = await collectCandidates(registry, buildId, state, fetchImplementation);
+export async function collectEvidence(registry, buildId, state, fetchImplementation = fetch, eventBuildId = null, eventHeadSha = null) {
+  const selected = await collectCandidates(registry, buildId, eventBuildId, eventHeadSha, state, fetchImplementation);
   const failures = [];
   for (const candidate of selected.candidates) {
     failures.push(await collectFailureEvidence(
@@ -719,6 +770,8 @@ export async function collectEvidence(registry, buildId, state, fetchImplementat
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
     manualBuildId: buildId || null,
+    eventBuildId: eventBuildId || null,
+    eventHeadSha: eventHeadSha || null,
     bootstrap: selected.bootstrap,
     pipelineHealth: selected.pipelineHealth,
     failures
@@ -759,7 +812,13 @@ async function main() {
   const options = parseArguments(process.argv.slice(2));
   const registry = JSON.parse(await readFile(options.registry, "utf8"));
   const state = await readState(options.state);
-  const dossier = await collectEvidence(registry, options["build-id"], state);
+  const dossier = await collectEvidence(
+    registry,
+    options["build-id"],
+    state,
+    fetch,
+    options["event-build-id"],
+    options["event-head-sha"]);
   await mkdir(path.dirname(options.output), { recursive: true });
   await writeFile(options.output, `${JSON.stringify(dossier, null, 2)}\n`);
   if (options["state-output"]) {
