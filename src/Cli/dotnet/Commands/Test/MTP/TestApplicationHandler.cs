@@ -11,17 +11,26 @@ internal sealed class TestApplicationHandler
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
     private readonly TestOptions _options;
+    private readonly ArtifactPostProcessingManager? _artifactPostProcessingManager;
+    private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
     private bool _receivedTestHostHandshake;
 
-    public TestApplicationHandler(TerminalTestReporter output, TestModule module, TestOptions options)
+    public TestApplicationHandler(
+        TerminalTestReporter output,
+        TestModule module,
+        TestOptions options,
+        ArtifactPostProcessingManager? artifactPostProcessingManager = null,
+        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null)
     {
         _output = output;
         _module = module;
         _options = options;
+        _artifactPostProcessingManager = artifactPostProcessingManager;
+        _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
     }
 
     /// <summary>
@@ -61,9 +70,19 @@ internal sealed class TestApplicationHandler
         var tfm = TargetFrameworkParser.GetShortTargetFramework(framework);
         var currentHandshakeInfo = (tfm, arch, executionId!);
 
+        if (_options.IsArtifactPostProcessing
+            && hostType != HandshakeMessageHostTypes.ArtifactPostProcessor)
+        {
+            ReportHandshakeFailure(string.Format(
+                CliCommandStrings.MismatchingHandshakeHostType,
+                hostType,
+                HandshakeMessageHostTypes.ArtifactPostProcessor));
+            return false;
+        }
+
         // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
         string? instanceId = null;
-        if (hostType == "TestHost"
+        if (hostType == HandshakeMessageHostTypes.TestHost
             && !TryGetRequiredHandshakeProperty(handshakeMessage, HandshakeMessagePropertyNames.InstanceId, out instanceId, out validationError))
         {
             ReportHandshakeFailure(validationError!);
@@ -80,7 +99,7 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
-        if (hostType == "TestHost")
+        if (hostType == HandshakeMessageHostTypes.TestHost)
         {
             int? attemptNumber = null;
             // Invalid values fall back to legacy instance-based inference. Testfx normalizes malformed
@@ -121,12 +140,23 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
+        if (!_options.IsArtifactPostProcessing)
+        {
+            _artifactPostProcessingManager?.RecordCapabilities(
+                _module,
+                _module.TargetFramework ?? tfm,
+                arch,
+                handshakeMessage);
+        }
+
         return true;
     }
 
     private bool IsExpectedExecutionMode(string reportedMode, out string expectedMode)
     {
-        expectedMode = _options.IsHelp
+        expectedMode = _options.IsArtifactPostProcessing
+            ? HandshakeMessageExecutionModes.Tool
+            : _options.IsHelp
             ? HandshakeMessageExecutionModes.Help
             : _options.IsDiscovery
                 ? HandshakeMessageExecutionModes.Discover
@@ -147,7 +177,14 @@ internal sealed class TestApplicationHandler
     // HandshakeFailure with no actionable context. Explicit programmatic rejections here (unsupported
     // protocol version, missing required property, mismatching handshake info, mismatching execution
     // mode) are real protocol failures and must still be surfaced even when the SDK is in help mode.
-    private void ReportHandshakeFailure(string failureMessage) =>
+    private void ReportHandshakeFailure(string failureMessage)
+    {
+        if (_artifactPostProcessingInvocation is not null)
+        {
+            _artifactPostProcessingInvocation.RecordFailure(failureMessage);
+            return;
+        }
+
         _output.HandshakeFailure(
             _module.TargetPath,
             string.Empty,
@@ -155,6 +192,7 @@ internal sealed class TestApplicationHandler
             failureMessage,
             string.Empty,
             reportEvenWhenHelp: true);
+    }
 
     private static bool TryGetRequiredHandshakeProperty(HandshakeMessage handshakeMessage, byte propertyId, out string? value, out string? failureMessage)
     {
@@ -199,6 +237,8 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.IsIDE => nameof(HandshakeMessagePropertyNames.IsIDE),
             HandshakeMessagePropertyNames.ExecutionMode => nameof(HandshakeMessagePropertyNames.ExecutionMode),
             HandshakeMessagePropertyNames.AttemptNumber => nameof(HandshakeMessagePropertyNames.AttemptNumber),
+            HandshakeMessagePropertyNames.SupportedPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorKinds),
+            HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy),
             _ => string.Empty,
         };
 
@@ -367,7 +407,9 @@ internal sealed class TestApplicationHandler
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(FileArtifactMessages)));
         }
 
-        if (!_receivedTestHostHandshake)
+        if (_options.IsArtifactPostProcessing
+            ? _artifactPostProcessingInvocation is null
+            : !_receivedTestHostHandshake)
         {
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutTestHostHandshake, nameof(FileArtifactMessages)));
         }
@@ -391,10 +433,28 @@ internal sealed class TestApplicationHandler
                 nameof(FileArtifactMessage.FullPath),
                 nameof(FileArtifactMessage));
 
-            _output.ArtifactAdded(
-                outOfProcess: false,
-                _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                artifact.TestDisplayName, fullPath);
+            if (_artifactPostProcessingInvocation is not null)
+            {
+                _artifactPostProcessingInvocation.RecordOutput(
+                    _module,
+                    handshakeInfo.TargetFramework,
+                    handshakeInfo.Architecture,
+                    handshakeInfo.ExecutionId,
+                    artifact with { FullPath = fullPath });
+            }
+            else
+            {
+                _artifactPostProcessingManager?.RecordArtifact(
+                    _module,
+                    _module.TargetFramework ?? handshakeInfo.TargetFramework,
+                    handshakeInfo.Architecture,
+                    handshakeInfo.ExecutionId,
+                    artifact with { FullPath = fullPath });
+                _output.ArtifactAdded(
+                    outOfProcess: false,
+                    _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+                    artifact.TestDisplayName, fullPath);
+            }
         }
     }
 
@@ -550,6 +610,14 @@ internal sealed class TestApplicationHandler
 
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
+        if (_options.IsArtifactPostProcessing)
+        {
+            WriteMessage(outputData);
+            WriteMessage(errorData);
+            LogTestProcessExit(exitCode, outputData, errorData);
+            return;
+        }
+
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
             // If we received a handshake from TestHostController but not from TestHost,
