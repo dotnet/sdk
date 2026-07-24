@@ -1,6 +1,6 @@
-# CI Quality Monitor
+# CI Quality Investigator 🕵️
 
-The CI Quality Monitor is a scheduled GitHub Agentic Workflow that polls public
+The CI Quality Investigator is a GitHub Agentic Workflow that reviews public
 Azure DevOps builds and previews issues for recurring, previously untracked SDK
 build and test failures. It does not require an Azure DevOps service hook or
 credential. The initial experiment uses the GitHub Actions token for Copilot
@@ -43,9 +43,11 @@ The collector code follows three boundaries:
 compatibility export surface. The run implementation lives in
 [`collector.mjs`](collector.mjs).
 
-The workflow runs every 30 minutes and can be dispatched manually with a public
-Azure DevOps build ID. Manual dispatch ignores the processed-build ledger for
-the selected build, which makes repeatable validation possible.
+The workflow runs one daily routine and can be dispatched manually with a public
+Azure DevOps build ID. The daily routine reconciles stable-branch events and
+heartbeat state; a planned extension will also sample up to three developer PR
+failures in the same run. Manual dispatch ignores the processed-build ledger
+for the selected build, which makes repeatable validation possible.
 
 ## Public Data Boundary
 

@@ -118,7 +118,7 @@ test("legacy processed build IDs remain consumable during migration", () => {
   assert.deepEqual(selected.failures, []);
 });
 
-test("open PR check-suite builds remain inactive until MED and LOW policy is implemented", async () => {
+test("PR check-suite builds analyze once without bootstrap suppression", async () => {
   const build = {
     id: 42,
     result: "failed",
@@ -147,7 +147,8 @@ test("open PR check-suite builds remain inactive until MED and LOW policy is imp
   const first = await collectEvidence(registry, null, state, fetchImplementation, "42");
   const second = await collectEvidence(registry, null, state, fetchImplementation, "42");
 
-  assert.equal(first.failures.length, 0);
+  assert.equal(first.bootstrap, false);
+  assert.equal(first.failures.length, 1);
   assert.equal(second.failures.length, 0);
 });
 
@@ -174,7 +175,7 @@ test("manual build IDs skip incomplete attempts without consuming them", async (
   assert.deepEqual(state.pipelines, {});
 });
 
-test("stable branch check-suite failures are HIGH and analyze once", async () => {
+test("check-suite events silently ignore non-PR Azure builds", async () => {
   const build = {
     id: 43,
     result: "failed",
@@ -184,22 +185,15 @@ test("stable branch check-suite failures are HIGH and analyze once", async () =>
     repository: { id: "dotnet/sdk" }
   };
   const fetchImplementation = async () => ({ ok: true, json: async () => build });
-  const registry = { pipelines: [{
-    organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk",
-    branches: ["refs/heads/main"], stableBranches: ["refs/heads/main"]
-  }] };
-  const state = { schemaVersion: 1, pipelines: {} };
+  const registry = { pipelines: [{ organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk", branches: ["refs/heads/main"] }] };
 
-  const first = await collectEvidence(registry, null, state, fetchImplementation, "43");
-  const second = await collectEvidence(registry, null, state, fetchImplementation, "43");
+  const dossier = await collectEvidence(registry, null, { schemaVersion: 1, pipelines: {} }, fetchImplementation, "43");
 
-  assert.equal(first.failures.length, 1);
-  assert.equal(first.failures[0].monitoringCategory, "stable-branch");
-  assert.equal(first.failures[0].priority, "HIGH");
-  assert.equal(second.failures.length, 0);
+  assert.equal(dossier.failures.length, 0);
+  assert.equal(shouldRunAgent(dossier), false);
 });
 
-test("merged PR failures targeting a stable branch are HIGH and analyze once", async () => {
+test("neutral PR suites resolve YAML failures by source head SHA", async () => {
   const build = {
     id: 44,
     result: "failed",
@@ -219,21 +213,14 @@ test("merged PR failures targeting a stable branch are HIGH and analyze once", a
     if (url.includes("/build/builds?")) return { ok: true, json: async () => ({ value: [build] }) };
     assert.fail(`Unexpected URL: ${url}`);
   };
-  const registry = { pipelines: [{
-    organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk",
-    branches: ["refs/heads/main"], stableBranches: ["refs/heads/main"]
-  }] };
+  const registry = { pipelines: [{ organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk", branches: ["refs/heads/main"] }] };
   const state = { schemaVersion: 1, pipelines: {} };
-  const mergedPullRequest = { number: 124, baseRef: "main", mergeCommitSha: "landed-sha" };
 
-  const first = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha", mergedPullRequest);
-  const second = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha", mergedPullRequest);
+  const first = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha");
+  const second = await collectEvidence(registry, null, state, fetchImplementation, null, "head-sha");
 
   assert.equal(first.failures.length, 1);
   assert.equal(first.failures[0].observations[0].category, "pipeline-configuration");
-  assert.equal(first.failures[0].monitoringCategory, "stable-branch");
-  assert.equal(first.failures[0].priority, "HIGH");
-  assert.equal(first.failures[0].mergedPullRequest.number, 124);
   assert.equal(second.failures.length, 0);
 });
 

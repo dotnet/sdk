@@ -4,7 +4,6 @@ export interface Pipeline {
   definitionId: number;
   repository: string;
   branches: string[];
-  stableBranches: string[];
 }
 
 export interface Observation {
@@ -21,9 +20,6 @@ export interface BuildCandidate {
   pipeline: Pipeline;
   build: Record<string, unknown>;
   history: Array<Record<string, unknown>>;
-  monitoringCategory?: "stable-branch";
-  priority?: "HIGH";
-  mergedPullRequest?: Record<string, unknown>;
 }
 
 export interface CandidateSelection {

@@ -1,14 +1,14 @@
 ---
-emoji: "🔎"
-name: CI Quality Monitor
-description: Reviews public dotnet/sdk CI failures and identifies actionable, previously untracked build and test quality issues.
+emoji: "🕵️"
+name: CI Quality Investigator
+description: Investigates public dotnet/sdk CI failures and identifies actionable, previously untracked build and test quality issues.
 # See `ci-quality-monitor.README.md` for trigger coverage and fallback behavior.
 on:
   push:
     branches: [nagilson/ci-quality-monitor-live-evaluation]
   check_suite:
     types: [completed]
-  schedule: every 30m
+  schedule: daily
   workflow_dispatch:
     inputs:
       build_id:
@@ -229,7 +229,7 @@ safe-outputs:
     report-as-issue: false
 ---
 
-# CI Quality Monitor
+# CI Quality Investigator
 
 Review the supplied public CI evidence and determine whether maintainers need to investigate a build or test quality problem:
 
