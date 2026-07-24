@@ -34,4 +34,8 @@
     <EmbeddedResource Include="..\..\src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Combinatorial.MSTest" />
+    <Using Include="Combinatorial.MSTest" />
+  </ItemGroup>
 </Project>

@@ -72,10 +72,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         [TestMethod]
         [Ignore("https://github.com/dotnet/sdk/issues/10335")]
-        [DataRow(false, false)]
-        [DataRow(false, true)]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
+        [CombinatorialData]
         public void It_packs_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             Console.WriteLine(generatePackageOnBuild.ToString() + packAsTool.ToString());
