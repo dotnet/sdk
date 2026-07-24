@@ -47,8 +47,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public static void ClassCleanup() => _envFixture?.Dispose();
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -70,8 +69,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenNugetConfigInstallSucceedsInTransaction(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -100,8 +98,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenNugetConfigInstallCreatesAnAssetFile(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -165,8 +162,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAllButNoPackageVersionItReturnLatestStableVersion(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -208,8 +204,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAllButNoPackageVersionItCanInstallThePackage(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -230,8 +225,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAllButNoTargetFrameworkItCanDownloadThePackage(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -251,8 +245,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenASourceInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -275,8 +268,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenARelativeSourcePathInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             //  CI seems to be getting an old version of the global.tool.console.demo package which targets .NET Core 2.1.  This may fix that
@@ -309,8 +301,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAUriSourceInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             //  CI seems to be getting an old version of the global.tool.console.demo package which targets .NET Core 2.1.  This may fix that
@@ -336,8 +327,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAEmptySourceAndNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -362,8 +352,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenFailureAfterRestoreInstallWillRollback(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -399,8 +388,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenSecondInstallInATransactionTheFirstInstallShouldRollback(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -448,8 +436,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenFailureWhenInstallLocalToolsItWillRollbackPackageVersion(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -513,8 +500,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenSecondInstallOfLocalToolItShouldNotThrowException(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -552,8 +538,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenSecondInstallWithoutATransactionTheFirstShouldNotRollback(bool testMockBehaviorIsInSync)
         {
             new RunExeCommand(Log, "dotnet", "nuget", "locals", "all", "--list")
@@ -608,8 +593,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -635,8 +619,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAnInstalledPackageUninstallRollsbackWhenTransactionFails(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -704,8 +687,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAPackageNameWithDifferentCaseItCanInstallThePackage(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
@@ -761,8 +743,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         // repro https://github.com/dotnet/cli/issues/9409
         public void GivenAComplexVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
@@ -789,8 +770,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         // repro https://github.com/dotnet/cli/issues/10101
         public void GivenAPackageWithCasingAndenUSPOSIXInstallSucceeds(bool testMockBehaviorIsInSync)
         {

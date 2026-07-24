@@ -20,8 +20,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
     {
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
