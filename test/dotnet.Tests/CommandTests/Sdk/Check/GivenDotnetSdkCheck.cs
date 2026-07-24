@@ -46,8 +46,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void WhenNewFeatureBandExistsItIsAdvertised(bool newerBandExists)
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });

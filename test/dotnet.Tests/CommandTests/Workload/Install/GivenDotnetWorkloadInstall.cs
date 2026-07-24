@@ -345,8 +345,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenWorkloadInstallItDoesNotRemoveOldInstallsOnRollback(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;

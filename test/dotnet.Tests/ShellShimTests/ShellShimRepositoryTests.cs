@@ -132,8 +132,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAShimConflictItWillRollback(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -177,8 +176,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAnExceptionItWillRollback(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -220,8 +218,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenANonexistentShimRemoveDoesNotThrow(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -247,8 +244,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAnInstalledShimRemoveDeletesTheShimFiles(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -278,8 +274,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAnInstalledShimRemoveRollsbackIfTransactionIsAborted(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -316,8 +311,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenAnInstalledShimRemoveCommitsIfTransactionIsCompleted(bool testMockBehaviorIsInSync)
         {
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();

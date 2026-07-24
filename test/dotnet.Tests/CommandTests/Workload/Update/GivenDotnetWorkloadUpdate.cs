@@ -111,8 +111,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenWorkloadUpdateItRemovesOldPacksAfterInstall(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -197,8 +196,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenWorkloadUpdateAcrossFeatureBandsItUpdatesPacks(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -663,8 +661,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenMissingManifestsInWorkloadSetModeUpdateReinstallsManifests(bool userLocal)
         {
             var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider) =
