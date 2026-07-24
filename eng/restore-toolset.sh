@@ -35,13 +35,8 @@ function InitializeCustomSDKToolset {
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
     if [[ -n "${TARGET_ARCHITECTURE:-}" && "$TARGET_ARCHITECTURE" != "$native_arch" ]]; then
-      # On macOS arm64, x64 binaries can run via Rosetta 2, so we still install.
-      if [[ "$(uname)" == "Darwin" && "$native_arch" == "arm64" && "$TARGET_ARCHITECTURE" == "x64" ]]; then
-        : # Allow — Rosetta 2 can run x64 on arm64
-      else
-        install_test_runtimes=false
-        echo "Skipping test-runtime install: host architecture '$native_arch' cannot run target architecture '$TARGET_ARCHITECTURE' runtimes on this cross-build leg."
-      fi
+      install_test_runtimes=false
+      echo "Skipping test-runtime install: host architecture '$native_arch' cannot run target architecture '$TARGET_ARCHITECTURE' runtimes on this cross-build leg."
     fi
 
     if [[ "$install_test_runtimes" == true ]]; then
