@@ -51,6 +51,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public bool SupportLocalizedComponentNames { get; set; }
 
+        public string[] Assemblies { get; set; }
+
+        public bool UseSourceGenerator { get; set; }
+
         internal override string Command => "generate";
 
         protected override bool ValidateParameters()
@@ -195,6 +199,23 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                 builder.AppendLine("-e");
                 builder.AppendLine(Path.GetFullPath(Extensions[i].GetMetadata(AssemblyFilePath)));
+            }
+
+            // In source generator mode the tool hosts the Razor source generator and discovers tag
+            // helpers from the compilation instead of a manifest, so it needs the reference assemblies.
+            // The engine path ignores these.
+            if (UseSourceGenerator)
+            {
+                builder.AppendLine("--use-source-generator");
+
+                if (Assemblies != null)
+                {
+                    for (var i = 0; i < Assemblies.Length; i++)
+                    {
+                        builder.AppendLine("-a");
+                        builder.AppendLine(Assemblies[i]);
+                    }
+                }
             }
 
             return builder.ToString();

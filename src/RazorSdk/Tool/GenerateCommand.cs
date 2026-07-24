@@ -6,6 +6,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
 using Microsoft.NET.Sdk.Razor.Tool.Json;
@@ -34,6 +35,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             CSharpLanguageVersion = Option("--csharp-language-version", "csharp language version generated code", CommandOptionType.SingleValue);
             GenerateDeclaration = Option("--generate-declaration", "Generate declaration", CommandOptionType.NoValue);
             SupportLocalizedComponentNames = Option("--support-localized-component-names", "support localized component names", CommandOptionType.NoValue);
+            Assemblies = Option("-a", "reference assemblies used for tag helper discovery (source generator mode)", CommandOptionType.MultipleValue);
+            UseSourceGenerator = Option("--use-source-generator", "host the Razor source generator instead of the engine", CommandOptionType.NoValue);
         }
 
         public CommandOption Sources { get; }
@@ -68,6 +71,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         public CommandOption SupportLocalizedComponentNames { get; }
 
+        public CommandOption Assemblies { get; }
+
+        public CommandOption UseSourceGenerator { get; }
+
         protected override Task<int> ExecuteCoreAsync()
         {
             if (!Parent.Checker.Check(ExtensionFilePaths.Values))
@@ -76,12 +83,19 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 return Task.FromResult(ExitCodeFailure);
             }
 
-            var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
-
             var sourceItems = GetSourceItems(
                 Sources.Values, Outputs.Values, RelativePaths.Values,
                 FileKinds.Values, CssScopeSources.Values, CssScopeValues.Values);
+
+            // The source generator path handles ordinary generation. Declaration-only generation
+            // (--generate-declaration) has no public generator output, so it stays on the engine path.
+            if (UseSourceGenerator.HasValue() && !GenerateDeclaration.HasValue())
+            {
+                return Task.FromResult(ExecuteWithSourceGenerator(sourceItems));
+            }
+
+            var version = RazorLanguageVersion.Parse(Version.Value());
+            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
 
             var result = ExecuteCore(
                 configuration: configuration,
@@ -276,6 +290,85 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
 
             return success ? ExitCodeSuccess : ExitCodeFailureRazorError;
+        }
+
+        private int ExecuteWithSourceGenerator(SourceItem[] sourceItems)
+        {
+            var parseOptions = RazorSourceGeneratorHost.CreateParseOptions(GetCSharpLanguageVersion());
+            var compilation = RazorSourceGeneratorHost.CreateCompilation(Assemblies.Values, Parent.AssemblyReferenceProvider);
+
+            var inputFiles = new List<RazorInputFile>(sourceItems.Length);
+            foreach (var item in sourceItems)
+            {
+                inputFiles.Add(new RazorInputFile(item.SourcePath, item.RelativePhysicalPath, item.CssScope));
+            }
+
+            var optionsProvider = RazorSourceGeneratorHost.CreateOptionsProvider(
+                razorConfiguration: Configuration.Value(),
+                razorLanguageVersion: Version.Value(),
+                rootNamespace: RootNamespace.Value(),
+                supportLocalizedComponentNames: SupportLocalizedComponentNames.HasValue(),
+                generateMetadataSourceChecksumAttributes: false,
+                projectDirectory: ProjectDirectory.Value(),
+                files: inputFiles);
+            var additionalTexts = RazorSourceGeneratorHost.CreateAdditionalTexts(inputFiles);
+
+            var runResult = RazorSourceGeneratorHost.CreateDriver(parseOptions)
+                .AddAdditionalTexts(additionalTexts)
+                .WithUpdatedAnalyzerConfigOptions(optionsProvider)
+                .RunGeneratorsAndUpdateCompilation(compilation, out _, out _)
+                .GetRunResult().Results.Single();
+
+            var success = true;
+            foreach (var diagnostic in runResult.Diagnostics)
+            {
+                if (diagnostic.Severity == DiagnosticSeverity.Error)
+                {
+                    success = false;
+                }
+
+                Error.WriteLine(diagnostic.ToString());
+            }
+
+            if (!success)
+            {
+                return ExitCodeFailureRazorError;
+            }
+
+            if (!RazorSourceGeneratorHostOutput.TryGet(runResult, out var razorResult))
+            {
+                Error.WriteLine("The Razor source generator did not produce the expected host output.");
+                return ExitCodeFailureRazorError;
+            }
+
+            // The generator emits one C# source per input; map it back to that input's requested output path.
+            var outputBySourcePath = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var item in sourceItems)
+            {
+                outputBySourcePath[item.SourcePath] = item.OutputPath;
+            }
+
+            foreach (var generated in runResult.GeneratedSources)
+            {
+                var sourcePath = razorResult.GetFilePath(generated.HintName);
+                if (sourcePath is not null && outputBySourcePath.TryGetValue(sourcePath, out var outputPath))
+                {
+                    File.WriteAllText(outputPath, generated.SourceText.ToString());
+                }
+            }
+
+            return ExitCodeSuccess;
+        }
+
+        private LanguageVersion GetCSharpLanguageVersion()
+        {
+            if (CSharpLanguageVersion.HasValue() &&
+                LanguageVersionFacts.TryParse(CSharpLanguageVersion.Value(), out var languageVersion))
+            {
+                return languageVersion;
+            }
+
+            return LanguageVersion.Default;
         }
 
         private VirtualRazorProjectFileSystem GetVirtualRazorProjectSystem(SourceItem[] inputItems)
