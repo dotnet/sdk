@@ -250,7 +250,7 @@ function timelinePath(record, recordsById) {
   return names;
 }
 
-function getTimelineFailuresFromRecords(records = []) {
+export function getTimelineFailuresFromRecords(records = []) {
   const recordsById = new Map(records.map(record => [record.id, record]));
   return records
     .filter(record => record.result === "failed" || record.result === "partiallySucceeded")
@@ -268,7 +268,7 @@ function getTimelineFailuresFromRecords(records = []) {
         startedAt: record.startTime,
         finishedAt: record.finishTime,
         helixReferences: parseHelixWorkItemReferences(messages),
-        issues: messages.map(sanitizeText)
+        issues: messages.map(message => sanitizeText(message))
       };
     });
 }

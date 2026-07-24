@@ -10,6 +10,7 @@ import {
   classifyWorkItem,
   createFailureSignature,
   createHeartbeatObservation,
+  getTimelineFailuresFromRecords,
   normalizeBuild,
   parseArguments,
   parseHelixWorkItemReferences,
@@ -198,6 +199,18 @@ test("createTaskObservations preserves roots and suppresses cascades", () => {
   assert.deepEqual(observations[0].path, ["Build", "Windows", "Build"]);
   assert.equal(observations[1].category, "cascade");
   assert.equal(observations[1].actionable, false);
+});
+
+test("timeline failures preserve every issue message", () => {
+  const failures = getTimelineFailuresFromRecords([{
+    id: "task",
+    type: "Task",
+    name: "Checkout",
+    result: "failed",
+    issues: [{ message: "Git fetch failed" }, { message: "Git fetch failed with exit code 128" }]
+  }]);
+
+  assert.deepEqual(failures[0].issues, ["Git fetch failed", "Git fetch failed with exit code 128"]);
 });
 
 test("createTaskObservations classifies restore failures from task logs", () => {
