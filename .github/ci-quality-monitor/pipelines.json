@@ -1,0 +1,13 @@
+{
+  "pipelines": [
+    {
+      "organization": "dnceng-public",
+      "project": "public",
+      "definitionId": 101,
+      "repository": "dotnet/sdk",
+      "branches": [
+        "refs/heads/main"
+      ]
+    }
+  ]
+}
