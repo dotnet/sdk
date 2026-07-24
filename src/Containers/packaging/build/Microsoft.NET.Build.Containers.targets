@@ -149,6 +149,9 @@
       <ContainerGenerateAnnotationsImageVendor Condition="'$(ContainerGenerateAnnotationsImageVendor)' == ''">$(ContainerGenerateLabelsImageVendor)</ContainerGenerateAnnotationsImageVendor>
       <ContainerGenerateAnnotationsImageLicenses Condition="'$(ContainerGenerateAnnotationsImageLicenses)' == ''">$(ContainerGenerateLabelsImageLicenses)</ContainerGenerateAnnotationsImageLicenses>
       <ContainerGenerateAnnotationsImageTitle Condition="'$(ContainerGenerateAnnotationsImageTitle)' == ''">$(ContainerGenerateLabelsImageTitle)</ContainerGenerateAnnotationsImageTitle>
+      <ContainerGenerateAnnotationsImageBaseDigest Condition="'$(ContainerGenerateAnnotationsImageBaseDigest)' == ''">$(ContainerGenerateLabelsImageBaseDigest)</ContainerGenerateAnnotationsImageBaseDigest>
+      <ContainerGenerateAnnotationsImageBaseName Condition="'$(ContainerGenerateAnnotationsImageBaseName)' == ''">$(ContainerGenerateLabelsImageBaseName)</ContainerGenerateAnnotationsImageBaseName>
+      <ContainerGenerateAnnotationsDotnetToolset Condition="'$(ContainerGenerateAnnotationsDotnetToolset)' == ''">$(ContainerGenerateLabelsDotnetToolset)</ContainerGenerateAnnotationsDotnetToolset>
     </PropertyGroup>
 
     <PropertyGroup Label="Defaults for Container Labels">
@@ -180,7 +183,7 @@
       <ContainerLabel Condition="'$(ContainerGenerateLabelsDotnetToolset)' == 'true'" Include="net.dot.sdk.version" Value="$(NETCoreSdkVersion)" />
     </ItemGroup>
 
-    <!-- OCI annotations describe the manifest or index itself. Only architecture-neutral metadata is generated here. -->
+    <!-- OCI annotations describe the manifest or index itself. Architecture-neutral metadata is emitted on both; image-specific metadata is emitted only on manifests. -->
     <ItemGroup Label="Conventional Annotation assignment" Condition="'$(ContainerGenerateAnnotations)' == 'true'">
       <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageCreated)' == 'true'" Include="org.opencontainers.image.created" Value="$(_ContainerImageCreated)" />
       <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageDescription)' == 'true' and '$(ContainerDescription)' != ''" Include="org.opencontainers.image.description" Value="$(ContainerDescription)" />
@@ -191,6 +194,11 @@
       <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageVendor)' == 'true' and '$(ContainerVendor)' != ''" Include="org.opencontainers.image.vendor" Value="$(ContainerVendor)" />
       <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageLicenses)' == 'true' and '$(ContainerLicenseExpression)' != ''" Include="org.opencontainers.image.licenses" Value="$(ContainerLicenseExpression)" />
       <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageTitle)' == 'true' and '$(ContainerTitle)' != ''" Include="org.opencontainers.image.title" Value="$(ContainerTitle)" />
+      <!-- Base-image and .NET toolset metadata describes each platform-specific image, not the aggregate index. The base digest value is resolved after fetching the platform-specific base manifest. -->
+      <ContainerAnnotation Scope="Manifest" Condition="'$(ContainerGenerateAnnotationsImageBaseDigest)' == 'true'" Include="org.opencontainers.image.base.digest" />
+      <ContainerAnnotation Scope="Manifest" Condition="'$(ContainerGenerateAnnotationsImageBaseName)' == 'true' and '$(ContainerBaseImage)' != ''" Include="org.opencontainers.image.base.name" Value="$(ContainerBaseImage)" />
+      <ContainerAnnotation Scope="Manifest" Condition="'$(ContainerGenerateAnnotationsDotnetToolset)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" Include="net.dot.runtime.majorminor" Value="$(_TargetFrameworkVersionWithoutV)" />
+      <ContainerAnnotation Scope="Manifest" Condition="'$(ContainerGenerateAnnotationsDotnetToolset)' == 'true'" Include="net.dot.sdk.version" Value="$(NETCoreSdkVersion)" />
     </ItemGroup>
 
     <!-- These sourcelink-derived properties are only allowed to flow to generated artifacts if `PublishRepositoryUrl` is set as a user signal for opt-in.

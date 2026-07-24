@@ -208,7 +208,15 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         foreach (ITaskItem annotation in manifestAnnotations)
         {
-            imageBuilder.AddAnnotation(annotation.ItemSpec, annotation.GetMetadata("Value"));
+            string value = annotation.GetMetadata("Value");
+            if (annotation.ItemSpec == ImageBuilder.BaseImageDigestName && string.IsNullOrEmpty(value))
+            {
+                imageBuilder.AddBaseImageDigestAnnotation();
+            }
+            else
+            {
+                imageBuilder.AddAnnotation(annotation.ItemSpec, value);
+            }
         }
 
         SetEnvironmentVariables(imageBuilder, ContainerEnvironmentVariables);

@@ -166,9 +166,14 @@ public class TargetsTests
             .ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.source", "https://github.com/dotnet/sdk", annotation))
             .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.revision", "abcdef", annotation))
             .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.version", "1.2.3", annotation))
-            .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.description", "SDK container", annotation));
-        annotations.Should().NotContain(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.base.name" || annotation.EvaluatedInclude == "net.dot.sdk.version");
-        annotations.Should().OnlyContain(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index");
+            .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.description", "SDK container", annotation))
+            .And.ContainSingle(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.base.digest" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest")
+            .And.ContainSingle(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.base.name" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest")
+            .And.ContainSingle(annotation => annotation.EvaluatedInclude == "net.dot.runtime.majorminor" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest")
+            .And.ContainSingle(annotation => annotation.EvaluatedInclude == "net.dot.sdk.version" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest");
+        annotations
+            .Where(annotation => !annotation.EvaluatedInclude.StartsWith("org.opencontainers.image.base.", StringComparison.Ordinal) && !annotation.EvaluatedInclude.StartsWith("net.dot.", StringComparison.Ordinal))
+            .Should().OnlyContain(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index");
         instance.GetPropertyValue("ContainerImageFormat").Should().Be("OCI");
     }
 
@@ -197,9 +202,12 @@ public class TargetsTests
         if (shouldGenerateAnnotations)
         {
             annotations.Should()
-                .ContainSingle(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.created")
-                .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.description", "SDK container", annotation))
-                .And.OnlyContain(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index");
+                .ContainSingle(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.created" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index")
+                .And.ContainSingle(annotation => AnnotationMatch("org.opencontainers.image.description", "SDK container", annotation) && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest,Index")
+                .And.ContainSingle(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.base.digest" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest")
+                .And.ContainSingle(annotation => annotation.EvaluatedInclude == "org.opencontainers.image.base.name" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest")
+                .And.ContainSingle(annotation => annotation.EvaluatedInclude == "net.dot.runtime.majorminor" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest")
+                .And.ContainSingle(annotation => annotation.EvaluatedInclude == "net.dot.sdk.version" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest");
         }
         else
         {

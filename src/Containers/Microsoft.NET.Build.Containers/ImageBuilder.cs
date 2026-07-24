@@ -14,6 +14,8 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal sealed class ImageBuilder
 {
+    internal const string BaseImageDigestName = "org.opencontainers.image.base.digest";
+
     // a snapshot of the manifest that this builder is based on
     private readonly ManifestV2 _baseImageManifest;
 
@@ -113,9 +115,18 @@ internal sealed class ImageBuilder
 
     internal (string name, string value) AddBaseImageDigestLabel()
     {
-        var label = ("org.opencontainers.image.base.digest", _baseImageManifest.GetDigest());
+        var label = (BaseImageDigestName, _baseImageManifest.GetDigest());
         AddLabel(label.Item1, label.Item2);
         return label;
+    }
+
+    internal void AddBaseImageDigestAnnotation()
+    {
+        string digest = _baseImageManifest.GetDigest();
+        if (!string.IsNullOrEmpty(digest))
+        {
+            AddAnnotation(BaseImageDigestName, digest);
+        }
     }
 
     /// <summary>
