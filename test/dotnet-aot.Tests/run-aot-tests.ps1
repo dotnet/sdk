@@ -112,6 +112,20 @@ if (-not (Test-Path $exePath)) {
 Write-Host "Running AOT tests..." -ForegroundColor Yellow
 Write-Host ""
 
+$sdkDirectory = & $dotnet --info 2>$null | ForEach-Object {
+    if ($_ -match '^\s*Base Path:\s*(.+?)\s*$') {
+        $Matches[1]
+    }
+} | Select-Object -First 1
+
+if (-not $sdkDirectory) {
+    Write-Host "ERROR: Could not determine the bootstrap SDK directory." -ForegroundColor Red
+    exit 1
+}
+
+$previousTestSdkDirectory = $env:DOTNET_AOT_TEST_SDK_DIRECTORY
+$env:DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
+
 # When -Trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
 # app, so it accepts the --report-trx options) so CI can publish the results.
 $runArgs = @()
@@ -123,8 +137,13 @@ if ($Trx) {
     $runArgs += @("--report-trx", "--report-trx-filename", "dotnet-aot.Tests.trx", "--results-directory", $ResultsDirectory)
 }
 
-& $exePath @runArgs
-$testExitCode = $LASTEXITCODE
+try {
+    & $exePath @runArgs
+    $testExitCode = $LASTEXITCODE
+}
+finally {
+    $env:DOTNET_AOT_TEST_SDK_DIRECTORY = $previousTestSdkDirectory
+}
 
 Write-Host ""
 if ($testExitCode -eq 0) {

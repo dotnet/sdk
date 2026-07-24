@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -11,7 +10,6 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Publish;
 
-[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class PublishCommand : RestoringCommand
 {
     private PublishCommand(
@@ -25,7 +23,7 @@ public class PublishCommand : RestoringCommand
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
         var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
-        return FromParseResult(parseResult);
+        return FromParseResult(parseResult, msbuildPath);
     }
 
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
