@@ -137,8 +137,7 @@ public class NETFramework
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void PackageWithoutAssets_ShouldNotShowUpInDepsJson(bool trimLibrariesWithoutAssets)
         {
             var testProject = new TestProject()
@@ -390,8 +389,7 @@ public static class {project.Name}
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void It_uses_hintpath_when_replacing_simple_name_references(bool useFacades)
         {
             TestProject project = new()
